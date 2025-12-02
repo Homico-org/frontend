@@ -1,0 +1,162 @@
+'use client';
+
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'client' | 'pro' | 'company' | 'admin';
+  avatar?: string;
+  city?: string;
+  phone?: string;
+  selectedCategories?: string[];
+  accountType?: 'individual' | 'organization';
+  companyName?: string;
+}
+
+interface AuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (accessToken: string, user: User) => void;
+  logout: () => void;
+  updateUser: (userData: Partial<User>) => void;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Helper to clear all auth data
+const clearAuthData = () => {
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('user');
+  // Also clear old token key if exists
+  localStorage.removeItem('token');
+};
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
+  // Validate token with backend
+  const validateToken = useCallback(async (token: string): Promise<User | null> => {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${API_URL}/users/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const userData = await response.json();
+      return {
+        id: userData._id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
+        avatar: userData.avatar,
+        city: userData.city,
+        phone: userData.phone,
+        selectedCategories: userData.selectedCategories,
+        accountType: userData.accountType,
+        companyName: userData.companyName
+      };
+    } catch (err) {
+      console.error('Token validation failed:', err);
+      return null;
+    }
+  }, []);
+
+  useEffect(() => {
+    // Check if user is logged in on mount and validate token
+    const initAuth = async () => {
+      const accessToken = localStorage.getItem('access_token');
+
+      if (!accessToken) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Validate token with backend
+      const validatedUser = await validateToken(accessToken);
+
+      if (validatedUser) {
+        // Token is valid, update user state and localStorage
+        localStorage.setItem('user', JSON.stringify(validatedUser));
+        setUser(validatedUser);
+      } else {
+        // Token is invalid, clear auth data
+        clearAuthData();
+        setUser(null);
+      }
+
+      setIsLoading(false);
+    };
+
+    initAuth();
+  }, [validateToken]);
+
+  // Listen for logout events from api interceptor
+  useEffect(() => {
+    const handleLogoutEvent = () => {
+      setUser(null);
+    };
+
+    window.addEventListener('auth:logout', handleLogoutEvent);
+    return () => {
+      window.removeEventListener('auth:logout', handleLogoutEvent);
+    };
+  }, []);
+
+  const login = (accessToken: string, userData: User) => {
+    localStorage.setItem('access_token', accessToken);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+  };
+
+  const logout = useCallback(() => {
+    // Clear all auth data
+    clearAuthData();
+    setUser(null);
+    // Use replace to avoid back button issues
+    router.replace('/');
+  }, [router]);
+
+  const updateUser = (userData: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...userData };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+    }
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        isLoading,
+        login,
+        logout,
+        updateUser,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}
