@@ -89,7 +89,7 @@ type FilterKey = 'all' | 'unread' | 'jobs' | 'messages' | 'reviews';
 
 export default function NotificationsPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
-  const { language } = useLanguage();
+  const { locale } = useLanguage();
   const router = useRouter();
   const {
     notifications,
@@ -145,17 +145,17 @@ export default function NotificationsPage() {
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (diffInSeconds < 60) return language === 'ka' ? 'ახლახანს' : 'Just now';
+    if (diffInSeconds < 60) return locale === 'ka' ? 'ახლახანს' : 'Just now';
     if (diffInSeconds < 3600) {
       const mins = Math.floor(diffInSeconds / 60);
-      return language === 'ka' ? `${mins} წუთის წინ` : `${mins}m ago`;
+      return locale === 'ka' ? `${mins} წუთის წინ` : `${mins}m ago`;
     }
     if (diffInSeconds < 86400) {
       const hours = Math.floor(diffInSeconds / 3600);
-      return language === 'ka' ? `${hours} საათის წინ` : `${hours}h ago`;
+      return locale === 'ka' ? `${hours} საათის წინ` : `${hours}h ago`;
     }
     const days = Math.floor(diffInSeconds / 86400);
-    return language === 'ka' ? `${days} დღის წინ` : `${days}d ago`;
+    return locale === 'ka' ? `${days} დღის წინ` : `${days}d ago`;
   };
 
   const handleNotificationClick = async (notification: Notification) => {
@@ -213,7 +213,7 @@ export default function NotificationsPage() {
             className="group inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-200 transition-all duration-300 mb-6"
           >
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform duration-300" />
-            <span>{language === 'ka' ? 'უკან' : 'Back'}</span>
+            <span>{locale === 'ka' ? 'უკან' : 'Back'}</span>
           </button>
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -237,14 +237,14 @@ export default function NotificationsPage() {
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl font-serif font-medium text-neutral-50">
-                  {language === 'ka' ? 'შეტყობინებები' : 'Notifications'}
+                  {locale === 'ka' ? 'შეტყობინებები' : 'Notifications'}
                 </h1>
                 <p className="mt-1 text-neutral-400 text-sm">
                   {unreadCount > 0
-                    ? language === 'ka'
+                    ? locale === 'ka'
                       ? `${unreadCount} წაუკითხავი შეტყობინება`
                       : `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}`
-                    : language === 'ka'
+                    : locale === 'ka'
                     ? 'ყველა შეტყობინება წაკითხულია'
                     : 'All caught up'}
                 </p>
@@ -264,7 +264,7 @@ export default function NotificationsPage() {
                 }}
               >
                 <Check className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-                <span className="hidden sm:inline">{language === 'ka' ? 'ყველას წაკითხვა' : 'Mark all read'}</span>
+                <span className="hidden sm:inline">{locale === 'ka' ? 'ყველას წაკითხვა' : 'Mark all read'}</span>
               </button>
               <button
                 onClick={handleDeleteAll}
@@ -277,7 +277,7 @@ export default function NotificationsPage() {
                 }}
               >
                 <Trash2 className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-                <span className="hidden sm:inline">{language === 'ka' ? 'ყველას წაშლა' : 'Clear all'}</span>
+                <span className="hidden sm:inline">{locale === 'ka' ? 'ყველას წაშლა' : 'Clear all'}</span>
               </button>
             </div>
           </div>
@@ -298,7 +298,7 @@ export default function NotificationsPage() {
                   border: activeFilter === filter.key ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
                 }}
               >
-                {language === 'ka' ? filter.labelKa : filter.label}
+                {locale === 'ka' ? filter.labelKa : filter.label}
                 {filter.key === 'unread' && unreadCount > 0 && (
                   <span className="ml-1.5 px-1.5 py-0.5 text-xs rounded-full bg-white/20">
                     {unreadCount}
@@ -349,11 +349,11 @@ export default function NotificationsPage() {
             </div>
             <h3 className="text-xl font-serif font-medium text-neutral-200 mb-2">
               {activeFilter === 'unread'
-                ? language === 'ka' ? 'წაუკითხავი შეტყობინებები არ არის' : 'No unread notifications'
-                : language === 'ka' ? 'შეტყობინებები არ არის' : 'No notifications yet'}
+                ? locale === 'ka' ? 'წაუკითხავი შეტყობინებები არ არის' : 'No unread notifications'
+                : locale === 'ka' ? 'შეტყობინებები არ არის' : 'No notifications yet'}
             </h3>
             <p className="text-neutral-500 max-w-sm mx-auto">
-              {language === 'ka'
+              {locale === 'ka'
                 ? 'როდესაც მიიღებთ შეტყობინებას, ის აქ გამოჩნდება'
                 : "When you receive notifications, they'll appear here"}
             </p>
@@ -430,7 +430,7 @@ export default function NotificationsPage() {
                       {/* Link indicator */}
                       {notification.link && (
                         <div className="mt-3 flex items-center gap-1.5 text-xs text-primary-400 group-hover:text-primary-300 transition-colors duration-300">
-                          <span>{language === 'ka' ? 'დეტალების ნახვა' : 'View details'}</span>
+                          <span>{locale === 'ka' ? 'დეტალების ნახვა' : 'View details'}</span>
                           <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform duration-300" />
                         </div>
                       )}
