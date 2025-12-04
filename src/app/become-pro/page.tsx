@@ -224,15 +224,7 @@ export default function BecomeProPage() {
   };
 
   const canSubmit = () => {
-    // Designer needs at least one Pinterest link
-    if (selectedCategory === 'interior-design') {
-      return pinterestLinks.some(l => l.trim());
-    }
-    // Architect needs cadastral ID
-    if (selectedCategory === 'architecture') {
-      return cadastralId.trim().length > 0;
-    }
-    // Craftsmen and Home Care just need basic info
+    // All fields are optional now - users can complete profile later
     return true;
   };
 
@@ -735,124 +727,75 @@ export default function BecomeProPage() {
                   />
                 </div>
 
-                {/* Interior Design specific - Pinterest */}
-                {selectedCategory === 'interior-design' && (
-                  <div className="space-y-4 p-4 rounded-xl bg-[var(--color-bg-tertiary)] border border-[var(--color-border-subtle)]">
-                    <div className="flex items-center gap-2 text-[var(--color-accent)]">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 01.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z"/>
-                      </svg>
-                      <span className="font-medium">{locale === 'ka' ? 'Pinterest პორტფოლიო' : 'Pinterest Portfolio'}</span>
-                    </div>
-                    <p className="text-sm text-[var(--color-text-tertiary)]">
-                      {locale === 'ka'
-                        ? 'დაამატე შენი Pinterest ბორდების ლინკები პორტფოლიოსთვის'
-                        : 'Add links to your Pinterest boards for your portfolio'
-                      }
-                    </p>
-                    {pinterestLinks.map((link, index) => (
-                      <div key={index} className="flex gap-2">
-                        <input
-                          type="url"
-                          value={link}
-                          onChange={(e) => updatePinterestLink(index, e.target.value)}
-                          placeholder="https://pinterest.com/yourboard"
-                          className="flex-1 px-4 py-3 bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all text-sm"
-                        />
-                        {pinterestLinks.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removePinterestLink(index)}
-                            className="p-3 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] text-[var(--color-text-tertiary)] hover:text-red-500 hover:border-red-500/30 transition-all"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                    {pinterestLinks.length < 5 && (
-                      <button
-                        type="button"
-                        onClick={addPinterestLink}
-                        className="flex items-center gap-2 text-sm font-medium text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] transition-colors"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                        {locale === 'ka' ? 'დაამატე კიდევ' : 'Add another'}
-                      </button>
-                    )}
-                  </div>
-                )}
+                {/* Portfolio URL - Optional for all categories */}
+                <div>
+                  <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                    {locale === 'ka' ? 'პორტფოლიოს ბმული' : 'Portfolio URL'}
+                    <span className="text-[var(--color-text-muted)] text-xs ml-2">
+                      ({locale === 'ka' ? 'არასავალდებულო' : 'optional'})
+                    </span>
+                  </label>
+                  <input
+                    type="url"
+                    value={pinterestLinks[0] || ''}
+                    onChange={(e) => updatePinterestLink(0, e.target.value)}
+                    placeholder={locale === 'ka' ? 'https://თქვენი-საიტი.com ან Instagram/Behance' : 'https://your-website.com or Instagram/Behance'}
+                    className="w-full px-4 py-4 bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
+                  />
+                  <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
+                    {locale === 'ka'
+                      ? 'ვებსაიტი, Instagram, Behance, Pinterest ან სხვა პორტფოლიო'
+                      : 'Website, Instagram, Behance, Pinterest or any portfolio link'
+                    }
+                  </p>
+                </div>
 
-                {/* Architecture specific - Cadastral ID */}
+                {/* Architecture specific - Cadastral ID (optional) */}
                 {selectedCategory === 'architecture' && (
-                  <div className="space-y-4 p-4 rounded-xl bg-[var(--color-bg-tertiary)] border border-[var(--color-border-subtle)]">
-                    <div className="flex items-center gap-2 text-[var(--color-accent)]">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                      </svg>
-                      <span className="font-medium">{locale === 'ka' ? 'ვერიფიკაცია' : 'Verification'}</span>
-                    </div>
-                    <p className="text-sm text-[var(--color-text-tertiary)]">
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                      {locale === 'ka' ? 'საკადასტრო კოდი' : 'Cadastral ID'}
+                      <span className="text-[var(--color-text-muted)] text-xs ml-2">
+                        ({locale === 'ka' ? 'არასავალდებულო' : 'optional'})
+                      </span>
+                    </label>
+                    <input
+                      type="text"
+                      value={cadastralId}
+                      onChange={(e) => setCadastralId(e.target.value)}
+                      placeholder="01.18.01.004.001"
+                      className="w-full px-4 py-4 bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
+                    />
+                    <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
                       {locale === 'ka'
-                        ? 'საჯარო რეესტრიდან მიღებული საკადასტრო კოდი'
-                        : 'Cadastral code from the Public Registry'
+                        ? 'ვერიფიკაციისთვის (შეგიძლიათ მოგვიანებით დაამატოთ)'
+                        : 'For verification (you can add later)'
                       }
                     </p>
-                    <div>
-                      <input
-                        type="text"
-                        value={cadastralId}
-                        onChange={(e) => setCadastralId(e.target.value)}
-                        placeholder="01.18.01.004.001"
-                        className="w-full px-4 py-3 bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-[var(--color-text-tertiary)] mb-1">
-                        {locale === 'ka' ? 'ლიცენზიის ნომერი (არასავალდებულო)' : 'License Number (optional)'}
-                      </label>
-                      <input
-                        type="text"
-                        value={licenseNumber}
-                        onChange={(e) => setLicenseNumber(e.target.value)}
-                        placeholder={locale === 'ka' ? 'არქიტექტორის ლიცენზია' : 'Architect license'}
-                        className="w-full px-4 py-3 bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
-                      />
-                    </div>
                   </div>
                 )}
 
-                {/* Craftsmen & Home Care - Simple confirmation */}
-                {(selectedCategory === 'craftsmen' || selectedCategory === 'home-care') && (
-                  <div className="p-4 rounded-xl bg-[var(--color-accent-soft)] border border-[var(--color-accent)]/20">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-[var(--color-accent)] flex items-center justify-center text-white flex-shrink-0">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-[var(--color-text-primary)] mb-1">
-                          {locale === 'ka' ? 'მზადაა!' : 'All set!'}
-                        </h4>
-                        <p className="text-sm text-[var(--color-text-secondary)]">
-                          {locale === 'ka'
-                            ? 'არჩეული გაქვს: ' + selectedSubcategories.map(s =>
-                                selectedCategoryData?.subcategories.find(sub => sub.key === s)?.nameKa
-                              ).join(', ')
-                            : 'Selected: ' + selectedSubcategories.map(s =>
-                                selectedCategoryData?.subcategories.find(sub => sub.key === s)?.name
-                              ).join(', ')
-                          }
-                        </p>
-                      </div>
+                {/* Info about profile completion */}
+                <div className="p-4 rounded-xl bg-[var(--color-accent-soft)] border border-[var(--color-accent)]/20">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[var(--color-accent)] flex items-center justify-center text-white flex-shrink-0">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-[var(--color-text-primary)] mb-1">
+                        {locale === 'ka' ? 'რეგისტრაციის შემდეგ' : 'After registration'}
+                      </h4>
+                      <p className="text-sm text-[var(--color-text-secondary)]">
+                        {locale === 'ka'
+                          ? 'შეძლებთ დაამატოთ პორტფოლიო, გამოცდილება, ფასები და სხვა დეტალები თქვენს პროფილში'
+                          : 'You can add portfolio, experience, pricing and other details to your profile'
+                        }
+                      </p>
                     </div>
                   </div>
-                )}
+                </div>
 
                 {/* Custom Specialties Display */}
                 {customSpecialties.length > 0 && (

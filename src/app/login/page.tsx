@@ -17,7 +17,7 @@ export default function LoginPage() {
   const { login, isAuthenticated, isLoading: authLoading, user } = useAuth();
   const { t } = useLanguage();
   const [formData, setFormData] = useState({
-    email: '',
+    identifier: '',
     password: '',
   });
   const [error, setError] = useState('');
@@ -84,7 +84,13 @@ export default function LoginPage() {
         router.push('/browse');
       }
     } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      // Map backend error messages to translation keys
+      const errorMessage = err.message || '';
+      if (errorMessage.toLowerCase().includes('invalid credentials')) {
+        setError(t('auth.invalidCredentials'));
+      } else {
+        setError(t('auth.loginFailed'));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -172,19 +178,19 @@ export default function LoginPage() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Email */}
+              {/* Phone Number */}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-2">
-                  {t('auth.email')}
+                <label htmlFor="identifier" className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-2">
+                  {t('auth.phone')}
                 </label>
                 <input
-                  id="email"
-                  type="email"
+                  id="identifier"
+                  type="tel"
                   required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  value={formData.identifier}
+                  onChange={(e) => setFormData({ ...formData, identifier: e.target.value })}
                   className="input"
-                  placeholder="you@example.com"
+                  placeholder="+995 555 123 456"
                 />
               </div>
 
@@ -276,7 +282,7 @@ export default function LoginPage() {
                   <button
                     key={account.email}
                     type="button"
-                    onClick={() => setFormData({ email: account.email, password: 'demo123' })}
+                    onClick={() => setFormData({ identifier: account.email, password: 'demo123' })}
                     className="w-full flex items-center justify-between text-sm bg-cream-50 dark:bg-dark-elevated hover:bg-cream-100 dark:hover:bg-dark-border rounded-xl px-4 py-3 border border-neutral-100 dark:border-dark-border hover:border-primary-200 transition-all duration-200 cursor-pointer text-left group"
                   >
                     <span className="text-neutral-500 dark:text-neutral-400 capitalize font-medium">{account.role}</span>

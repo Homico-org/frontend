@@ -1,11 +1,11 @@
 'use client';
 
+import { getCategoryByKey } from '@/constants/categories';
 import { useAuth } from '@/contexts/AuthContext';
 import { countries, CountryCode, useLanguage } from '@/contexts/LanguageContext';
-import { CATEGORIES, getCategoryByKey } from '@/constants/categories';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useRef, useState, Suspense } from 'react';
 
 // Hook to redirect authenticated users
 function useAuthRedirectFromRegister() {
@@ -40,6 +40,42 @@ interface Category {
   isActive: boolean;
 }
 
+// Category icon component
+const CategoryIcon = ({ iconKey, className = '' }: { iconKey: string; className?: string }) => {
+  switch (iconKey) {
+    case 'designer':
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />
+        </svg>
+      );
+    case 'architect':
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
+        </svg>
+      );
+    case 'craftsmen':
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" />
+        </svg>
+      );
+    case 'homecare':
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+        </svg>
+      );
+    default:
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z" />
+        </svg>
+      );
+  }
+};
+
 // Design styles for Interior Designers
 const designStyles = [
   'Modern',
@@ -54,8 +90,9 @@ const designStyles = [
   'Mid-Century Modern',
 ];
 
-export default function RegisterPage() {
+function RegisterContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
   const { t, country, locale } = useLanguage();
   const errorRef = useRef<HTMLDivElement>(null);
@@ -63,15 +100,19 @@ export default function RegisterPage() {
   // Redirect authenticated users away from register page
   const { authLoading, isAuthenticated, user } = useAuthRedirectFromRegister();
 
+  // Check if coming from "Become Pro" button (type=pro in URL)
+  const isProRegistration = searchParams.get('type') === 'pro';
+
   // Steps: 1 = role, 2 = basic info, 2.5 = email verify, 2.75 = phone verify, 3 = category (pro), 4 = category-specific
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(isProRegistration ? 2 : 1);
 
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
-    role: '',
+    role: isProRegistration ? 'pro' : '',
     phone: '',
     city: '',
     avatar: '',
@@ -256,9 +297,15 @@ export default function RegisterPage() {
     }
   };
 
-  const validatePinterestLink = (url: string): boolean => {
+  const validatePortfolioUrl = (url: string): boolean => {
     if (!url) return true;
-    return url.includes('pinterest.com') || url.includes('pin.it');
+    // Accept any valid URL for portfolio
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   // Resend timer effect
@@ -425,21 +472,34 @@ export default function RegisterPage() {
         return;
       }
 
-      // Check if email, phone, or ID number already exist
+      // Check if email (if provided), phone, or ID number already exist
       setIsLoading(true);
       try {
-        const checks = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/check-exists?field=email&value=${encodeURIComponent(formData.email)}`).then(r => r.json()),
+        const checkPromises = [
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/check-exists?field=phone&value=${encodeURIComponent(countries[phoneCountry].phonePrefix + formData.phone)}`).then(r => r.json()),
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/check-exists?field=idNumber&value=${encodeURIComponent(formData.idNumber)}`).then(r => r.json()),
-        ]);
+        ];
 
-        const [emailCheck, phoneCheck, idCheck] = checks;
+        // Only check email if provided
+        if (formData.email) {
+          checkPromises.unshift(
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/check-exists?field=email&value=${encodeURIComponent(formData.email)}`).then(r => r.json())
+          );
+        }
+
+        const checks = await Promise.all(checkPromises);
 
         const newExistingFields: Record<string, boolean> = {};
-        if (emailCheck.exists) newExistingFields.email = true;
-        if (phoneCheck.exists) newExistingFields.phone = true;
-        if (idCheck.exists) newExistingFields.idNumber = true;
+        if (formData.email) {
+          const [emailCheck, phoneCheck, idCheck] = checks;
+          if (emailCheck.exists) newExistingFields.email = true;
+          if (phoneCheck.exists) newExistingFields.phone = true;
+          if (idCheck.exists) newExistingFields.idNumber = true;
+        } else {
+          const [phoneCheck, idCheck] = checks;
+          if (phoneCheck.exists) newExistingFields.phone = true;
+          if (idCheck.exists) newExistingFields.idNumber = true;
+        }
 
         if (Object.keys(newExistingFields).length > 0) {
           setExistingFields(newExistingFields);
@@ -451,9 +511,10 @@ export default function RegisterPage() {
       }
       setIsLoading(false);
 
-      // Go to email verification
-      setStep(2.5);
-      sendOtp('email');
+      // Go directly to phone verification (skip email verification)
+      setStep(2.75);
+      // Auto-send OTP for phone verification
+      sendOtp('phone');
     } else if (step === 3) {
       // Category selected, move to category-specific info
       if (!formData.selectedCategory) {
@@ -468,23 +529,7 @@ export default function RegisterPage() {
     e.preventDefault();
     setError('');
 
-    // Validate category-specific fields for pros
-    if (formData.role === 'pro') {
-      if (formData.selectedCategory === 'interior-design') {
-        const validLinks = formData.pinterestLinks.filter(link => link.trim());
-        if (validLinks.length === 0) {
-          setError(locale === 'ka' ? 'გთხოვთ დაამატოთ მინიმუმ ერთი ლინკი' : 'Please add at least one link');
-          return;
-        }
-        for (const link of validLinks) {
-          if (!validatePinterestLink(link)) {
-            setError(locale === 'ka' ? 'გთხოვთ შეიყვანოთ სწორი ლინკი' : 'Please enter a valid link');
-            return;
-          }
-        }
-      }
-    }
-
+    // No required category-specific validation - all fields are optional now
     setIsLoading(true);
 
     try {
@@ -494,8 +539,8 @@ export default function RegisterPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
+          name: `${formData.firstName} ${formData.lastName}`.trim(),
+          email: formData.email || undefined,
           password: formData.password,
           idNumber: formData.idNumber,
           role: formData.role,
@@ -550,9 +595,7 @@ export default function RegisterPage() {
       case 3:
         return locale === 'ka' ? 'აირჩიე სპეციალობა' : 'Choose Your Specialty';
       case 4:
-        return formData.selectedCategory === 'interior-design'
-          ? (locale === 'ka' ? 'დაამატე პორტფოლიო' : 'Add Your Portfolio')
-          : (locale === 'ka' ? 'პროფესიული ვერიფიკაცია' : 'Professional Verification');
+        return locale === 'ka' ? 'დამატებითი ინფორმაცია' : 'Additional Info';
       default:
         return '';
     }
@@ -598,9 +641,9 @@ export default function RegisterPage() {
         </Link>
 
         {/* Progress Steps */}
-        {formData.role === 'pro' && step > 1 && (
+        {step > 1 && (
           <div className="flex items-center justify-center gap-2 mb-6">
-            {[2, 3, 4].map((s) => (
+            {(formData.role === 'pro' ? [2, 2.75, 3, 4] : [2, 2.75]).map((s, index) => (
               <div key={s} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-200 ${
                   step >= s ? 'bg-forest-800 dark:bg-primary-400 text-white dark:text-dark-bg' : 'bg-neutral-200 dark:bg-dark-border text-neutral-400 dark:text-neutral-500'
@@ -609,10 +652,12 @@ export default function RegisterPage() {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                  ) : s - 1}
+                  ) : (
+                    <span>{index + 1}</span>
+                  )}
                 </div>
-                {s < 4 && (
-                  <div className={`w-12 h-1 mx-1 rounded ${step > s ? 'bg-forest-800 dark:bg-primary-400' : 'bg-neutral-200 dark:bg-dark-border'}`} />
+                {index < (formData.role === 'pro' ? 3 : 1) && (
+                  <div className={`w-8 h-1 mx-1 rounded ${step > s ? 'bg-forest-800 dark:bg-primary-400' : 'bg-neutral-200 dark:bg-dark-border'}`} />
                 )}
               </div>
             ))}
@@ -749,131 +794,121 @@ export default function RegisterPage() {
                   {locale === 'ka' ? 'უკან' : 'Back'}
                 </button>
 
-                {/* Name and ID Number */}
+                {/* First Name and Last Name */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">
-                      {locale === 'ka' ? 'სახელი და გვარი' : 'Full Name'} *
-                    </label>
-                    <input
-                      id="name"
-                      type="text"
-                      required
-                      value={formData.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
-                      className="input"
-                      placeholder={locale === 'ka' ? 'გიორგი ბერიძე' : 'John Doe'}
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="idNumber" className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">
-                      {locale === 'ka' ? 'პირადი ნომერი' : 'ID Number'} *
+                    <label htmlFor="firstName" className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">
+                      {locale === 'ka' ? 'სახელი' : 'First Name'} *
                     </label>
                     <div className="relative">
                       <input
-                        id="idNumber"
+                        id="firstName"
                         type="text"
                         required
-                        value={formData.idNumber}
+                        value={formData.firstName}
                         onChange={(e) => {
-                          const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 11);
-                          handleInputChange('idNumber', value);
-                          setExistingFields(prev => ({ ...prev, idNumber: false }));
+                          // Only allow Georgian letters (ა-ჰ), spaces, and hyphens
+                          const value = e.target.value.replace(/[^ა-ჰ\s-]/g, '');
+                          handleInputChange('firstName', value);
                         }}
-                        className={`input pr-10 ${
-                          existingFields.idNumber
-                            ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                            : formData.idNumber && formData.idNumber.length !== 11
-                              ? 'border-amber-300 focus:ring-amber-500 focus:border-amber-500'
-                              : formData.idNumber.length === 11 && !existingFields.idNumber
-                                ? 'border-green-300 focus:ring-green-500 focus:border-green-500'
-                                : ''
-                        }`}
-                        placeholder={locale === 'ka' ? '11-ნიშნა კოდი' : '11-digit ID'}
-                        maxLength={11}
+                        className={`input pr-10 ${formData.firstName ? 'border-green-300 focus:ring-green-500 focus:border-green-500' : ''}`}
+                        placeholder="გიორგი"
                       />
-                      {/* Status indicator */}
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        {existingFields.idNumber ? (
-                          <svg className="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        ) : formData.idNumber.length === 11 ? (
+                      {formData.firstName && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
                           <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
-                        ) : null}
-                      </div>
+                        </div>
+                      )}
                     </div>
-                    {formData.idNumber && formData.idNumber.length !== 11 && !existingFields.idNumber && (
-                      <p className="text-xs text-amber-600 mt-1">
-                        {locale === 'ka' ? `${formData.idNumber.length}/11 ციფრი` : `${formData.idNumber.length}/11 digits`}
-                      </p>
-                    )}
-                    {existingFields.idNumber && (
-                      <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                        <p className="text-sm text-red-700 dark:text-red-400">
-                          {locale === 'ka' ? 'ეს პირადი ნომერი უკვე რეგისტრირებულია.' : 'This ID number is already registered.'}
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => openContactModal('idNumber')}
-                          className="mt-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 underline"
-                        >
-                          {locale === 'ka' ? 'დაგვიკავშირდით დახმარებისთვის' : 'Contact us for help'}
-                        </button>
-                      </div>
-                    )}
+                  </div>
+                  <div>
+                    <label htmlFor="lastName" className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">
+                      {locale === 'ka' ? 'გვარი' : 'Last Name'} *
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="lastName"
+                        type="text"
+                        required
+                        value={formData.lastName}
+                        onChange={(e) => {
+                          // Only allow Georgian letters (ა-ჰ), spaces, and hyphens
+                          const value = e.target.value.replace(/[^ა-ჰ\s-]/g, '');
+                          handleInputChange('lastName', value);
+                        }}
+                        className={`input pr-10 ${formData.lastName ? 'border-green-300 focus:ring-green-500 focus:border-green-500' : ''}`}
+                        placeholder="ბერიძე"
+                      />
+                      {formData.lastName && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 -mt-2">
+                  შეავსეთ ქართულად
+                </p>
 
-                {/* Email */}
+                {/* ID Number */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">
-                    {locale === 'ka' ? 'ელ-ფოსტა' : 'Email'} *
+                  <label htmlFor="idNumber" className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">
+                    {locale === 'ka' ? 'პირადი ნომერი' : 'ID Number'} *
                   </label>
                   <div className="relative">
                     <input
-                      id="email"
-                      type="email"
+                      id="idNumber"
+                      type="text"
                       required
-                      value={formData.email}
+                      value={formData.idNumber}
                       onChange={(e) => {
-                        const value = e.target.value;
-                        handleInputChange('email', value);
-                        setExistingFields(prev => ({ ...prev, email: false }));
+                        const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 11);
+                        handleInputChange('idNumber', value);
+                        setExistingFields(prev => ({ ...prev, idNumber: false }));
                       }}
                       className={`input pr-10 ${
-                        existingFields.email
+                        existingFields.idNumber
                           ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                          : formData.email && formData.email.includes('@') && formData.email.includes('.') && !existingFields.email
-                            ? 'border-green-300 focus:ring-green-500 focus:border-green-500'
-                            : ''
+                          : formData.idNumber && formData.idNumber.length !== 11
+                            ? 'border-amber-300 focus:ring-amber-500 focus:border-amber-500'
+                            : formData.idNumber.length === 11 && !existingFields.idNumber
+                              ? 'border-green-300 focus:ring-green-500 focus:border-green-500'
+                              : ''
                       }`}
-                      placeholder="you@example.com"
+                      placeholder={locale === 'ka' ? '11-ნიშნა კოდი' : '11-digit ID'}
+                      maxLength={11}
                     />
                     {/* Status indicator */}
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      {existingFields.email ? (
+                      {existingFields.idNumber ? (
                         <svg className="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                      ) : formData.email && formData.email.includes('@') && formData.email.includes('.') ? (
+                      ) : formData.idNumber.length === 11 ? (
                         <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                       ) : null}
                     </div>
                   </div>
-                  {existingFields.email && (
+                  {formData.idNumber && formData.idNumber.length !== 11 && !existingFields.idNumber && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      {locale === 'ka' ? `${formData.idNumber.length}/11 ციფრი` : `${formData.idNumber.length}/11 digits`}
+                    </p>
+                  )}
+                  {existingFields.idNumber && (
                     <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                       <p className="text-sm text-red-700 dark:text-red-400">
-                        {locale === 'ka' ? 'ეს ელ-ფოსტა უკვე რეგისტრირებულია.' : 'This email is already registered.'}
+                        {locale === 'ka' ? 'ეს პირადი ნომერი უკვე რეგისტრირებულია.' : 'This ID number is already registered.'}
                       </p>
                       <button
                         type="button"
-                        onClick={() => openContactModal('email')}
+                        onClick={() => openContactModal('idNumber')}
                         className="mt-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 underline"
                       >
                         {locale === 'ka' ? 'დაგვიკავშირდით დახმარებისთვის' : 'Contact us for help'}
@@ -895,25 +930,38 @@ export default function RegisterPage() {
                         required
                         value={formData.password}
                         onChange={(e) => handleInputChange('password', e.target.value)}
-                        className={`input pr-10 ${fieldErrors.password ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
+                        className={`input pr-20 ${
+                          fieldErrors.password
+                            ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                            : formData.password.length >= 6
+                              ? 'border-green-300 focus:ring-green-500 focus:border-green-500'
+                              : ''
+                        }`}
                         placeholder={locale === 'ka' ? 'მინ. 6 სიმბოლო' : 'Min 6 characters'}
                       />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-all duration-200 ease-out"
-                      >
-                        {showPassword ? (
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                          </svg>
-                        ) : (
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                        {formData.password.length >= 6 && !fieldErrors.password && (
+                          <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         )}
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="text-neutral-400 hover:text-neutral-600 transition-all duration-200 ease-out"
+                        >
+                          {showPassword ? (
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                            </svg>
+                          ) : (
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
                     </div>
                     {fieldErrors.password && (
                       <p className="text-xs text-red-600 mt-1">{fieldErrors.password}</p>
@@ -931,25 +979,38 @@ export default function RegisterPage() {
                         required
                         value={formData.confirmPassword}
                         onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                        className={`input pr-10 ${fieldErrors.confirmPassword ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
+                        className={`input pr-20 ${
+                          fieldErrors.confirmPassword
+                            ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                            : formData.confirmPassword && formData.confirmPassword === formData.password
+                              ? 'border-green-300 focus:ring-green-500 focus:border-green-500'
+                              : ''
+                        }`}
                         placeholder={locale === 'ka' ? 'გაიმეორე პაროლი' : 'Re-enter password'}
                       />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-all duration-200 ease-out"
-                      >
-                        {showConfirmPassword ? (
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                          </svg>
-                        ) : (
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                        {formData.confirmPassword && formData.confirmPassword === formData.password && !fieldErrors.confirmPassword && (
+                          <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         )}
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="text-neutral-400 hover:text-neutral-600 transition-all duration-200 ease-out"
+                        >
+                          {showConfirmPassword ? (
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                            </svg>
+                          ) : (
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
                     </div>
                     {fieldErrors.confirmPassword && (
                       <p className="text-xs text-red-600 mt-1">{fieldErrors.confirmPassword}</p>
@@ -1042,12 +1103,18 @@ export default function RegisterPage() {
                           setShowCityDropdown(true);
                         }}
                         onFocus={() => setShowCityDropdown(true)}
-                        className="input pr-10"
+                        className={`input pr-10 ${formData.city ? 'border-green-300 focus:ring-green-500 focus:border-green-500' : ''}`}
                         placeholder={locale === 'ka' ? 'აირჩიე ქალაქი' : 'Select city'}
                       />
-                      <svg className="w-4 h-4 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
+                      {formData.city ? (
+                        <svg className="h-5 w-5 text-green-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      )}
                     </div>
                     {showCityDropdown && (
                       <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-card border border-neutral-200 dark:border-dark-border rounded-lg shadow-lg dark:shadow-none max-h-48 overflow-y-auto">
@@ -1074,9 +1141,65 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
+                {/* Email - Optional for newsletters */}
+                <div className="pt-4 border-t border-neutral-100 dark:border-dark-border">
+                  <label htmlFor="email" className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">
+                    {locale === 'ka' ? 'ელ-ფოსტა' : 'Email'} <span className="text-neutral-400 text-xs">({locale === 'ka' ? 'არასავალდებულო' : 'optional'})</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        handleInputChange('email', value);
+                        setExistingFields(prev => ({ ...prev, email: false }));
+                      }}
+                      className={`input pr-10 ${
+                        existingFields.email
+                          ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                          : formData.email && formData.email.includes('@') && formData.email.includes('.') && !existingFields.email
+                            ? 'border-green-300 focus:ring-green-500 focus:border-green-500'
+                            : ''
+                      }`}
+                      placeholder="email@gmail.com"
+                    />
+                    {/* Status indicator */}
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      {existingFields.email ? (
+                        <svg className="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      ) : formData.email && formData.email.includes('@') && formData.email.includes('.') ? (
+                        <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : null}
+                    </div>
+                  </div>
+                  <p className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+                    {locale === 'ka' ? 'სიახლეების და შეტყობინებების მისაღებად' : 'For newsletters and notifications'}
+                  </p>
+                  {existingFields.email && (
+                    <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                      <p className="text-sm text-red-700 dark:text-red-400">
+                        {locale === 'ka' ? 'ეს ელ-ფოსტა უკვე რეგისტრირებულია.' : 'This email is already registered.'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => openContactModal('email')}
+                        className="mt-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 underline"
+                      >
+                        {locale === 'ka' ? 'დაგვიკავშირდით დახმარებისთვის' : 'Contact us for help'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 <button
                   type="submit"
-                  disabled={isLoading || Object.keys(fieldErrors).length > 0 || !formData.name || !formData.email || !formData.password || !formData.confirmPassword || formData.password.length < 6 || formData.password !== formData.confirmPassword || !formData.phone || !formData.idNumber || formData.idNumber.length !== 11 || existingFields.email || existingFields.phone || existingFields.idNumber}
+                  disabled={isLoading || Object.keys(fieldErrors).length > 0 || !formData.firstName || !formData.lastName || !formData.password || !formData.confirmPassword || formData.password.length < 6 || formData.password !== formData.confirmPassword || !formData.phone || !formData.idNumber || formData.idNumber.length !== 11 || existingFields.email || existingFields.phone || existingFields.idNumber}
                   className="w-full btn btn-primary py-3 text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
@@ -1191,10 +1314,9 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    setStep(2.5);
+                    setStep(2);
                     setOtpSent(false);
                     setPhoneOtp(['', '', '', '']);
-                    setIsEmailVerified(false);
                   }}
                   className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-50 transition-all duration-200 ease-out mb-2"
                 >
@@ -1213,91 +1335,65 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
-                {/* Send OTP button if not sent */}
-                {!otpSent && (
-                  <button
-                    type="button"
-                    onClick={() => sendOtp('phone')}
-                    disabled={isLoading}
-                    className="w-full btn btn-primary py-3 text-base font-semibold"
-                  >
-                    {isLoading ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        {locale === 'ka' ? 'იგზავნება...' : 'Sending...'}
-                      </span>
-                    ) : (
-                      locale === 'ka' ? 'კოდის გაგზავნა' : 'Send Code'
-                    )}
-                  </button>
-                )}
+                {/* OTP Input */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-3 text-center">
+                    {locale === 'ka' ? 'შეიყვანეთ 4-ნიშნა კოდი' : 'Enter 4-digit code'}
+                  </label>
+                  <div className="flex justify-center gap-2">
+                    {phoneOtp.map((digit, index) => (
+                      <input
+                        key={index}
+                        ref={(el) => { otpInputRefs.current[index] = el; }}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => handleOtpChange(index, e.target.value, 'phone')}
+                        onKeyDown={(e) => handleOtpKeyDown(e, index, 'phone')}
+                        onPaste={(e) => handleOtpPaste(e, 'phone')}
+                        className="w-12 h-14 text-center text-xl font-bold border-2 border-neutral-200 dark:border-dark-border dark:bg-dark-card dark:text-neutral-50 rounded-xl focus:border-primary-500 dark:focus:border-primary-400 focus:ring-2 focus:ring-primary-200 dark:focus:ring-primary-400/20 transition-all duration-200"
+                      />
+                    ))}
+                  </div>
+                </div>
 
-                {/* OTP Input - show after sent */}
-                {otpSent && (
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-3 text-center">
-                        {locale === 'ka' ? 'შეიყვანეთ 4-ნიშნა კოდი' : 'Enter 4-digit code'}
-                      </label>
-                      <div className="flex justify-center gap-2">
-                        {phoneOtp.map((digit, index) => (
-                          <input
-                            key={index}
-                            ref={(el) => { otpInputRefs.current[index] = el; }}
-                            type="text"
-                            inputMode="numeric"
-                            maxLength={1}
-                            value={digit}
-                            onChange={(e) => handleOtpChange(index, e.target.value, 'phone')}
-                            onKeyDown={(e) => handleOtpKeyDown(e, index, 'phone')}
-                            onPaste={(e) => handleOtpPaste(e, 'phone')}
-                            className="w-12 h-14 text-center text-xl font-bold border-2 border-neutral-200 dark:border-dark-border dark:bg-dark-card dark:text-neutral-50 rounded-xl focus:border-primary-500 dark:focus:border-primary-400 focus:ring-2 focus:ring-primary-200 dark:focus:ring-primary-400/20 transition-all duration-200"
-                          />
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Resend button */}
-                    <div className="text-center">
-                      {resendTimer > 0 ? (
-                        <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                          {locale === 'ka' ? `კოდის ხელახლა გაგზავნა ${resendTimer} წამში` : `Resend code in ${resendTimer}s`}
-                        </p>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => sendOtp('phone')}
-                          disabled={isLoading}
-                          className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
-                        >
-                          {locale === 'ka' ? 'კოდის ხელახლა გაგზავნა' : 'Resend code'}
-                        </button>
-                      )}
-                    </div>
-
+                {/* Resend button */}
+                <div className="text-center">
+                  {resendTimer > 0 ? (
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                      {locale === 'ka' ? `კოდის ხელახლა გაგზავნა ${resendTimer} წამში` : `Resend code in ${resendTimer}s`}
+                    </p>
+                  ) : (
                     <button
                       type="button"
-                      onClick={() => verifyOtp('phone')}
-                      disabled={isLoading || phoneOtp.join('').length !== 4}
-                      className="w-full btn btn-primary py-3 text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => sendOtp('phone')}
+                      disabled={isLoading}
+                      className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
                     >
-                      {isLoading ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          {locale === 'ka' ? 'მოწმდება...' : 'Verifying...'}
-                        </span>
-                      ) : (
-                        locale === 'ka' ? 'დადასტურება' : 'Verify'
-                      )}
+                      {locale === 'ka' ? 'კოდის ხელახლა გაგზავნა' : 'Resend code'}
                     </button>
-                  </>
-                )}
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => verifyOtp('phone')}
+                  disabled={isLoading || phoneOtp.join('').length !== 4}
+                  className="w-full btn btn-primary py-3 text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      {locale === 'ka' ? 'მოწმდება...' : 'Verifying...'}
+                    </span>
+                  ) : (
+                    locale === 'ka' ? 'დადასტურება' : 'Verify'
+                  )}
+                </button>
               </div>
             )}
 
@@ -1331,20 +1427,23 @@ export default function RegisterPage() {
                         onClick={() => setFormData({ ...formData, selectedCategory: cat.key, selectedSubcategories: [] })}
                         className={`relative flex items-start gap-4 p-5 rounded-2xl border-2 transition-all duration-200 text-left ${
                           formData.selectedCategory === cat.key
-                            ? 'border-blue-500 dark:border-primary-400 bg-blue-50 dark:bg-primary-900/20 shadow-lg shadow-blue-100 dark:shadow-none'
-                            : 'border-neutral-200 dark:border-dark-border hover:border-blue-300 dark:hover:border-primary-400 hover:bg-blue-50/50 dark:hover:bg-primary-900/10'
+                            ? 'border-forest-800 dark:border-primary-400 bg-cream-100 dark:bg-primary-900/20 shadow-lg'
+                            : 'border-neutral-200 dark:border-dark-border hover:border-forest-600 dark:hover:border-primary-400 hover:bg-cream-50 dark:hover:bg-primary-900/10'
                         }`}
                       >
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl transition-all duration-200 ${
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200 ${
                           formData.selectedCategory === cat.key
                             ? 'bg-forest-800 dark:bg-primary-400 shadow-lg'
                             : 'bg-neutral-100 dark:bg-dark-border'
                         }`}>
-                          {cat.icon}
+                          <CategoryIcon
+                            iconKey={cat.icon}
+                            className={`w-7 h-7 ${formData.selectedCategory === cat.key ? 'text-white dark:text-dark-bg' : 'text-neutral-500 dark:text-neutral-400'}`}
+                          />
                         </div>
                         <div className="flex-1">
                           <h3 className={`text-lg font-bold mb-1 ${
-                            formData.selectedCategory === cat.key ? 'text-blue-700 dark:text-primary-400' : 'text-neutral-900 dark:text-neutral-50'
+                            formData.selectedCategory === cat.key ? 'text-forest-800 dark:text-primary-400' : 'text-neutral-900 dark:text-neutral-50'
                           }`}>
                             {locale === 'ka' ? cat.nameKa : cat.name}
                           </h3>
@@ -1438,117 +1537,73 @@ export default function RegisterPage() {
                   {locale === 'ka' ? 'უკან' : 'Back'}
                 </button>
 
-                {/* Interior Designer specific fields */}
-                {formData.selectedCategory === 'interior-design' && (
-                  <>
-                    <div className="space-y-3">
-                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400">
-                        Pinterest {locale === 'ka' ? 'ლინკები' : 'Links'} *
-                      </label>
-                      {formData.pinterestLinks.map((link, index) => (
-                        <div key={index} className="flex gap-2">
-                          <input
-                            type="url"
-                            value={link}
-                            onChange={(e) => updatePinterestLink(index, e.target.value)}
-                            placeholder="https://pinterest.com/yourboard"
-                            className={`input flex-1 ${link && !validatePinterestLink(link) ? 'border-red-300' : ''}`}
-                          />
-                          {formData.pinterestLinks.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => removePinterestLink(index)}
-                              className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                      {formData.pinterestLinks.length < 5 && (
-                        <button
-                          type="button"
-                          onClick={addPinterestLink}
-                          className="flex items-center gap-2 text-forest-800 dark:text-primary-400 hover:text-terracotta-500 dark:hover:text-primary-300 text-sm font-medium transition-all duration-200 ease-out"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                          </svg>
-                          {locale === 'ka' ? 'დაამატე კიდევ ლინკი' : 'Add another link'}
-                        </button>
-                      )}
-                    </div>
-
+                {/* Info text about profile setup */}
+                <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-xl p-4">
+                  <div className="flex gap-3">
+                    <svg className="w-5 h-5 text-primary-600 dark:text-primary-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">
-                        {locale === 'ka' ? 'დიზაინის სტილი' : 'Design Style'} <span className="text-neutral-400 text-xs">({locale === 'ka' ? 'არასავალდებულო' : 'optional'})</span>
-                      </label>
-                      <div className="flex flex-wrap gap-2">
-                        {designStyles.map((style) => (
-                          <button
-                            key={style}
-                            type="button"
-                            onClick={() => setFormData({ ...formData, designStyle: formData.designStyle === style ? '' : style })}
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                              formData.designStyle === style
-                                ? 'bg-forest-800 dark:bg-primary-400 text-white dark:text-dark-bg shadow-md'
-                                : 'bg-neutral-100 dark:bg-dark-border text-neutral-700 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
-                            }`}
-                          >
-                            {style}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                  </>
-                )}
-
-                {/* Architect specific fields */}
-                {formData.selectedCategory === 'architecture' && (
-                  <>
-                    <div>
-                      <label htmlFor="cadastralId" className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">
-                        {locale === 'ka' ? 'საკადასტრო კოდი' : 'Cadastral ID'} *
-                      </label>
-                      <input
-                        id="cadastralId"
-                        type="text"
-                        required
-                        value={formData.cadastralId}
-                        onChange={(e) => handleInputChange('cadastralId', e.target.value)}
-                        className="input"
-                        placeholder="01.18.01.004.001"
-                      />
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                      <p className="text-sm text-primary-800 dark:text-primary-300 font-medium">
+                        {locale === 'ka' ? 'რეგისტრაციის შემდეგ' : 'After registration'}
+                      </p>
+                      <p className="text-xs text-primary-600 dark:text-primary-400 mt-1">
                         {locale === 'ka'
-                          ? 'საჯარო რეესტრიდან მიღებული საკადასტრო კოდი ვერიფიკაციისთვის'
-                          : 'Cadastral ID from Public Service Hall for verification'
+                          ? 'შეძლებთ დაამატოთ პორტფოლიო, გამოცდილება, ფასები და სხვა დეტალები თქვენს პროფილში'
+                          : 'You can add portfolio, experience, pricing and other details to your profile'
                         }
                       </p>
                     </div>
+                  </div>
+                </div>
 
-                    <div>
-                      <label htmlFor="licenseNumber" className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">
-                        {locale === 'ka' ? 'ლიცენზიის ნომერი' : 'License Number'} <span className="text-neutral-400 text-xs">({locale === 'ka' ? 'არასავალდებულო' : 'optional'})</span>
-                      </label>
-                      <input
-                        id="licenseNumber"
-                        type="text"
-                        value={formData.architectLicenseNumber}
-                        onChange={(e) => handleInputChange('architectLicenseNumber', e.target.value)}
-                        className="input"
-                        placeholder={locale === 'ka' ? 'არქიტექტორის ლიცენზია' : 'Architect license number'}
-                      />
-                    </div>
-                  </>
+                {/* Portfolio URL - optional for all categories */}
+                <div>
+                  <label htmlFor="portfolioUrl" className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">
+                    {locale === 'ka' ? 'პორტფოლიოს ბმული' : 'Portfolio URL'} <span className="text-neutral-400 text-xs">({locale === 'ka' ? 'არასავალდებულო' : 'optional'})</span>
+                  </label>
+                  <input
+                    id="portfolioUrl"
+                    type="url"
+                    value={formData.pinterestLinks[0] || ''}
+                    onChange={(e) => updatePinterestLink(0, e.target.value)}
+                    className="input"
+                    placeholder={locale === 'ka' ? 'https://თქვენი-საიტი.com ან Instagram/Behance' : 'https://your-website.com or Instagram/Behance'}
+                  />
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                    {locale === 'ka'
+                      ? 'ვებსაიტი, Instagram, Behance, Pinterest ან სხვა პორტფოლიო'
+                      : 'Website, Instagram, Behance, Pinterest or any portfolio link'
+                    }
+                  </p>
+                </div>
+
+                {/* Architect specific - Cadastral ID */}
+                {formData.selectedCategory === 'architecture' && (
+                  <div>
+                    <label htmlFor="cadastralId" className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">
+                      {locale === 'ka' ? 'საკადასტრო კოდი' : 'Cadastral ID'} <span className="text-neutral-400 text-xs">({locale === 'ka' ? 'არასავალდებულო' : 'optional'})</span>
+                    </label>
+                    <input
+                      id="cadastralId"
+                      type="text"
+                      value={formData.cadastralId}
+                      onChange={(e) => handleInputChange('cadastralId', e.target.value)}
+                      className="input"
+                      placeholder="01.18.01.004.001"
+                    />
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                      {locale === 'ka'
+                        ? 'ვერიფიკაციისთვის (შეგიძლიათ მოგვიანებით დაამატოთ)'
+                        : 'For verification (you can add later)'
+                      }
+                    </p>
+                  </div>
                 )}
 
                 <button
                   type="submit"
-                  disabled={isLoading || (formData.selectedCategory === 'interior-design' && !formData.pinterestLinks.some(link => link.trim())) || (formData.selectedCategory === 'architecture' && !formData.cadastralId)}
+                  disabled={isLoading}
                   className="w-full btn btn-primary py-3 text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
@@ -1699,5 +1754,17 @@ export default function RegisterPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-cream-50 dark:bg-dark-bg flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-forest-800 dark:border-primary-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <RegisterContent />
+    </Suspense>
   );
 }

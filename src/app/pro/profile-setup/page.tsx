@@ -1,78 +1,115 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Link from 'next/link';
+import { getCategoryByKey, CATEGORIES } from '@/constants/categories';
 
 interface PortfolioProject {
   title: string;
   description: string;
-  location: string;
   images: string[];
-  videos: string[];
+  year?: string;
+  budget?: string;
 }
 
-interface ProRegistrationData {
-  category: string;
-  pinterestLinks: string[];
-  designStyle: string;
-  basePrice: string;
-  cadastralId: string;
-  architectLicenseNumber: string;
-}
+// Category-specific step configurations
+const categorySteps = {
+  'interior-design': [
+    { key: 'profile', title: 'Profile', titleKa: 'პროფილი' },
+    { key: 'style', title: 'Design Style', titleKa: 'დიზაინის სტილი' },
+    { key: 'pricing', title: 'Pricing', titleKa: 'ფასები' },
+    { key: 'portfolio', title: 'Portfolio', titleKa: 'პორტფოლიო' },
+    { key: 'areas', title: 'Service Areas', titleKa: 'მომსახურების ზონები' },
+  ],
+  'architecture': [
+    { key: 'profile', title: 'Profile', titleKa: 'პროფილი' },
+    { key: 'credentials', title: 'Credentials', titleKa: 'კვალიფიკაცია' },
+    { key: 'services', title: 'Services', titleKa: 'მომსახურებები' },
+    { key: 'portfolio', title: 'Portfolio', titleKa: 'პორტფოლიო' },
+    { key: 'areas', title: 'Service Areas', titleKa: 'მომსახურების ზონები' },
+  ],
+  'craftsmen': [
+    { key: 'profile', title: 'Profile', titleKa: 'პროფილი' },
+    { key: 'skills', title: 'Skills', titleKa: 'უნარები' },
+    { key: 'pricing', title: 'Rates', titleKa: 'ტარიფები' },
+    { key: 'portfolio', title: 'Work Examples', titleKa: 'სამუშაო მაგალითები' },
+    { key: 'areas', title: 'Service Areas', titleKa: 'მომსახურების ზონები' },
+  ],
+  'home-care': [
+    { key: 'profile', title: 'Profile', titleKa: 'პროფილი' },
+    { key: 'services', title: 'Services', titleKa: 'სერვისები' },
+    { key: 'pricing', title: 'Pricing', titleKa: 'ფასები' },
+    { key: 'availability', title: 'Availability', titleKa: 'ხელმისაწვდომობა' },
+    { key: 'areas', title: 'Service Areas', titleKa: 'მომსახურების ზონები' },
+  ],
+};
+
+// Design styles for designers
+const designStyles = [
+  { key: 'modern', name: 'Modern', nameKa: 'თანამედროვე', icon: '◇' },
+  { key: 'minimalist', name: 'Minimalist', nameKa: 'მინიმალისტური', icon: '○' },
+  { key: 'classic', name: 'Classic', nameKa: 'კლასიკური', icon: '❖' },
+  { key: 'scandinavian', name: 'Scandinavian', nameKa: 'სკანდინავიური', icon: '△' },
+  { key: 'industrial', name: 'Industrial', nameKa: 'ინდუსტრიული', icon: '⬡' },
+  { key: 'bohemian', name: 'Bohemian', nameKa: 'ბოჰემური', icon: '✿' },
+  { key: 'contemporary', name: 'Contemporary', nameKa: 'კონტემპორარული', icon: '◈' },
+  { key: 'mediterranean', name: 'Mediterranean', nameKa: 'ხმელთაშუაზღვური', icon: '☼' },
+];
+
+// Availability options
+const availabilityOptions = [
+  { key: 'weekdays', name: 'Weekdays', nameKa: 'სამუშაო დღეები' },
+  { key: 'weekends', name: 'Weekends', nameKa: 'შაბათ-კვირა' },
+  { key: 'evenings', name: 'Evenings', nameKa: 'საღამოობით' },
+  { key: 'emergency', name: 'Emergency Calls', nameKa: 'გადაუდებელი გამოძახება' },
+];
 
 export default function ProProfileSetupPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
-  const { t, locale } = useLanguage();
-  const [currentStep, setCurrentStep] = useState(1);
+  const { locale } = useLanguage();
+  const [currentStep, setCurrentStep] = useState(0);
   const [profileType, setProfileType] = useState<'personal' | 'company'>('personal');
-  const [registrationData, setRegistrationData] = useState<ProRegistrationData | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
+
   const [formData, setFormData] = useState({
+    // Basic profile
     title: '',
     companyName: '',
-    description: '',
-    categories: [] as string[],
+    bio: '',
     yearsExperience: '',
-    serviceAreas: [] as string[],
+    avatar: '',
+    // Designer specific
+    designStyles: [] as string[],
+    portfolioUrl: '',
+    // Architect specific
+    licenseNumber: '',
+    cadastralId: '',
+    certifications: [] as string[],
+    // Craftsmen specific
+    tools: [] as string[],
+    // Home care specific
+    availability: [] as string[],
+    // Pricing
     pricingModel: 'project_based',
     basePrice: '',
-    currency: 'USD',
-    tagline: '',
-    bio: '',
-    avatar: '',
-    // Category-specific fields
-    pinterestLinks: [] as string[],
-    designStyle: '',
-    cadastralId: '',
-    architectLicenseNumber: '',
+    hourlyRate: '',
+    // Service areas
+    serviceAreas: [] as string[],
+    nationwide: false,
   });
+
   const [portfolioProjects, setPortfolioProjects] = useState<PortfolioProject[]>([]);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [customCategory, setCustomCategory] = useState('');
-  const [showCustomCategoryInput, setShowCustomCategoryInput] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
-  const [showAddProjectModal, setShowAddProjectModal] = useState(false);
-  const [showEditProjectModal, setShowEditProjectModal] = useState(false);
-  const [editingProjectIndex, setEditingProjectIndex] = useState<number | null>(null);
-  const [newProject, setNewProject] = useState<PortfolioProject>({
-    title: '',
-    description: '',
-    location: '',
-    images: [],
-    videos: [],
-  });
-  const [editProject, setEditProject] = useState<PortfolioProject>({
-    title: '',
-    description: '',
-    location: '',
-    images: [],
-    videos: [],
-  });
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [editingProject, setEditingProject] = useState<PortfolioProject | null>(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [locationData, setLocationData] = useState<{
     country: string;
     nationwide: string;
@@ -80,51 +117,41 @@ export default function ProProfileSetupPage() {
     emoji: string;
   } | null>(null);
 
-  // Load registration data from sessionStorage
+  // Load registration data from sessionStorage or user profile
   useEffect(() => {
     const storedData = sessionStorage.getItem('proRegistrationData');
     if (storedData) {
       try {
-        const parsed: ProRegistrationData = JSON.parse(storedData);
-        setRegistrationData(parsed);
-        // Pre-populate form data with registration data
-        const pinterestLinks = parsed.pinterestLinks && parsed.pinterestLinks.length > 0
-          ? parsed.pinterestLinks
-          : (parsed.category === 'Interior Design' ? [''] : []);
-        setFormData(prev => ({
-          ...prev,
-          categories: parsed.category ? [parsed.category] : [],
-          pinterestLinks,
-          designStyle: parsed.designStyle || '',
-          basePrice: parsed.basePrice || '',
-          pricingModel: parsed.category === 'Interior Design' ? 'from' : prev.pricingModel,
-          cadastralId: parsed.cadastralId || '',
-          architectLicenseNumber: parsed.architectLicenseNumber || '',
-          // Set default title based on category
-          title: parsed.category === 'Interior Design'
-            ? (locale === 'ka' ? 'ინტერიერის დიზაინერი' : 'Interior Designer')
-            : parsed.category === 'Architecture'
-            ? (locale === 'ka' ? 'არქიტექტორი' : 'Architect')
-            : '',
-        }));
-        // Clear the session storage after reading
+        const parsed = JSON.parse(storedData);
+        setSelectedCategory(parsed.category || 'interior-design');
+        setSelectedSubcategories(parsed.subcategories || []);
+        if (parsed.pinterestLinks?.[0]) {
+          setFormData(prev => ({ ...prev, portfolioUrl: parsed.pinterestLinks[0] }));
+        }
+        if (parsed.cadastralId) {
+          setFormData(prev => ({ ...prev, cadastralId: parsed.cadastralId }));
+        }
         sessionStorage.removeItem('proRegistrationData');
       } catch (err) {
         console.error('Failed to parse registration data:', err);
+        setSelectedCategory('interior-design');
       }
+    } else if (user?.selectedCategories?.length > 0) {
+      // Fallback to user's selected categories from profile
+      setSelectedCategory(user.selectedCategories[0]);
+    } else {
+      // Default to interior-design if no data available
+      setSelectedCategory('interior-design');
     }
-  }, [locale]);
+  }, [user]);
 
+  // Fetch location data
   useEffect(() => {
     const fetchLocationData = async () => {
       try {
-        let detectedCountry = 'United States';
+        let detectedCountry = 'Georgia';
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         if (timezone.includes('Tbilisi') || timezone.includes('Georgia')) {
-          detectedCountry = 'Georgia';
-        }
-        const locale = navigator.language;
-        if (locale.startsWith('ka')) {
           detectedCountry = 'Georgia';
         }
         const response = await fetch(
@@ -139,38 +166,25 @@ export default function ProProfileSetupPage() {
     fetchLocationData();
   }, []);
 
+  // Auth redirect
   useEffect(() => {
     if (!authLoading && (!user || user.role !== 'pro')) {
       router.push('/browse');
     }
   }, [user, authLoading, router]);
 
-  const toggleCategory = (category: string) => {
-    if (formData.categories.includes(category)) {
-      setFormData({ ...formData, categories: formData.categories.filter(c => c !== category) });
-    } else {
-      // No limit - allow unlimited categories
-      setFormData({ ...formData, categories: [...formData.categories, category] });
-    }
-  };
+  const steps = categorySteps[selectedCategory as keyof typeof categorySteps] || categorySteps['interior-design'];
+  const totalSteps = steps.length;
 
-  const addCustomCategory = () => {
-    if (customCategory.trim() && !formData.categories.includes(customCategory.trim())) {
-      setFormData({ ...formData, categories: [...formData.categories, customCategory.trim()] });
-      setCustomCategory('');
-      setShowCustomCategoryInput(false);
-    }
+  const getCategoryInfo = () => {
+    return getCategoryByKey(selectedCategory) || CATEGORIES[0];
   };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        setError('Image size must be less than 2MB');
-        return;
-      }
-      if (!file.type.startsWith('image/')) {
-        setError('Please upload an image file');
+        setError(locale === 'ka' ? 'სურათი უნდა იყოს 2MB-ზე ნაკლები' : 'Image must be less than 2MB');
         return;
       }
       setError('');
@@ -178,64 +192,80 @@ export default function ProProfileSetupPage() {
       reader.onloadend = () => {
         const base64String = reader.result as string;
         setAvatarPreview(base64String);
-        setFormData({ ...formData, avatar: base64String });
+        setFormData(prev => ({ ...prev, avatar: base64String }));
       };
       reader.readAsDataURL(file);
     }
   };
 
+  const toggleDesignStyle = (style: string) => {
+    setFormData(prev => ({
+      ...prev,
+      designStyles: prev.designStyles.includes(style)
+        ? prev.designStyles.filter(s => s !== style)
+        : [...prev.designStyles, style]
+    }));
+  };
+
+  const toggleAvailability = (option: string) => {
+    setFormData(prev => ({
+      ...prev,
+      availability: prev.availability.includes(option)
+        ? prev.availability.filter(a => a !== option)
+        : [...prev.availability, option]
+    }));
+  };
+
   const toggleServiceArea = (area: string) => {
-    if (formData.serviceAreas.includes(area)) {
-      setFormData({ ...formData, serviceAreas: formData.serviceAreas.filter(a => a !== area) });
-    } else {
-      setFormData({ ...formData, serviceAreas: [...formData.serviceAreas, area] });
-    }
+    setFormData(prev => ({
+      ...prev,
+      serviceAreas: prev.serviceAreas.includes(area)
+        ? prev.serviceAreas.filter(a => a !== area)
+        : [...prev.serviceAreas, area]
+    }));
   };
 
-  const toggleNationwide = () => {
-    if (!locationData) return;
-    const nationwide = locationData.nationwide;
-    if (formData.serviceAreas.includes(nationwide)) {
-      setFormData({ ...formData, serviceAreas: [] });
-    } else {
-      setFormData({ ...formData, serviceAreas: [nationwide] });
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setError('');
-
-    if (formData.serviceAreas.length === 0) {
-      setError(t('profileSetup.serviceAreas'));
-      return;
-    }
-
     setIsLoading(true);
 
     try {
       const token = localStorage.getItem('access_token');
+      const categoryInfo = getCategoryInfo();
 
-      // Build the request body with category-specific fields
-      const requestBody: any = {
-        ...formData,
+      // Determine pricing model based on category
+      let pricingModel = formData.pricingModel;
+      if (selectedCategory === 'interior-design' || selectedCategory === '') {
+        // Designers use "from" (per m²) pricing
+        pricingModel = 'from';
+      } else if (selectedCategory === 'craftsmen' || selectedCategory === 'home-care') {
+        // Craftsmen and home-care use hourly pricing
+        pricingModel = 'hourly';
+      }
+      // Architecture uses formData.pricingModel (project_based or from)
+
+      const requestBody = {
         profileType,
-        yearsExperience: formData.yearsExperience ? parseInt(formData.yearsExperience) : 0,
-        basePrice: formData.basePrice ? parseFloat(formData.basePrice) : undefined,
+        title: formData.title || (locale === 'ka' ? categoryInfo.nameKa : categoryInfo.name),
+        companyName: profileType === 'company' ? formData.companyName : undefined,
+        bio: formData.bio,
+        description: formData.bio,
+        categories: [selectedCategory || 'interior-design'],
+        yearsExperience: parseInt(formData.yearsExperience) || 0,
+        avatar: formData.avatar,
+        pricingModel,
+        basePrice: parseFloat(formData.basePrice) || undefined,
+        serviceAreas: formData.nationwide && locationData ? [locationData.nationwide] : formData.serviceAreas,
         portfolioProjects,
+        // Designer specific
+        designStyles: selectedCategory === 'interior-design' ? formData.designStyles : undefined,
+        pinterestLinks: formData.portfolioUrl ? [formData.portfolioUrl] : undefined,
+        // Architect specific
+        architectLicenseNumber: selectedCategory === 'architecture' ? formData.licenseNumber : undefined,
+        cadastralId: selectedCategory === 'architecture' ? formData.cadastralId : undefined,
+        // Home care specific
+        availability: selectedCategory === 'home-care' ? formData.availability : undefined,
       };
-
-      // Add Interior Design specific fields
-      if (formData.categories.includes('Interior Design')) {
-        requestBody.pinterestLinks = formData.pinterestLinks.filter(link => link.trim());
-        requestBody.designStyle = formData.designStyle;
-      }
-
-      // Add Architecture specific fields
-      if (formData.categories.includes('Architecture')) {
-        requestBody.cadastralId = formData.cadastralId;
-        requestBody.architectLicenseNumber = formData.architectLicenseNumber;
-      }
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pro-profiles`, {
         method: 'POST',
@@ -260,1172 +290,895 @@ export default function ProProfileSetupPage() {
     }
   };
 
+  const canProceed = () => {
+    const step = steps[currentStep];
+    switch (step.key) {
+      case 'profile':
+        return formData.bio && formData.yearsExperience && (profileType === 'personal' || formData.companyName);
+      case 'style':
+        return formData.designStyles.length > 0;
+      case 'credentials':
+        return true; // Optional
+      case 'skills':
+        return true; // Optional
+      case 'services':
+        return true; // Optional
+      case 'pricing':
+        return formData.basePrice || formData.hourlyRate;
+      case 'portfolio':
+        return portfolioProjects.length > 0 || formData.portfolioUrl;
+      case 'availability':
+        return formData.availability.length > 0;
+      case 'areas':
+        return formData.nationwide || formData.serviceAreas.length > 0;
+      default:
+        return true;
+    }
+  };
+
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-dark-bg">
-        <div className="animate-spin rounded-full h-10 w-10 border-2 border-blue-500 border-t-transparent"></div>
+      <div className="min-h-screen flex items-center justify-center bg-cream-50 dark:bg-dark-bg">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-2 border-forest-800 border-t-transparent rounded-full animate-spin" />
+          <p className="text-neutral-500 dark:text-neutral-400 text-sm">
+            {locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
+          </p>
+        </div>
       </div>
     );
   }
 
-  // Steps: 1 = Profile Type, 2 = Service Areas, 3 = Pricing, 4 = Portfolio
-  // Category & verification info is already collected during registration
-  const totalSteps = 4;
+  const categoryInfo = getCategoryInfo();
 
-  // Helper function to get translated category
-  const getCategoryLabel = (category: string) => {
-    const translated = t(`categories.${category}`);
-    if (translated === `categories.${category}`) {
-      return category
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
+  // Category-specific icon
+  const CategoryIcon = () => {
+    switch (selectedCategory) {
+      case 'interior-design':
+        return (
+          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />
+          </svg>
+        );
+      case 'architecture':
+        return (
+          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
+          </svg>
+        );
+      case 'craftsmen':
+        return (
+          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" />
+          </svg>
+        );
+      case 'home-care':
+        return (
+          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+          </svg>
+        );
+      default:
+        return null;
     }
-    return translated;
   };
 
-  // Preview Card Component
-  const PreviewCard = () => (
-    <div className="relative bg-white/70 backdrop-blur-xl rounded-2xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.08)] p-5 max-w-sm mx-auto">
-      {/* Glass overlay effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-white/20 pointer-events-none rounded-2xl" />
-
-      {/* Content */}
-      <div className="relative">
-        {/* Header - Avatar + Info */}
-        <div className="flex items-center gap-4 mb-4">
-          {/* Avatar */}
-          <div className="relative flex-shrink-0">
-            {avatarPreview ? (
-              <img
-                src={avatarPreview}
-                alt={user?.name}
-                className="w-14 h-14 rounded-xl object-cover ring-2 ring-white/60 shadow-lg"
-              />
-            ) : (
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-neutral-600 to-neutral-800 flex items-center justify-center text-white text-xl font-semibold ring-2 ring-white/60 shadow-lg">
-                {user?.name?.charAt(0) || 'P'}
-              </div>
-            )}
-            {/* Available indicator */}
-            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full ring-2 ring-white shadow-sm" />
-          </div>
-
-          {/* Name & Title */}
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-neutral-900 truncate">
-              {profileType === 'company' ? formData.companyName : user?.name || 'Professional'}
-            </h3>
-            <p className="text-sm text-neutral-500 truncate">
-              {formData.title || (formData.categories[0] ? getCategoryLabel(formData.categories[0]) : 'Professional')}
-            </p>
-          </div>
-        </div>
-
-        {/* Stats Row - Compact */}
-        <div className="flex items-center gap-2 mb-4 text-xs">
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/60 backdrop-blur-sm rounded-lg border border-neutral-100/50">
-            <svg className="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-            <span className="text-neutral-600 font-medium">{formData.yearsExperience || 0}+ yrs</span>
-          </div>
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/60 backdrop-blur-sm rounded-lg border border-neutral-100/50">
-            <svg className="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="text-neutral-600 font-medium">0 jobs</span>
-          </div>
-          {formData.basePrice && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 backdrop-blur-sm rounded-lg border border-emerald-100">
-              <span className="text-emerald-700 font-medium">{locale === 'ka' ? 'დან' : 'from'} {formData.basePrice} ₾/m²</span>
-            </div>
-          )}
-        </div>
-
-        {/* Categories */}
-        <div className="flex flex-wrap gap-1.5 mb-4">
-          {formData.categories.slice(0, 2).map((cat, i) => (
-            <span
-              key={i}
-              className="px-2.5 py-1 bg-neutral-900/5 text-neutral-700 text-xs rounded-lg font-medium"
-            >
-              {getCategoryLabel(cat)}
-            </span>
-          ))}
-          {formData.categories.length > 2 && (
-            <span className="px-2 py-1 text-neutral-400 text-xs">
-              +{formData.categories.length - 2}
-            </span>
-          )}
-        </div>
-
-        {/* Footer - Location & Arrow */}
-        <div className="flex items-center justify-between pt-3 border-t border-neutral-100/50">
-          <div className="flex items-center gap-1.5 text-neutral-500">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            </svg>
-            <span className="text-sm truncate max-w-[120px]">{formData.serviceAreas[0] || 'Not set'}</span>
-          </div>
-
-          <div className="flex items-center gap-1 text-sm font-medium text-neutral-900">
-            <span>View</span>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-dark-bg py-8 px-4">
-      {/* Preview Modal */}
-      {showPreview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setShowPreview(false)}
-          />
+    <div className="min-h-screen bg-gradient-to-br from-cream-50 via-white to-cream-100 dark:from-dark-bg dark:via-dark-bg dark:to-dark-elevated">
+      {/* Background Pattern */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-forest-800/5 dark:bg-primary-400/5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-terracotta-500/5 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
+      </div>
 
-          {/* Modal Content */}
-          <div className="relative z-10 w-full max-w-md">
-            {/* Close button */}
-            <button
-              onClick={() => setShowPreview(false)}
-              className="absolute -top-12 right-0 text-white/80 hover:text-white transition-colors flex items-center gap-2"
-            >
-              <span className="text-sm">{locale === 'ka' ? 'დახურვა' : 'Close'}</span>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      {/* Project Modal */}
+      {showProjectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowProjectModal(false)} />
+          <div className="relative z-10 w-full max-w-lg bg-white dark:bg-dark-elevated rounded-2xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">
+                {editingIndex !== null
+                  ? (locale === 'ka' ? 'პროექტის რედაქტირება' : 'Edit Project')
+                  : (locale === 'ka' ? 'პროექტის დამატება' : 'Add Project')
+                }
+              </h3>
+              <button
+                onClick={() => {
+                  setShowProjectModal(false);
+                  setEditingProject(null);
+                  setEditingIndex(null);
+                }}
+                className="p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 rounded-lg hover:bg-neutral-100 dark:hover:bg-dark-border transition-all"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                  {locale === 'ka' ? 'პროექტის სახელი' : 'Project Title'} *
+                </label>
+                <input
+                  type="text"
+                  value={editingProject?.title || ''}
+                  onChange={(e) => setEditingProject(prev => prev ? { ...prev, title: e.target.value } : { title: e.target.value, description: '', images: [] })}
+                  className="w-full px-4 py-3 bg-neutral-50 dark:bg-dark-card border border-neutral-200 dark:border-dark-border rounded-xl focus:outline-none focus:ring-2 focus:ring-forest-800 dark:focus:ring-primary-400 transition-all"
+                  placeholder={locale === 'ka' ? 'მაგ: თანამედროვე აპარტამენტი' : 'e.g., Modern Apartment'}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                  {locale === 'ka' ? 'აღწერა' : 'Description'} *
+                </label>
+                <textarea
+                  rows={3}
+                  value={editingProject?.description || ''}
+                  onChange={(e) => setEditingProject(prev => prev ? { ...prev, description: e.target.value } : { title: '', description: e.target.value, images: [] })}
+                  className="w-full px-4 py-3 bg-neutral-50 dark:bg-dark-card border border-neutral-200 dark:border-dark-border rounded-xl focus:outline-none focus:ring-2 focus:ring-forest-800 dark:focus:ring-primary-400 transition-all resize-none"
+                  placeholder={locale === 'ka' ? 'პროექტის მოკლე აღწერა...' : 'Brief project description...'}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                  {locale === 'ka' ? 'სურათები' : 'Images'} *
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {(editingProject?.images || []).map((img, idx) => (
+                    <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group">
+                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setEditingProject(prev => prev ? { ...prev, images: prev.images.filter((_, i) => i !== idx) } : null)}
+                        className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                      >
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                  {(editingProject?.images?.length || 0) < 8 && (
+                    <label className="aspect-square rounded-xl border-2 border-dashed border-neutral-300 dark:border-dark-border hover:border-forest-800 dark:hover:border-primary-400 hover:bg-forest-800/5 dark:hover:bg-primary-400/5 transition-all cursor-pointer flex flex-col items-center justify-center gap-1">
+                      <svg className="w-6 h-6 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => {
+                          const files = e.target.files;
+                          if (files) {
+                            Array.from(files).forEach(file => {
+                              if (file.size > 5 * 1024 * 1024) return;
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setEditingProject(prev => prev
+                                  ? { ...prev, images: [...prev.images, reader.result as string].slice(0, 8) }
+                                  : { title: '', description: '', images: [reader.result as string] }
+                                );
+                              };
+                              reader.readAsDataURL(file);
+                            });
+                          }
+                          e.target.value = '';
+                        }}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowProjectModal(false);
+                  setEditingProject(null);
+                  setEditingIndex(null);
+                }}
+                className="flex-1 px-4 py-3 border border-neutral-200 dark:border-dark-border rounded-xl text-neutral-700 dark:text-neutral-300 font-medium hover:bg-neutral-50 dark:hover:bg-dark-border transition-all"
+              >
+                {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (editingProject?.title && editingProject?.description && editingProject?.images?.length > 0) {
+                    if (editingIndex !== null) {
+                      const updated = [...portfolioProjects];
+                      updated[editingIndex] = editingProject;
+                      setPortfolioProjects(updated);
+                    } else {
+                      setPortfolioProjects([...portfolioProjects, editingProject]);
+                    }
+                    setShowProjectModal(false);
+                    setEditingProject(null);
+                    setEditingIndex(null);
+                  }
+                }}
+                disabled={!editingProject?.title || !editingProject?.description || !editingProject?.images?.length}
+                className="flex-1 px-4 py-3 bg-forest-800 dark:bg-primary-400 text-white dark:text-dark-bg rounded-xl font-medium hover:bg-forest-700 dark:hover:bg-primary-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {editingIndex !== null
+                  ? (locale === 'ka' ? 'შენახვა' : 'Save')
+                  : (locale === 'ka' ? 'დამატება' : 'Add')
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="relative max-w-2xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <Link href="/" className="inline-flex items-center gap-2 group">
+              <span className="text-2xl font-serif font-semibold text-forest-800 dark:text-primary-400 group-hover:text-forest-600 dark:group-hover:text-primary-300 transition-colors">Homico</span>
+              <span className="w-2 h-2 rounded-full bg-primary-400" />
+            </Link>
+            {/* Category Badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-forest-800/10 dark:bg-primary-400/10 rounded-full">
+              <div className="text-forest-800 dark:text-primary-400">
+                <CategoryIcon />
+              </div>
+              <span className="text-sm font-medium text-forest-800 dark:text-primary-400">
+                {locale === 'ka' ? categoryInfo.nameKa : categoryInfo.name}
+              </span>
+            </div>
+          </div>
+
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50 mb-2">
+            {locale === 'ka' ? 'დაასრულე შენი პროფილი' : 'Complete Your Profile'}
+          </h1>
+          <p className="text-neutral-500 dark:text-neutral-400">
+            {locale === 'ka'
+              ? 'შეავსე ინფორმაცია რომ კლიენტებმა გიპოვონ'
+              : 'Fill in your details so clients can find you'
+            }
+          </p>
+        </div>
+
+        {/* Progress Steps */}
+        <div className="mb-8">
+          <div className="flex items-center justify-center mb-4">
+            {steps.map((step, index) => (
+              <div key={step.key} className="flex items-center">
+                <button
+                  type="button"
+                  onClick={() => index < currentStep && setCurrentStep(index)}
+                  disabled={index > currentStep}
+                  className={`relative flex items-center justify-center w-10 h-10 rounded-full font-medium text-sm transition-all duration-300 flex-shrink-0 ${
+                    index < currentStep
+                      ? 'bg-forest-800 dark:bg-primary-400 text-white dark:text-dark-bg cursor-pointer hover:scale-105'
+                      : index === currentStep
+                        ? 'bg-forest-800 dark:bg-primary-400 text-white dark:text-dark-bg ring-4 ring-forest-800/20 dark:ring-primary-400/20'
+                        : 'bg-neutral-100 dark:bg-dark-border text-neutral-400 dark:text-neutral-500 cursor-not-allowed'
+                  }`}
+                >
+                  {index < currentStep ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    index + 1
+                  )}
+                </button>
+                {index < steps.length - 1 && (
+                  <div className={`w-12 h-1 rounded-full transition-all duration-300 ${
+                    index < currentStep
+                      ? 'bg-forest-800 dark:bg-primary-400'
+                      : 'bg-neutral-200 dark:bg-dark-border'
+                  }`} />
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="text-center">
+            <span className="text-base font-semibold text-neutral-900 dark:text-neutral-50">
+              {locale === 'ka' ? steps[currentStep].titleKa : steps[currentStep].title}
+            </span>
+          </div>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-terracotta-50 dark:bg-terracotta-500/10 border border-terracotta-200 dark:border-terracotta-500/30 rounded-xl flex items-start gap-3">
+            <svg className="w-5 h-5 text-terracotta-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-sm text-terracotta-700 dark:text-terracotta-400 flex-1">{error}</p>
+            <button onClick={() => setError('')} className="text-terracotta-400 hover:text-terracotta-600 transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-
-            {/* Header */}
-            <div className="text-center mb-4">
-              <p className="text-white/90 text-sm font-medium">
-                {locale === 'ka' ? 'ასე დაინახავენ თქვენს ბარათს კლიენტები' : 'This is how clients will see your card'}
-              </p>
-            </div>
-
-            {/* Preview Card */}
-            <PreviewCard />
-
-            {/* Tip */}
-            <div className="mt-4 text-center">
-              <p className="text-white/70 text-xs">
-                {locale === 'ka'
-                  ? 'პროფილის სურათის დამატება გაზრდის თქვენს ხილვადობას'
-                  : 'Adding a profile picture will increase your visibility'
-                }
-              </p>
-            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Add Project Modal */}
-      {showAddProjectModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setShowAddProjectModal(false)}
-          />
-
-          {/* Modal Content */}
-          <div className="relative z-10 w-full max-w-lg bg-white dark:bg-dark-elevated rounded-2xl shadow-xl p-6 max-h-[90vh] overflow-y-auto">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">
-                {locale === 'ka' ? 'პროექტის დამატება' : 'Add Project'}
-              </h3>
-              <button
-                onClick={() => setShowAddProjectModal(false)}
-                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-all duration-200 ease-out"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Form */}
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="projectTitle" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  {locale === 'ka' ? 'პროექტის სახელი' : 'Project Title'} *
-                </label>
-                <input
-                  id="projectTitle"
-                  type="text"
-                  value={newProject.title}
-                  onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
-                  className="input"
-                  placeholder={locale === 'ka' ? 'მაგ: თანამედროვე აპარტამენტის დიზაინი' : 'e.g., Modern Apartment Design'}
-                />
-              </div>
-
-              <div>
-                <label htmlFor="projectDescription" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  {locale === 'ka' ? 'აღწერა' : 'Description'} *
-                </label>
-                <textarea
-                  id="projectDescription"
-                  rows={3}
-                  value={newProject.description}
-                  onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-                  className="input resize-none"
-                  placeholder={locale === 'ka' ? 'აღწერეთ პროექტი...' : 'Describe the project...'}
-                />
-              </div>
-
-              {/* Images Upload */}
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  {locale === 'ka' ? 'სურათები' : 'Images'} *
-                </label>
-                <div className="grid grid-cols-4 gap-2">
-                  {newProject.images.map((img, index) => (
-                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden group">
-                      <img src={img} alt={`Project ${index + 1}`} className="w-full h-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => setNewProject({
-                          ...newProject,
-                          images: newProject.images.filter((_, i) => i !== index)
-                        })}
-                        className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                      >
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </div>
-                  ))}
-                  {newProject.images.length < 10 && (
-                    <label className="aspect-square rounded-lg border-2 border-dashed border-neutral-300 dark:border-dark-border hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 ease-out cursor-pointer flex flex-col items-center justify-center gap-1">
-                      <svg className="w-6 h-6 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span className="text-xs text-neutral-500 dark:text-neutral-400">{locale === 'ka' ? 'დამატება' : 'Add'}</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={(e) => {
-                          const files = e.target.files;
-                          if (files) {
-                            Array.from(files).forEach(file => {
-                              if (file.size > 5 * 1024 * 1024) {
-                                setError(locale === 'ka' ? 'სურათი უნდა იყოს 5MB-ზე ნაკლები' : 'Image must be less than 5MB');
-                                return;
-                              }
-                              const reader = new FileReader();
-                              reader.onloadend = () => {
-                                setNewProject(prev => ({
-                                  ...prev,
-                                  images: [...prev.images, reader.result as string].slice(0, 10)
-                                }));
-                              };
-                              reader.readAsDataURL(file);
-                            });
-                          }
-                          e.target.value = '';
-                        }}
-                        className="hidden"
-                      />
-                    </label>
-                  )}
-                </div>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1.5">
-                  {locale === 'ka'
-                    ? `${newProject.images.length}/10 სურათი (მაქს. 5MB თითო)`
-                    : `${newProject.images.length}/10 images (max 5MB each)`}
-                </p>
-              </div>
-
-              {/* Videos Upload */}
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  {locale === 'ka' ? 'ვიდეოები' : 'Videos'}
-                  <span className="text-neutral-400 text-xs ml-1">({locale === 'ka' ? 'არასავალდებულო' : 'optional'})</span>
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {newProject.videos.map((video, index) => (
-                    <div key={index} className="relative aspect-video rounded-lg overflow-hidden group bg-neutral-900">
-                      <video src={video} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z" />
+        {/* Main Card */}
+        <div className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border shadow-xl dark:shadow-none overflow-hidden">
+          <div className="p-6 md:p-8">
+            {/* Step: Profile */}
+            {steps[currentStep].key === 'profile' && (
+              <div className="space-y-6">
+                {/* Profile Type */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">
+                    {locale === 'ka' ? 'პროფილის ტიპი' : 'Profile Type'}
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setProfileType('personal')}
+                      className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
+                        profileType === 'personal'
+                          ? 'border-forest-800 dark:border-primary-400 bg-forest-800/5 dark:bg-primary-400/5'
+                          : 'border-neutral-200 dark:border-dark-border hover:border-neutral-300'
+                      }`}
+                    >
+                      <div className="text-center">
+                        <div className={`w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center transition-all ${
+                          profileType === 'personal' ? 'bg-forest-800 dark:bg-primary-400' : 'bg-neutral-100 dark:bg-dark-border'
+                        }`}>
+                          <svg className={`w-6 h-6 ${profileType === 'personal' ? 'text-white dark:text-dark-bg' : 'text-neutral-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                           </svg>
                         </div>
+                        <h4 className="font-semibold text-neutral-900 dark:text-neutral-50">
+                          {locale === 'ka' ? 'პირადი' : 'Personal'}
+                        </h4>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                          {locale === 'ka' ? 'ინდივიდუალური' : 'Individual'}
+                        </p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setNewProject({
-                          ...newProject,
-                          videos: newProject.videos.filter((_, i) => i !== index)
-                        })}
-                        className="absolute top-1 right-1 w-6 h-6 bg-black/50 hover:bg-red-500 rounded-full flex items-center justify-center transition-all duration-200 ease-out"
-                      >
-                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  ))}
-                  {newProject.videos.length < 3 && (
-                    <label className="aspect-video rounded-lg border-2 border-dashed border-neutral-300 dark:border-dark-border hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 ease-out cursor-pointer flex flex-col items-center justify-center gap-1">
-                      <svg className="w-6 h-6 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                      <span className="text-xs text-neutral-500 dark:text-neutral-400">{locale === 'ka' ? 'ვიდეო' : 'Video'}</span>
-                      <input
-                        type="file"
-                        accept="video/mp4,video/webm,video/quicktime,video/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            if (file.size > 100 * 1024 * 1024) {
-                              setError(locale === 'ka' ? 'ვიდეო უნდა იყოს 100MB-ზე ნაკლები' : 'Video must be less than 100MB');
-                              e.target.value = '';
-                              return;
-                            }
-                            // Use URL.createObjectURL for video preview
-                            const videoUrl = URL.createObjectURL(file);
-                            setNewProject(prev => ({
-                              ...prev,
-                              videos: [...prev.videos, videoUrl].slice(0, 3)
-                            }));
-                          }
-                          e.target.value = '';
-                        }}
-                        className="hidden"
-                      />
-                    </label>
-                  )}
-                </div>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1.5">
-                  {locale === 'ka'
-                    ? `${newProject.videos.length}/3 ვიდეო (მაქს. 100MB თითო)`
-                    : `${newProject.videos.length}/3 videos (max 100MB each)`}
-                </p>
-              </div>
-            </div>
+                      {profileType === 'personal' && (
+                        <div className="absolute top-3 right-3">
+                          <div className="w-5 h-5 bg-forest-800 dark:bg-primary-400 rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white dark:text-dark-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                    </button>
 
-            {/* Actions */}
-            <div className="flex gap-3 mt-6">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowAddProjectModal(false);
-                  setNewProject({ title: '', description: '', location: '', images: [], videos: [] });
-                }}
-                className="flex-1 btn btn-secondary"
-              >
-                {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (newProject.title && newProject.description && newProject.images.length > 0) {
-                    setPortfolioProjects([...portfolioProjects, { ...newProject }]);
-                    setNewProject({ title: '', description: '', location: '', images: [], videos: [] });
-                    setShowAddProjectModal(false);
-                  }
-                }}
-                disabled={!newProject.title || !newProject.description || newProject.images.length === 0}
-                className="flex-1 btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {locale === 'ka' ? 'დამატება' : 'Add Project'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Project Modal */}
-      {showEditProjectModal && editingProjectIndex !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => {
-              setShowEditProjectModal(false);
-              setEditingProjectIndex(null);
-            }}
-          />
-
-          {/* Modal Content */}
-          <div className="relative z-10 w-full max-w-lg bg-white dark:bg-dark-elevated rounded-2xl shadow-xl p-6 max-h-[90vh] overflow-y-auto">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">
-                {locale === 'ka' ? 'პროექტის რედაქტირება' : 'Edit Project'}
-              </h3>
-              <button
-                onClick={() => {
-                  setShowEditProjectModal(false);
-                  setEditingProjectIndex(null);
-                }}
-                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-all duration-200 ease-out"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Form */}
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="editProjectTitle" className="block text-sm font-medium text-neutral-700 mb-1.5">
-                  {locale === 'ka' ? 'პროექტის სახელი' : 'Project Title'} *
-                </label>
-                <input
-                  id="editProjectTitle"
-                  type="text"
-                  value={editProject.title}
-                  onChange={(e) => setEditProject({ ...editProject, title: e.target.value })}
-                  className="input"
-                  placeholder={locale === 'ka' ? 'მაგ: თანამედროვე აპარტამენტის დიზაინი' : 'e.g., Modern Apartment Design'}
-                />
-              </div>
-
-              <div>
-                <label htmlFor="editProjectDescription" className="block text-sm font-medium text-neutral-700 mb-1.5">
-                  {locale === 'ka' ? 'აღწერა' : 'Description'} *
-                </label>
-                <textarea
-                  id="editProjectDescription"
-                  rows={3}
-                  value={editProject.description}
-                  onChange={(e) => setEditProject({ ...editProject, description: e.target.value })}
-                  className="input resize-none"
-                  placeholder={locale === 'ka' ? 'აღწერეთ პროექტი...' : 'Describe the project...'}
-                />
-              </div>
-
-              {/* Images Upload */}
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  {locale === 'ka' ? 'სურათები' : 'Images'} *
-                </label>
-                <div className="grid grid-cols-4 gap-2">
-                  {editProject.images.map((img, index) => (
-                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden group">
-                      <img src={img} alt={`Project ${index + 1}`} className="w-full h-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => setEditProject({
-                          ...editProject,
-                          images: editProject.images.filter((_, i) => i !== index)
-                        })}
-                        className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                      >
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </div>
-                  ))}
-                  {editProject.images.length < 10 && (
-                    <label className="aspect-square rounded-lg border-2 border-dashed border-neutral-300 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 ease-out cursor-pointer flex flex-col items-center justify-center gap-1">
-                      <svg className="w-6 h-6 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span className="text-xs text-neutral-500 dark:text-neutral-400">{locale === 'ka' ? 'დამატება' : 'Add'}</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={(e) => {
-                          const files = e.target.files;
-                          if (files) {
-                            Array.from(files).forEach(file => {
-                              if (file.size > 5 * 1024 * 1024) {
-                                setError(locale === 'ka' ? 'სურათი უნდა იყოს 5MB-ზე ნაკლები' : 'Image must be less than 5MB');
-                                return;
-                              }
-                              const reader = new FileReader();
-                              reader.onloadend = () => {
-                                setEditProject(prev => ({
-                                  ...prev,
-                                  images: [...prev.images, reader.result as string].slice(0, 10)
-                                }));
-                              };
-                              reader.readAsDataURL(file);
-                            });
-                          }
-                          e.target.value = '';
-                        }}
-                        className="hidden"
-                      />
-                    </label>
-                  )}
-                </div>
-                <p className="text-xs text-neutral-500 mt-1.5">
-                  {locale === 'ka'
-                    ? `${editProject.images.length}/10 სურათი (მაქს. 5MB თითო)`
-                    : `${editProject.images.length}/10 images (max 5MB each)`}
-                </p>
-              </div>
-
-              {/* Videos Upload */}
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  {locale === 'ka' ? 'ვიდეოები' : 'Videos'}
-                  <span className="text-neutral-400 text-xs ml-1">({locale === 'ka' ? 'არასავალდებულო' : 'optional'})</span>
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {editProject.videos.map((video, index) => (
-                    <div key={index} className="relative aspect-video rounded-lg overflow-hidden group bg-neutral-900">
-                      <video src={video} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z" />
+                    <button
+                      type="button"
+                      onClick={() => setProfileType('company')}
+                      className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
+                        profileType === 'company'
+                          ? 'border-forest-800 dark:border-primary-400 bg-forest-800/5 dark:bg-primary-400/5'
+                          : 'border-neutral-200 dark:border-dark-border hover:border-neutral-300'
+                      }`}
+                    >
+                      <div className="text-center">
+                        <div className={`w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center transition-all ${
+                          profileType === 'company' ? 'bg-forest-800 dark:bg-primary-400' : 'bg-neutral-100 dark:bg-dark-border'
+                        }`}>
+                          <svg className={`w-6 h-6 ${profileType === 'company' ? 'text-white dark:text-dark-bg' : 'text-neutral-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                           </svg>
                         </div>
+                        <h4 className="font-semibold text-neutral-900 dark:text-neutral-50">
+                          {locale === 'ka' ? 'კომპანია' : 'Company'}
+                        </h4>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                          {locale === 'ka' ? 'ბიზნესი' : 'Business'}
+                        </p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setEditProject({
-                          ...editProject,
-                          videos: editProject.videos.filter((_, i) => i !== index)
-                        })}
-                        className="absolute top-1 right-1 w-6 h-6 bg-black/50 hover:bg-red-500 rounded-full flex items-center justify-center transition-all duration-200 ease-out"
-                      >
-                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  ))}
-                  {editProject.videos.length < 3 && (
-                    <label className="aspect-video rounded-lg border-2 border-dashed border-neutral-300 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 ease-out cursor-pointer flex flex-col items-center justify-center gap-1">
-                      <svg className="w-6 h-6 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                      <span className="text-xs text-neutral-500 dark:text-neutral-400">{locale === 'ka' ? 'ვიდეო' : 'Video'}</span>
-                      <input
-                        type="file"
-                        accept="video/mp4,video/webm,video/quicktime,video/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            if (file.size > 100 * 1024 * 1024) {
-                              setError(locale === 'ka' ? 'ვიდეო უნდა იყოს 100MB-ზე ნაკლები' : 'Video must be less than 100MB');
-                              e.target.value = '';
-                              return;
-                            }
-                            const videoUrl = URL.createObjectURL(file);
-                            setEditProject(prev => ({
-                              ...prev,
-                              videos: [...prev.videos, videoUrl].slice(0, 3)
-                            }));
-                          }
-                          e.target.value = '';
-                        }}
-                        className="hidden"
-                      />
-                    </label>
-                  )}
-                </div>
-                <p className="text-xs text-neutral-500 mt-1.5">
-                  {locale === 'ka'
-                    ? `${editProject.videos.length}/3 ვიდეო (მაქს. 100MB თითო)`
-                    : `${editProject.videos.length}/3 videos (max 100MB each)`}
-                </p>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-3 mt-6">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowEditProjectModal(false);
-                  setEditingProjectIndex(null);
-                }}
-                className="flex-1 btn btn-secondary"
-              >
-                {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (editProject.title && editProject.description && editProject.images.length > 0 && editingProjectIndex !== null) {
-                    const updatedProjects = [...portfolioProjects];
-                    updatedProjects[editingProjectIndex] = { ...editProject };
-                    setPortfolioProjects(updatedProjects);
-                    setShowEditProjectModal(false);
-                    setEditingProjectIndex(null);
-                  }
-                }}
-                disabled={!editProject.title || !editProject.description || editProject.images.length === 0}
-                className="flex-1 btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {locale === 'ka' ? 'შენახვა' : 'Save Changes'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="max-w-xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-6">
-          <Link href="/" className="inline-block mb-3">
-            <h1 className="text-2xl font-bold text-blue-500">Homico</h1>
-          </Link>
-          <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-50 mb-1">{t('profileSetup.completeProfile')}</h2>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">{t('profileSetup.step', { current: currentStep, total: totalSteps })}</p>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="mb-6">
-          <div className="h-1.5 bg-neutral-200 dark:bg-dark-border-subtle rounded-full overflow-hidden">
-            <div
-              className="h-full bg-blue-500 transition-all duration-200"
-              style={{ width: `${(currentStep / totalSteps) * 100}%` }}
-            ></div>
-          </div>
-        </div>
-
-        {/* Card */}
-        <div className="bg-white dark:bg-dark-elevated rounded-xl border border-neutral-200 dark:border-dark-border shadow-sm p-6">
-          {/* Error Message */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-              <svg className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p className="text-sm text-red-700 flex-1">{error}</p>
-              <button onClick={() => setError('')} className="text-red-400 hover:text-red-600">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Step 1: Profile Type */}
-            {currentStep === 1 && (
-              <div className="space-y-4">
-                <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-50">{t('profileSetup.chooseType')}</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setProfileType('personal')}
-                    className={`relative p-4 rounded-xl border transition-all duration-200 ease-out ${
-                      profileType === 'personal'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-neutral-200 hover:border-neutral-300'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className={`w-10 h-10 mx-auto mb-2 rounded-lg flex items-center justify-center ${
-                        profileType === 'personal' ? 'bg-blue-500' : 'bg-neutral-100'
-                      }`}>
-                        <svg className={`w-5 h-5 ${profileType === 'personal' ? 'text-white' : 'text-neutral-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                      </div>
-                      <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">{t('profileSetup.personal')}</h4>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{t('profileSetup.workIndependently')}</p>
-                    </div>
-                    {profileType === 'personal' && (
-                      <div className="absolute top-2 right-2">
-                        <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                          </svg>
+                      {profileType === 'company' && (
+                        <div className="absolute top-3 right-3">
+                          <div className="w-5 h-5 bg-forest-800 dark:bg-primary-400 rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white dark:text-dark-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setProfileType('company')}
-                    className={`relative p-4 rounded-xl border transition-all duration-200 ease-out ${
-                      profileType === 'company'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-neutral-200 hover:border-neutral-300'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className={`w-10 h-10 mx-auto mb-2 rounded-lg flex items-center justify-center ${
-                        profileType === 'company' ? 'bg-blue-500' : 'bg-neutral-100'
-                      }`}>
-                        <svg className={`w-5 h-5 ${profileType === 'company' ? 'text-white' : 'text-neutral-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                      </div>
-                      <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">{t('profileSetup.company')}</h4>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{t('profileSetup.representBusiness')}</p>
-                    </div>
-                    {profileType === 'company' && (
-                      <div className="absolute top-2 right-2">
-                        <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </div>
-                      </div>
-                    )}
-                  </button>
+                      )}
+                    </button>
+                  </div>
                 </div>
 
-                {/* Company Name & Years Experience */}
-                <div className="space-y-4 pt-2">
-                  {profileType === 'company' && (
-                    <div>
-                      <label htmlFor="companyName" className="block text-sm font-medium text-neutral-700 mb-1.5">
-                        {t('profileSetup.companyName')} *
-                      </label>
-                      <input
-                        id="companyName"
-                        type="text"
-                        required={profileType === 'company'}
-                        value={formData.companyName}
-                        onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                        className="input"
-                        placeholder="Your company name"
-                      />
-                    </div>
-                  )}
-
+                {/* Company Name (if company) */}
+                {profileType === 'company' && (
                   <div>
-                    <label htmlFor="yearsExperience" className="block text-sm font-medium text-neutral-700 mb-1.5">
-                      {t('profileSetup.yearsExperience')} *
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                      {locale === 'ka' ? 'კომპანიის სახელი' : 'Company Name'} *
                     </label>
                     <input
-                      id="yearsExperience"
                       type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      required
-                      value={formData.yearsExperience}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/[^0-9]/g, '');
-                        setFormData({ ...formData, yearsExperience: value });
-                      }}
-                      className="input"
-                      placeholder="0"
+                      value={formData.companyName}
+                      onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
+                      className="w-full px-4 py-3 bg-neutral-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl focus:outline-none focus:ring-2 focus:ring-forest-800 dark:focus:ring-primary-400 transition-all"
+                      placeholder={locale === 'ka' ? 'შეიყვანე კომპანიის სახელი' : 'Enter company name'}
                     />
                   </div>
+                )}
+
+                {/* Avatar */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                    {locale === 'ka' ? 'პროფილის სურათი' : 'Profile Photo'}
+                  </label>
+                  <div className="flex items-center gap-4">
+                    {avatarPreview ? (
+                      <div className="relative">
+                        <img src={avatarPreview} alt="" className="w-20 h-20 rounded-2xl object-cover border-2 border-neutral-200 dark:border-dark-border" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAvatarPreview(null);
+                            setFormData(prev => ({ ...prev, avatar: '' }));
+                          }}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-terracotta-500 text-white rounded-full flex items-center justify-center hover:bg-terracotta-600 transition-colors"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="w-20 h-20 rounded-2xl border-2 border-dashed border-neutral-300 dark:border-dark-border hover:border-forest-800 dark:hover:border-primary-400 bg-neutral-50 dark:bg-dark-elevated flex items-center justify-center cursor-pointer transition-all group">
+                        <svg className="w-8 h-8 text-neutral-400 group-hover:text-forest-800 dark:group-hover:text-primary-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+                        </svg>
+                        <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
+                      </label>
+                    )}
+                    <div className="text-sm text-neutral-500 dark:text-neutral-400">
+                      <p>{locale === 'ka' ? 'PNG, JPG მაქს. 2MB' : 'PNG, JPG up to 2MB'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Years Experience */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                    {locale === 'ka' ? 'გამოცდილება (წელი)' : 'Years of Experience'} *
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="50"
+                    value={formData.yearsExperience}
+                    onChange={(e) => setFormData(prev => ({ ...prev, yearsExperience: e.target.value }))}
+                    className="w-full px-4 py-3 bg-neutral-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl focus:outline-none focus:ring-2 focus:ring-forest-800 dark:focus:ring-primary-400 transition-all"
+                    placeholder="0"
+                  />
+                </div>
+
+                {/* Bio */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                    {locale === 'ka' ? 'შენს შესახებ' : 'About You'} *
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={formData.bio}
+                    onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                    className="w-full px-4 py-3 bg-neutral-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl focus:outline-none focus:ring-2 focus:ring-forest-800 dark:focus:ring-primary-400 transition-all resize-none"
+                    placeholder={locale === 'ka' ? 'მოკლედ აღწერე შენი გამოცდილება და უნარები...' : 'Briefly describe your experience and skills...'}
+                  />
                 </div>
               </div>
             )}
 
-            {/* Step 2: Service Areas */}
-            {currentStep === 2 && locationData && (
-              <div className="space-y-4">
+            {/* Step: Design Style (Designer) */}
+            {steps[currentStep].key === 'style' && (
+              <div className="space-y-6">
                 <div>
-                  <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-50 mb-1">{t('profileSetup.serviceAreas')} *</h3>
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400">{t('profileSetup.whereProvide')}</p>
-                </div>
-
-                {/* Nationwide Option */}
-                <button
-                  type="button"
-                  onClick={toggleNationwide}
-                  className={`w-full p-3 rounded-xl border transition-all duration-200 ease-out ${
-                    formData.serviceAreas.includes(locationData.nationwide)
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-neutral-200 hover:border-neutral-300'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                        formData.serviceAreas.includes(locationData.nationwide)
-                          ? 'bg-blue-500'
-                          : 'bg-neutral-100'
-                      }`}>
-                        <span className="text-lg">{locationData.emoji}</span>
-                      </div>
-                      <div className="text-left">
-                        <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">{locationData.nationwide}</p>
-                        <p className="text-xs text-neutral-500 dark:text-neutral-400">{t('profileSetup.allRegions')}</p>
-                      </div>
-                    </div>
-                    {formData.serviceAreas.includes(locationData.nationwide) && (
-                      <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </div>
-                </button>
-
-                {/* Regional Options */}
-                {!formData.serviceAreas.includes(locationData.nationwide) && (
-                  <div className="space-y-2">
-                    {Object.entries(locationData.regions).map(([regionName, cities]) => (
-                      <details key={regionName} className="group border border-neutral-200 dark:border-dark-border rounded-lg overflow-hidden">
-                        <summary className="cursor-pointer list-none p-3 bg-neutral-50 dark:bg-dark-card hover:bg-neutral-100 dark:hover:bg-dark-elevated transition-all duration-200 ease-out flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <svg className="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <span className="text-sm font-medium text-neutral-700">{regionName}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-full">
-                              {cities.filter(city => formData.serviceAreas.includes(city)).length}/{cities.length}
-                            </span>
-                            <svg className="w-4 h-4 text-neutral-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </div>
-                        </summary>
-                        <div className="p-2 grid grid-cols-3 gap-1.5">
-                          {cities.map((city) => (
-                            <button
-                              key={city}
-                              type="button"
-                              onClick={() => toggleServiceArea(city)}
-                              className={`p-2 rounded text-sm transition-all duration-200 ease-out text-center ${
-                                formData.serviceAreas.includes(city)
-                                  ? 'bg-blue-100 text-blue-700 font-medium border border-blue-200'
-                                  : 'bg-white text-neutral-600 hover:bg-neutral-50 border border-transparent'
-                              }`}
-                            >
-                              {city}
-                            </button>
-                          ))}
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50 mb-2">
+                    {locale === 'ka' ? 'დიზაინის სტილები' : 'Design Styles'}
+                  </h3>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
+                    {locale === 'ka' ? 'აირჩიე სტილები რომლებშიც მუშაობ' : 'Select the styles you work with'}
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {designStyles.map((style) => (
+                      <button
+                        key={style.key}
+                        type="button"
+                        onClick={() => toggleDesignStyle(style.key)}
+                        className={`relative p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+                          formData.designStyles.includes(style.key)
+                            ? 'border-forest-800 dark:border-primary-400 bg-forest-800/5 dark:bg-primary-400/5'
+                            : 'border-neutral-200 dark:border-dark-border hover:border-neutral-300'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{style.icon}</span>
+                          <span className="font-medium text-neutral-900 dark:text-neutral-50">
+                            {locale === 'ka' ? style.nameKa : style.name}
+                          </span>
                         </div>
-                      </details>
+                        {formData.designStyles.includes(style.key) && (
+                          <div className="absolute top-3 right-3">
+                            <div className="w-5 h-5 bg-forest-800 dark:bg-primary-400 rounded-full flex items-center justify-center">
+                              <svg className="w-3 h-3 text-white dark:text-dark-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                          </div>
+                        )}
+                      </button>
                     ))}
                   </div>
-                )}
+                </div>
               </div>
             )}
 
-            {/* Step 3: Pricing */}
-            {currentStep === 3 && (
-              <div className="space-y-4">
+            {/* Step: Credentials (Architect) */}
+            {steps[currentStep].key === 'credentials' && (
+              <div className="space-y-6">
                 <div>
-                  <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-50 mb-1">{t('profileSetup.pricingDetails')}</h3>
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400">{t('profileSetup.setPricing')}</p>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50 mb-2">
+                    {locale === 'ka' ? 'კვალიფიკაცია და ლიცენზიები' : 'Credentials & Licenses'}
+                  </h3>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
+                    {locale === 'ka' ? 'დაამატე შენი პროფესიული დოკუმენტები' : 'Add your professional documentation'}
+                  </p>
                 </div>
 
-                {/* Interior Designer: Only square meter pricing - show for Interior Design OR when no category is selected (default) */}
-                {(formData.categories.includes('Interior Design') || !formData.categories.includes('Architecture')) && (
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                    {locale === 'ka' ? 'ლიცენზიის ნომერი' : 'License Number'}
+                    <span className="text-neutral-400 text-xs ml-2">({locale === 'ka' ? 'არასავალდებულო' : 'optional'})</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.licenseNumber}
+                    onChange={(e) => setFormData(prev => ({ ...prev, licenseNumber: e.target.value }))}
+                    className="w-full px-4 py-3 bg-neutral-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl focus:outline-none focus:ring-2 focus:ring-forest-800 dark:focus:ring-primary-400 transition-all"
+                    placeholder={locale === 'ka' ? 'არქიტექტორის ლიცენზია' : 'Architect License'}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                    {locale === 'ka' ? 'საკადასტრო კოდი' : 'Cadastral ID'}
+                    <span className="text-neutral-400 text-xs ml-2">({locale === 'ka' ? 'არასავალდებულო' : 'optional'})</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.cadastralId}
+                    onChange={(e) => setFormData(prev => ({ ...prev, cadastralId: e.target.value }))}
+                    className="w-full px-4 py-3 bg-neutral-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl focus:outline-none focus:ring-2 focus:ring-forest-800 dark:focus:ring-primary-400 transition-all"
+                    placeholder="01.18.01.004.001"
+                  />
+                </div>
+
+                <div className="p-4 bg-forest-800/5 dark:bg-primary-400/5 border border-forest-800/10 dark:border-primary-400/10 rounded-xl">
+                  <div className="flex gap-3">
+                    <svg className="w-5 h-5 text-forest-800 dark:text-primary-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                      {locale === 'ka'
+                        ? 'ლიცენზირებული არქიტექტორები უფრო მეტ ნდობას იმსახურებენ კლიენტებისგან'
+                        : 'Licensed architects gain more trust from clients'
+                      }
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step: Skills (Craftsmen) */}
+            {steps[currentStep].key === 'skills' && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50 mb-2">
+                    {locale === 'ka' ? 'შენი სპეციალიზაციები' : 'Your Specializations'}
+                  </h3>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
+                    {locale === 'ka' ? 'რა სამუშაოებს ასრულებ?' : 'What types of work do you do?'}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {selectedSubcategories.map((sub) => {
+                    const catInfo = getCategoryByKey(selectedCategory);
+                    const subInfo = catInfo?.subcategories.find(s => s.key === sub);
+                    return (
+                      <div key={sub} className="px-4 py-2 bg-forest-800 dark:bg-primary-400 text-white dark:text-dark-bg rounded-xl text-sm font-medium">
+                        {locale === 'ka' ? subInfo?.nameKa : subInfo?.name}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="p-4 bg-forest-800/5 dark:bg-primary-400/5 border border-forest-800/10 dark:border-primary-400/10 rounded-xl">
+                  <div className="flex gap-3">
+                    <svg className="w-5 h-5 text-forest-800 dark:text-primary-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                      {locale === 'ka'
+                        ? 'ეს სპეციალიზაციები შენ რეგისტრაციისას აირჩიე. შეგიძლია მოგვიანებით დაამატო'
+                        : 'These are the specializations you selected during registration. You can add more later'
+                      }
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step: Services (Architect/Home Care) */}
+            {steps[currentStep].key === 'services' && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50 mb-2">
+                    {locale === 'ka' ? 'შენი სერვისები' : 'Your Services'}
+                  </h3>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
+                    {locale === 'ka' ? 'რა სერვისებს სთავაზობ კლიენტებს?' : 'What services do you offer to clients?'}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {selectedSubcategories.map((sub) => {
+                    const catInfo = getCategoryByKey(selectedCategory);
+                    const subInfo = catInfo?.subcategories.find(s => s.key === sub);
+                    return (
+                      <div key={sub} className="px-4 py-2 bg-forest-800 dark:bg-primary-400 text-white dark:text-dark-bg rounded-xl text-sm font-medium">
+                        {locale === 'ka' ? subInfo?.nameKa : subInfo?.name}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Step: Pricing */}
+            {steps[currentStep].key === 'pricing' && (
+              <div className="space-y-6">
+                {/* Designer pricing */}
+                {(selectedCategory === 'interior-design' || selectedCategory === '') && (
                   <>
                     <div>
-                      <label htmlFor="basePrice" className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                         {locale === 'ka' ? 'საწყისი ფასი კვ.მ-ზე' : 'Starting Price per m²'} *
                       </label>
                       <div className="relative">
                         <input
-                          id="basePrice"
-                          type="text"
-                          inputMode="decimal"
-                          required
+                          type="number"
                           value={formData.basePrice}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/[^0-9.]/g, '');
-                            setFormData({ ...formData, basePrice: value, pricingModel: 'from' });
-                          }}
-                          className="input pr-16"
+                          onChange={(e) => setFormData(prev => ({ ...prev, basePrice: e.target.value }))}
+                          className="w-full px-4 py-3 bg-neutral-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl focus:outline-none focus:ring-2 focus:ring-forest-800 dark:focus:ring-primary-400 transition-all pr-16"
                           placeholder="50"
                         />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">
-                          ₾/m²
-                        </span>
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 font-medium">₾/m²</span>
                       </div>
-                      <p className="text-xs text-neutral-500 mt-1.5">
-                        {locale === 'ka'
-                          ? 'მინიმალური ფასი კვადრატულ მეტრზე დიზაინის მომსახურებისთვის'
-                          : 'Minimum price per square meter for design services'
-                        }
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
+                        {locale === 'ka' ? 'კლიენტები დაინახავენ "დან XX ₾/m²"' : 'Clients will see "from XX ₾/m²"'}
                       </p>
                     </div>
 
-                    {/* Card preview note */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                      <div className="flex gap-2">
-                        <svg className="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <div>
-                          <p className="text-sm font-medium text-blue-800">
-                            {locale === 'ka' ? 'ეს ფასი გამოჩნდება თქვენს ბარათზე' : 'This price will be shown on your card'}
-                          </p>
-                          <p className="text-xs text-blue-700 mt-0.5">
-                            {locale === 'ka'
-                              ? 'მომხმარებლები დაინახავენ "დან XX ₾/m²" თქვენს პროფილზე'
-                              : 'Users will see "from XX ₾/m²" on your profile'
-                            }
-                          </p>
-                        </div>
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                        {locale === 'ka' ? 'საკონსულტაციო შეხვედრის ფასი' : 'Consultation Fee'}
+                        <span className="text-neutral-400 text-xs ml-2">({locale === 'ka' ? 'არასავალდებულო' : 'optional'})</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          value={formData.hourlyRate}
+                          onChange={(e) => setFormData(prev => ({ ...prev, hourlyRate: e.target.value }))}
+                          className="w-full px-4 py-3 bg-neutral-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl focus:outline-none focus:ring-2 focus:ring-forest-800 dark:focus:ring-primary-400 transition-all pr-16"
+                          placeholder="100"
+                        />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 font-medium">₾</span>
                       </div>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
+                        {locale === 'ka' ? 'პირველი შეხვედრის/კონსულტაციის ფასი' : 'Price for initial consultation meeting'}
+                      </p>
                     </div>
                   </>
                 )}
 
-                {/* Architect: Full pricing options */}
-                {formData.categories.includes('Architecture') && (
+                {/* Craftsmen & Home Care pricing */}
+                {(selectedCategory === 'craftsmen' || selectedCategory === 'home-care') && (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-2">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                        {locale === 'ka' ? 'საათობრივი ტარიფი' : 'Hourly Rate'} *
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          value={formData.hourlyRate}
+                          onChange={(e) => setFormData(prev => ({ ...prev, hourlyRate: e.target.value }))}
+                          className="w-full px-4 py-3 bg-neutral-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl focus:outline-none focus:ring-2 focus:ring-forest-800 dark:focus:ring-primary-400 transition-all pr-16"
+                          placeholder="25"
+                        />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 font-medium">₾/სთ</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                        {locale === 'ka' ? 'მინიმალური გამოძახება' : 'Minimum Call-out Fee'}
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          value={formData.basePrice}
+                          onChange={(e) => setFormData(prev => ({ ...prev, basePrice: e.target.value }))}
+                          className="w-full px-4 py-3 bg-neutral-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl focus:outline-none focus:ring-2 focus:ring-forest-800 dark:focus:ring-primary-400 transition-all pr-12"
+                          placeholder="50"
+                        />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 font-medium">₾</span>
+                      </div>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
+                        {locale === 'ka' ? 'მინიმალური ფასი გამოძახებისთვის' : 'Minimum fee for a service call'}
+                      </p>
+                    </div>
+                  </>
+                )}
+
+                {/* Architect pricing */}
+                {selectedCategory === 'architecture' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">
                         {locale === 'ka' ? 'ფასის მოდელი' : 'Pricing Model'}
                       </label>
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-2 gap-3">
                         {[
-                          { value: 'hourly', labelKey: 'hourly', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
-                          { value: 'project_based', labelKey: 'project', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-                          { value: 'from', labelKey: 'starting', icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' }
+                          { value: 'project_based', label: locale === 'ka' ? 'პროექტი' : 'Project', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+                          { value: 'from', label: locale === 'ka' ? 'კვ.მ-დან' : 'Per m²', icon: 'M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4' },
                         ].map((model) => (
                           <button
                             key={model.value}
                             type="button"
-                            onClick={() => setFormData({ ...formData, pricingModel: model.value })}
-                            className={`p-3 rounded-lg border transition-all duration-200 ease-out ${
+                            onClick={() => setFormData(prev => ({ ...prev, pricingModel: model.value }))}
+                            className={`p-4 rounded-xl border-2 transition-all ${
                               formData.pricingModel === model.value
-                                ? 'border-blue-500 bg-blue-50'
-                                : 'border-neutral-200 hover:border-neutral-300'
+                                ? 'border-forest-800 dark:border-primary-400 bg-forest-800/5 dark:bg-primary-400/5'
+                                : 'border-neutral-200 dark:border-dark-border hover:border-neutral-300'
                             }`}
                           >
-                            <div className="flex flex-col items-center gap-1">
-                              <svg className={`w-5 h-5 ${formData.pricingModel === model.value ? 'text-blue-600' : 'text-neutral-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={model.icon} />
-                              </svg>
-                              <span className={`text-xs font-medium ${formData.pricingModel === model.value ? 'text-blue-700' : 'text-neutral-600'}`}>
-                                {t(`profileSetup.${model.labelKey}`)}
-                              </span>
-                            </div>
+                            <svg className={`w-6 h-6 mx-auto mb-2 ${formData.pricingModel === model.value ? 'text-forest-800 dark:text-primary-400' : 'text-neutral-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={model.icon} />
+                            </svg>
+                            <span className={`text-sm font-medium ${formData.pricingModel === model.value ? 'text-forest-800 dark:text-primary-400' : 'text-neutral-600 dark:text-neutral-400'}`}>
+                              {model.label}
+                            </span>
                           </button>
                         ))}
                       </div>
                     </div>
 
                     <div>
-                      <label htmlFor="basePrice" className="block text-sm font-medium text-neutral-700 mb-1.5">
-                        {t('profileSetup.basePrice')}
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                        {formData.pricingModel === 'from'
+                          ? (locale === 'ka' ? 'ფასი კვ.მ-ზე' : 'Price per m²')
+                          : (locale === 'ka' ? 'საბაზისო ფასი' : 'Base Price')
+                        } *
                       </label>
-                      <input
-                        id="basePrice"
-                        type="text"
-                        inputMode="decimal"
-                        value={formData.basePrice}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/[^0-9.]/g, '');
-                          setFormData({ ...formData, basePrice: value });
-                        }}
-                        className="input"
-                        placeholder="0.00"
-                      />
+                      <div className="relative">
+                        <input
+                          type="number"
+                          value={formData.basePrice}
+                          onChange={(e) => setFormData(prev => ({ ...prev, basePrice: e.target.value }))}
+                          className="w-full px-4 py-3 bg-neutral-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl focus:outline-none focus:ring-2 focus:ring-forest-800 dark:focus:ring-primary-400 transition-all pr-16"
+                          placeholder={formData.pricingModel === 'from' ? '50' : '500'}
+                        />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 font-medium">
+                          {formData.pricingModel === 'from' ? '₾/m²' : '₾'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
+                        {formData.pricingModel === 'from'
+                          ? (locale === 'ka' ? 'კლიენტები დაინახავენ "დან XX ₾/m²"' : 'Clients will see "from XX ₾/m²"')
+                          : (locale === 'ka' ? 'საწყისი ფასი პროექტისთვის' : 'Starting price for a project')
+                        }
+                      </p>
                     </div>
                   </>
                 )}
-
-                <div>
-                  <label htmlFor="description" className="block text-sm font-medium text-neutral-700 mb-1.5">
-                    {t('profileSetup.aboutServices')} *
-                  </label>
-                  <textarea
-                    id="description"
-                    rows={3}
-                    required
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="input resize-none"
-                    placeholder={t('profileSetup.describeExperience')}
-                  />
-                </div>
               </div>
             )}
 
-            {/* Step 4: Portfolio */}
-            {currentStep === 4 && (
-              <div className="space-y-5">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-50 mb-1">{t('profileSetup.portfolio')}</h3>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">{t('profileSetup.addProjects')}</p>
-                  </div>
-                  {/* Preview Button */}
-                  <button
-                    type="button"
-                    onClick={() => setShowPreview(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all duration-200 ease-out"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                    {locale === 'ka' ? 'გადახედვა' : 'Preview'}
-                  </button>
-                </div>
-
-                {/* Profile Picture */}
-                <div className="flex items-center gap-4 pb-4 border-b border-neutral-100 dark:border-dark-border">
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                      {t('profileSetup.profilePicture')} *
-                    </label>
-                  </div>
-                  {avatarPreview ? (
-                    <div className="relative">
-                      <img
-                        src={avatarPreview}
-                        alt="Avatar"
-                        className="w-16 h-16 rounded-xl object-cover border border-neutral-200 dark:border-dark-border"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setAvatarPreview(null);
-                          setFormData({ ...formData, avatar: '' });
-                        }}
-                        className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-all duration-200 ease-out"
-                      >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  ) : (
-                    <label className="group w-16 h-16 rounded-xl bg-neutral-50 dark:bg-dark-card border border-dashed border-neutral-300 dark:border-dark-border flex items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 ease-out">
-                      <svg className="w-6 h-6 text-neutral-400 group-hover:text-blue-500 transition-all duration-200 ease-out" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleAvatarChange}
-                        className="hidden"
-                      />
-                    </label>
-                  )}
-                </div>
-
-                {/* Bio */}
+            {/* Step: Portfolio */}
+            {steps[currentStep].key === 'portfolio' && (
+              <div className="space-y-6">
                 <div>
-                  <label htmlFor="bio" className="block text-sm font-medium text-neutral-700 mb-1.5">
-                    {t('profileSetup.bio')} *
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50 mb-2">
+                    {locale === 'ka' ? 'პორტფოლიო' : 'Portfolio'}
+                  </h3>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
+                    {locale === 'ka' ? 'დაამატე შენი საუკეთესო სამუშაოები' : 'Add your best work examples'}
+                  </p>
+                </div>
+
+                {/* Portfolio URL */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                    {locale === 'ka' ? 'პორტფოლიოს ბმული' : 'Portfolio URL'}
+                    <span className="text-neutral-400 text-xs ml-2">({locale === 'ka' ? 'არასავალდებულო' : 'optional'})</span>
                   </label>
-                  <textarea
-                    id="bio"
-                    rows={3}
-                    required
-                    value={formData.bio}
-                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                    className="input resize-none"
-                    placeholder={t('profileSetup.tellAboutYourself')}
+                  <input
+                    type="url"
+                    value={formData.portfolioUrl}
+                    onChange={(e) => setFormData(prev => ({ ...prev, portfolioUrl: e.target.value }))}
+                    className="w-full px-4 py-3 bg-neutral-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl focus:outline-none focus:ring-2 focus:ring-forest-800 dark:focus:ring-primary-400 transition-all"
+                    placeholder="https://behance.net/yourprofile"
                   />
                 </div>
 
-                {/* Add Project Button */}
+                {/* Projects */}
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium text-neutral-700">
-                      {t('profileSetup.addProject')} *
-                    </label>
-                    {portfolioProjects.length > 0 && (
-                      <span className="text-xs text-neutral-500">
-                        {portfolioProjects.length} {locale === 'ka' ? 'პროექტი' : portfolioProjects.length === 1 ? 'project' : 'projects'}
-                      </span>
-                    )}
-                  </div>
-                  <div className="grid gap-3">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">
+                    {locale === 'ka' ? 'პროექტები' : 'Projects'} *
+                  </label>
+                  <div className="space-y-3">
                     {portfolioProjects.map((project, index) => (
                       <div
                         key={index}
-                        className="p-4 bg-neutral-50 dark:bg-dark-card rounded-xl border border-neutral-200 dark:border-dark-border hover:border-blue-300 hover:bg-blue-50/30 transition-all duration-200 ease-out cursor-pointer"
+                        className="flex gap-4 p-4 bg-neutral-50 dark:bg-dark-elevated rounded-xl border border-neutral-200 dark:border-dark-border hover:border-forest-800 dark:hover:border-primary-400 transition-all cursor-pointer"
                         onClick={() => {
-                          setEditProject({ ...project });
-                          setEditingProjectIndex(index);
-                          setShowEditProjectModal(true);
+                          setEditingProject(project);
+                          setEditingIndex(index);
+                          setShowProjectModal(true);
                         }}
                       >
-                        <div className="flex gap-3">
-                          {/* Thumbnail */}
-                          {project.images.length > 0 && (
-                            <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden">
-                              <img src={project.images[0]} alt={project.title} className="w-full h-full object-cover" />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-50 truncate">{project.title}</p>
-                                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 line-clamp-1">{project.description}</p>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setEditProject({ ...project });
-                                    setEditingProjectIndex(index);
-                                    setShowEditProjectModal(true);
-                                  }}
-                                  className="p-1.5 text-neutral-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all duration-200 ease-out"
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                  </svg>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setPortfolioProjects(portfolioProjects.filter((_, i) => i !== index));
-                                  }}
-                                  className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200 ease-out"
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                  </svg>
-                                </button>
-                              </div>
-                            </div>
-                            {/* Media counts */}
-                            <div className="flex items-center gap-3 mt-2">
-                              <div className="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400">
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                <span>{project.images.length} {locale === 'ka' ? 'სურათი' : 'images'}</span>
-                              </div>
-                              {project.videos.length > 0 && (
-                                <div className="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400">
-                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                  </svg>
-                                  <span>{project.videos.length} {locale === 'ka' ? 'ვიდეო' : 'videos'}</span>
-                                </div>
-                              )}
-                            </div>
+                        {project.images[0] && (
+                          <img src={project.images[0]} alt="" className="w-20 h-20 rounded-lg object-cover flex-shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-neutral-900 dark:text-neutral-50 truncate">{project.title}</h4>
+                          <p className="text-sm text-neutral-500 dark:text-neutral-400 line-clamp-2 mt-1">{project.description}</p>
+                          <div className="flex items-center gap-2 mt-2 text-xs text-neutral-400">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span>{project.images.length} {locale === 'ka' ? 'სურათი' : 'images'}</span>
                           </div>
                         </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPortfolioProjects(portfolioProjects.filter((_, i) => i !== index));
+                          }}
+                          className="p-2 text-neutral-400 hover:text-terracotta-500 hover:bg-terracotta-50 dark:hover:bg-terracotta-500/10 rounded-lg transition-all"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
                       </div>
                     ))}
 
                     <button
                       type="button"
-                      onClick={() => setShowAddProjectModal(true)}
-                      className="p-4 rounded-lg border border-dashed border-neutral-300 dark:border-dark-border text-center hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 ease-out group"
+                      onClick={() => {
+                        setEditingProject({ title: '', description: '', images: [] });
+                        setEditingIndex(null);
+                        setShowProjectModal(true);
+                      }}
+                      className="w-full p-6 rounded-xl border-2 border-dashed border-neutral-300 dark:border-dark-border hover:border-forest-800 dark:hover:border-primary-400 hover:bg-forest-800/5 dark:hover:bg-primary-400/5 transition-all group"
                     >
                       <div className="flex flex-col items-center gap-2">
-                        <div className="w-10 h-10 rounded-lg bg-neutral-100 group-hover:bg-blue-100 flex items-center justify-center transition-all duration-200 ease-out">
-                          <svg className="w-5 h-5 text-neutral-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        <div className="w-12 h-12 rounded-xl bg-neutral-100 dark:bg-dark-border group-hover:bg-forest-800 dark:group-hover:bg-primary-400 flex items-center justify-center transition-all">
+                          <svg className="w-6 h-6 text-neutral-400 group-hover:text-white dark:group-hover:text-dark-bg transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                           </svg>
                         </div>
-                        <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400 group-hover:text-blue-600">{t('profileSetup.addProject')}</span>
+                        <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400 group-hover:text-forest-800 dark:group-hover:text-primary-400 transition-colors">
+                          {locale === 'ka' ? 'პროექტის დამატება' : 'Add Project'}
+                        </span>
                       </div>
                     </button>
                   </div>
@@ -1433,51 +1186,338 @@ export default function ProProfileSetupPage() {
               </div>
             )}
 
-            {/* Navigation Buttons */}
-            <div className="flex gap-3 pt-4">
-              {currentStep > 1 && (
+            {/* Step: Availability (Home Care) */}
+            {steps[currentStep].key === 'availability' && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50 mb-2">
+                    {locale === 'ka' ? 'ხელმისაწვდომობა' : 'Availability'}
+                  </h3>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
+                    {locale === 'ka' ? 'როდის ხარ ხელმისაწვდომი?' : 'When are you available?'}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {availabilityOptions.map((option) => (
+                    <button
+                      key={option.key}
+                      type="button"
+                      onClick={() => toggleAvailability(option.key)}
+                      className={`relative p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+                        formData.availability.includes(option.key)
+                          ? 'border-forest-800 dark:border-primary-400 bg-forest-800/5 dark:bg-primary-400/5'
+                          : 'border-neutral-200 dark:border-dark-border hover:border-neutral-300'
+                      }`}
+                    >
+                      <span className="font-medium text-neutral-900 dark:text-neutral-50">
+                        {locale === 'ka' ? option.nameKa : option.name}
+                      </span>
+                      {formData.availability.includes(option.key) && (
+                        <div className="absolute top-3 right-3">
+                          <div className="w-5 h-5 bg-forest-800 dark:bg-primary-400 rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white dark:text-dark-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Step: Service Areas */}
+            {steps[currentStep].key === 'areas' && locationData && (
+              <div className="space-y-6">
+                {/* Nationwide Toggle - Hero Card */}
                 <button
                   type="button"
-                  onClick={() => setCurrentStep(currentStep - 1)}
-                  className="btn btn-secondary"
+                  onClick={() => setFormData(prev => ({ ...prev, nationwide: !prev.nationwide, serviceAreas: [] }))}
+                  className={`group relative w-full overflow-hidden rounded-2xl transition-all duration-500 ${
+                    formData.nationwide
+                      ? 'ring-2 ring-forest-800 dark:ring-primary-400 ring-offset-2 dark:ring-offset-dark-card'
+                      : 'hover:shadow-lg'
+                  }`}
                 >
-                  {t('common.back')}
-                </button>
-              )}
-              {currentStep < totalSteps ? (
-                <button
-                  type="button"
-                  onClick={() => setCurrentStep(currentStep + 1)}
-                  disabled={
-                    (currentStep === 1 && ((profileType === 'company' && !formData.companyName) || !formData.yearsExperience)) ||
-                    (currentStep === 2 && formData.serviceAreas.length === 0) ||
-                    (currentStep === 3 && (((formData.categories.includes('Interior Design') || !formData.categories.includes('Architecture')) && !formData.basePrice) || !formData.description))
-                  }
-                  className="flex-1 btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {t('common.continue')}
-                </button>
-              ) : (
-                <button
-                  type="submit"
-                  disabled={isLoading || formData.serviceAreas.length === 0 || !formData.bio || !formData.avatar || portfolioProjects.length === 0}
-                  className="flex-1 btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  {/* Background with map pattern */}
+                  <div className={`absolute inset-0 transition-all duration-500 ${
+                    formData.nationwide
+                      ? 'bg-gradient-to-br from-forest-800 via-forest-700 to-forest-900 dark:from-primary-500 dark:via-primary-400 dark:to-primary-600'
+                      : 'bg-gradient-to-br from-neutral-100 via-neutral-50 to-neutral-100 dark:from-dark-elevated dark:via-dark-card dark:to-dark-elevated'
+                  }`} />
+
+                  {/* Decorative map lines */}
+                  <div className="absolute inset-0 opacity-10">
+                    <svg className="w-full h-full" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice">
+                      <path d="M0 100 Q100 50 200 100 T400 100" fill="none" stroke="currentColor" strokeWidth="1" className={formData.nationwide ? 'text-white' : 'text-forest-800 dark:text-primary-400'} />
+                      <path d="M0 120 Q150 70 250 120 T400 120" fill="none" stroke="currentColor" strokeWidth="1" className={formData.nationwide ? 'text-white' : 'text-forest-800 dark:text-primary-400'} />
+                      <circle cx="100" cy="80" r="3" className={formData.nationwide ? 'fill-white' : 'fill-forest-800 dark:fill-primary-400'} />
+                      <circle cx="200" cy="100" r="4" className={formData.nationwide ? 'fill-white' : 'fill-forest-800 dark:fill-primary-400'} />
+                      <circle cx="300" cy="90" r="3" className={formData.nationwide ? 'fill-white' : 'fill-forest-800 dark:fill-primary-400'} />
+                      <circle cx="150" cy="110" r="2" className={formData.nationwide ? 'fill-white' : 'fill-forest-800 dark:fill-primary-400'} />
+                      <circle cx="250" cy="85" r="2" className={formData.nationwide ? 'fill-white' : 'fill-forest-800 dark:fill-primary-400'} />
+                    </svg>
+                  </div>
+
+                  <div className="relative p-6 flex items-center gap-5">
+                    {/* Globe Icon */}
+                    <div className={`relative flex-shrink-0 w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 ${
+                      formData.nationwide
+                        ? 'bg-white/20 backdrop-blur-sm'
+                        : 'bg-forest-800/10 dark:bg-primary-400/10 group-hover:bg-forest-800/15 dark:group-hover:bg-primary-400/15'
+                    }`}>
+                      <svg className={`w-8 h-8 transition-all duration-500 ${
+                        formData.nationwide ? 'text-white' : 'text-forest-800 dark:text-primary-400'
+                      }`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M2 12h20" />
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                       </svg>
-                      {t('profileSetup.creating')}
-                    </span>
-                  ) : (
-                    t('profileSetup.completeSetup')
-                  )}
+                      {formData.nationwide && (
+                        <div className="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-lg">
+                          <svg className="w-4 h-4 text-forest-800 dark:text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex-1 text-left">
+                      <h3 className={`text-xl font-bold mb-1 transition-colors duration-500 ${
+                        formData.nationwide ? 'text-white' : 'text-neutral-900 dark:text-neutral-50'
+                      }`}>
+                        {locationData.nationwide}
+                      </h3>
+                      <p className={`text-sm transition-colors duration-500 ${
+                        formData.nationwide ? 'text-white/80' : 'text-neutral-500 dark:text-neutral-400'
+                      }`}>
+                        {locale === 'ka' ? 'მომსახურება მთელი ქვეყნის მასშტაბით' : 'Serve clients across the entire country'}
+                      </p>
+                    </div>
+
+                    {/* Radio indicator */}
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+                      formData.nationwide
+                        ? 'border-white bg-white'
+                        : 'border-neutral-300 dark:border-dark-border group-hover:border-forest-800 dark:group-hover:border-primary-400'
+                    }`}>
+                      {formData.nationwide && (
+                        <div className="w-3 h-3 rounded-full bg-forest-800 dark:bg-primary-500" />
+                      )}
+                    </div>
+                  </div>
                 </button>
-              )}
-            </div>
-          </form>
+
+                {/* Divider */}
+                <div className="flex items-center gap-4">
+                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-neutral-200 dark:via-dark-border to-transparent" />
+                  <span className="text-xs font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+                    {locale === 'ka' ? 'ან აირჩიე რეგიონები' : 'or select regions'}
+                  </span>
+                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-neutral-200 dark:via-dark-border to-transparent" />
+                </div>
+
+                {/* Regional Selection */}
+                <div className={`space-y-3 transition-all duration-300 ${formData.nationwide ? 'opacity-40 pointer-events-none' : ''}`}>
+                  {/* Selected count badge */}
+                  {formData.serviceAreas.length > 0 && !formData.nationwide && (
+                    <div className="flex items-center justify-between px-1 mb-2">
+                      <span className="text-sm text-neutral-500 dark:text-neutral-400">
+                        {locale === 'ka' ? 'არჩეული ქალაქები:' : 'Selected cities:'}
+                      </span>
+                      <span className="px-3 py-1 bg-forest-800 dark:bg-primary-400 text-white dark:text-dark-bg text-sm font-semibold rounded-full">
+                        {formData.serviceAreas.length}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Region Cards */}
+                  <div className="grid gap-3 max-h-[320px] overflow-y-auto pr-1 custom-scrollbar">
+                    {Object.entries(locationData.regions).map(([regionName, cities], regionIndex) => {
+                      const selectedInRegion = cities.filter(c => formData.serviceAreas.includes(c)).length;
+                      const allSelected = selectedInRegion === cities.length;
+
+                      return (
+                        <details
+                          key={regionName}
+                          className="group rounded-xl overflow-hidden bg-neutral-50 dark:bg-dark-elevated border border-neutral-100 dark:border-dark-border hover:border-forest-800/30 dark:hover:border-primary-400/30 transition-all duration-300"
+                        >
+                          <summary className="cursor-pointer list-none p-4 flex items-center gap-4 select-none">
+                            {/* Region Icon */}
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                              selectedInRegion > 0
+                                ? 'bg-forest-800 dark:bg-primary-400'
+                                : 'bg-neutral-200 dark:bg-dark-border group-hover:bg-forest-800/10 dark:group-hover:bg-primary-400/10'
+                            }`}>
+                              <svg className={`w-5 h-5 transition-colors ${
+                                selectedInRegion > 0 ? 'text-white dark:text-dark-bg' : 'text-neutral-400 dark:text-neutral-500'
+                              }`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                              </svg>
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-neutral-900 dark:text-neutral-50 truncate">
+                                {regionName}
+                              </h4>
+                              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                                {cities.length} {locale === 'ka' ? 'ქალაქი' : 'cities'}
+                              </p>
+                            </div>
+
+                            {/* Selection indicator */}
+                            <div className="flex items-center gap-3">
+                              {selectedInRegion > 0 && (
+                                <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
+                                  allSelected
+                                    ? 'bg-forest-800 dark:bg-primary-400 text-white dark:text-dark-bg'
+                                    : 'bg-forest-800/10 dark:bg-primary-400/10 text-forest-800 dark:text-primary-400'
+                                }`}>
+                                  {selectedInRegion}/{cities.length}
+                                </span>
+                              )}
+                              <svg className="w-5 h-5 text-neutral-400 transition-transform duration-300 group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </div>
+                          </summary>
+
+                          {/* Cities Grid */}
+                          <div className="px-4 pb-4 pt-2">
+                            {/* Select All for Region */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                if (allSelected) {
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    serviceAreas: prev.serviceAreas.filter(a => !cities.includes(a))
+                                  }));
+                                } else {
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    serviceAreas: [...new Set([...prev.serviceAreas, ...cities])]
+                                  }));
+                                }
+                              }}
+                              className={`w-full mb-3 py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+                                allSelected
+                                  ? 'bg-forest-800 dark:bg-primary-400 text-white dark:text-dark-bg'
+                                  : 'bg-white dark:bg-dark-card border border-neutral-200 dark:border-dark-border text-neutral-600 dark:text-neutral-400 hover:border-forest-800 dark:hover:border-primary-400 hover:text-forest-800 dark:hover:text-primary-400'
+                              }`}
+                            >
+                              {allSelected ? (
+                                <>
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                  {locale === 'ka' ? 'ყველა არჩეულია' : 'All Selected'}
+                                </>
+                              ) : (
+                                <>
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                  {locale === 'ka' ? 'აირჩიე ყველა' : 'Select All'}
+                                </>
+                              )}
+                            </button>
+
+                            {/* City chips */}
+                            <div className="flex flex-wrap gap-2">
+                              {cities.map((city) => {
+                                const isSelected = formData.serviceAreas.includes(city);
+                                return (
+                                  <button
+                                    key={city}
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      toggleServiceArea(city);
+                                    }}
+                                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                      isSelected
+                                        ? 'bg-forest-800 dark:bg-primary-400 text-white dark:text-dark-bg shadow-md'
+                                        : 'bg-white dark:bg-dark-card text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-dark-border hover:border-forest-800 dark:hover:border-primary-400 hover:text-forest-800 dark:hover:text-primary-400'
+                                    }`}
+                                  >
+                                    {isSelected && (
+                                      <svg className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                      </svg>
+                                    )}
+                                    {city}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </details>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Navigation */}
+          <div className="px-6 md:px-8 py-4 bg-neutral-50 dark:bg-dark-elevated border-t border-neutral-100 dark:border-dark-border flex gap-3">
+            {currentStep > 0 && (
+              <button
+                type="button"
+                onClick={() => setCurrentStep(currentStep - 1)}
+                className="px-6 py-3 border border-neutral-200 dark:border-dark-border rounded-xl text-neutral-700 dark:text-neutral-300 font-medium hover:bg-white dark:hover:bg-dark-card transition-all"
+              >
+                {locale === 'ka' ? 'უკან' : 'Back'}
+              </button>
+            )}
+
+            {currentStep < totalSteps - 1 ? (
+              <button
+                type="button"
+                onClick={() => setCurrentStep(currentStep + 1)}
+                disabled={!canProceed()}
+                className="flex-1 px-6 py-3 bg-forest-800 dark:bg-primary-400 text-white dark:text-dark-bg rounded-xl font-medium hover:bg-forest-700 dark:hover:bg-primary-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {locale === 'ka' ? 'გაგრძელება' : 'Continue'}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={isLoading || !canProceed()}
+                className="flex-1 px-6 py-3 bg-forest-800 dark:bg-primary-400 text-white dark:text-dark-bg rounded-xl font-medium hover:bg-forest-700 dark:hover:bg-primary-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {isLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    {locale === 'ka' ? 'იქმნება...' : 'Creating...'}
+                  </span>
+                ) : (
+                  locale === 'ka' ? 'დასრულება' : 'Complete Setup'
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Skip link */}
+        <div className="text-center mt-6">
+          <button
+            type="button"
+            onClick={() => router.push('/browse')}
+            className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
+          >
+            {locale === 'ka' ? 'გამოტოვება და მოგვიანებით დასრულება' : 'Skip and complete later'}
+          </button>
         </div>
       </div>
     </div>

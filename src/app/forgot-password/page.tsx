@@ -36,7 +36,12 @@ export default function ForgotPasswordPage() {
       sessionStorage.setItem('resetEmail', email);
       router.push('/forgot-password/verify');
     } catch (err: any) {
-      setError(err.message || t('forgotPassword.sendFailed'));
+      // Check if it's a network error (Failed to fetch)
+      if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
+        setError(t('forgotPassword.networkError'));
+      } else {
+        setError(t('forgotPassword.sendFailed'));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -167,7 +172,7 @@ export default function ForgotPasswordPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="input pl-12"
-                    placeholder="you@example.com"
+                    placeholder="email@gmail.com"
                     autoComplete="email"
                     autoFocus
                   />

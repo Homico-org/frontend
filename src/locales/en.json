@@ -252,6 +252,8 @@
     "password": "Password",
     "confirmPassword": "Confirm Password",
     "fullName": "Full Name",
+    "firstName": "First Name",
+    "lastName": "Last Name",
     "forgotPassword": "Forgot password?",
     "signingIn": "Signing in...",
     "signIn": "Sign in",
@@ -271,7 +273,9 @@
     "additionalInfo": "Additional Info",
     "minCharacters": "Min {count} characters",
     "passwordsNotMatch": "Passwords do not match",
-    "selectCountry": "Select country"
+    "selectCountry": "Select country",
+    "invalidCredentials": "Invalid phone number or password",
+    "loginFailed": "Login failed. Please check your credentials."
   },
   "forgotPassword": {
     "title": "Reset your password",
@@ -283,6 +287,7 @@
     "stepReset": "Reset",
     "sendCode": "Send verification code",
     "sendFailed": "Failed to send verification code. Please try again.",
+    "networkError": "Connection error. Please check your internet connection and try again.",
     "emailHint": "We'll send a 6-digit code to this email",
     "backToLogin": "Back to login",
     "needHelp": "Having trouble?",
@@ -1004,6 +1009,116 @@
       "welcomeMessage": "Hi! I see you need help with \"{topic}\". How can I assist you today?",
       "autoResponse": "Thank you for your message. Our support team will respond shortly. In the meantime, you can check our help center for instant answers.",
       "placeholder": "Type your message..."
+    }
+  },
+  "helpPage": {
+    "badge": "Support Center",
+    "title": "How can we help?",
+    "subtitle": "Find answers to common questions or reach out to our support team",
+    "categories": {
+      "all": "All",
+      "gettingStarted": "Getting Started",
+      "jobs": "Jobs",
+      "account": "Account",
+      "support": "Support"
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Quick answers to common questions",
+      "createAccount": {
+        "question": "How do I create an account?",
+        "answer": "Click on \"Sign Up\" in the top right corner. You can register as a Client to post jobs, or as a Professional to offer your services. Fill in your details and verify your email to get started."
+      },
+      "postJob": {
+        "question": "How do I post a job?",
+        "answer": "Once logged in as a client, click \"Post a Job\" from the menu. Describe your project, set your budget, location, and any specific requirements. Professionals will then be able to submit proposals."
+      },
+      "becomePro": {
+        "question": "How do I become a professional on Homico?",
+        "answer": "Register as a Professional, complete your profile with your skills and experience, add portfolio items, and set up your service areas. Once approved, you can start bidding on jobs."
+      },
+      "submitProposal": {
+        "question": "How do I submit a proposal?",
+        "answer": "Browse available jobs, find one that matches your skills, and click \"Submit Proposal\". Include your price, estimated timeline, and a personalized message explaining why you're the best fit."
+      },
+      "editProfile": {
+        "question": "How do I edit my profile?",
+        "answer": "Go to Settings from your profile menu. There you can update your personal information, change your password, manage notification preferences, and more."
+      },
+      "contactSupport": {
+        "question": "How do I contact support?",
+        "answer": "You can reach our support team via email at support@homico.ge or by submitting a ticket through this help page. We typically respond within 24 hours."
+      }
+    },
+    "myTickets": {
+      "title": "My Support Tickets",
+      "newTicket": "New Ticket",
+      "createTicket": "Create Support Ticket",
+      "subject": "Subject",
+      "subjectPlaceholder": "Brief description of your issue",
+      "category": "Category",
+      "priority": "Priority",
+      "message": "Message",
+      "messagePlaceholder": "Describe your issue in detail...",
+      "submit": "Submit Ticket",
+      "noTickets": "No support tickets yet",
+      "noTicketsDesc": "When you create a ticket, it will appear here"
+    },
+    "ticketCategories": {
+      "account": "Account & Profile",
+      "job": "Jobs & Projects",
+      "payment": "Payments & Billing",
+      "technical": "Technical Issues",
+      "other": "Other"
+    },
+    "priorities": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "status": {
+      "open": "Open",
+      "in_progress": "In Progress",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
+    "contact": {
+      "title": "Still need help?",
+      "subtitle": "Send us a message and we'll get back to you",
+      "type": "What can we help you with?",
+      "types": {
+        "general": "General",
+        "account": "Account",
+        "feedback": "Feedback"
+      },
+      "email": "Your Email",
+      "emailPlaceholder": "email@gmail.com",
+      "message": "Message",
+      "messagePlaceholder": "Tell us how we can help...",
+      "send": "Send Message",
+      "success": "Your message has been sent! We'll get back to you soon.",
+      "error": "Failed to send message. Please try again."
+    },
+    "signInPrompt": "Sign in to create support tickets and track your conversations",
+    "contactCards": {
+      "email": {
+        "title": "Email Us",
+        "description": "Get in touch via email"
+      },
+      "response": {
+        "title": "Response Time",
+        "description": "We aim to respond quickly",
+        "time": "Within 24 hours"
+      }
+    },
+    "ticketDetail": {
+      "backToHelp": "Back to Help",
+      "supportTeam": "Support Team",
+      "placeholder": "Type your message...",
+      "enterHint": "Press Enter to send, Shift+Enter for new line",
+      "ticketClosed": "This ticket is closed. Create a new ticket if you need further assistance.",
+      "notFound": "Ticket not found",
+      "loadError": "Failed to load ticket"
     }
   }
 }

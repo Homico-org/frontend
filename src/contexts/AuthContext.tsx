@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface User {
@@ -42,13 +42,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
+  // Ref to prevent duplicate auth initialization (React Strict Mode)
+  const authInitializedRef = useRef(false);
+
   // Validate token with backend
-  const validateToken = useCallback(async (token: string): Promise<User | null> => {
+  const validateToken = useCallback(async (tokenToValidate: string): Promise<User | null> => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
       const response = await fetch(`${API_URL}/users/me`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${tokenToValidate}`,
           'Content-Type': 'application/json'
         }
       });
@@ -77,6 +80,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // Prevent double initialization in React Strict Mode
+    if (authInitializedRef.current) return;
+    authInitializedRef.current = true;
+
     // Check if user is logged in on mount and validate token
     const initAuth = async () => {
       const accessToken = localStorage.getItem('access_token');

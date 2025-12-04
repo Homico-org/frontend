@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import api from '@/lib/api';
 
@@ -50,6 +50,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Ref to prevent duplicate initial fetch (React Strict Mode)
+  const initialFetchDoneRef = useRef(false);
 
   const refreshUnreadCount = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -133,8 +136,12 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   // Fetch unread count on auth change
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
+      // Prevent duplicate initial fetch in React Strict Mode
+      if (initialFetchDoneRef.current) return;
+      initialFetchDoneRef.current = true;
       refreshUnreadCount();
     } else if (!isAuthenticated) {
+      initialFetchDoneRef.current = false;
       setNotifications([]);
       setUnreadCount(0);
     }

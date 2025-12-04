@@ -11,7 +11,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useViewMode } from '@/contexts/ViewModeContext';
 import { storage } from '@/services/storage';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface MediaItem {
@@ -100,8 +100,9 @@ interface Category {
 
 function BrowseContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { t, locale } = useLanguage();
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading, isAuthenticated } = useAuth();
   const { viewMode: userViewMode, isClientMode } = useViewMode();
 
   // A pro user in client mode should see professionals (like a client would)
@@ -169,11 +170,19 @@ function BrowseContent() {
   const userCategoriesJson = JSON.stringify(user?.selectedCategories || []);
   const userCategories = useMemo(() => JSON.parse(userCategoriesJson) as string[], [userCategoriesJson]);
 
+  // Refs to prevent duplicate fetches (React Strict Mode causes double mount)
+  const categoriesFetchedRef = useRef(false);
+  const dbCategoriesFetchedRef = useRef(false);
+  const proposalsFetchedRef = useRef(false);
+
   useEffect(() => {
     setSortBy(isPro ? 'newest' : 'recommended');
   }, [isPro]);
 
   useEffect(() => {
+    if (categoriesFetchedRef.current) return;
+    categoriesFetchedRef.current = true;
+
     const fetchCategories = async () => {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pro-profiles/categories`);
@@ -187,7 +196,8 @@ function BrowseContent() {
   }, []);
 
   useEffect(() => {
-    if (isPro) return;
+    if (isPro || dbCategoriesFetchedRef.current) return;
+    dbCategoriesFetchedRef.current = true;
 
     const fetchDbCategories = async () => {
       try {
@@ -202,7 +212,8 @@ function BrowseContent() {
   }, [isPro]);
 
   useEffect(() => {
-    if (!isPro || isAuthLoading) return;
+    if (!isPro || isAuthLoading || proposalsFetchedRef.current) return;
+    proposalsFetchedRef.current = true;
 
     const fetchProposals = async () => {
       setIsLoadingProposals(true);
@@ -553,10 +564,28 @@ function BrowseContent() {
 
   const displayCount = isPro ? totalJobsCount : totalCount;
 
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isAuthLoading && !isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [isAuthLoading, isAuthenticated, router]);
+
   if (isAuthLoading) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
         <Header />
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
+  // Show nothing while redirecting to login
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
         <div className="flex items-center justify-center py-20">
           <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
         </div>
