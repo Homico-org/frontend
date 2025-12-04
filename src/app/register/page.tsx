@@ -93,7 +93,7 @@ export default function RegisterPage() {
 
   // Verification state
   const [emailOtp, setEmailOtp] = useState(['', '', '', '', '', '']);
-  const [phoneOtp, setPhoneOtp] = useState(['', '', '', '', '', '']);
+  const [phoneOtp, setPhoneOtp] = useState(['', '', '', '']);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isPhoneVerified, setIsPhoneVerified] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
@@ -309,8 +309,11 @@ export default function RegisterPage() {
         : `${countries[phoneCountry].phonePrefix}${formData.phone}`;
       const code = type === 'email' ? emailOtp.join('') : phoneOtp.join('');
 
-      if (code.length !== 6) {
-        throw new Error(locale === 'ka' ? 'შეიყვანეთ 6-ნიშნა კოდი' : 'Please enter 6-digit code');
+      const expectedLength = type === 'email' ? 6 : 4;
+      if (code.length !== expectedLength) {
+        throw new Error(locale === 'ka'
+          ? `შეიყვანეთ ${expectedLength}-ნიშნა კოდი`
+          : `Please enter ${expectedLength}-digit code`);
       }
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/verification/verify-otp`, {
@@ -361,7 +364,8 @@ export default function RegisterPage() {
     }
 
     // Auto-focus next input
-    if (value && index < 5) {
+    const maxIndex = type === 'email' ? 5 : 3;
+    if (value && index < maxIndex) {
       otpInputRefs.current[index + 1]?.focus();
     }
   };
@@ -369,9 +373,10 @@ export default function RegisterPage() {
   // Handle OTP paste
   const handleOtpPaste = (e: React.ClipboardEvent, type: 'email' | 'phone') => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    const maxLength = type === 'email' ? 6 : 4;
+    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, maxLength);
     const otp = pastedData.split('');
-    while (otp.length < 6) otp.push('');
+    while (otp.length < maxLength) otp.push('');
 
     if (type === 'email') {
       setEmailOtp(otp);
@@ -1188,7 +1193,7 @@ export default function RegisterPage() {
                   onClick={() => {
                     setStep(2.5);
                     setOtpSent(false);
-                    setPhoneOtp(['', '', '', '', '', '']);
+                    setPhoneOtp(['', '', '', '']);
                     setIsEmailVerified(false);
                   }}
                   className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-50 transition-all duration-200 ease-out mb-2"
@@ -1235,7 +1240,7 @@ export default function RegisterPage() {
                   <>
                     <div>
                       <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-3 text-center">
-                        {locale === 'ka' ? 'შეიყვანეთ 6-ნიშნა კოდი' : 'Enter 6-digit code'}
+                        {locale === 'ka' ? 'შეიყვანეთ 4-ნიშნა კოდი' : 'Enter 4-digit code'}
                       </label>
                       <div className="flex justify-center gap-2">
                         {phoneOtp.map((digit, index) => (
@@ -1276,7 +1281,7 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() => verifyOtp('phone')}
-                      disabled={isLoading || phoneOtp.join('').length !== 6}
+                      disabled={isLoading || phoneOtp.join('').length !== 4}
                       className="w-full btn btn-primary py-3 text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isLoading ? (
