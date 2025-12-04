@@ -5,6 +5,7 @@ import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { ViewModeProvider } from '@/contexts/ViewModeContext';
+import { NotificationProvider } from '@/contexts/NotificationContext';
 import '@/styles/globals.css';
 import type { Metadata } from 'next';
 
@@ -33,10 +34,12 @@ export default function RootLayout({
           <LanguageProvider>
             <AuthProvider>
               <ViewModeProvider>
-                <ToastProvider>
-                  <ClientLayout>{children}</ClientLayout>
-                  <ToastContainer />
-                </ToastProvider>
+                <NotificationProvider>
+                  <ToastProvider>
+                    <ClientLayout>{children}</ClientLayout>
+                    <ToastContainer />
+                  </ToastProvider>
+                </NotificationProvider>
               </ViewModeProvider>
             </AuthProvider>
           </LanguageProvider>

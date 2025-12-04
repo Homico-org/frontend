@@ -1,92 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { CATEGORIES } from '@/constants/categories';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Link from 'next/link';
-
-interface Subcategory {
-  key: string;
-  name: string;
-  nameKa: string;
-}
-
-interface Category {
-  key: string;
-  name: string;
-  nameKa: string;
-  description: string;
-  descriptionKa: string;
-  icon: string;
-  subcategories: Subcategory[];
-}
-
-// Categories with subcategories
-const CATEGORIES: Category[] = [
-  {
-    key: 'interior-design',
-    name: 'Interior Design',
-    nameKa: 'დიზაინერი',
-    description: 'Interior designers and space planners',
-    descriptionKa: 'ინტერიერის დიზაინერები და სივრცის დამგეგმავები',
-    icon: 'designer',
-    subcategories: [
-      { key: 'residential', name: 'Residential', nameKa: 'საცხოვრებელი' },
-      { key: 'commercial', name: 'Commercial', nameKa: 'კომერციული' },
-      { key: 'kitchen', name: 'Kitchen Design', nameKa: 'სამზარეულო' },
-      { key: 'bathroom', name: 'Bathroom Design', nameKa: 'სააბაზანო' },
-    ],
-  },
-  {
-    key: 'architecture',
-    name: 'Architecture',
-    nameKa: 'არქიტექტორი',
-    description: 'Architects and structural designers',
-    descriptionKa: 'არქიტექტორები და კონსტრუქტორები',
-    icon: 'architect',
-    subcategories: [
-      { key: 'residential-arch', name: 'Residential', nameKa: 'საცხოვრებელი' },
-      { key: 'commercial-arch', name: 'Commercial', nameKa: 'კომერციული' },
-      { key: 'landscape', name: 'Landscape', nameKa: 'ლანდშაფტი' },
-      { key: 'renovation-arch', name: 'Renovation', nameKa: 'რენოვაცია' },
-    ],
-  },
-  {
-    key: 'craftsmen',
-    name: 'Craftsmen',
-    nameKa: 'ხელოსანი',
-    description: 'Electricians, plumbers, carpenters and more',
-    descriptionKa: 'ელექტრიკოსები, სანტექნიკები, ხურო და სხვა',
-    icon: 'craftsmen',
-    subcategories: [
-      { key: 'electrical', name: 'Electrician', nameKa: 'ელექტრიკოსი' },
-      { key: 'plumbing', name: 'Plumber', nameKa: 'სანტექნიკი' },
-      { key: 'carpentry', name: 'Carpenter', nameKa: 'ხურო' },
-      { key: 'painting', name: 'Painter', nameKa: 'მხატვარი' },
-      { key: 'tiling', name: 'Tiler', nameKa: 'კაფელის მგები' },
-      { key: 'hvac', name: 'HVAC', nameKa: 'კონდიცირება' },
-      { key: 'welding', name: 'Welder', nameKa: 'შემდუღებელი' },
-      { key: 'plastering', name: 'Plasterer', nameKa: 'მალიარი' },
-    ],
-  },
-  {
-    key: 'home-care',
-    name: 'Home Care',
-    nameKa: 'მოვლა',
-    description: 'Cleaning, moving and maintenance services',
-    descriptionKa: 'დასუფთავება, გადაზიდვა და მოვლის სერვისები',
-    icon: 'homecare',
-    subcategories: [
-      { key: 'cleaning', name: 'Cleaning', nameKa: 'დასუფთავება' },
-      { key: 'moving', name: 'Moving', nameKa: 'გადაზიდვა' },
-      { key: 'gardening', name: 'Gardening', nameKa: 'ბაღის მოვლა' },
-      { key: 'security', name: 'Security Systems', nameKa: 'დაცვის სისტემები' },
-      { key: 'pest-control', name: 'Pest Control', nameKa: 'დეზინფექცია' },
-      { key: 'pool', name: 'Pool Service', nameKa: 'აუზის მოვლა' },
-    ],
-  },
-];
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 // Custom SVG icons for each category
 const CategoryIcon = ({ type, className = '' }: { type: string; className?: string }) => {
@@ -147,7 +66,7 @@ const CategoryIcon = ({ type, className = '' }: { type: string; className?: stri
 
 export default function BecomeProPage() {
   const router = useRouter();
-  const { user, isLoading: authLoading, isAuthenticated, updateUser } = useAuth();
+  const { user, isLoading: authLoading, isAuthenticated, login } = useAuth();
   const { locale } = useLanguage();
 
   // Steps: intro -> category -> subcategory -> details -> complete
@@ -275,13 +194,23 @@ export default function BecomeProPage() {
         throw new Error(data.message || 'Failed to upgrade account');
       }
 
-      const updatedUserData = await response.json();
+      const data = await response.json();
 
-      // Update auth context
-      updateUser({
-        role: 'pro',
-        selectedCategories: updatedUserData.selectedCategories || allCategories,
-      });
+      // Save new token and update auth context
+      if (data.access_token && data.user) {
+        login(data.access_token, {
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          role: data.user.role,
+          avatar: data.user.avatar,
+          city: data.user.city,
+          phone: data.user.phone,
+          selectedCategories: data.user.selectedCategories,
+          accountType: data.user.accountType,
+          companyName: data.user.companyName,
+        });
+      }
 
       setStep('complete');
     } catch (err: any) {
@@ -319,7 +248,7 @@ export default function BecomeProPage() {
 
   const stats = [
     { value: '2,400+', label: locale === 'ka' ? 'აქტიური პროფესიონალი' : 'Active professionals' },
-    { value: '98%', label: locale === 'ka' ? 'კმაყოფილი კლიენტი' : 'Client satisfaction' },
+    { value: '98%', label: locale === 'ka' ? 'კმაყოფილი მაძიებელი' : 'Client satisfaction' },
     { value: '24h', label: locale === 'ka' ? 'საშუალო პასუხის დრო' : 'Avg response time' },
   ];
 

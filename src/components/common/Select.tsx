@@ -72,10 +72,27 @@ export default function Select({
       const dropdownHeight = Math.min(filteredOptions.length * 48 + (searchable ? 60 : 16), 320);
       const showAbove = spaceBelow < dropdownHeight && spaceAbove > spaceBelow;
 
+      // Calculate width - on mobile, use smaller min-width
+      const isMobile = window.innerWidth < 640;
+      const minWidth = isMobile ? 180 : 220;
+      const dropdownWidth = Math.max(rect.width, minWidth);
+
+      // Calculate left position, ensuring dropdown stays within viewport
+      let left = rect.left;
+      const rightOverflow = left + dropdownWidth - window.innerWidth;
+      if (rightOverflow > 0) {
+        // Dropdown would overflow right edge, shift it left
+        left = Math.max(8, left - rightOverflow - 8); // 8px padding from edge
+      }
+      // Also ensure it doesn't overflow left edge
+      if (left < 8) {
+        left = 8;
+      }
+
       setDropdownPosition({
         top: showAbove ? rect.top - dropdownHeight - 8 : rect.bottom + 8,
-        left: rect.left,
-        width: Math.max(rect.width, 220),
+        left,
+        width: Math.min(dropdownWidth, window.innerWidth - 16), // Max width with 8px padding on each side
         showAbove,
       });
     }

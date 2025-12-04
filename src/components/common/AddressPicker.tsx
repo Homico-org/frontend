@@ -40,19 +40,19 @@ const MAP_STYLES = [
   { featureType: 'transit', stylers: [{ visibility: 'off' }] },
 ];
 
-// Elegant map styles - dark
+// Elegant map styles - softer dark mode
 const MAP_STYLES_DARK = [
-  { elementType: 'geometry', stylers: [{ color: '#18181b' }] },
+  { elementType: 'geometry', stylers: [{ color: '#28282c' }] },
   { elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#71717a' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#18181b' }] },
-  { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#27272a' }] },
-  { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#1f1f23' }] },
-  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#1a2e1a' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#27272a' }] },
-  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#1f1f23' }] },
-  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#2d2d33' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0c1929' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#8e8e98' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#28282c' }] },
+  { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#3c3c40' }] },
+  { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#323236' }] },
+  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#2a3d2a' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#3c3c40' }] },
+  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#323236' }] },
+  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#46464a' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#1a2938' }] },
   { featureType: 'transit', stylers: [{ visibility: 'off' }] },
 ];
 
@@ -395,7 +395,7 @@ export default function AddressPicker({
           style={{
             height: '320px',
             border: '1px solid var(--color-border)',
-            backgroundColor: isDarkMode ? '#18181b' : '#f8f9fa',
+            backgroundColor: isDarkMode ? '#28282c' : '#f8f9fa',
           }}
         >
           {mapLoaded ? (

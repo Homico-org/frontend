@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Avatar from './Avatar';
+import { storage } from '@/services/storage';
 
 interface MediaItem {
   type: 'image' | 'video';
@@ -124,36 +125,37 @@ export default function JobCard({ job, variant = 'default', onSave, isSaved = fa
       ...(job.media || []),
       ...(job.images || []).filter(img => !job.media?.some(m => m.url === img)).map(url => ({ type: 'image' as const, url }))
     ];
-    const thumbnailUrl = allMedia[0]?.thumbnail || (allMedia[0]?.type === 'image' ? allMedia[0]?.url : null);
+    const rawThumbnailUrl = allMedia[0]?.thumbnail || (allMedia[0]?.type === 'image' ? allMedia[0]?.url : null);
+    const thumbnailUrl = rawThumbnailUrl ? storage.getFileUrl(rawThumbnailUrl) : null;
 
     return (
       <Link
         href={`/jobs/${job._id}`}
-        className="group block rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02]"
+        className="group block rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] touch-manipulation"
         style={{
-          backgroundColor: '#1a1a1e',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)'
+          backgroundColor: 'var(--color-bg-secondary)',
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15)'
         }}
       >
         {/* Image */}
-        <div className="aspect-[4/3] relative overflow-hidden bg-zinc-800">
+        <div className="aspect-[4/3] relative overflow-hidden" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
           {thumbnailUrl ? (
             <img src={thumbnailUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-700 to-zinc-800">
-              <svg className="w-12 h-12 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-full h-full flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, var(--color-bg-elevated), var(--color-bg-tertiary))' }}>
+              <svg className="w-8 h-8 sm:w-12 sm:h-12" style={{ color: 'var(--color-text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
           )}
           {/* Price badge */}
-          <div className="absolute top-3 right-3 px-3 py-1.5 rounded-lg text-sm font-bold bg-white/95 text-emerald-600 backdrop-blur-sm">
+          <div className="absolute top-2 sm:top-3 right-2 sm:right-3 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-md sm:rounded-lg text-xs sm:text-sm font-bold bg-white/95 text-emerald-600 backdrop-blur-sm">
             {formatBudget()}
           </div>
           {/* New badge */}
           {isNew && (
-            <div className="absolute top-3 left-3 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-400 text-amber-900 flex items-center gap-1">
-              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+            <div className="absolute top-2 sm:top-3 left-2 sm:left-3 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-semibold bg-amber-400 text-amber-900 flex items-center gap-0.5 sm:gap-1">
+              <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" />
               </svg>
               ახალი
@@ -162,17 +164,17 @@ export default function JobCard({ job, variant = 'default', onSave, isSaved = fa
         </div>
 
         {/* Content */}
-        <div className="p-4">
-          <h3 className="font-semibold text-white text-base line-clamp-2 mb-2 group-hover:text-emerald-400 transition-colors">
+        <div className="p-2.5 sm:p-4">
+          <h3 className="font-semibold text-white text-sm sm:text-base line-clamp-2 mb-1.5 sm:mb-2 group-hover:text-emerald-400 transition-colors">
             {job.title}
           </h3>
-          <div className="flex items-center gap-2 text-xs text-zinc-400">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-zinc-400">
+            <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
             </svg>
-            <span>{job.location}</span>
-            <span className="text-zinc-600">·</span>
-            <span>{getTimeAgo(job.createdAt)}</span>
+            <span className="truncate">{job.location}</span>
+            <span className="text-zinc-600 flex-shrink-0">·</span>
+            <span className="flex-shrink-0">{getTimeAgo(job.createdAt)}</span>
           </div>
         </div>
       </Link>
@@ -231,46 +233,46 @@ export default function JobCard({ job, variant = 'default', onSave, isSaved = fa
   // Default variant - Full featured card matching reference design
   return (
     <div
-      className="relative rounded-3xl overflow-hidden transition-all duration-300 hover:scale-[1.01]"
+      className="relative rounded-2xl sm:rounded-3xl overflow-hidden transition-all duration-300 hover:scale-[1.01]"
       style={{
-        backgroundColor: '#18181b',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
+        backgroundColor: 'var(--color-bg-secondary)',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)'
       }}
     >
       {/* Main content */}
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         {/* Header with avatar and title */}
-        <div className="flex items-start gap-4 mb-5">
+        <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-5">
           {/* Client avatar */}
           <div className="flex-shrink-0">
             <Avatar
               src={job.clientId?.avatar}
               name={job.clientId?.name || 'Client'}
-              size="xl"
+              size="lg"
               rounded="full"
-              className="ring-2 ring-zinc-700"
+              className="ring-2 ring-zinc-700 w-12 h-12 sm:w-14 sm:h-14"
             />
           </div>
 
           {/* Title and badges */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start justify-between gap-2 sm:gap-3">
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-xl text-white mb-2 line-clamp-2 group-hover:text-emerald-400 transition-colors">
+                <h3 className="font-semibold text-base sm:text-lg lg:text-xl text-white mb-1 sm:mb-2 line-clamp-2 group-hover:text-emerald-400 transition-colors">
                   {job.title}
                 </h3>
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                   {/* Location badge */}
-                  <div className="flex items-center gap-1.5 text-zinc-400 text-sm">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex items-center gap-1 text-zinc-400 text-xs sm:text-sm">
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     </svg>
-                    {job.location}
+                    <span className="truncate max-w-[100px] sm:max-w-none">{job.location}</span>
                   </div>
                   {/* New job badge */}
                   {isNew && (
-                    <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-400/90 text-amber-900 text-xs font-semibold">
-                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-amber-400/90 text-amber-900 text-[10px] sm:text-xs font-semibold">
+                      <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" />
                       </svg>
                       ახალი
@@ -280,7 +282,7 @@ export default function JobCard({ job, variant = 'default', onSave, isSaved = fa
               </div>
               {/* Price */}
               <div className="flex-shrink-0 text-right">
-                <div className="text-xl font-bold text-emerald-400">
+                <div className="text-base sm:text-lg lg:text-xl font-bold text-emerald-400">
                   {formatBudget()}
                 </div>
               </div>
@@ -289,20 +291,22 @@ export default function JobCard({ job, variant = 'default', onSave, isSaved = fa
         </div>
 
         {/* Description */}
-        <p className="text-zinc-400 text-sm leading-relaxed mb-6 line-clamp-3">
+        <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-6 line-clamp-2 sm:line-clamp-3">
           {job.description}
         </p>
 
         {/* Action buttons */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <Link
             href={`/jobs/${job._id}`}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-white text-xs sm:text-sm font-medium transition-colors touch-manipulation"
+            style={{ backgroundColor: 'var(--color-bg-elevated)' }}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
             </svg>
-            დეტალები
+            <span className="hidden sm:inline">დეტალები</span>
+            <span className="sm:hidden">ნახვა</span>
           </Link>
           <button
             onClick={(e) => {
@@ -310,36 +314,38 @@ export default function JobCard({ job, variant = 'default', onSave, isSaved = fa
               e.stopPropagation();
               onSave?.(job._id);
             }}
-            className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-colors touch-manipulation ${
               isSaved
                 ? 'bg-emerald-500/20 text-emerald-400'
-                : 'bg-zinc-800 hover:bg-zinc-700 text-white'
+                : 'text-white'
             }`}
+            style={!isSaved ? { backgroundColor: 'var(--color-bg-elevated)' } : {}}
           >
-            <svg className="w-4 h-4" fill={isSaved ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill={isSaved ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
             </svg>
-            შენახვა
+            <span className="hidden sm:inline">შენახვა</span>
           </button>
           <Link
             href={`/users/${job.clientId?._id}`}
-            className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium transition-colors"
+            className="hidden sm:flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-white text-sm font-medium transition-colors touch-manipulation"
+            style={{ backgroundColor: 'var(--color-bg-elevated)' }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            კლიენტი
+            მაძიებელი
           </Link>
         </div>
       </div>
 
       {/* Countdown footer */}
       {job.deadline && timeLeft && (
-        <div className="px-6 py-4 bg-[#84cc16] flex items-center justify-center gap-2">
-          <svg className="w-5 h-5 text-zinc-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 bg-[#84cc16] flex items-center justify-center gap-1.5 sm:gap-2">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <span className="text-zinc-900 font-medium text-sm">
+          <span className="text-zinc-900 font-medium text-xs sm:text-sm">
             დარჩა: {timeLeft}
           </span>
         </div>

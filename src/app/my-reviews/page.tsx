@@ -160,7 +160,7 @@ export default function MyReviewsPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {/* Back Button */}
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push('/browse')}
             className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors mb-4"
           >
             <ArrowLeft className="h-4 w-4" />

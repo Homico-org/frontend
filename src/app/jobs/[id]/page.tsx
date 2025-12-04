@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import Link from 'next/link';
 import Header from '@/components/common/Header';
+import { useAuth } from '@/contexts/AuthContext';
+import { storage } from '@/services/storage';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
 interface MediaItem {
   type: 'image' | 'video';
@@ -87,6 +88,8 @@ interface Job {
 const categoryMap: Record<string, string> = {
   'architecture': 'არქიტექტურა',
   'interior-design': 'ინტერიერის დიზაინი',
+  'craftsmen': 'ხელოსანი',
+  'home-care': 'სერვისები',
   'renovation': 'რემონტი',
   'construction': 'მშენებლობა',
   'electrical': 'ელექტრობა',
@@ -116,6 +119,76 @@ const statusMap: Record<string, { label: string; color: string }> = {
   'in_progress': { label: 'მიმდინარე', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
   'completed': { label: 'დასრულებული', color: 'bg-neutral-500/10 text-neutral-500' },
   'cancelled': { label: 'გაუქმებული', color: 'bg-red-500/10 text-red-500' },
+};
+
+// Work types translations
+const workTypeMap: Record<string, string> = {
+  'Demolition': 'დემონტაჟი',
+  'Wall Construction': 'კედლების აშენება',
+  'Electrical': 'ელექტროობა',
+  'Plumbing': 'სანტექნიკა',
+  'Flooring': 'იატაკი',
+  'Painting': 'შეღებვა',
+  'Tiling': 'კაფელი',
+  'Ceiling': 'ჭერი',
+  'Windows & Doors': 'ფანჯრები და კარები',
+  'HVAC': 'კონდიცირება/გათბობა',
+};
+
+// Skills/subcategory translations
+const skillMap: Record<string, string> = {
+  // Craftsmen subcategories
+  'electrical': 'ელექტრიკოსი',
+  'plumbing': 'სანტექნიკოსი',
+  'painting': 'მხატვარი',
+  'tiling': 'მოკაფელე',
+  'flooring': 'იატაკის სპეციალისტი',
+  'plastering': 'მლესავი',
+  'carpentry': 'დურგალი',
+  'welding': 'შემდუღებელი',
+  'hvac': 'გათბობა/გაგრილება',
+  'roofing': 'გადამხურავი',
+  // Home care subcategories
+  'cleaning': 'დალაგება',
+  'moving': 'გადაზიდვა',
+  'gardening': 'მებაღეობა',
+  'appliance-repair': 'ტექნიკის შეკეთება',
+  'pest-control': 'დეზინსექცია',
+  'window-cleaning': 'ფანჯრების წმენდა',
+  // Interior design subcategories
+  'interior': 'ინტერიერი',
+  'exterior': 'ექსტერიერი',
+  'landscape-design': 'ლანდშაფტის დიზაინი',
+  '3d-visualization': '3D ვიზუალიზაცია',
+  'furniture-design': 'ავეჯის დიზაინი',
+  // Architecture subcategories
+  'residential-arch': 'საცხოვრებელი',
+  'commercial-arch': 'კომერციული',
+  'industrial-arch': 'სამრეწველო',
+  'reconstruction': 'რეკონსტრუქცია',
+  'project-documentation': 'საპროექტო დოკუმენტაცია',
+  // Design styles
+  'Modern': 'მოდერნი',
+  'Minimalist': 'მინიმალისტური',
+  'Classic': 'კლასიკური',
+  'Scandinavian': 'სკანდინავიური',
+  'Industrial': 'ინდუსტრიული',
+  'Bohemian': 'ბოჰემური',
+  'Mid-Century Modern': 'შუა საუკუნის მოდერნი',
+  'Contemporary': 'თანამედროვე',
+  'Traditional': 'ტრადიციული',
+  'Rustic': 'რუსტიკული',
+  // Rooms
+  'Living Room': 'მისაღები',
+  'Bedroom': 'საძინებელი',
+  'Kitchen': 'სამზარეულო',
+  'Bathroom': 'სააბაზანო',
+  'Dining Room': 'სასადილო',
+  'Home Office': 'სამუშაო ოთახი',
+  'Kids Room': 'საბავშვო',
+  'Hallway': 'დერეფანი',
+  'Balcony': 'აივანი',
+  'Entire Space': 'მთლიანი სივრცე',
 };
 
 export default function JobDetailPage() {
@@ -279,13 +352,13 @@ export default function JobDetailPage() {
     return (
       <div className="min-h-screen" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
         <Header />
-        <div className="max-w-4xl mx-auto px-6 py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
           {/* Skeleton loader */}
           <div className="animate-pulse">
-            <div className="h-4 w-24 rounded-full mb-8" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
-            <div className="h-8 w-3/4 rounded-lg mb-4" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
-            <div className="h-5 w-1/2 rounded-lg mb-12" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
-            <div className="aspect-[16/9] rounded-2xl mb-12" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
+            <div className="h-4 w-24 rounded-full mb-6 sm:mb-8" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
+            <div className="h-7 sm:h-8 w-3/4 rounded-lg mb-3 sm:mb-4" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
+            <div className="h-5 w-1/2 rounded-lg mb-8 sm:mb-12" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
+            <div className="aspect-[4/3] sm:aspect-[16/9] rounded-xl sm:rounded-2xl mb-8 sm:mb-12" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
             <div className="space-y-3">
               <div className="h-4 w-full rounded" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
               <div className="h-4 w-5/6 rounded" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
@@ -328,12 +401,12 @@ export default function JobDetailPage() {
       <main ref={contentRef} className={`transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
         {/* Hero Section */}
         <div className="relative" style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
-          <div className="max-w-4xl mx-auto px-6 py-8">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
             {/* Breadcrumb */}
-            <nav className="flex items-center gap-2 text-sm mb-6">
+            <nav className="flex items-center gap-2 text-sm mb-4 sm:mb-6">
               <Link
                 href="/browse"
-                className="transition-colors duration-200 flex items-center gap-1.5 group"
+                className="transition-colors duration-200 flex items-center gap-1.5 group touch-manipulation"
                 style={{ color: 'var(--color-text-tertiary)' }}
               >
                 <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -344,9 +417,9 @@ export default function JobDetailPage() {
             </nav>
 
             {/* Title & Meta */}
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+            <div className="flex flex-col gap-4 sm:gap-6">
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3 mb-3">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
                   <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusInfo.color}`}>
                     {statusInfo.label}
                   </span>
@@ -354,13 +427,13 @@ export default function JobDetailPage() {
                     {getTimeAgo(job.createdAt)}
                   </span>
                 </div>
-                <h1 className="text-2xl md:text-3xl font-semibold tracking-tight mb-4" style={{ color: 'var(--color-text-primary)' }}>
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight mb-3 sm:mb-4" style={{ color: 'var(--color-text-primary)' }}>
                   {job.title}
                 </h1>
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-2 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                   {job.location && (
                     <span className="flex items-center gap-1.5">
-                      <svg className="w-4 h-4" style={{ color: 'var(--color-text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--color-text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
@@ -368,14 +441,14 @@ export default function JobDetailPage() {
                     </span>
                   )}
                   <span className="flex items-center gap-1.5">
-                    <svg className="w-4 h-4" style={{ color: 'var(--color-text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--color-text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                     {job.viewCount} ნახვა
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <svg className="w-4 h-4" style={{ color: 'var(--color-text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--color-text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
                     {job.proposalCount} წინადადება
@@ -385,9 +458,9 @@ export default function JobDetailPage() {
 
               {/* Budget Card */}
               {budgetDisplay && (
-                <div className="flex-shrink-0 p-5 rounded-2xl" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
+                <div className="flex-shrink-0 p-4 sm:p-5 rounded-xl sm:rounded-2xl" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
                   <p className="text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>ბიუჯეტი</p>
-                  <p className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>{budgetDisplay}</p>
+                  <p className="text-lg sm:text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>{budgetDisplay}</p>
                   {job.budgetType === 'per_sqm' && job.areaSize && job.pricePerUnit && (
                     <p className="text-sm mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
                       ≈ {(job.areaSize * job.pricePerUnit).toLocaleString()} ₾ სულ
@@ -400,23 +473,23 @@ export default function JobDetailPage() {
         </div>
 
         {/* Content */}
-        <div className="max-w-4xl mx-auto px-6 py-10">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
           {/* My Proposal Banner */}
           {myProposal && user?.role === 'pro' && (
-            <div className="mb-10 rounded-2xl overflow-hidden animate-fade-in" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
-              <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+            <div className="mb-6 sm:mb-10 rounded-xl sm:rounded-2xl overflow-hidden animate-fade-in" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
+              <div className="px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3" style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-500">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-xl flex items-center justify-center bg-emerald-500 flex-shrink-0">
+                    <svg className="w-4 sm:w-5 h-4 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
                   <div>
-                    <p className="font-medium" style={{ color: 'var(--color-text-primary)' }}>თქვენი წინადადება</p>
+                    <p className="font-medium text-sm sm:text-base" style={{ color: 'var(--color-text-primary)' }}>თქვენი წინადადება</p>
                     <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>გაგზავნილია {getTimeAgo(myProposal.createdAt)}</p>
                   </div>
                 </div>
-                <span className={`text-xs px-3 py-1.5 rounded-full font-medium ${
+                <span className={`text-xs px-3 py-1.5 rounded-full font-medium self-start sm:self-center ${
                   myProposal.status === 'pending' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
                   myProposal.status === 'accepted' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
                   'bg-red-500/10 text-red-500'
@@ -424,20 +497,20 @@ export default function JobDetailPage() {
                   {myProposal.status === 'pending' ? 'განხილვაში' : myProposal.status === 'accepted' ? 'მიღებული' : myProposal.status === 'rejected' ? 'უარყოფილი' : 'გაუქმებული'}
                 </span>
               </div>
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>{myProposal.coverLetter}</p>
                 {(myProposal.proposedPrice || myProposal.estimatedDuration) && (
-                  <div className="mt-5 pt-5 flex gap-8" style={{ borderTop: '1px solid var(--color-border-subtle)' }}>
+                  <div className="mt-4 sm:mt-5 pt-4 sm:pt-5 flex flex-wrap gap-6 sm:gap-8" style={{ borderTop: '1px solid var(--color-border-subtle)' }}>
                     {myProposal.proposedPrice && (
                       <div>
                         <p className="text-xs uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>თქვენი ფასი</p>
-                        <p className="text-lg font-semibold mt-1" style={{ color: 'var(--color-text-primary)' }}>{myProposal.proposedPrice.toLocaleString()} ₾</p>
+                        <p className="text-base sm:text-lg font-semibold mt-1" style={{ color: 'var(--color-text-primary)' }}>{myProposal.proposedPrice.toLocaleString()} ₾</p>
                       </div>
                     )}
                     {myProposal.estimatedDuration && (
                       <div>
                         <p className="text-xs uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>ვადა</p>
-                        <p className="text-lg font-semibold mt-1" style={{ color: 'var(--color-text-primary)' }}>
+                        <p className="text-base sm:text-lg font-semibold mt-1" style={{ color: 'var(--color-text-primary)' }}>
                           {myProposal.estimatedDuration} {myProposal.estimatedDurationUnit === 'days' ? 'დღე' : myProposal.estimatedDurationUnit === 'weeks' ? 'კვირა' : 'თვე'}
                         </p>
                       </div>
@@ -448,21 +521,21 @@ export default function JobDetailPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-10">
             {/* Main Content */}
-            <div className="lg:col-span-2 space-y-10">
+            <div className="lg:col-span-2 space-y-6 sm:space-y-10">
               {/* Media Gallery */}
               {allMedia.length > 0 && (
-                <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
-                  <div className="aspect-[16/10] relative group">
+                <div className="rounded-xl sm:rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
+                  <div className="aspect-[4/3] sm:aspect-[16/10] relative group">
                     {currentMedia?.type === 'video' ? (
                       <div className="w-full h-full relative" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
                         {isVideoPlaying ? (
-                          <video src={currentMedia.url} className="w-full h-full object-contain" controls autoPlay onEnded={() => setIsVideoPlaying(false)} />
+                          <video src={storage.getFileUrl(currentMedia.url)} className="w-full h-full object-contain" controls autoPlay onEnded={() => setIsVideoPlaying(false)} />
                         ) : (
                           <>
                             {currentMedia.thumbnail ? (
-                              <img src={currentMedia.thumbnail} alt="" className="w-full h-full object-cover" />
+                              <img src={storage.getFileUrl(currentMedia.thumbnail)} alt="" className="w-full h-full object-cover" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
                                 <svg className="w-16 h-16" style={{ color: 'var(--color-text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -482,7 +555,7 @@ export default function JobDetailPage() {
                       </div>
                     ) : (
                       <img
-                        src={currentMedia?.url}
+                        src={currentMedia ? storage.getFileUrl(currentMedia.url) : ''}
                         alt=""
                         className="w-full h-full object-cover cursor-zoom-in transition-transform duration-300"
                         onClick={() => currentMedia && setSelectedMedia(currentMedia)}
@@ -492,44 +565,44 @@ export default function JobDetailPage() {
                       <>
                         <button
                           onClick={prevMedia}
-                          className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-105"
+                          className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-9 sm:w-10 h-9 sm:h-10 rounded-full flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 active:scale-95 sm:hover:scale-105 touch-manipulation"
                           style={{ backgroundColor: 'var(--color-bg-elevated)', boxShadow: 'var(--shadow-md)' }}
                         >
-                          <svg className="w-5 h-5" style={{ color: 'var(--color-text-primary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 sm:w-5 h-4 sm:h-5" style={{ color: 'var(--color-text-primary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
                           </svg>
                         </button>
                         <button
                           onClick={nextMedia}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-105"
+                          className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-9 sm:w-10 h-9 sm:h-10 rounded-full flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 active:scale-95 sm:hover:scale-105 touch-manipulation"
                           style={{ backgroundColor: 'var(--color-bg-elevated)', boxShadow: 'var(--shadow-md)' }}
                         >
-                          <svg className="w-5 h-5" style={{ color: 'var(--color-text-primary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 sm:w-5 h-4 sm:h-5" style={{ color: 'var(--color-text-primary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
                           </svg>
                         </button>
-                        <div className="absolute bottom-4 right-4 px-3 py-1.5 rounded-full text-xs font-medium" style={{ backgroundColor: 'rgba(0,0,0,0.6)', color: 'white' }}>
+                        <div className="absolute bottom-2 sm:bottom-4 right-2 sm:right-4 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-medium" style={{ backgroundColor: 'rgba(0,0,0,0.6)', color: 'white' }}>
                           {currentMediaIndex + 1} / {allMedia.length}
                         </div>
                       </>
                     )}
                   </div>
                   {allMedia.length > 1 && (
-                    <div className="flex gap-2 p-3 overflow-x-auto" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+                    <div className="flex gap-2 p-2 sm:p-3 overflow-x-auto scrollbar-none snap-x snap-mandatory" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
                       {allMedia.map((media, idx) => (
                         <button
                           key={idx}
                           onClick={() => { setCurrentMediaIndex(idx); setIsVideoPlaying(false); }}
-                          className={`flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden transition-all duration-200 ${
-                            idx === currentMediaIndex ? 'ring-2 ring-offset-2 ring-emerald-500' : 'opacity-60 hover:opacity-100'
+                          className={`flex-shrink-0 w-14 sm:w-16 h-14 sm:h-16 rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 snap-start touch-manipulation ${
+                            idx === currentMediaIndex ? 'ring-2 ring-offset-1 sm:ring-offset-2 ring-emerald-500' : 'opacity-60 hover:opacity-100'
                           }`}
                         >
                           {media.type === 'video' ? (
                             <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
-                              <svg className="w-5 h-5" style={{ color: 'var(--color-text-muted)' }} fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                              <svg className="w-4 sm:w-5 h-4 sm:h-5" style={{ color: 'var(--color-text-muted)' }} fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                             </div>
                           ) : (
-                            <img src={media.url} alt="" className="w-full h-full object-cover" />
+                            <img src={storage.getFileUrl(media.url)} alt="" className="w-full h-full object-cover" />
                           )}
                         </button>
                       ))}
@@ -540,35 +613,35 @@ export default function JobDetailPage() {
 
               {/* Specifications Grid */}
               {(job.propertyType || job.areaSize || job.roomCount || job.floorCount || job.deadline) && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                   {job.propertyType && (
-                    <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
-                      <p className="text-[11px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>ტიპი</p>
-                      <p className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{propertyTypeMap[job.propertyType] || job.propertyType}</p>
+                    <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
+                      <p className="text-[10px] sm:text-[11px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>ტიპი</p>
+                      <p className="font-medium text-sm sm:text-base" style={{ color: 'var(--color-text-primary)' }}>{propertyTypeMap[job.propertyType] || job.propertyType}</p>
                     </div>
                   )}
                   {job.areaSize && (
-                    <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
-                      <p className="text-[11px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>ფართი</p>
-                      <p className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{job.areaSize} მ²</p>
+                    <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
+                      <p className="text-[10px] sm:text-[11px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>ფართი</p>
+                      <p className="font-medium text-sm sm:text-base" style={{ color: 'var(--color-text-primary)' }}>{job.areaSize} მ²</p>
                     </div>
                   )}
                   {job.roomCount && (
-                    <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
-                      <p className="text-[11px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>ოთახები</p>
-                      <p className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{job.roomCount}</p>
+                    <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
+                      <p className="text-[10px] sm:text-[11px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>ოთახები</p>
+                      <p className="font-medium text-sm sm:text-base" style={{ color: 'var(--color-text-primary)' }}>{job.roomCount}</p>
                     </div>
                   )}
                   {job.floorCount && (
-                    <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
-                      <p className="text-[11px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>სართულები</p>
-                      <p className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{job.floorCount}</p>
+                    <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
+                      <p className="text-[10px] sm:text-[11px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>სართულები</p>
+                      <p className="font-medium text-sm sm:text-base" style={{ color: 'var(--color-text-primary)' }}>{job.floorCount}</p>
                     </div>
                   )}
                   {job.deadline && (
-                    <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
-                      <p className="text-[11px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>ვადა</p>
-                      <p className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                    <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
+                      <p className="text-[10px] sm:text-[11px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>ვადა</p>
+                      <p className="font-medium text-sm sm:text-base" style={{ color: 'var(--color-text-primary)' }}>
                         {new Date(job.deadline).toLocaleDateString('ka-GE', { month: 'short', day: 'numeric', year: 'numeric' })}
                       </p>
                     </div>
@@ -593,7 +666,7 @@ export default function JobDetailPage() {
                   <div className="flex flex-wrap gap-2">
                     {job.workTypes.map((type) => (
                       <span key={type} className="text-sm px-3 py-1.5 rounded-lg" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }}>
-                        {type}
+                        {workTypeMap[type] || type}
                       </span>
                     ))}
                   </div>
@@ -609,7 +682,7 @@ export default function JobDetailPage() {
                       <div className="flex items-center gap-2">
                         <span className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>სტილი:</span>
                         <span className="text-sm font-medium px-3 py-1 rounded-lg" style={{ backgroundColor: 'var(--color-accent-soft)', color: 'var(--color-accent)' }}>
-                          {job.designStyle}
+                          {skillMap[job.designStyle] || job.designStyle}
                         </span>
                       </div>
                     )}
@@ -619,7 +692,7 @@ export default function JobDetailPage() {
                         <div className="flex flex-wrap gap-2">
                           {job.roomsToDesign.map((room) => (
                             <span key={room} className="text-sm px-3 py-1.5 rounded-lg" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }}>
-                              {room}
+                              {skillMap[room] || room}
                             </span>
                           ))}
                         </div>
@@ -677,7 +750,7 @@ export default function JobDetailPage() {
                   <div className="flex flex-wrap gap-2">
                     {job.skills.map((skill) => (
                       <span key={skill} className="text-sm px-3 py-1.5 rounded-lg" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }}>
-                        {skill}
+                        {skillMap[skill] || skill}
                       </span>
                     ))}
                   </div>
@@ -869,26 +942,26 @@ export default function JobDetailPage() {
             </div>
 
             {/* Sidebar */}
-            <div className="lg:col-span-1">
-              <div className="sticky top-24 space-y-4">
+            <div className="lg:col-span-1 order-first lg:order-last">
+              <div className="lg:sticky lg:top-24 space-y-3 sm:space-y-4">
                 {/* Client Card */}
-                <div className="p-5 rounded-2xl" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
-                  <div className="flex items-center justify-between mb-4">
-                    <p className="text-xs uppercase tracking-wider font-medium" style={{ color: 'var(--color-text-muted)' }}>კლიენტი</p>
+                <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
+                  <div className="flex items-center justify-between mb-3 sm:mb-4">
+                    <p className="text-xs uppercase tracking-wider font-medium" style={{ color: 'var(--color-text-muted)' }}>მაძიებელი</p>
                     <span className="text-[10px] px-2 py-0.5 rounded-md font-medium" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-tertiary)' }}>
                       {job.clientId.accountType === 'organization' ? 'კომპანია' : 'ფიზიკური პირი'}
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
                     {job.clientId.avatar ? (
-                      <img src={job.clientId.avatar} alt="" className="w-12 h-12 rounded-xl object-cover" />
+                      <img src={job.clientId.avatar} alt="" className="w-11 sm:w-12 h-11 sm:h-12 rounded-xl object-cover" />
                     ) : (
-                      <div className="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-semibold" style={{ backgroundColor: 'var(--color-accent-soft)', color: 'var(--color-accent)' }}>
+                      <div className="w-11 sm:w-12 h-11 sm:h-12 rounded-xl flex items-center justify-center text-base sm:text-lg font-semibold" style={{ backgroundColor: 'var(--color-accent-soft)', color: 'var(--color-accent)' }}>
                         {job.clientId.name[0].toUpperCase()}
                       </div>
                     )}
                     <div className="min-w-0">
-                      <p className="font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
+                      <p className="font-medium truncate text-sm sm:text-base" style={{ color: 'var(--color-text-primary)' }}>
                         {job.clientId.accountType === 'organization' ? job.clientId.companyName || job.clientId.name : job.clientId.name}
                       </p>
                       {job.clientId.city && (
@@ -898,30 +971,33 @@ export default function JobDetailPage() {
                   </div>
                 </div>
 
-                {/* Category */}
-                <div className="p-5 rounded-2xl" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
-                  <p className="text-xs uppercase tracking-wider font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>კატეგორია</p>
-                  <p className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                    {categoryMap[job.category] || job.category}
-                  </p>
+                {/* Category & Quick Info - Combined on mobile */}
+                <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4">
+                  {/* Category */}
+                  <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
+                    <p className="text-xs uppercase tracking-wider font-medium mb-1.5 sm:mb-2" style={{ color: 'var(--color-text-muted)' }}>კატეგორია</p>
+                    <p className="font-medium text-sm sm:text-base" style={{ color: 'var(--color-text-primary)' }}>
+                      {categoryMap[job.category] || job.category}
+                    </p>
+                  </div>
+
+                  {/* Quick Info */}
+                  <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl space-y-2 sm:space-y-3" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
+                    <div className="flex items-center justify-between text-xs sm:text-sm">
+                      <span style={{ color: 'var(--color-text-tertiary)' }}>ID</span>
+                      <span className="font-mono text-xs" style={{ color: 'var(--color-text-muted)' }}>{job._id.slice(-8)}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs sm:text-sm">
+                      <span style={{ color: 'var(--color-text-tertiary)' }}>თარიღი</span>
+                      <span style={{ color: 'var(--color-text-primary)' }}>{new Date(job.createdAt).toLocaleDateString('ka-GE')}</span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Quick Info */}
-                <div className="p-5 rounded-2xl space-y-3" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
-                  <div className="flex items-center justify-between text-sm">
-                    <span style={{ color: 'var(--color-text-tertiary)' }}>განცხადების ID</span>
-                    <span className="font-mono text-xs" style={{ color: 'var(--color-text-muted)' }}>{job._id.slice(-8)}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span style={{ color: 'var(--color-text-tertiary)' }}>გამოქვეყნდა</span>
-                    <span style={{ color: 'var(--color-text-primary)' }}>{new Date(job.createdAt).toLocaleDateString('ka-GE')}</span>
-                  </div>
-                </div>
-
-                {/* Back Link */}
+                {/* Back Link - Hidden on mobile (use browser back) */}
                 <Link
                   href="/browse"
-                  className="flex items-center justify-center gap-2 w-full py-3 text-sm font-medium rounded-xl transition-all duration-200 group"
+                  className="hidden lg:flex items-center justify-center gap-2 w-full py-3 text-sm font-medium rounded-xl transition-all duration-200 group touch-manipulation"
                   style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}
                 >
                   <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -952,7 +1028,7 @@ export default function JobDetailPage() {
             </svg>
           </button>
           <img
-            src={selectedMedia.url}
+            src={storage.getFileUrl(selectedMedia.url)}
             alt=""
             className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg"
             onClick={(e) => e.stopPropagation()}

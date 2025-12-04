@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Briefcase, Search, Clock, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 
 export default function AdminJobsPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -26,10 +28,10 @@ export default function AdminJobsPage() {
   }
 
   const stats = [
-    { label: 'Total Jobs', value: '0', icon: Briefcase, color: 'bg-blue-500' },
-    { label: 'Pending Review', value: '0', icon: Clock, color: 'bg-yellow-500' },
-    { label: 'Approved', value: '0', icon: CheckCircle, color: 'bg-green-500' },
-    { label: 'Flagged', value: '0', icon: AlertTriangle, color: 'bg-red-500' },
+    { label: t('admin.totalJobs'), value: '0', icon: Briefcase, color: 'bg-blue-500' },
+    { label: t('admin.jobsPage.pendingReview'), value: '0', icon: Clock, color: 'bg-yellow-500' },
+    { label: t('admin.jobsPage.approved'), value: '0', icon: CheckCircle, color: 'bg-green-500' },
+    { label: t('admin.jobsPage.flagged'), value: '0', icon: AlertTriangle, color: 'bg-red-500' },
   ];
 
   return (
@@ -37,14 +39,14 @@ export default function AdminJobsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-50">Jobs</h1>
-            <p className="mt-2 text-neutral-600 dark:text-neutral-400">Review and moderate job postings</p>
+            <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-50">{t('admin.jobsPage.title')}</h1>
+            <p className="mt-2 text-neutral-600 dark:text-neutral-400">{t('admin.jobsPage.subtitle')}</p>
           </div>
           <button
             onClick={() => router.push('/admin')}
             className="text-sm text-forest-800 dark:text-primary-400 hover:text-terracotta-500 font-medium transition-all duration-200 ease-out"
           >
-            ← Back to Dashboard
+            ← {t('admin.backToDashboard')}
           </button>
         </div>
 
@@ -72,22 +74,22 @@ export default function AdminJobsPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-neutral-400" />
               <input
                 type="text"
-                placeholder="Search jobs..."
+                placeholder={t('admin.jobsPage.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 transition-all duration-200 ease-out"
+                className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 dark:border-dark-border dark:bg-dark-bg dark:text-neutral-50 rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 transition-all duration-200 ease-out"
               />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 transition-all duration-200 ease-out"
+              className="px-4 py-2.5 border border-neutral-200 dark:border-dark-border dark:bg-dark-bg dark:text-neutral-50 rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 transition-all duration-200 ease-out"
             >
-              <option value="all">All Status</option>
-              <option value="pending">Pending Review</option>
-              <option value="approved">Approved</option>
-              <option value="flagged">Flagged</option>
-              <option value="rejected">Rejected</option>
+              <option value="all">{t('admin.jobsPage.allStatus')}</option>
+              <option value="pending">{t('admin.jobsPage.pendingReview')}</option>
+              <option value="approved">{t('admin.jobsPage.approved')}</option>
+              <option value="flagged">{t('admin.jobsPage.flagged')}</option>
+              <option value="rejected">{t('admin.jobsPage.rejected')}</option>
             </select>
           </div>
         </div>
@@ -98,22 +100,22 @@ export default function AdminJobsPage() {
             <thead className="bg-neutral-50 dark:bg-dark-bg">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Job
+                  {t('admin.jobsPage.tableJob')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Client
+                  {t('admin.jobsPage.tableClient')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Category
+                  {t('admin.jobsPage.tableCategory')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Status
+                  {t('admin.jobsPage.tableStatus')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Posted
+                  {t('admin.jobsPage.tablePosted')}
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Actions
+                  {t('admin.jobsPage.tableActions')}
                 </th>
               </tr>
             </thead>
@@ -121,7 +123,7 @@ export default function AdminJobsPage() {
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center">
                   <Briefcase className="h-12 w-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-3" />
-                  <p className="text-neutral-500 dark:text-neutral-400">No jobs found</p>
+                  <p className="text-neutral-500 dark:text-neutral-400">{t('admin.jobsPage.noJobsFound')}</p>
                 </td>
               </tr>
             </tbody>

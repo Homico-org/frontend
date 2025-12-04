@@ -1,18 +1,18 @@
 'use client';
 
-import Header from '@/components/common/Header';
-import ProCard from '@/components/common/ProCard';
-import JobCard from '@/components/common/JobCard';
-import Avatar from '@/components/common/Avatar';
+import ArchitecturalBackground from '@/components/browse/ArchitecturalBackground';
 import CategorySection from '@/components/browse/CategorySection';
+import Header from '@/components/common/Header';
+import JobCard from '@/components/common/JobCard';
+import ProCard from '@/components/common/ProCard';
 import Select from '@/components/common/Select';
-import { useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState, useMemo, useRef, useCallback } from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useViewMode } from '@/contexts/ViewModeContext';
 import { storage } from '@/services/storage';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface MediaItem {
   type: 'image' | 'video';
@@ -570,23 +570,16 @@ function BrowseContent() {
 
       {/* Pro Dashboard */}
       {isPro && (
-        <div className="min-h-[calc(100vh-64px)]">
-          {/* Subtle gradient mesh background */}
-          <div className="fixed inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute top-0 right-0 w-[800px] h-[800px] opacity-30 dark:opacity-20">
-              <div className="absolute inset-0 bg-gradient-to-bl from-emerald-500/10 via-transparent to-transparent blur-3xl" />
-            </div>
-            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] opacity-20 dark:opacity-10">
-              <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-transparent to-transparent blur-3xl" />
-            </div>
-          </div>
+        <div className="relative min-h-[calc(100vh-64px)]">
+          {/* Premium architectural background with floating design elements */}
+          <ArchitecturalBackground />
 
           {/* Navigation Bar */}
           <div className="sticky top-16 z-40 border-b" style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border-subtle)' }}>
-            <div className="max-w-6xl mx-auto px-6">
-              <div className="flex items-center justify-between h-14">
-                {/* Tabs */}
-                <div className="flex items-center gap-1">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6">
+              <div className="flex items-center justify-between h-14 gap-2">
+                {/* Tabs - scrollable on mobile */}
+                <div className="flex items-center gap-1 overflow-x-auto scrollbar-none -mx-1 px-1">
                   {[
                     { key: 'jobs', label: 'სამუშაოები', count: totalJobsCount || jobs.length },
                     { key: 'proposals', label: 'წინადადებები', count: proposalStats.pending },
@@ -595,13 +588,13 @@ function BrowseContent() {
                     <button
                       key={tab.key}
                       onClick={() => setActiveProTab(tab.key as any)}
-                      className={`relative px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                      className={`relative px-3 sm:px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap touch-manipulation ${
                         activeProTab === tab.key
                           ? 'text-emerald-600 dark:text-emerald-400'
                           : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
                       }`}
                     >
-                      <span className="flex items-center gap-2">
+                      <span className="flex items-center gap-1.5 sm:gap-2">
                         {tab.label}
                         {tab.count > 0 && (
                           <span className={`px-1.5 py-0.5 text-xs rounded-full ${
@@ -621,8 +614,8 @@ function BrowseContent() {
                 </div>
 
                 {/* View toggle & Sort */}
-                <div className="flex items-center gap-3">
-                  <div className="w-48">
+                <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                  <div className="hidden sm:block w-48">
                     <Select
                       value={sortBy}
                       onChange={setSortBy}
@@ -642,7 +635,7 @@ function BrowseContent() {
                         setProViewMode('list');
                         storage.setProViewMode('list');
                       }}
-                      className={`p-1.5 rounded-md transition-all ${proViewMode === 'list' ? 'bg-white dark:bg-zinc-800 shadow-sm' : ''}`}
+                      className={`p-2 sm:p-1.5 rounded-md transition-all touch-manipulation ${proViewMode === 'list' ? 'bg-white dark:bg-dark-elevated shadow-sm' : ''}`}
                     >
                       <svg className="w-4 h-4" style={{ color: proViewMode === 'list' ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -653,7 +646,7 @@ function BrowseContent() {
                         setProViewMode('grid');
                         storage.setProViewMode('grid');
                       }}
-                      className={`p-1.5 rounded-md transition-all ${proViewMode === 'grid' ? 'bg-white dark:bg-zinc-800 shadow-sm' : ''}`}
+                      className={`p-2 sm:p-1.5 rounded-md transition-all touch-manipulation ${proViewMode === 'grid' ? 'bg-white dark:bg-dark-elevated shadow-sm' : ''}`}
                     >
                       <svg className="w-4 h-4" style={{ color: proViewMode === 'grid' ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -666,14 +659,14 @@ function BrowseContent() {
           </div>
 
           {/* Content */}
-          <div className="max-w-6xl mx-auto px-6 py-8 relative z-10">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 relative z-10">
             {/* Jobs Tab */}
             {activeProTab === 'jobs' && (
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Search & Filters */}
-                <div className="flex gap-3">
+                <div className="flex gap-2 sm:gap-3">
                   <div className="relative flex-1">
-                    <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--color-text-tertiary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--color-text-tertiary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     <input
@@ -681,7 +674,7 @@ function BrowseContent() {
                       placeholder="სამუშაოს ძებნა..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all"
+                      className="w-full pl-10 sm:pl-11 pr-4 py-3 rounded-xl border text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all"
                       style={{
                         backgroundColor: 'var(--color-bg-secondary)',
                         borderColor: 'var(--color-border)',
@@ -691,7 +684,7 @@ function BrowseContent() {
                   </div>
                   <button
                     onClick={() => setShowFilters(!showFilters)}
-                    className={`px-4 py-3 rounded-xl border text-sm font-medium flex items-center gap-2 transition-all ${
+                    className={`px-3 sm:px-4 py-3 rounded-xl border text-sm font-medium flex items-center gap-2 transition-all touch-manipulation ${
                       showFilters || hasActiveFilters
                         ? 'bg-emerald-500 text-white border-emerald-500'
                         : ''
@@ -705,14 +698,29 @@ function BrowseContent() {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                     </svg>
-                    ფილტრები
+                    <span className="hidden sm:inline">ფილტრები</span>
                   </button>
+                </div>
+
+                {/* Mobile Sort Dropdown - visible only on mobile */}
+                <div className="sm:hidden">
+                  <Select
+                    value={sortBy}
+                    onChange={setSortBy}
+                    size="sm"
+                    options={[
+                      { value: 'newest', label: 'უახლესი', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+                      { value: 'budget-high', label: 'ბიუჯეტი ↓', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4" /></svg> },
+                      { value: 'budget-low', label: 'ბიუჯეტი ↑', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg> },
+                      { value: 'proposals-low', label: 'ნაკლები წინადადება', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg> },
+                    ]}
+                  />
                 </div>
 
                 {/* Expanded Filters */}
                 {showFilters && (
-                  <div className="rounded-xl border p-5" style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)' }}>
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  <div className="rounded-xl border p-4 sm:p-5" style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)' }}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
                       <div>
                         <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-text-tertiary)' }}>ქონების ტიპი</label>
                         <Select
@@ -728,7 +736,7 @@ function BrowseContent() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-text-tertiary)' }}>კლიენტის ტიპი</label>
+                        <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-text-tertiary)' }}>მაძიებელის ტიპი</label>
                         <Select
                           value={clientTypeFilter}
                           onChange={setClientTypeFilter}
@@ -758,10 +766,11 @@ function BrowseContent() {
                         <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-text-tertiary)' }}>ბიუჯეტი (მინ)</label>
                         <input
                           type="number"
+                          inputMode="numeric"
                           placeholder="₾ მინ"
                           value={budgetMinFilter}
                           onChange={(e) => setBudgetMinFilter(e.target.value)}
-                          className="w-full px-3 py-2 rounded-lg border text-sm"
+                          className="w-full px-3 py-2.5 sm:py-2 rounded-lg border text-base sm:text-sm"
                           style={{ backgroundColor: 'var(--color-bg-tertiary)', borderColor: 'var(--color-border-subtle)', color: 'var(--color-text-primary)' }}
                         />
                       </div>
@@ -769,10 +778,11 @@ function BrowseContent() {
                         <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-text-tertiary)' }}>ბიუჯეტი (მაქს)</label>
                         <input
                           type="number"
+                          inputMode="numeric"
                           placeholder="₾ მაქს"
                           value={budgetMaxFilter}
                           onChange={(e) => setBudgetMaxFilter(e.target.value)}
-                          className="w-full px-3 py-2 rounded-lg border text-sm"
+                          className="w-full px-3 py-2.5 sm:py-2 rounded-lg border text-base sm:text-sm"
                           style={{ backgroundColor: 'var(--color-bg-tertiary)', borderColor: 'var(--color-border-subtle)', color: 'var(--color-text-primary)' }}
                         />
                       </div>
@@ -780,10 +790,11 @@ function BrowseContent() {
                         <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-text-tertiary)' }}>წინადადებები (მაქს)</label>
                         <input
                           type="number"
+                          inputMode="numeric"
                           placeholder="მაგ. 5"
                           value={proposalMaxFilter}
                           onChange={(e) => setProposalMaxFilter(e.target.value)}
-                          className="w-full px-3 py-2 rounded-lg border text-sm"
+                          className="w-full px-3 py-2.5 sm:py-2 rounded-lg border text-base sm:text-sm"
                           style={{ backgroundColor: 'var(--color-bg-tertiary)', borderColor: 'var(--color-border-subtle)', color: 'var(--color-text-primary)' }}
                         />
                       </div>
@@ -800,19 +811,19 @@ function BrowseContent() {
 
                 {/* Jobs Grid/List */}
                 {isLoading ? (
-                  <div className={proViewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5' : 'space-y-4'}>
+                  <div className={proViewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5' : 'space-y-3 sm:space-y-4'}>
                     {[...Array(6)].map((_, i) => (
-                      <div key={i} className="rounded-2xl animate-pulse" style={{ backgroundColor: '#18181b' }}>
-                        <div className="aspect-[4/3] rounded-t-2xl" style={{ backgroundColor: '#27272a' }} />
-                        <div className="p-4">
-                          <div className="h-5 rounded-lg w-3/4 mb-3" style={{ backgroundColor: '#27272a' }} />
-                          <div className="h-4 rounded-lg w-1/2" style={{ backgroundColor: '#27272a' }} />
+                      <div key={i} className="rounded-2xl animate-pulse" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+                        <div className="aspect-[4/3] rounded-t-2xl" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
+                        <div className="p-3 sm:p-4">
+                          <div className="h-5 rounded-lg w-3/4 mb-3" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
+                          <div className="h-4 rounded-lg w-1/2" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : jobs.length > 0 ? (
-                  <div className={proViewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5' : 'space-y-4'}>
+                  <div className={proViewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5' : 'space-y-3 sm:space-y-4'}>
                     {jobs.map((job) => (
                       <JobCard
                         key={job._id}
@@ -841,9 +852,9 @@ function BrowseContent() {
 
             {/* Proposals Tab */}
             {activeProTab === 'proposals' && (
-              <div className="space-y-6">
-                {/* Filter pills */}
-                <div className="flex items-center gap-2">
+              <div className="space-y-4 sm:space-y-6">
+                {/* Filter pills - scrollable on mobile */}
+                <div className="flex items-center gap-2 overflow-x-auto scrollbar-none -mx-1 px-1 pb-1">
                   {[
                     { key: 'all', label: 'ყველა' },
                     { key: 'pending', label: 'მოლოდინში' },
@@ -853,7 +864,7 @@ function BrowseContent() {
                     <button
                       key={filter.key}
                       onClick={() => setProposalFilter(filter.key as any)}
-                      className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${
+                      className={`px-3 py-2 sm:py-1.5 text-sm font-medium rounded-lg transition-all whitespace-nowrap touch-manipulation ${
                         proposalFilter === filter.key
                           ? 'bg-emerald-500 text-white'
                           : ''
@@ -872,7 +883,7 @@ function BrowseContent() {
                 {isLoadingProposals ? (
                   <div className="space-y-3">
                     {[...Array(5)].map((_, i) => (
-                      <div key={i} className="rounded-xl border p-4 animate-pulse" style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)' }}>
+                      <div key={i} className="rounded-xl border p-3 sm:p-4 animate-pulse" style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)' }}>
                         <div className="h-5 rounded-lg w-2/3 mb-2" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
                         <div className="h-4 rounded-lg w-1/3" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
                       </div>
@@ -884,16 +895,16 @@ function BrowseContent() {
                       <Link
                         key={proposal._id}
                         href={`/jobs/${proposal.jobId?._id}`}
-                        className="group block rounded-xl border p-4 hover:border-emerald-500/30 transition-all"
+                        className="group block rounded-xl border p-3 sm:p-4 hover:border-emerald-500/30 transition-all active:scale-[0.99]"
                         style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)' }}
                       >
-                        <div className="flex items-center justify-between gap-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
                           <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-medium truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors" style={{ color: 'var(--color-text-primary)' }}>
+                            <div className="flex items-start sm:items-center gap-2 mb-1 flex-wrap">
+                              <h3 className="font-medium group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-2 sm:truncate" style={{ color: 'var(--color-text-primary)' }}>
                                 {proposal.jobId?.title}
                               </h3>
-                              <span className={`px-2 py-0.5 text-xs font-medium rounded-md ${
+                              <span className={`px-2 py-0.5 text-xs font-medium rounded-md flex-shrink-0 ${
                                 proposal.status === 'pending' ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400' :
                                 proposal.status === 'accepted' ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400' :
                                 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400'
@@ -901,15 +912,15 @@ function BrowseContent() {
                                 {proposal.status === 'pending' ? 'მოლოდინში' : proposal.status === 'accepted' ? 'მიღებული' : 'უარყოფილი'}
                               </span>
                             </div>
-                            <div className="flex items-center gap-3 text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
                               <span>{proposal.jobId?.clientId?.name}</span>
-                              <span>·</span>
+                              <span className="hidden sm:inline">·</span>
                               <span>{proposal.jobId?.location}</span>
-                              <span>·</span>
+                              <span className="hidden sm:inline">·</span>
                               <span>{getTimeAgo(proposal.createdAt)}</span>
                             </div>
                           </div>
-                          <div className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                          <div className="font-semibold text-right sm:text-left" style={{ color: 'var(--color-text-primary)' }}>
                             ₾{proposal.proposedPrice?.toLocaleString()}
                           </div>
                         </div>
@@ -934,31 +945,31 @@ function BrowseContent() {
 
             {/* Active Jobs Tab */}
             {activeProTab === 'active' && (
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {activeJobs.length > 0 ? (
                   <div className="space-y-3">
                     {activeJobs.map((proposal) => (
                       <Link
                         key={proposal._id}
                         href={`/jobs/${proposal.jobId?._id}`}
-                        className="group block rounded-xl border p-4 hover:border-emerald-500/30 transition-all"
+                        className="group block rounded-xl border p-3 sm:p-4 hover:border-emerald-500/30 transition-all active:scale-[0.99]"
                         style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)' }}
                       >
-                        <div className="flex items-center justify-between gap-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                              <h3 className="font-medium truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors" style={{ color: 'var(--color-text-primary)' }}>
+                              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse flex-shrink-0" />
+                              <h3 className="font-medium line-clamp-2 sm:truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors" style={{ color: 'var(--color-text-primary)' }}>
                                 {proposal.jobId?.title}
                               </h3>
                             </div>
-                            <div className="flex items-center gap-3 text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
                               <span>{proposal.jobId?.clientId?.name}</span>
-                              <span>·</span>
+                              <span className="hidden sm:inline">·</span>
                               <span>{proposal.jobId?.location}</span>
                             </div>
                           </div>
-                          <div className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                          <div className="font-semibold text-right sm:text-left" style={{ color: 'var(--color-text-primary)' }}>
                             ₾{proposal.proposedPrice?.toLocaleString()}
                           </div>
                         </div>
@@ -987,62 +998,73 @@ function BrowseContent() {
       {/* Client View */}
       {!isPro && (
         <div className="relative min-h-[calc(100vh-64px)]">
-          {/* Subtle gradient mesh background */}
-          <div className="fixed inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute top-20 right-0 w-[600px] h-[600px] opacity-20 dark:opacity-10">
-              <div className="absolute inset-0 bg-gradient-to-bl from-emerald-500/20 via-transparent to-transparent blur-3xl" />
-            </div>
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] opacity-15 dark:opacity-5">
-              <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/20 via-transparent to-transparent blur-3xl" />
-            </div>
-          </div>
+          {/* Premium architectural background with floating design elements */}
+          <ArchitecturalBackground />
 
-          <div className="max-w-6xl mx-auto px-5 py-8 relative z-10">
+          <div className="max-w-6xl mx-auto px-4 sm:px-5 py-6 sm:py-8 relative z-10">
             {/* Hero Section */}
-            <div className="mb-8">
+            <div className="mb-6 sm:mb-8">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2" style={{ color: 'var(--color-text-primary)' }}>
                     {t('browse.findSpecialist') || 'იპოვე სპეციალისტი'}
                   </h1>
-                  <p className="text-base" style={{ color: 'var(--color-text-secondary)' }}>
+                  <p className="text-sm sm:text-base" style={{ color: 'var(--color-text-secondary)' }}>
                     {t('browse.subtitle') || 'აღმოაჩინე გამოცდილი პროფესიონალები შენი პროექტისთვის'}
                   </p>
                 </div>
 
-                {/* Quick Actions */}
+                {/* Quick Action Button - Glass Style */}
                 {user && (user.role === 'client' || (user.role === 'pro' && isClientMode)) && (
-                  <div className="flex items-center gap-3">
-                    <Link
-                      href="/my-jobs"
-                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all hover:shadow-md"
+                  <Link
+                    href="/my-jobs"
+                    className="hidden sm:flex group relative items-center gap-2 px-3.5 py-2.5 rounded-xl overflow-hidden touch-manipulation transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98]"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.06)',
+                      backdropFilter: 'blur(12px)',
+                      WebkitBackdropFilter: 'blur(12px)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      boxShadow: '0 4px 16px -2px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
+                    }}
+                  >
+                    {/* Hover glow */}
+                    <div
+                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400"
                       style={{
-                        backgroundColor: 'var(--color-bg-secondary)',
-                        border: '1px solid var(--color-border)',
-                        color: 'var(--color-text-primary)'
+                        background: 'linear-gradient(135deg, rgba(52, 211, 153, 0.12) 0%, rgba(16, 185, 129, 0.08) 100%)',
                       }}
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                      </svg>
-                      {t('menu.myJobs')}
-                    </Link>
-                    <Link
-                      href="/post-job"
-                      className="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--color-accent)] text-white rounded-xl text-sm font-medium transition-all hover:opacity-90 shadow-sm"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                      {t('menu.postJob')}
-                    </Link>
-                  </div>
+                    />
+                    {/* Folder icon */}
+                    <svg className="w-[18px] h-[18px] relative z-10 transition-all duration-300 text-neutral-400 group-hover:text-emerald-400" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M3 8C3 6.89543 3.89543 6 5 6H9L11 8H19C20.1046 8 21 8.89543 21 10V18C21 19.1046 20.1046 20 19 20H5C3.89543 20 3 19.1046 3 18V8Z"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M9 14H15"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <span className="text-sm font-medium relative z-10 transition-colors duration-300 text-neutral-300 group-hover:text-emerald-400">
+                      {locale === 'ka' ? 'განცხადებები' : 'My Jobs'}
+                    </span>
+                    {/* Border glow on hover */}
+                    <div
+                      className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none"
+                      style={{ border: '1px solid rgba(52, 211, 153, 0.3)' }}
+                    />
+                  </Link>
                 )}
               </div>
             </div>
 
             {/* Categories Section */}
-            <div className="mb-8">
+            <div className="mb-6 sm:mb-8">
               <CategorySection
                 selectedCategory={selectedCategory}
                 onSelectCategory={(cat) => {
@@ -1055,9 +1077,10 @@ function BrowseContent() {
             </div>
 
             {/* Search & Filters Bar */}
-            <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            <div className="flex flex-col gap-3 mb-5 sm:mb-6">
+              {/* Search input */}
               <div className="relative flex-1">
-                <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--color-text-tertiary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--color-text-tertiary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input
@@ -1065,7 +1088,7 @@ function BrowseContent() {
                   placeholder={t('browse.searchPlaceholder') || 'სპეციალისტის ძებნა...'}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-12 pl-11 pr-4 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)]/50 transition-all"
+                  className="w-full h-12 pl-10 sm:pl-11 pr-4 rounded-xl border text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)]/50 transition-all"
                   style={{
                     backgroundColor: 'var(--color-bg-secondary)',
                     borderColor: 'var(--color-border)',
@@ -1074,54 +1097,56 @@ function BrowseContent() {
                 />
               </div>
 
-              {/* Rating Filter Pills */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium px-2" style={{ color: 'var(--color-text-tertiary)' }}>
-                  {t('browse.rating') || 'რეიტინგი'}:
-                </span>
-                {[0, 4, 4.5].map((rating) => (
-                  <button
-                    key={rating}
-                    onClick={() => setMinRating(rating)}
-                    className={`h-9 px-3 rounded-lg text-sm font-medium transition-all ${
-                      minRating === rating
-                        ? 'bg-[var(--color-accent)] text-white'
-                        : ''
-                    }`}
-                    style={minRating !== rating ? {
-                      backgroundColor: 'var(--color-bg-tertiary)',
-                      color: 'var(--color-text-secondary)'
-                    } : {}}
-                  >
-                    {rating === 0 ? (t('browse.all') || 'ყველა') : `${rating}+`}
-                  </button>
-                ))}
-              </div>
+              {/* Rating Filter Pills & Clear - horizontal scroll on mobile */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 overflow-x-auto scrollbar-none -mx-1 px-1 pb-1">
+                  <span className="text-xs font-medium px-1 sm:px-2 whitespace-nowrap flex-shrink-0" style={{ color: 'var(--color-text-tertiary)' }}>
+                    {t('browse.rating') || 'რეიტინგი'}:
+                  </span>
+                  {[0, 4, 4.5].map((rating) => (
+                    <button
+                      key={rating}
+                      onClick={() => setMinRating(rating)}
+                      className={`h-9 px-3 rounded-lg text-sm font-medium transition-all whitespace-nowrap touch-manipulation ${
+                        minRating === rating
+                          ? 'bg-[var(--color-accent)] text-white'
+                          : ''
+                      }`}
+                      style={minRating !== rating ? {
+                        backgroundColor: 'var(--color-bg-tertiary)',
+                        color: 'var(--color-text-secondary)'
+                      } : {}}
+                    >
+                      {rating === 0 ? (t('browse.all') || 'ყველა') : `${rating}+`}
+                    </button>
+                  ))}
+                </div>
 
-              {/* Clear Filters */}
-              {(selectedCategory || selectedSubcategory || minRating > 0 || searchQuery) && (
-                <button
-                  onClick={clearFilters}
-                  className="h-12 px-4 rounded-xl text-sm font-medium border transition-all hover:border-[var(--color-accent)]/50 flex items-center gap-2"
-                  style={{
-                    borderColor: 'var(--color-border)',
-                    color: 'var(--color-text-secondary)'
-                  }}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  {t('browse.clearFilters') || 'გასუფთავება'}
-                </button>
-              )}
+                {/* Clear Filters */}
+                {(selectedCategory || selectedSubcategory || minRating > 0 || searchQuery) && (
+                  <button
+                    onClick={clearFilters}
+                    className="h-9 px-3 sm:px-4 rounded-xl text-sm font-medium border transition-all hover:border-[var(--color-accent)]/50 flex items-center gap-1.5 sm:gap-2 flex-shrink-0 touch-manipulation"
+                    style={{
+                      borderColor: 'var(--color-border)',
+                      color: 'var(--color-text-secondary)'
+                    }}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span className="hidden sm:inline">{t('browse.clearFilters') || 'გასუფთავება'}</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Results Header */}
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center justify-between mb-4 sm:mb-5 gap-2">
               <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                 <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{totalCount}</span> {t('browse.specialists') || 'სპეციალისტი'}
                 {selectedCategory && (
-                  <span className="ml-2 px-2 py-0.5 rounded-md text-xs" style={{ backgroundColor: 'var(--color-accent-soft)', color: 'var(--color-accent)' }}>
+                  <span className="hidden sm:inline-block ml-2 px-2 py-0.5 rounded-md text-xs" style={{ backgroundColor: 'var(--color-accent-soft)', color: 'var(--color-accent)' }}>
                     {(() => {
                       const cat = dbCategories.find(c => c.key === selectedCategory);
                       return locale === 'ka' ? (cat?.nameKa || cat?.name || selectedCategory) : (cat?.name || selectedCategory);
@@ -1129,7 +1154,7 @@ function BrowseContent() {
                   </span>
                 )}
               </p>
-              <div className="flex items-center gap-2 w-44">
+              <div className="flex items-center gap-2 w-32 sm:w-44">
                 <Select
                   value={sortBy}
                   onChange={setSortBy}
@@ -1145,11 +1170,11 @@ function BrowseContent() {
 
             {/* Results Grid */}
             {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="rounded-2xl border p-5 animate-pulse" style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)' }}>
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="w-14 h-14 rounded-xl" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
+                  <div key={i} className="rounded-2xl border p-4 sm:p-5 animate-pulse" style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)' }}>
+                    <div className="flex items-center gap-3 sm:gap-4 mb-4">
+                      <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-xl" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
                       <div className="flex-1">
                         <div className="h-5 rounded-lg w-3/4 mb-2" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
                         <div className="h-4 rounded-lg w-1/2" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
@@ -1161,7 +1186,7 @@ function BrowseContent() {
                 ))}
               </div>
             ) : results.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
                 {results.map((profile, index) => (
                   <div
                     key={profile._id}
@@ -1193,12 +1218,13 @@ function BrowseContent() {
       {user && (user.role === 'client' || (user.role === 'pro' && isClientMode)) && (
         <Link
           href="/post-job"
-          className="fixed bottom-5 right-5 z-50 flex items-center gap-2 h-11 px-5 bg-emerald-500 text-white rounded-full shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 hover:shadow-emerald-500/30 transition-all hover:scale-105"
+          className="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-50 flex items-center justify-center gap-2 h-12 sm:h-11 w-12 sm:w-auto sm:px-5 bg-emerald-500 text-white rounded-full shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 hover:shadow-emerald-500/30 transition-all hover:scale-105 touch-manipulation"
+          style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
-          <span className="font-medium text-sm">{t('menu.postJob')}</span>
+          <span className="hidden sm:inline font-medium text-sm">{t('menu.postJob')}</span>
         </Link>
       )}
     </div>

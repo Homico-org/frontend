@@ -71,25 +71,25 @@ module.exports = {
           400: '#ede8d4',
           500: '#e2dcc4',
         },
-        // Dark mode specific colors - Lighter, smoother palette
+        // Dark mode specific colors - Soft twilight palette (lighter, warmer)
         dark: {
-          50: '#3a3a3c',   // Lightest - for hover states
-          100: '#323234',  // Light - for elevated elements
-          200: '#2c2c2e',  // Medium light - for cards
-          300: '#252527',  // Medium - for secondary bg
-          400: '#1f1f21',  // Main background
-          500: '#1a1a1c',  // Darker background
-          600: '#161618',
-          700: '#121214',
-          800: '#0e0e10',
-          900: '#0a0a0c',
-          // Semantic colors
-          bg: '#1a1a1c',        // Main page background
-          card: '#242426',      // Card backgrounds - lighter
-          elevated: '#2e2e30',  // Elevated elements - even lighter
-          surface: '#323234',   // Surface elements
-          border: '#3d3d3f',    // Borders - more visible
-          'border-subtle': '#2a2a2c', // Subtle borders
+          50: '#5a5a5e',   // Lightest - for hover states
+          100: '#4e4e52',  // Light - for elevated elements
+          200: '#434347',  // Medium light - for cards
+          300: '#38383c',  // Medium - for secondary bg
+          400: '#2d2d31',  // Main background
+          500: '#262629',  // Darker background
+          600: '#1f1f22',
+          700: '#1a1a1d',
+          800: '#151517',
+          900: '#101012',
+          // Semantic colors - Softer, lighter dark mode
+          bg: '#28282c',        // Main page background - lighter charcoal
+          card: '#323236',      // Card backgrounds - soft slate
+          elevated: '#3c3c40',  // Elevated elements - visible lift
+          surface: '#46464a',   // Surface elements - lighter
+          border: '#52525a',    // Borders - clearly visible
+          'border-subtle': '#3e3e44', // Subtle borders - still visible
         },
       },
       fontFamily: {

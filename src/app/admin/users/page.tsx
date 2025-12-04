@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Users, Search, Filter, MoreVertical, UserCheck, UserX, Shield } from 'lucide-react';
 
 export default function AdminUsersPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
@@ -26,10 +28,10 @@ export default function AdminUsersPage() {
   }
 
   const stats = [
-    { label: 'Total Users', value: '0', icon: Users, color: 'bg-forest-800' },
-    { label: 'Clients', value: '0', icon: UserCheck, color: 'bg-primary-500' },
-    { label: 'Professionals', value: '0', icon: Shield, color: 'bg-terracotta-500' },
-    { label: 'Suspended', value: '0', icon: UserX, color: 'bg-terracotta-400' },
+    { label: t('admin.totalUsers'), value: '0', icon: Users, color: 'bg-forest-800' },
+    { label: t('admin.clients'), value: '0', icon: UserCheck, color: 'bg-primary-500' },
+    { label: t('admin.professionals'), value: '0', icon: Shield, color: 'bg-terracotta-500' },
+    { label: t('admin.usersPage.suspended'), value: '0', icon: UserX, color: 'bg-terracotta-400' },
   ];
 
   return (
@@ -37,14 +39,14 @@ export default function AdminUsersPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-serif font-medium text-neutral-900 dark:text-neutral-50">Users</h1>
-            <p className="mt-2 text-neutral-500 dark:text-neutral-400">Manage user accounts and permissions</p>
+            <h1 className="text-3xl font-serif font-medium text-neutral-900 dark:text-neutral-50">{t('admin.usersPage.title')}</h1>
+            <p className="mt-2 text-neutral-500 dark:text-neutral-400">{t('admin.usersPage.subtitle')}</p>
           </div>
           <button
             onClick={() => router.push('/admin')}
-            className="text-sm text-forest-800 hover:text-terracotta-500 font-medium transition-all duration-200 ease-out"
+            className="text-sm text-forest-800 dark:text-primary-400 hover:text-terracotta-500 font-medium transition-all duration-200 ease-out"
           >
-            ← Back to Dashboard
+            ← {t('admin.backToDashboard')}
           </button>
         </div>
 
@@ -72,21 +74,21 @@ export default function AdminUsersPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-neutral-400" />
               <input
                 type="text"
-                placeholder="Search users..."
+                placeholder={t('admin.usersPage.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 transition-all duration-200 ease-out"
+                className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 dark:border-dark-border dark:bg-dark-bg dark:text-neutral-50 rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 transition-all duration-200 ease-out"
               />
             </div>
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 transition-all duration-200 ease-out"
+              className="px-4 py-2.5 border border-neutral-200 dark:border-dark-border dark:bg-dark-bg dark:text-neutral-50 rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 transition-all duration-200 ease-out"
             >
-              <option value="all">All Roles</option>
-              <option value="client">Clients</option>
-              <option value="pro">Professionals</option>
-              <option value="admin">Admins</option>
+              <option value="all">{t('admin.usersPage.allRoles')}</option>
+              <option value="client">{t('admin.clients')}</option>
+              <option value="pro">{t('admin.professionals')}</option>
+              <option value="admin">{t('admin.usersPage.admins')}</option>
             </select>
           </div>
         </div>
@@ -97,19 +99,19 @@ export default function AdminUsersPage() {
             <thead className="bg-cream-50 dark:bg-dark-bg">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  User
+                  {t('admin.usersPage.tableUser')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Role
+                  {t('admin.usersPage.tableRole')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Status
+                  {t('admin.usersPage.tableStatus')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Joined
+                  {t('admin.usersPage.tableJoined')}
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Actions
+                  {t('admin.usersPage.tableActions')}
                 </th>
               </tr>
             </thead>
@@ -117,7 +119,7 @@ export default function AdminUsersPage() {
               <tr>
                 <td colSpan={5} className="px-6 py-12 text-center">
                   <Users className="h-12 w-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-3" />
-                  <p className="text-neutral-500 dark:text-neutral-400">No users found</p>
+                  <p className="text-neutral-500 dark:text-neutral-400">{t('admin.usersPage.noUsersFound')}</p>
                 </td>
               </tr>
             </tbody>

@@ -641,7 +641,7 @@ export default function CreateCompanyJobPage() {
           <div className="flex gap-4">
             <button
               type="button"
-              onClick={() => router.back()}
+              onClick={() => router.push('/browse')}
               className="flex-1 px-6 py-3 border border-neutral-300 dark:border-dark-border text-neutral-700 dark:text-neutral-400 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-elevated transition-all duration-200 ease-out font-medium"
             >
               Cancel

@@ -105,50 +105,54 @@ const WORK_TYPES = [
 ];
 
 const PROJECT_PHASES = [
-  { value: 'concept', label: 'Concept Design', description: 'Initial ideas and sketches' },
-  { value: 'schematic', label: 'Schematic Design', description: 'Preliminary drawings and layouts' },
-  { value: 'detailed', label: 'Detailed Design', description: 'Full technical drawings' },
-  { value: 'construction', label: 'Construction Documents', description: 'Ready for building' },
+  { value: 'concept', label: 'Concept Design', labelKa: 'კონცეფციის დიზაინი', description: 'Initial ideas and sketches', descriptionKa: 'პირველადი იდეები და ესკიზები' },
+  { value: 'schematic', label: 'Schematic Design', labelKa: 'სქემატური დიზაინი', description: 'Preliminary drawings and layouts', descriptionKa: 'წინასწარი ნახაზები და განლაგება' },
+  { value: 'detailed', label: 'Detailed Design', labelKa: 'დეტალური დიზაინი', description: 'Full technical drawings', descriptionKa: 'სრული ტექნიკური ნახაზები' },
+  { value: 'construction', label: 'Construction Documents', labelKa: 'სამშენებლო დოკუმენტაცია', description: 'Ready for building', descriptionKa: 'მზად მშენებლობისთვის' },
 ];
 
 const ZONING_TYPES = [
-  { value: 'residential', label: 'Residential' },
-  { value: 'commercial', label: 'Commercial' },
-  { value: 'mixed', label: 'Mixed Use' },
-  { value: 'industrial', label: 'Industrial' },
+  { value: 'residential', label: 'Residential', labelKa: 'საცხოვრებელი' },
+  { value: 'commercial', label: 'Commercial', labelKa: 'კომერციული' },
+  { value: 'mixed', label: 'Mixed Use', labelKa: 'შერეული' },
+  { value: 'industrial', label: 'Industrial', labelKa: 'სამრეწველო' },
 ];
 
-// Specialties for each category - what type of specialist do they need
+// Specialties for each category - what type of specialist do they need (matches backend categories)
 const CATEGORY_SPECIALTIES: Record<string, { value: string; label: string; labelKa: string }[]> = {
   'interior-design': [
-    { value: 'residential', label: 'Residential', labelKa: 'საცხოვრებელი' },
-    { value: 'commercial', label: 'Commercial', labelKa: 'კომერციული' },
-    { value: 'kitchen', label: 'Kitchen Design', labelKa: 'სამზარეულო' },
-    { value: 'bathroom', label: 'Bathroom Design', labelKa: 'სააბაზანო' },
+    { value: 'interior', label: 'Interior Design', labelKa: 'ინტერიერი' },
+    { value: 'exterior', label: 'Exterior Design', labelKa: 'ექსტერიერი' },
+    { value: 'landscape-design', label: 'Landscape Design', labelKa: 'ლანდშაფტის დიზაინი' },
+    { value: '3d-visualization', label: '3D Visualization', labelKa: '3D ვიზუალიზაცია' },
+    { value: 'furniture-design', label: 'Furniture Design', labelKa: 'ავეჯის დიზაინი' },
   ],
   'architecture': [
     { value: 'residential-arch', label: 'Residential', labelKa: 'საცხოვრებელი' },
     { value: 'commercial-arch', label: 'Commercial', labelKa: 'კომერციული' },
-    { value: 'landscape', label: 'Landscape', labelKa: 'ლანდშაფტი' },
-    { value: 'renovation-arch', label: 'Renovation', labelKa: 'რენოვაცია' },
+    { value: 'industrial-arch', label: 'Industrial', labelKa: 'სამრეწველო' },
+    { value: 'reconstruction', label: 'Reconstruction', labelKa: 'რეკონსტრუქცია' },
+    { value: 'project-documentation', label: 'Project Documentation', labelKa: 'საპროექტო დოკუმენტაცია' },
   ],
   'craftsmen': [
     { value: 'electrical', label: 'Electrician', labelKa: 'ელექტრიკოსი' },
-    { value: 'plumbing', label: 'Plumber', labelKa: 'სანტექნიკი' },
-    { value: 'carpentry', label: 'Carpenter', labelKa: 'ხურო' },
+    { value: 'plumbing', label: 'Plumber', labelKa: 'სანტექნიკოსი' },
     { value: 'painting', label: 'Painter', labelKa: 'მხატვარი' },
-    { value: 'tiling', label: 'Tiler', labelKa: 'კაფელის მგები' },
-    { value: 'hvac', label: 'HVAC', labelKa: 'კონდიცირება' },
+    { value: 'tiling', label: 'Tiler', labelKa: 'მოკაფელე' },
+    { value: 'flooring', label: 'Flooring', labelKa: 'იატაკის სპეციალისტი' },
+    { value: 'plastering', label: 'Plasterer', labelKa: 'მლესავი' },
+    { value: 'carpentry', label: 'Carpenter', labelKa: 'დურგალი' },
     { value: 'welding', label: 'Welder', labelKa: 'შემდუღებელი' },
-    { value: 'plastering', label: 'Plasterer', labelKa: 'მალიარი' },
+    { value: 'hvac', label: 'HVAC', labelKa: 'გათბობა/გაგრილება' },
+    { value: 'roofing', label: 'Roofer', labelKa: 'გადამხურავი' },
   ],
   'home-care': [
-    { value: 'cleaning', label: 'Cleaning', labelKa: 'დასუფთავება' },
+    { value: 'cleaning', label: 'Cleaning', labelKa: 'დალაგება' },
     { value: 'moving', label: 'Moving', labelKa: 'გადაზიდვა' },
-    { value: 'gardening', label: 'Gardening', labelKa: 'ბაღის მოვლა' },
-    { value: 'security', label: 'Security Systems', labelKa: 'დაცვის სისტემები' },
-    { value: 'pest-control', label: 'Pest Control', labelKa: 'დეზინფექცია' },
-    { value: 'pool', label: 'Pool Service', labelKa: 'აუზის მოვლა' },
+    { value: 'gardening', label: 'Gardening', labelKa: 'მებაღეობა' },
+    { value: 'appliance-repair', label: 'Appliance Repair', labelKa: 'ტექნიკის შეკეთება' },
+    { value: 'pest-control', label: 'Pest Control', labelKa: 'დეზინსექცია' },
+    { value: 'window-cleaning', label: 'Window Cleaning', labelKa: 'ფანჯრების წმენდა' },
   ],
 };
 
@@ -202,7 +206,8 @@ export default function PostJobPage() {
     title: '',
     description: '',
     location: '',
-    propertyType: 'apartment',
+    propertyType: '',
+    propertyTypeOther: '',
 
     // Size info
     areaSize: '',
@@ -295,7 +300,8 @@ export default function PostJobPage() {
           title: job.title || '',
           description: job.description || '',
           location: job.location || '',
-          propertyType: job.propertyType || 'apartment',
+          propertyType: job.propertyType || '',
+          propertyTypeOther: job.propertyTypeOther || '',
           areaSize: job.areaSize?.toString() || '',
           sizeUnit: job.sizeUnit || 'sqm',
           roomCount: job.roomCount?.toString() || '',
@@ -547,7 +553,8 @@ export default function PostJobPage() {
         // Require category AND at least 1 specialty (from predefined or custom)
         return !!formData.category && (selectedSpecialties.length > 0 || customSpecialties.length > 0);
       case 'basics':
-        return !!formData.title && !!formData.description && !!formData.location;
+        const hasPropertyType = !!formData.propertyType && (formData.propertyType !== 'other' || !!formData.propertyTypeOther);
+        return !!formData.title && !!formData.description && hasPropertyType;
       case 'details':
         return true; // All optional
       case 'budget':
@@ -610,10 +617,17 @@ export default function PostJobPage() {
         title: formData.title,
         description: formData.description,
         category: formData.category,
-        location: formData.location,
         propertyType: formData.propertyType,
         budgetType: formData.budgetType,
       };
+
+      // Add propertyTypeOther if property type is "other"
+      if (formData.propertyType === 'other' && formData.propertyTypeOther) {
+        jobData.propertyTypeOther = formData.propertyTypeOther;
+      }
+
+      // Add location if provided
+      if (formData.location) jobData.location = formData.location;
 
       // Add size info
       if (formData.areaSize) jobData.areaSize = Number(formData.areaSize);
@@ -745,7 +759,7 @@ export default function PostJobPage() {
           <div className="py-4">
             <div className="flex items-center justify-between mb-3">
               <button
-                onClick={() => router.back()}
+                onClick={() => router.push('/browse')}
                 className="text-sm text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors"
               >
                 {language === 'ka' ? 'გაუქმება' : 'Cancel'}
@@ -884,7 +898,7 @@ export default function PostJobPage() {
               <div className="mt-10 max-w-2xl mx-auto animate-fadeIn">
                 <div className="text-center mb-6">
                   <h2 className="text-xl font-serif font-medium text-neutral-900 dark:text-neutral-50 mb-2">
-                    {language === 'ka' ? 'რა სპეციალისტი გჭირდებათ?' : 'What specialist do you need?'}
+                    {language === 'ka' ? 'რისი სპეციალისტი გჭირდებათ?' : 'What specialist do you need?'}
                   </h2>
                   <p className="text-sm text-neutral-500 dark:text-neutral-400">
                     {language === 'ka'
@@ -1103,21 +1117,10 @@ export default function PostJobPage() {
               />
             </div>
 
-            {/* Location */}
-            <div>
-              <AddressPicker
-                value={formData.location}
-                onChange={(value) => updateFormData('location', value)}
-                locale={language}
-                label={language === 'ka' ? 'პროექეტის მდებარეობა' : 'Location'}
-                required={true}
-              />
-            </div>
-
             {/* Property Type */}
             <div className="space-y-3">
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                {language === 'ka' ? 'ქონების ტიპი' : 'Property Type'}
+                {language === 'ka' ? 'ქონების ტიპი' : 'Property Type'} <span className="text-red-500">*</span>
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                 {PROPERTY_TYPES.map((type) => {
@@ -1126,7 +1129,12 @@ export default function PostJobPage() {
                     <button
                       key={type.value}
                       type="button"
-                      onClick={() => updateFormData('propertyType', type.value)}
+                      onClick={() => {
+                        updateFormData('propertyType', type.value);
+                        if (type.value !== 'other') {
+                          updateFormData('propertyTypeOther', '');
+                        }
+                      }}
                       className={`flex flex-col items-center gap-2 p-4 rounded-xl transition-all duration-200 ${
                         formData.propertyType === type.value
                           ? 'ring-2 ring-forest-500 dark:ring-primary-400'
@@ -1145,6 +1153,23 @@ export default function PostJobPage() {
                   );
                 })}
               </div>
+              {/* Custom property type input when "other" is selected */}
+              {formData.propertyType === 'other' && (
+                <div className="mt-3">
+                  <input
+                    type="text"
+                    value={formData.propertyTypeOther}
+                    onChange={(e) => updateFormData('propertyTypeOther', e.target.value)}
+                    placeholder={language === 'ka' ? 'მიუთითეთ ქონების ტიპი...' : 'Specify property type...'}
+                    className="w-full px-4 py-3 rounded-xl text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-forest-500 dark:focus:ring-primary-400"
+                    style={{
+                      backgroundColor: 'var(--color-bg-secondary)',
+                      border: '1px solid var(--color-border)',
+                      color: 'var(--color-text-primary)'
+                    }}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Size Info - Two rows for better layout */}
@@ -1219,6 +1244,17 @@ export default function PostJobPage() {
                 )}
               </div>
             </div>
+
+            {/* Location - Optional */}
+            <div>
+              <AddressPicker
+                value={formData.location}
+                onChange={(value) => updateFormData('location', value)}
+                locale={language}
+                label={language === 'ka' ? 'პროექეტის მდებარეობა' : 'Location'}
+                required={false}
+              />
+            </div>
           </div>
         )}
 
@@ -1256,7 +1292,7 @@ export default function PostJobPage() {
                 {/* Project Phase */}
                 <div className="space-y-3">
                   <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                    Project Phase
+                    {language === 'ka' ? 'პროექტის ფაზა' : 'Project Phase'}
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {PROJECT_PHASES.map((phase) => (
@@ -1275,10 +1311,10 @@ export default function PostJobPage() {
                         }}
                       >
                         <span className={`block text-sm font-medium ${formData.projectPhase === phase.value ? 'text-forest-600 dark:text-primary-400' : 'text-neutral-900 dark:text-neutral-50'}`}>
-                          {phase.label}
+                          {language === 'ka' ? phase.labelKa : phase.label}
                         </span>
                         <span className="block text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                          {phase.description}
+                          {language === 'ka' ? phase.descriptionKa : phase.description}
                         </span>
                       </button>
                     ))}
@@ -1288,7 +1324,7 @@ export default function PostJobPage() {
                 {/* Zoning Type */}
                 <div className="space-y-3">
                   <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                    Zoning Type
+                    {language === 'ka' ? 'ზონირების ტიპი' : 'Zoning Type'}
                   </label>
                   <div className="flex flex-wrap gap-2">
                     {ZONING_TYPES.map((zone) => (
@@ -1306,7 +1342,7 @@ export default function PostJobPage() {
                           border: '1px solid var(--color-border)',
                         } : {}}
                       >
-                        {zone.label}
+                        {language === 'ka' ? zone.labelKa : zone.label}
                       </button>
                     ))}
                   </div>
@@ -1316,7 +1352,7 @@ export default function PostJobPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                      Cadastral ID
+                      {language === 'ka' ? 'საკადასტრო კოდი' : 'Cadastral ID'}
                     </label>
                     <input
                       type="text"
@@ -1334,7 +1370,7 @@ export default function PostJobPage() {
 
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                      Land Area
+                      {language === 'ka' ? 'მიწის ფართობი' : 'Land Area'}
                     </label>
                     <input
                       type="text"
@@ -1352,7 +1388,7 @@ export default function PostJobPage() {
 
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                      Number of Floors
+                      {language === 'ka' ? 'სართულების რაოდენობა' : 'Number of Floors'}
                     </label>
                     <input
                       type="number"
@@ -1370,7 +1406,7 @@ export default function PostJobPage() {
 
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                      Current Condition
+                      {language === 'ka' ? 'მიმდინარე მდგომარეობა' : 'Current Condition'}
                     </label>
                     <input
                       type="text"
@@ -1396,8 +1432,8 @@ export default function PostJobPage() {
                   }}
                 >
                   <div>
-                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-50">Building Permit Required</p>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400">Does this project need a permit?</p>
+                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-50">{language === 'ka' ? 'საჭიროა მშენებლობის ნებართვა' : 'Building Permit Required'}</p>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">{language === 'ka' ? 'სჭირდება თუ არა ამ პროექტს ნებართვა?' : 'Does this project need a permit?'}</p>
                   </div>
                   <button
                     type="button"
@@ -2282,7 +2318,7 @@ export default function PostJobPage() {
                   </div>
                   <div className="flex-1">
                     <p className="text-xs text-forest-600 dark:text-primary-400 font-medium uppercase tracking-wide mb-1">
-                      {selectedCategory?.name}
+                      {language === 'ka' ? selectedCategory?.nameKa : selectedCategory?.name}
                     </p>
                     <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-50">
                       {formData.title}
@@ -2305,7 +2341,9 @@ export default function PostJobPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t" style={{ borderColor: 'var(--color-border)' }}>
                   <div>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-1">{language === 'ka' ? 'ქონება' : 'Property'}</p>
-                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-50 capitalize">{formData.propertyType}</p>
+                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-50 capitalize">
+                      {formData.propertyType === 'other' ? formData.propertyTypeOther : formData.propertyType}
+                    </p>
                   </div>
                   {formData.areaSize && (
                     <div>

@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Flag, Search, AlertTriangle, Clock, CheckCircle, XCircle } from 'lucide-react';
 
 export default function AdminReportsPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -27,10 +29,10 @@ export default function AdminReportsPage() {
   }
 
   const stats = [
-    { label: 'Total Reports', value: '0', icon: Flag, color: 'bg-blue-500' },
-    { label: 'Pending', value: '0', icon: Clock, color: 'bg-yellow-500' },
-    { label: 'Resolved', value: '0', icon: CheckCircle, color: 'bg-green-500' },
-    { label: 'Urgent', value: '0', icon: AlertTriangle, color: 'bg-red-500' },
+    { label: t('admin.reportsPage.totalReports'), value: '0', icon: Flag, color: 'bg-blue-500' },
+    { label: t('admin.pending'), value: '0', icon: Clock, color: 'bg-yellow-500' },
+    { label: t('admin.resolved'), value: '0', icon: CheckCircle, color: 'bg-green-500' },
+    { label: t('admin.reportsPage.urgent'), value: '0', icon: AlertTriangle, color: 'bg-red-500' },
   ];
 
   return (
@@ -38,14 +40,14 @@ export default function AdminReportsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-50">Reports</h1>
-            <p className="mt-2 text-neutral-600 dark:text-neutral-400">Handle user reports and disputes</p>
+            <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-50">{t('admin.reportsPage.title')}</h1>
+            <p className="mt-2 text-neutral-600 dark:text-neutral-400">{t('admin.reportsPage.subtitle')}</p>
           </div>
           <button
             onClick={() => router.push('/admin')}
             className="text-sm text-forest-800 dark:text-primary-400 hover:text-terracotta-500 font-medium transition-all duration-200 ease-out"
           >
-            ← Back to Dashboard
+            ← {t('admin.backToDashboard')}
           </button>
         </div>
 
@@ -73,33 +75,33 @@ export default function AdminReportsPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-neutral-400" />
               <input
                 type="text"
-                placeholder="Search reports..."
+                placeholder={t('admin.reportsPage.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 transition-all duration-200 ease-out"
+                className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 dark:border-dark-border dark:bg-dark-bg dark:text-neutral-50 rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 transition-all duration-200 ease-out"
               />
             </div>
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 transition-all duration-200 ease-out"
+              className="px-4 py-2.5 border border-neutral-200 dark:border-dark-border dark:bg-dark-bg dark:text-neutral-50 rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 transition-all duration-200 ease-out"
             >
-              <option value="all">All Types</option>
-              <option value="user">User Report</option>
-              <option value="job">Job Report</option>
-              <option value="order">Order Dispute</option>
-              <option value="payment">Payment Issue</option>
+              <option value="all">{t('admin.reportsPage.allTypes')}</option>
+              <option value="user">{t('admin.reportsPage.userReport')}</option>
+              <option value="job">{t('admin.reportsPage.jobReport')}</option>
+              <option value="order">{t('admin.reportsPage.orderDispute')}</option>
+              <option value="payment">{t('admin.reportsPage.paymentIssue')}</option>
             </select>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 transition-all duration-200 ease-out"
+              className="px-4 py-2.5 border border-neutral-200 dark:border-dark-border dark:bg-dark-bg dark:text-neutral-50 rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 transition-all duration-200 ease-out"
             >
-              <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="investigating">Investigating</option>
-              <option value="resolved">Resolved</option>
-              <option value="dismissed">Dismissed</option>
+              <option value="all">{t('admin.reportsPage.allStatus')}</option>
+              <option value="pending">{t('admin.pending')}</option>
+              <option value="investigating">{t('admin.reportsPage.investigating')}</option>
+              <option value="resolved">{t('admin.resolved')}</option>
+              <option value="dismissed">{t('admin.reportsPage.dismissed')}</option>
             </select>
           </div>
         </div>
@@ -110,25 +112,25 @@ export default function AdminReportsPage() {
             <thead className="bg-neutral-50 dark:bg-dark-bg">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Report
+                  {t('admin.reportsPage.tableReport')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Type
+                  {t('admin.reportsPage.tableType')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Reporter
+                  {t('admin.reportsPage.tableReporter')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Status
+                  {t('admin.reportsPage.tableStatus')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Priority
+                  {t('admin.reportsPage.tablePriority')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Date
+                  {t('admin.reportsPage.tableDate')}
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Actions
+                  {t('admin.reportsPage.tableActions')}
                 </th>
               </tr>
             </thead>
@@ -136,7 +138,7 @@ export default function AdminReportsPage() {
               <tr>
                 <td colSpan={7} className="px-6 py-12 text-center">
                   <Flag className="h-12 w-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-3" />
-                  <p className="text-neutral-500 dark:text-neutral-400">No reports found</p>
+                  <p className="text-neutral-500 dark:text-neutral-400">{t('admin.reportsPage.noReportsFound')}</p>
                 </td>
               </tr>
             </tbody>

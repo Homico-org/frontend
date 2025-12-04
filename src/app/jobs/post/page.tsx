@@ -704,7 +704,7 @@ export default function PostJobPage() {
             <div className="flex gap-4 pt-4">
               <button
                 type="button"
-                onClick={() => router.back()}
+                onClick={() => router.push('/browse')}
                 className="flex-1 btn btn-outline"
                 disabled={isLoading}
               >

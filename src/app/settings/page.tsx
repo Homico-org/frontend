@@ -116,28 +116,29 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-cream-50 dark:bg-dark-bg">
       <Header />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-serif font-medium text-neutral-900 dark:text-neutral-50">{t('settings.title')}</h1>
-          <p className="mt-1 text-neutral-500 dark:text-neutral-400">{t('settings.subtitle')}</p>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-xl sm:text-2xl font-serif font-medium text-neutral-900 dark:text-neutral-50">{t('settings.title')}</h1>
+          <p className="mt-1 text-sm sm:text-base text-neutral-500 dark:text-neutral-400">{t('settings.subtitle')}</p>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Sidebar */}
+        <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
+          {/* Sidebar - Horizontal tabs on mobile */}
           <div className="md:w-56 flex-shrink-0">
-            <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible pb-2 md:pb-0">
+            <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible pb-2 md:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ease-out whitespace-nowrap ${
+                  className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ease-out whitespace-nowrap touch-manipulation ${
                     activeTab === tab.id
                       ? 'bg-forest-800 dark:bg-primary-400 text-white dark:text-dark-bg'
                       : 'text-neutral-600 dark:text-neutral-400 hover:bg-cream-100 dark:hover:bg-dark-card'
                   }`}
                 >
-                  <tab.icon className="h-4 w-4" />
-                  {tab.label}
+                  <tab.icon className="h-4 w-4 flex-shrink-0" />
+                  <span className="hidden sm:inline md:hidden lg:inline">{tab.label}</span>
+                  <span className="sm:hidden md:inline lg:hidden">{tab.label.split(' ')[0]}</span>
                 </button>
               ))}
             </nav>
@@ -146,11 +147,11 @@ export default function SettingsPage() {
           {/* Content */}
           <div className="flex-1">
             {activeTab === 'profile' && (
-              <div className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-6">
-                <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50 mb-6">{t('settings.profile.title')}</h2>
+              <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-4 sm:p-6">
+                <h2 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-50 mb-4 sm:mb-6">{t('settings.profile.title')}</h2>
 
                 {message && (
-                  <div className={`mb-6 p-4 rounded-xl text-sm ${
+                  <div className={`mb-4 sm:mb-6 p-3 sm:p-4 rounded-xl text-sm ${
                     message.type === 'success'
                       ? 'bg-primary-50 text-primary-700 border border-primary-200 dark:bg-primary-900/20 dark:text-primary-300 dark:border-primary-800'
                       : 'bg-terracotta-50 text-terracotta-700 border border-terracotta-200 dark:bg-terracotta-900/20 dark:text-terracotta-300 dark:border-terracotta-800'
@@ -159,9 +160,9 @@ export default function SettingsPage() {
                   </div>
                 )}
 
-                <div className="space-y-6">
+                <div className="space-y-5 sm:space-y-6">
                   {/* Avatar Upload */}
-                  <div className="flex items-center gap-6">
+                  <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
                     <div className="relative group">
                       <Avatar
                         src={formData.avatar}
@@ -171,9 +172,9 @@ export default function SettingsPage() {
                       />
                       <button
                         onClick={handleAvatarClick}
-                        className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 ease-out cursor-pointer"
+                        className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 active:opacity-100 transition-all duration-200 ease-out cursor-pointer touch-manipulation"
                       >
-                        <Camera className="w-8 h-8 text-white" />
+                        <Camera className="w-6 sm:w-8 h-6 sm:h-8 text-white" />
                       </button>
                       <input
                         ref={fileInputRef}
@@ -183,29 +184,29 @@ export default function SettingsPage() {
                         className="hidden"
                       />
                     </div>
-                    <div>
+                    <div className="text-center sm:text-left">
                       <h3 className="font-medium text-neutral-900 dark:text-neutral-50">{t('settings.profile.profilePhoto')}</h3>
                       <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
                         {t('settings.profile.photoHint')}
                       </p>
                       <button
                         onClick={handleAvatarClick}
-                        className="mt-2 text-sm text-forest-800 dark:text-primary-400 hover:text-terracotta-500 dark:hover:text-primary-300 font-medium transition-all duration-200 ease-out"
+                        className="mt-2 text-sm text-forest-800 dark:text-primary-400 hover:text-terracotta-500 dark:hover:text-primary-300 font-medium transition-all duration-200 ease-out touch-manipulation"
                       >
                         {t('settings.profile.uploadPhoto')}
                       </button>
                     </div>
                   </div>
 
-                  <div className="border-t border-neutral-100 dark:border-dark-border pt-6">
-                    <div className="grid gap-4">
+                  <div className="border-t border-neutral-100 dark:border-dark-border pt-5 sm:pt-6">
+                    <div className="grid gap-3 sm:gap-4">
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">{t('settings.profile.fullName')}</label>
                         <input
                           type="text"
                           value={formData.name}
                           onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                          className="w-full px-4 py-2.5 border border-neutral-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 dark:bg-dark-elevated dark:text-white"
+                          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-base border border-neutral-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 dark:bg-dark-elevated dark:text-white"
                         />
                       </div>
                       <div>
@@ -214,7 +215,7 @@ export default function SettingsPage() {
                           type="email"
                           value={formData.email}
                           disabled
-                          className="w-full px-4 py-2.5 border border-neutral-200 dark:border-dark-border rounded-xl bg-neutral-50 dark:bg-dark-elevated text-neutral-500 dark:text-neutral-400 cursor-not-allowed"
+                          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-base border border-neutral-200 dark:border-dark-border rounded-xl bg-neutral-50 dark:bg-dark-elevated text-neutral-500 dark:text-neutral-400 cursor-not-allowed"
                         />
                         <p className="mt-1 text-xs text-neutral-400">{t('settings.profile.emailHint')}</p>
                       </div>
@@ -222,10 +223,11 @@ export default function SettingsPage() {
                         <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">{t('settings.profile.phone')}</label>
                         <input
                           type="tel"
+                          inputMode="tel"
                           value={formData.phone}
                           onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                           placeholder={t('settings.profile.phonePlaceholder')}
-                          className="w-full px-4 py-2.5 border border-neutral-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 dark:bg-dark-elevated dark:text-white"
+                          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-base border border-neutral-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 dark:bg-dark-elevated dark:text-white"
                         />
                       </div>
                       <div>
@@ -235,7 +237,7 @@ export default function SettingsPage() {
                           value={formData.city}
                           onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
                           placeholder={t('settings.profile.cityPlaceholder')}
-                          className="w-full px-4 py-2.5 border border-neutral-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 dark:bg-dark-elevated dark:text-white"
+                          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-base border border-neutral-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 dark:bg-dark-elevated dark:text-white"
                         />
                       </div>
                     </div>
@@ -245,7 +247,7 @@ export default function SettingsPage() {
                     <button
                       onClick={handleSaveProfile}
                       disabled={isSaving}
-                      className="px-6 py-2.5 bg-forest-800 dark:bg-primary-400 text-white dark:text-dark-bg rounded-xl hover:bg-forest-700 dark:hover:bg-primary-500 transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="w-full sm:w-auto px-6 py-3 sm:py-2.5 bg-forest-800 dark:bg-primary-400 text-white dark:text-dark-bg rounded-xl hover:bg-forest-700 dark:hover:bg-primary-500 transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 touch-manipulation"
                     >
                       {isSaving ? (
                         <>
@@ -262,18 +264,18 @@ export default function SettingsPage() {
             )}
 
             {activeTab === 'notifications' && (
-              <div className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-6">
-                <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50 mb-6">{t('settings.notifications.title')}</h2>
-                <div className="space-y-4">
+              <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-4 sm:p-6">
+                <h2 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-50 mb-4 sm:mb-6">{t('settings.notifications.title')}</h2>
+                <div className="space-y-3 sm:space-y-4">
                   {[
                     { key: 'email', label: t('settings.notifications.email') },
                     { key: 'push', label: t('settings.notifications.push') },
                     { key: 'sms', label: t('settings.notifications.sms') },
                     { key: 'marketing', label: t('settings.notifications.marketing') }
                   ].map((item) => (
-                    <div key={item.key} className="flex items-center justify-between py-3 border-b border-neutral-100 dark:border-dark-border last:border-0">
-                      <span className="text-neutral-700 dark:text-neutral-400">{item.label}</span>
-                      <label className="relative inline-flex items-center cursor-pointer">
+                    <div key={item.key} className="flex items-center justify-between py-2.5 sm:py-3 border-b border-neutral-100 dark:border-dark-border last:border-0">
+                      <span className="text-sm sm:text-base text-neutral-700 dark:text-neutral-400">{item.label}</span>
+                      <label className="relative inline-flex items-center cursor-pointer touch-manipulation">
                         <input type="checkbox" className="sr-only peer" defaultChecked />
                         <div className="w-11 h-6 bg-neutral-200 dark:bg-dark-elevated peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-forest-100 dark:peer-focus:ring-primary-400/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 dark:after:border-dark-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all duration-200 peer-checked:bg-forest-800 dark:peer-checked:bg-primary-400"></div>
                       </label>
@@ -284,32 +286,32 @@ export default function SettingsPage() {
             )}
 
             {activeTab === 'security' && (
-              <div className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-6">
-                <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50 mb-6">{t('settings.security.title')}</h2>
-                <div className="space-y-4">
+              <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-4 sm:p-6">
+                <h2 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-50 mb-4 sm:mb-6">{t('settings.security.title')}</h2>
+                <div className="space-y-3 sm:space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">{t('settings.security.currentPassword')}</label>
                     <input
                       type="password"
-                      className="w-full px-4 py-2.5 border border-neutral-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 dark:bg-dark-elevated dark:text-white"
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-base border border-neutral-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 dark:bg-dark-elevated dark:text-white"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">{t('settings.security.newPassword')}</label>
                     <input
                       type="password"
-                      className="w-full px-4 py-2.5 border border-neutral-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 dark:bg-dark-elevated dark:text-white"
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-base border border-neutral-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 dark:bg-dark-elevated dark:text-white"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">{t('settings.security.confirmPassword')}</label>
                     <input
                       type="password"
-                      className="w-full px-4 py-2.5 border border-neutral-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 dark:bg-dark-elevated dark:text-white"
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-base border border-neutral-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 dark:bg-dark-elevated dark:text-white"
                     />
                   </div>
                   <div className="flex justify-end pt-4">
-                    <button className="px-6 py-2.5 bg-forest-800 dark:bg-primary-400 text-white dark:text-dark-bg rounded-xl hover:bg-forest-700 dark:hover:bg-primary-500 transition-all duration-200 ease-out">
+                    <button className="w-full sm:w-auto px-6 py-3 sm:py-2.5 bg-forest-800 dark:bg-primary-400 text-white dark:text-dark-bg rounded-xl hover:bg-forest-700 dark:hover:bg-primary-500 transition-all duration-200 ease-out touch-manipulation">
                       {t('settings.security.updatePassword')}
                     </button>
                   </div>
@@ -318,12 +320,12 @@ export default function SettingsPage() {
             )}
 
             {activeTab === 'payments' && (
-              <div className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-6">
-                <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50 mb-6">{t('settings.payments.title')}</h2>
-                <div className="text-center py-8">
-                  <CreditCard className="h-12 w-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-3" />
-                  <p className="text-neutral-500 dark:text-neutral-400">{t('settings.payments.noMethods')}</p>
-                  <button className="mt-4 px-6 py-2.5 bg-forest-800 dark:bg-primary-400 text-white dark:text-dark-bg rounded-xl hover:bg-forest-700 dark:hover:bg-primary-500 transition-all duration-200 ease-out">
+              <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-4 sm:p-6">
+                <h2 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-50 mb-4 sm:mb-6">{t('settings.payments.title')}</h2>
+                <div className="text-center py-6 sm:py-8">
+                  <CreditCard className="h-10 sm:h-12 w-10 sm:w-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-3" />
+                  <p className="text-sm sm:text-base text-neutral-500 dark:text-neutral-400">{t('settings.payments.noMethods')}</p>
+                  <button className="mt-4 w-full sm:w-auto px-6 py-3 sm:py-2.5 bg-forest-800 dark:bg-primary-400 text-white dark:text-dark-bg rounded-xl hover:bg-forest-700 dark:hover:bg-primary-500 transition-all duration-200 ease-out touch-manipulation">
                     {t('settings.payments.addMethod')}
                   </button>
                 </div>

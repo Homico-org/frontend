@@ -2,12 +2,12 @@
 
 import Header from '@/components/common/Header';
 import RatingBar from '@/components/common/RatingBar';
-import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 interface Company {
   name: string;
@@ -339,24 +339,24 @@ export default function ProfessionalDetailPage() {
   const primaryCompany = profile.companies && profile.companies.length > 0 ? profile.companies[0] : null;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+    <div className="min-h-screen overflow-x-hidden" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
       <Header />
 
       {/* Hero Section */}
       <div style={{ backgroundColor: 'var(--color-bg-secondary)', borderBottom: '1px solid var(--color-border)' }}>
         <div className="container-custom">
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-sm py-3">
-            <Link href="/browse" className="transition-colors hover:opacity-80" style={{ color: 'var(--color-text-tertiary)' }}>პროფესიონალები</Link>
-            <svg className="w-3.5 h-3.5" style={{ color: 'var(--color-border)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <nav className="flex items-center gap-2 text-sm py-3 overflow-hidden">
+            <Link href="/browse" className="transition-colors hover:opacity-80 flex-shrink-0" style={{ color: 'var(--color-text-tertiary)' }}>პროფესიონალები</Link>
+            <svg className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--color-border)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-            <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{profile.userId.name}</span>
+            <span className="font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>{profile.userId.name}</span>
           </nav>
 
           {/* Profile Header */}
-          <div className="pb-6">
-            <div className="flex flex-col lg:flex-row gap-5 lg:gap-6">
+          <div className="pb-4 sm:pb-6">
+            <div className="flex gap-3 sm:gap-5 lg:gap-6">
               {/* Avatar Section */}
               <div className="flex-shrink-0">
                 <div className="relative">
@@ -364,107 +364,109 @@ export default function ProfessionalDetailPage() {
                     <img
                       src={profile.userId.avatar}
                       alt={profile.userId.name}
-                      className="w-28 h-28 lg:w-32 lg:h-32 rounded-xl object-cover"
+                      className="w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-xl object-cover"
                       style={{ boxShadow: '0 0 0 1px var(--color-border)' }}
                     />
                   ) : (
-                    <div className="w-28 h-28 lg:w-32 lg:h-32 rounded-xl flex items-center justify-center text-4xl lg:text-5xl font-semibold" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }}>
+                    <div className="w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-xl flex items-center justify-center text-2xl sm:text-4xl lg:text-5xl font-semibold" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }}>
                       {profile.userId.name.charAt(0)}
                     </div>
                   )}
                   {/* Company badge on avatar */}
                   {primaryCompany && (
-                    <div className="absolute -bottom-1.5 -right-1.5 w-9 h-9 rounded-lg flex items-center justify-center overflow-hidden" style={{ backgroundColor: 'var(--color-bg-secondary)', boxShadow: '0 0 0 1px var(--color-border)' }}>
+                    <div className="absolute -bottom-1 -right-1 sm:-bottom-1.5 sm:-right-1.5 w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center overflow-hidden" style={{ backgroundColor: 'var(--color-bg-secondary)', boxShadow: '0 0 0 1px var(--color-border)' }}>
                       {primaryCompany.logo ? (
                         <img src={primaryCompany.logo} alt={primaryCompany.name} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full bg-emerald-500 flex items-center justify-center">
-                          <span className="text-xs font-semibold text-white">{primaryCompany.name.charAt(0)}</span>
+                          <span className="text-[10px] sm:text-xs font-semibold text-white">{primaryCompany.name.charAt(0)}</span>
                         </div>
                       )}
                     </div>
                   )}
                   {/* Online indicator */}
                   {profile.isAvailable && !primaryCompany && (
-                    <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-emerald-500 rounded-full" style={{ boxShadow: '0 0 0 2px var(--color-bg-secondary)' }} />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 sm:w-5 sm:h-5 bg-emerald-500 rounded-full" style={{ boxShadow: '0 0 0 2px var(--color-bg-secondary)' }} />
                   )}
                 </div>
               </div>
 
               {/* Info Section */}
               <div className="flex-1 min-w-0">
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                  <div>
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
+                  <div className="min-w-0">
                     {/* Name row */}
-                    <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                      <h1 className="text-xl lg:text-2xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>{profile.userId.name}</h1>
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1 sm:mb-1.5">
+                      <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold truncate max-w-[200px] sm:max-w-none" style={{ color: 'var(--color-text-primary)' }}>{profile.userId.name}</h1>
                       {profile.avgRating >= 4.8 && profile.totalReviews >= 5 && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-500/10 dark:bg-amber-400/15 text-amber-600 dark:text-amber-400 text-[10px] font-semibold rounded-full uppercase tracking-wide">
-                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 bg-amber-500/10 dark:bg-amber-400/15 text-amber-600 dark:text-amber-400 text-[9px] sm:text-[10px] font-semibold rounded-full uppercase tracking-wide flex-shrink-0">
+                          <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                           </svg>
                           Top
                         </span>
                       )}
                       {profile.isAvailable && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-500/10 dark:bg-emerald-400/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-medium rounded-full">
-                          <span className="w-1.5 h-1.5 bg-emerald-500 dark:bg-emerald-400 rounded-full animate-pulse" />
-                          ხელმისაწვდომია
+                        <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 bg-emerald-500/10 dark:bg-emerald-400/15 text-emerald-600 dark:text-emerald-400 text-[9px] sm:text-[10px] font-medium rounded-full flex-shrink-0">
+                          <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-emerald-500 dark:bg-emerald-400 rounded-full animate-pulse" />
+                          <span className="hidden sm:inline">ხელმისაწვდომია</span>
+                          <span className="sm:hidden">აქტიური</span>
                         </span>
                       )}
                     </div>
 
                     {/* Title */}
-                    <p className="text-sm mb-1" style={{ color: 'var(--color-text-secondary)' }}>{profile.title}</p>
+                    <p className="text-xs sm:text-sm mb-1 truncate" style={{ color: 'var(--color-text-secondary)' }}>{profile.title}</p>
 
                     {/* Company */}
                     {primaryCompany && (
-                      <div className="flex items-center gap-1.5 mb-2 text-sm">
-                        <svg className="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="flex items-center gap-1 sm:gap-1.5 mb-1.5 sm:mb-2 text-xs sm:text-sm">
+                        <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
-                        <span className="font-medium" style={{ color: 'var(--color-text-secondary)' }}>{primaryCompany.name}</span>
+                        <span className="font-medium truncate" style={{ color: 'var(--color-text-secondary)' }}>{primaryCompany.name}</span>
                         {primaryCompany.role && (
-                          <span style={{ color: 'var(--color-text-tertiary)' }}>· {primaryCompany.role}</span>
+                          <span className="truncate hidden sm:inline" style={{ color: 'var(--color-text-tertiary)' }}>· {primaryCompany.role}</span>
                         )}
                       </div>
                     )}
 
                     {/* Stats row */}
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 text-sm">
+                    <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-4 gap-y-1 sm:gap-y-1.5 mt-1.5 sm:mt-2 text-xs sm:text-sm">
                       {profile.totalReviews > 0 && (
                         <RatingBar rating={profile.avgRating} reviewCount={profile.totalReviews} size="sm" />
                       )}
                       <div className="flex items-center gap-1" style={{ color: 'var(--color-text-tertiary)' }}>
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
-                        <span>{profile.yearsExperience}+ წელი</span>
+                        <span>{profile.yearsExperience}+ წ</span>
                       </div>
                       {profile.completedJobs && profile.completedJobs > 0 && (
                         <div className="flex items-center gap-1" style={{ color: 'var(--color-text-tertiary)' }}>
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
-                          <span>{profile.completedJobs} პროექტი</span>
+                          <span>{profile.completedJobs}</span>
                         </div>
                       )}
                       <div className="flex items-center gap-1" style={{ color: 'var(--color-text-tertiary)' }}>
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span>{profile.responseTime || '< 1 საათი'}</span>
+                        <span className="hidden sm:inline">{profile.responseTime || '< 1 საათი'}</span>
+                        <span className="sm:hidden">&lt;1სთ</span>
                       </div>
                     </div>
 
                     {/* Location */}
-                    <div className="flex items-center gap-1.5 mt-2 text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="flex items-center gap-1 sm:gap-1.5 mt-1.5 sm:mt-2 text-xs sm:text-sm overflow-hidden" style={{ color: 'var(--color-text-tertiary)' }}>
+                      <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       </svg>
-                      <span>{profile.serviceAreas.slice(0, 3).join(' · ')}</span>
-                      {profile.serviceAreas.length > 3 && (
-                        <span style={{ color: 'var(--color-text-muted)' }}>+{profile.serviceAreas.length - 3}</span>
+                      <span className="truncate">{profile.serviceAreas.slice(0, 2).join(' · ')}</span>
+                      {profile.serviceAreas.length > 2 && (
+                        <span className="flex-shrink-0" style={{ color: 'var(--color-text-muted)' }}>+{profile.serviceAreas.length - 2}</span>
                       )}
                     </div>
                   </div>
@@ -490,7 +492,7 @@ export default function ProfessionalDetailPage() {
                             onClick={() => {
                               navigator.clipboard.writeText(window.location.href);
                               setShowShareMenu(false);
-                              alert('ბმული დაკოპირებულია!');
+                              toast.success('ბმული დაკოპირებულია!');
                             }}
                             className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md transition-colors text-left hover:opacity-80"
                             style={{ backgroundColor: 'transparent' }}
@@ -573,10 +575,10 @@ export default function ProfessionalDetailPage() {
       </div>
 
       {/* Main Content */}
-      <main className="container-custom py-6">
-        <div className="grid lg:grid-cols-3 gap-6">
+      <main className="container-custom py-4 sm:py-6 pb-24 lg:pb-6">
+        <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Left Column - Main Content */}
-          <div className="lg:col-span-2 space-y-5">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-5">
             {/* Tabs */}
             <div className="rounded-lg overflow-hidden" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
               <div style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
@@ -585,82 +587,89 @@ export default function ProfessionalDetailPage() {
                     <button
                       key={tab}
                       onClick={() => setActiveTab(tab)}
-                      className="flex-1 px-4 py-3 text-sm font-medium transition-colors relative"
+                      className="flex-1 px-2 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium transition-colors relative touch-manipulation"
                       style={{ color: activeTab === tab ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)' }}
                     >
-                      <span className="flex items-center justify-center gap-1.5">
+                      <span className="flex items-center justify-center gap-1 sm:gap-1.5">
                         {tab === 'about' && (
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                           </svg>
                         )}
                         {tab === 'portfolio' && (
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
                         )}
                         {tab === 'reviews' && (
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                           </svg>
                         )}
-                        {tab === 'about' && 'შესახებ'}
-                        {tab === 'portfolio' && `სამუშაოები (${portfolio.length})`}
-                        {tab === 'reviews' && `შეფასებები (${profile.totalReviews})`}
+                        <span className="hidden sm:inline">
+                          {tab === 'about' && 'შესახებ'}
+                          {tab === 'portfolio' && `სამუშაოები (${portfolio.length})`}
+                          {tab === 'reviews' && `შეფასებები (${profile.totalReviews})`}
+                        </span>
+                        <span className="sm:hidden">
+                          {tab === 'about' && 'შესახებ'}
+                          {tab === 'portfolio' && `(${portfolio.length})`}
+                          {tab === 'reviews' && `(${profile.totalReviews})`}
+                        </span>
                       </span>
                       {activeTab === tab && (
-                        <div className="absolute bottom-0 left-4 right-4 h-0.5 rounded-full" style={{ backgroundColor: 'var(--color-text-primary)' }} />
+                        <div className="absolute bottom-0 left-2 right-2 sm:left-4 sm:right-4 h-0.5 rounded-full" style={{ backgroundColor: 'var(--color-text-primary)' }} />
                       )}
                     </button>
                   ))}
                 </nav>
               </div>
 
-              <div className="p-5">
+              <div className="p-3 sm:p-5">
                 {/* About Tab */}
                 {activeTab === 'about' && (
-                  <div className="space-y-6">
+                  <div className="space-y-4 sm:space-y-6">
                     {/* Tagline */}
                     {profile.tagline && (
-                      <div className="relative pl-4" style={{ borderLeft: '2px solid var(--color-border)' }}>
-                        <p className="text-base italic" style={{ color: 'var(--color-text-secondary)' }}>"{profile.tagline}"</p>
+                      <div className="relative pl-3 sm:pl-4" style={{ borderLeft: '2px solid var(--color-border)' }}>
+                        <p className="text-sm sm:text-base italic" style={{ color: 'var(--color-text-secondary)' }}>"{profile.tagline}"</p>
                       </div>
                     )}
 
                     {/* Description */}
                     <div>
-                      <h3 className="text-sm font-semibold mb-2" style={{ color: 'var(--color-text-primary)' }}>შესახებ</h3>
-                      <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>{profile.description}</p>
+                      <h3 className="text-xs sm:text-sm font-semibold mb-1.5 sm:mb-2" style={{ color: 'var(--color-text-primary)' }}>შესახებ</h3>
+                      <p className="text-xs sm:text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>{profile.description}</p>
                     </div>
 
                     {/* Highlights Grid */}
-                    <div className="grid sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
                       {/* Experience Card */}
-                      <div className="p-3.5 rounded-lg" style={{ backgroundColor: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border-subtle)' }}>
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--color-accent-soft)' }}>
-                            <svg className="w-4.5 h-4.5" style={{ color: 'var(--color-accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="p-2.5 sm:p-3.5 rounded-lg" style={{ backgroundColor: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border-subtle)' }}>
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--color-accent-soft)' }}>
+                            <svg className="w-4 h-4 sm:w-4.5 sm:h-4.5" style={{ color: 'var(--color-accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
                           </div>
-                          <div>
-                            <p className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>{profile.yearsExperience}+</p>
-                            <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>წლიანი გამოცდილება</p>
+                          <div className="min-w-0">
+                            <p className="text-lg sm:text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>{profile.yearsExperience}+</p>
+                            <p className="text-[10px] sm:text-xs truncate" style={{ color: 'var(--color-text-tertiary)' }}>წელი</p>
                           </div>
                         </div>
                       </div>
 
                       {/* Jobs Card */}
-                      <div className="p-3.5 rounded-lg" style={{ backgroundColor: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border-subtle)' }}>
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--color-accent-soft)' }}>
-                            <svg className="w-4.5 h-4.5" style={{ color: 'var(--color-accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="p-2.5 sm:p-3.5 rounded-lg" style={{ backgroundColor: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border-subtle)' }}>
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--color-accent-soft)' }}>
+                            <svg className="w-4 h-4 sm:w-4.5 sm:h-4.5" style={{ color: 'var(--color-accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                           </div>
-                          <div>
-                            <p className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>{profile.completedJobs || 0}</p>
-                            <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>დასრულებული პროექტი</p>
+                          <div className="min-w-0">
+                            <p className="text-lg sm:text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>{profile.completedJobs || 0}</p>
+                            <p className="text-[10px] sm:text-xs truncate" style={{ color: 'var(--color-text-tertiary)' }}>პროექტი</p>
                           </div>
                         </div>
                       </div>
@@ -668,11 +677,11 @@ export default function ProfessionalDetailPage() {
 
                     {/* Service Areas */}
                     <div>
-                      <h3 className="text-sm font-semibold mb-2" style={{ color: 'var(--color-text-primary)' }}>მომსახურების არეალი</h3>
-                      <div className="flex flex-wrap gap-1.5">
+                      <h3 className="text-xs sm:text-sm font-semibold mb-1.5 sm:mb-2" style={{ color: 'var(--color-text-primary)' }}>მომსახურების არეალი</h3>
+                      <div className="flex flex-wrap gap-1 sm:gap-1.5">
                         {profile.serviceAreas.map((area, i) => (
-                          <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }}>
-                            <svg className="w-3 h-3" style={{ color: 'var(--color-text-tertiary)' }} fill="currentColor" viewBox="0 0 20 20">
+                          <span key={i} className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-medium" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }}>
+                            <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" style={{ color: 'var(--color-text-tertiary)' }} fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                             </svg>
                             {area}
@@ -684,16 +693,16 @@ export default function ProfessionalDetailPage() {
                     {/* Certifications */}
                     {profile.certifications.length > 0 && (
                       <div>
-                        <h3 className="text-sm font-semibold mb-2" style={{ color: 'var(--color-text-primary)' }}>სერტიფიკატები</h3>
-                        <div className="space-y-1.5">
+                        <h3 className="text-xs sm:text-sm font-semibold mb-1.5 sm:mb-2" style={{ color: 'var(--color-text-primary)' }}>სერტიფიკატები</h3>
+                        <div className="space-y-1 sm:space-y-1.5">
                           {profile.certifications.map((cert, i) => (
-                            <div key={i} className="flex items-center gap-2.5 p-2.5 rounded-lg" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
-                              <div className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--color-highlight-soft)' }}>
-                                <svg className="w-3.5 h-3.5" style={{ color: 'var(--color-highlight)' }} fill="currentColor" viewBox="0 0 20 20">
+                            <div key={i} className="flex items-center gap-2 sm:gap-2.5 p-2 sm:p-2.5 rounded-lg" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
+                              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--color-highlight-soft)' }}>
+                                <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" style={{ color: 'var(--color-highlight)' }} fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                 </svg>
                               </div>
-                              <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{cert}</span>
+                              <span className="text-xs sm:text-sm truncate" style={{ color: 'var(--color-text-secondary)' }}>{cert}</span>
                             </div>
                           ))}
                         </div>
@@ -713,60 +722,60 @@ export default function ProfessionalDetailPage() {
                     ) : portfolio.length > 0 ? (
                       <>
                         {/* Project Type Stats */}
-                        <div className="grid grid-cols-3 gap-3">
+                        <div className="grid grid-cols-3 gap-2 sm:gap-3">
                           <button
                             onClick={() => setProjectTypeFilter(projectTypeFilter === 'quick' ? 'all' : 'quick')}
-                            className={`p-4 rounded-xl border transition-all ${
+                            className={`p-2 sm:p-4 rounded-lg sm:rounded-xl border transition-all ${
                               projectTypeFilter === 'quick'
-                                ? 'bg-emerald-50 border-emerald-200 ring-2 ring-emerald-500'
-                                : 'bg-white border-neutral-200 hover:border-emerald-200 hover:bg-emerald-50/50'
+                                ? 'bg-emerald-50 border-emerald-200 ring-2 ring-emerald-500 dark:bg-emerald-500/20 dark:border-emerald-500/40'
+                                : 'bg-white dark:bg-dark-card border-neutral-200 dark:border-dark-border hover:border-emerald-200 hover:bg-emerald-50/50 dark:hover:bg-emerald-500/10'
                             }`}
                           >
-                            <div className="flex items-center gap-2 mb-1">
-                              <div className="w-6 h-6 bg-emerald-100 rounded-md flex items-center justify-center">
-                                <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 mb-1">
+                              <div className="w-5 h-5 sm:w-6 sm:h-6 bg-emerald-100 dark:bg-emerald-500/20 rounded-md flex items-center justify-center">
+                                <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
                               </div>
-                              <span className="text-xs font-medium text-neutral-500">სწრაფი შეკეთება</span>
+                              <span className="text-[10px] sm:text-xs font-medium text-neutral-500 dark:text-neutral-400 text-center leading-tight">სწრაფი</span>
                             </div>
-                            <p className="text-2xl font-bold text-neutral-900">{portfolioStats.quick}</p>
+                            <p className="text-lg sm:text-2xl font-bold text-neutral-900 dark:text-neutral-50">{portfolioStats.quick}</p>
                           </button>
                           <button
                             onClick={() => setProjectTypeFilter(projectTypeFilter === 'project' ? 'all' : 'project')}
-                            className={`p-4 rounded-xl border transition-all ${
+                            className={`p-2 sm:p-4 rounded-lg sm:rounded-xl border transition-all ${
                               projectTypeFilter === 'project'
-                                ? 'bg-blue-50 border-blue-200 ring-2 ring-blue-500'
-                                : 'bg-white border-neutral-200 hover:border-blue-200 hover:bg-blue-50/50'
+                                ? 'bg-blue-50 border-blue-200 ring-2 ring-blue-500 dark:bg-blue-500/20 dark:border-blue-500/40'
+                                : 'bg-white dark:bg-dark-card border-neutral-200 dark:border-dark-border hover:border-blue-200 hover:bg-blue-50/50 dark:hover:bg-blue-500/10'
                             }`}
                           >
-                            <div className="flex items-center gap-2 mb-1">
-                              <div className="w-6 h-6 bg-blue-100 rounded-md flex items-center justify-center">
-                                <svg className="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 mb-1">
+                              <div className="w-5 h-5 sm:w-6 sm:h-6 bg-blue-100 dark:bg-blue-500/20 rounded-md flex items-center justify-center">
+                                <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                 </svg>
                               </div>
-                              <span className="text-xs font-medium text-neutral-500">პროექტები</span>
+                              <span className="text-[10px] sm:text-xs font-medium text-neutral-500 dark:text-neutral-400 text-center leading-tight">პროექტი</span>
                             </div>
-                            <p className="text-2xl font-bold text-neutral-900">{portfolioStats.project}</p>
+                            <p className="text-lg sm:text-2xl font-bold text-neutral-900 dark:text-neutral-50">{portfolioStats.project}</p>
                           </button>
                           <button
                             onClick={() => setProjectTypeFilter(projectTypeFilter === 'job' ? 'all' : 'job')}
-                            className={`p-4 rounded-xl border transition-all ${
+                            className={`p-2 sm:p-4 rounded-lg sm:rounded-xl border transition-all ${
                               projectTypeFilter === 'job'
-                                ? 'bg-purple-50 border-purple-200 ring-2 ring-purple-500'
-                                : 'bg-white border-neutral-200 hover:border-purple-200 hover:bg-purple-50/50'
+                                ? 'bg-purple-50 border-purple-200 ring-2 ring-purple-500 dark:bg-purple-500/20 dark:border-purple-500/40'
+                                : 'bg-white dark:bg-dark-card border-neutral-200 dark:border-dark-border hover:border-purple-200 hover:bg-purple-50/50 dark:hover:bg-purple-500/10'
                             }`}
                           >
-                            <div className="flex items-center gap-2 mb-1">
-                              <div className="w-6 h-6 bg-purple-100 rounded-md flex items-center justify-center">
-                                <svg className="w-3.5 h-3.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 mb-1">
+                              <div className="w-5 h-5 sm:w-6 sm:h-6 bg-purple-100 dark:bg-purple-500/20 rounded-md flex items-center justify-center">
+                                <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                 </svg>
                               </div>
-                              <span className="text-xs font-medium text-neutral-500">დიდი სამუშაო</span>
+                              <span className="text-[10px] sm:text-xs font-medium text-neutral-500 dark:text-neutral-400 text-center leading-tight">დიდი</span>
                             </div>
-                            <p className="text-2xl font-bold text-neutral-900">{portfolioStats.job}</p>
+                            <p className="text-lg sm:text-2xl font-bold text-neutral-900 dark:text-neutral-50">{portfolioStats.job}</p>
                           </button>
                         </div>
 
@@ -789,48 +798,48 @@ export default function ProfessionalDetailPage() {
                         )}
 
                         {/* Project List */}
-                        <div className="space-y-4">
+                        <div className="space-y-3 sm:space-y-4">
                           {filteredPortfolio.map((item) => (
                             <div
                               key={item._id}
                               onClick={() => setSelectedProject(item)}
-                              className="group bg-white border border-neutral-200 rounded-2xl overflow-hidden hover:border-neutral-300 hover:shadow-lg transition-all cursor-pointer"
+                              className="group bg-white dark:bg-dark-card border border-neutral-200 dark:border-dark-border rounded-xl sm:rounded-2xl overflow-hidden hover:border-neutral-300 dark:hover:border-dark-50 hover:shadow-lg transition-all cursor-pointer"
                             >
                               <div className="flex flex-col sm:flex-row">
                                 {/* Image */}
-                                <div className="sm:w-48 h-48 sm:h-auto relative flex-shrink-0">
+                                <div className="sm:w-48 h-40 sm:h-auto relative flex-shrink-0">
                                   <img
                                     src={item.imageUrl}
                                     alt={item.title}
                                     className="w-full h-full object-cover"
                                   />
                                   {/* Project type badge */}
-                                  <div className={`absolute top-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border ${getProjectTypeColor(item.projectType)}`}>
+                                  <div className={`absolute top-2 sm:top-3 left-2 sm:left-3 inline-flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-medium border ${getProjectTypeColor(item.projectType)}`}>
                                     {getProjectTypeIcon(item.projectType)}
-                                    {getProjectTypeLabel(item.projectType)}
+                                    <span className="hidden sm:inline">{getProjectTypeLabel(item.projectType)}</span>
                                   </div>
                                   {/* Before/After indicator */}
                                   {item.beforeImage && item.afterImage && (
-                                    <div className="absolute bottom-3 left-3 inline-flex items-center gap-1 px-2 py-1 bg-black/70 text-white text-xs font-medium rounded-lg">
-                                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div className="absolute bottom-2 sm:bottom-3 left-2 sm:left-3 inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-black/70 text-white text-[10px] sm:text-xs font-medium rounded-md sm:rounded-lg">
+                                      <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                       </svg>
-                                      მანამდე/მერე
+                                      <span className="hidden sm:inline">მანამდე/მერე</span>
                                     </div>
                                   )}
                                 </div>
 
                                 {/* Content */}
-                                <div className="flex-1 p-5">
-                                  <div className="flex items-start justify-between gap-4 mb-3">
-                                    <div>
-                                      <h4 className="font-semibold text-neutral-900 group-hover:text-neutral-700 transition-all duration-200 ease-out">{item.title}</h4>
+                                <div className="flex-1 p-3 sm:p-5 min-w-0">
+                                  <div className="flex items-start justify-between gap-2 sm:gap-4 mb-2 sm:mb-3">
+                                    <div className="min-w-0 flex-1">
+                                      <h4 className="font-semibold text-sm sm:text-base text-neutral-900 dark:text-neutral-50 group-hover:text-neutral-700 dark:group-hover:text-neutral-200 transition-all duration-200 ease-out truncate">{item.title}</h4>
                                       {item.location && (
-                                        <div className="flex items-center gap-1 text-sm text-neutral-500 mt-1">
-                                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <div className="flex items-center gap-1 text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5 sm:mt-1">
+                                          <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                           </svg>
-                                          {item.location}
+                                          <span className="truncate">{item.location}</span>
                                         </div>
                                       )}
                                     </div>
@@ -840,22 +849,22 @@ export default function ProfessionalDetailPage() {
                                   </div>
 
                                   {item.description && (
-                                    <p className="text-sm text-neutral-600 line-clamp-2 mb-4">{item.description}</p>
+                                    <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2 mb-2 sm:mb-4">{item.description}</p>
                                   )}
 
                                   {/* Duration and Client */}
-                                  <div className="flex flex-wrap items-center gap-4">
+                                  <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                                     {item.duration && (
-                                      <div className="flex items-center gap-1.5 text-sm text-neutral-500">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <div className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
+                                        <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
                                         {item.duration}
                                       </div>
                                     )}
                                     {item.completedDate && (
-                                      <div className="flex items-center gap-1.5 text-sm text-neutral-500">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <div className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
+                                        <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
                                         {new Date(item.completedDate).toLocaleDateString('ka-GE', { month: 'short', year: 'numeric' })}
@@ -865,27 +874,27 @@ export default function ProfessionalDetailPage() {
 
                                   {/* Client info */}
                                   {item.clientName && (
-                                    <div className="mt-4 pt-4 border-t border-neutral-100">
-                                      <div className="flex items-center gap-3">
+                                    <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-neutral-100 dark:border-dark-border">
+                                      <div className="flex items-center gap-2 sm:gap-3">
                                         {item.clientAvatar ? (
-                                          <img src={item.clientAvatar} alt={item.clientName} className="w-8 h-8 rounded-full object-cover" />
+                                          <img src={item.clientAvatar} alt={item.clientName} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover flex-shrink-0" />
                                         ) : (
-                                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-neutral-300 to-neutral-400 flex items-center justify-center text-white text-sm font-medium">
+                                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-neutral-300 to-neutral-400 dark:from-neutral-600 dark:to-neutral-700 flex items-center justify-center text-white text-xs sm:text-sm font-medium flex-shrink-0">
                                             {item.clientName.charAt(0)}
                                           </div>
                                         )}
                                         <div className="flex-1 min-w-0">
-                                          <p className="text-sm font-medium text-neutral-900 truncate">{item.clientName}</p>
+                                          <p className="text-xs sm:text-sm font-medium text-neutral-900 dark:text-neutral-50 truncate">{item.clientName}</p>
                                           {item.clientCity && (
-                                            <p className="text-xs text-neutral-500">{item.clientCity}</p>
+                                            <p className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400 truncate">{item.clientCity}</p>
                                           )}
                                         </div>
                                         {item.review && (
-                                          <div className="flex items-center gap-1 text-xs text-neutral-400">
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <div className="flex items-center gap-1 text-[10px] sm:text-xs text-neutral-400 dark:text-neutral-500 flex-shrink-0">
+                                            <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                                             </svg>
-                                            შეფასება
+                                            <span className="hidden sm:inline">შეფასება</span>
                                           </div>
                                         )}
                                       </div>
@@ -928,17 +937,17 @@ export default function ProfessionalDetailPage() {
                   <div className="space-y-6">
                     {/* Rating Summary - Refined Card */}
                     <div className="relative overflow-hidden">
-                      <div className="flex flex-col sm:flex-row gap-6">
+                      <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                         {/* Left: Score Display */}
                         <div className="flex-shrink-0 flex flex-col items-center sm:items-start">
                           <div className="relative">
                             {/* Glow effect behind score */}
                             <div className="absolute inset-0 blur-2xl opacity-20 bg-amber-400 dark:bg-amber-500 rounded-full scale-150" />
                             <div className="relative flex items-baseline gap-1">
-                              <span className="text-5xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+                              <span className="text-4xl sm:text-5xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
                                 {profile.avgRating.toFixed(1)}
                               </span>
-                              <span className="text-lg text-neutral-400 dark:text-neutral-500 font-medium">/5</span>
+                              <span className="text-base sm:text-lg text-neutral-400 dark:text-neutral-500 font-medium">/5</span>
                             </div>
                           </div>
                           {/* Stars */}
@@ -946,7 +955,7 @@ export default function ProfessionalDetailPage() {
                             {[1, 2, 3, 4, 5].map((star) => (
                               <svg
                                 key={star}
-                                className={`w-4 h-4 ${star <= Math.round(profile.avgRating) ? 'text-amber-400' : 'text-neutral-200 dark:text-neutral-700'}`}
+                                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${star <= Math.round(profile.avgRating) ? 'text-amber-400' : 'text-neutral-200 dark:text-neutral-700'}`}
                                 fill="currentColor"
                                 viewBox="0 0 20 20"
                               >
@@ -954,13 +963,13 @@ export default function ProfessionalDetailPage() {
                               </svg>
                             ))}
                           </div>
-                          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1.5">
+                          <p className="text-[11px] sm:text-xs text-neutral-500 dark:text-neutral-400 mt-1.5">
                             {profile.totalReviews} შეფასება
                           </p>
                         </div>
 
                         {/* Right: Distribution Bars */}
-                        <div className="flex-1 space-y-2">
+                        <div className="flex-1 space-y-1.5 sm:space-y-2">
                           {[5, 4, 3, 2, 1].map((ratingValue) => {
                             const count = reviews.filter(r => r.rating === ratingValue).length;
                             const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
@@ -990,11 +999,11 @@ export default function ProfessionalDetailPage() {
                     <div className="h-px bg-neutral-100 dark:bg-[#2e2e33]" />
 
                     {/* Review List */}
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       {reviews.map((review, index) => (
                         <div
                           key={review._id}
-                          className={`group relative p-4 rounded-lg border transition-all duration-200 ${
+                          className={`group relative p-3 sm:p-4 rounded-lg border transition-all duration-200 ${
                             review.workImages && review.workImages.length > 0
                               ? 'cursor-pointer border-neutral-200 dark:border-[#3f3f46] hover:border-neutral-300 dark:hover:border-[#52525b] hover:bg-neutral-50/50 dark:hover:bg-[#2a2a2f]/50'
                               : 'border-transparent bg-neutral-50 dark:bg-[#2a2a2f]/50'
@@ -1004,30 +1013,30 @@ export default function ProfessionalDetailPage() {
                         >
                           {/* Click indicator for reviews with images */}
                           {review.workImages && review.workImages.length > 0 && (
-                            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <div className="flex items-center gap-1 px-2 py-1 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-[10px] font-medium rounded-md">
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="absolute top-2 sm:top-3 right-2 sm:right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-[9px] sm:text-[10px] font-medium rounded-md">
+                                <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
-                                ნახვა
+                                <span className="hidden sm:inline">ნახვა</span>
                               </div>
                             </div>
                           )}
 
-                          <div className="flex gap-3">
+                          <div className="flex gap-2 sm:gap-3">
                             {/* Avatar */}
                             <div className="flex-shrink-0">
                               {review.isAnonymous ? (
-                                <div className="w-9 h-9 rounded-lg bg-neutral-200 dark:bg-[#3f3f46] flex items-center justify-center">
-                                  <svg className="w-4 h-4 text-neutral-400 dark:text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-neutral-200 dark:bg-[#3f3f46] flex items-center justify-center">
+                                  <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-400 dark:text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                   </svg>
                                 </div>
                               ) : review.clientId.avatar ? (
-                                <img src={review.clientId.avatar} alt={review.clientId.name} className="w-9 h-9 rounded-lg object-cover" />
+                                <img src={review.clientId.avatar} alt={review.clientId.name} className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg object-cover" />
                               ) : (
-                                <div className="w-9 h-9 rounded-lg bg-neutral-200 dark:bg-[#3f3f46] flex items-center justify-center text-neutral-600 dark:text-neutral-300 text-sm font-medium">
+                                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-neutral-200 dark:bg-[#3f3f46] flex items-center justify-center text-neutral-600 dark:text-neutral-300 text-xs sm:text-sm font-medium">
                                   {review.clientId.name.charAt(0)}
                                 </div>
                               )}
@@ -1036,67 +1045,67 @@ export default function ProfessionalDetailPage() {
                             {/* Content */}
                             <div className="flex-1 min-w-0">
                               {/* Header Row */}
-                              <div className="flex items-start justify-between gap-2 mb-1.5">
-                                <div>
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                              <div className="flex items-start justify-between gap-2 mb-1 sm:mb-1.5">
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+                                    <span className="text-xs sm:text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
                                       {review.isAnonymous ? 'ანონიმური' : review.clientId.name}
                                     </span>
                                     {review.isAnonymous && (
-                                      <span className="inline-flex items-center px-1.5 py-0.5 bg-neutral-100 dark:bg-[#3f3f46] text-neutral-500 dark:text-neutral-400 text-[9px] font-medium rounded">
+                                      <span className="inline-flex items-center px-1 sm:px-1.5 py-0.5 bg-neutral-100 dark:bg-[#3f3f46] text-neutral-500 dark:text-neutral-400 text-[8px] sm:text-[9px] font-medium rounded">
                                         დამალული
                                       </span>
                                     )}
                                   </div>
-                                  <div className="flex items-center gap-1.5 text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">
+                                  <div className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">
                                     {!review.isAnonymous && review.clientId.city && (
                                       <>
-                                        <span>{review.clientId.city}</span>
-                                        <span className="w-0.5 h-0.5 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+                                        <span className="truncate max-w-[80px] sm:max-w-none">{review.clientId.city}</span>
+                                        <span className="w-0.5 h-0.5 rounded-full bg-neutral-300 dark:bg-neutral-600 flex-shrink-0" />
                                       </>
                                     )}
-                                    <span>{new Date(review.createdAt).toLocaleDateString('ka-GE', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                    <span className="flex-shrink-0">{new Date(review.createdAt).toLocaleDateString('ka-GE', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                                   </div>
                                 </div>
 
                                 {/* Rating Badge */}
-                                <div className="flex items-center gap-1 px-2 py-1 bg-white dark:bg-[#1a1a1e] rounded-md border border-neutral-100 dark:border-[#3f3f46]">
-                                  <svg className="w-3 h-3 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                                <div className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white dark:bg-dark-card rounded-md border border-neutral-100 dark:border-dark-border flex-shrink-0">
+                                  <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                   </svg>
-                                  <span className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">{review.rating}</span>
+                                  <span className="text-[10px] sm:text-xs font-semibold text-neutral-900 dark:text-neutral-100">{review.rating}</span>
                                 </div>
                               </div>
 
                               {/* Project Badge */}
                               {review.projectTitle && (
-                                <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-500/10 dark:bg-emerald-400/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-medium rounded mb-2">
-                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 bg-emerald-500/10 dark:bg-emerald-400/10 text-emerald-700 dark:text-emerald-400 text-[9px] sm:text-[10px] font-medium rounded mb-1.5 sm:mb-2 max-w-full">
+                                  <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                   </svg>
-                                  {review.projectTitle}
+                                  <span className="truncate">{review.projectTitle}</span>
                                 </div>
                               )}
 
                               {/* Review Text */}
                               {review.text && (
-                                <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                                <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed line-clamp-3 sm:line-clamp-none">
                                   {review.text}
                                 </p>
                               )}
 
                               {/* Work Images Preview */}
                               {review.workImages && review.workImages.length > 0 && (
-                                <div className="mt-3 flex gap-1.5">
+                                <div className="mt-2 sm:mt-3 flex gap-1 sm:gap-1.5">
                                   {review.workImages.slice(0, 4).map((img, idx) => (
                                     <div
                                       key={idx}
-                                      className="relative w-14 h-14 rounded-md overflow-hidden ring-1 ring-neutral-200 dark:ring-[#3f3f46] group-hover:ring-neutral-300 dark:group-hover:ring-[#52525b] transition-all"
+                                      className="relative w-11 h-11 sm:w-14 sm:h-14 rounded-md overflow-hidden ring-1 ring-neutral-200 dark:ring-[#3f3f46] group-hover:ring-neutral-300 dark:group-hover:ring-[#52525b] transition-all"
                                     >
                                       <img src={img} alt={`Work ${idx + 1}`} className="w-full h-full object-cover" />
                                       {idx === 3 && review.workImages!.length > 4 && (
                                         <div className="absolute inset-0 bg-neutral-900/60 dark:bg-black/60 flex items-center justify-center">
-                                          <span className="text-white text-xs font-medium">+{review.workImages!.length - 4}</span>
+                                          <span className="text-white text-[10px] sm:text-xs font-medium">+{review.workImages!.length - 4}</span>
                                         </div>
                                       )}
                                     </div>
@@ -1127,16 +1136,16 @@ export default function ProfessionalDetailPage() {
             </div>
           </div>
 
-          {/* Right Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-24 space-y-4">
+          {/* Right Sidebar - Hidden on mobile since we have fixed bottom bar */}
+          <div className="hidden lg:block lg:col-span-1">
+            <div className="lg:sticky lg:top-24 space-y-3 sm:space-y-4">
               {/* Contact Card */}
-              <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
+              <div className="rounded-lg p-3 sm:p-4" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
                 {/* CTA Buttons */}
-                <div className="space-y-2.5">
+                <div className="space-y-2 sm:space-y-2.5">
                   <button
                     onClick={handleContact}
-                    className="w-full py-3 text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-2.5 sm:py-3 text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2 touch-manipulation"
                     style={{ backgroundColor: 'var(--color-text-primary)', color: 'var(--color-bg-secondary)' }}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1144,7 +1153,7 @@ export default function ProfessionalDetailPage() {
                     </svg>
                     დაკავშირება
                   </button>
-                  <button className="w-full py-3 text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-primary)' }}>
+                  <button className="w-full py-2.5 sm:py-3 text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2 touch-manipulation" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-primary)' }}>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
@@ -1178,12 +1187,12 @@ export default function ProfessionalDetailPage() {
                 </div>
               </div>
 
-              {/* Trust Badges */}
-              <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--color-accent-soft)' }}>
-                      <svg className="w-4 h-4" style={{ color: 'var(--color-accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {/* Trust Badges - Hidden on mobile to save space */}
+              <div className="hidden sm:block rounded-lg p-3 sm:p-4" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
+                <div className="space-y-2.5 sm:space-y-3">
+                  <div className="flex items-center gap-2 sm:gap-2.5">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--color-accent-soft)' }}>
+                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: 'var(--color-accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                       </svg>
                     </div>
@@ -1192,9 +1201,9 @@ export default function ProfessionalDetailPage() {
                       <p className="text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>პირადობა დადასტურებულია</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex items-center gap-2 sm:gap-2.5">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                       </svg>
                     </div>
@@ -1203,9 +1212,9 @@ export default function ProfessionalDetailPage() {
                       <p className="text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>თანხის დაბრუნების გარანტია</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--color-highlight-soft)' }}>
-                      <svg className="w-4 h-4" style={{ color: 'var(--color-highlight)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex items-center gap-2 sm:gap-2.5">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--color-highlight-soft)' }}>
+                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: 'var(--color-highlight)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
@@ -1428,7 +1437,7 @@ export default function ProfessionalDetailPage() {
                     )}
                     <div>
                       <p className="font-semibold text-neutral-900">{selectedProject.clientName}</p>
-                      <p className="text-sm text-neutral-500">{selectedProject.clientCity || 'კლიენტი'}</p>
+                      <p className="text-sm text-neutral-500">{selectedProject.clientCity || 'მაძიებელი'}</p>
                     </div>
                   </div>
                   {selectedProject.review && (
@@ -1596,7 +1605,7 @@ export default function ProfessionalDetailPage() {
 
               {/* Client Review */}
               <div>
-                <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-4">კლიენტის შეფასება</h4>
+                <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-4">მაძიებელის შეფასება</h4>
                 <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
                   <div className="flex items-center gap-3 mb-3">
                     {selectedReview.isAnonymous ? (
@@ -1682,15 +1691,78 @@ export default function ProfessionalDetailPage() {
 
       {/* Mobile Action Bar */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 p-3 flex gap-2.5 z-40" style={{ backgroundColor: 'var(--color-bg-secondary)', borderTop: '1px solid var(--color-border)' }}>
-        <button
-          onClick={() => setShowShareMenu(!showShareMenu)}
-          className="p-2.5 rounded-lg transition-colors"
-          style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-tertiary)' }}
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-          </svg>
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setShowShareMenu(!showShareMenu)}
+            className="p-2.5 rounded-lg transition-colors"
+            style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-tertiary)' }}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+          </button>
+
+          {/* Mobile Share Menu */}
+          {showShareMenu && (
+            <div className="absolute bottom-full left-0 mb-2 w-52 rounded-lg shadow-lg z-50 overflow-hidden" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
+              <div className="p-1.5">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(window.location.href);
+                    setShowShareMenu(false);
+                    toast.success('ბმული დაკოპირებულია!');
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md transition-colors text-left active:bg-black/5"
+                  style={{ backgroundColor: 'transparent' }}
+                >
+                  <svg className="w-4 h-4" style={{ color: 'var(--color-text-tertiary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>ბმულის კოპირება</span>
+                </button>
+                <button
+                  onClick={() => {
+                    window.open(`https://wa.me/?text=Check out this professional: ${encodeURIComponent(window.location.href)}`, '_blank');
+                    setShowShareMenu(false);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md transition-colors text-left active:bg-black/5"
+                  style={{ backgroundColor: 'transparent' }}
+                >
+                  <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                  </svg>
+                  <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>WhatsApp</span>
+                </button>
+                <button
+                  onClick={() => {
+                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank');
+                    setShowShareMenu(false);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md transition-colors text-left active:bg-black/5"
+                  style={{ backgroundColor: 'transparent' }}
+                >
+                  <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                  <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Facebook</span>
+                </button>
+                <button
+                  onClick={() => {
+                    window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=Check out this professional!`, '_blank');
+                    setShowShareMenu(false);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md transition-colors text-left active:bg-black/5"
+                  style={{ backgroundColor: 'transparent' }}
+                >
+                  <svg className="w-4 h-4" style={{ color: 'var(--color-text-primary)' }} fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  </svg>
+                  <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>X (Twitter)</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
         <button
           onClick={handleContact}
           className="flex-1 py-2.5 text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2"

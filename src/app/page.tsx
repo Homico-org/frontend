@@ -4,8 +4,17 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
-// Configuration - Landing page URL for non-authenticated users
-const LANDING_URL = process.env.NEXT_PUBLIC_LANDING_URL || 'https://homico.ge';
+// Get landing URL from env or use current origin as fallback (works for localhost, dev, prod)
+const getLandingUrl = () => {
+  if (process.env.NEXT_PUBLIC_LANDING_URL) {
+    return process.env.NEXT_PUBLIC_LANDING_URL;
+  }
+  // Fallback to current origin - works for any environment
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+  return 'https://homico.ge';
+};
 
 export default function HomePage() {
   const router = useRouter();
@@ -18,8 +27,14 @@ export default function HomePage() {
       // Authenticated users go to browse page
       router.replace('/browse');
     } else {
-      // Non-authenticated users go to landing page (separate project)
-      window.location.href = LANDING_URL;
+      // Non-authenticated users go to landing page (separate project or login)
+      const landingUrl = getLandingUrl();
+      // If landing URL is same origin, use router for better UX
+      if (typeof window !== 'undefined' && landingUrl === window.location.origin) {
+        router.replace('/login');
+      } else {
+        window.location.href = landingUrl;
+      }
     }
   }, [isAuthenticated, isLoading, router]);
 

@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { countries, CountryCode, useLanguage } from '@/contexts/LanguageContext';
+import { CATEGORIES, getCategoryByKey } from '@/constants/categories';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -50,7 +51,9 @@ export default function RegisterPage() {
     phone: '',
     city: '',
     avatar: '',
+    idNumber: '', // Personal ID number (required)
     selectedCategory: '', // Single category now
+    selectedSubcategories: [] as string[], // Multiple subcategories
     // Interior Designer specific
     pinterestLinks: [''],
     designStyle: '',
@@ -84,6 +87,14 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Existing field validation states (checked on submit)
+  const [existingFields, setExistingFields] = useState<Record<string, boolean>>({});
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [contactField, setContactField] = useState<'email' | 'phone' | 'idNumber' | null>(null);
+  const [contactMessage, setContactMessage] = useState('');
+  const [contactSubmitting, setContactSubmitting] = useState(false);
+  const [contactSubmitted, setContactSubmitted] = useState(false);
 
   // Categories from backend
   const [categories, setCategories] = useState<Category[]>([]);
@@ -127,6 +138,46 @@ export default function RegisterPage() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const openContactModal = (field: 'email' | 'phone' | 'idNumber') => {
+    setContactField(field);
+    setShowContactModal(true);
+    setContactMessage('');
+    setContactSubmitted(false);
+  };
+
+  const submitContactForm = async () => {
+    if (!contactMessage.trim()) return;
+
+    setContactSubmitting(true);
+    try {
+      // Create a support ticket
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/support/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'account_issue',
+          field: contactField,
+          value: contactField === 'phone'
+            ? `${countries[phoneCountry].phonePrefix}${formData.phone}`
+            : contactField === 'email'
+              ? formData.email
+              : formData.idNumber,
+          message: contactMessage,
+          contactEmail: formData.email || undefined,
+          contactPhone: formData.phone ? `${countries[phoneCountry].phonePrefix}${formData.phone}` : undefined,
+        }),
+      });
+
+      if (response.ok) {
+        setContactSubmitted(true);
+      }
+    } catch (err) {
+      console.error('Failed to submit contact form:', err);
+    } finally {
+      setContactSubmitting(false);
+    }
+  };
 
   const validateField = (name: string, value: string) => {
     const errors: Record<string, string> = { ...fieldErrors };
@@ -315,7 +366,7 @@ export default function RegisterPage() {
     }
   };
 
-  const handleNextStep = (e: React.FormEvent) => {
+  const handleNextStep = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -328,6 +379,10 @@ export default function RegisterPage() {
       setStep(2);
     } else if (step === 2) {
       // Basic info validated, move to email verification
+      if (!formData.idNumber || formData.idNumber.length !== 11) {
+        setError(locale === 'ka' ? 'პირადი ნომერი უნდა იყოს 11 ციფრი' : 'ID number must be 11 digits');
+        return;
+      }
       if (formData.password !== formData.confirmPassword) {
         setError(locale === 'ka' ? 'პაროლები არ ემთხვევა' : 'Passwords do not match');
         return;
@@ -340,6 +395,32 @@ export default function RegisterPage() {
         setError(locale === 'ka' ? 'ტელეფონის ნომერი სავალდებულოა' : 'Phone number is required');
         return;
       }
+
+      // Check if email, phone, or ID number already exist
+      setIsLoading(true);
+      try {
+        const checks = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/check-exists?field=email&value=${encodeURIComponent(formData.email)}`).then(r => r.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/check-exists?field=phone&value=${encodeURIComponent(countries[phoneCountry].phonePrefix + formData.phone)}`).then(r => r.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/check-exists?field=idNumber&value=${encodeURIComponent(formData.idNumber)}`).then(r => r.json()),
+        ]);
+
+        const [emailCheck, phoneCheck, idCheck] = checks;
+
+        const newExistingFields: Record<string, boolean> = {};
+        if (emailCheck.exists) newExistingFields.email = true;
+        if (phoneCheck.exists) newExistingFields.phone = true;
+        if (idCheck.exists) newExistingFields.idNumber = true;
+
+        if (Object.keys(newExistingFields).length > 0) {
+          setExistingFields(newExistingFields);
+          setIsLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.error('Failed to check existing fields:', err);
+      }
+      setIsLoading(false);
 
       // Go to email verification
       setStep(2.5);
@@ -387,11 +468,13 @@ export default function RegisterPage() {
           name: formData.name,
           email: formData.email,
           password: formData.password,
+          idNumber: formData.idNumber,
           role: formData.role,
           phone: formData.phone || undefined,
           city: formData.city || undefined,
           avatar: formData.avatar || undefined,
           selectedCategories: formData.role === 'pro' ? [formData.selectedCategory] : undefined,
+          selectedSubcategories: formData.role === 'pro' ? formData.selectedSubcategories : undefined,
         }),
       });
 
@@ -408,6 +491,7 @@ export default function RegisterPage() {
         // Store category-specific data to be saved in profile setup
         sessionStorage.setItem('proRegistrationData', JSON.stringify({
           category: formData.selectedCategory,
+          subcategories: formData.selectedSubcategories,
           pinterestLinks: formData.pinterestLinks.filter(l => l.trim()),
           designStyle: formData.designStyle,
           cadastralId: formData.cadastralId,
@@ -524,7 +608,7 @@ export default function RegisterPage() {
             </div>
           )}
 
-          <form onSubmit={step === 4 || (step === 2 && formData.role === 'client') ? handleSubmit : handleNextStep} className="space-y-5">
+          <form onSubmit={step === 4 ? handleSubmit : handleNextStep} className="space-y-5">
 
             {/* Step 1: Role Selection */}
             {step === 1 && (
@@ -627,7 +711,7 @@ export default function RegisterPage() {
                   {locale === 'ka' ? 'უკან' : 'Back'}
                 </button>
 
-                {/* Name and Email */}
+                {/* Name and ID Number */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">
@@ -645,19 +729,119 @@ export default function RegisterPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">
-                      {locale === 'ka' ? 'ელ-ფოსტა' : 'Email'} *
+                    <label htmlFor="idNumber" className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">
+                      {locale === 'ka' ? 'პირადი ნომერი' : 'ID Number'} *
                     </label>
+                    <div className="relative">
+                      <input
+                        id="idNumber"
+                        type="text"
+                        required
+                        value={formData.idNumber}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 11);
+                          handleInputChange('idNumber', value);
+                          setExistingFields(prev => ({ ...prev, idNumber: false }));
+                        }}
+                        className={`input pr-10 ${
+                          existingFields.idNumber
+                            ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                            : formData.idNumber && formData.idNumber.length !== 11
+                              ? 'border-amber-300 focus:ring-amber-500 focus:border-amber-500'
+                              : formData.idNumber.length === 11 && !existingFields.idNumber
+                                ? 'border-green-300 focus:ring-green-500 focus:border-green-500'
+                                : ''
+                        }`}
+                        placeholder={locale === 'ka' ? '11-ნიშნა კოდი' : '11-digit ID'}
+                        maxLength={11}
+                      />
+                      {/* Status indicator */}
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        {existingFields.idNumber ? (
+                          <svg className="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        ) : formData.idNumber.length === 11 ? (
+                          <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : null}
+                      </div>
+                    </div>
+                    {formData.idNumber && formData.idNumber.length !== 11 && !existingFields.idNumber && (
+                      <p className="text-xs text-amber-600 mt-1">
+                        {locale === 'ka' ? `${formData.idNumber.length}/11 ციფრი` : `${formData.idNumber.length}/11 digits`}
+                      </p>
+                    )}
+                    {existingFields.idNumber && (
+                      <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                        <p className="text-sm text-red-700 dark:text-red-400">
+                          {locale === 'ka' ? 'ეს პირადი ნომერი უკვე რეგისტრირებულია.' : 'This ID number is already registered.'}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => openContactModal('idNumber')}
+                          className="mt-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 underline"
+                        >
+                          {locale === 'ka' ? 'დაგვიკავშირდით დახმარებისთვის' : 'Contact us for help'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">
+                    {locale === 'ka' ? 'ელ-ფოსტა' : 'Email'} *
+                  </label>
+                  <div className="relative">
                     <input
                       id="email"
                       type="email"
                       required
                       value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      className="input"
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        handleInputChange('email', value);
+                        setExistingFields(prev => ({ ...prev, email: false }));
+                      }}
+                      className={`input pr-10 ${
+                        existingFields.email
+                          ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                          : formData.email && formData.email.includes('@') && formData.email.includes('.') && !existingFields.email
+                            ? 'border-green-300 focus:ring-green-500 focus:border-green-500'
+                            : ''
+                      }`}
                       placeholder="you@example.com"
                     />
+                    {/* Status indicator */}
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      {existingFields.email ? (
+                        <svg className="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      ) : formData.email && formData.email.includes('@') && formData.email.includes('.') ? (
+                        <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : null}
+                    </div>
                   </div>
+                  {existingFields.email && (
+                    <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                      <p className="text-sm text-red-700 dark:text-red-400">
+                        {locale === 'ka' ? 'ეს ელ-ფოსტა უკვე რეგისტრირებულია.' : 'This email is already registered.'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => openContactModal('email')}
+                        className="mt-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 underline"
+                      >
+                        {locale === 'ka' ? 'დაგვიკავშირდით დახმარებისთვის' : 'Contact us for help'}
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Passwords */}
@@ -756,18 +940,53 @@ export default function RegisterPage() {
                           <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">{countries[phoneCountry].phonePrefix}</span>
                         </button>
                       </div>
-                      <input
-                        id="phone"
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/[^0-9]/g, '');
-                          handleInputChange('phone', value);
-                        }}
-                        className="input flex-1"
-                        placeholder="555 123 456"
-                      />
+                      <div className="relative flex-1">
+                        <input
+                          id="phone"
+                          type="tel"
+                          value={formData.phone}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9]/g, '');
+                            handleInputChange('phone', value);
+                            setExistingFields(prev => ({ ...prev, phone: false }));
+                          }}
+                          className={`input pr-10 w-full ${
+                            existingFields.phone
+                              ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                              : formData.phone && formData.phone.length >= 9 && !existingFields.phone
+                                ? 'border-green-300 focus:ring-green-500 focus:border-green-500'
+                                : ''
+                          }`}
+                          placeholder="555 123 456"
+                        />
+                        {/* Status indicator */}
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          {existingFields.phone ? (
+                            <svg className="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          ) : formData.phone && formData.phone.length >= 9 ? (
+                            <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          ) : null}
+                        </div>
+                      </div>
                     </div>
+                    {existingFields.phone && (
+                      <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                        <p className="text-sm text-red-700 dark:text-red-400">
+                          {locale === 'ka' ? 'ეს ტელეფონი უკვე რეგისტრირებულია.' : 'This phone number is already registered.'}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => openContactModal('phone')}
+                          className="mt-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 underline"
+                        >
+                          {locale === 'ka' ? 'დაგვიკავშირდით დახმარებისთვის' : 'Contact us for help'}
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   <div ref={cityDropdownRef} className="relative">
@@ -819,7 +1038,7 @@ export default function RegisterPage() {
 
                 <button
                   type="submit"
-                  disabled={isLoading || Object.keys(fieldErrors).length > 0 || !formData.name || !formData.email || !formData.password || !formData.confirmPassword || formData.password.length < 6 || formData.password !== formData.confirmPassword || !formData.phone}
+                  disabled={isLoading || Object.keys(fieldErrors).length > 0 || !formData.name || !formData.email || !formData.password || !formData.confirmPassword || formData.password.length < 6 || formData.password !== formData.confirmPassword || !formData.phone || !formData.idNumber || formData.idNumber.length !== 11 || existingFields.email || existingFields.phone || existingFields.idNumber}
                   className="w-full btn btn-primary py-3 text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
@@ -1071,7 +1290,7 @@ export default function RegisterPage() {
                       <button
                         key={cat.key}
                         type="button"
-                        onClick={() => setFormData({ ...formData, selectedCategory: cat.key })}
+                        onClick={() => setFormData({ ...formData, selectedCategory: cat.key, selectedSubcategories: [] })}
                         className={`relative flex items-start gap-4 p-5 rounded-2xl border-2 transition-all duration-200 text-left ${
                           formData.selectedCategory === cat.key
                             ? 'border-blue-500 dark:border-primary-400 bg-blue-50 dark:bg-primary-900/20 shadow-lg shadow-blue-100 dark:shadow-none'
@@ -1109,9 +1328,57 @@ export default function RegisterPage() {
                   )}
                 </div>
 
+                {/* Subcategory Selection */}
+                {formData.selectedCategory && (
+                  <div className="mt-6 p-4 rounded-xl bg-neutral-50 dark:bg-dark-border/50 border border-neutral-200 dark:border-dark-border">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">
+                      {locale === 'ka' ? 'აირჩიეთ სპეციალიზაციები' : 'Select Specializations'} *
+                    </label>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
+                      {locale === 'ka' ? 'შეგიძლიათ აირჩიოთ რამდენიმე' : 'You can select multiple'}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {getCategoryByKey(formData.selectedCategory)?.subcategories.map((sub) => {
+                        const isSelected = formData.selectedSubcategories.includes(sub.key);
+                        return (
+                          <button
+                            key={sub.key}
+                            type="button"
+                            onClick={() => {
+                              if (isSelected) {
+                                setFormData({
+                                  ...formData,
+                                  selectedSubcategories: formData.selectedSubcategories.filter(k => k !== sub.key)
+                                });
+                              } else {
+                                setFormData({
+                                  ...formData,
+                                  selectedSubcategories: [...formData.selectedSubcategories, sub.key]
+                                });
+                              }
+                            }}
+                            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 border ${
+                              isSelected
+                                ? 'bg-forest-800 dark:bg-primary-400 text-white dark:text-dark-bg border-transparent shadow-md'
+                                : 'bg-white dark:bg-dark-card text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-dark-border hover:border-forest-800 dark:hover:border-primary-400'
+                            }`}
+                          >
+                            {isSelected && (
+                              <svg className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                            {locale === 'ka' ? sub.nameKa : sub.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 <button
                   type="submit"
-                  disabled={!formData.selectedCategory}
+                  disabled={!formData.selectedCategory || formData.selectedSubcategories.length === 0}
                   className="w-full btn btn-primary py-3 text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {locale === 'ka' ? 'გაგრძელება' : 'Continue'}
@@ -1273,6 +1540,126 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
+
+      {/* Contact Us Modal */}
+      {showContactModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white dark:bg-dark-card rounded-2xl shadow-xl w-full max-w-md p-6 relative">
+            {/* Close button */}
+            <button
+              onClick={() => {
+                setShowContactModal(false);
+                setContactField(null);
+                setContactMessage('');
+                setContactSubmitted(false);
+              }}
+              className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {!contactSubmitted ? (
+              <>
+                {/* Header */}
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                    <svg className="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-neutral-900 dark:text-neutral-50 mb-2">
+                    {locale === 'ka' ? 'დაგვიკავშირდით' : 'Contact Us'}
+                  </h3>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                    {contactField === 'email' && (locale === 'ka'
+                      ? 'ეს ელ-ფოსტა უკვე რეგისტრირებულია. თუ ეს თქვენი ანგარიშია, დაგვიტოვეთ შეტყობინება.'
+                      : 'This email is already registered. If this is your account, leave us a message.')}
+                    {contactField === 'phone' && (locale === 'ka'
+                      ? 'ეს ტელეფონი უკვე რეგისტრირებულია. თუ ეს თქვენი ანგარიშია, დაგვიტოვეთ შეტყობინება.'
+                      : 'This phone is already registered. If this is your account, leave us a message.')}
+                    {contactField === 'idNumber' && (locale === 'ka'
+                      ? 'ეს პირადი ნომერი უკვე რეგისტრირებულია. თუ ეს თქვენი ანგარიშია, დაგვიტოვეთ შეტყობინება.'
+                      : 'This ID number is already registered. If this is your account, leave us a message.')}
+                  </p>
+                </div>
+
+                {/* Form */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1.5">
+                      {locale === 'ka' ? 'თქვენი შეტყობინება' : 'Your Message'} *
+                    </label>
+                    <textarea
+                      value={contactMessage}
+                      onChange={(e) => setContactMessage(e.target.value)}
+                      rows={4}
+                      className="input w-full resize-none"
+                      placeholder={locale === 'ka' ? 'აღწერეთ თქვენი პრობლემა...' : 'Describe your issue...'}
+                    />
+                  </div>
+
+                  <div className="p-3 bg-neutral-50 dark:bg-dark-border/50 rounded-lg">
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                      <span className="font-medium">{locale === 'ka' ? 'მონაცემები:' : 'Data:'}</span>{' '}
+                      {contactField === 'email' && formData.email}
+                      {contactField === 'phone' && `${countries[phoneCountry].phonePrefix}${formData.phone}`}
+                      {contactField === 'idNumber' && formData.idNumber}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={submitContactForm}
+                    disabled={contactSubmitting || !contactMessage.trim()}
+                    className="w-full btn btn-primary py-3 text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {contactSubmitting ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        {locale === 'ka' ? 'იგზავნება...' : 'Sending...'}
+                      </span>
+                    ) : (
+                      locale === 'ka' ? 'გაგზავნა' : 'Send Message'
+                    )}
+                  </button>
+                </div>
+              </>
+            ) : (
+              /* Success State */
+              <div className="text-center py-6">
+                <div className="w-20 h-20 mx-auto mb-4 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                  <svg className="w-10 h-10 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-neutral-900 dark:text-neutral-50 mb-2">
+                  {locale === 'ka' ? 'შეტყობინება გაგზავნილია!' : 'Message Sent!'}
+                </h3>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">
+                  {locale === 'ka'
+                    ? 'ჩვენი გუნდი მალე დაგიკავშირდებათ.'
+                    : 'Our team will contact you soon.'}
+                </p>
+                <button
+                  onClick={() => {
+                    setShowContactModal(false);
+                    setContactField(null);
+                    setContactMessage('');
+                    setContactSubmitted(false);
+                  }}
+                  className="btn btn-outline px-8"
+                >
+                  {locale === 'ka' ? 'დახურვა' : 'Close'}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -2,83 +2,9 @@
 
 import { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { CATEGORIES } from '@/constants/categories';
 
-interface Category {
-  key: string;
-  name: string;
-  nameKa: string;
-  description: string;
-  descriptionKa: string;
-  icon: string;
-  subcategories?: Subcategory[];
-}
-
-interface Subcategory {
-  key: string;
-  name: string;
-  nameKa: string;
-}
-
-const categories: Category[] = [
-  {
-    key: 'interior-design',
-    name: 'Designer',
-    nameKa: 'დიზაინერი',
-    description: 'Interior designers and space planners',
-    descriptionKa: 'ინტერიერის დიზაინერები',
-    icon: 'designer',
-    subcategories: [
-      { key: 'residential', name: 'Residential', nameKa: 'საცხოვრებელი' },
-      { key: 'commercial', name: 'Commercial', nameKa: 'კომერციული' },
-      { key: 'kitchen', name: 'Kitchen Design', nameKa: 'სამზარეულო' },
-      { key: 'bathroom', name: 'Bathroom Design', nameKa: 'სააბაზანო' },
-    ],
-  },
-  {
-    key: 'architecture',
-    name: 'Architect',
-    nameKa: 'არქიტექტორი',
-    description: 'Architects and structural designers',
-    descriptionKa: 'არქიტექტორები და კონსტრუქტორები',
-    icon: 'architect',
-    subcategories: [
-      { key: 'residential-arch', name: 'Residential', nameKa: 'საცხოვრებელი' },
-      { key: 'commercial-arch', name: 'Commercial', nameKa: 'კომერციული' },
-      { key: 'landscape', name: 'Landscape', nameKa: 'ლანდშაფტი' },
-      { key: 'renovation', name: 'Renovation', nameKa: 'რენოვაცია' },
-    ],
-  },
-  {
-    key: 'craftsmen',
-    name: 'Craftsmen',
-    nameKa: 'ხელოსანი',
-    description: 'Electricians, plumbers, and skilled trades',
-    descriptionKa: 'ელექტრიკოსები, სანტექნიკები',
-    icon: 'craftsmen',
-    subcategories: [
-      { key: 'electrical', name: 'Electrician', nameKa: 'ელექტრიკოსი' },
-      { key: 'plumbing', name: 'Plumber', nameKa: 'სანტექნიკი' },
-      { key: 'carpentry', name: 'Carpenter', nameKa: 'ხურო' },
-      { key: 'painting', name: 'Painter', nameKa: 'მხატვარი' },
-      { key: 'tiling', name: 'Tiler', nameKa: 'კაფელის მგები' },
-      { key: 'hvac', name: 'HVAC', nameKa: 'კონდიცირება' },
-    ],
-  },
-  {
-    key: 'home-care',
-    name: 'Home Care',
-    nameKa: 'მოვლა',
-    description: 'Cleaning and maintenance services',
-    descriptionKa: 'დასუფთავება და მოვლა',
-    icon: 'homecare',
-    subcategories: [
-      { key: 'cleaning', name: 'Cleaning', nameKa: 'დასუფთავება' },
-      { key: 'moving', name: 'Moving', nameKa: 'გადაზიდვა' },
-      { key: 'gardening', name: 'Gardening', nameKa: 'ბაღის მოვლა' },
-      { key: 'security', name: 'Security', nameKa: 'დაცვა' },
-    ],
-  },
-];
+const categories = CATEGORIES;
 
 // Custom SVG icons for each category
 const CategoryIcon = ({ type, className = '' }: { type: string; className?: string }) => {
