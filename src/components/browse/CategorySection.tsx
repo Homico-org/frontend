@@ -6,65 +6,48 @@ import { CATEGORIES } from '@/constants/categories';
 
 const categories = CATEGORIES;
 
-// Custom SVG icons for each category
+// Refined minimal SVG icons - thinner strokes, elegant proportions
 const CategoryIcon = ({ type, className = '' }: { type: string; className?: string }) => {
   switch (type) {
     case 'designer':
       return (
-        <svg className={className} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Elegant interior design icon - furniture/couch silhouette */}
-          <path d="M6 32V28C6 26.8954 6.89543 26 8 26H40C41.1046 26 42 26.8954 42 28V32" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-          <path d="M10 26V22C10 20.8954 10.8954 20 12 20H36C37.1046 20 38 20.8954 38 22V26" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-          <rect x="6" y="32" width="36" height="6" rx="2" stroke="currentColor" strokeWidth="2.5"/>
-          <path d="M10 38V42" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-          <path d="M38 38V42" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-          {/* Decorative element */}
-          <path d="M24 12L28 16L24 20L20 16L24 12Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
-          <circle cx="24" cy="8" r="2" fill="currentColor"/>
+        <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 16V14.5C4 13.67 4.67 13 5.5 13H18.5C19.33 13 20 13.67 20 14.5V16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M6 13V11.5C6 10.67 6.67 10 7.5 10H16.5C17.33 10 18 10.67 18 11.5V13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          <rect x="4" y="16" width="16" height="3" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+          <path d="M6 19V21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M18 19V21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M12 6L13.5 7.5L12 9L10.5 7.5L12 6Z" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round"/>
+          <circle cx="12" cy="4" r="1" fill="currentColor"/>
         </svg>
       );
     case 'architect':
       return (
-        <svg className={className} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Blueprint/building design icon */}
-          <path d="M8 40V16L24 6L40 16V40" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M8 40H40" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-          {/* Windows */}
-          <rect x="14" y="22" width="6" height="8" rx="1" stroke="currentColor" strokeWidth="2"/>
-          <rect x="28" y="22" width="6" height="8" rx="1" stroke="currentColor" strokeWidth="2"/>
-          {/* Door */}
-          <path d="M20 40V34C20 32.8954 20.8954 32 22 32H26C27.1046 32 28 32.8954 28 34V40" stroke="currentColor" strokeWidth="2"/>
-          {/* Roof detail */}
-          <path d="M24 6V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-          <circle cx="24" cy="14" r="2" stroke="currentColor" strokeWidth="1.5"/>
+        <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 20V10L12 4L20 10V20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M4 20H20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          <rect x="7" y="11" width="3" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.25"/>
+          <rect x="14" y="11" width="3" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.25"/>
+          <path d="M10 20V17C10 16.45 10.45 16 11 16H13C13.55 16 14 16.45 14 17V20" stroke="currentColor" strokeWidth="1.25"/>
         </svg>
       );
     case 'craftsmen':
       return (
-        <svg className={className} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Tools icon - wrench and hammer combined */}
-          <path d="M12 36L20 28" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-          <path d="M8 40L12 36L16 40L12 44L8 40Z" fill="currentColor"/>
-          {/* Wrench */}
-          <path d="M32 8C28.6863 8 26 10.6863 26 14C26 15.1256 26.3086 16.1832 26.8438 17.0938L18 26L22 30L30.9062 21.1562C31.8168 21.6914 32.8744 22 34 22C37.3137 22 40 19.3137 40 16C40 15.5 39.9 15 39.8 14.5L36 18L32 14L35.5 10.2C35 10.1 34.5 10 34 10C33.3 10 32.6 10.1 32 10.2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          {/* Hammer handle */}
-          <path d="M16 32L10 38" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
-          {/* Electric bolt */}
-          <path d="M38 30L34 36H38L34 42" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 17L10 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M5 19L7 17L9 19L7 21L5 19Z" fill="currentColor"/>
+          <path d="M16 5C14.34 5 13 6.34 13 8C13 8.56 13.15 9.09 13.42 9.55L9 14L11 16L15.45 11.58C15.91 11.85 16.44 12 17 12C18.66 12 20 10.66 20 9C20 8.75 19.95 8.5 19.9 8.25L18 10L16 8L17.75 6.1C17.5 6.05 17.25 6 17 6C16.65 6 16.3 6.05 16 6.1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M19 15L17 18H19L17 21" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       );
     case 'homecare':
       return (
-        <svg className={className} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Home with heart/care icon */}
-          <path d="M6 22L24 8L42 22" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M10 20V38C10 39.1046 10.8954 40 12 40H36C37.1046 40 38 39.1046 38 38V20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-          {/* Sparkle/clean elements */}
-          <path d="M24 24C26.5 24 28.5 26 28.5 28.5C28.5 32 24 35 24 35C24 35 19.5 32 19.5 28.5C19.5 26 21.5 24 24 24Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
-          {/* Sparkles */}
-          <path d="M16 16L17 18L16 20L15 18L16 16Z" fill="currentColor"/>
-          <path d="M32 16L33 18L32 20L31 18L32 16Z" fill="currentColor"/>
-          <circle cx="24" cy="14" r="1.5" fill="currentColor"/>
+        <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 11L12 5L20 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M6 10V19C6 19.55 6.45 20 7 20H17C17.55 20 18 19.55 18 19V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M12 12C13.1 12 14 12.9 14 14C14 15.5 12 17 12 17C12 17 10 15.5 10 14C10 12.9 10.9 12 12 12Z" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round"/>
+          <circle cx="8.5" cy="8" r="0.75" fill="currentColor"/>
+          <circle cx="15.5" cy="8" r="0.75" fill="currentColor"/>
         </svg>
       );
     default:
@@ -92,8 +75,8 @@ export default function CategorySection({
 
   return (
     <div className="w-full">
-      {/* Main Categories */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+      {/* Main Categories - Horizontal Pills */}
+      <div className="flex flex-wrap gap-2">
         {categories.map((category, index) => {
           const isSelected = selectedCategory === category.key;
           const isHovered = hoveredCategory === category.key;
@@ -105,145 +88,113 @@ export default function CategorySection({
               onMouseEnter={() => setHoveredCategory(category.key)}
               onMouseLeave={() => setHoveredCategory(null)}
               className={`
-                group relative overflow-hidden rounded-2xl p-5 md:p-6
-                transition-all duration-300 ease-out
+                group relative flex items-center gap-2
+                px-3.5 py-2 rounded-full
+                text-sm font-medium
+                transition-all duration-250 ease-out
                 animate-fade-in
                 ${isSelected
-                  ? 'bg-[var(--color-accent)] text-white shadow-lg scale-[1.02]'
-                  : 'bg-[var(--color-bg-secondary)] hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)]'
+                  ? 'bg-[var(--color-accent)] text-white shadow-md shadow-emerald-500/20'
+                  : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)]'
                 }
-                border border-[var(--color-border-subtle)]
-                hover:border-[var(--color-border)]
-                hover:shadow-md
+                border
+                ${isSelected
+                  ? 'border-emerald-400/30'
+                  : 'border-[var(--color-border-subtle)] hover:border-[var(--color-border)]'
+                }
               `}
-              style={{ animationDelay: `${index * 75}ms` }}
+              style={{
+                animationDelay: `${index * 50}ms`,
+                transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)'
+              }}
             >
-              {/* Ambient glow on hover */}
+              {/* Subtle hover glow */}
               <div
                 className={`
-                  absolute inset-0 opacity-0 transition-opacity duration-500
+                  absolute inset-0 rounded-full opacity-0 transition-opacity duration-300
                   ${isHovered && !isSelected ? 'opacity-100' : ''}
                 `}
                 style={{
-                  background: 'radial-gradient(circle at 50% 0%, var(--color-accent-soft) 0%, transparent 70%)',
+                  background: 'radial-gradient(circle at 50% 50%, var(--color-accent-soft) 0%, transparent 70%)',
+                  filter: 'blur(4px)',
+                  transform: 'scale(1.1)',
+                  zIndex: -1,
                 }}
               />
 
               {/* Icon */}
-              <div className={`
-                relative w-12 h-12 md:w-14 md:h-14 mb-4
-                transition-transform duration-300
-                ${isHovered ? 'scale-110' : ''}
-              `}>
-                <CategoryIcon
-                  type={category.icon}
-                  className={`
-                    w-full h-full
-                    transition-colors duration-300
-                    ${isSelected
-                      ? 'text-white'
-                      : 'text-[var(--color-accent)]'
-                    }
-                  `}
-                />
-              </div>
-
-              {/* Content */}
-              <div className="relative">
-                <h3 className={`
-                  text-lg md:text-xl font-semibold mb-1
-                  transition-colors duration-300
-                `}>
-                  {locale === 'ka' ? category.nameKa : category.name}
-                </h3>
-                <p className={`
-                  text-sm leading-relaxed
-                  transition-colors duration-300
+              <CategoryIcon
+                type={category.icon}
+                className={`
+                  w-[18px] h-[18px] flex-shrink-0
+                  transition-all duration-250
                   ${isSelected
-                    ? 'text-white/80'
-                    : 'text-[var(--color-text-tertiary)]'
+                    ? 'text-white'
+                    : 'text-[var(--color-accent)]'
                   }
-                `}>
-                  {locale === 'ka' ? category.descriptionKa : category.description}
-                </p>
-              </div>
+                  ${isHovered && !isSelected ? 'scale-110' : ''}
+                `}
+              />
 
-              {/* Selection indicator */}
+              {/* Title only */}
+              <span className="whitespace-nowrap">
+                {locale === 'ka' ? category.nameKa : category.name}
+              </span>
+
+              {/* Selection tick - appears on selected */}
               <div className={`
-                absolute top-4 right-4
-                w-6 h-6 rounded-full
                 flex items-center justify-center
-                transition-all duration-300
-                ${isSelected
-                  ? 'bg-white/20 scale-100'
-                  : 'bg-[var(--color-accent-soft)] scale-0'
-                }
+                transition-all duration-200
+                ${isSelected ? 'w-4 opacity-100' : 'w-0 opacity-0'}
+                overflow-hidden
               `}>
-                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-3.5 h-3.5 text-white/90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-
-              {/* Subcategory count badge */}
-              {category.subcategories && category.subcategories.length > 0 && (
-                <div className={`
-                  absolute bottom-4 right-4
-                  px-2 py-0.5 rounded-full text-xs font-medium
-                  transition-all duration-300
-                  ${isSelected
-                    ? 'bg-white/20 text-white'
-                    : 'bg-[var(--color-accent-soft)] text-[var(--color-accent)]'
-                  }
-                `}>
-                  {category.subcategories.length}+
-                </div>
-              )}
             </button>
           );
         })}
       </div>
 
-      {/* Subcategories - Expandable Section */}
+      {/* Subcategories - Compact expandable pills */}
       {activeCategory && activeCategory.subcategories && (
         <div
-          className="mt-4 overflow-hidden animate-fade-in"
+          className="mt-3 overflow-hidden animate-fade-in"
           style={{ animationDuration: '200ms' }}
         >
-          <div className="p-4 rounded-xl bg-[var(--color-bg-tertiary)] border border-[var(--color-border-subtle)]">
-            <div className="flex items-center gap-2 mb-3">
-              <CategoryIcon
-                type={activeCategory.icon}
-                className="w-5 h-5 text-[var(--color-accent)]"
-              />
-              <span className="text-sm font-medium text-[var(--color-text-secondary)]">
-                {locale === 'ka' ? 'ქვეკატეგორიები' : 'Subcategories'}
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {activeCategory.subcategories.map((sub, index) => {
-                const isSubSelected = selectedSubcategory === sub.key;
-                return (
-                  <button
-                    key={sub.key}
-                    onClick={() => onSelectSubcategory?.(isSubSelected ? null : sub.key)}
-                    className={`
-                      px-4 py-2 rounded-xl text-sm font-medium
-                      transition-all duration-200
-                      animate-fade-in
-                      ${isSubSelected
-                        ? 'bg-[var(--color-accent)] text-white shadow-sm'
-                        : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]'
-                      }
-                      border border-[var(--color-border-subtle)]
-                      hover:border-[var(--color-border)]
-                    `}
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    {locale === 'ka' ? sub.nameKa : sub.name}
-                  </button>
-                );
-              })}
-            </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {/* Subtle label */}
+            <span className="text-xs text-[var(--color-text-muted)] mr-1 py-1">
+              {locale === 'ka' ? 'ფილტრი:' : 'Filter:'}
+            </span>
+
+            {activeCategory.subcategories.map((sub, index) => {
+              const isSubSelected = selectedSubcategory === sub.key;
+              return (
+                <button
+                  key={sub.key}
+                  onClick={() => onSelectSubcategory?.(isSubSelected ? null : sub.key)}
+                  className={`
+                    px-3 py-1.5 rounded-full text-xs font-medium
+                    transition-all duration-200 ease-out
+                    animate-fade-in
+                    ${isSubSelected
+                      ? 'bg-[var(--color-accent)]/90 text-white'
+                      : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)]'
+                    }
+                    border
+                    ${isSubSelected
+                      ? 'border-transparent'
+                      : 'border-transparent hover:border-[var(--color-border-subtle)]'
+                    }
+                  `}
+                  style={{ animationDelay: `${index * 30}ms` }}
+                >
+                  {locale === 'ka' ? sub.nameKa : sub.name}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

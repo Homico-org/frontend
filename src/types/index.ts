@@ -5,6 +5,25 @@ export enum UserRole {
   ADMIN = 'admin',
 }
 
+export enum ProStatus {
+  ACTIVE = 'active',
+  BUSY = 'busy',
+  AWAY = 'away',
+}
+
+export enum LikeTargetType {
+  PRO_PROFILE = 'pro_profile',
+  PORTFOLIO_ITEM = 'portfolio_item',
+  FEED_ITEM = 'feed_item',
+}
+
+export enum FeedItemType {
+  PORTFOLIO = 'portfolio',
+  COMPLETION = 'completion',
+  BEFORE_AFTER = 'before_after',
+  PRO_HIGHLIGHT = 'pro_highlight',
+}
+
 export enum AccountType {
   INDIVIDUAL = 'individual',
   ORGANIZATION = 'organization',
@@ -44,6 +63,8 @@ export interface ProProfile {
   avgRating: number;
   totalReviews: number;
   isAvailable: boolean;
+  status?: ProStatus;
+  statusUpdatedAt?: string;
   coverImage?: string;
   tagline?: string;
   completedJobs?: number;
@@ -58,6 +79,8 @@ export interface ProProfile {
     images: string[];
     videos?: string[];
   }[];
+  likeCount?: number;
+  isLiked?: boolean;
 }
 
 export interface PortfolioItem {
@@ -69,6 +92,34 @@ export interface PortfolioItem {
   tags: string[];
   projectDate?: Date;
   location?: string;
+}
+
+export interface FeedItem {
+  _id: string;
+  type: FeedItemType;
+  title: string;
+  description?: string;
+  images: string[];
+  beforeImage?: string;
+  afterImage?: string;
+  category: string;
+  pro: {
+    _id: string;
+    name: string;
+    avatar?: string;
+    rating: number;
+    title?: string;
+  };
+  client?: {
+    name?: string;
+    avatar?: string;
+    city?: string;
+  };
+  rating?: number;
+  review?: string;
+  likeCount: number;
+  isLiked: boolean;
+  createdAt: string;
 }
 
 export enum ProjectStatus {

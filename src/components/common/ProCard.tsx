@@ -1,17 +1,22 @@
 'use client';
 
 import Link from 'next/link';
-import { ProProfile } from '@/types';
+import { ProProfile, ProStatus } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
+import StatusBadge from './StatusBadge';
+import LikeButton from './LikeButton';
 
 interface ProCardProps {
   profile: ProProfile;
   variant?: 'default' | 'compact' | 'horizontal';
+  onLike?: () => void;
+  showLikeButton?: boolean;
 }
 
-export default function ProCard({ profile, variant = 'default' }: ProCardProps) {
+export default function ProCard({ profile, variant = 'default', onLike, showLikeButton = true }: ProCardProps) {
   const { t } = useLanguage();
   const proUser = typeof profile.userId === 'object' ? profile.userId : null;
+  const status = profile.status || (profile.isAvailable ? ProStatus.ACTIVE : ProStatus.AWAY);
 
   const getCategoryLabel = (category: string) => {
     const translated = t(`categories.${category}`);
@@ -60,18 +65,45 @@ export default function ProCard({ profile, variant = 'default' }: ProCardProps) 
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-          {/* Availability badge */}
-          {profile.isAvailable && (
-            <div className="absolute top-2 sm:top-3 right-2 sm:right-3 z-10">
-              <div className="flex items-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full bg-white/90 backdrop-blur-sm shadow-lg">
-                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] sm:text-xs font-semibold text-zinc-800">აქტიური</span>
-              </div>
+          {/* Status badge */}
+          <div className="absolute top-2 sm:top-3 right-2 sm:right-3 z-10">
+            <StatusBadge status={status} size="sm" />
+          </div>
+
+          {/* Like button */}
+          {showLikeButton && (
+            <div className="absolute top-2 sm:top-3 left-2 sm:left-3 z-10">
+              {isTopRated ? (
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-amber-400/90 backdrop-blur-sm shadow-lg">
+                    <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-900" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    <span className="text-[9px] sm:text-[10px] font-bold text-amber-900 uppercase tracking-wide">Top</span>
+                  </div>
+                  <LikeButton
+                    isLiked={profile.isLiked || false}
+                    likeCount={profile.likeCount || 0}
+                    onToggle={onLike || (() => {})}
+                    variant="overlay"
+                    size="sm"
+                    showCount={false}
+                  />
+                </div>
+              ) : (
+                <LikeButton
+                  isLiked={profile.isLiked || false}
+                  likeCount={profile.likeCount || 0}
+                  onToggle={onLike || (() => {})}
+                  variant="overlay"
+                  size="sm"
+                />
+              )}
             </div>
           )}
 
-          {/* Top rated badge */}
-          {isTopRated && (
+          {/* Top rated badge (when no like button) */}
+          {!showLikeButton && isTopRated && (
             <div className="absolute top-2 sm:top-3 left-2 sm:left-3 z-10">
               <div className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-amber-400/90 backdrop-blur-sm shadow-lg">
                 <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-900" fill="currentColor" viewBox="0 0 20 20">
@@ -156,12 +188,10 @@ export default function ProCard({ profile, variant = 'default' }: ProCardProps) 
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
 
-          {/* Availability badge */}
-          {profile.isAvailable && (
-            <div className="absolute top-2 right-2 z-10">
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-white/30 animate-pulse" />
-            </div>
-          )}
+          {/* Status badge - minimal */}
+          <div className="absolute top-2 right-2 z-10">
+            <StatusBadge status={status} variant="minimal" />
+          </div>
 
           {/* Bottom content */}
           <div className="absolute bottom-0 left-0 right-0 p-3">
@@ -206,11 +236,10 @@ export default function ProCard({ profile, variant = 'default' }: ProCardProps) 
                 </div>
               )}
             </div>
-            {profile.isAvailable && (
-              <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full ring-2 ring-[var(--color-bg-secondary)] flex items-center justify-center">
-                <div className="w-2 h-2 bg-white rounded-full" />
-              </div>
-            )}
+            {/* Status indicator on avatar */}
+            <div className="absolute -bottom-0.5 -right-0.5">
+              <StatusBadge status={status} variant="minimal" size="sm" />
+            </div>
           </div>
 
           {/* Info */}

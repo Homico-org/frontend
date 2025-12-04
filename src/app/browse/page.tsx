@@ -1,7 +1,9 @@
 'use client';
 
 import ArchitecturalBackground from '@/components/browse/ArchitecturalBackground';
+import BrowseTabSwitcher from '@/components/browse/BrowseTabSwitcher';
 import CategorySection from '@/components/browse/CategorySection';
+import FeedSection from '@/components/browse/FeedSection';
 import Header from '@/components/common/Header';
 import JobCard from '@/components/common/JobCard';
 import ProCard from '@/components/common/ProCard';
@@ -9,7 +11,9 @@ import Select from '@/components/common/Select';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useViewMode } from '@/contexts/ViewModeContext';
+import { useLikes } from '@/hooks/useLikes';
 import { storage } from '@/services/storage';
+import { LikeTargetType } from '@/types';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -112,6 +116,12 @@ function BrowseContent() {
 
   // Show professionals (not jobs) when user is client OR when pro is in client mode
   const showProfessionals = user?.role === 'client' || (user?.role === 'pro' && isClientMode);
+
+  // Client tab state (professionals vs feed)
+  const [activeClientTab, setActiveClientTab] = useState<'professionals' | 'feed'>('professionals');
+
+  // Likes hook for pro profiles
+  const { toggleLike, initializeLikeStates, likeStates } = useLikes();
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(searchParams.get('category') || null);
@@ -311,6 +321,18 @@ function BrowseContent() {
         }
         setHasMore(result.pagination.hasMore);
         setTotalCount(result.pagination.total);
+
+        // Initialize like states from server data
+        const likeStatesFromServer: Record<string, { isLiked: boolean; likeCount: number }> = {};
+        result.data.forEach((profile: any) => {
+          if (profile._id) {
+            likeStatesFromServer[profile._id] = {
+              isLiked: profile.isLiked || false,
+              likeCount: profile.likeCount || 0,
+            };
+          }
+        });
+        initializeLikeStates(likeStatesFromServer);
       }
     } catch (err) {
       console.error('Error fetching profiles:', err);
@@ -321,7 +343,24 @@ function BrowseContent() {
         setTimeout(() => setInitialLoadComplete(true), 500);
       }
     }
-  }, [searchQuery, selectedCategory, selectedSubcategory, minRating, priceRange, sortBy, selectedCompanies, isAuthLoading, isPro]);
+  }, [searchQuery, selectedCategory, selectedSubcategory, minRating, priceRange, sortBy, selectedCompanies, isAuthLoading, isPro, initializeLikeStates]);
+
+  // Handle like toggle for pro profiles
+  const handleProLike = async (profileId: string) => {
+    if (!isAuthenticated) return;
+
+    const currentState = likeStates[profileId] || { isLiked: false, likeCount: 0 };
+    const newState = await toggleLike(LikeTargetType.PRO_PROFILE, profileId, currentState);
+
+    // Update local results state
+    setResults((prev) =>
+      prev.map((profile) =>
+        profile._id === profileId
+          ? { ...profile, isLiked: newState.isLiked, likeCount: newState.likeCount }
+          : profile
+      )
+    );
+  };
 
   useEffect(() => {
     // Fetch profiles when NOT in pro mode
@@ -1036,10 +1075,14 @@ function BrowseContent() {
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div>
                   <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2" style={{ color: 'var(--color-text-primary)' }}>
-                    {t('browse.findSpecialist') || 'იპოვე სპეციალისტი'}
+                    {activeClientTab === 'professionals'
+                      ? (t('browse.findSpecialist') || 'იპოვე სპეციალისტი')
+                      : (locale === 'ka' ? 'აღმოაჩინე ნამუშევრები' : 'Discover Work')}
                   </h1>
                   <p className="text-sm sm:text-base" style={{ color: 'var(--color-text-secondary)' }}>
-                    {t('browse.subtitle') || 'აღმოაჩინე გამოცდილი პროფესიონალები შენი პროექტისთვის'}
+                    {activeClientTab === 'professionals'
+                      ? (t('browse.subtitle') || 'აღმოაჩინე გამოცდილი პროფესიონალები შენი პროექტისთვის')
+                      : (locale === 'ka' ? 'დაათვალიერე დასრულებული პროექტები და პორტფოლიოები' : 'Browse completed projects and portfolios')}
                   </p>
                 </div>
 
@@ -1092,7 +1135,15 @@ function BrowseContent() {
               </div>
             </div>
 
-            {/* Categories Section */}
+            {/* Tab Switcher */}
+            <div className="mb-6">
+              <BrowseTabSwitcher
+                activeTab={activeClientTab}
+                onTabChange={setActiveClientTab}
+              />
+            </div>
+
+            {/* Categories Section - shared between both tabs */}
             <div className="mb-6 sm:mb-8">
               <CategorySection
                 selectedCategory={selectedCategory}
@@ -1105,140 +1156,158 @@ function BrowseContent() {
               />
             </div>
 
-            {/* Search & Filters Bar */}
-            <div className="flex flex-col gap-3 mb-5 sm:mb-6">
-              {/* Search input */}
-              <div className="relative flex-1">
-                <svg className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--color-text-tertiary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input
-                  type="text"
-                  placeholder={t('browse.searchPlaceholder') || 'სპეციალისტის ძებნა...'}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-12 pl-10 sm:pl-11 pr-4 rounded-xl border text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)]/50 transition-all"
-                  style={{
-                    backgroundColor: 'var(--color-bg-secondary)',
-                    borderColor: 'var(--color-border)',
-                    color: 'var(--color-text-primary)'
-                  }}
-                />
-              </div>
+            {/* Professionals Tab Content */}
+            {activeClientTab === 'professionals' && (
+              <>
+                {/* Search & Filters Bar */}
+                <div className="flex flex-col gap-3 mb-5 sm:mb-6">
+                  {/* Search input */}
+                  <div className="relative flex-1">
+                    <svg className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--color-text-tertiary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input
+                      type="text"
+                      placeholder={t('browse.searchPlaceholder') || 'სპეციალისტის ძებნა...'}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full h-12 pl-10 sm:pl-11 pr-4 rounded-xl border text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)]/50 transition-all"
+                      style={{
+                        backgroundColor: 'var(--color-bg-secondary)',
+                        borderColor: 'var(--color-border)',
+                        color: 'var(--color-text-primary)'
+                      }}
+                    />
+                  </div>
 
-              {/* Rating Filter Pills & Clear - horizontal scroll on mobile */}
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 overflow-x-auto scrollbar-none -mx-1 px-1 pb-1">
-                  <span className="text-xs font-medium px-1 sm:px-2 whitespace-nowrap flex-shrink-0" style={{ color: 'var(--color-text-tertiary)' }}>
-                    {t('browse.rating') || 'რეიტინგი'}:
-                  </span>
-                  {[0, 4, 4.5].map((rating) => (
-                    <button
-                      key={rating}
-                      onClick={() => setMinRating(rating)}
-                      className={`h-9 px-3 rounded-lg text-sm font-medium transition-all whitespace-nowrap touch-manipulation ${
-                        minRating === rating
-                          ? 'bg-[var(--color-accent)] text-white'
-                          : ''
-                      }`}
-                      style={minRating !== rating ? {
-                        backgroundColor: 'var(--color-bg-tertiary)',
-                        color: 'var(--color-text-secondary)'
-                      } : {}}
-                    >
-                      {rating === 0 ? (t('browse.all') || 'ყველა') : `${rating}+`}
-                    </button>
-                  ))}
+                  {/* Rating Filter Pills & Clear - horizontal scroll on mobile */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 overflow-x-auto scrollbar-none -mx-1 px-1 pb-1">
+                      <span className="text-xs font-medium px-1 sm:px-2 whitespace-nowrap flex-shrink-0" style={{ color: 'var(--color-text-tertiary)' }}>
+                        {t('browse.rating') || 'რეიტინგი'}:
+                      </span>
+                      {[0, 4, 4.5].map((rating) => (
+                        <button
+                          key={rating}
+                          onClick={() => setMinRating(rating)}
+                          className={`h-9 px-3 rounded-lg text-sm font-medium transition-all whitespace-nowrap touch-manipulation ${
+                            minRating === rating
+                              ? 'bg-[var(--color-accent)] text-white'
+                              : ''
+                          }`}
+                          style={minRating !== rating ? {
+                            backgroundColor: 'var(--color-bg-tertiary)',
+                            color: 'var(--color-text-secondary)'
+                          } : {}}
+                        >
+                          {rating === 0 ? (t('browse.all') || 'ყველა') : `${rating}+`}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Clear Filters */}
+                    {(selectedCategory || selectedSubcategory || minRating > 0 || searchQuery) && (
+                      <button
+                        onClick={clearFilters}
+                        className="h-9 px-3 sm:px-4 rounded-xl text-sm font-medium border transition-all hover:border-[var(--color-accent)]/50 flex items-center gap-1.5 sm:gap-2 flex-shrink-0 touch-manipulation"
+                        style={{
+                          borderColor: 'var(--color-border)',
+                          color: 'var(--color-text-secondary)'
+                        }}
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <span className="hidden sm:inline">{t('browse.clearFilters') || 'გასუფთავება'}</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
 
-                {/* Clear Filters */}
-                {(selectedCategory || selectedSubcategory || minRating > 0 || searchQuery) && (
-                  <button
-                    onClick={clearFilters}
-                    className="h-9 px-3 sm:px-4 rounded-xl text-sm font-medium border transition-all hover:border-[var(--color-accent)]/50 flex items-center gap-1.5 sm:gap-2 flex-shrink-0 touch-manipulation"
-                    style={{
-                      borderColor: 'var(--color-border)',
-                      color: 'var(--color-text-secondary)'
-                    }}
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    <span className="hidden sm:inline">{t('browse.clearFilters') || 'გასუფთავება'}</span>
-                  </button>
-                )}
-              </div>
-            </div>
+                {/* Results Header */}
+                <div className="flex items-center justify-between mb-4 sm:mb-5 gap-2">
+                  <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                    <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{totalCount}</span> {t('browse.specialists') || 'სპეციალისტი'}
+                    {selectedCategory && (
+                      <span className="hidden sm:inline-block ml-2 px-2 py-0.5 rounded-md text-xs" style={{ backgroundColor: 'var(--color-accent-soft)', color: 'var(--color-accent)' }}>
+                        {(() => {
+                          const cat = dbCategories.find(c => c.key === selectedCategory);
+                          return locale === 'ka' ? (cat?.nameKa || cat?.name || selectedCategory) : (cat?.name || selectedCategory);
+                        })()}
+                      </span>
+                    )}
+                  </p>
+                  <div className="flex items-center gap-2 w-32 sm:w-44">
+                    <Select
+                      value={sortBy}
+                      onChange={setSortBy}
+                      size="sm"
+                      options={[
+                        { value: 'recommended', label: t('browse.recommended') || 'რეკომენდებული', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg> },
+                        { value: 'rating', label: t('browse.topRated') || 'მაღალი რეიტინგი', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg> },
+                        { value: 'newest', label: t('browse.newest') || 'უახლესი', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+                      ]}
+                    />
+                  </div>
+                </div>
 
-            {/* Results Header */}
-            <div className="flex items-center justify-between mb-4 sm:mb-5 gap-2">
-              <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{totalCount}</span> {t('browse.specialists') || 'სპეციალისტი'}
-                {selectedCategory && (
-                  <span className="hidden sm:inline-block ml-2 px-2 py-0.5 rounded-md text-xs" style={{ backgroundColor: 'var(--color-accent-soft)', color: 'var(--color-accent)' }}>
-                    {(() => {
-                      const cat = dbCategories.find(c => c.key === selectedCategory);
-                      return locale === 'ka' ? (cat?.nameKa || cat?.name || selectedCategory) : (cat?.name || selectedCategory);
-                    })()}
-                  </span>
-                )}
-              </p>
-              <div className="flex items-center gap-2 w-32 sm:w-44">
-                <Select
-                  value={sortBy}
-                  onChange={setSortBy}
-                  size="sm"
-                  options={[
-                    { value: 'recommended', label: t('browse.recommended') || 'რეკომენდებული', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg> },
-                    { value: 'rating', label: t('browse.topRated') || 'მაღალი რეიტინგი', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg> },
-                    { value: 'newest', label: t('browse.newest') || 'უახლესი', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
-                  ]}
-                />
-              </div>
-            </div>
-
-            {/* Results Grid */}
-            {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="rounded-2xl border p-4 sm:p-5 animate-pulse" style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)' }}>
-                    <div className="flex items-center gap-3 sm:gap-4 mb-4">
-                      <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-xl" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
-                      <div className="flex-1">
-                        <div className="h-5 rounded-lg w-3/4 mb-2" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
-                        <div className="h-4 rounded-lg w-1/2" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
+                {/* Results Grid */}
+                {isLoading ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+                    {[...Array(6)].map((_, i) => (
+                      <div key={i} className="rounded-2xl border p-4 sm:p-5 animate-pulse" style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)' }}>
+                        <div className="flex items-center gap-3 sm:gap-4 mb-4">
+                          <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-xl" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
+                          <div className="flex-1">
+                            <div className="h-5 rounded-lg w-3/4 mb-2" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
+                            <div className="h-4 rounded-lg w-1/2" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
+                          </div>
+                        </div>
+                        <div className="h-4 rounded-lg w-full mb-2" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
+                        <div className="h-4 rounded-lg w-2/3" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
                       </div>
+                    ))}
+                  </div>
+                ) : results.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+                    {results.map((profile, index) => (
+                      <div
+                        key={profile._id}
+                        className="animate-fade-in"
+                        style={{ animationDelay: `${Math.min(index, 8) * 50}ms` }}
+                      >
+                        <ProCard
+                          profile={{
+                            ...profile,
+                            isLiked: likeStates[profile._id]?.isLiked ?? profile.isLiked,
+                            likeCount: likeStates[profile._id]?.likeCount ?? profile.likeCount,
+                          }}
+                          onLike={() => handleProLike(profile._id)}
+                          showLikeButton={true}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState isPro={isPro} onClear={clearFilters} userCategories={userCategories} />
+                )}
+
+                {/* Infinite scroll loader */}
+                <div ref={loaderRef} className="py-10">
+                  {isLoadingMore && (
+                    <div className="flex items-center justify-center gap-3">
+                      <div className="w-5 h-5 border-2 border-[var(--color-accent)] border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>{t('common.loading') || 'იტვირთება...'}</span>
                     </div>
-                    <div className="h-4 rounded-lg w-full mb-2" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
-                    <div className="h-4 rounded-lg w-2/3" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
-                  </div>
-                ))}
-              </div>
-            ) : results.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
-                {results.map((profile, index) => (
-                  <div
-                    key={profile._id}
-                    className="animate-fade-in"
-                    style={{ animationDelay: `${Math.min(index, 8) * 50}ms` }}
-                  >
-                    <ProCard profile={profile} />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <EmptyState isPro={isPro} onClear={clearFilters} userCategories={userCategories} />
+                  )}
+                </div>
+              </>
             )}
 
-            {/* Infinite scroll loader */}
-            <div ref={loaderRef} className="py-10">
-              {isLoadingMore && (
-                <div className="flex items-center justify-center gap-3">
-                  <div className="w-5 h-5 border-2 border-[var(--color-accent)] border-t-transparent rounded-full animate-spin" />
-                  <span className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>{t('common.loading') || 'იტვირთება...'}</span>
-                </div>
-              )}
-            </div>
+            {/* Feed Tab Content */}
+            {activeClientTab === 'feed' && (
+              <FeedSection selectedCategory={selectedCategory} />
+            )}
           </div>
         </div>
       )}
