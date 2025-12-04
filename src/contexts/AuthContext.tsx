@@ -18,6 +18,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
+  token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (accessToken: string, user: User) => void;
@@ -37,6 +38,7 @@ const clearAuthData = () => {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
@@ -91,10 +93,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Token is valid, update user state and localStorage
         localStorage.setItem('user', JSON.stringify(validatedUser));
         setUser(validatedUser);
+        setToken(accessToken);
       } else {
         // Token is invalid, clear auth data
         clearAuthData();
         setUser(null);
+        setToken(null);
       }
 
       setIsLoading(false);
@@ -119,12 +123,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('access_token', accessToken);
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
+    setToken(accessToken);
   };
 
   const logout = useCallback(() => {
     // Clear all auth data
     clearAuthData();
     setUser(null);
+    setToken(null);
     // Use replace to avoid back button issues
     router.replace('/');
   }, [router]);
@@ -141,6 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
+        token,
         isAuthenticated: !!user,
         isLoading,
         login,
