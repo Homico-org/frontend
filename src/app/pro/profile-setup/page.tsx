@@ -136,7 +136,7 @@ export default function ProProfileSetupPage() {
         console.error('Failed to parse registration data:', err);
         setSelectedCategory('interior-design');
       }
-    } else if ((user?.selectedCategories?.length ?? 0) > 0) {
+    } else if (user?.selectedCategories && user.selectedCategories.length > 0) {
       // Fallback to user's selected categories from profile
       setSelectedCategory(user.selectedCategories[0]);
     } else {
