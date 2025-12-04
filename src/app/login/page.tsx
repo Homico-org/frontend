@@ -14,7 +14,7 @@ interface DemoAccount {
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, isAuthenticated, isLoading: authLoading, user } = useAuth();
   const { t } = useLanguage();
   const [formData, setFormData] = useState({
     email: '',
@@ -24,6 +24,20 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [demoAccounts, setDemoAccounts] = useState<DemoAccount[]>([]);
+
+  // Redirect authenticated users away from login page
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && user) {
+      // Redirect based on user role
+      if (user.role === 'company') {
+        router.replace('/company/jobs');
+      } else if (user.role === 'admin') {
+        router.replace('/admin');
+      } else {
+        router.replace('/browse');
+      }
+    }
+  }, [authLoading, isAuthenticated, user, router]);
 
   useEffect(() => {
     const fetchDemoAccounts = async () => {
@@ -75,6 +89,15 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
+  // Show loading state while checking authentication
+  if (authLoading || (isAuthenticated && user)) {
+    return (
+      <div className="min-h-screen bg-cream-50 dark:bg-dark-bg flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-cream-50 dark:bg-dark-bg flex">

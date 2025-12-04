@@ -20,7 +20,7 @@ export default function Header() {
       <div className="container-custom py-3 sm:py-4">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <Link href="/" className="group flex items-center gap-2 touch-manipulation">
+          <Link href="/browse" className="group flex items-center gap-2 touch-manipulation">
             <span className="text-xl sm:text-2xl font-serif font-semibold text-neutral-50 tracking-tight transition-colors duration-200">
               Homico
             </span>

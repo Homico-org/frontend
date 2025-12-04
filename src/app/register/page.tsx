@@ -7,6 +7,27 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
+// Hook to redirect authenticated users
+function useAuthRedirectFromRegister() {
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && user) {
+      // Redirect based on user role
+      if (user.role === 'company') {
+        router.replace('/company/jobs');
+      } else if (user.role === 'admin') {
+        router.replace('/admin');
+      } else {
+        router.replace('/browse');
+      }
+    }
+  }, [authLoading, isAuthenticated, user, router]);
+
+  return { authLoading, isAuthenticated, user };
+}
+
 interface Category {
   _id: string;
   key: string;
@@ -38,6 +59,9 @@ export default function RegisterPage() {
   const { login } = useAuth();
   const { t, country, locale } = useLanguage();
   const errorRef = useRef<HTMLDivElement>(null);
+
+  // Redirect authenticated users away from register page
+  const { authLoading, isAuthenticated, user } = useAuthRedirectFromRegister();
 
   // Steps: 1 = role, 2 = basic info, 2.5 = email verify, 2.75 = phone verify, 3 = category (pro), 4 = category-specific
   const [step, setStep] = useState(1);
@@ -549,6 +573,15 @@ export default function RegisterPage() {
         return '';
     }
   };
+
+  // Show loading state while checking authentication
+  if (authLoading || (isAuthenticated && user)) {
+    return (
+      <div className="min-h-screen bg-cream-50 dark:bg-dark-bg flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-cream-50 dark:bg-dark-bg flex items-center justify-center py-8 px-4">
