@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { FeedItem, LikeTargetType } from '@/types';
-import FeedCard from './FeedCard';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useLikes } from '@/hooks/useLikes';
+import { FeedItem, LikeTargetType } from '@/types';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import FeedCard from './FeedCard';
 
 interface FeedSectionProps {
   selectedCategory: string | null;
@@ -55,8 +55,6 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
 
   const loaderRef = useRef<HTMLDivElement>(null);
   const initialFetchDone = useRef(false);
-
-  const tags = feedSearchTags[locale as 'ka' | 'en'] || feedSearchTags.ka;
 
   const fetchFeed = useCallback(
     async (pageNum: number, append: boolean = false) => {
@@ -277,41 +275,6 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full h-12 pl-10 pr-4 rounded-xl border text-base sm:text-sm bg-[var(--color-bg-secondary)] border-[var(--color-border)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)]/50 transition-all"
         />
-      </div>
-
-      {/* Search Chips */}
-      <div className="flex flex-wrap gap-2">
-        {tags.map((tag) => {
-          const isSelected = selectedTags.includes(tag.key);
-          return (
-            <button
-              key={tag.key}
-              onClick={() => toggleTag(tag.key)}
-              className={`
-                px-3.5 py-2 rounded-full text-sm font-medium transition-all duration-200 touch-manipulation
-                ${isSelected
-                  ? 'bg-[var(--color-accent)] text-white shadow-sm'
-                  : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)] hover:text-[var(--color-text-primary)]'
-                }
-              `}
-            >
-              {tag.label}
-            </button>
-          );
-        })}
-
-        {/* Clear button when filters active */}
-        {hasActiveSearch && (
-          <button
-            onClick={clearSearch}
-            className="px-3.5 py-2 rounded-full text-sm font-medium transition-all duration-200 touch-manipulation bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/30 flex items-center gap-1.5"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-            {locale === 'ka' ? 'გასუფთავება' : 'Clear'}
-          </button>
-        )}
       </div>
 
       {isLoading ? (

@@ -4,94 +4,119 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom CSS Variables for the design system */
+/* ============================================
+   DESIGN SYSTEM: "Warm Stone & Sage"
+   A refined, earthy light mode with depth
+   ============================================ */
+
 :root {
-  /* Warm, sophisticated light mode */
-  --color-bg-primary: #f8f7f4;
-  --color-bg-secondary: #ffffff;
-  --color-bg-tertiary: #f3f2ef;
-  --color-bg-elevated: #ffffff;
-  --color-bg-muted: #efeeeb;
-  --color-bg-canvas: linear-gradient(180deg, #f8f7f4 0%, #f5f4f1 100%);
+  /* Warm Stone Background Palette - grounded and sophisticated */
+  --color-bg-primary: #eae7e2;
+  --color-bg-secondary: #f5f3f0;
+  --color-bg-tertiary: #dfdcd6;
+  --color-bg-elevated: #faf9f7;
+  --color-bg-muted: #d8d5cf;
+  --color-bg-canvas: linear-gradient(175deg, #eae7e2 0%, #e2dfd9 50%, #dbd8d2 100%);
 
-  /* Rich, warm text colors */
-  --color-text-primary: #1a1916;
-  --color-text-secondary: #4a4744;
-  --color-text-tertiary: #8a8784;
-  --color-text-muted: #b0ada8;
+  /* Rich Ink Text - warm undertones with strong contrast */
+  --color-text-primary: #1c1a17;
+  --color-text-secondary: #42403b;
+  --color-text-tertiary: #706d66;
+  --color-text-muted: #9c9890;
 
-  /* Refined borders with warmth */
-  --color-border: #e8e6e1;
-  --color-border-subtle: #f0eee9;
-  --color-border-strong: #d4d1ca;
+  /* Warm Stone Borders - visible but refined */
+  --color-border: #ccc9c2;
+  --color-border-subtle: #dddad4;
+  --color-border-strong: #b5b2ab;
 
-  /* Emerald accent with warm undertones */
-  --color-accent: #0d9668;
-  --color-accent-hover: #0a7d56;
-  --color-accent-soft: rgba(13, 150, 104, 0.08);
-  --color-accent-muted: rgba(13, 150, 104, 0.12);
+  /* Deep Sage Emerald - primary brand accent */
+  --color-accent: #3d9970;
+  --color-accent-hover: #2d8760;
+  --color-accent-soft: rgba(61, 153, 112, 0.1);
+  --color-accent-muted: rgba(61, 153, 112, 0.15);
 
-  /* Warm amber for highlights */
-  --color-highlight: #f59e0b;
-  --color-highlight-soft: rgba(245, 158, 11, 0.1);
+  /* Warm Terracotta Highlight */
+  --color-highlight: #c45d3e;
+  --color-highlight-soft: rgba(196, 93, 62, 0.12);
+
+  /* Button gradients for light mode */
+  --gradient-primary: linear-gradient(180deg, #1a4d3e 0%, #143d31 100%);
+  --gradient-primary-hover: linear-gradient(180deg, #143d31 0%, #0e3328 100%);
+  --gradient-secondary: linear-gradient(180deg, #faf9f7 0%, #f5f3f0 100%);
+  --gradient-tertiary: linear-gradient(180deg, #eae7e2 0%, #dfdcd6 100%);
 
   /* Typography */
   --font-sans: 'Outfit', system-ui, -apple-system, sans-serif;
 
-  /* Refined shadows with warmth */
-  --shadow-xs: 0 1px 2px rgba(26, 25, 22, 0.03);
-  --shadow-sm: 0 1px 3px rgba(26, 25, 22, 0.04), 0 1px 2px rgba(26, 25, 22, 0.02);
-  --shadow-md: 0 4px 6px -1px rgba(26, 25, 22, 0.05), 0 2px 4px -1px rgba(26, 25, 22, 0.03);
-  --shadow-lg: 0 10px 15px -3px rgba(26, 25, 22, 0.06), 0 4px 6px -2px rgba(26, 25, 22, 0.03);
-  --shadow-xl: 0 20px 25px -5px rgba(26, 25, 22, 0.07), 0 10px 10px -5px rgba(26, 25, 22, 0.02);
-  --shadow-card: 0 1px 3px rgba(26, 25, 22, 0.04), 0 1px 2px rgba(26, 25, 22, 0.02), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-  --shadow-card-hover: 0 4px 12px rgba(26, 25, 22, 0.08), 0 2px 4px rgba(26, 25, 22, 0.04);
+  /* Layered Shadows - creating depth */
+  --shadow-xs: 0 1px 2px rgba(28, 26, 23, 0.04);
+  --shadow-sm: 0 2px 4px rgba(28, 26, 23, 0.05), 0 1px 2px rgba(28, 26, 23, 0.03);
+  --shadow-md: 0 4px 12px -2px rgba(28, 26, 23, 0.08), 0 2px 4px -1px rgba(28, 26, 23, 0.04);
+  --shadow-lg: 0 12px 24px -4px rgba(28, 26, 23, 0.1), 0 4px 8px -2px rgba(28, 26, 23, 0.05);
+  --shadow-xl: 0 24px 48px -8px rgba(28, 26, 23, 0.12), 0 12px 24px -4px rgba(28, 26, 23, 0.06);
+  --shadow-card: 0 2px 8px rgba(28, 26, 23, 0.06), 0 1px 2px rgba(28, 26, 23, 0.04);
+  --shadow-card-hover: 0 8px 24px -4px rgba(28, 26, 23, 0.12), 0 4px 8px -2px rgba(28, 26, 23, 0.06);
+
+  /* Button-specific shadows */
+  --shadow-button: 0 1px 3px rgba(28, 26, 23, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --shadow-button-hover: 0 4px 12px rgba(28, 26, 23, 0.12);
 
   /* Interaction states */
-  --hover-bg: rgba(26, 25, 22, 0.03);
-  --active-bg: rgba(26, 25, 22, 0.05);
+  --hover-bg: rgba(28, 26, 23, 0.05);
+  --active-bg: rgba(28, 26, 23, 0.08);
 }
 
 .dark {
-  /* Soft twilight palette - lighter, more refined dark mode */
-  --color-bg-primary: #28282c;
-  --color-bg-secondary: #323236;
-  --color-bg-tertiary: #3c3c40;
-  --color-bg-elevated: #46464a;
-  --color-bg-muted: #2e2e32;
-  --color-bg-canvas: linear-gradient(180deg, #28282c 0%, #2e2e32 100%);
+  /* Refined Dark Mode - softer twilight aesthetic */
+  --color-bg-primary: #1e1e22;
+  --color-bg-secondary: #26262b;
+  --color-bg-tertiary: #2e2e34;
+  --color-bg-elevated: #2a2a30;
+  --color-bg-muted: #222226;
+  --color-bg-canvas: linear-gradient(175deg, #1e1e22 0%, #1a1a1e 50%, #18181c 100%);
 
-  /* Warmer, softer text colors */
-  --color-text-primary: #f8f8fa;
-  --color-text-secondary: #b8b8c0;
-  --color-text-tertiary: #8e8e98;
-  --color-text-muted: #6a6a72;
+  /* Warm, readable text colors */
+  --color-text-primary: #f5f4f2;
+  --color-text-secondary: #b8b6b2;
+  --color-text-tertiary: #8a8884;
+  --color-text-muted: #5c5a56;
 
-  /* More visible borders for better definition */
-  --color-border: #52525a;
-  --color-border-subtle: #42424a;
-  --color-border-strong: #62626a;
+  /* Visible borders for good definition */
+  --color-border: #3e3e44;
+  --color-border-subtle: #32323a;
+  --color-border-strong: #52525a;
 
-  /* Emerald accent - slightly warmer */
-  --color-accent: #4ade80;
-  --color-accent-hover: #86efac;
-  --color-accent-soft: rgba(74, 222, 128, 0.15);
-  --color-accent-muted: rgba(74, 222, 128, 0.22);
+  /* Brighter Sage for dark mode visibility */
+  --color-accent: #5cc98e;
+  --color-accent-hover: #7dd9a6;
+  --color-accent-soft: rgba(92, 201, 142, 0.12);
+  --color-accent-muted: rgba(92, 201, 142, 0.18);
 
-  --color-highlight: #fcd34d;
-  --color-highlight-soft: rgba(252, 211, 77, 0.18);
+  /* Warm Terracotta for dark mode */
+  --color-highlight: #e87a5c;
+  --color-highlight-soft: rgba(232, 122, 92, 0.15);
 
-  /* Softer shadows for lighter dark mode */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.12);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.15);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.18);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.22);
-  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.25);
-  --shadow-card: 0 2px 6px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-card-hover: 0 6px 16px rgba(0, 0, 0, 0.18);
+  /* Button gradients for dark mode */
+  --gradient-primary: linear-gradient(180deg, #5cc98e 0%, #4ade94 100%);
+  --gradient-primary-hover: linear-gradient(180deg, #7dd9a6 0%, #5cc98e 100%);
+  --gradient-secondary: linear-gradient(180deg, #2e2e34 0%, #26262b 100%);
+  --gradient-tertiary: linear-gradient(180deg, #2a2a30 0%, #26262b 100%);
 
-  --hover-bg: rgba(255, 255, 255, 0.06);
-  --active-bg: rgba(255, 255, 255, 0.10);
+  /* Refined shadows for dark mode */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.35);
+  --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.25);
+
+  /* Button-specific shadows for dark mode */
+  --shadow-button: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --shadow-button-hover: 0 4px 16px rgba(0, 0, 0, 0.3);
+
+  --hover-bg: rgba(255, 255, 255, 0.05);
+  --active-bg: rgba(255, 255, 255, 0.08);
 }
 
 @layer base {
@@ -147,80 +172,153 @@
 }
 
 @layer components {
-  /* Luxury Button Styles */
+  /* Luxury Button Styles with Gradients and Borders */
   .btn {
     @apply px-6 py-3 rounded-xl font-medium transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-[0.98];
     @apply dark:focus:ring-offset-dark-bg;
+    box-shadow: var(--shadow-button);
+  }
+
+  .btn:hover {
+    box-shadow: var(--shadow-button-hover);
   }
 
   .btn-primary {
-    @apply bg-forest-800 text-white hover:bg-forest-700 focus:ring-forest-800 shadow-sm hover:shadow-luxury;
-    @apply dark:bg-primary-500 dark:text-white dark:hover:bg-primary-400 dark:focus:ring-primary-500;
+    background: var(--gradient-primary);
+    @apply text-white focus:ring-forest-800;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    @apply dark:text-forest-900 dark:focus:ring-primary-500;
+  }
+
+  .btn-primary:hover {
+    background: var(--gradient-primary-hover);
   }
 
   .btn-secondary {
-    @apply bg-white text-forest-800 border border-neutral-200 hover:border-forest-800 hover:bg-cream-100 focus:ring-forest-800;
-    @apply dark:bg-dark-card dark:text-neutral-100 dark:border-dark-border dark:hover:border-dark-50 dark:hover:bg-dark-elevated;
+    background: var(--gradient-secondary);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    @apply focus:ring-forest-800;
+    @apply dark:focus:ring-primary-500;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--color-border-strong);
+    background: var(--gradient-tertiary);
   }
 
   .btn-accent {
-    @apply bg-primary-400 text-forest-900 hover:bg-primary-300 focus:ring-primary-400 shadow-sm hover:shadow-glow;
+    @apply bg-primary-400 text-forest-900 hover:bg-primary-300 focus:ring-primary-400;
+    border: 1px solid rgba(0, 0, 0, 0.1);
     @apply dark:bg-primary-500 dark:text-white dark:hover:bg-primary-400;
   }
 
   .btn-terracotta {
-    @apply bg-terracotta-500 text-white hover:bg-terracotta-600 focus:ring-terracotta-500 shadow-sm;
-    @apply dark:bg-terracotta-500 dark:hover:bg-terracotta-400;
+    @apply text-white focus:ring-terracotta-500;
+    background: linear-gradient(180deg, #d66a2a 0%, #c45a1a 100%);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    @apply dark:hover:brightness-110;
+  }
+
+  .btn-terracotta:hover {
+    background: linear-gradient(180deg, #c45a1a 0%, #b34a10 100%);
   }
 
   .btn-outline {
-    @apply bg-transparent border-2 border-forest-800 text-forest-800 hover:bg-forest-800 hover:text-white;
-    @apply dark:border-primary-500 dark:text-primary-400 dark:hover:bg-primary-500 dark:hover:text-white;
+    @apply bg-transparent text-forest-800 hover:text-white;
+    border: 2px solid var(--color-accent);
+    color: var(--color-accent);
+    @apply dark:text-primary-400 dark:hover:text-white;
+  }
+
+  .btn-outline:hover {
+    background: var(--gradient-primary);
+    border-color: transparent;
   }
 
   .btn-ghost {
-    @apply bg-transparent text-forest-800 hover:bg-forest-800/5;
-    @apply dark:text-neutral-300 dark:hover:bg-white/10 dark:hover:text-white;
+    @apply bg-transparent;
+    color: var(--color-text-secondary);
+    border: 1px solid transparent;
   }
 
-  /* Elegant Card Styles - Smoother with lighter backgrounds */
+  .btn-ghost:hover {
+    background: var(--hover-bg);
+    border-color: var(--color-border-subtle);
+  }
+
+  /* Elegant Card Styles - Using CSS variables */
   .card {
-    @apply bg-white rounded-2xl border border-neutral-100 shadow-card transition-all duration-200 ease-out hover:shadow-elevated hover:border-neutral-200;
-    @apply dark:bg-dark-card dark:border-dark-border-subtle dark:shadow-none dark:hover:bg-dark-elevated dark:hover:border-dark-border;
+    @apply rounded-2xl transition-all duration-200 ease-out;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-card);
+  }
+
+  .card:hover {
+    border-color: var(--color-border-strong);
+    box-shadow: var(--shadow-card-hover);
   }
 
   .card-elevated {
-    @apply bg-white rounded-2xl border border-neutral-100 shadow-elevated hover:shadow-luxury transition-all duration-200;
-    @apply dark:bg-dark-elevated dark:border-dark-border dark:shadow-none;
+    @apply rounded-2xl transition-all duration-200;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-md);
+  }
+
+  .card-elevated:hover {
+    box-shadow: var(--shadow-lg);
   }
 
   .card-luxury {
-    @apply bg-white rounded-2xl border border-neutral-100 shadow-luxury;
-    @apply dark:bg-dark-elevated dark:border-dark-border dark:shadow-none;
+    @apply rounded-2xl;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
   }
 
   /* Refined Input Styles */
   .input {
-    @apply w-full px-4 py-3.5 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 transition-all duration-200 placeholder:text-neutral-400 text-neutral-800;
-    @apply dark:bg-dark-card dark:border-dark-border dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:ring-primary-500/30 dark:focus:border-primary-500;
+    @apply w-full px-4 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all duration-200;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    --tw-ring-color: var(--color-accent-soft);
+  }
+
+  .input::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  .input:focus {
+    border-color: var(--color-accent);
+    --tw-ring-color: var(--color-accent-soft);
   }
 
   .input-error {
-    @apply border-terracotta-400 focus:ring-terracotta-400/20 focus:border-terracotta-400;
+    border-color: #dc2626;
+    --tw-ring-color: rgba(220, 38, 38, 0.2);
   }
 
   .select {
-    @apply w-full px-4 py-3.5 pr-10 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 transition-all duration-200 cursor-pointer appearance-none font-medium text-neutral-700;
-    @apply dark:bg-dark-card dark:border-dark-border dark:text-neutral-100 dark:focus:ring-primary-500/30 dark:focus:border-primary-500;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23004B3B' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    @apply w-full px-4 py-3.5 pr-10 rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 cursor-pointer appearance-none font-medium;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b6660' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
     background-position: right 0.75rem center;
     background-repeat: no-repeat;
     background-size: 1.25em 1.25em;
   }
 
   .select:hover {
-    @apply border-forest-700;
-    @apply dark:border-dark-50;
+    border-color: var(--color-border-strong);
+  }
+
+  .select:focus {
+    border-color: var(--color-accent);
+    --tw-ring-color: var(--color-accent-soft);
   }
 
   /* Container */

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -13,25 +13,42 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // Always use dark mode
-  const [theme] = useState<Theme>('dark');
+  const [theme, setThemeState] = useState<Theme>('dark');
   const [mounted, setMounted] = useState(false);
 
+  // Initialize theme from localStorage or system preference
   useEffect(() => {
     setMounted(true);
+    const savedTheme = localStorage.getItem('theme') as Theme | null;
+
+    if (savedTheme === 'light' || savedTheme === 'dark') {
+      setThemeState(savedTheme);
+    } else {
+      // Check system preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setThemeState(prefersDark ? 'dark' : 'light');
+    }
   }, []);
 
+  // Apply theme class to document
   useEffect(() => {
     if (mounted) {
-      // Always set dark mode
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      localStorage.setItem('theme', theme);
     }
-  }, [mounted]);
+  }, [theme, mounted]);
 
-  // These functions are kept for compatibility but do nothing
-  const toggleTheme = () => {};
-  const setTheme = () => {};
+  const toggleTheme = useCallback(() => {
+    setThemeState(prev => prev === 'dark' ? 'light' : 'dark');
+  }, []);
+
+  const setTheme = useCallback((newTheme: Theme) => {
+    setThemeState(newTheme);
+  }, []);
 
   // Prevent flash of wrong theme
   if (!mounted) {

@@ -1,6 +1,7 @@
 'use client';
 
 import ArchitecturalBackground from '@/components/browse/ArchitecturalBackground';
+import BrowseDecorations from '@/components/browse/BrowseDecorations';
 import BrowseTabSwitcher from '@/components/browse/BrowseTabSwitcher';
 import CategorySection from '@/components/browse/CategorySection';
 import FeedSection from '@/components/browse/FeedSection';
@@ -10,6 +11,7 @@ import ProCard from '@/components/common/ProCard';
 import Select from '@/components/common/Select';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useViewMode } from '@/contexts/ViewModeContext';
 import { useLikes } from '@/hooks/useLikes';
 import { storage } from '@/services/storage';
@@ -108,6 +110,7 @@ function BrowseContent() {
   const { t, locale } = useLanguage();
   const { user, isLoading: isAuthLoading, isAuthenticated } = useAuth();
   const { viewMode: userViewMode, isClientMode } = useViewMode();
+  const { theme } = useTheme();
 
   // A pro user in client mode should see professionals (like a client would)
   // A pro user in pro mode should see jobs
@@ -128,10 +131,22 @@ function BrowseContent() {
     return 'professionals';
   });
 
-  // Save tab preference to localStorage
+  // Key to force FeedSection remount and reset internal state when switching tabs
+  const [feedResetKey, setFeedResetKey] = useState(0);
+
+  // Save tab preference to localStorage and clear filters when switching
   const handleTabChange = useCallback((tab: 'professionals' | 'feed') => {
     setActiveClientTab(tab);
     localStorage.setItem('browseActiveTab', tab);
+    // Clear search and filters when switching tabs
+    setSearchQuery('');
+    setSelectedCategory(null);
+    setSelectedSubcategory(null);
+    setMinRating(0);
+    setPriceRange([0, 1000]);
+    setSelectedCompanies([]);
+    // Increment reset key to force FeedSection remount
+    setFeedResetKey(prev => prev + 1);
   }, []);
 
   // Likes hook for pro profiles
@@ -655,6 +670,7 @@ function BrowseContent() {
         <div className="relative min-h-[calc(100vh-64px)]">
           {/* Premium architectural background with floating design elements */}
           <ArchitecturalBackground />
+          <BrowseDecorations />
 
           {/* Navigation Bar */}
           <div className="sticky top-16 z-40 border-b" style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border-subtle)' }}>
@@ -1082,6 +1098,7 @@ function BrowseContent() {
         <div className="relative min-h-[calc(100vh-64px)]">
           {/* Premium architectural background with floating design elements */}
           <ArchitecturalBackground />
+          <BrowseDecorations />
 
           <div className="max-w-6xl mx-auto px-4 sm:px-5 py-6 sm:py-8 relative z-10">
             {/* Hero Section */}
@@ -1100,28 +1117,39 @@ function BrowseContent() {
                   </p>
                 </div>
 
-                {/* Quick Action Button - Glass Style */}
+                {/* Quick Action Button - Theme-aware Style */}
                 {user && (user.role === 'client' || (user.role === 'pro' && isClientMode)) && (
                   <Link
                     href="/my-jobs"
                     className="hidden sm:flex group relative items-center gap-2 px-3.5 py-2.5 rounded-xl overflow-hidden touch-manipulation transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98]"
                     style={{
-                      background: 'rgba(255, 255, 255, 0.06)',
+                      background: theme === 'dark'
+                        ? 'rgba(255, 255, 255, 0.06)'
+                        : 'linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%)',
                       backdropFilter: 'blur(12px)',
                       WebkitBackdropFilter: 'blur(12px)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      boxShadow: '0 4px 16px -2px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
+                      border: theme === 'dark'
+                        ? '1px solid rgba(255, 255, 255, 0.1)'
+                        : '1px solid #6ee7b7',
+                      boxShadow: theme === 'dark'
+                        ? '0 4px 16px -2px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 2px 8px rgba(16, 185, 129, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
                     }}
                   >
                     {/* Hover glow */}
                     <div
                       className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400"
                       style={{
-                        background: 'linear-gradient(135deg, rgba(52, 211, 153, 0.12) 0%, rgba(16, 185, 129, 0.08) 100%)',
+                        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.1) 100%)',
                       }}
                     />
                     {/* Folder icon */}
-                    <svg className="w-[18px] h-[18px] relative z-10 transition-all duration-300 text-neutral-400 group-hover:text-emerald-400" viewBox="0 0 24 24" fill="none">
+                    <svg
+                      className="w-[18px] h-[18px] relative z-10 transition-all duration-300 group-hover:text-emerald-500"
+                      style={{ color: theme === 'dark' ? '#9ca3af' : '#059669' }}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
                       <path
                         d="M3 8C3 6.89543 3.89543 6 5 6H9L11 8H19C20.1046 8 21 8.89543 21 10V18C21 19.1046 20.1046 20 19 20H5C3.89543 20 3 19.1046 3 18V8Z"
                         stroke="currentColor"
@@ -1136,13 +1164,16 @@ function BrowseContent() {
                         strokeLinecap="round"
                       />
                     </svg>
-                    <span className="text-sm font-medium relative z-10 transition-colors duration-300 text-neutral-300 group-hover:text-emerald-400">
+                    <span
+                      className="text-sm font-semibold relative z-10 transition-colors duration-300 group-hover:text-emerald-600"
+                      style={{ color: theme === 'dark' ? '#d4d4d4' : '#065f46' }}
+                    >
                       {locale === 'ka' ? 'განცხადებები' : 'My Jobs'}
                     </span>
                     {/* Border glow on hover */}
                     <div
                       className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none"
-                      style={{ border: '1px solid rgba(52, 211, 153, 0.3)' }}
+                      style={{ border: '1px solid rgba(16, 185, 129, 0.4)' }}
                     />
                   </Link>
                 )}
@@ -1316,7 +1347,10 @@ function BrowseContent() {
 
             {/* Feed Tab Content */}
             {activeClientTab === 'feed' && (
-              <FeedSection selectedCategory={selectedCategory} />
+              <FeedSection
+                key={`feed-${feedResetKey}`}
+                selectedCategory={selectedCategory}
+              />
             )}
           </div>
         </div>

@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useViewMode } from '@/contexts/ViewModeContext';
 import { useNotifications } from '@/contexts/NotificationContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import Link from 'next/link';
 import { useState } from 'react';
 import Avatar from './Avatar';
@@ -13,18 +14,28 @@ export default function Header() {
   const { t } = useLanguage();
   const { viewMode, toggleViewMode } = useViewMode();
   const { unreadCount } = useNotifications();
+  const { theme, toggleTheme } = useTheme();
   const [showDropdown, setShowDropdown] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-dark-bg/95 backdrop-blur-md border-b border-dark-border-subtle transition-colors duration-200">
+    <header
+      className="sticky top-0 z-50 backdrop-blur-md border-b transition-colors duration-300"
+      style={{
+        backgroundColor: theme === 'dark' ? 'rgba(40, 40, 44, 0.95)' : 'rgba(242, 240, 236, 0.95)',
+        borderColor: 'var(--color-border)'
+      }}
+    >
       <div className="container-custom py-3 sm:py-4">
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link href="/browse" className="group flex items-center gap-2 touch-manipulation">
-            <span className="text-xl sm:text-2xl font-serif font-semibold text-neutral-50 tracking-tight transition-colors duration-200">
+            <span
+              className="text-xl sm:text-2xl font-serif font-semibold tracking-tight transition-colors duration-200"
+              style={{ color: 'var(--color-text-primary)' }}
+            >
               Homico
             </span>
-            <span className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-primary-400 group-hover:scale-125 transition-transform duration-200"></span>
+            <span className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-emerald-500 group-hover:scale-125 transition-transform duration-200"></span>
           </Link>
 
           <nav className="flex gap-4 items-center">
@@ -32,25 +43,31 @@ export default function Header() {
               <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-dark-card animate-pulse"></div>
             ) : isAuthenticated && user ? (
               <div className="flex items-center gap-3">
-                {/* Become Pro Button for Client Users - Glassmorphism Style */}
+                {/* Become Pro Button for Client Users - Theme-aware style */}
                 {user.role === 'client' && (
                   <Link
                     href="/become-pro"
                     className="group relative flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl overflow-hidden touch-manipulation transition-all duration-500 hover:-translate-y-0.5 active:scale-[0.98]"
                     style={{
-                      background: 'rgba(255, 255, 255, 0.08)',
+                      background: theme === 'dark'
+                        ? 'rgba(255, 255, 255, 0.08)'
+                        : 'linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%)',
                       backdropFilter: 'blur(12px)',
                       WebkitBackdropFilter: 'blur(12px)',
-                      border: '1px solid rgba(255, 255, 255, 0.12)',
-                      boxShadow: '0 4px 24px -1px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                      border: theme === 'dark'
+                        ? '1px solid rgba(255, 255, 255, 0.12)'
+                        : '1px solid #fcd34d',
+                      boxShadow: theme === 'dark'
+                        ? '0 4px 24px -1px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                        : '0 2px 8px rgba(251, 191, 36, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
                     }}
                   >
                     {/* Hover glow effect */}
                     <div
                       className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"
                       style={{
-                        background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.1) 100%)',
-                        boxShadow: '0 8px 32px -4px rgba(251, 191, 36, 0.2)',
+                        background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.15) 100%)',
+                        boxShadow: '0 8px 32px -4px rgba(251, 191, 36, 0.25)',
                       }}
                     />
 
@@ -84,8 +101,13 @@ export default function Header() {
                       </svg>
                     </div>
 
-                    {/* Text with gradient on hover */}
-                    <span className="text-xs sm:text-sm font-medium relative z-10 transition-all duration-300 text-neutral-300 group-hover:text-amber-400">
+                    {/* Text - theme aware */}
+                    <span
+                      className="text-xs sm:text-sm font-semibold relative z-10 transition-all duration-300 group-hover:text-amber-600"
+                      style={{
+                        color: theme === 'dark' ? '#d4d4d4' : '#92400e',
+                      }}
+                    >
                       გახდი სპეცი
                     </span>
 
@@ -93,7 +115,7 @@ export default function Header() {
                     <div
                       className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                       style={{
-                        border: '1px solid rgba(251, 191, 36, 0.3)',
+                        border: '1px solid rgba(251, 191, 36, 0.5)',
                       }}
                     />
                   </Link>
@@ -128,16 +150,85 @@ export default function Header() {
                   </button>
                 )}
 
+                {/* Theme Toggle - Sun/Moon Switcher */}
+                <button
+                  onClick={toggleTheme}
+                  className="relative group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-500 touch-manipulation overflow-hidden"
+                  style={{
+                    background: theme === 'dark'
+                      ? 'rgba(255, 255, 255, 0.05)'
+                      : 'rgba(0, 0, 0, 0.03)',
+                  }}
+                  aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                >
+                  {/* Background glow on hover */}
+                  <div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{
+                      background: theme === 'dark'
+                        ? 'radial-gradient(circle at center, rgba(251, 191, 36, 0.15) 0%, transparent 70%)'
+                        : 'radial-gradient(circle at center, rgba(99, 102, 241, 0.1) 0%, transparent 70%)',
+                    }}
+                  />
+
+                  {/* Sun icon (shown in dark mode) */}
+                  <svg
+                    className={`absolute w-5 h-5 transition-all duration-500 ease-out ${
+                      theme === 'dark'
+                        ? 'opacity-100 rotate-0 scale-100'
+                        : 'opacity-0 rotate-90 scale-50'
+                    }`}
+                    style={{ color: theme === 'dark' ? '#fbbf24' : '#f59e0b' }}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <circle cx="12" cy="12" r="4" fill="currentColor" stroke="none" />
+                    <path
+                      strokeLinecap="round"
+                      d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41"
+                    />
+                  </svg>
+
+                  {/* Moon icon (shown in light mode) */}
+                  <svg
+                    className={`absolute w-5 h-5 transition-all duration-500 ease-out ${
+                      theme === 'light'
+                        ? 'opacity-100 rotate-0 scale-100'
+                        : 'opacity-0 -rotate-90 scale-50'
+                    }`}
+                    style={{ color: theme === 'light' ? '#6366f1' : '#818cf8' }}
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                  </svg>
+
+                  {/* Hover ring effect */}
+                  <div
+                    className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                    style={{
+                      border: theme === 'dark'
+                        ? '1px solid rgba(251, 191, 36, 0.3)'
+                        : '1px solid rgba(99, 102, 241, 0.2)',
+                    }}
+                  />
+                </button>
+
                 {/* Notification Bell */}
                 <Link
                   href="/notifications"
-                  className="relative group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 hover:bg-white/10"
+                  className="relative group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
+                    background: theme === 'dark'
+                      ? 'rgba(255, 255, 255, 0.05)'
+                      : 'rgba(0, 0, 0, 0.03)',
                   }}
                 >
                   <svg
-                    className="w-5 h-5 text-neutral-400 group-hover:text-primary-400 transition-colors duration-300"
+                    className="w-5 h-5 transition-colors duration-300"
+                    style={{ color: 'var(--color-text-tertiary)' }}
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -164,7 +255,9 @@ export default function Header() {
                   {/* Glow effect on hover */}
                   <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
                     style={{
-                      boxShadow: '0 0 20px rgba(52, 211, 153, 0.15)',
+                      boxShadow: theme === 'dark'
+                        ? '0 0 20px rgba(52, 211, 153, 0.15)'
+                        : '0 0 16px rgba(5, 150, 105, 0.12)',
                     }}
                   />
                 </Link>
@@ -359,9 +452,76 @@ export default function Header() {
               </div>
             ) : (
               <div className="flex items-center gap-2 sm:gap-3">
+                {/* Theme Toggle for non-authenticated users */}
+                <button
+                  onClick={toggleTheme}
+                  className="relative group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-500 touch-manipulation overflow-hidden"
+                  style={{
+                    background: theme === 'dark'
+                      ? 'rgba(255, 255, 255, 0.05)'
+                      : 'rgba(0, 0, 0, 0.03)',
+                  }}
+                  aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                >
+                  {/* Background glow on hover */}
+                  <div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{
+                      background: theme === 'dark'
+                        ? 'radial-gradient(circle at center, rgba(251, 191, 36, 0.15) 0%, transparent 70%)'
+                        : 'radial-gradient(circle at center, rgba(99, 102, 241, 0.1) 0%, transparent 70%)',
+                    }}
+                  />
+
+                  {/* Sun icon (shown in dark mode) */}
+                  <svg
+                    className={`absolute w-5 h-5 transition-all duration-500 ease-out ${
+                      theme === 'dark'
+                        ? 'opacity-100 rotate-0 scale-100'
+                        : 'opacity-0 rotate-90 scale-50'
+                    }`}
+                    style={{ color: theme === 'dark' ? '#fbbf24' : '#f59e0b' }}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <circle cx="12" cy="12" r="4" fill="currentColor" stroke="none" />
+                    <path
+                      strokeLinecap="round"
+                      d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41"
+                    />
+                  </svg>
+
+                  {/* Moon icon (shown in light mode) */}
+                  <svg
+                    className={`absolute w-5 h-5 transition-all duration-500 ease-out ${
+                      theme === 'light'
+                        ? 'opacity-100 rotate-0 scale-100'
+                        : 'opacity-0 -rotate-90 scale-50'
+                    }`}
+                    style={{ color: theme === 'light' ? '#6366f1' : '#818cf8' }}
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                  </svg>
+
+                  {/* Hover ring effect */}
+                  <div
+                    className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                    style={{
+                      border: theme === 'dark'
+                        ? '1px solid rgba(251, 191, 36, 0.3)'
+                        : '1px solid rgba(99, 102, 241, 0.2)',
+                    }}
+                  />
+                </button>
+
                 <Link
                   href="/login"
-                  className="text-neutral-600 dark:text-neutral-300 hover:text-forest-800 dark:hover:text-primary-400 font-medium transition-colors px-3 sm:px-4 py-2 text-sm sm:text-base touch-manipulation"
+                  className="font-medium transition-colors px-3 sm:px-4 py-2 text-sm sm:text-base touch-manipulation"
+                  style={{ color: 'var(--color-text-secondary)' }}
                 >
                   {t('nav.login')}
                 </Link>
