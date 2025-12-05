@@ -95,25 +95,58 @@ export default function FeedCard({ item, onLike }: FeedCardProps) {
               />
             </div>
 
-            {/* Slider Line */}
+            {/* Slider Line - Bold and visible */}
             <div
-              className="absolute top-0 bottom-0 w-[3px] bg-white shadow-[0_0_8px_rgba(0,0,0,0.3)] z-10"
+              className="absolute top-0 bottom-0 z-20"
               style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
             >
-              {/* Slider Handle */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white shadow-lg flex items-center justify-center border border-zinc-200">
-                <svg className="w-4 h-4 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l-3 3 3 3m8-6l3 3-3 3" />
-                </svg>
+              {/* Glowing line effect */}
+              <div className="absolute inset-0 w-1 bg-white shadow-[0_0_20px_rgba(255,255,255,0.8),0_0_40px_rgba(255,255,255,0.4)]" />
+
+              {/* Main line with gradient */}
+              <div className="absolute inset-0 w-1 bg-gradient-to-b from-white via-white to-white">
+                {/* Top accent */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rounded-full shadow-lg" />
+                {/* Bottom accent */}
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rounded-full shadow-lg" />
+              </div>
+
+              {/* Slider Handle - Prominent circular grip */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex items-center justify-center border-2 border-white/50 backdrop-blur-sm">
+                {/* Inner circle with arrows */}
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-zinc-50 to-zinc-100 flex items-center justify-center gap-0.5 shadow-inner">
+                  {/* Left arrow */}
+                  <svg className="w-3 h-3 text-zinc-600" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                  </svg>
+                  {/* Divider */}
+                  <div className="w-px h-4 bg-zinc-300" />
+                  {/* Right arrow */}
+                  <svg className="w-3 h-3 text-zinc-600" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
+                  </svg>
+                </div>
               </div>
             </div>
 
-            {/* Labels */}
-            <div className="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-sm text-white text-[11px] font-semibold tracking-wide uppercase">
-              {locale === 'ka' ? 'მანამდე' : 'Before'}
+            {/* Labels - High contrast badges */}
+            <div className="absolute top-3 left-3 z-10">
+              <div className="px-3 py-1.5 rounded-full bg-zinc-900/90 backdrop-blur-md text-white text-[10px] font-bold tracking-wider uppercase shadow-lg border border-white/10">
+                {locale === 'ka' ? 'მანამდე' : 'Before'}
+              </div>
             </div>
-            <div className="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-white/90 backdrop-blur-sm text-zinc-800 text-[11px] font-semibold tracking-wide uppercase">
-              {locale === 'ka' ? 'შემდეგ' : 'After'}
+            <div className="absolute top-3 right-3 z-10">
+              <div className="px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md text-zinc-900 text-[10px] font-bold tracking-wider uppercase shadow-lg border border-black/5">
+                {locale === 'ka' ? 'შემდეგ' : 'After'}
+              </div>
+            </div>
+
+            {/* Drag hint - appears briefly */}
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-sm text-white/90 text-[10px] font-medium flex items-center gap-1.5 opacity-70 pointer-events-none">
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+              </svg>
+              <span>{locale === 'ka' ? 'გადაათრიე' : 'Drag to compare'}</span>
             </div>
           </div>
         ) : (
