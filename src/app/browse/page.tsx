@@ -134,19 +134,10 @@ function BrowseContent() {
   // Key to force FeedSection remount and reset internal state when switching tabs
   const [feedResetKey, setFeedResetKey] = useState(0);
 
-  // Save tab preference to localStorage and clear filters when switching
+  // Save tab preference to localStorage when switching (keep filters)
   const handleTabChange = useCallback((tab: 'professionals' | 'feed') => {
     setActiveClientTab(tab);
     localStorage.setItem('browseActiveTab', tab);
-    // Clear search and filters when switching tabs
-    setSearchQuery('');
-    setSelectedCategory(null);
-    setSelectedSubcategory(null);
-    setMinRating(0);
-    setPriceRange([0, 1000]);
-    setSelectedCompanies([]);
-    // Increment reset key to force FeedSection remount
-    setFeedResetKey(prev => prev + 1);
   }, []);
 
   // Likes hook for pro profiles
