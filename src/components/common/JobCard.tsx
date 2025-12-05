@@ -165,15 +165,15 @@ export default function JobCard({ job, variant = 'default', onSave, isSaved = fa
 
         {/* Content */}
         <div className="p-2.5 sm:p-4">
-          <h3 className="font-semibold text-white text-sm sm:text-base line-clamp-2 mb-1.5 sm:mb-2 group-hover:text-emerald-400 transition-colors">
+          <h3 className="font-semibold text-sm sm:text-base line-clamp-2 mb-1.5 sm:mb-2 group-hover:text-emerald-500 transition-colors" style={{ color: 'var(--color-text-primary)' }}>
             {job.title}
           </h3>
-          <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-zinc-400">
+          <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
             <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
             </svg>
             <span className="truncate">{job.location}</span>
-            <span className="text-zinc-600 flex-shrink-0">·</span>
+            <span style={{ color: 'var(--color-text-muted)' }} className="flex-shrink-0">·</span>
             <span className="flex-shrink-0">{getTimeAgo(job.createdAt)}</span>
           </div>
         </div>
@@ -258,12 +258,12 @@ export default function JobCard({ job, variant = 'default', onSave, isSaved = fa
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2 sm:gap-3">
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-base sm:text-lg lg:text-xl text-white mb-1 sm:mb-2 line-clamp-2 group-hover:text-emerald-400 transition-colors">
+                <h3 className="font-semibold text-base sm:text-lg lg:text-xl mb-1 sm:mb-2 line-clamp-2 group-hover:text-emerald-500 transition-colors" style={{ color: 'var(--color-text-primary)' }}>
                   {job.title}
                 </h3>
                 <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                   {/* Location badge */}
-                  <div className="flex items-center gap-1 text-zinc-400 text-xs sm:text-sm">
+                  <div className="flex items-center gap-1 text-xs sm:text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
                     <svg className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     </svg>
@@ -291,7 +291,7 @@ export default function JobCard({ job, variant = 'default', onSave, isSaved = fa
         </div>
 
         {/* Description */}
-        <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-6 line-clamp-2 sm:line-clamp-3">
+        <p className="text-xs sm:text-sm leading-relaxed mb-4 sm:mb-6 line-clamp-2 sm:line-clamp-3" style={{ color: 'var(--color-text-secondary)' }}>
           {job.description}
         </p>
 
@@ -299,8 +299,8 @@ export default function JobCard({ job, variant = 'default', onSave, isSaved = fa
         <div className="flex items-center gap-2 sm:gap-3">
           <Link
             href={`/jobs/${job._id}`}
-            className="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-white text-xs sm:text-sm font-medium transition-colors touch-manipulation"
-            style={{ backgroundColor: 'var(--color-bg-elevated)' }}
+            className="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-colors touch-manipulation"
+            style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-primary)' }}
           >
             <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -316,10 +316,10 @@ export default function JobCard({ job, variant = 'default', onSave, isSaved = fa
             }}
             className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-colors touch-manipulation ${
               isSaved
-                ? 'bg-emerald-500/20 text-emerald-400'
-                : 'text-white'
+                ? 'bg-emerald-500/20 text-emerald-500'
+                : ''
             }`}
-            style={!isSaved ? { backgroundColor: 'var(--color-bg-elevated)' } : {}}
+            style={!isSaved ? { backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-primary)' } : {}}
           >
             <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill={isSaved ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
@@ -328,8 +328,8 @@ export default function JobCard({ job, variant = 'default', onSave, isSaved = fa
           </button>
           <Link
             href={`/users/${job.clientId?._id}`}
-            className="hidden sm:flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-white text-sm font-medium transition-colors touch-manipulation"
-            style={{ backgroundColor: 'var(--color-bg-elevated)' }}
+            className="hidden sm:flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors touch-manipulation"
+            style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-primary)' }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

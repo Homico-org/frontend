@@ -84,7 +84,6 @@ export default function BecomeProPage() {
   const [yearsExperience, setYearsExperience] = useState<number>(0);
   const [bio, setBio] = useState('');
   const [pinterestLinks, setPinterestLinks] = useState<string[]>(['']);
-  const [cadastralId, setCadastralId] = useState('');
   const [licenseNumber, setLicenseNumber] = useState('');
 
   useEffect(() => {
@@ -174,7 +173,6 @@ export default function BecomeProPage() {
         yearsExperience,
         bio,
         pinterestLinks: pinterestLinks.filter(l => l.trim()),
-        cadastralId,
         licenseNumber,
       }));
 
@@ -749,31 +747,6 @@ export default function BecomeProPage() {
                     }
                   </p>
                 </div>
-
-                {/* Architecture specific - Cadastral ID (optional) */}
-                {selectedCategory === 'architecture' && (
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                      {locale === 'ka' ? 'საკადასტრო კოდი' : 'Cadastral ID'}
-                      <span className="text-[var(--color-text-muted)] text-xs ml-2">
-                        ({locale === 'ka' ? 'არასავალდებულო' : 'optional'})
-                      </span>
-                    </label>
-                    <input
-                      type="text"
-                      value={cadastralId}
-                      onChange={(e) => setCadastralId(e.target.value)}
-                      placeholder="01.18.01.004.001"
-                      className="w-full px-4 py-4 bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
-                    />
-                    <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
-                      {locale === 'ka'
-                        ? 'ვერიფიკაციისთვის (შეგიძლიათ მოგვიანებით დაამატოთ)'
-                        : 'For verification (you can add later)'
-                      }
-                    </p>
-                  </div>
-                )}
 
                 {/* Info about profile completion */}
                 <div className="p-4 rounded-xl bg-[var(--color-accent-soft)] border border-[var(--color-accent)]/20">

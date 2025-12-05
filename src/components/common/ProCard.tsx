@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useState, useRef, useEffect } from 'react';
 import { ProProfile, ProStatus } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import StatusBadge from './StatusBadge';
@@ -17,6 +18,12 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
   const { t } = useLanguage();
   const proUser = typeof profile.userId === 'object' ? profile.userId : null;
   const status = profile.status || (profile.isAvailable ? ProStatus.ACTIVE : ProStatus.AWAY);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const sliderRef = useRef<HTMLDivElement>(null);
+
+  // Collect all portfolio images
+  const portfolioImages = profile.portfolioProjects?.flatMap(p => p.images) || [];
+  const hasPortfolio = portfolioImages.length > 0;
 
   const getCategoryLabel = (category: string) => {
     const translated = t(`categories.${category}`);
@@ -34,124 +41,215 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
   const avatarUrl = profile.avatar || proUser?.avatar;
   const displayName = proUser?.name || 'Professional';
 
-  // Default card variant - Modern image-based design matching reference
+  // Handle slider navigation
+  const scrollToSlide = (index: number) => {
+    if (sliderRef.current) {
+      const slideWidth = sliderRef.current.offsetWidth / 3; // Show 3 images at a time
+      sliderRef.current.scrollTo({
+        left: index * slideWidth,
+        behavior: 'smooth'
+      });
+      setCurrentSlide(index);
+    }
+  };
+
+  // Handle scroll detection for active dot
+  const handleScroll = () => {
+    if (sliderRef.current) {
+      const slideWidth = sliderRef.current.offsetWidth / 3;
+      const newSlide = Math.round(sliderRef.current.scrollLeft / slideWidth);
+      setCurrentSlide(newSlide);
+    }
+  };
+
+  // Default card variant - Compact modern design with portfolio slider
   if (variant === 'default') {
     return (
       <Link href={`/professionals/${profile._id}`} className="group block touch-manipulation">
         <div
-          className="relative aspect-[3/4] rounded-xl sm:rounded-2xl overflow-hidden transition-shadow duration-300 hover:shadow-2xl"
+          className="relative rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl"
           style={{
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)'
+            backgroundColor: 'var(--color-bg-secondary)',
+            border: '1px solid var(--color-border)',
           }}
         >
-          {/* Background image */}
-          {avatarUrl ? (
-            <img
-              src={avatarUrl}
-              alt={displayName}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
-          ) : (
-            <div
-              className="absolute inset-0 w-full h-full"
-              style={{
-                background: `linear-gradient(135deg,
-                  hsl(${(displayName.charCodeAt(0) * 7) % 360}, 70%, 40%) 0%,
-                  hsl(${(displayName.charCodeAt(0) * 7 + 40) % 360}, 60%, 30%) 100%)`
-              }}
-            />
-          )}
-
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-          {/* Status badge */}
-          <div className="absolute top-2 sm:top-3 right-2 sm:right-3 z-10">
-            <StatusBadge status={status} size="sm" />
-          </div>
-
-          {/* Like button */}
-          {showLikeButton && (
-            <div className="absolute top-2 sm:top-3 left-2 sm:left-3 z-10">
-              {isTopRated ? (
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-amber-400/90 backdrop-blur-sm shadow-lg">
-                    <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-900" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    <span className="text-[9px] sm:text-[10px] font-bold text-amber-900 uppercase tracking-wide">Top</span>
-                  </div>
-                  <LikeButton
-                    isLiked={profile.isLiked || false}
-                    likeCount={profile.likeCount || 0}
-                    onToggle={onLike || (() => {})}
-                    variant="overlay"
-                    size="sm"
-                    showCount={false}
-                  />
+          {/* Top Section - Avatar and Info */}
+          <div className="relative p-3 sm:p-4">
+            <div className="flex items-start gap-3">
+              {/* Avatar */}
+              <div className="relative flex-shrink-0">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden ring-2 ring-[var(--color-border)]">
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={displayName}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                  ) : (
+                    <div
+                      className="w-full h-full flex items-center justify-center"
+                      style={{
+                        background: `linear-gradient(135deg,
+                          hsl(${(displayName.charCodeAt(0) * 7) % 360}, 70%, 40%) 0%,
+                          hsl(${(displayName.charCodeAt(0) * 7 + 40) % 360}, 60%, 30%) 100%)`
+                      }}
+                    >
+                      <span className="text-lg font-bold text-white">{displayName.charAt(0)}</span>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <LikeButton
-                  isLiked={profile.isLiked || false}
-                  likeCount={profile.likeCount || 0}
-                  onToggle={onLike || (() => {})}
-                  variant="overlay"
-                  size="sm"
-                />
-              )}
-            </div>
-          )}
-
-          {/* Top rated badge (when no like button) */}
-          {!showLikeButton && isTopRated && (
-            <div className="absolute top-2 sm:top-3 left-2 sm:left-3 z-10">
-              <div className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-amber-400/90 backdrop-blur-sm shadow-lg">
-                <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-900" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-                <span className="text-[9px] sm:text-[10px] font-bold text-amber-900 uppercase tracking-wide">Top</span>
+                {/* Status badge on avatar */}
+                <div className="absolute -bottom-1 -right-1">
+                  <StatusBadge status={status} variant="minimal" size="sm" />
+                </div>
               </div>
-            </div>
-          )}
 
-          {/* Bottom content */}
-          <div className="absolute bottom-0 left-0 right-0 p-2.5 sm:p-4">
-            <div className="flex items-end justify-between gap-2 sm:gap-3">
               {/* Info */}
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-sm sm:text-base lg:text-lg text-white mb-0.5 truncate group-hover:text-emerald-400 transition-colors">
-                  {displayName}
-                </h3>
-                <p className="text-xs sm:text-sm text-white/70 truncate">
-                  {profile.title || getCategoryLabel(profile.categories[0])}
-                </p>
-                {/* Rating */}
-                {profile.totalReviews > 0 && (
-                  <div className="flex items-center gap-1 sm:gap-1.5 mt-1 sm:mt-2">
-                    <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    <span className="text-xs sm:text-sm font-medium text-white">{profile.avgRating.toFixed(1)}</span>
-                    <span className="text-[10px] sm:text-xs text-white/50">({profile.totalReviews})</span>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <h3
+                      className="font-semibold text-sm sm:text-base truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors"
+                      style={{ color: 'var(--color-text-primary)' }}
+                    >
+                      {displayName}
+                    </h3>
+                    <p className="text-xs sm:text-sm truncate" style={{ color: 'var(--color-text-secondary)' }}>
+                      {profile.title || getCategoryLabel(profile.categories[0])}
+                    </p>
+                  </div>
+
+                  {/* Like button */}
+                  {showLikeButton && (
+                    <LikeButton
+                      isLiked={profile.isLiked || false}
+                      likeCount={profile.likeCount || 0}
+                      onToggle={onLike || (() => {})}
+                      variant="ghost"
+                      size="sm"
+                      showCount={false}
+                    />
+                  )}
+                </div>
+
+                {/* Stats row */}
+                <div className="flex items-center gap-2 mt-1.5">
+                  {/* Rating */}
+                  {profile.totalReviews > 0 && (
+                    <div className="flex items-center gap-1">
+                      <svg className="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                      <span className="text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                        {profile.avgRating.toFixed(1)}
+                      </span>
+                      <span className="text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>
+                        ({profile.totalReviews})
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Top rated badge */}
+                  {isTopRated && (
+                    <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/20">
+                      <svg className="w-2.5 h-2.5 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                      <span className="text-[9px] font-bold text-amber-700 dark:text-amber-400 uppercase">Top</span>
+                    </div>
+                  )}
+
+                  {/* Separator */}
+                  {profile.totalReviews > 0 && (
+                    <span className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>·</span>
+                  )}
+
+                  {/* Experience */}
+                  <span className="text-[10px] sm:text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                    {profile.yearsExperience}+ წ.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Portfolio Image Slider */}
+          {hasPortfolio ? (
+            <div className="relative">
+              {/* Slider container */}
+              <div
+                ref={sliderRef}
+                onScroll={handleScroll}
+                className="flex gap-1 px-3 sm:px-4 pb-3 sm:pb-4 overflow-x-auto scrollbar-none scroll-smooth"
+                style={{ scrollSnapType: 'x mandatory' }}
+              >
+                {portfolioImages.slice(0, 6).map((img, idx) => (
+                  <div
+                    key={idx}
+                    className="flex-shrink-0 w-[calc(33.333%-4px)] aspect-square rounded-lg overflow-hidden"
+                    style={{ scrollSnapAlign: 'start' }}
+                  >
+                    <img
+                      src={img}
+                      alt={`Portfolio ${idx + 1}`}
+                      className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                      loading="lazy"
+                    />
+                  </div>
+                ))}
+                {/* Show more indicator */}
+                {portfolioImages.length > 6 && (
+                  <div
+                    className="flex-shrink-0 w-[calc(33.333%-4px)] aspect-square rounded-lg overflow-hidden flex items-center justify-center"
+                    style={{ backgroundColor: 'var(--color-bg-tertiary)' }}
+                  >
+                    <div className="text-center">
+                      <span className="text-lg font-bold" style={{ color: 'var(--color-text-secondary)' }}>
+                        +{portfolioImages.length - 6}
+                      </span>
+                      <p className="text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>სხვა</p>
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* Action button */}
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  window.location.href = `/professionals/${profile._id}`;
-                }}
-                className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-500 hover:bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30 transition-all hover:scale-110 touch-manipulation"
-              >
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
-              </button>
+              {/* Scroll indicators (dots) - only show if more than 3 images */}
+              {portfolioImages.length > 3 && (
+                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
+                  {Array.from({ length: Math.min(Math.ceil(portfolioImages.length / 3), 3) }).map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        scrollToSlide(idx * 3);
+                      }}
+                      className={`w-1.5 h-1.5 rounded-full transition-all ${
+                        Math.floor(currentSlide / 3) === idx
+                          ? 'bg-emerald-500 w-3'
+                          : 'bg-[var(--color-text-muted)]'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
+          ) : (
+            /* Fallback when no portfolio - show a subtle placeholder */
+            <div className="px-3 sm:px-4 pb-3 sm:pb-4">
+              <div
+                className="h-16 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: 'var(--color-bg-tertiary)' }}
+              >
+                <div className="flex items-center gap-2" style={{ color: 'var(--color-text-muted)' }}>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span className="text-xs">პორტფოლიო მალე</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </Link>
     );
@@ -300,6 +398,17 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
               )}
             </div>
           </div>
+
+          {/* Portfolio Preview - Small thumbnails */}
+          {hasPortfolio && (
+            <div className="hidden sm:flex flex-shrink-0 gap-1">
+              {portfolioImages.slice(0, 2).map((img, idx) => (
+                <div key={idx} className="w-12 h-12 rounded-lg overflow-hidden">
+                  <img src={img} alt="" className="w-full h-full object-cover" />
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Arrow */}
           <div className="flex-shrink-0 self-center">

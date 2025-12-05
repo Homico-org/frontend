@@ -1117,36 +1117,23 @@ function BrowseContent() {
                   </p>
                 </div>
 
-                {/* Quick Action Button - Theme-aware Style */}
+                {/* Quick Action Button - Category pill style (unselected) */}
                 {user && (user.role === 'client' || (user.role === 'pro' && isClientMode)) && (
                   <Link
                     href="/my-jobs"
-                    className="hidden sm:flex group relative items-center gap-2 px-3.5 py-2.5 rounded-xl overflow-hidden touch-manipulation transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98]"
+                    className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-full text-sm font-medium transition-all duration-250 ease-out border hover:scale-[1.02] active:scale-[0.98]"
                     style={{
-                      background: theme === 'dark'
-                        ? 'rgba(255, 255, 255, 0.06)'
-                        : 'linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%)',
-                      backdropFilter: 'blur(12px)',
-                      WebkitBackdropFilter: 'blur(12px)',
-                      border: theme === 'dark'
-                        ? '1px solid rgba(255, 255, 255, 0.1)'
-                        : '1px solid #6ee7b7',
-                      boxShadow: theme === 'dark'
-                        ? '0 4px 16px -2px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
-                        : '0 2px 8px rgba(16, 185, 129, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+                      transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
+                      background: 'var(--color-bg-secondary)',
+                      color: 'var(--color-text-secondary)',
+                      borderColor: 'var(--color-border)',
+                      boxShadow: 'var(--shadow-xs)',
                     }}
                   >
-                    {/* Hover glow */}
-                    <div
-                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400"
-                      style={{
-                        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.1) 100%)',
-                      }}
-                    />
                     {/* Folder icon */}
                     <svg
-                      className="w-[18px] h-[18px] relative z-10 transition-all duration-300 group-hover:text-emerald-500"
-                      style={{ color: theme === 'dark' ? '#9ca3af' : '#059669' }}
+                      className="w-[18px] h-[18px] flex-shrink-0"
+                      style={{ color: '#0d6355' }}
                       viewBox="0 0 24 24"
                       fill="none"
                     >
@@ -1164,17 +1151,9 @@ function BrowseContent() {
                         strokeLinecap="round"
                       />
                     </svg>
-                    <span
-                      className="text-sm font-semibold relative z-10 transition-colors duration-300 group-hover:text-emerald-600"
-                      style={{ color: theme === 'dark' ? '#d4d4d4' : '#065f46' }}
-                    >
+                    <span className="whitespace-nowrap">
                       {locale === 'ka' ? 'განცხადებები' : 'My Jobs'}
                     </span>
-                    {/* Border glow on hover */}
-                    <div
-                      className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none"
-                      style={{ border: '1px solid rgba(16, 185, 129, 0.4)' }}
-                    />
                   </Link>
                 )}
               </div>
@@ -1278,23 +1257,50 @@ function BrowseContent() {
                       </span>
                     )}
                   </p>
-                  <div className="flex items-center gap-2 w-32 sm:w-44">
-                    <Select
-                      value={sortBy}
-                      onChange={setSortBy}
-                      size="sm"
-                      options={[
-                        { value: 'recommended', label: t('browse.recommended') || 'რეკომენდებული', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg> },
-                        { value: 'rating', label: t('browse.topRated') || 'მაღალი რეიტინგი', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg> },
-                        { value: 'newest', label: t('browse.newest') || 'უახლესი', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
-                      ]}
-                    />
+                  <div className="flex items-center gap-2">
+                    <div className="w-32 sm:w-44">
+                      <Select
+                        value={sortBy}
+                        onChange={setSortBy}
+                        size="sm"
+                        options={[
+                          { value: 'recommended', label: t('browse.recommended') || 'რეკომენდებული', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg> },
+                          { value: 'rating', label: t('browse.topRated') || 'მაღალი რეიტინგი', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg> },
+                          { value: 'newest', label: t('browse.newest') || 'უახლესი', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+                        ]}
+                      />
+                    </div>
+                    {/* View Mode Toggle */}
+                    <div className="hidden sm:flex items-center p-1 rounded-lg" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
+                      <button
+                        onClick={() => {
+                          setViewMode('list');
+                          storage.setBrowseViewMode('list');
+                        }}
+                        className={`p-1.5 rounded-md transition-all touch-manipulation ${viewMode === 'list' ? 'bg-white dark:bg-dark-elevated shadow-sm' : ''}`}
+                      >
+                        <svg className="w-4 h-4" style={{ color: viewMode === 'list' ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setViewMode('grid');
+                          storage.setBrowseViewMode('grid');
+                        }}
+                        className={`p-1.5 rounded-md transition-all touch-manipulation ${viewMode === 'grid' ? 'bg-white dark:bg-dark-elevated shadow-sm' : ''}`}
+                      >
+                        <svg className="w-4 h-4" style={{ color: viewMode === 'grid' ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
 
                 {/* Results Grid */}
                 {isLoading ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+                  <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5' : 'space-y-3 sm:space-y-4'}>
                     {[...Array(6)].map((_, i) => (
                       <div key={i} className="rounded-2xl border p-4 sm:p-5 animate-pulse" style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)' }}>
                         <div className="flex items-center gap-3 sm:gap-4 mb-4">
@@ -1310,7 +1316,7 @@ function BrowseContent() {
                     ))}
                   </div>
                 ) : results.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+                  <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5' : 'space-y-3 sm:space-y-4'}>
                     {results.map((profile, index) => (
                       <div
                         key={profile._id}
@@ -1325,6 +1331,7 @@ function BrowseContent() {
                           }}
                           onLike={() => handleProLike(profile._id)}
                           showLikeButton={true}
+                          variant={viewMode === 'grid' ? 'compact' : 'horizontal'}
                         />
                       </div>
                     ))}

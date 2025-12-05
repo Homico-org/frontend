@@ -43,81 +43,41 @@ export default function Header() {
               <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-dark-card animate-pulse"></div>
             ) : isAuthenticated && user ? (
               <div className="flex items-center gap-3">
-                {/* Become Pro Button for Client Users - Theme-aware style */}
+                {/* Become Pro Button for Client Users - Category pill style (unselected) */}
                 {user.role === 'client' && (
                   <Link
                     href="/become-pro"
-                    className="group relative flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl overflow-hidden touch-manipulation transition-all duration-500 hover:-translate-y-0.5 active:scale-[0.98]"
+                    className="group flex items-center gap-2 px-3.5 py-2 rounded-full text-sm font-medium transition-all duration-250 ease-out border hover:scale-[1.02] active:scale-[0.98]"
                     style={{
-                      background: theme === 'dark'
-                        ? 'rgba(255, 255, 255, 0.08)'
-                        : 'linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%)',
-                      backdropFilter: 'blur(12px)',
-                      WebkitBackdropFilter: 'blur(12px)',
-                      border: theme === 'dark'
-                        ? '1px solid rgba(255, 255, 255, 0.12)'
-                        : '1px solid #fcd34d',
-                      boxShadow: theme === 'dark'
-                        ? '0 4px 24px -1px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-                        : '0 2px 8px rgba(251, 191, 36, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+                      transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
+                      background: 'var(--color-bg-secondary)',
+                      color: 'var(--color-text-secondary)',
+                      borderColor: 'var(--color-border)',
+                      boxShadow: 'var(--shadow-xs)',
                     }}
                   >
-                    {/* Hover glow effect */}
-                    <div
-                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"
-                      style={{
-                        background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.15) 100%)',
-                        boxShadow: '0 8px 32px -4px rgba(251, 191, 36, 0.25)',
-                      }}
-                    />
+                    {/* Rocket icon */}
+                    <svg className="w-[18px] h-[18px] flex-shrink-0" style={{ color: '#0d6355' }} viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M12 2C12 2 9.5 6.5 9.5 11.5C9.5 14.5 10.5 16.5 12 18C13.5 16.5 14.5 14.5 14.5 11.5C14.5 6.5 12 2 12 2Z"
+                        fill="currentColor"
+                      />
+                      <path
+                        d="M7 14C5.5 15 5 17 5 17L7 19C7 19 9 18.5 10 17"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d="M17 14C18.5 15 19 17 19 17L17 19C17 19 15 18.5 14 17"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                      <circle cx="12" cy="22" r="1.5" fill="currentColor" className="opacity-60" />
+                    </svg>
 
-                    {/* Icon container with gradient */}
-                    <div className="relative flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-lg transition-all duration-300 group-hover:scale-105"
-                      style={{
-                        background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                        boxShadow: '0 2px 8px rgba(251, 191, 36, 0.4)',
-                      }}
-                    >
-                      {/* Rocket/upgrade icon */}
-                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" viewBox="0 0 24 24" fill="none">
-                        <path
-                          d="M12 2C12 2 9.5 6.5 9.5 11.5C9.5 14.5 10.5 16.5 12 18C13.5 16.5 14.5 14.5 14.5 11.5C14.5 6.5 12 2 12 2Z"
-                          fill="currentColor"
-                          className="group-hover:animate-pulse"
-                        />
-                        <path
-                          d="M7 14C5.5 15 5 17 5 17L7 19C7 19 9 18.5 10 17"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                        />
-                        <path
-                          d="M17 14C18.5 15 19 17 19 17L17 19C17 19 15 18.5 14 17"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                        />
-                        <circle cx="12" cy="22" r="1.5" fill="currentColor" className="opacity-60" />
-                      </svg>
-                    </div>
-
-                    {/* Text - theme aware */}
-                    <span
-                      className="text-xs sm:text-sm font-semibold relative z-10 transition-all duration-300 group-hover:text-amber-600"
-                      style={{
-                        color: theme === 'dark' ? '#d4d4d4' : '#92400e',
-                      }}
-                    >
-                      გახდი სპეცი
-                    </span>
-
-                    {/* Animated border on hover */}
-                    <div
-                      className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                      style={{
-                        border: '1px solid rgba(251, 191, 36, 0.5)',
-                      }}
-                    />
+                    <span className="whitespace-nowrap">გახდი სპეცი</span>
                   </Link>
                 )}
 
@@ -150,14 +110,17 @@ export default function Header() {
                   </button>
                 )}
 
-                {/* Theme Toggle - Sun/Moon Switcher */}
+                {/* Theme Toggle - Sun/Moon Switcher - Green theme */}
                 <button
                   onClick={toggleTheme}
                   className="relative group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-500 touch-manipulation overflow-hidden"
                   style={{
                     background: theme === 'dark'
-                      ? 'rgba(255, 255, 255, 0.05)'
-                      : 'rgba(0, 0, 0, 0.03)',
+                      ? 'rgba(92, 201, 142, 0.08)'
+                      : 'rgba(16, 185, 129, 0.06)',
+                    border: theme === 'dark'
+                      ? '1px solid rgba(92, 201, 142, 0.15)'
+                      : '1px solid rgba(16, 185, 129, 0.2)',
                   }}
                   aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
                 >
@@ -165,9 +128,7 @@ export default function Header() {
                   <div
                     className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     style={{
-                      background: theme === 'dark'
-                        ? 'radial-gradient(circle at center, rgba(251, 191, 36, 0.15) 0%, transparent 70%)'
-                        : 'radial-gradient(circle at center, rgba(99, 102, 241, 0.1) 0%, transparent 70%)',
+                      background: 'radial-gradient(circle at center, rgba(16, 185, 129, 0.15) 0%, transparent 70%)',
                     }}
                   />
 
@@ -178,7 +139,7 @@ export default function Header() {
                         ? 'opacity-100 rotate-0 scale-100'
                         : 'opacity-0 rotate-90 scale-50'
                     }`}
-                    style={{ color: theme === 'dark' ? '#fbbf24' : '#f59e0b' }}
+                    style={{ color: '#5cc98e' }}
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -198,7 +159,7 @@ export default function Header() {
                         ? 'opacity-100 rotate-0 scale-100'
                         : 'opacity-0 -rotate-90 scale-50'
                     }`}
-                    style={{ color: theme === 'light' ? '#6366f1' : '#818cf8' }}
+                    style={{ color: '#059669' }}
                     viewBox="0 0 24 24"
                     fill="currentColor"
                   >
@@ -209,9 +170,7 @@ export default function Header() {
                   <div
                     className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
                     style={{
-                      border: theme === 'dark'
-                        ? '1px solid rgba(251, 191, 36, 0.3)'
-                        : '1px solid rgba(99, 102, 241, 0.2)',
+                      border: '1px solid rgba(16, 185, 129, 0.3)',
                     }}
                   />
                 </button>
@@ -452,14 +411,17 @@ export default function Header() {
               </div>
             ) : (
               <div className="flex items-center gap-2 sm:gap-3">
-                {/* Theme Toggle for non-authenticated users */}
+                {/* Theme Toggle for non-authenticated users - Green theme */}
                 <button
                   onClick={toggleTheme}
                   className="relative group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-500 touch-manipulation overflow-hidden"
                   style={{
                     background: theme === 'dark'
-                      ? 'rgba(255, 255, 255, 0.05)'
-                      : 'rgba(0, 0, 0, 0.03)',
+                      ? 'rgba(92, 201, 142, 0.08)'
+                      : 'rgba(16, 185, 129, 0.06)',
+                    border: theme === 'dark'
+                      ? '1px solid rgba(92, 201, 142, 0.15)'
+                      : '1px solid rgba(16, 185, 129, 0.2)',
                   }}
                   aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
                 >
@@ -467,9 +429,7 @@ export default function Header() {
                   <div
                     className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     style={{
-                      background: theme === 'dark'
-                        ? 'radial-gradient(circle at center, rgba(251, 191, 36, 0.15) 0%, transparent 70%)'
-                        : 'radial-gradient(circle at center, rgba(99, 102, 241, 0.1) 0%, transparent 70%)',
+                      background: 'radial-gradient(circle at center, rgba(16, 185, 129, 0.15) 0%, transparent 70%)',
                     }}
                   />
 
@@ -480,7 +440,7 @@ export default function Header() {
                         ? 'opacity-100 rotate-0 scale-100'
                         : 'opacity-0 rotate-90 scale-50'
                     }`}
-                    style={{ color: theme === 'dark' ? '#fbbf24' : '#f59e0b' }}
+                    style={{ color: '#5cc98e' }}
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -500,7 +460,7 @@ export default function Header() {
                         ? 'opacity-100 rotate-0 scale-100'
                         : 'opacity-0 -rotate-90 scale-50'
                     }`}
-                    style={{ color: theme === 'light' ? '#6366f1' : '#818cf8' }}
+                    style={{ color: '#059669' }}
                     viewBox="0 0 24 24"
                     fill="currentColor"
                   >
@@ -511,9 +471,7 @@ export default function Header() {
                   <div
                     className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
                     style={{
-                      border: theme === 'dark'
-                        ? '1px solid rgba(251, 191, 36, 0.3)'
-                        : '1px solid rgba(99, 102, 241, 0.2)',
+                      border: '1px solid rgba(16, 185, 129, 0.3)',
                     }}
                   />
                 </button>
