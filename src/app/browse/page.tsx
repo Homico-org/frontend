@@ -120,8 +120,14 @@ function BrowseContent() {
   // Show professionals (not jobs) when user is client OR when pro is in client mode
   const showProfessionals = user?.role === 'client' || (user?.role === 'pro' && isClientMode);
 
-  // Client tab state (professionals vs feed) - persisted to localStorage
+  // Client tab state (professionals vs feed) - URL params first, then localStorage
   const [activeClientTab, setActiveClientTab] = useState<'professionals' | 'feed'>(() => {
+    // Check URL first
+    const urlTab = searchParams.get('tab');
+    if (urlTab === 'professionals' || urlTab === 'feed') {
+      return urlTab;
+    }
+    // Fallback to localStorage
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('browseActiveTab');
       if (saved === 'professionals' || saved === 'feed') {
@@ -143,12 +149,23 @@ function BrowseContent() {
   // Likes hook for pro profiles
   const { toggleLike, initializeLikeStates, likeStates } = useLikes();
 
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(searchParams.get('category') || null);
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+  // Initialize filters from URL params first, then localStorage as fallback
+  const getInitialFilter = (paramKey: string, storageKey: string, defaultValue: string | null = null): string | null => {
+    const urlValue = searchParams.get(paramKey);
+    if (urlValue) return urlValue;
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(storageKey);
+      if (stored) return stored;
+    }
+    return defaultValue;
+  };
+
+  const [searchQuery, setSearchQuery] = useState(getInitialFilter('q', 'browse_searchQuery', '') || '');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(getInitialFilter('category', 'browse_category'));
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(getInitialFilter('subcategory', 'browse_subcategory'));
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [minRating, setMinRating] = useState(0);
-  const [sortBy, setSortBy] = useState('recommended');
+  const [sortBy, setSortBy] = useState(getInitialFilter('sort', 'browse_sortBy', 'recommended') || 'recommended');
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [results, setResults] = useState<any[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -208,6 +225,35 @@ function BrowseContent() {
   useEffect(() => {
     setSortBy(isPro ? 'newest' : 'recommended');
   }, [isPro]);
+
+  // Sync filters to URL and localStorage
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    if (searchQuery) params.set('q', searchQuery);
+    if (selectedCategory) params.set('category', selectedCategory);
+    if (selectedSubcategory) params.set('subcategory', selectedSubcategory);
+    if (sortBy && sortBy !== 'recommended') params.set('sort', sortBy);
+    if (activeClientTab !== 'professionals') params.set('tab', activeClientTab);
+
+    // Update URL without reload
+    const newUrl = params.toString() ? `?${params.toString()}` : window.location.pathname;
+    window.history.replaceState({}, '', newUrl);
+
+    // Save to localStorage
+    if (searchQuery) localStorage.setItem('browse_searchQuery', searchQuery);
+    else localStorage.removeItem('browse_searchQuery');
+
+    if (selectedCategory) localStorage.setItem('browse_category', selectedCategory);
+    else localStorage.removeItem('browse_category');
+
+    if (selectedSubcategory) localStorage.setItem('browse_subcategory', selectedSubcategory);
+    else localStorage.removeItem('browse_subcategory');
+
+    if (sortBy) localStorage.setItem('browse_sortBy', sortBy);
+
+    localStorage.setItem('browseActiveTab', activeClientTab);
+  }, [searchQuery, selectedCategory, selectedSubcategory, sortBy, activeClientTab]);
 
   useEffect(() => {
     if (categoriesFetchedRef.current) return;
@@ -565,6 +611,15 @@ function BrowseContent() {
     setProposalMinFilter('');
     setProposalMaxFilter('');
     setDateFilter('all');
+
+    // Clear localStorage
+    localStorage.removeItem('browse_searchQuery');
+    localStorage.removeItem('browse_category');
+    localStorage.removeItem('browse_subcategory');
+    localStorage.removeItem('browse_sortBy');
+
+    // Clear URL params
+    window.history.replaceState({}, '', window.location.pathname);
   };
 
   const hasActiveFilters = propertyTypeFilter !== 'all' || clientTypeFilter !== 'all' || budgetMinFilter || budgetMaxFilter || proposalMinFilter || proposalMaxFilter || dateFilter !== 'all';

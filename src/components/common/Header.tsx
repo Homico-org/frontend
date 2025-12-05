@@ -42,12 +42,12 @@ export default function Header() {
             {isLoading ? (
               <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-dark-card animate-pulse"></div>
             ) : isAuthenticated && user ? (
-              <div className="flex items-center gap-3">
-                {/* Become Pro Button for Client Users - Category pill style (unselected) */}
+              <div className="flex items-center gap-2 sm:gap-3">
+                {/* Become Pro Button for Client Users - Hidden on mobile */}
                 {user.role === 'client' && (
                   <Link
                     href="/become-pro"
-                    className="group flex items-center gap-2 px-3.5 py-2 rounded-full text-sm font-medium transition-all duration-250 ease-out border hover:scale-[1.02] active:scale-[0.98]"
+                    className="hidden sm:flex group items-center gap-2 px-3.5 py-2 rounded-full text-sm font-medium transition-all duration-250 ease-out border hover:scale-[1.02] active:scale-[0.98]"
                     style={{
                       transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
                       background: 'var(--color-bg-secondary)',
@@ -81,39 +81,51 @@ export default function Header() {
                   </Link>
                 )}
 
-                {/* View Mode Toggle for Pro Users */}
+                {/* View Mode Toggle for Pro Users - Compact on mobile */}
                 {user.role === 'pro' && (
                   <button
                     onClick={toggleViewMode}
-                    className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-full transition-all duration-300 touch-manipulation"
+                    className="flex items-center justify-center w-9 h-9 sm:w-auto sm:h-auto sm:gap-2 sm:px-3 sm:py-1.5 rounded-full transition-all duration-300 touch-manipulation"
                     style={{
                       backgroundColor: viewMode === 'client' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(52, 211, 153, 0.15)',
                       border: `1px solid ${viewMode === 'client' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(52, 211, 153, 0.3)'}`
                     }}
+                    title={viewMode === 'client' ? 'მაძიებელი რეჟიმი' : 'სპეციალისტი რეჟიმი'}
                   >
-                    <div className="relative w-7 sm:w-8 h-3.5 sm:h-4 rounded-full transition-colors duration-300"
+                    {/* Icon only on mobile */}
+                    <svg
+                      className="w-4 h-4 sm:hidden"
+                      style={{ color: viewMode === 'client' ? '#f59e0b' : '#34d399' }}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    {/* Toggle switch on desktop */}
+                    <div className="hidden sm:block relative w-8 h-4 rounded-full transition-colors duration-300"
                       style={{ backgroundColor: viewMode === 'client' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(52, 211, 153, 0.3)' }}
                     >
                       <div
-                        className="absolute top-0.5 w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full transition-all duration-300 shadow-sm"
+                        className="absolute top-0.5 w-3 h-3 rounded-full transition-all duration-300 shadow-sm"
                         style={{
                           backgroundColor: viewMode === 'client' ? '#f59e0b' : '#34d399',
-                          left: viewMode === 'client' ? '2px' : 'calc(100% - 12px)'
+                          left: viewMode === 'client' ? '2px' : 'calc(100% - 14px)'
                         }}
                       />
                     </div>
                     <span className="hidden sm:inline text-xs font-medium transition-colors duration-300"
                       style={{ color: viewMode === 'client' ? '#f59e0b' : '#34d399' }}
                     >
-                      {viewMode === 'client' ? 'მაძიებელი' : 'სპეციალისტი'}
+                      {viewMode === 'client' ? 'მაძიებელი' : 'სპეცი'}
                     </span>
                   </button>
                 )}
 
-                {/* Theme Toggle - Sun/Moon Switcher - Green theme */}
+                {/* Theme Toggle - Compact on mobile */}
                 <button
                   onClick={toggleTheme}
-                  className="relative group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-500 touch-manipulation overflow-hidden"
+                  className="relative group flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl transition-all duration-500 touch-manipulation overflow-hidden"
                   style={{
                     background: theme === 'dark'
                       ? 'rgba(92, 201, 142, 0.08)'
@@ -124,17 +136,9 @@ export default function Header() {
                   }}
                   aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
                 >
-                  {/* Background glow on hover */}
-                  <div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    style={{
-                      background: 'radial-gradient(circle at center, rgba(16, 185, 129, 0.15) 0%, transparent 70%)',
-                    }}
-                  />
-
                   {/* Sun icon (shown in dark mode) */}
                   <svg
-                    className={`absolute w-5 h-5 transition-all duration-500 ease-out ${
+                    className={`absolute w-4 h-4 sm:w-5 sm:h-5 transition-all duration-500 ease-out ${
                       theme === 'dark'
                         ? 'opacity-100 rotate-0 scale-100'
                         : 'opacity-0 rotate-90 scale-50'
@@ -154,7 +158,7 @@ export default function Header() {
 
                   {/* Moon icon (shown in light mode) */}
                   <svg
-                    className={`absolute w-5 h-5 transition-all duration-500 ease-out ${
+                    className={`absolute w-4 h-4 sm:w-5 sm:h-5 transition-all duration-500 ease-out ${
                       theme === 'light'
                         ? 'opacity-100 rotate-0 scale-100'
                         : 'opacity-0 -rotate-90 scale-50'
@@ -165,20 +169,12 @@ export default function Header() {
                   >
                     <path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
                   </svg>
-
-                  {/* Hover ring effect */}
-                  <div
-                    className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                    style={{
-                      border: '1px solid rgba(16, 185, 129, 0.3)',
-                    }}
-                  />
                 </button>
 
-                {/* Notification Bell */}
+                {/* Notification Bell - Compact on mobile */}
                 <Link
                   href="/notifications"
-                  className="relative group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300"
+                  className="relative group flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl transition-all duration-300"
                   style={{
                     background: theme === 'dark'
                       ? 'rgba(255, 255, 255, 0.05)'
@@ -186,7 +182,7 @@ export default function Header() {
                   }}
                 >
                   <svg
-                    className="w-5 h-5 transition-colors duration-300"
+                    className="w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-300"
                     style={{ color: 'var(--color-text-tertiary)' }}
                     viewBox="0 0 24 24"
                     fill="none"
@@ -207,31 +203,23 @@ export default function Header() {
                   </svg>
                   {/* Notification Badge */}
                   {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-gradient-to-r from-red-500 to-rose-500 rounded-full shadow-lg shadow-red-500/30 animate-pulse">
+                    <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-[16px] sm:min-w-[18px] sm:h-[18px] px-1 text-[9px] sm:text-[10px] font-bold text-white bg-gradient-to-r from-red-500 to-rose-500 rounded-full shadow-lg shadow-red-500/30 animate-pulse">
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                   )}
-                  {/* Glow effect on hover */}
-                  <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                    style={{
-                      boxShadow: theme === 'dark'
-                        ? '0 0 20px rgba(52, 211, 153, 0.15)'
-                        : '0 0 16px rgba(5, 150, 105, 0.12)',
-                    }}
-                  />
                 </Link>
 
                 <div className="relative">
                   <button
                     onClick={() => setShowDropdown(!showDropdown)}
-                    className="flex items-center gap-3 hover:opacity-90 transition-opacity group touch-manipulation"
+                    className="flex items-center hover:opacity-90 transition-opacity group touch-manipulation"
                   >
                     <Avatar
                       src={user.avatar}
                       name={user.name}
-                      size="md"
+                      size="sm"
                       rounded="xl"
-                      className="ring-2 ring-neutral-100 dark:ring-dark-border group-hover:ring-primary-300 transition-all duration-300"
+                      className="w-9 h-9 sm:w-10 sm:h-10 ring-2 ring-neutral-100 dark:ring-dark-border group-hover:ring-primary-300 transition-all duration-300"
                     />
                   </button>
 
