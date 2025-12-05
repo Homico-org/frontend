@@ -125,7 +125,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
                       isLiked={profile.isLiked || false}
                       likeCount={profile.likeCount || 0}
                       onToggle={onLike || (() => {})}
-                      variant="ghost"
+                      variant="minimal"
                       size="sm"
                       showCount={false}
                     />
