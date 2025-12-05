@@ -138,8 +138,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearAuthData();
     setUser(null);
     setToken(null);
-    // Use replace to avoid back button issues
-    router.replace('/');
+    // Redirect to landing page
+    const landingUrl = process.env.NEXT_PUBLIC_LANDING_URL;
+    if (landingUrl) {
+      window.location.href = landingUrl;
+    } else {
+      // Fallback to home if no landing URL configured
+      router.replace('/');
+    }
   }, [router]);
 
   const updateUser = (userData: Partial<User>) => {
