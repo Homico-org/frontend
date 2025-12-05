@@ -117,8 +117,22 @@ function BrowseContent() {
   // Show professionals (not jobs) when user is client OR when pro is in client mode
   const showProfessionals = user?.role === 'client' || (user?.role === 'pro' && isClientMode);
 
-  // Client tab state (professionals vs feed)
-  const [activeClientTab, setActiveClientTab] = useState<'professionals' | 'feed'>('professionals');
+  // Client tab state (professionals vs feed) - persisted to localStorage
+  const [activeClientTab, setActiveClientTab] = useState<'professionals' | 'feed'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('browseActiveTab');
+      if (saved === 'professionals' || saved === 'feed') {
+        return saved;
+      }
+    }
+    return 'professionals';
+  });
+
+  // Save tab preference to localStorage
+  const handleTabChange = useCallback((tab: 'professionals' | 'feed') => {
+    setActiveClientTab(tab);
+    localStorage.setItem('browseActiveTab', tab);
+  }, []);
 
   // Likes hook for pro profiles
   const { toggleLike, initializeLikeStates, likeStates } = useLikes();
@@ -1135,16 +1149,8 @@ function BrowseContent() {
               </div>
             </div>
 
-            {/* Tab Switcher */}
-            <div className="mb-6">
-              <BrowseTabSwitcher
-                activeTab={activeClientTab}
-                onTabChange={setActiveClientTab}
-              />
-            </div>
-
             {/* Categories Section - shared between both tabs */}
-            <div className="mb-6 sm:mb-8">
+            <div className="mb-4 sm:mb-5">
               <CategorySection
                 selectedCategory={selectedCategory}
                 onSelectCategory={(cat) => {
@@ -1153,6 +1159,14 @@ function BrowseContent() {
                 }}
                 selectedSubcategory={selectedSubcategory}
                 onSelectSubcategory={setSelectedSubcategory}
+              />
+            </div>
+
+            {/* Tab Switcher - Below categories, full width */}
+            <div className="mb-6 sm:mb-8">
+              <BrowseTabSwitcher
+                activeTab={activeClientTab}
+                onTabChange={handleTabChange}
               />
             </div>
 
@@ -1205,15 +1219,11 @@ function BrowseContent() {
                       ))}
                     </div>
 
-                    {/* Clear Filters */}
+                    {/* Clear Filters - Terracotta/Red color for visibility */}
                     {(selectedCategory || selectedSubcategory || minRating > 0 || searchQuery) && (
                       <button
                         onClick={clearFilters}
-                        className="h-9 px-3 sm:px-4 rounded-xl text-sm font-medium border transition-all hover:border-[var(--color-accent)]/50 flex items-center gap-1.5 sm:gap-2 flex-shrink-0 touch-manipulation"
-                        style={{
-                          borderColor: 'var(--color-border)',
-                          color: 'var(--color-text-secondary)'
-                        }}
+                        className="h-9 px-3 sm:px-4 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5 sm:gap-2 flex-shrink-0 touch-manipulation bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/30"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

@@ -11,6 +11,32 @@ interface FeedSectionProps {
   selectedCategory: string | null;
 }
 
+// Popular search tags for the feed
+const feedSearchTags = {
+  ka: [
+    { key: 'renovation', label: 'რემონტი' },
+    { key: 'interior', label: 'ინტერიერი' },
+    { key: 'kitchen', label: 'სამზარეულო' },
+    { key: 'bathroom', label: 'სააბაზანო' },
+    { key: 'bedroom', label: 'საძინებელი' },
+    { key: 'living', label: 'მისაღები' },
+    { key: 'modern', label: 'მოდერნი' },
+    { key: 'classic', label: 'კლასიკა' },
+    { key: 'minimalist', label: 'მინიმალიზმი' },
+  ],
+  en: [
+    { key: 'renovation', label: 'Renovation' },
+    { key: 'interior', label: 'Interior' },
+    { key: 'kitchen', label: 'Kitchen' },
+    { key: 'bathroom', label: 'Bathroom' },
+    { key: 'bedroom', label: 'Bedroom' },
+    { key: 'living', label: 'Living Room' },
+    { key: 'modern', label: 'Modern' },
+    { key: 'classic', label: 'Classic' },
+    { key: 'minimalist', label: 'Minimalist' },
+  ],
+};
+
 export default function FeedSection({ selectedCategory }: FeedSectionProps) {
   const { locale } = useLanguage();
   const { isAuthenticated } = useAuth();
@@ -23,8 +49,14 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
 
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
   const loaderRef = useRef<HTMLDivElement>(null);
   const initialFetchDone = useRef(false);
+
+  const tags = feedSearchTags[locale as 'ka' | 'en'] || feedSearchTags.ka;
 
   const fetchFeed = useCallback(
     async (pageNum: number, append: boolean = false) => {
@@ -40,6 +72,11 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
         params.append('limit', '12');
         if (selectedCategory) {
           params.append('category', selectedCategory);
+        }
+        // Add search query to API call
+        const combinedSearch = [searchQuery, ...selectedTags].filter(Boolean).join(' ');
+        if (combinedSearch) {
+          params.append('search', combinedSearch);
         }
 
         const response = await fetch(
@@ -88,7 +125,7 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
         setIsLoadingMore(false);
       }
     },
-    [selectedCategory, initializeLikeStates]
+    [selectedCategory, searchQuery, selectedTags, initializeLikeStates]
   );
 
   // Initial fetch
@@ -98,13 +135,13 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
     fetchFeed(1);
   }, [fetchFeed]);
 
-  // Refetch when category changes
+  // Refetch when category or search changes
   useEffect(() => {
     setPage(1);
     setFeedItems([]);
     initialFetchDone.current = false;
     fetchFeed(1);
-  }, [selectedCategory]);
+  }, [selectedCategory, searchQuery, selectedTags]);
 
   // Infinite scroll observer
   useEffect(() => {
@@ -144,6 +181,21 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
       )
     );
   };
+
+  const toggleTag = (tagKey: string) => {
+    setSelectedTags(prev =>
+      prev.includes(tagKey)
+        ? prev.filter(t => t !== tagKey)
+        : [...prev, tagKey]
+    );
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSelectedTags([]);
+  };
+
+  const hasActiveSearch = searchQuery.length > 0 || selectedTags.length > 0;
 
   // Loading skeleton
   const FeedSkeleton = () => (
@@ -190,64 +242,131 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
           ? 'ამჟამად არ არის შესაბამისი ნამუშევარი. სცადეთ სხვა კატეგორია ან დაბრუნდით მოგვიანებით.'
           : 'No matching work found. Try a different category or check back later.'}
       </p>
+      {hasActiveSearch && (
+        <button
+          onClick={clearSearch}
+          className="mt-4 px-4 py-2 text-sm font-medium bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors"
+        >
+          {locale === 'ka' ? 'ძიების გასუფთავება' : 'Clear search'}
+        </button>
+      )}
     </div>
   );
 
-  if (isLoading) {
-    return <FeedSkeleton />;
-  }
-
-  if (feedItems.length === 0) {
-    return <EmptyState />;
-  }
-
   return (
-    <div className="space-y-6">
-      {/* Results count */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-[var(--color-text-secondary)]">
-          {locale === 'ka'
-            ? `ნაჩვენებია ${feedItems.length} / ${totalCount} ნამუშევარი`
-            : `Showing ${feedItems.length} of ${totalCount} items`}
-        </p>
+    <div className="space-y-5">
+      {/* Search Bar */}
+      <div className="relative">
+        <svg
+          className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+        <input
+          type="text"
+          placeholder={locale === 'ka' ? 'ნამუშევრების ძებნა...' : 'Search portfolio...'}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full h-12 pl-10 pr-4 rounded-xl border text-base sm:text-sm bg-[var(--color-bg-secondary)] border-[var(--color-border)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)]/50 transition-all"
+        />
       </div>
 
-      {/* Feed Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        {feedItems.map((item, index) => (
-          <div
-            key={item._id}
-            className="animate-fade-in"
-            style={{ animationDelay: `${(index % 12) * 50}ms` }}
+      {/* Search Chips */}
+      <div className="flex flex-wrap gap-2">
+        {tags.map((tag) => {
+          const isSelected = selectedTags.includes(tag.key);
+          return (
+            <button
+              key={tag.key}
+              onClick={() => toggleTag(tag.key)}
+              className={`
+                px-3.5 py-2 rounded-full text-sm font-medium transition-all duration-200 touch-manipulation
+                ${isSelected
+                  ? 'bg-[var(--color-accent)] text-white shadow-sm'
+                  : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)] hover:text-[var(--color-text-primary)]'
+                }
+              `}
+            >
+              {tag.label}
+            </button>
+          );
+        })}
+
+        {/* Clear button when filters active */}
+        {hasActiveSearch && (
+          <button
+            onClick={clearSearch}
+            className="px-3.5 py-2 rounded-full text-sm font-medium transition-all duration-200 touch-manipulation bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/30 flex items-center gap-1.5"
           >
-            <FeedCard
-              item={{
-                ...item,
-                isLiked: likeStates[item._id]?.isLiked ?? item.isLiked,
-                likeCount: likeStates[item._id]?.likeCount ?? item.likeCount,
-              }}
-              onLike={() => handleLike(item._id)}
-            />
-          </div>
-        ))}
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            {locale === 'ka' ? 'გასუფთავება' : 'Clear'}
+          </button>
+        )}
       </div>
 
-      {/* Load More / Loader */}
-      <div ref={loaderRef} className="flex justify-center py-8">
-        {isLoadingMore && (
-          <div className="flex items-center gap-3">
-            <div className="w-5 h-5 border-2 border-[var(--color-accent)] border-t-transparent rounded-full animate-spin" />
-            <span className="text-sm text-[var(--color-text-secondary)]">
-              {locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
-            </span>
+      {isLoading ? (
+        <FeedSkeleton />
+      ) : feedItems.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <>
+          {/* Results count */}
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-[var(--color-text-secondary)]">
+              {locale === 'ka'
+                ? `ნაჩვენებია ${feedItems.length} / ${totalCount} ნამუშევარი`
+                : `Showing ${feedItems.length} of ${totalCount} items`}
+            </p>
           </div>
-        )}
-        {!hasMore && feedItems.length > 0 && (
-          <p className="text-sm text-[var(--color-text-tertiary)]">
-            {locale === 'ka' ? 'ყველა ნამუშევარი ნაჩვენებია' : 'All items loaded'}
-          </p>
-        )}
-      </div>
+
+          {/* Feed Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            {feedItems.map((item, index) => (
+              <div
+                key={item._id}
+                className="animate-fade-in"
+                style={{ animationDelay: `${(index % 12) * 50}ms` }}
+              >
+                <FeedCard
+                  item={{
+                    ...item,
+                    isLiked: likeStates[item._id]?.isLiked ?? item.isLiked,
+                    likeCount: likeStates[item._id]?.likeCount ?? item.likeCount,
+                  }}
+                  onLike={() => handleLike(item._id)}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Load More / Loader */}
+          <div ref={loaderRef} className="flex justify-center py-8">
+            {isLoadingMore && (
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 border-2 border-[var(--color-accent)] border-t-transparent rounded-full animate-spin" />
+                <span className="text-sm text-[var(--color-text-secondary)]">
+                  {locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
+                </span>
+              </div>
+            )}
+            {!hasMore && feedItems.length > 0 && (
+              <p className="text-sm text-[var(--color-text-tertiary)]">
+                {locale === 'ka' ? 'ყველა ნამუშევარი ნაჩვენებია' : 'All items loaded'}
+              </p>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
