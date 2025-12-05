@@ -75,8 +75,8 @@ export default function CategorySection({
 
   return (
     <div className="w-full">
-      {/* Main Categories - Horizontal Pills */}
-      <div className="flex flex-wrap gap-2">
+      {/* Main Categories - Horizontal scroll on mobile, wrap on desktop */}
+      <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 -mx-1 px-1 sm:mx-0 sm:px-0 sm:pb-0 sm:flex-wrap">
         {categories.map((category, index) => {
           const isSelected = selectedCategory === category.key;
           const isHovered = hoveredCategory === category.key;
@@ -88,12 +88,12 @@ export default function CategorySection({
               onMouseEnter={() => setHoveredCategory(category.key)}
               onMouseLeave={() => setHoveredCategory(null)}
               className={`
-                group relative flex items-center gap-2
-                px-3.5 py-2 rounded-full
-                text-sm font-medium
+                group relative flex items-center gap-1.5 sm:gap-2
+                px-3 sm:px-3.5 py-2 rounded-full
+                text-[13px] sm:text-sm font-medium
                 transition-all duration-250 ease-out
                 animate-fade-in
-                border
+                border flex-shrink-0
               `}
               style={{
                 animationDelay: `${index * 50}ms`,
@@ -126,7 +126,7 @@ export default function CategorySection({
               <CategoryIcon
                 type={category.icon}
                 className={`
-                  w-[18px] h-[18px] flex-shrink-0
+                  w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0
                   transition-all duration-250
                   ${isHovered && !isSelected ? 'scale-110' : ''}
                 `}

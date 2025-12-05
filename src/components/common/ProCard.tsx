@@ -132,43 +132,81 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
                   )}
                 </div>
 
-                {/* Stats row */}
-                <div className="flex items-center gap-2 mt-1.5">
-                  {/* Rating */}
-                  {profile.totalReviews > 0 && (
-                    <div className="flex items-center gap-1">
-                      <svg className="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                      <span className="text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                        {profile.avgRating.toFixed(1)}
-                      </span>
-                      <span className="text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>
-                        ({profile.totalReviews})
-                      </span>
-                    </div>
-                  )}
+                {/* Top rated badge */}
+                {isTopRated && (
+                  <div className="flex items-center gap-0.5 px-1.5 py-0.5 mt-1 rounded-full bg-amber-100 dark:bg-amber-500/20 w-fit">
+                    <svg className="w-2.5 h-2.5 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    <span className="text-[9px] font-bold text-amber-700 dark:text-amber-400 uppercase">Top რეიტინგი</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
 
-                  {/* Top rated badge */}
-                  {isTopRated && (
-                    <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/20">
-                      <svg className="w-2.5 h-2.5 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                      <span className="text-[9px] font-bold text-amber-700 dark:text-amber-400 uppercase">Top</span>
-                    </div>
-                  )}
+          {/* Stats Bar - Rating, Experience, Jobs */}
+          <div
+            className="flex items-center justify-between px-3 sm:px-4 py-2 border-t"
+            style={{
+              backgroundColor: 'var(--color-bg-tertiary)',
+              borderColor: 'var(--color-border-subtle)'
+            }}
+          >
+            {/* Rating */}
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center justify-center w-6 h-6 rounded-full" style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)' }}>
+                <svg className="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                  {profile.avgRating > 0 ? profile.avgRating.toFixed(1) : '—'}
+                </span>
+                <span className="text-[9px]" style={{ color: 'var(--color-text-muted)' }}>
+                  {profile.totalReviews > 0 ? `${profile.totalReviews} შეფ.` : 'შეფასება'}
+                </span>
+              </div>
+            </div>
 
-                  {/* Separator */}
-                  {profile.totalReviews > 0 && (
-                    <span className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>·</span>
-                  )}
+            {/* Divider */}
+            <div className="w-px h-8" style={{ backgroundColor: 'var(--color-border)' }} />
 
-                  {/* Experience */}
-                  <span className="text-[10px] sm:text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                    {profile.yearsExperience}+ წ.
-                  </span>
-                </div>
+            {/* Experience */}
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center justify-center w-6 h-6 rounded-full" style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)' }}>
+                <svg className="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                  {profile.yearsExperience}+ წელი
+                </span>
+                <span className="text-[9px]" style={{ color: 'var(--color-text-muted)' }}>
+                  გამოცდილება
+                </span>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="w-px h-8" style={{ backgroundColor: 'var(--color-border)' }} />
+
+            {/* Completed Jobs */}
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center justify-center w-6 h-6 rounded-full" style={{ backgroundColor: 'rgba(99, 102, 241, 0.15)' }}>
+                <svg className="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                  {profile.completedJobs || 0}
+                </span>
+                <span className="text-[9px]" style={{ color: 'var(--color-text-muted)' }}>
+                  პროექტი
+                </span>
               </div>
             </div>
           </div>

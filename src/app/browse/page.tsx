@@ -1095,17 +1095,17 @@ function BrowseContent() {
           <ArchitecturalBackground />
           <BrowseDecorations />
 
-          <div className="max-w-6xl mx-auto px-4 sm:px-5 py-6 sm:py-8 relative z-10">
-            {/* Hero Section */}
-            <div className="mb-6 sm:mb-8">
-              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className="max-w-6xl mx-auto px-4 sm:px-5 py-4 sm:py-8 relative z-10">
+            {/* Hero Section - Compact on mobile */}
+            <div className="mb-4 sm:mb-8">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
                 <div>
-                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                  <h1 className="text-lg sm:text-2xl md:text-3xl font-bold mb-0.5 sm:mb-2" style={{ color: 'var(--color-text-primary)' }}>
                     {activeClientTab === 'professionals'
                       ? (t('browse.findSpecialist') || 'იპოვე სპეციალისტი')
                       : (locale === 'ka' ? 'აღმოაჩინე ნამუშევრები' : 'Discover Work')}
                   </h1>
-                  <p className="text-sm sm:text-base" style={{ color: 'var(--color-text-secondary)' }}>
+                  <p className="text-xs sm:text-base hidden sm:block" style={{ color: 'var(--color-text-secondary)' }}>
                     {activeClientTab === 'professionals'
                       ? (t('browse.subtitle') || 'აღმოაჩინე გამოცდილი პროფესიონალები შენი პროექტისთვის')
                       : (locale === 'ka' ? 'დაათვალიერე დასრულებული პროექტები და პორტფოლიოები' : 'Browse completed projects and portfolios')}
@@ -1155,7 +1155,7 @@ function BrowseContent() {
             </div>
 
             {/* Categories Section - shared between both tabs */}
-            <div className="mb-4 sm:mb-5">
+            <div className="mb-3 sm:mb-5">
               <CategorySection
                 selectedCategory={selectedCategory}
                 onSelectCategory={(cat) => {
@@ -1168,7 +1168,7 @@ function BrowseContent() {
             </div>
 
             {/* Tab Switcher - Below categories, full width */}
-            <div className="mb-6 sm:mb-8">
+            <div className="mb-4 sm:mb-8">
               <BrowseTabSwitcher
                 activeTab={activeClientTab}
                 onTabChange={handleTabChange}
@@ -1241,7 +1241,7 @@ function BrowseContent() {
 
                 {/* Results Header */}
                 <div className="flex items-center justify-between mb-4 sm:mb-5 gap-2">
-                  <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                  <p className="text-xs sm:text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                     <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{totalCount}</span> {t('browse.specialists') || 'სპეციალისტი'}
                     {selectedCategory && (
                       <span className="hidden sm:inline-block ml-2 px-2 py-0.5 rounded-md text-xs" style={{ backgroundColor: 'var(--color-accent-soft)', color: 'var(--color-accent)' }}>
@@ -1253,15 +1253,15 @@ function BrowseContent() {
                     )}
                   </p>
                   <div className="flex items-center gap-2">
-                    <div className="w-32 sm:w-44">
+                    <div className="w-28 sm:w-44">
                       <Select
                         value={sortBy}
                         onChange={setSortBy}
                         size="sm"
                         options={[
-                          { value: 'recommended', label: t('browse.recommended') || 'რეკომენდებული', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg> },
-                          { value: 'rating', label: t('browse.topRated') || 'მაღალი რეიტინგი', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg> },
-                          { value: 'newest', label: t('browse.newest') || 'უახლესი', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+                          { value: 'recommended', label: locale === 'ka' ? 'რეკომენდ.' : 'Recommend.', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg> },
+                          { value: 'rating', label: locale === 'ka' ? 'რეიტინგი' : 'Rating', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg> },
+                          { value: 'newest', label: locale === 'ka' ? 'უახლესი' : 'Newest', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
                         ]}
                       />
                     </div>
