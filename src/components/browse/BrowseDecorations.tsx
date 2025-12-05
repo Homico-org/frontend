@@ -413,7 +413,7 @@ export default function BrowseDecorations() {
           }
           50% {
             transform: translateY(-8px) rotate(calc(var(--rotation) + 3deg));
-            opacity: calc(var(--base-opacity) + 0.02);
+            opacity: calc(var(--base-opacity) + 0.05);
           }
         }
 
@@ -427,15 +427,15 @@ export default function BrowseDecorations() {
         }
       `}</style>
 
-      {/* Decoration container - positioned behind content */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+      {/* Decoration container - fixed positioning to stay visible during scroll */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 1 }}>
         {decorations.map(({ Icon, position, rotation, size, delay }, index) => (
           <div
             key={index}
             className={`absolute ${position} hidden lg:block`}
             style={{
               '--rotation': rotation,
-              '--base-opacity': isDark ? '0.08' : '0.06',
+              '--base-opacity': isDark ? '0.12' : '0.18',
               animation: `float-tool 8s ease-in-out infinite`,
               animationDelay: delay,
             } as React.CSSProperties}
@@ -444,28 +444,28 @@ export default function BrowseDecorations() {
               <Icon
                 className={`w-full h-full ${
                   isDark
-                    ? 'text-emerald-400/[0.12]'
-                    : 'text-emerald-600/[0.08]'
+                    ? 'text-emerald-400/[0.20]'
+                    : 'text-emerald-700/[0.25]'
                 } transition-colors duration-500`}
               />
             </ToolIcon>
           </div>
         ))}
 
-        {/* Subtle gradient orbs for depth */}
+        {/* Subtle gradient orbs for depth - more visible in light mode */}
         <div
           className={`absolute top-[10%] right-[10%] w-[300px] h-[300px] rounded-full blur-[100px] ${
-            isDark ? 'bg-emerald-500/5' : 'bg-emerald-400/5'
+            isDark ? 'bg-emerald-500/8' : 'bg-emerald-500/15'
           }`}
         />
         <div
           className={`absolute bottom-[20%] left-[5%] w-[250px] h-[250px] rounded-full blur-[80px] ${
-            isDark ? 'bg-amber-500/5' : 'bg-amber-400/5'
+            isDark ? 'bg-amber-500/8' : 'bg-amber-500/12'
           }`}
         />
         <div
           className={`absolute top-[50%] left-[15%] w-[200px] h-[200px] rounded-full blur-[60px] ${
-            isDark ? 'bg-cyan-500/3' : 'bg-cyan-400/3'
+            isDark ? 'bg-cyan-500/5' : 'bg-cyan-500/10'
           }`}
         />
       </div>

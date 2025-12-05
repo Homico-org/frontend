@@ -274,93 +274,95 @@ export default function ArchitecturalBackground() {
         }
       `}</style>
 
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+      {/* Fixed positioning to stay visible during scroll */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 1 }}>
         {/* Gradient overlays */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] opacity-25 dark:opacity-15">
-          <div className="absolute inset-0 bg-gradient-to-bl from-emerald-500/15 via-transparent to-transparent blur-3xl" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] opacity-30 dark:opacity-15">
+          <div className="absolute inset-0 bg-gradient-to-bl from-emerald-500/20 via-transparent to-transparent blur-3xl" />
         </div>
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] opacity-20 dark:opacity-10">
-          <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/15 via-transparent to-transparent blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] opacity-25 dark:opacity-10">
+          <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/20 via-transparent to-transparent blur-3xl" />
         </div>
 
         {/* Floating architectural elements - carefully positioned */}
-        <div className="text-emerald-600/40 dark:text-emerald-400/35">
+        {/* Light mode: stronger colors, Dark mode: subtle colors */}
+        <div className="text-emerald-700/50 dark:text-emerald-400/35">
           {/* Top left area */}
           <FloatingElement x={5} y={8} delay={0} duration={25}>
-            <FloorPlanRoom size={90} opacity={0.05} />
+            <FloorPlanRoom size={90} opacity={0.12} />
           </FloatingElement>
 
           <FloatingElement x={2} y={35} delay={3} duration={22}>
-            <TSquareRuler size={80} opacity={0.04} />
+            <TSquareRuler size={80} opacity={0.10} />
           </FloatingElement>
 
           {/* Top right area */}
           <FloatingElement x={85} y={5} delay={2} duration={28}>
-            <GoldenSpiral size={110} opacity={0.035} />
+            <GoldenSpiral size={110} opacity={0.09} />
           </FloatingElement>
 
           <FloatingElement x={78} y={25} delay={5} duration={20}>
-            <ArchitecturalCompass size={65} opacity={0.045} />
+            <ArchitecturalCompass size={65} opacity={0.11} />
           </FloatingElement>
 
           {/* Middle left */}
           <FloatingElement x={8} y={55} delay={1.5} duration={24}>
-            <HouseOutline size={70} opacity={0.045} />
+            <HouseOutline size={70} opacity={0.11} />
           </FloatingElement>
 
           {/* Middle right */}
           <FloatingElement x={88} y={50} delay={4} duration={26}>
-            <GeometricWindow size={55} opacity={0.04} />
+            <GeometricWindow size={55} opacity={0.10} />
           </FloatingElement>
 
           {/* Bottom left area */}
           <FloatingElement x={3} y={75} delay={2.5} duration={23}>
-            <SetSquare size={75} opacity={0.04} />
+            <SetSquare size={75} opacity={0.10} />
           </FloatingElement>
 
           <FloatingElement x={15} y={85} delay={6} duration={21}>
-            <BrickPattern size={80} opacity={0.035} />
+            <BrickPattern size={80} opacity={0.09} />
           </FloatingElement>
 
           {/* Bottom right area */}
           <FloatingElement x={82} y={75} delay={1} duration={27}>
-            <ClassicColumn size={45} opacity={0.045} />
+            <ClassicColumn size={45} opacity={0.11} />
           </FloatingElement>
 
           <FloatingElement x={90} y={88} delay={4.5} duration={19}>
-            <HexagonTile size={70} opacity={0.04} />
+            <HexagonTile size={70} opacity={0.10} />
           </FloatingElement>
 
           {/* Scattered middle elements */}
           <FloatingElement x={45} y={15} delay={3.5} duration={30}>
-            <DimensionArrow size={120} opacity={0.025} />
+            <DimensionArrow size={120} opacity={0.07} />
           </FloatingElement>
 
           <FloatingElement x={60} y={65} delay={2} duration={25}>
-            <LevelTool size={100} opacity={0.035} />
+            <LevelTool size={100} opacity={0.09} />
           </FloatingElement>
 
           <FloatingElement x={25} y={45} delay={5.5} duration={22}>
-            <PaintRoller size={60} opacity={0.04} />
+            <PaintRoller size={60} opacity={0.10} />
           </FloatingElement>
 
           <FloatingElement x={70} y={40} delay={0.5} duration={24}>
-            <ArchitectPencil size={70} opacity={0.035} />
+            <ArchitectPencil size={70} opacity={0.09} />
           </FloatingElement>
 
           {/* Additional subtle grid patterns */}
           <FloatingElement x={30} y={80} delay={7} duration={35}>
-            <BlueprintGrid size={100} opacity={0.02} />
+            <BlueprintGrid size={100} opacity={0.05} />
           </FloatingElement>
 
           <FloatingElement x={55} y={10} delay={4} duration={32}>
-            <BlueprintGrid size={80} opacity={0.02} />
+            <BlueprintGrid size={80} opacity={0.05} />
           </FloatingElement>
         </div>
 
         {/* Subtle dot pattern overlay */}
         <div
-          className="absolute inset-0 opacity-[0.015] dark:opacity-[0.025]"
+          className="absolute inset-0 opacity-[0.03] dark:opacity-[0.025]"
           style={{
             backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
             backgroundSize: '40px 40px',
