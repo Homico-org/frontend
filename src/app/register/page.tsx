@@ -589,7 +589,10 @@ function RegisterContent() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
       {/* Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl border-b" style={{ backgroundColor: 'rgba(var(--color-bg-primary-rgb, 255, 255, 255), 0.9)', borderColor: 'var(--color-border)' }}>
+      <header
+        className="sticky top-0 z-50 border-b bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl"
+        style={{ borderColor: 'var(--color-border)' }}
+      >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center">
@@ -597,12 +600,11 @@ function RegisterContent() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75" />
               </svg>
             </div>
-            <span className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>Homico</span>
+            <span className="text-xl font-semibold text-gray-900 dark:text-white">Homico</span>
           </Link>
           <Link
             href="/login"
-            className="text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-            style={{ color: 'var(--color-text-secondary)' }}
+            className="text-sm font-medium px-4 py-2 rounded-lg transition-colors text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
           >
             {locale === 'ka' ? 'უკვე გაქვს ანგარიში?' : 'Already have an account?'}{' '}
             <span className="text-emerald-600 dark:text-emerald-400">{locale === 'ka' ? 'შესვლა' : 'Sign in'}</span>

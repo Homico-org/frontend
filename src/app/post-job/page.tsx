@@ -1,6 +1,7 @@
 'use client';
 
 import AddressPicker from '@/components/common/AddressPicker';
+import CategorySubcategorySelector from '@/components/common/CategorySubcategorySelector';
 import DatePicker from '@/components/common/DatePicker';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -8,39 +9,9 @@ import { useToast } from '@/contexts/ToastContext';
 import { useViewMode } from '@/contexts/ViewModeContext';
 import { api } from '@/lib/api';
 import { storage } from '@/services/storage';
-import {
-  AlertCircle,
-  Building2,
-  Camera,
-  Castle,
-  Check,
-  ChevronDown,
-  HelpCircle,
-  Home,
-  Layers,
-  Link as LinkIcon,
-  MapPin,
-  Palette,
-  Plus,
-  Ruler,
-  Send,
-  Sparkles,
-  Trash2,
-  Warehouse,
-  X
-} from 'lucide-react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-
-interface Category {
-  _id: string;
-  key: string;
-  name: string;
-  nameKa: string;
-  description?: string;
-  descriptionKa?: string;
-  icon?: string;
-}
 
 interface Reference {
   type: 'link' | 'image' | 'pinterest' | 'instagram';
@@ -55,322 +26,151 @@ interface MediaFile {
 }
 
 const PROPERTY_TYPES = [
-  { value: 'apartment', label: 'Apartment', labelKa: 'ბინა', icon: Home },
-  { value: 'house', label: 'House', labelKa: 'სახლი', icon: Castle },
-  { value: 'office', label: 'Office', labelKa: 'ოფისი', icon: Building2 },
-  { value: 'building', label: 'Building', labelKa: 'შენობა', icon: Warehouse },
-  { value: 'other', label: 'Other', labelKa: 'სხვა', icon: HelpCircle },
+  { value: 'apartment', label: 'Apartment', labelKa: 'ბინა', icon: 'apartment' },
+  { value: 'house', label: 'House', labelKa: 'სახლი', icon: 'house' },
+  { value: 'office', label: 'Office', labelKa: 'ოფისი', icon: 'office' },
+  { value: 'building', label: 'Building', labelKa: 'შენობა', icon: 'building' },
+  { value: 'other', label: 'Other', labelKa: 'სხვა', icon: 'other' },
 ];
-
-const DESIGN_STYLES = [
-  { value: 'Modern', label: 'Modern', labelKa: 'მოდერნი' },
-  { value: 'Minimalist', label: 'Minimalist', labelKa: 'მინიმალისტური' },
-  { value: 'Classic', label: 'Classic', labelKa: 'კლასიკური' },
-  { value: 'Scandinavian', label: 'Scandinavian', labelKa: 'სკანდინავიური' },
-  { value: 'Industrial', label: 'Industrial', labelKa: 'ინდუსტრიული' },
-  { value: 'Bohemian', label: 'Bohemian', labelKa: 'ბოჰემური' },
-  { value: 'Mid-Century Modern', label: 'Mid-Century Modern', labelKa: 'შუა საუკუნის მოდერნი' },
-  { value: 'Contemporary', label: 'Contemporary', labelKa: 'თანამედროვე' },
-  { value: 'Traditional', label: 'Traditional', labelKa: 'ტრადიციული' },
-  { value: 'Rustic', label: 'Rustic', labelKa: 'რუსტიკული' },
-];
-
-const ROOM_OPTIONS = [
-  { value: 'Living Room', label: 'Living Room', labelKa: 'მისაღები' },
-  { value: 'Bedroom', label: 'Bedroom', labelKa: 'საძინებელი' },
-  { value: 'Kitchen', label: 'Kitchen', labelKa: 'სამზარეულო' },
-  { value: 'Bathroom', label: 'Bathroom', labelKa: 'სააბაზანო' },
-  { value: 'Dining Room', label: 'Dining Room', labelKa: 'სასადილო' },
-  { value: 'Home Office', label: 'Home Office', labelKa: 'სამუშაო ოთახი' },
-  { value: 'Kids Room', label: 'Kids Room', labelKa: 'საბავშვო' },
-  { value: 'Hallway', label: 'Hallway', labelKa: 'დერეფანი' },
-  { value: 'Balcony', label: 'Balcony', labelKa: 'აივანი' },
-  { value: 'Entire Space', label: 'Entire Space', labelKa: 'მთლიანი სივრცე' },
-];
-
-const WORK_TYPES = [
-  { value: 'Demolition', label: 'Demolition', labelKa: 'დემონტაჟი' },
-  { value: 'Wall Construction', label: 'Wall Construction', labelKa: 'კედლების აშენება' },
-  { value: 'Electrical', label: 'Electrical', labelKa: 'ელექტროობა' },
-  { value: 'Plumbing', label: 'Plumbing', labelKa: 'სანტექნიკა' },
-  { value: 'Flooring', label: 'Flooring', labelKa: 'იატაკი' },
-  { value: 'Painting', label: 'Painting', labelKa: 'შეღებვა' },
-  { value: 'Tiling', label: 'Tiling', labelKa: 'კაფელი' },
-  { value: 'Ceiling', label: 'Ceiling', labelKa: 'ჭერი' },
-  { value: 'Windows & Doors', label: 'Windows & Doors', labelKa: 'ფანჯრები და კარები' },
-  { value: 'HVAC', label: 'HVAC', labelKa: 'კონდიცირება/გათბობა' },
-];
-
-const PROJECT_PHASES = [
-  { value: 'concept', label: 'Concept Design', labelKa: 'კონცეფციის დიზაინი', description: 'Initial ideas and sketches', descriptionKa: 'პირველადი იდეები და ესკიზები' },
-  { value: 'schematic', label: 'Schematic Design', labelKa: 'სქემატური დიზაინი', description: 'Preliminary drawings and layouts', descriptionKa: 'წინასწარი ნახაზები და განლაგება' },
-  { value: 'detailed', label: 'Detailed Design', labelKa: 'დეტალური დიზაინი', description: 'Full technical drawings', descriptionKa: 'სრული ტექნიკური ნახაზები' },
-  { value: 'construction', label: 'Construction Documents', labelKa: 'სამშენებლო დოკუმენტაცია', description: 'Ready for building', descriptionKa: 'მზად მშენებლობისთვის' },
-];
-
-const ZONING_TYPES = [
-  { value: 'residential', label: 'Residential', labelKa: 'საცხოვრებელი' },
-  { value: 'commercial', label: 'Commercial', labelKa: 'კომერციული' },
-  { value: 'mixed', label: 'Mixed Use', labelKa: 'შერეული' },
-  { value: 'industrial', label: 'Industrial', labelKa: 'სამრეწველო' },
-];
-
-const CATEGORY_SPECIALTIES: Record<string, { value: string; label: string; labelKa: string }[]> = {
-  'interior-design': [
-    { value: 'interior', label: 'Interior Design', labelKa: 'ინტერიერი' },
-    { value: 'exterior', label: 'Exterior Design', labelKa: 'ექსტერიერი' },
-    { value: 'landscape-design', label: 'Landscape Design', labelKa: 'ლანდშაფტის დიზაინი' },
-    { value: '3d-visualization', label: '3D Visualization', labelKa: '3D ვიზუალიზაცია' },
-    { value: 'furniture-design', label: 'Furniture Design', labelKa: 'ავეჯის დიზაინი' },
-  ],
-  'architecture': [
-    { value: 'residential-arch', label: 'Residential', labelKa: 'საცხოვრებელი' },
-    { value: 'commercial-arch', label: 'Commercial', labelKa: 'კომერციული' },
-    { value: 'industrial-arch', label: 'Industrial', labelKa: 'სამრეწველო' },
-    { value: 'reconstruction', label: 'Reconstruction', labelKa: 'რეკონსტრუქცია' },
-    { value: 'project-documentation', label: 'Project Documentation', labelKa: 'საპროექტო დოკუმენტაცია' },
-  ],
-  'craftsmen': [
-    { value: 'electrical', label: 'Electrician', labelKa: 'ელექტრიკოსი' },
-    { value: 'plumbing', label: 'Plumber', labelKa: 'სანტექნიკოსი' },
-    { value: 'painting', label: 'Painter', labelKa: 'მხატვარი' },
-    { value: 'tiling', label: 'Tiler', labelKa: 'მოკაფელე' },
-    { value: 'flooring', label: 'Flooring', labelKa: 'იატაკის სპეციალისტი' },
-    { value: 'plastering', label: 'Plasterer', labelKa: 'მლესავი' },
-    { value: 'carpentry', label: 'Carpenter', labelKa: 'დურგალი' },
-    { value: 'welding', label: 'Welder', labelKa: 'შემდუღებელი' },
-    { value: 'hvac', label: 'HVAC', labelKa: 'გათბობა/გაგრილება' },
-    { value: 'roofing', label: 'Roofer', labelKa: 'გადამხურავი' },
-  ],
-  'home-care': [
-    { value: 'cleaning', label: 'Cleaning', labelKa: 'დალაგება' },
-    { value: 'moving', label: 'Moving', labelKa: 'გადაზიდვა' },
-    { value: 'gardening', label: 'Gardening', labelKa: 'მებაღეობა' },
-    { value: 'appliance-repair', label: 'Appliance Repair', labelKa: 'ტექნიკის შეკეთება' },
-    { value: 'pest-control', label: 'Pest Control', labelKa: 'დეზინსექცია' },
-    { value: 'window-cleaning', label: 'Window Cleaning', labelKa: 'ფანჯრების წმენდა' },
-  ],
-};
 
 const BUDGET_TYPES = [
-  { value: 'fixed', label: 'Fixed Budget', labelKa: 'ფიქსირებული ბიუჯეტი', description: 'I have a specific amount', descriptionKa: 'კონკრეტული თანხა მაქვს' },
-  { value: 'range', label: 'Budget Range', labelKa: 'ბიუჯეტის დიაპაზონი', description: 'Flexible within a range', descriptionKa: 'მოქნილი ფასის დიაპაზონი' },
-  { value: 'per_sqm', label: 'Per Square Meter', labelKa: 'კვადრატულ მეტრზე', description: 'Based on area size', descriptionKa: 'ფართობის მიხედვით' },
-  { value: 'negotiable', label: 'Negotiable', labelKa: 'შეთანხმებით', description: 'Open to discussion', descriptionKa: 'ფასზე შეთანხმება' },
+  { value: 'fixed', label: 'Fixed Budget', labelKa: 'ფიქსირებული', icon: 'fixed' },
+  { value: 'range', label: 'Budget Range', labelKa: 'დიაპაზონი', icon: 'range' },
+  { value: 'per_sqm', label: 'Per m²', labelKa: 'კვ.მ-ზე', icon: 'sqm' },
+  { value: 'negotiable', label: 'Negotiable', labelKa: 'შეთანხმებით', icon: 'negotiable' },
 ];
 
-// Category visual configurations
-const CATEGORY_CONFIG: Record<string, {
-  gradient: string;
-  bgGradient: string;
-  iconBg: string;
-  accentColor: string;
-  tagline: { en: string; ka: string };
-}> = {
-  'interior-design': {
-    gradient: 'from-rose-500 via-fuchsia-500 to-violet-600',
-    bgGradient: 'from-rose-50 via-fuchsia-50 to-violet-50 dark:from-rose-950/30 dark:via-fuchsia-950/30 dark:to-violet-950/30',
-    iconBg: 'bg-gradient-to-br from-rose-100 to-fuchsia-100 dark:from-rose-900/40 dark:to-fuchsia-900/40',
-    accentColor: 'text-fuchsia-600 dark:text-fuchsia-400',
-    tagline: { en: 'Transform spaces into experiences', ka: 'სივრცე გამოცდილებად' },
-  },
-  'architecture': {
-    gradient: 'from-sky-500 via-blue-500 to-indigo-600',
-    bgGradient: 'from-sky-50 via-blue-50 to-indigo-50 dark:from-sky-950/30 dark:via-blue-950/30 dark:to-indigo-950/30',
-    iconBg: 'bg-gradient-to-br from-sky-100 to-blue-100 dark:from-sky-900/40 dark:to-blue-900/40',
-    accentColor: 'text-blue-600 dark:text-blue-400',
-    tagline: { en: 'Blueprint your vision', ka: 'შენი ხედვის პროექტი' },
-  },
-  'craftsmen': {
-    gradient: 'from-amber-500 via-orange-500 to-red-500',
-    bgGradient: 'from-amber-50 via-orange-50 to-red-50 dark:from-amber-950/30 dark:via-orange-950/30 dark:to-red-950/30',
-    iconBg: 'bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/40 dark:to-orange-900/40',
-    accentColor: 'text-orange-600 dark:text-orange-400',
-    tagline: { en: 'Skilled hands, lasting quality', ka: 'ოსტატობა და ხარისხი' },
-  },
-  'home-care': {
-    gradient: 'from-emerald-500 via-teal-500 to-cyan-600',
-    bgGradient: 'from-emerald-50 via-teal-50 to-cyan-50 dark:from-emerald-950/30 dark:via-teal-950/30 dark:to-cyan-950/30',
-    iconBg: 'bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40',
-    accentColor: 'text-teal-600 dark:text-teal-400',
-    tagline: { en: 'Care for your sanctuary', ka: 'შენი თავშესაფრის მოვლა' },
-  },
-};
-
-// Category Illustrations
-const CategoryIllustration = ({ categoryKey, isSelected }: { categoryKey: string; isSelected: boolean }) => {
-  const baseClass = `w-full h-full transition-all duration-500 ${isSelected ? 'scale-110' : 'group-hover:scale-105'}`;
-
-  switch (categoryKey) {
-    case 'interior-design':
+// Property Type Icons
+const PropertyIcon = ({ type, className = '' }: { type: string; className?: string }) => {
+  switch (type) {
+    case 'apartment':
       return (
-        <svg className={baseClass} viewBox="0 0 80 80" fill="none">
-          <defs>
-            <linearGradient id="int-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#f472b6" />
-              <stop offset="100%" stopColor="#7c3aed" />
-            </linearGradient>
-          </defs>
-          <rect x="15" y="45" width="50" height="18" rx="4" fill="url(#int-grad)" opacity="0.9"/>
-          <rect x="12" y="40" width="14" height="26" rx="3" fill="url(#int-grad)" opacity="0.7"/>
-          <rect x="54" y="40" width="14" height="26" rx="3" fill="url(#int-grad)" opacity="0.7"/>
-          <ellipse cx="30" cy="50" rx="8" ry="5" fill="white" opacity="0.4"/>
-          <ellipse cx="50" cy="50" rx="8" ry="5" fill="white" opacity="0.4"/>
-          <rect x="30" y="15" width="20" height="16" rx="2" stroke="url(#int-grad)" strokeWidth="2" fill="white" opacity="0.9"/>
-          <circle cx="36" cy="22" r="3" fill="url(#int-grad)" opacity="0.6"/>
-          <circle cx="46" cy="25" r="2" fill="url(#int-grad)" opacity="0.4"/>
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <rect x="4" y="4" width="16" height="16" rx="2" />
+          <path d="M9 4v16M15 4v16M4 9h16M4 15h16" />
         </svg>
       );
-    case 'architecture':
+    case 'house':
       return (
-        <svg className={baseClass} viewBox="0 0 80 80" fill="none">
-          <defs>
-            <linearGradient id="arch-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#38bdf8" />
-              <stop offset="100%" stopColor="#6366f1" />
-            </linearGradient>
-          </defs>
-          <path d="M15 65 L15 30 L40 12 L65 30 L65 65 Z" fill="url(#arch-grad)" opacity="0.2" stroke="url(#arch-grad)" strokeWidth="2"/>
-          <rect x="22" y="35" width="10" height="14" rx="1" fill="url(#arch-grad)" opacity="0.6"/>
-          <rect x="48" y="35" width="10" height="14" rx="1" fill="url(#arch-grad)" opacity="0.6"/>
-          <rect x="34" y="45" width="12" height="20" rx="1" fill="url(#arch-grad)" opacity="0.8"/>
-          <path d="M40 12 L40 5" stroke="url(#arch-grad)" strokeWidth="2"/>
-          <circle cx="40" cy="5" r="2" fill="url(#arch-grad)"/>
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M3 10.5L12 4l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V10.5z" />
+          <path d="M9 21V14h6v7" />
         </svg>
       );
-    case 'craftsmen':
+    case 'office':
       return (
-        <svg className={baseClass} viewBox="0 0 80 80" fill="none">
-          <defs>
-            <linearGradient id="craft-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#f59e0b" />
-              <stop offset="100%" stopColor="#ef4444" />
-            </linearGradient>
-          </defs>
-          <rect x="35" y="15" width="10" height="35" rx="2" fill="url(#craft-grad)" opacity="0.9"/>
-          <rect x="30" y="50" width="20" height="8" rx="2" fill="url(#craft-grad)" opacity="0.7"/>
-          <path d="M20 40 L30 30 L32 32 L22 42 Z" fill="url(#craft-grad)" opacity="0.8"/>
-          <circle cx="18" cy="42" r="4" fill="url(#craft-grad)" opacity="0.6"/>
-          <path d="M50 30 L60 40 L58 42 L48 32 Z" fill="url(#craft-grad)" opacity="0.8"/>
-          <rect x="58" y="38" width="8" height="4" rx="1" fill="url(#craft-grad)" opacity="0.6" transform="rotate(45 62 40)"/>
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <rect x="4" y="3" width="16" height="18" rx="2" />
+          <path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2" strokeLinecap="round" />
         </svg>
       );
-    case 'home-care':
+    case 'building':
       return (
-        <svg className={baseClass} viewBox="0 0 80 80" fill="none">
-          <defs>
-            <linearGradient id="care-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#10b981" />
-              <stop offset="100%" stopColor="#06b6d4" />
-            </linearGradient>
-          </defs>
-          <path d="M40 15 L60 30 L60 60 L20 60 L20 30 Z" fill="url(#care-grad)" opacity="0.2" stroke="url(#care-grad)" strokeWidth="2"/>
-          <path d="M15 32 L40 12 L65 32" stroke="url(#care-grad)" strokeWidth="3" strokeLinecap="round" fill="none"/>
-          <rect x="34" y="42" width="12" height="18" rx="1" fill="url(#care-grad)" opacity="0.6"/>
-          <circle cx="40" cy="50" r="2" fill="white" opacity="0.8"/>
-          <path d="M25 40 Q28 35 31 40 Q34 45 28 48 Q22 45 25 40" fill="#22c55e" opacity="0.7"/>
-          <path d="M49 38 Q52 33 55 38 Q58 43 52 46 Q46 43 49 38" fill="#22c55e" opacity="0.7"/>
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M3 21h18M5 21V7l7-4 7 4v14" />
+          <path d="M9 9h1M14 9h1M9 13h1M14 13h1M9 17h1M14 17h1" strokeLinecap="round" />
         </svg>
       );
     default:
-      return null;
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 8v4M12 16h.01" strokeLinecap="round" />
+        </svg>
+      );
+  }
+};
+
+// Budget Type Icons
+const BudgetIcon = ({ type, className = '' }: { type: string; className?: string }) => {
+  switch (type) {
+    case 'fixed':
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 6v12M9 9h6M9 15h6" strokeLinecap="round" />
+        </svg>
+      );
+    case 'range':
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case 'sqm':
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <rect x="4" y="4" width="16" height="16" rx="1" />
+          <path d="M4 12h16M12 4v16" />
+        </svg>
+      );
+    default:
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M8 12h8M12 3v18" strokeLinecap="round" />
+          <circle cx="12" cy="12" r="9" />
+        </svg>
+      );
   }
 };
 
 export default function PostJobPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
-  const { t, locale: language } = useLanguage();
+  const { locale } = useLanguage();
   const { isClientMode } = useViewMode();
   const toast = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const initialLoadDoneRef = useRef(false);
 
   const editJobId = searchParams.get('edit');
   const isEditMode = !!editJobId;
 
-  // Section refs for scroll tracking
-  const sectionRefs = {
-    category: useRef<HTMLDivElement>(null),
-    basics: useRef<HTMLDivElement>(null),
-    details: useRef<HTMLDivElement>(null),
-    budget: useRef<HTMLDivElement>(null),
-    media: useRef<HTMLDivElement>(null),
-  };
-
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
   const [isLoadingJob, setIsLoadingJob] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
-  const [activeSection, setActiveSection] = useState('category');
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['category']));
+
+  // Category selection state
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
+  const [customSpecialties, setCustomSpecialties] = useState<string[]>([]);
 
   // Form state
   const [formData, setFormData] = useState({
-    category: '',
     title: '',
     description: '',
     location: '',
     propertyType: '',
     propertyTypeOther: '',
     areaSize: '',
-    sizeUnit: 'sqm',
     roomCount: '',
-    cadastralId: '',
-    landArea: '',
-    floorCount: '',
-    projectPhase: '',
-    permitRequired: false,
-    currentCondition: '',
-    zoningType: '',
-    designStyles: [] as string[],
-    roomsToDesign: [] as string[],
-    furnitureIncluded: false,
-    visualizationNeeded: false,
-    preferredColors: [] as string[],
-    workTypes: [] as string[],
-    materialsProvided: false,
-    materialsNote: '',
-    occupiedDuringWork: false,
-    urgencyLevel: '',
-    serviceFrequency: '',
-    preferredTime: '',
-    accessInstructions: '',
-    hasPets: false,
+    deadline: '',
     budgetType: 'negotiable',
     budgetAmount: '',
     budgetMin: '',
     budgetMax: '',
     pricePerUnit: '',
-    deadline: '',
-    references: [] as Reference[],
   });
 
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const [existingMedia, setExistingMedia] = useState<{ type: 'image' | 'video'; url: string }[]>([]);
   const [newReferenceUrl, setNewReferenceUrl] = useState('');
-  const [customWorkType, setCustomWorkType] = useState('');
-  const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
-  const [customSpecialties, setCustomSpecialties] = useState<string[]>([]);
-  const [customSpecialtyInput, setCustomSpecialtyInput] = useState('');
+  const [references, setReferences] = useState<Reference[]>([]);
 
-  // Fetch categories on mount
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await api.get('/categories');
-        setCategories(response.data);
-      } catch (err) {
-        console.error('Failed to fetch categories:', err);
-      } finally {
-        setIsLoadingCategories(false);
-      }
-    };
-    fetchCategories();
+    setIsVisible(true);
   }, []);
+
+  // Auth check
+  useEffect(() => {
+    const isClient = user?.role === 'client';
+    const isProInClientMode = user?.role === 'pro' && isClientMode;
+    if (!authLoading && (!isAuthenticated || (!isClient && !isProInClientMode))) {
+      router.push('/login?redirect=/post-job');
+    }
+  }, [authLoading, isAuthenticated, user, router, isClientMode]);
 
   // Fetch job data for edit mode
   useEffect(() => {
@@ -382,82 +182,35 @@ export default function PostJobPage() {
         const response = await api.get(`/jobs/${editJobId}`);
         const job = response.data;
 
-        setFormData(prev => ({
-          ...prev,
-          category: job.category || '',
+        setSelectedCategory(job.category || '');
+        setSelectedSubcategories(job.skills || []);
+
+        setFormData({
           title: job.title || '',
           description: job.description || '',
           location: job.location || '',
           propertyType: job.propertyType || '',
           propertyTypeOther: job.propertyTypeOther || '',
           areaSize: job.areaSize?.toString() || '',
-          sizeUnit: job.sizeUnit || 'sqm',
           roomCount: job.roomCount?.toString() || '',
-          cadastralId: job.cadastralId || '',
-          landArea: job.landArea || '',
-          floorCount: job.floorCount?.toString() || '',
-          projectPhase: job.projectPhase || '',
-          permitRequired: job.permitRequired || false,
-          currentCondition: job.currentCondition || '',
-          zoningType: job.zoningType || '',
-          designStyles: job.designStyles || job.designStyle ? [job.designStyle] : [],
-          roomsToDesign: job.roomsToDesign || [],
-          furnitureIncluded: job.furnitureIncluded || false,
-          visualizationNeeded: job.visualizationNeeded || false,
-          preferredColors: job.preferredColors || [],
-          workTypes: job.workTypes || [],
-          materialsProvided: job.materialsProvided || false,
-          materialsNote: job.materialsNote || '',
-          occupiedDuringWork: job.occupiedDuringWork || false,
-          urgencyLevel: job.urgencyLevel || '',
-          serviceFrequency: job.serviceFrequency || '',
-          preferredTime: job.preferredTime || '',
-          accessInstructions: job.accessInstructions || '',
-          hasPets: job.hasPets || false,
+          deadline: job.deadline ? job.deadline.split('T')[0] : '',
           budgetType: job.budgetType || 'negotiable',
           budgetAmount: job.budgetAmount?.toString() || '',
           budgetMin: job.budgetMin?.toString() || '',
           budgetMax: job.budgetMax?.toString() || '',
           pricePerUnit: job.pricePerUnit?.toString() || '',
-          deadline: job.deadline ? job.deadline.split('T')[0] : '',
-          references: job.references || [],
-        }));
+        });
 
-        if (job.skills && job.skills.length > 0 && job.category) {
-          const categorySpecialties = CATEGORY_SPECIALTIES[job.category] || [];
-          const predefinedValues = categorySpecialties.map(s => s.value);
-          const matchedSpecialties: string[] = [];
-          const customSpecs: string[] = [];
-
-          job.skills.forEach((skill: string) => {
-            if (predefinedValues.includes(skill)) {
-              matchedSpecialties.push(skill);
-            } else {
-              const isDesignStyle = DESIGN_STYLES.some(ds => ds.value === skill);
-              const isRoom = ROOM_OPTIONS.some(r => r.value === skill);
-              if (!isDesignStyle && !isRoom) {
-                customSpecs.push(skill);
-              }
-            }
-          });
-
-          setSelectedSpecialties(matchedSpecialties);
-          setCustomSpecialties(customSpecs.slice(0, 5));
-        }
-
-        if (job.media && job.media.length > 0) {
+        if (job.references) setReferences(job.references);
+        if (job.media?.length > 0) {
           setExistingMedia(job.media);
-        } else if (job.images && job.images.length > 0) {
+        } else if (job.images?.length > 0) {
           setExistingMedia(job.images.map((url: string) => ({ type: 'image' as const, url })));
         }
 
-        // Expand all sections in edit mode
-        setExpandedSections(new Set(['category', 'basics', 'details', 'budget', 'media']));
-        initialLoadDoneRef.current = true;
-
       } catch (err: any) {
         console.error('Failed to fetch job:', err);
-        setError('Failed to load job data for editing');
+        setError('Failed to load job data');
       } finally {
         setIsLoadingJob(false);
       }
@@ -466,55 +219,8 @@ export default function PostJobPage() {
     fetchJobData();
   }, [editJobId, isAuthenticated]);
 
-  // Auth check
-  useEffect(() => {
-    const isClient = user?.role === 'client';
-    const isProInClientMode = user?.role === 'pro' && isClientMode;
-    if (!authLoading && (!isAuthenticated || (!isClient && !isProInClientMode))) {
-      router.push('/');
-    }
-  }, [authLoading, isAuthenticated, user, router, isClientMode]);
-
-  // Auto-expand sections based on category selection
-  useEffect(() => {
-    if (formData.category) {
-      setExpandedSections(prev => new Set([...prev, 'basics']));
-    }
-  }, [formData.category]);
-
-  const selectedCategory = categories.find(c => c.key === formData.category);
-  const isArchitecture = formData.category === 'architecture';
-  const isInteriorDesign = formData.category === 'interior-design';
-  const isCraftsmen = formData.category === 'craftsmen';
-  const isHomeCare = formData.category === 'home-care';
-  const categoryConfig = formData.category ? CATEGORY_CONFIG[formData.category] : null;
-
   const updateFormData = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const toggleArrayItem = (field: string, item: string) => {
-    setFormData(prev => {
-      const arr = prev[field as keyof typeof prev] as string[];
-      if (field === 'roomsToDesign') {
-        if (item === 'Entire Space') {
-          if (arr.includes('Entire Space')) {
-            return { ...prev, [field]: [] };
-          }
-          return { ...prev, [field]: ['Entire Space'] };
-        } else {
-          const filtered = arr.filter(i => i !== 'Entire Space');
-          if (filtered.includes(item)) {
-            return { ...prev, [field]: filtered.filter(i => i !== item) };
-          }
-          return { ...prev, [field]: [...filtered, item] };
-        }
-      }
-      if (arr.includes(item)) {
-        return { ...prev, [field]: arr.filter(i => i !== item) };
-      }
-      return { ...prev, [field]: [...arr, item] };
-    });
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -541,93 +247,17 @@ export default function PostJobPage() {
     let type: Reference['type'] = 'link';
     if (newReferenceUrl.includes('pinterest')) type = 'pinterest';
     else if (newReferenceUrl.includes('instagram')) type = 'instagram';
-    setFormData(prev => ({
-      ...prev,
-      references: [...prev.references, { type, url: newReferenceUrl.trim() }]
-    }));
+    setReferences(prev => [...prev, { type, url: newReferenceUrl.trim() }]);
     setNewReferenceUrl('');
   };
 
   const removeReference = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      references: prev.references.filter((_, i) => i !== index)
-    }));
-  };
-
-  const addCustomWorkType = () => {
-    const trimmed = customWorkType.trim();
-    if (!trimmed || formData.workTypes.includes(trimmed)) {
-      setCustomWorkType('');
-      return;
-    }
-    setFormData(prev => ({
-      ...prev,
-      workTypes: [...prev.workTypes, trimmed]
-    }));
-    setCustomWorkType('');
-  };
-
-  const toggleSpecialty = (value: string) => {
-    setSelectedSpecialties(prev =>
-      prev.includes(value)
-        ? prev.filter(s => s !== value)
-        : [...prev, value]
-    );
-  };
-
-  const addCustomSpecialty = () => {
-    const trimmed = customSpecialtyInput.trim();
-    if (!trimmed || customSpecialties.includes(trimmed) || selectedSpecialties.includes(trimmed) || customSpecialties.length >= 5) {
-      setCustomSpecialtyInput('');
-      return;
-    }
-    setCustomSpecialties(prev => [...prev, trimmed]);
-    setCustomSpecialtyInput('');
-  };
-
-  const removeCustomSpecialty = (specialty: string) => {
-    setCustomSpecialties(prev => prev.filter(s => s !== specialty));
-  };
-
-  useEffect(() => {
-    if (isEditMode && !initialLoadDoneRef.current) return;
-    if (isEditMode && initialLoadDoneRef.current) {
-      setSelectedSpecialties([]);
-      setCustomSpecialties([]);
-      setCustomSpecialtyInput('');
-    } else if (!isEditMode) {
-      setSelectedSpecialties([]);
-      setCustomSpecialties([]);
-      setCustomSpecialtyInput('');
-    }
-  }, [formData.category, isEditMode]);
-
-  const toggleSection = (section: string) => {
-    setExpandedSections(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(section)) {
-        newSet.delete(section);
-      } else {
-        newSet.add(section);
-      }
-      return newSet;
-    });
-  };
-
-  const scrollToSection = (section: string) => {
-    const ref = sectionRefs[section as keyof typeof sectionRefs];
-    if (ref?.current) {
-      ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      if (!expandedSections.has(section)) {
-        setExpandedSections(prev => new Set([...prev, section]));
-      }
-    }
+    setReferences(prev => prev.filter((_, i) => i !== index));
   };
 
   const canSubmit = (): boolean => {
-    const hasCategory = !!formData.category;
-    const hasSpecialty = selectedSpecialties.length > 0 || customSpecialties.length > 0;
+    const hasCategory = !!selectedCategory;
+    const hasSpecialty = selectedSubcategories.length > 0 || customSpecialties.length > 0;
     const hasTitle = !!formData.title;
     const hasDescription = !!formData.description;
     const hasPropertyType = !!formData.propertyType && (formData.propertyType !== 'other' || !!formData.propertyTypeOther);
@@ -641,6 +271,8 @@ export default function PostJobPage() {
   };
 
   const handleSubmit = async () => {
+    if (!canSubmit()) return;
+
     setIsSubmitting(true);
     setError(null);
 
@@ -666,7 +298,8 @@ export default function PostJobPage() {
       const jobData: any = {
         title: formData.title,
         description: formData.description,
-        category: formData.category,
+        category: selectedCategory,
+        skills: [...selectedSubcategories, ...customSpecialties],
         propertyType: formData.propertyType,
         budgetType: formData.budgetType,
       };
@@ -676,8 +309,8 @@ export default function PostJobPage() {
       }
       if (formData.location) jobData.location = formData.location;
       if (formData.areaSize) jobData.areaSize = Number(formData.areaSize);
-      if (formData.sizeUnit) jobData.sizeUnit = formData.sizeUnit;
       if (formData.roomCount) jobData.roomCount = Number(formData.roomCount);
+      if (formData.deadline) jobData.deadline = formData.deadline;
 
       if (formData.budgetType === 'fixed' && formData.budgetAmount) {
         jobData.budgetAmount = Number(formData.budgetAmount);
@@ -689,35 +322,8 @@ export default function PostJobPage() {
       if (formData.budgetType === 'per_sqm' && formData.pricePerUnit) {
         jobData.pricePerUnit = Number(formData.pricePerUnit);
       }
-      if (formData.deadline) jobData.deadline = formData.deadline;
 
-      if (isArchitecture) {
-        if (formData.cadastralId) jobData.cadastralId = formData.cadastralId;
-        if (formData.landArea) jobData.landArea = formData.landArea;
-        if (formData.floorCount) jobData.floorCount = Number(formData.floorCount);
-        if (formData.projectPhase) jobData.projectPhase = formData.projectPhase;
-        if (formData.permitRequired) jobData.permitRequired = formData.permitRequired;
-        if (formData.currentCondition) jobData.currentCondition = formData.currentCondition;
-        if (formData.zoningType) jobData.zoningType = formData.zoningType;
-      }
-
-      if (isInteriorDesign) {
-        const interiorSkills: string[] = [];
-        if (formData.designStyles.length) interiorSkills.push(...formData.designStyles);
-        if (formData.roomsToDesign.length) interiorSkills.push(...formData.roomsToDesign);
-        if (interiorSkills.length) jobData.skills = interiorSkills;
-      }
-
-      const allSpecialties = [...selectedSpecialties, ...customSpecialties];
-      if (allSpecialties.length > 0) {
-        if (!jobData.skills) jobData.skills = [];
-        jobData.skills = [...new Set([...jobData.skills, ...allSpecialties])];
-      }
-
-      if (formData.workTypes.length) jobData.workTypes = formData.workTypes;
-      if (formData.materialsProvided) jobData.materialsProvided = formData.materialsProvided;
-      if (formData.materialsNote) jobData.materialsNote = formData.materialsNote;
-      if (formData.occupiedDuringWork) jobData.occupiedDuringWork = formData.occupiedDuringWork;
+      if (references.length > 0) jobData.references = references;
 
       if (uploadedMedia.length) {
         jobData.images = uploadedMedia.filter(m => m.type === 'image').map(m => m.url);
@@ -737,20 +343,20 @@ export default function PostJobPage() {
 
       toast.success(
         isEditMode
-          ? (language === 'ka' ? 'სამუშაო განახლდა' : 'Job updated')
-          : (language === 'ka' ? 'სამუშაო შეიქმნა' : 'Job created'),
+          ? (locale === 'ka' ? 'სამუშაო განახლდა' : 'Job updated')
+          : (locale === 'ka' ? 'სამუშაო შეიქმნა' : 'Job created'),
         isEditMode
-          ? (language === 'ka' ? 'თქვენი სამუშაო წარმატებით განახლდა' : 'Your job has been successfully updated')
-          : (language === 'ka' ? 'თქვენი სამუშაო წარმატებით გამოქვეყნდა' : 'Your job has been successfully posted')
+          ? (locale === 'ka' ? 'თქვენი სამუშაო წარმატებით განახლდა' : 'Your job has been successfully updated')
+          : (locale === 'ka' ? 'თქვენი სამუშაო წარმატებით გამოქვეყნდა' : 'Your job has been successfully posted')
       );
 
       router.push('/my-jobs');
     } catch (err: any) {
       console.error('Failed to save job:', err);
-      setError(err.response?.data?.message || `Failed to ${isEditMode ? 'update' : 'create'} job. Please try again.`);
+      setError(err.response?.data?.message || `Failed to ${isEditMode ? 'update' : 'create'} job`);
       toast.error(
-        language === 'ka' ? 'შეცდომა' : 'Error',
-        language === 'ka' ? `სამუშაოს ${isEditMode ? 'განახლება' : 'შექმნა'} ვერ მოხერხდა` : `Failed to ${isEditMode ? 'update' : 'create'} job`
+        locale === 'ka' ? 'შეცდომა' : 'Error',
+        locale === 'ka' ? `სამუშაოს ${isEditMode ? 'განახლება' : 'შექმნა'} ვერ მოხერხდა` : `Failed to ${isEditMode ? 'update' : 'create'} job`
       );
     } finally {
       setIsSubmitting(false);
@@ -758,1249 +364,625 @@ export default function PostJobPage() {
     }
   };
 
-  if (authLoading || isLoadingCategories || isLoadingJob) {
+  if (authLoading || isLoadingJob) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative">
-            <div className="w-16 h-16 rounded-full border-[3px] border-neutral-200 dark:border-neutral-700"></div>
-            <div className="absolute inset-0 w-16 h-16 rounded-full border-[3px] border-transparent border-t-forest-600 dark:border-t-primary-400 animate-spin"></div>
-          </div>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">
-            {isLoadingJob
-              ? (language === 'ka' ? 'სამუშაოს მონაცემები იტვირთება...' : 'Loading job data...')
-              : (language === 'ka' ? 'იტვირთება...' : 'Loading...')}
-          </p>
+      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-primary)]">
+        <div className="relative">
+          <div className="w-12 h-12 rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-accent)] animate-spin" />
         </div>
       </div>
     );
   }
 
-  // Section header component
-  const SectionHeader = ({
-    id,
-    number,
-    title,
-    subtitle,
-    isComplete,
-    isRequired = true
-  }: {
-    id: string;
-    number: number;
-    title: string;
-    subtitle: string;
-    isComplete: boolean;
-    isRequired?: boolean;
-  }) => (
-    <button
-      onClick={() => toggleSection(id)}
-      className="w-full flex items-center gap-4 py-5 text-left group"
-    >
-      <div className={`
-        w-10 h-10 rounded-xl flex items-center justify-center text-sm font-semibold transition-all duration-300
-        ${isComplete
-          ? 'bg-gradient-to-br from-forest-500 to-forest-600 dark:from-primary-500 dark:to-primary-600 text-white shadow-lg shadow-forest-500/25 dark:shadow-primary-500/25'
-          : expandedSections.has(id)
-            ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900'
-            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 group-hover:bg-neutral-200 dark:group-hover:bg-neutral-700'
-        }
-      `}>
-        {isComplete ? <Check className="w-5 h-5" /> : number}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white truncate">
-            {title}
-          </h2>
-          {!isRequired && (
-            <span className="text-xs text-neutral-400 dark:text-neutral-500 font-medium">
-              {language === 'ka' ? 'არასავალდებულო' : 'Optional'}
-            </span>
-          )}
-        </div>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 truncate">
-          {subtitle}
-        </p>
-      </div>
-      <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform duration-300 ${expandedSections.has(id) ? 'rotate-180' : ''}`} />
-    </button>
-  );
+  const totalSpecialties = selectedSubcategories.length + customSpecialties.length;
 
   return (
-    <div className="min-h-screen pb-32" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
-      {/* Decorative background */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className={`absolute -top-1/2 -right-1/2 w-full h-full rounded-full blur-3xl opacity-[0.03] bg-gradient-to-br ${categoryConfig?.gradient || 'from-forest-500 to-emerald-600'}`} />
-        <div className={`absolute -bottom-1/2 -left-1/2 w-full h-full rounded-full blur-3xl opacity-[0.02] bg-gradient-to-tr ${categoryConfig?.gradient || 'from-forest-500 to-emerald-600'}`} />
+    <div className="min-h-screen bg-[var(--color-bg-primary)] overflow-x-hidden">
+      {/* Ambient background */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[var(--color-accent-soft)] rounded-full blur-[120px] translate-x-1/3 -translate-y-1/3 opacity-60" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[var(--color-highlight-soft)] rounded-full blur-[100px] -translate-x-1/3 translate-y-1/3 opacity-40" />
       </div>
 
       {/* Header */}
-      <div className="sticky top-0 z-50 backdrop-blur-xl border-b" style={{ backgroundColor: 'rgba(var(--color-bg-secondary-rgb), 0.8)', borderColor: 'var(--color-border)' }}>
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4">
+      <header className="relative z-10 py-6 sticky top-0 bg-[var(--color-bg-primary)]/80 backdrop-blur-xl border-b border-[var(--color-border-subtle)]">
+        <div className="container-custom">
           <div className="flex items-center justify-between">
-            <button
-              onClick={() => router.push('/browse')}
-              className="text-sm font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors"
-            >
-              {language === 'ka' ? 'გაუქმება' : 'Cancel'}
-            </button>
-            <h1 className="text-base font-semibold text-neutral-900 dark:text-white">
-              {isEditMode
-                ? (language === 'ka' ? 'სამუშაოს რედაქტირება' : 'Edit Job')
-                : (language === 'ka' ? 'ახალი სამუშაო' : 'New Job')}
-            </h1>
-            <div className="w-16" />
-          </div>
-        </div>
-      </div>
+            <Link href="/browse" className="group flex items-center gap-2">
+              <span className="text-xl font-semibold text-[var(--color-text-primary)] tracking-tight">
+                Homico
+              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] group-hover:scale-125 transition-transform" />
+            </Link>
 
-      {/* Main Content */}
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
-        {/* Hero Section */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-100 dark:bg-neutral-800 text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-4">
-            <Sparkles className="w-4 h-4" />
-            {language === 'ka' ? 'იპოვე საუკეთესო სპეციალისტი' : 'Find the best professional'}
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-white mb-3" style={{ fontFamily: 'var(--font-display, Georgia, serif)' }}>
-            {isEditMode
-              ? (language === 'ka' ? 'განაახლეთ თქვენი პროექტი' : 'Update Your Project')
-              : (language === 'ka' ? 'აღწერეთ თქვენი პროექტი' : 'Describe Your Project')}
-          </h1>
-          <p className="text-neutral-500 dark:text-neutral-400 max-w-lg mx-auto">
-            {language === 'ka'
-              ? 'შეავსეთ დეტალები და მიიღეთ შეთავაზებები სანდო სპეციალისტებისგან'
-              : 'Fill in the details and receive proposals from trusted professionals'}
-          </p>
-        </div>
-
-        {/* Form Sections */}
-        <div className="space-y-2">
-          {/* Section 1: Category */}
-          <div
-            ref={sectionRefs.category}
-            className="rounded-2xl overflow-hidden transition-all duration-300"
-            style={{
-              backgroundColor: 'var(--color-bg-secondary)',
-              border: '1px solid var(--color-border)',
-            }}
-          >
-            <div className="px-5">
-              <SectionHeader
-                id="category"
-                number={1}
-                title={language === 'ka' ? 'კატეგორია' : 'Category'}
-                subtitle={
-                  formData.category
-                    ? `${selectedCategory?.name || formData.category}${selectedSpecialties.length > 0 ? ` • ${selectedSpecialties.length} ${language === 'ka' ? 'სპეციალობა' : 'specialty'}` : ''}`
-                    : (language === 'ka' ? 'აირჩიეთ სერვისის ტიპი' : 'Choose the type of service')
-                }
-                isComplete={!!formData.category && (selectedSpecialties.length > 0 || customSpecialties.length > 0)}
-              />
-            </div>
-
-            <div className={`overflow-hidden transition-all duration-500 ease-out ${expandedSections.has('category') ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-              <div className="px-5 pb-6 space-y-6">
-                {/* Category Grid */}
-                <div className="grid grid-cols-2 gap-3">
-                  {categories.map((category, index) => {
-                    const config = CATEGORY_CONFIG[category.key];
-                    const isSelected = formData.category === category.key;
-
-                    return (
-                      <button
-                        key={category._id}
-                        onClick={() => updateFormData('category', category.key)}
-                        className={`
-                          group relative p-4 rounded-xl text-left transition-all duration-300
-                          ${isSelected
-                            ? `bg-gradient-to-br ${config?.bgGradient || 'from-neutral-50 to-neutral-100'} ring-2 ring-offset-2 ring-neutral-900 dark:ring-white dark:ring-offset-neutral-900`
-                            : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
-                          }
-                        `}
-                        style={!isSelected ? {
-                          backgroundColor: 'var(--color-bg-tertiary)',
-                          border: '1px solid var(--color-border)'
-                        } : { border: '1px solid transparent' }}
-                      >
-                        <div className={`w-14 h-14 mb-3 ${config?.iconBg || 'bg-neutral-100 dark:bg-neutral-800'} rounded-xl flex items-center justify-center`}>
-                          <CategoryIllustration categoryKey={category.key} isSelected={isSelected} />
-                        </div>
-                        <h3 className={`font-semibold mb-0.5 ${isSelected ? 'text-neutral-900 dark:text-white' : 'text-neutral-700 dark:text-neutral-300'}`}>
-                          {language === 'ka' ? category.nameKa : category.name}
-                        </h3>
-                        <p className={`text-xs ${isSelected ? config?.accentColor : 'text-neutral-500 dark:text-neutral-400'}`}>
-                          {config?.tagline[language === 'ka' ? 'ka' : 'en']}
-                        </p>
-                        {isSelected && (
-                          <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-neutral-900 dark:bg-white flex items-center justify-center">
-                            <Check className="w-4 h-4 text-white dark:text-neutral-900" />
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
+            {/* User info */}
+            {user && (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-[var(--color-text-secondary)] hidden sm:block">
+                  {user.name || user.email}
+                </span>
+                <div className="w-8 h-8 rounded-full bg-[var(--color-accent-soft)] flex items-center justify-center text-[var(--color-accent)] font-medium text-sm">
+                  {(user.name || user.email || '?')[0].toUpperCase()}
                 </div>
-
-                {/* Specialties */}
-                {formData.category && CATEGORY_SPECIALTIES[formData.category] && (
-                  <div className="space-y-3 pt-4 border-t" style={{ borderColor: 'var(--color-border)' }}>
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                      {language === 'ka' ? 'სპეციალობა' : 'Specialty'} <span className="text-rose-500">*</span>
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {CATEGORY_SPECIALTIES[formData.category].map((specialty) => (
-                        <button
-                          key={specialty.value}
-                          onClick={() => toggleSpecialty(specialty.value)}
-                          className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                            selectedSpecialties.includes(specialty.value)
-                              ? `bg-gradient-to-r ${categoryConfig?.gradient || 'from-forest-500 to-forest-600'} text-white shadow-md`
-                              : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700'
-                          }`}
-                          style={!selectedSpecialties.includes(specialty.value) ? {
-                            backgroundColor: 'var(--color-bg-tertiary)',
-                            border: '1px solid var(--color-border)',
-                          } : { border: 'none' }}
-                        >
-                          {language === 'ka' ? specialty.labelKa : specialty.label}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Custom specialties */}
-                    {customSpecialties.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {customSpecialties.map((specialty) => (
-                          <span
-                            key={specialty}
-                            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r ${categoryConfig?.gradient || 'from-forest-500 to-forest-600'} text-white`}
-                          >
-                            {specialty}
-                            <button onClick={() => removeCustomSpecialty(specialty)} className="hover:bg-white/20 rounded-full p-0.5">
-                              <X className="w-3.5 h-3.5" />
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Add custom specialty */}
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={customSpecialtyInput}
-                        onChange={(e) => setCustomSpecialtyInput(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomSpecialty())}
-                        placeholder={language === 'ka' ? 'დაამატეთ სპეციალობა...' : 'Add custom specialty...'}
-                        className="flex-1 px-4 py-2.5 rounded-xl text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white"
-                        style={{
-                          backgroundColor: 'var(--color-bg-tertiary)',
-                          border: '1px solid var(--color-border)',
-                          color: 'var(--color-text-primary)'
-                        }}
-                      />
-                      <button
-                        onClick={addCustomSpecialty}
-                        disabled={!customSpecialtyInput.trim() || customSpecialties.length >= 5}
-                        className="px-4 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <Plus className="w-5 h-5" />
-                      </button>
-                    </div>
-
-                    {(selectedSpecialties.length === 0 && customSpecialties.length === 0) && (
-                      <p className="text-sm text-amber-600 dark:text-amber-400 flex items-center gap-2">
-                        <AlertCircle className="w-4 h-4" />
-                        {language === 'ka' ? 'აირჩიეთ მინიმუმ 1 სპეციალობა' : 'Select at least 1 specialty'}
-                      </p>
-                    )}
-                  </div>
-                )}
               </div>
-            </div>
+            )}
           </div>
+        </div>
+      </header>
 
-          {/* Section 2: Basics */}
-          <div
-            ref={sectionRefs.basics}
-            className={`rounded-2xl overflow-hidden transition-all duration-300 ${!formData.category ? 'opacity-50 pointer-events-none' : ''}`}
-            style={{
-              backgroundColor: 'var(--color-bg-secondary)',
-              border: '1px solid var(--color-border)',
-            }}
-          >
-            <div className="px-5">
-              <SectionHeader
-                id="basics"
-                number={2}
-                title={language === 'ka' ? 'ძირითადი ინფორმაცია' : 'Basic Information'}
-                subtitle={
-                  formData.title
-                    ? formData.title
-                    : (language === 'ka' ? 'სათაური, აღწერა და მდებარეობა' : 'Title, description and location')
+      <main className={`relative z-10 pb-32 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div className="container-custom pt-8 md:pt-12">
+          <div className="max-w-2xl mx-auto">
+            {/* Hero Section */}
+            <section className="mb-12">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--color-accent-soft)] border border-[var(--color-accent)]/20 mb-6">
+                <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] animate-pulse" />
+                <span className="text-xs font-medium text-[var(--color-accent)] uppercase tracking-wider">
+                  {locale === 'ka' ? 'ახალი პროექტი' : 'New Project'}
+                </span>
+              </div>
+
+              {/* Main headline */}
+              <h1 className="text-3xl md:text-5xl font-bold text-[var(--color-text-primary)] leading-[1.1] tracking-tight mb-4">
+                {isEditMode ? (
+                  locale === 'ka' ? (
+                    <>პროექტის <span className="text-[var(--color-accent)]">რედაქტირება</span></>
+                  ) : (
+                    <>Edit Your <span className="text-[var(--color-accent)]">Project</span></>
+                  )
+                ) : (
+                  locale === 'ka' ? (
+                    <>აღწერე შენი <span className="text-[var(--color-accent)]">პროექტი</span></>
+                  ) : (
+                    <>Describe Your <span className="text-[var(--color-accent)]">Project</span></>
+                  )
+                )}
+              </h1>
+
+              <p className="text-base md:text-lg text-[var(--color-text-secondary)] max-w-xl mb-8 leading-relaxed">
+                {locale === 'ka'
+                  ? 'შეავსე დეტალები და მიიღე შეთავაზებები საუკეთესო სპეციალისტებისგან.'
+                  : 'Fill in the details and receive proposals from top professionals.'
                 }
-                isComplete={!!formData.title && !!formData.description && !!formData.propertyType}
-              />
-            </div>
+              </p>
+            </section>
 
-            <div className={`overflow-hidden transition-all duration-500 ease-out ${expandedSections.has('basics') ? 'max-h-[3000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-              <div className="px-5 pb-6 space-y-5">
-                {/* Title */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                    {language === 'ka' ? 'პროექტის სათაური' : 'Project Title'} <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => updateFormData('title', e.target.value)}
-                    placeholder={language === 'ka' ? "მაგ., თანამედროვე ბინის რემონტი" : "e.g., Modern apartment renovation"}
-                    className="w-full px-4 py-3.5 rounded-xl text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white"
-                    style={{
-                      backgroundColor: 'var(--color-bg-tertiary)',
-                      border: '1px solid var(--color-border)',
-                      color: 'var(--color-text-primary)'
-                    }}
-                  />
+            {/* Main Form */}
+            <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+              {/* Section 1: Category & Specializations */}
+              <section className="mb-10">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-[var(--color-accent)] flex items-center justify-center text-white font-bold">
+                    1
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
+                      {locale === 'ka' ? 'რა გჭირდება?' : 'What do you need?'}
+                    </h2>
+                    <p className="text-sm text-[var(--color-text-tertiary)]">
+                      {locale === 'ka' ? 'აირჩიე კატეგორია და სპეციალობა' : 'Select category and specialty'}
+                    </p>
+                  </div>
                 </div>
 
-                {/* Description */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                    {language === 'ka' ? 'პროექტის აღწერა' : 'Description'} <span className="text-rose-500">*</span>
-                  </label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => updateFormData('description', e.target.value)}
-                    placeholder={language === 'ka' ? 'დეტალურად აღწერეთ თქვენი პროექტი...' : 'Describe your project in detail...'}
-                    rows={4}
-                    className="w-full px-4 py-3.5 rounded-xl text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white resize-none"
-                    style={{
-                      backgroundColor: 'var(--color-bg-tertiary)',
-                      border: '1px solid var(--color-border)',
-                      color: 'var(--color-text-primary)'
-                    }}
-                  />
+                <CategorySubcategorySelector
+                  selectedCategory={selectedCategory}
+                  selectedSubcategories={selectedSubcategories}
+                  onCategoryChange={setSelectedCategory}
+                  onSubcategoriesChange={setSelectedSubcategories}
+                  customSpecialties={customSpecialties}
+                  onCustomSpecialtiesChange={setCustomSpecialties}
+                  showCustomSpecialties={true}
+                  singleCategoryMode={true}
+                />
+              </section>
+
+              {/* Section 2: Project Details */}
+              <section className="mb-10">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${
+                    totalSpecialties > 0
+                      ? 'bg-[var(--color-accent)] text-white'
+                      : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)]'
+                  }`}>
+                    2
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
+                      {locale === 'ka' ? 'პროექტის დეტალები' : 'Project Details'}
+                    </h2>
+                    <p className="text-sm text-[var(--color-text-tertiary)]">
+                      {locale === 'ka' ? 'აღწერე რა გინდა გაკეთდეს' : 'Describe what needs to be done'}
+                    </p>
+                  </div>
                 </div>
 
-                {/* Property Type */}
-                <div className="space-y-3">
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                    {language === 'ka' ? 'ქონების ტიპი' : 'Property Type'} <span className="text-rose-500">*</span>
-                  </label>
-                  <div className="grid grid-cols-5 gap-2">
-                    {PROPERTY_TYPES.map((type) => {
-                      const Icon = type.icon;
-                      return (
+                <div className="space-y-5 p-5 rounded-2xl bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)]">
+                  {/* Title */}
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                      {locale === 'ka' ? 'პროექტის სათაური' : 'Project Title'} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.title}
+                      onChange={(e) => updateFormData('title', e.target.value)}
+                      placeholder={locale === 'ka' ? 'მაგ: 2 ოთახიანი ბინის რემონტი' : 'e.g. 2-bedroom apartment renovation'}
+                      className="w-full px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
+                    />
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                      {locale === 'ka' ? 'აღწერა' : 'Description'} <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      value={formData.description}
+                      onChange={(e) => updateFormData('description', e.target.value)}
+                      rows={4}
+                      placeholder={locale === 'ka' ? 'დეტალურად აღწერე რა გინდა გაკეთდეს...' : 'Describe what you need in detail...'}
+                      className="w-full px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all resize-none"
+                    />
+                  </div>
+
+                  {/* Property Type */}
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-3">
+                      {locale === 'ka' ? 'ობიექტის ტიპი' : 'Property Type'} <span className="text-red-500">*</span>
+                    </label>
+                    <div className="grid grid-cols-5 gap-2">
+                      {PROPERTY_TYPES.map((type) => (
                         <button
                           key={type.value}
+                          type="button"
                           onClick={() => {
                             updateFormData('propertyType', type.value);
                             if (type.value !== 'other') updateFormData('propertyTypeOther', '');
                           }}
-                          className={`flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all duration-200 ${
+                          className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 ${
                             formData.propertyType === type.value
-                              ? 'ring-2 ring-neutral-900 dark:ring-white bg-neutral-50 dark:bg-neutral-800'
-                              : 'hover:bg-neutral-50 dark:hover:bg-neutral-800'
+                              ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)]/50'
+                              : 'border-[var(--color-border-subtle)] hover:border-[var(--color-border)] bg-[var(--color-bg-primary)]'
                           }`}
-                          style={{
-                            backgroundColor: formData.propertyType !== type.value ? 'var(--color-bg-tertiary)' : undefined,
-                            border: '1px solid var(--color-border)',
-                          }}
                         >
-                          <Icon className={`w-5 h-5 ${formData.propertyType === type.value ? 'text-neutral-900 dark:text-white' : 'text-neutral-500 dark:text-neutral-400'}`} />
-                          <span className={`text-xs font-medium ${formData.propertyType === type.value ? 'text-neutral-900 dark:text-white' : 'text-neutral-600 dark:text-neutral-400'}`}>
-                            {language === 'ka' ? type.labelKa : type.label}
+                          <PropertyIcon
+                            type={type.icon}
+                            className={`w-6 h-6 transition-colors ${
+                              formData.propertyType === type.value
+                                ? 'text-[var(--color-accent)]'
+                                : 'text-[var(--color-text-tertiary)]'
+                            }`}
+                          />
+                          <span className={`text-xs font-medium text-center transition-colors ${
+                            formData.propertyType === type.value
+                              ? 'text-[var(--color-accent)]'
+                              : 'text-[var(--color-text-secondary)]'
+                          }`}>
+                            {locale === 'ka' ? type.labelKa : type.label}
                           </span>
                         </button>
-                      );
-                    })}
-                  </div>
-                  {formData.propertyType === 'other' && (
-                    <input
-                      type="text"
-                      value={formData.propertyTypeOther}
-                      onChange={(e) => updateFormData('propertyTypeOther', e.target.value)}
-                      placeholder={language === 'ka' ? 'მიუთითეთ ქონების ტიპი...' : 'Specify property type...'}
-                      className="w-full px-4 py-3 rounded-xl text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white"
-                      style={{
-                        backgroundColor: 'var(--color-bg-tertiary)',
-                        border: '1px solid var(--color-border)',
-                        color: 'var(--color-text-primary)'
-                      }}
-                    />
-                  )}
-                </div>
-
-                {/* Size & Rooms */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                      <Ruler className="w-4 h-4 inline mr-1.5" />
-                      {language === 'ka' ? 'ფართობი (მ²)' : 'Area (m²)'}
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.areaSize}
-                      onChange={(e) => updateFormData('areaSize', e.target.value)}
-                      placeholder="100"
-                      className="w-full px-4 py-3 rounded-xl text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white"
-                      style={{
-                        backgroundColor: 'var(--color-bg-tertiary)',
-                        border: '1px solid var(--color-border)',
-                        color: 'var(--color-text-primary)'
-                      }}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                      <Layers className="w-4 h-4 inline mr-1.5" />
-                      {language === 'ka' ? 'ოთახები' : 'Rooms'}
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.roomCount}
-                      onChange={(e) => updateFormData('roomCount', e.target.value)}
-                      placeholder="3"
-                      className="w-full px-4 py-3 rounded-xl text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white"
-                      style={{
-                        backgroundColor: 'var(--color-bg-tertiary)',
-                        border: '1px solid var(--color-border)',
-                        color: 'var(--color-text-primary)'
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Deadline */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                    {language === 'ka' ? 'სასურველი ვადა' : 'Preferred Deadline'}
-                  </label>
-                  <DatePicker
-                    value={formData.deadline}
-                    onChange={(value) => updateFormData('deadline', value)}
-                    min={new Date().toISOString().split('T')[0]}
-                    locale={language}
-                    placeholder={language === 'ka' ? 'აირჩიეთ თარიღი' : 'Select date'}
-                  />
-                </div>
-
-                {/* Location */}
-                <div>
-                  <AddressPicker
-                    value={formData.location}
-                    onChange={(value) => updateFormData('location', value)}
-                    locale={language}
-                    label={language === 'ka' ? 'მდებარეობა' : 'Location'}
-                    required={false}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Section 3: Details */}
-          <div
-            ref={sectionRefs.details}
-            className={`rounded-2xl overflow-hidden transition-all duration-300 ${!formData.category ? 'opacity-50 pointer-events-none' : ''}`}
-            style={{
-              backgroundColor: 'var(--color-bg-secondary)',
-              border: '1px solid var(--color-border)',
-            }}
-          >
-            <div className="px-5">
-              <SectionHeader
-                id="details"
-                number={3}
-                title={
-                  isArchitecture ? (language === 'ka' ? 'არქიტექტურის დეტალები' : 'Architecture Details') :
-                  isInteriorDesign ? (language === 'ka' ? 'დიზაინის დეტალები' : 'Design Details') :
-                  isCraftsmen ? (language === 'ka' ? 'სამუშაოს დეტალები' : 'Work Details') :
-                  isHomeCare ? (language === 'ka' ? 'სერვისის დეტალები' : 'Service Details') :
-                  (language === 'ka' ? 'დეტალები' : 'Details')
-                }
-                subtitle={language === 'ka' ? 'დამატებითი ინფორმაცია პროექტის შესახებ' : 'Additional project information'}
-                isComplete={false}
-                isRequired={false}
-              />
-            </div>
-
-            <div className={`overflow-hidden transition-all duration-500 ease-out ${expandedSections.has('details') ? 'max-h-[4000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-              <div className="px-5 pb-6 space-y-6">
-                {/* Architecture-specific */}
-                {isArchitecture && (
-                  <>
-                    <div className="space-y-3">
-                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                        {language === 'ka' ? 'პროექტის ფაზა' : 'Project Phase'}
-                      </label>
-                      <div className="grid grid-cols-2 gap-3">
-                        {PROJECT_PHASES.map((phase) => (
-                          <button
-                            key={phase.value}
-                            onClick={() => updateFormData('projectPhase', phase.value)}
-                            className={`p-4 rounded-xl text-left transition-all duration-200 ${
-                              formData.projectPhase === phase.value ? 'ring-2 ring-neutral-900 dark:ring-white' : ''
-                            }`}
-                            style={{
-                              backgroundColor: 'var(--color-bg-tertiary)',
-                              border: '1px solid var(--color-border)',
-                            }}
-                          >
-                            <span className={`block text-sm font-medium ${formData.projectPhase === phase.value ? 'text-neutral-900 dark:text-white' : 'text-neutral-700 dark:text-neutral-300'}`}>
-                              {language === 'ka' ? phase.labelKa : phase.label}
-                            </span>
-                            <span className="block text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                              {language === 'ka' ? phase.descriptionKa : phase.description}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
+                      ))}
                     </div>
+                    {formData.propertyType === 'other' && (
+                      <input
+                        type="text"
+                        value={formData.propertyTypeOther}
+                        onChange={(e) => updateFormData('propertyTypeOther', e.target.value)}
+                        placeholder={locale === 'ka' ? 'მიუთითე ობიექტის ტიპი...' : 'Specify property type...'}
+                        className="w-full mt-3 px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
+                      />
+                    )}
+                  </div>
 
-                    <div className="space-y-3">
-                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                        {language === 'ka' ? 'ზონირების ტიპი' : 'Zoning Type'}
+                  {/* Size & Rooms */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                        {locale === 'ka' ? 'ფართობი (მ²)' : 'Area (m²)'}
                       </label>
-                      <div className="flex flex-wrap gap-2">
-                        {ZONING_TYPES.map((zone) => (
-                          <button
-                            key={zone.value}
-                            onClick={() => updateFormData('zoningType', zone.value)}
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                              formData.zoningType === zone.value
-                                ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900'
-                                : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                            }`}
-                            style={formData.zoningType !== zone.value ? {
-                              backgroundColor: 'var(--color-bg-tertiary)',
-                              border: '1px solid var(--color-border)',
-                            } : {}}
-                          >
-                            {language === 'ka' ? zone.labelKa : zone.label}
-                          </button>
-                        ))}
-                      </div>
+                      <input
+                        type="number"
+                        value={formData.areaSize}
+                        onChange={(e) => updateFormData('areaSize', e.target.value)}
+                        placeholder="100"
+                        className="w-full px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
+                      />
                     </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                        {locale === 'ka' ? 'ოთახების რაოდენობა' : 'Number of Rooms'}
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.roomCount}
+                        onChange={(e) => updateFormData('roomCount', e.target.value)}
+                        placeholder="3"
+                        className="w-full px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
+                      />
+                    </div>
+                  </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                          {language === 'ka' ? 'საკადასტრო კოდი' : 'Cadastral ID'}
-                        </label>
-                        <input
-                          type="text"
-                          value={formData.cadastralId}
-                          onChange={(e) => updateFormData('cadastralId', e.target.value)}
-                          placeholder="01.12.34.567.890"
-                          className="w-full px-4 py-3 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white"
-                          style={{
-                            backgroundColor: 'var(--color-bg-tertiary)',
-                            border: '1px solid var(--color-border)',
-                            color: 'var(--color-text-primary)'
-                          }}
+                  {/* Deadline */}
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                      {locale === 'ka' ? 'სასურველი დასრულების თარიღი' : 'Preferred Deadline'}
+                    </label>
+                    <DatePicker
+                      value={formData.deadline}
+                      onChange={(value) => updateFormData('deadline', value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      locale={locale}
+                      placeholder={locale === 'ka' ? 'აირჩიე თარიღი' : 'Select date'}
+                    />
+                  </div>
+
+                  {/* Location */}
+                  <div>
+                    <AddressPicker
+                      value={formData.location}
+                      onChange={(value) => updateFormData('location', value)}
+                      locale={locale}
+                      label={locale === 'ka' ? 'მდებარეობა' : 'Location'}
+                      required={false}
+                    />
+                  </div>
+                </div>
+              </section>
+
+              {/* Section 3: Budget */}
+              <section className="mb-10">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${
+                    formData.title && formData.description && formData.propertyType
+                      ? 'bg-[var(--color-accent)] text-white'
+                      : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)]'
+                  }`}>
+                    3
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
+                      {locale === 'ka' ? 'ბიუჯეტი' : 'Budget'}
+                    </h2>
+                    <p className="text-sm text-[var(--color-text-tertiary)]">
+                      {locale === 'ka' ? 'რამდენის დახარჯვა გეგმავ?' : 'How much are you planning to spend?'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)]">
+                  {/* Budget Type Selection */}
+                  <div className="grid grid-cols-4 gap-2 mb-5">
+                    {BUDGET_TYPES.map((type) => (
+                      <button
+                        key={type.value}
+                        type="button"
+                        onClick={() => updateFormData('budgetType', type.value)}
+                        className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 ${
+                          formData.budgetType === type.value
+                            ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)]/50'
+                            : 'border-[var(--color-border-subtle)] hover:border-[var(--color-border)] bg-[var(--color-bg-primary)]'
+                        }`}
+                      >
+                        <BudgetIcon
+                          type={type.icon}
+                          className={`w-5 h-5 transition-colors ${
+                            formData.budgetType === type.value
+                              ? 'text-[var(--color-accent)]'
+                              : 'text-[var(--color-text-tertiary)]'
+                          }`}
                         />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                          {language === 'ka' ? 'სართულები' : 'Floors'}
+                        <span className={`text-xs font-medium text-center transition-colors ${
+                          formData.budgetType === type.value
+                            ? 'text-[var(--color-accent)]'
+                            : 'text-[var(--color-text-secondary)]'
+                        }`}>
+                          {locale === 'ka' ? type.labelKa : type.label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Budget Input Fields */}
+                  {formData.budgetType === 'fixed' && (
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                        {locale === 'ka' ? 'ბიუჯეტის თანხა (₾)' : 'Budget Amount (₾)'}
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.budgetAmount}
+                        onChange={(e) => updateFormData('budgetAmount', e.target.value)}
+                        placeholder="5000"
+                        className="w-full px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] text-lg font-medium placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
+                      />
+                    </div>
+                  )}
+
+                  {formData.budgetType === 'range' && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                          {locale === 'ka' ? 'მინიმუმ (₾)' : 'Minimum (₾)'}
                         </label>
                         <input
                           type="number"
-                          value={formData.floorCount}
-                          onChange={(e) => updateFormData('floorCount', e.target.value)}
-                          placeholder="2"
-                          className="w-full px-4 py-3 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white"
-                          style={{
-                            backgroundColor: 'var(--color-bg-tertiary)',
-                            border: '1px solid var(--color-border)',
-                            color: 'var(--color-text-primary)'
-                          }}
+                          value={formData.budgetMin}
+                          onChange={(e) => updateFormData('budgetMin', e.target.value)}
+                          placeholder="3000"
+                          className="w-full px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] text-lg font-medium placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
                         />
                       </div>
-                    </div>
-                  </>
-                )}
-
-                {/* Interior Design-specific */}
-                {isInteriorDesign && (
-                  <>
-                    <div className="space-y-3">
-                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                        <Palette className="w-4 h-4 inline mr-1.5" />
-                        {language === 'ka' ? 'დიზაინის სტილი' : 'Design Style'}
-                      </label>
-                      <div className="flex flex-wrap gap-2">
-                        {DESIGN_STYLES.map((style) => (
-                          <button
-                            key={style.value}
-                            onClick={() => toggleArrayItem('designStyles', style.value)}
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                              formData.designStyles.includes(style.value)
-                                ? `bg-gradient-to-r ${categoryConfig?.gradient} text-white`
-                                : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                            }`}
-                            style={!formData.designStyles.includes(style.value) ? {
-                              backgroundColor: 'var(--color-bg-tertiary)',
-                              border: '1px solid var(--color-border)',
-                            } : {}}
-                          >
-                            {language === 'ka' ? style.labelKa : style.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                        {language === 'ka' ? 'ოთახები დიზაინისთვის' : 'Rooms to Design'}
-                      </label>
-                      <div className="flex flex-wrap gap-2">
-                        {ROOM_OPTIONS.map((room) => (
-                          <button
-                            key={room.value}
-                            onClick={() => toggleArrayItem('roomsToDesign', room.value)}
-                            disabled={room.value !== 'Entire Space' && formData.roomsToDesign.includes('Entire Space')}
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                              formData.roomsToDesign.includes(room.value)
-                                ? `bg-gradient-to-r ${categoryConfig?.gradient} text-white`
-                                : room.value !== 'Entire Space' && formData.roomsToDesign.includes('Entire Space')
-                                ? 'opacity-40 cursor-not-allowed'
-                                : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                            }`}
-                            style={!formData.roomsToDesign.includes(room.value) ? {
-                              backgroundColor: 'var(--color-bg-tertiary)',
-                              border: '1px solid var(--color-border)',
-                            } : {}}
-                          >
-                            {language === 'ka' ? room.labelKa : room.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Toggle options */}
-                    <div className="space-y-3">
-                      {[
-                        { field: 'furnitureIncluded', label: language === 'ka' ? 'ავეჯის შერჩევა' : 'Include Furniture Selection', desc: language === 'ka' ? 'დახმარება ავეჯის შერჩევაში' : 'Help selecting furniture' },
-                        { field: 'visualizationNeeded', label: language === 'ka' ? '3D ვიზუალიზაცია' : '3D Visualization', desc: language === 'ka' ? '3D რენდერები' : '3D renders needed' },
-                      ].map((toggle) => (
-                        <div
-                          key={toggle.field}
-                          className="p-4 rounded-xl flex items-center justify-between"
-                          style={{
-                            backgroundColor: 'var(--color-bg-tertiary)',
-                            border: '1px solid var(--color-border)',
-                          }}
-                        >
-                          <div>
-                            <p className="text-sm font-medium text-neutral-900 dark:text-white">{toggle.label}</p>
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400">{toggle.desc}</p>
-                          </div>
-                          <button
-                            onClick={() => updateFormData(toggle.field, !formData[toggle.field as keyof typeof formData])}
-                            className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
-                              formData[toggle.field as keyof typeof formData] ? 'bg-neutral-900 dark:bg-white' : 'bg-neutral-200 dark:bg-neutral-700'
-                            }`}
-                          >
-                            <span
-                              className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform duration-200 ${
-                                formData[toggle.field as keyof typeof formData] ? 'translate-x-6 bg-white dark:bg-neutral-900' : 'bg-white dark:bg-neutral-400'
-                              }`}
-                            />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* References */}
-                    <div className="space-y-3">
-                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                        <LinkIcon className="w-4 h-4 inline mr-1.5" />
-                        {language === 'ka' ? 'ინსპირაცია' : 'Inspiration & References'}
-                      </label>
-                      <div className="flex gap-2">
+                      <div>
+                        <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                          {locale === 'ka' ? 'მაქსიმუმ (₾)' : 'Maximum (₾)'}
+                        </label>
                         <input
-                          type="url"
-                          value={newReferenceUrl}
-                          onChange={(e) => setNewReferenceUrl(e.target.value)}
-                          placeholder={language === 'ka' ? "Pinterest, Instagram ბმული..." : "Pinterest, Instagram URL..."}
-                          className="flex-1 px-4 py-3 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white"
-                          style={{
-                            backgroundColor: 'var(--color-bg-tertiary)',
-                            border: '1px solid var(--color-border)',
-                            color: 'var(--color-text-primary)'
-                          }}
-                          onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addReference())}
+                          type="number"
+                          value={formData.budgetMax}
+                          onChange={(e) => updateFormData('budgetMax', e.target.value)}
+                          placeholder="8000"
+                          className="w-full px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] text-lg font-medium placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
                         />
-                        <button
-                          onClick={addReference}
-                          className="px-4 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors"
-                        >
-                          <Plus className="w-5 h-5" />
-                        </button>
                       </div>
-                      {formData.references.length > 0 && (
-                        <div className="space-y-2">
-                          {formData.references.map((ref, idx) => (
-                            <div
-                              key={idx}
-                              className="flex items-center gap-3 p-3 rounded-xl"
-                              style={{
-                                backgroundColor: 'var(--color-bg-tertiary)',
-                                border: '1px solid var(--color-border)',
-                              }}
-                            >
-                              <LinkIcon className="w-4 h-4 text-neutral-400" />
-                              <span className="flex-1 text-sm text-neutral-600 dark:text-neutral-400 truncate">
-                                {ref.url}
-                              </span>
-                              <button onClick={() => removeReference(idx)} className="p-1 text-neutral-400 hover:text-rose-500">
-                                <X className="w-4 h-4" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
+                    </div>
+                  )}
+
+                  {formData.budgetType === 'per_sqm' && (
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                        {locale === 'ka' ? 'ფასი კვ.მ-ზე (₾)' : 'Price per m² (₾)'}
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.pricePerUnit}
+                        onChange={(e) => updateFormData('pricePerUnit', e.target.value)}
+                        placeholder="50"
+                        className="w-full px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] text-lg font-medium placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
+                      />
+                      {formData.areaSize && formData.pricePerUnit && (
+                        <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+                          {locale === 'ka' ? 'სავარაუდო ჯამი:' : 'Estimated total:'}{' '}
+                          <span className="font-semibold text-[var(--color-text-primary)]">
+                            ₾{(Number(formData.areaSize) * Number(formData.pricePerUnit)).toLocaleString()}
+                          </span>
+                        </p>
                       )}
                     </div>
-                  </>
-                )}
+                  )}
 
-                {/* Craftsmen-specific */}
-                {isCraftsmen && (
-                  <>
-                    <div className="space-y-3">
-                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                        {language === 'ka' ? 'სასწრაფოობა' : 'Urgency Level'}
+                  {formData.budgetType === 'negotiable' && (
+                    <div className="p-4 rounded-xl bg-[var(--color-accent-soft)]/50 border border-[var(--color-accent)]/20 text-center">
+                      <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-[var(--color-accent)] flex items-center justify-center">
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                      </div>
+                      <p className="text-sm text-[var(--color-text-secondary)]">
+                        {locale === 'ka'
+                          ? 'სპეციალისტები შემოგთავაზებენ საკუთარ ფასებს'
+                          : 'Professionals will propose their own prices'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              {/* Section 4: Media & References (Optional) */}
+              <section className="mb-10">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-[var(--color-bg-tertiary)] flex items-center justify-center text-[var(--color-text-secondary)] font-bold border border-[var(--color-border-subtle)]">
+                    4
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
+                      {locale === 'ka' ? 'ფოტოები და ინსპირაცია' : 'Photos & Inspiration'}
+                    </h2>
+                    <p className="text-sm text-[var(--color-text-tertiary)]">
+                      {locale === 'ka' ? 'არასავალდებულო - დაეხმარე სპეციალისტს' : 'Optional - help pros understand'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-5 p-5 rounded-2xl bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)]">
+                  {/* Existing Media (Edit Mode) */}
+                  {isEditMode && existingMedia.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-3">
+                        {locale === 'ka' ? 'არსებული ფოტოები' : 'Current Photos'} ({existingMedia.length})
                       </label>
-                      <div className="grid grid-cols-3 gap-3">
-                        {[
-                          { value: 'flexible', label: language === 'ka' ? 'მოქნილი' : 'Flexible', desc: language === 'ka' ? 'დროში არ ვარ შეზღუდული' : 'No rush' },
-                          { value: 'soon', label: language === 'ka' ? 'მალე' : 'Soon', desc: language === 'ka' ? '1-2 კვირაში' : '1-2 weeks' },
-                          { value: 'urgent', label: language === 'ka' ? 'სასწრაფო' : 'Urgent', desc: language === 'ka' ? 'დაუყოვნებლივ' : 'ASAP' },
-                        ].map((urgency) => (
-                          <button
-                            key={urgency.value}
-                            onClick={() => updateFormData('urgencyLevel', urgency.value)}
-                            className={`p-4 rounded-xl text-left transition-all duration-200 ${
-                              formData.urgencyLevel === urgency.value ? 'ring-2 ring-neutral-900 dark:ring-white' : ''
-                            }`}
-                            style={{
-                              backgroundColor: 'var(--color-bg-tertiary)',
-                              border: '1px solid var(--color-border)',
-                            }}
-                          >
-                            <span className={`block text-sm font-medium ${formData.urgencyLevel === urgency.value ? 'text-neutral-900 dark:text-white' : 'text-neutral-700 dark:text-neutral-300'}`}>
-                              {urgency.label}
-                            </span>
-                            <span className="block text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                              {urgency.desc}
-                            </span>
-                          </button>
+                      <div className="grid grid-cols-4 gap-2">
+                        {existingMedia.map((media, idx) => (
+                          <div key={idx} className="relative aspect-square rounded-xl overflow-hidden">
+                            <img
+                              src={storage.getFileUrl(media.url)}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
                         ))}
                       </div>
                     </div>
+                  )}
 
-                    <div className="space-y-3">
-                      {[
-                        { field: 'materialsProvided', label: language === 'ka' ? 'მასალებს მე ვუზრუნველყოფ' : 'I will provide materials', desc: language === 'ka' ? 'მაქვს საჭირო მასალები' : 'I have the materials' },
-                        { field: 'occupiedDuringWork', label: language === 'ka' ? 'ფართი დაკავებულია' : 'Space is occupied', desc: language === 'ka' ? 'ვცხოვრობ/ვმუშაობ ამ ფართში' : 'I live/work in this space' },
-                      ].map((toggle) => (
-                        <div
-                          key={toggle.field}
-                          className="p-4 rounded-xl flex items-center justify-between"
-                          style={{
-                            backgroundColor: 'var(--color-bg-tertiary)',
-                            border: '1px solid var(--color-border)',
-                          }}
-                        >
-                          <div>
-                            <p className="text-sm font-medium text-neutral-900 dark:text-white">{toggle.label}</p>
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400">{toggle.desc}</p>
+                  {/* Upload Area */}
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-3">
+                      {locale === 'ka' ? 'ატვირთე ფოტოები' : 'Upload Photos'}
+                    </label>
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className="group p-8 rounded-xl border-2 border-dashed border-[var(--color-border)] hover:border-[var(--color-accent)] bg-[var(--color-bg-primary)] cursor-pointer transition-all duration-300"
+                    >
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*,video/*"
+                        multiple
+                        onChange={handleFileSelect}
+                        className="hidden"
+                      />
+                      <div className="text-center">
+                        <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-[var(--color-bg-tertiary)] flex items-center justify-center group-hover:bg-[var(--color-accent-soft)] group-hover:scale-110 transition-all duration-300">
+                          <svg className="w-7 h-7 text-[var(--color-text-tertiary)] group-hover:text-[var(--color-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <p className="font-medium text-[var(--color-text-primary)] mb-1">
+                          {locale === 'ka' ? 'ატვირთე ფოტოები' : 'Upload photos'}
+                        </p>
+                        <p className="text-sm text-[var(--color-text-tertiary)]">
+                          PNG, JPG, MP4
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* New Files Preview */}
+                  {mediaFiles.length > 0 && (
+                    <div className="grid grid-cols-4 gap-2">
+                      {mediaFiles.map((media, idx) => (
+                        <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group">
+                          {media.type === 'image' ? (
+                            <img src={media.preview} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <video src={media.preview} className="w-full h-full object-cover" />
+                          )}
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <button
+                              type="button"
+                              onClick={() => removeMediaFile(idx)}
+                              className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30"
+                            >
+                              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
                           </div>
-                          <button
-                            onClick={() => updateFormData(toggle.field, !formData[toggle.field as keyof typeof formData])}
-                            className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
-                              formData[toggle.field as keyof typeof formData] ? 'bg-neutral-900 dark:bg-white' : 'bg-neutral-200 dark:bg-neutral-700'
-                            }`}
-                          >
-                            <span
-                              className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform duration-200 ${
-                                formData[toggle.field as keyof typeof formData] ? 'translate-x-6 bg-white dark:bg-neutral-900' : 'bg-white dark:bg-neutral-400'
-                              }`}
-                            />
-                          </button>
                         </div>
                       ))}
                     </div>
-                  </>
-                )}
+                  )}
 
-                {/* Home Care-specific */}
-                {isHomeCare && (
-                  <>
-                    <div className="space-y-3">
-                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                        {language === 'ka' ? 'სერვისის სიხშირე' : 'Service Frequency'}
-                      </label>
-                      <div className="grid grid-cols-2 gap-3">
-                        {[
-                          { value: 'one-time', label: language === 'ka' ? 'ერთჯერადი' : 'One-time', desc: language === 'ka' ? 'ერთჯერადი სერვისი' : 'Single service' },
-                          { value: 'weekly', label: language === 'ka' ? 'ყოველკვირეული' : 'Weekly', desc: language === 'ka' ? 'ყოველ კვირა' : 'Every week' },
-                          { value: 'monthly', label: language === 'ka' ? 'ყოველთვიური' : 'Monthly', desc: language === 'ka' ? 'თვეში ერთხელ' : 'Once a month' },
-                          { value: 'as-needed', label: language === 'ka' ? 'საჭიროებისამებრ' : 'As Needed', desc: language === 'ka' ? 'გამოძახებით' : 'On call' },
-                        ].map((freq) => (
-                          <button
-                            key={freq.value}
-                            onClick={() => updateFormData('serviceFrequency', freq.value)}
-                            className={`p-4 rounded-xl text-left transition-all duration-200 ${
-                              formData.serviceFrequency === freq.value ? 'ring-2 ring-neutral-900 dark:ring-white' : ''
-                            }`}
-                            style={{
-                              backgroundColor: 'var(--color-bg-tertiary)',
-                              border: '1px solid var(--color-border)',
-                            }}
-                          >
-                            <span className={`block text-sm font-medium ${formData.serviceFrequency === freq.value ? 'text-neutral-900 dark:text-white' : 'text-neutral-700 dark:text-neutral-300'}`}>
-                              {freq.label}
-                            </span>
-                            <span className="block text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                              {freq.desc}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                        {language === 'ka' ? 'სასურველი დრო' : 'Preferred Time'}
-                      </label>
-                      <div className="flex flex-wrap gap-2">
-                        {[
-                          { value: 'morning', label: language === 'ka' ? 'დილა' : 'Morning' },
-                          { value: 'afternoon', label: language === 'ka' ? 'შუადღე' : 'Afternoon' },
-                          { value: 'evening', label: language === 'ka' ? 'საღამო' : 'Evening' },
-                          { value: 'flexible', label: language === 'ka' ? 'მოქნილი' : 'Flexible' },
-                        ].map((time) => (
-                          <button
-                            key={time.value}
-                            onClick={() => updateFormData('preferredTime', time.value)}
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                              formData.preferredTime === time.value
-                                ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900'
-                                : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                            }`}
-                            style={formData.preferredTime !== time.value ? {
-                              backgroundColor: 'var(--color-bg-tertiary)',
-                              border: '1px solid var(--color-border)',
-                            } : {}}
-                          >
-                            {time.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div
-                      className="p-4 rounded-xl flex items-center justify-between"
-                      style={{
-                        backgroundColor: 'var(--color-bg-tertiary)',
-                        border: '1px solid var(--color-border)',
-                      }}
-                    >
-                      <div>
-                        <p className="text-sm font-medium text-neutral-900 dark:text-white">
-                          {language === 'ka' ? 'შინაური ცხოველები მყავს' : 'I have pets'}
-                        </p>
-                        <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                          {language === 'ka' ? 'სპეციალისტმა იცოდეს' : 'Let the specialist know'}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => updateFormData('hasPets', !formData.hasPets)}
-                        className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
-                          formData.hasPets ? 'bg-neutral-900 dark:bg-white' : 'bg-neutral-200 dark:bg-neutral-700'
-                        }`}
-                      >
-                        <span
-                          className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform duration-200 ${
-                            formData.hasPets ? 'translate-x-6 bg-white dark:bg-neutral-900' : 'bg-white dark:bg-neutral-400'
-                          }`}
-                        />
-                      </button>
-                    </div>
-                  </>
-                )}
-
-                {/* Work Types for Craftsmen/Architecture/Interior */}
-                {(isCraftsmen || isArchitecture || isInteriorDesign) && (
-                  <div className="space-y-3 pt-4 border-t" style={{ borderColor: 'var(--color-border)' }}>
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                      {language === 'ka' ? 'სამუშაოს ტიპები' : 'Work Types Required'}
+                  {/* References/Inspiration Links */}
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                      {locale === 'ka' ? 'ინსპირაციის ბმულები' : 'Inspiration Links'}
                     </label>
-                    <div className="flex flex-wrap gap-2">
-                      {WORK_TYPES.map((work) => (
-                        <button
-                          key={work.value}
-                          onClick={() => toggleArrayItem('workTypes', work.value)}
-                          className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                            formData.workTypes.includes(work.value)
-                              ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900'
-                              : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                          }`}
-                          style={!formData.workTypes.includes(work.value) ? {
-                            backgroundColor: 'var(--color-bg-tertiary)',
-                            border: '1px solid var(--color-border)',
-                          } : {}}
-                        >
-                          {language === 'ka' ? work.labelKa : work.label}
-                        </button>
-                      ))}
-                    </div>
                     <div className="flex gap-2">
                       <input
-                        type="text"
-                        value={customWorkType}
-                        onChange={(e) => setCustomWorkType(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomWorkType())}
-                        placeholder={language === 'ka' ? 'დაამატეთ საკუთარი...' : 'Add custom type...'}
-                        className="flex-1 px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white"
-                        style={{
-                          backgroundColor: 'var(--color-bg-tertiary)',
-                          border: '1px solid var(--color-border)',
-                          color: 'var(--color-text-primary)'
-                        }}
+                        type="url"
+                        value={newReferenceUrl}
+                        onChange={(e) => setNewReferenceUrl(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addReference())}
+                        placeholder={locale === 'ka' ? 'Pinterest, Instagram ბმული...' : 'Pinterest, Instagram URL...'}
+                        className="flex-1 px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
                       />
                       <button
-                        onClick={addCustomWorkType}
-                        disabled={!customWorkType.trim()}
-                        className="px-4 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors disabled:opacity-50"
+                        type="button"
+                        onClick={addReference}
+                        disabled={!newReferenceUrl.trim()}
+                        className="px-4 py-3 bg-[var(--color-accent)] text-white rounded-xl font-medium transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-[var(--color-accent)]/25"
                       >
-                        <Plus className="w-5 h-5" />
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
                       </button>
                     </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Section 4: Budget */}
-          <div
-            ref={sectionRefs.budget}
-            className={`rounded-2xl overflow-hidden transition-all duration-300 ${!formData.category ? 'opacity-50 pointer-events-none' : ''}`}
-            style={{
-              backgroundColor: 'var(--color-bg-secondary)',
-              border: '1px solid var(--color-border)',
-            }}
-          >
-            <div className="px-5">
-              <SectionHeader
-                id="budget"
-                number={4}
-                title={language === 'ka' ? 'ბიუჯეტი' : 'Budget'}
-                subtitle={
-                  formData.budgetType === 'fixed' && formData.budgetAmount
-                    ? `₾${Number(formData.budgetAmount).toLocaleString()}`
-                    : formData.budgetType === 'range' && formData.budgetMin && formData.budgetMax
-                    ? `₾${Number(formData.budgetMin).toLocaleString()} - ₾${Number(formData.budgetMax).toLocaleString()}`
-                    : formData.budgetType === 'negotiable'
-                    ? (language === 'ka' ? 'შეთანხმებით' : 'Negotiable')
-                    : (language === 'ka' ? 'განსაზღვრეთ ბიუჯეტი' : 'Set your budget')
-                }
-                isComplete={
-                  formData.budgetType === 'negotiable' ||
-                  (formData.budgetType === 'fixed' && !!formData.budgetAmount) ||
-                  (formData.budgetType === 'range' && !!formData.budgetMin && !!formData.budgetMax) ||
-                  (formData.budgetType === 'per_sqm' && !!formData.pricePerUnit)
-                }
-              />
-            </div>
-
-            <div className={`overflow-hidden transition-all duration-500 ease-out ${expandedSections.has('budget') ? 'max-h-[1500px] opacity-100' : 'max-h-0 opacity-0'}`}>
-              <div className="px-5 pb-6 space-y-5">
-                <div className="grid grid-cols-2 gap-3">
-                  {BUDGET_TYPES.map((type) => (
-                    <button
-                      key={type.value}
-                      onClick={() => updateFormData('budgetType', type.value)}
-                      className={`p-4 rounded-xl text-left transition-all duration-200 ${
-                        formData.budgetType === type.value ? 'ring-2 ring-neutral-900 dark:ring-white' : ''
-                      }`}
-                      style={{
-                        backgroundColor: 'var(--color-bg-tertiary)',
-                        border: '1px solid var(--color-border)',
-                      }}
-                    >
-                      <span className={`block text-sm font-medium ${formData.budgetType === type.value ? 'text-neutral-900 dark:text-white' : 'text-neutral-700 dark:text-neutral-300'}`}>
-                        {language === 'ka' ? type.labelKa : type.label}
-                      </span>
-                      <span className="block text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                        {language === 'ka' ? type.descriptionKa : type.description}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-
-                {formData.budgetType === 'fixed' && (
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                      {language === 'ka' ? 'ბიუჯეტის თანხა (₾)' : 'Budget Amount (₾)'}
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.budgetAmount}
-                      onChange={(e) => updateFormData('budgetAmount', e.target.value)}
-                      placeholder="5000"
-                      className="w-full px-4 py-3.5 rounded-xl text-lg font-medium focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white"
-                      style={{
-                        backgroundColor: 'var(--color-bg-tertiary)',
-                        border: '1px solid var(--color-border)',
-                        color: 'var(--color-text-primary)'
-                      }}
-                    />
-                  </div>
-                )}
-
-                {formData.budgetType === 'range' && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                        {language === 'ka' ? 'მინიმუმი (₾)' : 'Minimum (₾)'}
-                      </label>
-                      <input
-                        type="number"
-                        value={formData.budgetMin}
-                        onChange={(e) => updateFormData('budgetMin', e.target.value)}
-                        placeholder="3000"
-                        className="w-full px-4 py-3.5 rounded-xl text-lg font-medium focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white"
-                        style={{
-                          backgroundColor: 'var(--color-bg-tertiary)',
-                          border: '1px solid var(--color-border)',
-                          color: 'var(--color-text-primary)'
-                        }}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                        {language === 'ka' ? 'მაქსიმუმი (₾)' : 'Maximum (₾)'}
-                      </label>
-                      <input
-                        type="number"
-                        value={formData.budgetMax}
-                        onChange={(e) => updateFormData('budgetMax', e.target.value)}
-                        placeholder="8000"
-                        className="w-full px-4 py-3.5 rounded-xl text-lg font-medium focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white"
-                        style={{
-                          backgroundColor: 'var(--color-bg-tertiary)',
-                          border: '1px solid var(--color-border)',
-                          color: 'var(--color-text-primary)'
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {formData.budgetType === 'per_sqm' && (
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                      {language === 'ka' ? 'ფასი კვ.მ-ზე (₾)' : 'Price per m² (₾)'}
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.pricePerUnit}
-                      onChange={(e) => updateFormData('pricePerUnit', e.target.value)}
-                      placeholder="50"
-                      className="w-full px-4 py-3.5 rounded-xl text-lg font-medium focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white"
-                      style={{
-                        backgroundColor: 'var(--color-bg-tertiary)',
-                        border: '1px solid var(--color-border)',
-                        color: 'var(--color-text-primary)'
-                      }}
-                    />
-                    {formData.areaSize && formData.pricePerUnit && (
-                      <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                        {language === 'ka' ? 'სავარაუდო ჯამი' : 'Estimated total'}: <span className="font-semibold text-neutral-900 dark:text-white">₾{(Number(formData.areaSize) * Number(formData.pricePerUnit)).toLocaleString()}</span>
-                      </p>
+                    {references.length > 0 && (
+                      <div className="mt-3 space-y-2">
+                        {references.map((ref, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center gap-3 p-3 rounded-xl bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)]"
+                          >
+                            <svg className="w-4 h-4 text-[var(--color-text-tertiary)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
+                            <span className="flex-1 text-sm text-[var(--color-text-secondary)] truncate">
+                              {ref.url}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => removeReference(idx)}
+                              className="p-1 text-[var(--color-text-tertiary)] hover:text-red-500 transition-colors"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
-                )}
-
-                {formData.budgetType === 'negotiable' && (
-                  <div
-                    className="p-6 rounded-xl text-center"
-                    style={{
-                      backgroundColor: 'var(--color-bg-tertiary)',
-                      border: '1px solid var(--color-border)',
-                    }}
-                  >
-                    <Sparkles className="w-8 h-8 text-neutral-400 mx-auto mb-3" />
-                    <p className="text-neutral-600 dark:text-neutral-400">
-                      {language === 'ka'
-                        ? 'შეძლებთ ბიუჯეტზე მოლაპარაკებას პროფესიონალებთან'
-                        : 'You can discuss the budget with professionals who submit proposals'}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Section 5: Media */}
-          <div
-            ref={sectionRefs.media}
-            className={`rounded-2xl overflow-hidden transition-all duration-300 ${!formData.category ? 'opacity-50 pointer-events-none' : ''}`}
-            style={{
-              backgroundColor: 'var(--color-bg-secondary)',
-              border: '1px solid var(--color-border)',
-            }}
-          >
-            <div className="px-5">
-              <SectionHeader
-                id="media"
-                number={5}
-                title={language === 'ka' ? 'ფოტოები' : 'Photos'}
-                subtitle={
-                  mediaFiles.length > 0
-                    ? `${mediaFiles.length} ${language === 'ka' ? 'ფაილი დამატებულია' : 'files added'}`
-                    : existingMedia.length > 0
-                    ? `${existingMedia.length} ${language === 'ka' ? 'არსებული ფაილი' : 'existing files'}`
-                    : (language === 'ka' ? 'ატვირთეთ ფოტოები' : 'Upload photos')
-                }
-                isComplete={mediaFiles.length > 0 || existingMedia.length > 0}
-                isRequired={false}
-              />
-            </div>
-
-            <div className={`overflow-hidden transition-all duration-500 ease-out ${expandedSections.has('media') ? 'max-h-[1500px] opacity-100' : 'max-h-0 opacity-0'}`}>
-              <div className="px-5 pb-6 space-y-4">
-                {/* Existing Media */}
-                {isEditMode && existingMedia.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                      {language === 'ka' ? 'არსებული ფაილები' : 'Current files'} ({existingMedia.length})
-                    </p>
-                    <div className="grid grid-cols-4 gap-2">
-                      {existingMedia.map((media, idx) => (
-                        <div key={idx} className="relative aspect-square rounded-xl overflow-hidden">
-                          <img
-                            src={storage.getFileUrl(media.url)}
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Upload Area */}
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  className="relative p-8 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200 hover:border-neutral-400 dark:hover:border-neutral-500 group"
-                  style={{ borderColor: 'var(--color-border)' }}
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*,video/*"
-                    multiple
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-                  <div className="text-center">
-                    <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Camera className="w-7 h-7 text-neutral-400" />
-                    </div>
-                    <p className="text-neutral-900 dark:text-white font-medium mb-1">
-                      {language === 'ka' ? 'ატვირთეთ ფოტოები' : 'Upload photos'}
-                    </p>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                      PNG, JPG, MP4
-                    </p>
-                  </div>
                 </div>
+              </section>
 
-                {/* New Files Preview */}
-                {mediaFiles.length > 0 && (
-                  <div className="grid grid-cols-4 gap-2">
-                    {mediaFiles.map((media, idx) => (
-                      <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group">
-                        {media.type === 'image' ? (
-                          <img src={media.preview} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <video src={media.preview} className="w-full h-full object-cover" />
-                        )}
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <button
-                            onClick={() => removeMediaFile(idx)}
-                            className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30"
-                          >
-                            <Trash2 className="w-4 h-4 text-white" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              {/* Error */}
+              {error && (
+                <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-3 animate-fade-in">
+                  <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                </div>
+              )}
+
+              {/* Submit Button - Fixed at bottom */}
+              <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-[var(--color-bg-primary)]/90 backdrop-blur-xl border-t border-[var(--color-border-subtle)]">
+                <div className="max-w-2xl mx-auto">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || !canSubmit()}
+                    className="w-full py-4 px-6 bg-[var(--color-accent)] text-white rounded-2xl font-medium text-lg transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-[0_8px_30px_rgba(13,150,104,0.3)] hover:-translate-y-0.5 disabled:hover:shadow-none disabled:hover:translate-y-0 flex items-center justify-center gap-2"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        <span>
+                          {uploadProgress > 0 ? `${uploadProgress}%` : (locale === 'ka' ? 'მიმდინარეობს...' : 'Processing...')}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span>
+                          {isEditMode
+                            ? (locale === 'ka' ? 'შენახვა' : 'Save Changes')
+                            : (locale === 'ka' ? 'გამოქვეყნება' : 'Publish Job')}
+                        </span>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </>
+                    )}
+                  </button>
+
+                  {!canSubmit() && (
+                    <p className="text-center text-sm text-[var(--color-text-tertiary)] mt-2">
+                      {!selectedCategory
+                        ? (locale === 'ka' ? 'აირჩიე კატეგორია' : 'Select a category')
+                        : totalSpecialties === 0
+                        ? (locale === 'ka' ? 'აირჩიე სპეციალობა' : 'Select a specialty')
+                        : !formData.title
+                        ? (locale === 'ka' ? 'დაამატე სათაური' : 'Add a title')
+                        : !formData.description
+                        ? (locale === 'ka' ? 'დაამატე აღწერა' : 'Add a description')
+                        : !formData.propertyType
+                        ? (locale === 'ka' ? 'აირჩიე ობიექტის ტიპი' : 'Select property type')
+                        : (locale === 'ka' ? 'შეავსე ყველა სავალდებულო ველი' : 'Fill all required fields')}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
+            </form>
           </div>
         </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="mt-6 p-4 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-rose-700 dark:text-rose-300">{error}</p>
-          </div>
-        )}
-      </div>
-
-      {/* Fixed Bottom Submit Button */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 p-4 backdrop-blur-xl border-t" style={{ backgroundColor: 'rgba(var(--color-bg-secondary-rgb), 0.9)', borderColor: 'var(--color-border)' }}>
-        <div className="max-w-3xl mx-auto">
-          <button
-            onClick={handleSubmit}
-            disabled={!canSubmit() || isSubmitting}
-            className={`
-              w-full flex items-center justify-center gap-3 py-4 rounded-xl font-semibold text-base transition-all duration-300
-              ${canSubmit() && !isSubmitting
-                ? `bg-gradient-to-r ${categoryConfig?.gradient || 'from-forest-500 to-forest-600'} text-white shadow-xl hover:shadow-2xl hover:scale-[1.01] active:scale-[0.99]`
-                : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-not-allowed'
-              }
-            `}
-          >
-            {isSubmitting ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                {uploadProgress > 0 && <span>{uploadProgress}%</span>}
-              </>
-            ) : (
-              <>
-                <Send className="w-5 h-5" />
-                {isEditMode
-                  ? (language === 'ka' ? 'ცვლილებების შენახვა' : 'Save Changes')
-                  : (language === 'ka' ? 'გამოქვეყნება' : 'Publish Job')}
-              </>
-            )}
-          </button>
-
-          {!canSubmit() && (
-            <p className="text-center text-xs text-neutral-500 dark:text-neutral-400 mt-2">
-              {!formData.category ? (language === 'ka' ? 'აირჩიეთ კატეგორია' : 'Select a category') :
-               (selectedSpecialties.length === 0 && customSpecialties.length === 0) ? (language === 'ka' ? 'აირჩიეთ სპეციალობა' : 'Select a specialty') :
-               !formData.title ? (language === 'ka' ? 'დაამატეთ სათაური' : 'Add a title') :
-               !formData.description ? (language === 'ka' ? 'დაამატეთ აღწერა' : 'Add a description') :
-               !formData.propertyType ? (language === 'ka' ? 'აირჩიეთ ქონების ტიპი' : 'Select property type') :
-               (language === 'ka' ? 'შეავსეთ ყველა სავალდებულო ველი' : 'Fill all required fields')}
-            </p>
-          )}
-        </div>
-      </div>
+      </main>
     </div>
   );
 }
