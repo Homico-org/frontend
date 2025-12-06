@@ -678,28 +678,10 @@ function BrowseContent() {
 
   const displayCount = isPro ? totalJobsCount : totalCount;
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!isAuthLoading && !isAuthenticated) {
-      router.replace('/login');
-    }
-  }, [isAuthLoading, isAuthenticated, router]);
-
   if (isAuthLoading) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
         <Header />
-        <div className="flex items-center justify-center py-20">
-          <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-        </div>
-      </div>
-    );
-  }
-
-  // Show nothing while redirecting to login
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
         <div className="flex items-center justify-center py-20">
           <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
         </div>

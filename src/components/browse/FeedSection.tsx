@@ -307,6 +307,7 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
                     likeCount: likeStates[item._id]?.likeCount ?? item.likeCount,
                   }}
                   onLike={() => handleLike(item._id)}
+                  isAuthenticated={isAuthenticated}
                 />
               </div>
             ))}

@@ -9,9 +9,10 @@ import { useState, useCallback } from 'react';
 interface FeedCardProps {
   item: FeedItem;
   onLike?: () => void;
+  isAuthenticated?: boolean;
 }
 
-export default function FeedCard({ item, onLike }: FeedCardProps) {
+export default function FeedCard({ item, onLike, isAuthenticated = false }: FeedCardProps) {
   const { locale } = useLanguage();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [sliderPosition, setSliderPosition] = useState(50);
@@ -226,16 +227,6 @@ export default function FeedCard({ item, onLike }: FeedCardProps) {
           </div>
         )}
 
-        {/* Like Button */}
-        <div className="absolute top-3 right-3 z-10">
-          <LikeButton
-            isLiked={item.isLiked}
-            likeCount={item.likeCount}
-            onToggle={onLike || (() => {})}
-            variant="overlay"
-            size="md"
-          />
-        </div>
       </div>
 
       {/* Content Section */}
@@ -329,13 +320,17 @@ export default function FeedCard({ item, onLike }: FeedCardProps) {
           {/* Spacer */}
           <div className="flex-1" />
 
-          {/* Like Count */}
-          <div className="flex items-center gap-1.5 text-[var(--color-text-tertiary)]">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-            </svg>
-            <span className="text-[12px] font-semibold">{item.likeCount}</span>
-          </div>
+          {/* Like Button - Only for authenticated users */}
+          {isAuthenticated && (
+            <LikeButton
+              isLiked={item.isLiked}
+              likeCount={item.likeCount}
+              onToggle={onLike || (() => {})}
+              variant="minimal"
+              size="sm"
+              showCount={true}
+            />
+          )}
         </div>
       </div>
     </div>

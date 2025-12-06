@@ -255,19 +255,46 @@ export default function PostJobPage() {
     setReferences(prev => prev.filter((_, i) => i !== index));
   };
 
-  const canSubmit = (): boolean => {
+  // Validation state for each field
+  const getValidationState = () => {
     const hasCategory = !!selectedCategory;
     const hasSpecialty = selectedSubcategories.length > 0 || customSpecialties.length > 0;
-    const hasTitle = !!formData.title;
-    const hasDescription = !!formData.description;
-    const hasPropertyType = !!formData.propertyType && (formData.propertyType !== 'other' || !!formData.propertyTypeOther);
+    const hasTitle = !!formData.title.trim();
+    const hasDescription = !!formData.description.trim();
+    const hasPropertyType = !!formData.propertyType && (formData.propertyType !== 'other' || !!formData.propertyTypeOther.trim());
 
     let budgetValid = true;
     if (formData.budgetType === 'fixed') budgetValid = !!formData.budgetAmount;
     if (formData.budgetType === 'range') budgetValid = !!formData.budgetMin && !!formData.budgetMax;
     if (formData.budgetType === 'per_sqm') budgetValid = !!formData.pricePerUnit;
 
-    return hasCategory && hasSpecialty && hasTitle && hasDescription && hasPropertyType && budgetValid;
+    return {
+      category: hasCategory,
+      specialty: hasSpecialty,
+      title: hasTitle,
+      description: hasDescription,
+      propertyType: hasPropertyType,
+      budget: budgetValid,
+    };
+  };
+
+  const validation = getValidationState();
+  const completedFields = Object.values(validation).filter(Boolean).length;
+  const totalFields = Object.keys(validation).length;
+
+  const canSubmit = (): boolean => {
+    return Object.values(validation).every(Boolean);
+  };
+
+  // Get first missing field for display
+  const getFirstMissingField = () => {
+    if (!validation.category) return { key: 'category', label: locale === 'ka' ? 'კატეგორია' : 'Category' };
+    if (!validation.specialty) return { key: 'specialty', label: locale === 'ka' ? 'სპეციალობა' : 'Specialty' };
+    if (!validation.title) return { key: 'title', label: locale === 'ka' ? 'სათაური' : 'Title' };
+    if (!validation.description) return { key: 'description', label: locale === 'ka' ? 'აღწერა' : 'Description' };
+    if (!validation.propertyType) return { key: 'propertyType', label: locale === 'ka' ? 'ობიექტის ტიპი' : 'Property type' };
+    if (!validation.budget) return { key: 'budget', label: locale === 'ka' ? 'ბიუჯეტი' : 'Budget' };
+    return null;
   };
 
   const handleSubmit = async () => {
@@ -453,13 +480,28 @@ export default function PostJobPage() {
               {/* Section 1: Category & Specializations */}
               <section className="mb-10">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-[var(--color-accent)] flex items-center justify-center text-white font-bold">
-                    1
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${
+                    validation.category && validation.specialty
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-[var(--color-accent)] text-white'
+                  }`}>
+                    {validation.category && validation.specialty ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : '1'}
                   </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-                      {locale === 'ka' ? 'რა გჭირდება?' : 'What do you need?'}
-                    </h2>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
+                        {locale === 'ka' ? 'რა გჭირდება?' : 'What do you need?'}
+                      </h2>
+                      {!validation.category && (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                          {locale === 'ka' ? 'სავალდებულო' : 'Required'}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-sm text-[var(--color-text-tertiary)]">
                       {locale === 'ka' ? 'აირჩიე კატეგორია და სპეციალობა' : 'Select category and specialty'}
                     </p>
@@ -482,16 +524,29 @@ export default function PostJobPage() {
               <section className="mb-10">
                 <div className="flex items-center gap-3 mb-6">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${
-                    totalSpecialties > 0
-                      ? 'bg-[var(--color-accent)] text-white'
-                      : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)]'
+                    validation.title && validation.description && validation.propertyType
+                      ? 'bg-emerald-500 text-white'
+                      : totalSpecialties > 0
+                        ? 'bg-[var(--color-accent)] text-white'
+                        : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)]'
                   }`}>
-                    2
+                    {validation.title && validation.description && validation.propertyType ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : '2'}
                   </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-                      {locale === 'ka' ? 'პროექტის დეტალები' : 'Project Details'}
-                    </h2>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
+                        {locale === 'ka' ? 'პროექტის დეტალები' : 'Project Details'}
+                      </h2>
+                      {totalSpecialties > 0 && (!validation.title || !validation.description || !validation.propertyType) && (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                          {locale === 'ka' ? 'შეავსე' : 'Fill in'}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-sm text-[var(--color-text-tertiary)]">
                       {locale === 'ka' ? 'აღწერე რა გინდა გაკეთდეს' : 'Describe what needs to be done'}
                     </p>
@@ -501,36 +556,77 @@ export default function PostJobPage() {
                 <div className="space-y-5 p-5 rounded-2xl bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)]">
                   {/* Title */}
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                      {locale === 'ka' ? 'პროექტის სათაური' : 'Project Title'} <span className="text-red-500">*</span>
+                    <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                      <span>{locale === 'ka' ? 'პროექტის სათაური' : 'Project Title'}</span>
+                      {validation.title ? (
+                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500">
+                          <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </span>
+                      ) : (
+                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/30">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                        </span>
+                      )}
                     </label>
                     <input
                       type="text"
                       value={formData.title}
                       onChange={(e) => updateFormData('title', e.target.value)}
                       placeholder={locale === 'ka' ? 'მაგ: 2 ოთახიანი ბინის რემონტი' : 'e.g. 2-bedroom apartment renovation'}
-                      className="w-full px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
+                      className={`w-full px-4 py-3 bg-[var(--color-bg-primary)] border rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 transition-all ${
+                        validation.title
+                          ? 'border-emerald-500/30 focus:border-emerald-500 focus:ring-emerald-500/20'
+                          : 'border-[var(--color-border-subtle)] focus:border-[var(--color-accent)] focus:ring-[var(--color-accent-soft)]'
+                      }`}
                     />
                   </div>
 
                   {/* Description */}
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                      {locale === 'ka' ? 'აღწერა' : 'Description'} <span className="text-red-500">*</span>
+                    <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                      <span>{locale === 'ka' ? 'აღწერა' : 'Description'}</span>
+                      {validation.description ? (
+                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500">
+                          <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </span>
+                      ) : (
+                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/30">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                        </span>
+                      )}
                     </label>
                     <textarea
                       value={formData.description}
                       onChange={(e) => updateFormData('description', e.target.value)}
                       rows={4}
                       placeholder={locale === 'ka' ? 'დეტალურად აღწერე რა გინდა გაკეთდეს...' : 'Describe what you need in detail...'}
-                      className="w-full px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all resize-none"
+                      className={`w-full px-4 py-3 bg-[var(--color-bg-primary)] border rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 transition-all resize-none ${
+                        validation.description
+                          ? 'border-emerald-500/30 focus:border-emerald-500 focus:ring-emerald-500/20'
+                          : 'border-[var(--color-border-subtle)] focus:border-[var(--color-accent)] focus:ring-[var(--color-accent-soft)]'
+                      }`}
                     />
                   </div>
 
                   {/* Property Type */}
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-3">
-                      {locale === 'ka' ? 'ობიექტის ტიპი' : 'Property Type'} <span className="text-red-500">*</span>
+                    <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] mb-3">
+                      <span>{locale === 'ka' ? 'ობიექტის ტიპი' : 'Property Type'}</span>
+                      {validation.propertyType ? (
+                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500">
+                          <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </span>
+                      ) : (
+                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/30">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                        </span>
+                      )}
                     </label>
                     <div className="grid grid-cols-5 gap-2">
                       {PROPERTY_TYPES.map((type) => (
@@ -635,16 +731,29 @@ export default function PostJobPage() {
               <section className="mb-10">
                 <div className="flex items-center gap-3 mb-6">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${
-                    formData.title && formData.description && formData.propertyType
-                      ? 'bg-[var(--color-accent)] text-white'
-                      : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)]'
+                    validation.budget
+                      ? 'bg-emerald-500 text-white'
+                      : validation.title && validation.description && validation.propertyType
+                        ? 'bg-[var(--color-accent)] text-white'
+                        : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)]'
                   }`}>
-                    3
+                    {validation.budget ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : '3'}
                   </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-                      {locale === 'ka' ? 'ბიუჯეტი' : 'Budget'}
-                    </h2>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
+                        {locale === 'ka' ? 'ბიუჯეტი' : 'Budget'}
+                      </h2>
+                      {validation.title && validation.description && validation.propertyType && !validation.budget && (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                          {locale === 'ka' ? 'მიუთითე' : 'Specify'}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-sm text-[var(--color-text-tertiary)]">
                       {locale === 'ka' ? 'რამდენის დახარჯვა გეგმავ?' : 'How much are you planning to spend?'}
                     </p>
@@ -930,59 +1039,85 @@ export default function PostJobPage() {
                 </div>
               )}
 
-              {/* Submit Button - Fixed at bottom */}
-              <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-[var(--color-bg-primary)]/90 backdrop-blur-xl border-t border-[var(--color-border-subtle)]">
-                <div className="max-w-2xl mx-auto">
-                  <button
-                    type="submit"
-                    disabled={isSubmitting || !canSubmit()}
-                    className="w-full py-4 px-6 bg-[var(--color-accent)] text-white rounded-2xl font-medium text-lg transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-[0_8px_30px_rgba(13,150,104,0.3)] hover:-translate-y-0.5 disabled:hover:shadow-none disabled:hover:translate-y-0 flex items-center justify-center gap-2"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                        </svg>
-                        <span>
-                          {uploadProgress > 0 ? `${uploadProgress}%` : (locale === 'ka' ? 'მიმდინარეობს...' : 'Processing...')}
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <span>
-                          {isEditMode
-                            ? (locale === 'ka' ? 'შენახვა' : 'Save Changes')
-                            : (locale === 'ka' ? 'გამოქვეყნება' : 'Publish Job')}
-                        </span>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                        </svg>
-                      </>
-                    )}
-                  </button>
-
-                  {!canSubmit() && (
-                    <p className="text-center text-sm text-[var(--color-text-tertiary)] mt-2">
-                      {!selectedCategory
-                        ? (locale === 'ka' ? 'აირჩიე კატეგორია' : 'Select a category')
-                        : totalSpecialties === 0
-                        ? (locale === 'ka' ? 'აირჩიე სპეციალობა' : 'Select a specialty')
-                        : !formData.title
-                        ? (locale === 'ka' ? 'დაამატე სათაური' : 'Add a title')
-                        : !formData.description
-                        ? (locale === 'ka' ? 'დაამატე აღწერა' : 'Add a description')
-                        : !formData.propertyType
-                        ? (locale === 'ka' ? 'აირჩიე ობიექტის ტიპი' : 'Select property type')
-                        : (locale === 'ka' ? 'შეავსე ყველა სავალდებულო ველი' : 'Fill all required fields')}
-                    </p>
-                  )}
-                </div>
-              </div>
             </form>
           </div>
         </div>
       </main>
+
+      {/* Submit Button - Fixed at bottom, compact design */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--color-bg-primary)]/95 backdrop-blur-xl border-t border-[var(--color-border-subtle)] shadow-[0_-2px_10px_rgba(0,0,0,0.06)]">
+        <div className="max-w-2xl mx-auto px-4 py-3">
+          <div className="flex items-center gap-3">
+            {/* Progress indicator - compact */}
+            {!canSubmit() && (
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-[var(--color-bg-tertiary)] flex items-center justify-center relative">
+                  <svg className="w-8 h-8 -rotate-90">
+                    <circle
+                      cx="16"
+                      cy="16"
+                      r="12"
+                      fill="none"
+                      stroke="var(--color-border)"
+                      strokeWidth="3"
+                    />
+                    <circle
+                      cx="16"
+                      cy="16"
+                      r="12"
+                      fill="none"
+                      stroke="#10b981"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeDasharray={`${(completedFields / totalFields) * 75.4} 75.4`}
+                    />
+                  </svg>
+                  <span className="absolute text-[10px] font-bold text-[var(--color-text-secondary)]">
+                    {completedFields}/{totalFields}
+                  </span>
+                </div>
+                <span className="text-xs text-amber-600 dark:text-amber-400 font-medium hidden sm:block">
+                  {getFirstMissingField()?.label}
+                </span>
+              </div>
+            )}
+
+            {/* Submit button */}
+            <button
+              type="button"
+              onClick={() => {
+                const form = document.querySelector('form');
+                if (form) form.requestSubmit();
+              }}
+              disabled={isSubmitting || !canSubmit()}
+              className={`flex-1 py-3 px-5 rounded-xl font-medium text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
+                canSubmit()
+                  ? 'bg-[var(--color-accent)] text-white hover:shadow-[0_4px_20px_rgba(13,150,104,0.3)]'
+                  : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] cursor-not-allowed'
+              }`}
+            >
+              {isSubmitting ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  <span>{uploadProgress > 0 ? `${uploadProgress}%` : (locale === 'ka' ? 'მიმდინარეობს...' : 'Processing...')}</span>
+                </>
+              ) : canSubmit() ? (
+                <>
+                  <span>{isEditMode ? (locale === 'ka' ? 'შენახვა' : 'Save') : (locale === 'ka' ? 'გამოქვეყნება' : 'Publish')}</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </>
+              ) : (
+                <span>{locale === 'ka' ? 'შეავსე ველები' : 'Fill required fields'}</span>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

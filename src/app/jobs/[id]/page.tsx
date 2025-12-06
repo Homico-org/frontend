@@ -945,31 +945,33 @@ export default function JobDetailPage() {
             <div className="lg:col-span-1 order-first lg:order-last">
               <div className="lg:sticky lg:top-24 space-y-3 sm:space-y-4">
                 {/* Client Card */}
-                <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
-                  <div className="flex items-center justify-between mb-3 sm:mb-4">
-                    <p className="text-xs uppercase tracking-wider font-medium" style={{ color: 'var(--color-text-muted)' }}>მაძიებელი</p>
-                    <span className="text-[10px] px-2 py-0.5 rounded-md font-medium" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-tertiary)' }}>
-                      {job.clientId.accountType === 'organization' ? 'კომპანია' : 'ფიზიკური პირი'}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {job.clientId.avatar ? (
-                      <img src={job.clientId.avatar} alt="" className="w-11 sm:w-12 h-11 sm:h-12 rounded-xl object-cover" />
-                    ) : (
-                      <div className="w-11 sm:w-12 h-11 sm:h-12 rounded-xl flex items-center justify-center text-base sm:text-lg font-semibold" style={{ backgroundColor: 'var(--color-accent-soft)', color: 'var(--color-accent)' }}>
-                        {job.clientId.name[0].toUpperCase()}
-                      </div>
-                    )}
-                    <div className="min-w-0">
-                      <p className="font-medium truncate text-sm sm:text-base" style={{ color: 'var(--color-text-primary)' }}>
-                        {job.clientId.accountType === 'organization' ? job.clientId.companyName || job.clientId.name : job.clientId.name}
-                      </p>
-                      {job.clientId.city && (
-                        <p className="text-sm truncate" style={{ color: 'var(--color-text-muted)' }}>{job.clientId.city}</p>
+                {job.clientId && (
+                  <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
+                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                      <p className="text-xs uppercase tracking-wider font-medium" style={{ color: 'var(--color-text-muted)' }}>მაძიებელი</p>
+                      <span className="text-[10px] px-2 py-0.5 rounded-md font-medium" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-tertiary)' }}>
+                        {job.clientId.accountType === 'organization' ? 'კომპანია' : 'ფიზიკური პირი'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {job.clientId.avatar ? (
+                        <img src={job.clientId.avatar} alt="" className="w-11 sm:w-12 h-11 sm:h-12 rounded-xl object-cover" />
+                      ) : (
+                        <div className="w-11 sm:w-12 h-11 sm:h-12 rounded-xl flex items-center justify-center text-base sm:text-lg font-semibold" style={{ backgroundColor: 'var(--color-accent-soft)', color: 'var(--color-accent)' }}>
+                          {job.clientId.name?.[0]?.toUpperCase() || '?'}
+                        </div>
                       )}
+                      <div className="min-w-0">
+                        <p className="font-medium truncate text-sm sm:text-base" style={{ color: 'var(--color-text-primary)' }}>
+                          {job.clientId.accountType === 'organization' ? job.clientId.companyName || job.clientId.name : job.clientId.name}
+                        </p>
+                        {job.clientId.city && (
+                          <p className="text-sm truncate" style={{ color: 'var(--color-text-muted)' }}>{job.clientId.city}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* Category & Quick Info - Combined on mobile */}
                 <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4">

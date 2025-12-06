@@ -2,20 +2,21 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useViewMode } from '@/contexts/ViewModeContext';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useViewMode } from '@/contexts/ViewModeContext';
 import Link from 'next/link';
 import { useState } from 'react';
 import Avatar from './Avatar';
 
 export default function Header() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { viewMode, toggleViewMode } = useViewMode();
   const { unreadCount } = useNotifications();
   const { theme, toggleTheme } = useTheme();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   return (
     <header
@@ -117,7 +118,7 @@ export default function Header() {
                     <span className="hidden sm:inline text-xs font-medium transition-colors duration-300"
                       style={{ color: viewMode === 'client' ? '#f59e0b' : '#34d399' }}
                     >
-                      {viewMode === 'client' ? 'მაძიებელი' : 'სპეცი'}
+                      {viewMode === 'client' ? 'იპოვე სამუშაო' : 'იპოვე სპეციალისტი'}
                     </span>
                   </button>
                 )}
@@ -399,6 +400,33 @@ export default function Header() {
               </div>
             ) : (
               <div className="flex items-center gap-2 sm:gap-3">
+                {/* Find Work Button for non-authenticated users */}
+                <button
+                  onClick={() => setShowLoginModal(true)}
+                  className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 touch-manipulation"
+                  style={{
+                    backgroundColor: 'rgba(52, 211, 153, 0.15)',
+                    border: '1px solid rgba(52, 211, 153, 0.3)'
+                  }}
+                >
+                  <div className="relative w-8 h-4 rounded-full transition-colors duration-300"
+                    style={{ backgroundColor: 'rgba(52, 211, 153, 0.3)' }}
+                  >
+                    <div
+                      className="absolute top-0.5 w-3 h-3 rounded-full transition-all duration-300 shadow-sm"
+                      style={{
+                        backgroundColor: '#34d399',
+                        left: 'calc(100% - 14px)'
+                      }}
+                    />
+                  </div>
+                  <span className="text-xs font-medium transition-colors duration-300"
+                    style={{ color: '#34d399' }}
+                  >
+                    {locale === 'ka' ? 'იპოვე სამუშაო' : 'Find Work'}
+                  </span>
+                </button>
+
                 {/* Theme Toggle for non-authenticated users - Green theme */}
                 <button
                   onClick={toggleTheme}
@@ -482,6 +510,111 @@ export default function Header() {
           </nav>
         </div>
       </div>
+
+      {/* Login Modal for "Find Work" button */}
+      {showLoginModal && (
+        <>
+          <div
+            className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm animate-fade-in"
+            onClick={() => setShowLoginModal(false)}
+          />
+          <div className="fixed inset-0 z-[101] flex items-center justify-center p-4">
+            <div
+              className="relative w-full max-w-md rounded-2xl p-6 sm:p-8 animate-scale-in"
+              style={{
+                backgroundColor: 'var(--color-bg-primary)',
+                border: '1px solid var(--color-border)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close button */}
+              <button
+                onClick={() => setShowLoginModal(false)}
+                className="absolute top-4 right-4 p-2 rounded-lg transition-colors hover:bg-[var(--color-bg-tertiary)]"
+              >
+                <svg className="w-5 h-5 text-[var(--color-text-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              {/* Icon */}
+              <div className="flex justify-center mb-6">
+                <div
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(52, 211, 153, 0.2) 0%, rgba(16, 185, 129, 0.1) 100%)',
+                    border: '1px solid rgba(52, 211, 153, 0.3)',
+                  }}
+                >
+                  <svg className="w-8 h-8 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Title */}
+              <h2
+                className="text-xl sm:text-2xl font-semibold text-center mb-2"
+                style={{ color: 'var(--color-text-primary)' }}
+              >
+                {locale === 'ka' ? 'გახდი პროფესიონალი' : 'Become a Professional'}
+              </h2>
+
+              {/* Description */}
+              <p
+                className="text-center mb-6"
+                style={{ color: 'var(--color-text-secondary)' }}
+              >
+                {locale === 'ka'
+                  ? 'სამუშაოს საპოვნელად გაიარე რეგისტრაცია პროფესიონალად'
+                  : 'Register as a professional to find work opportunities'}
+              </p>
+
+              {/* Buttons */}
+              <div className="space-y-3">
+                <Link
+                  href="/register?role=pro"
+                  onClick={() => setShowLoginModal(false)}
+                  className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl text-white font-medium transition-all duration-200 hover:shadow-lg"
+                  style={{
+                    background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                  }}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  </svg>
+                  {locale === 'ka' ? 'რეგისტრაცია პროფესიონალად' : 'Register as Professional'}
+                </Link>
+
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-px bg-[var(--color-border)]" />
+                  <span className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+                    {locale === 'ka' ? 'ან' : 'or'}
+                  </span>
+                  <div className="flex-1 h-px bg-[var(--color-border)]" />
+                </div>
+
+                <Link
+                  href="/login"
+                  onClick={() => setShowLoginModal(false)}
+                  className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl font-medium transition-all duration-200"
+                  style={{
+                    backgroundColor: 'var(--color-bg-secondary)',
+                    color: 'var(--color-text-primary)',
+                    border: '1px solid var(--color-border)',
+                  }}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                  </svg>
+                  {locale === 'ka' ? 'შესვლა არსებული ანგარიშით' : 'Login with existing account'}
+                </Link>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </header>
   );
 }

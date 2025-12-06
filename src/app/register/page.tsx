@@ -131,6 +131,53 @@ function RegisterContent() {
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
+  // Validation state for progress tracking
+  const getValidationState = () => {
+    const hasFirstName = !!formData.firstName.trim();
+    const hasLastName = !!formData.lastName.trim();
+    const hasIdNumber = formData.idNumber.length === 11;
+    const hasPhone = !!formData.phone.trim();
+    const hasPassword = formData.password.length >= 6;
+    const hasPasswordMatch = formData.password === formData.confirmPassword && hasPassword;
+    const hasCategory = formData.role === 'client' || !!formData.selectedCategory;
+    const hasAvatar = formData.role === 'client' || !!avatarPreview;
+
+    return {
+      firstName: hasFirstName,
+      lastName: hasLastName,
+      idNumber: hasIdNumber,
+      phone: hasPhone,
+      password: hasPassword,
+      passwordMatch: hasPasswordMatch,
+      category: hasCategory,
+      avatar: hasAvatar,
+    };
+  };
+
+  const validation = getValidationState();
+  const requiredFieldsForRole = formData.role === 'pro'
+    ? ['firstName', 'lastName', 'idNumber', 'phone', 'password', 'passwordMatch', 'category', 'avatar'] as const
+    : ['firstName', 'lastName', 'idNumber', 'phone', 'password', 'passwordMatch'] as const;
+
+  const completedFields = requiredFieldsForRole.filter(field => validation[field]).length;
+  const totalFields = requiredFieldsForRole.length;
+
+  const canSubmitForm = () => {
+    return requiredFieldsForRole.every(field => validation[field]);
+  };
+
+  const getFirstMissingField = () => {
+    if (!validation.firstName) return { key: 'firstName', label: locale === 'ka' ? 'სახელი' : 'First name' };
+    if (!validation.lastName) return { key: 'lastName', label: locale === 'ka' ? 'გვარი' : 'Last name' };
+    if (!validation.idNumber) return { key: 'idNumber', label: locale === 'ka' ? 'პირადი ნომერი' : 'ID number' };
+    if (!validation.phone) return { key: 'phone', label: locale === 'ka' ? 'ტელეფონი' : 'Phone' };
+    if (!validation.password) return { key: 'password', label: locale === 'ka' ? 'პაროლი' : 'Password' };
+    if (!validation.passwordMatch) return { key: 'passwordMatch', label: locale === 'ka' ? 'პაროლის დადასტურება' : 'Password confirmation' };
+    if (formData.role === 'pro' && !validation.category) return { key: 'category', label: locale === 'ka' ? 'სპეციალობა' : 'Specialty' };
+    if (formData.role === 'pro' && !validation.avatar) return { key: 'avatar', label: locale === 'ka' ? 'პროფილის ფოტო' : 'Profile photo' };
+    return null;
+  };
+
   useEffect(() => {
     setPhoneCountry(country as CountryCode);
   }, [country]);
@@ -613,7 +660,7 @@ function RegisterContent() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 pb-40">
         {/* Title */}
         <div className="text-center mb-10">
           <h1 className="text-3xl sm:text-4xl font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
@@ -730,10 +777,34 @@ function RegisterContent() {
           {/* Profile Picture Upload - Only for Pro */}
           {formData.role === 'pro' && (
             <section>
-              <h2 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-text-primary)' }}>
-                {locale === 'ka' ? 'პროფილის ფოტო' : 'Profile Photo'} *
-              </h2>
-              <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm transition-all duration-300 ${
+                  validation.avatar
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
+                }`}>
+                  {validation.avatar ? (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                    {locale === 'ka' ? 'პროფილის ფოტო' : 'Profile Photo'}
+                  </h2>
+                  {!validation.avatar && (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                      {locale === 'ka' ? 'სავალდებულო' : 'Required'}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <p className="text-sm mb-4 ml-11" style={{ color: 'var(--color-text-secondary)' }}>
                 {locale === 'ka' ? 'ატვირთე პროფესიონალური ფოტო კლიენტებისთვის' : 'Upload a professional photo for clients to see'}
               </p>
 
@@ -835,14 +906,38 @@ function RegisterContent() {
 
           {/* Personal Info */}
           <section>
-            <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text-primary)' }}>
-              {locale === 'ka' ? 'პირადი ინფორმაცია' : 'Personal Information'}
-            </h2>
+            <div className="flex items-center gap-3 mb-4">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm transition-all duration-300 ${
+                validation.firstName && validation.lastName && validation.idNumber && validation.phone
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
+              }`}>
+                {validation.firstName && validation.lastName && validation.idNumber && validation.phone ? (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : '1'}
+              </div>
+              <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                {locale === 'ka' ? 'პირადი ინფორმაცია' : 'Personal Information'}
+              </h2>
+            </div>
             <div className="grid sm:grid-cols-2 gap-4">
               {/* First Name */}
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-                  {locale === 'ka' ? 'სახელი' : 'First Name'} *
+                <label className="flex items-center gap-2 text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+                  <span>{locale === 'ka' ? 'სახელი' : 'First Name'}</span>
+                  {validation.firstName ? (
+                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500">
+                      <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/30">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    </span>
+                  )}
                 </label>
                 <input
                   type="text"
@@ -862,8 +957,19 @@ function RegisterContent() {
 
               {/* Last Name */}
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-                  {locale === 'ka' ? 'გვარი' : 'Last Name'} *
+                <label className="flex items-center gap-2 text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+                  <span>{locale === 'ka' ? 'გვარი' : 'Last Name'}</span>
+                  {validation.lastName ? (
+                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500">
+                      <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/30">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    </span>
+                  )}
                 </label>
                 <input
                   type="text"
@@ -883,8 +989,19 @@ function RegisterContent() {
 
               {/* ID Number */}
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-                  {locale === 'ka' ? 'პირადი ნომერი' : 'ID Number'} *
+                <label className="flex items-center gap-2 text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+                  <span>{locale === 'ka' ? 'პირადი ნომერი' : 'ID Number'}</span>
+                  {validation.idNumber ? (
+                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500">
+                      <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/30">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    </span>
+                  )}
                 </label>
                 <input
                   type="text"
@@ -909,8 +1026,19 @@ function RegisterContent() {
 
               {/* Phone */}
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-                  {locale === 'ka' ? 'ტელეფონი' : 'Phone'} *
+                <label className="flex items-center gap-2 text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+                  <span>{locale === 'ka' ? 'ტელეფონი' : 'Phone'}</span>
+                  {validation.phone ? (
+                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500">
+                      <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/30">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    </span>
+                  )}
                 </label>
                 <div className="flex gap-2">
                   <div
@@ -1021,13 +1149,37 @@ function RegisterContent() {
 
           {/* Password */}
           <section>
-            <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text-primary)' }}>
-              {locale === 'ka' ? 'პაროლი' : 'Password'}
-            </h2>
+            <div className="flex items-center gap-3 mb-4">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm transition-all duration-300 ${
+                validation.password && validation.passwordMatch
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
+              }`}>
+                {validation.password && validation.passwordMatch ? (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : '2'}
+              </div>
+              <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                {locale === 'ka' ? 'პაროლი' : 'Password'}
+              </h2>
+            </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-                  {locale === 'ka' ? 'პაროლი' : 'Password'} *
+                <label className="flex items-center gap-2 text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+                  <span>{locale === 'ka' ? 'პაროლი' : 'Password'}</span>
+                  {validation.password ? (
+                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500">
+                      <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/30">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    </span>
+                  )}
                 </label>
                 <div className="relative">
                   <input
@@ -1069,8 +1221,19 @@ function RegisterContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-                  {locale === 'ka' ? 'გაიმეორეთ პაროლი' : 'Confirm Password'} *
+                <label className="flex items-center gap-2 text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+                  <span>{locale === 'ka' ? 'გაიმეორეთ პაროლი' : 'Confirm Password'}</span>
+                  {validation.passwordMatch ? (
+                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500">
+                      <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/30">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    </span>
+                  )}
                 </label>
                 <div className="relative">
                   <input
@@ -1116,10 +1279,30 @@ function RegisterContent() {
           {/* Category Selection - Only for Pro */}
           {formData.role === 'pro' && (
             <section>
-              <h2 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-text-primary)' }}>
-                {locale === 'ka' ? 'აირჩიე სპეციალობა' : 'Choose Your Specialty'} *
-              </h2>
-              <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm transition-all duration-300 ${
+                  validation.category
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
+                }`}>
+                  {validation.category ? (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : '3'}
+                </div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                    {locale === 'ka' ? 'აირჩიე სპეციალობა' : 'Choose Your Specialty'}
+                  </h2>
+                  {!validation.category && (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                      {locale === 'ka' ? 'სავალდებულო' : 'Required'}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <p className="text-sm mb-4 ml-11" style={{ color: 'var(--color-text-secondary)' }}>
                 {locale === 'ka' ? 'აირჩიე კატეგორია და შენი სპეციალიზაცია' : 'Select a category and your specializations'}
               </p>
 
@@ -1232,14 +1415,68 @@ function RegisterContent() {
             </section>
           )}
 
-          {/* Submit */}
-          <div className="pt-4">
+        </form>
+
+        {/* Fixed Submit Button with Progress */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--color-bg-primary)]/95 backdrop-blur-xl border-t shadow-[0_-4px_20px_rgba(0,0,0,0.08)]" style={{ borderColor: 'var(--color-border)' }}>
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
+            {/* Progress bar */}
+            {!canSubmitForm() && (
+              <div className="mb-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+                    {locale === 'ka' ? 'პროგრესი' : 'Progress'}
+                  </span>
+                  <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                    {completedFields}/{totalFields}
+                  </span>
+                </div>
+                <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-500 ease-out"
+                    style={{ width: `${(completedFields / totalFields) * 100}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Missing field indicator */}
+            {!canSubmitForm() && getFirstMissingField() && (
+              <div className="flex items-center gap-2 mb-3 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-3 h-3 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01" />
+                  </svg>
+                </div>
+                <p className="text-sm text-amber-700 dark:text-amber-300">
+                  <span className="font-medium">{getFirstMissingField()?.label}</span>
+                  {' '}
+                  <span className="text-amber-600/80 dark:text-amber-400/80">
+                    {locale === 'ka' ? 'სავალდებულოა' : 'is required'}
+                  </span>
+                </p>
+              </div>
+            )}
+
             <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-4 px-6 rounded-xl text-white font-semibold text-base transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-emerald-500/25 hover:-translate-y-0.5 active:translate-y-0"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                if (canSubmitForm() && formRef.current) {
+                  formRef.current.requestSubmit();
+                }
+              }}
+              disabled={isLoading || !canSubmitForm()}
+              className={`w-full py-4 px-6 rounded-xl font-semibold text-base transition-all duration-300 flex items-center justify-center gap-2 ${
+                canSubmitForm()
+                  ? 'text-white hover:shadow-lg hover:shadow-emerald-500/25 hover:-translate-y-0.5 active:translate-y-0'
+                  : 'cursor-not-allowed'
+              }`}
               style={{
-                background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+                background: canSubmitForm()
+                  ? 'linear-gradient(135deg, #059669 0%, #10b981 100%)'
+                  : 'var(--color-bg-tertiary)',
+                color: canSubmitForm() ? undefined : 'var(--color-text-muted)',
               }}
             >
               {isLoading ? (
@@ -1249,18 +1486,30 @@ function RegisterContent() {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                 </span>
+              ) : canSubmitForm() ? (
+                <>
+                  <span>{locale === 'ka' ? 'რეგისტრაცია' : 'Create Account'}</span>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </>
               ) : (
-                locale === 'ka' ? 'რეგისტრაცია' : 'Create Account'
+                <>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0H9m3-10V4m0 0a9 9 0 11-9 9 9 9 0 019-9z" />
+                  </svg>
+                  <span>{locale === 'ka' ? 'შეავსე სავალდებულო ველები' : 'Complete required fields'}</span>
+                </>
               )}
             </button>
 
-            <p className="text-center text-xs mt-4" style={{ color: 'var(--color-text-muted)' }}>
+            <p className="text-center text-xs mt-3" style={{ color: 'var(--color-text-muted)' }}>
               {locale === 'ka'
                 ? 'რეგისტრაციით ეთანხმები წესებსა და პირობებს'
                 : 'By signing up, you agree to our Terms and Conditions'}
             </p>
           </div>
-        </form>
+        </div>
       </main>
     </div>
   );
