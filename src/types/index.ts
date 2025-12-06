@@ -68,6 +68,7 @@ export interface ProProfile {
   coverImage?: string;
   tagline?: string;
   completedJobs?: number;
+  externalCompletedJobs?: number;
   responseTime?: string;
   companies?: Company[];
   avatar?: string;

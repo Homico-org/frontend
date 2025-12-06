@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
+import AppBackground from './AppBackground';
 import SupportChat from './SupportChat';
 
 interface ClientLayoutProps {
@@ -12,6 +13,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
   return (
     <>
+      <AppBackground />
       {children}
       {isAuthenticated && <SupportChat />}
     </>

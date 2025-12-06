@@ -145,56 +145,71 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
             </div>
           </div>
 
-          {/* Stats Bar - Rating, Experience, Jobs from Homico */}
+          {/* Stats Bar - Rating, Experience, Jobs from Homico, External Jobs */}
           <div
-            className="grid grid-cols-3 gap-1 px-2 sm:px-3 py-2.5 border-t"
+            className="grid grid-cols-4 gap-0.5 px-1.5 sm:px-2 py-2 border-t"
             style={{
               backgroundColor: 'var(--color-bg-tertiary)',
               borderColor: 'var(--color-border)'
             }}
           >
             {/* Rating */}
-            <div className="flex flex-col items-center text-center">
-              <div className="flex items-center justify-center w-7 h-7 rounded-full mb-1" style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)' }}>
-                <svg className="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+            <div className="flex flex-col items-center text-center px-1">
+              <div className="flex items-center gap-0.5 mb-0.5">
+                <svg className="w-3 h-3 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
+                <span className="text-xs font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                  {profile.avgRating > 0 ? profile.avgRating.toFixed(1) : '—'}
+                </span>
               </div>
-              <span className="text-xs font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                {profile.avgRating > 0 ? profile.avgRating.toFixed(1) : '—'}
-              </span>
-              <span className="text-[9px] leading-tight" style={{ color: 'var(--color-text-muted)' }}>
+              <span className="text-[8px] leading-tight" style={{ color: 'var(--color-text-muted)' }}>
                 {profile.totalReviews > 0 ? `${profile.totalReviews} შეფ.` : 'რეიტინგი'}
               </span>
             </div>
 
             {/* Experience */}
-            <div className="flex flex-col items-center text-center border-x" style={{ borderColor: 'var(--color-border)' }}>
-              <div className="flex items-center justify-center w-7 h-7 rounded-full mb-1" style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)' }}>
-                <svg className="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex flex-col items-center text-center px-1 border-l" style={{ borderColor: 'var(--color-border)' }}>
+              <div className="flex items-center gap-0.5 mb-0.5">
+                <svg className="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
+                <span className="text-xs font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                  {profile.yearsExperience || 0}+
+                </span>
               </div>
-              <span className="text-xs font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                {profile.yearsExperience || 0}+
-              </span>
-              <span className="text-[9px] leading-tight" style={{ color: 'var(--color-text-muted)' }}>
+              <span className="text-[8px] leading-tight" style={{ color: 'var(--color-text-muted)' }}>
                 წელი გამოცდ.
               </span>
             </div>
 
             {/* Completed Jobs from Homico */}
-            <div className="flex flex-col items-center text-center">
-              <div className="flex items-center justify-center w-7 h-7 rounded-full mb-1" style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)' }}>
-                <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex flex-col items-center text-center px-1 border-l" style={{ borderColor: 'var(--color-border)' }}>
+              <div className="flex items-center gap-0.5 mb-0.5">
+                <svg className="w-3 h-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
+                <span className="text-xs font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                  {profile.completedJobs || 0}
+                </span>
               </div>
-              <span className="text-xs font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                {profile.completedJobs || 0}
-              </span>
-              <span className="text-[9px] leading-tight" style={{ color: 'var(--color-text-muted)' }}>
+              <span className="text-[8px] leading-tight" style={{ color: 'var(--color-text-muted)' }}>
                 Homico-ზე
+              </span>
+            </div>
+
+            {/* External Completed Jobs */}
+            <div className="flex flex-col items-center text-center px-1 border-l" style={{ borderColor: 'var(--color-border)' }}>
+              <div className="flex items-center gap-0.5 mb-0.5">
+                <svg className="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <span className="text-xs font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                  {profile.externalCompletedJobs || 0}
+                </span>
+              </div>
+              <span className="text-[8px] leading-tight" style={{ color: 'var(--color-text-muted)' }}>
+                გარეთ
               </span>
             </div>
           </div>
@@ -261,18 +276,16 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
               )}
             </div>
           ) : (
-            /* Fallback when no portfolio - show a subtle placeholder */
+            /* Empty portfolio placeholder */
             <div className="px-3 sm:px-4 pb-3 sm:pb-4">
               <div
-                className="h-16 rounded-lg flex items-center justify-center"
+                className="flex items-center justify-center gap-2 py-3 rounded-lg"
                 style={{ backgroundColor: 'var(--color-bg-tertiary)' }}
               >
-                <div className="flex items-center gap-2" style={{ color: 'var(--color-text-muted)' }}>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span className="text-xs">პორტფოლიო მალე</span>
-                </div>
+                <svg className="w-4 h-4 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span className="text-xs text-[var(--color-text-muted)]">პორტფოლიო მალე</span>
               </div>
             </div>
           )}
@@ -281,51 +294,152 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
     );
   }
 
-  // Compact variant - Smaller card for tight spaces
+  // Compact variant - Smaller card for tight spaces (grid view)
   if (variant === 'compact') {
     return (
       <Link href={`/professionals/${profile._id}`} className="group block">
         <div
-          className="relative aspect-square rounded-xl overflow-hidden transition-shadow duration-300 hover:shadow-xl"
+          className="relative rounded-xl overflow-hidden transition-shadow duration-300 hover:shadow-xl"
           style={{
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15)'
+            backgroundColor: 'var(--color-bg-secondary)',
+            border: '1px solid var(--color-border)',
           }}
         >
-          {/* Background image */}
-          {avatarUrl ? (
-            <img
-              src={avatarUrl}
-              alt={displayName}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
+          {/* Image section */}
+          <div className="relative aspect-[4/3] overflow-hidden">
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={displayName}
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              />
+            ) : (
+              <div
+                className="absolute inset-0 w-full h-full"
+                style={{
+                  background: `linear-gradient(135deg,
+                    hsl(${(displayName.charCodeAt(0) * 7) % 360}, 70%, 40%) 0%,
+                    hsl(${(displayName.charCodeAt(0) * 7 + 40) % 360}, 60%, 30%) 100%)`
+                }}
+              />
+            )}
+
+            {/* Gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+            {/* Status badge - minimal */}
+            <div className="absolute top-2 right-2 z-10">
+              <StatusBadge status={status} variant="minimal" />
+            </div>
+
+            {/* Name overlay on image */}
+            <div className="absolute bottom-0 left-0 right-0 p-2.5">
+              <h3 className="font-semibold text-sm text-white truncate">
+                {displayName}
+              </h3>
+              <p className="text-[11px] text-white/70 truncate">
+                {profile.title || getCategoryLabel(profile.categories[0])}
+              </p>
+            </div>
+          </div>
+
+          {/* Stats Bar - 4 columns */}
+          <div
+            className="grid grid-cols-4 gap-0 py-2 px-1"
+            style={{ backgroundColor: 'var(--color-bg-tertiary)' }}
+          >
+            {/* Rating */}
+            <div className="flex flex-col items-center text-center">
+              <div className="flex items-center gap-0.5">
+                <svg className="w-2.5 h-2.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                <span className="text-[10px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                  {profile.avgRating > 0 ? profile.avgRating.toFixed(1) : '—'}
+                </span>
+              </div>
+              <span className="text-[7px] leading-tight" style={{ color: 'var(--color-text-muted)' }}>
+                რეიტინგი
+              </span>
+            </div>
+
+            {/* Experience */}
+            <div className="flex flex-col items-center text-center border-l" style={{ borderColor: 'var(--color-border)' }}>
+              <div className="flex items-center gap-0.5">
+                <svg className="w-2.5 h-2.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-[10px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                  {profile.yearsExperience || 0}+
+                </span>
+              </div>
+              <span className="text-[7px] leading-tight" style={{ color: 'var(--color-text-muted)' }}>
+                წელი
+              </span>
+            </div>
+
+            {/* Homico Jobs */}
+            <div className="flex flex-col items-center text-center border-l" style={{ borderColor: 'var(--color-border)' }}>
+              <div className="flex items-center gap-0.5">
+                <svg className="w-2.5 h-2.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-[10px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                  {profile.completedJobs || 0}
+                </span>
+              </div>
+              <span className="text-[7px] leading-tight" style={{ color: 'var(--color-text-muted)' }}>
+                Homico
+              </span>
+            </div>
+
+            {/* External Jobs */}
+            <div className="flex flex-col items-center text-center border-l" style={{ borderColor: 'var(--color-border)' }}>
+              <div className="flex items-center gap-0.5">
+                <svg className="w-2.5 h-2.5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <span className="text-[10px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                  {profile.externalCompletedJobs || 0}
+                </span>
+              </div>
+              <span className="text-[7px] leading-tight" style={{ color: 'var(--color-text-muted)' }}>
+                გარეთ
+              </span>
+            </div>
+          </div>
+
+          {/* Portfolio Preview - Last 3 jobs */}
+          {hasPortfolio ? (
+            <div className="flex gap-1 p-1.5 overflow-x-auto scrollbar-none" style={{ scrollSnapType: 'x mandatory' }}>
+              {portfolioImages.slice(0, 3).map((img, idx) => (
+                <div
+                  key={idx}
+                  className="flex-shrink-0 w-[calc(33.333%-3px)] aspect-square rounded-md overflow-hidden"
+                  style={{ scrollSnapAlign: 'start' }}
+                >
+                  <img
+                    src={img}
+                    alt={`სამუშაო ${idx + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
           ) : (
-            <div
-              className="absolute inset-0 w-full h-full"
-              style={{
-                background: `linear-gradient(135deg,
-                  hsl(${(displayName.charCodeAt(0) * 7) % 360}, 70%, 40%) 0%,
-                  hsl(${(displayName.charCodeAt(0) * 7 + 40) % 360}, 60%, 30%) 100%)`
-              }}
-            />
+            <div className="p-1.5">
+              <div
+                className="flex items-center justify-center gap-1.5 py-2 rounded-md"
+                style={{ backgroundColor: 'var(--color-bg-primary)' }}
+              >
+                <svg className="w-3 h-3 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span className="text-[9px] text-[var(--color-text-muted)]">პორტფოლიო მალე</span>
+              </div>
+            </div>
           )}
-
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-
-          {/* Status badge - minimal */}
-          <div className="absolute top-2 right-2 z-10">
-            <StatusBadge status={status} variant="minimal" />
-          </div>
-
-          {/* Bottom content */}
-          <div className="absolute bottom-0 left-0 right-0 p-3">
-            <h3 className="font-medium text-sm text-white truncate">
-              {displayName}
-            </h3>
-            <p className="text-xs text-white/60 truncate">
-              {profile.title || getCategoryLabel(profile.categories[0])}
-            </p>
-          </div>
         </div>
       </Link>
     );
@@ -389,18 +503,34 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
             </p>
 
             {/* Stats row */}
-            <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+            <div className="flex items-center gap-2 sm:gap-3 text-xs flex-wrap" style={{ color: 'var(--color-text-tertiary)' }}>
               {profile.totalReviews > 0 && (
                 <div className="flex items-center gap-1">
-                  <svg className="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-3 h-3 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
                   <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{profile.avgRating.toFixed(1)}</span>
                   <span>({profile.totalReviews})</span>
                 </div>
               )}
-              <span>{profile.yearsExperience}+ წელი</span>
-              <span>{profile.completedJobs || 0} პროექტი</span>
+              <span className="flex items-center gap-1">
+                <svg className="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {profile.yearsExperience}+ წელი
+              </span>
+              <span className="flex items-center gap-1">
+                <svg className="w-3 h-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {profile.completedJobs || 0} Homico
+              </span>
+              <span className="flex items-center gap-1">
+                <svg className="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                {profile.externalCompletedJobs || 0} გარეთ
+              </span>
             </div>
 
             {/* Categories */}

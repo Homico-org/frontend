@@ -58,8 +58,38 @@ export default function FeedCard({ item, onLike }: FeedCardProps) {
     return locale === 'ka' ? `${Math.floor(diffDays / 30)} თვ.` : `${Math.floor(diffDays / 30)}mo`;
   };
 
+  const getTypeLabel = () => {
+    switch (item.type) {
+      case FeedItemType.COMPLETION:
+        return locale === 'ka' ? 'დასრულებული' : 'Completed';
+      case FeedItemType.BEFORE_AFTER:
+        return locale === 'ka' ? 'მანამდე/შემდეგ' : 'Before/After';
+      case FeedItemType.PORTFOLIO:
+        return locale === 'ka' ? 'პორტფოლიო' : 'Portfolio';
+      case FeedItemType.PRO_HIGHLIGHT:
+        return locale === 'ka' ? 'გამორჩეული' : 'Highlight';
+      default:
+        return '';
+    }
+  };
+
+  const getTypeColor = () => {
+    switch (item.type) {
+      case FeedItemType.COMPLETION:
+        return 'bg-emerald-500 text-white';
+      case FeedItemType.BEFORE_AFTER:
+        return 'bg-purple-500 text-white';
+      case FeedItemType.PORTFOLIO:
+        return 'bg-blue-500 text-white';
+      case FeedItemType.PRO_HIGHLIGHT:
+        return 'bg-amber-500 text-white';
+      default:
+        return 'bg-zinc-500 text-white';
+    }
+  };
+
   return (
-    <div className="group relative bg-[var(--color-bg-primary)] rounded-2xl overflow-hidden border border-[var(--color-border-subtle)] hover:border-[var(--color-border)] transition-all duration-300 hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/20">
+    <div className="group relative bg-[var(--color-bg-primary)] rounded-2xl overflow-hidden border border-[var(--color-border-subtle)] hover:border-[var(--color-border)] transition-all duration-300 hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-black/20">
       {/* Image Section */}
       <div className="relative aspect-[4/3] overflow-hidden bg-zinc-100 dark:bg-zinc-800">
         {isBeforeAfter ? (
@@ -95,109 +125,77 @@ export default function FeedCard({ item, onLike }: FeedCardProps) {
               />
             </div>
 
-            {/* Slider Line - Bold and visible */}
+            {/* Slider Line */}
             <div
               className="absolute top-0 bottom-0 z-20"
               style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
             >
-              {/* Glowing line effect */}
-              <div className="absolute inset-0 w-1 bg-white shadow-[0_0_20px_rgba(255,255,255,0.8),0_0_40px_rgba(255,255,255,0.4)]" />
+              <div className="absolute inset-0 w-1 bg-white shadow-[0_0_20px_rgba(255,255,255,0.8)]" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rounded-full shadow-lg" />
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rounded-full shadow-lg" />
 
-              {/* Main line with gradient */}
-              <div className="absolute inset-0 w-1 bg-gradient-to-b from-white via-white to-white">
-                {/* Top accent */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rounded-full shadow-lg" />
-                {/* Bottom accent */}
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rounded-full shadow-lg" />
-              </div>
-
-              {/* Slider Handle - Prominent circular grip */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex items-center justify-center border-2 border-white/50 backdrop-blur-sm">
-                {/* Inner circle with arrows */}
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-zinc-50 to-zinc-100 flex items-center justify-center gap-0.5 shadow-inner">
-                  {/* Left arrow */}
-                  <svg className="w-3 h-3 text-zinc-600" viewBox="0 0 24 24" fill="currentColor">
+              {/* Slider Handle */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center border-2 border-white/50">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-zinc-50 to-zinc-100 flex items-center justify-center gap-0.5 shadow-inner">
+                  <svg className="w-2.5 h-2.5 text-zinc-600" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
                   </svg>
-                  {/* Divider */}
-                  <div className="w-px h-4 bg-zinc-300" />
-                  {/* Right arrow */}
-                  <svg className="w-3 h-3 text-zinc-600" viewBox="0 0 24 24" fill="currentColor">
+                  <div className="w-px h-3.5 bg-zinc-300" />
+                  <svg className="w-2.5 h-2.5 text-zinc-600" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
                   </svg>
                 </div>
               </div>
             </div>
 
-            {/* Labels - High contrast badges */}
+            {/* Before/After Labels */}
             <div className="absolute top-3 left-3 z-10">
-              <div className="px-3 py-1.5 rounded-full bg-zinc-900/90 backdrop-blur-md text-white text-[10px] font-bold tracking-wider uppercase shadow-lg border border-white/10">
+              <div className="px-2.5 py-1 rounded-full bg-zinc-900/80 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wide">
                 {locale === 'ka' ? 'მანამდე' : 'Before'}
               </div>
             </div>
-            <div className="absolute top-3 right-3 z-10">
-              <div className="px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md text-zinc-900 text-[10px] font-bold tracking-wider uppercase shadow-lg border border-black/5">
+            <div className="absolute top-3 right-14 z-10">
+              <div className="px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm text-zinc-900 text-[10px] font-bold uppercase tracking-wide">
                 {locale === 'ka' ? 'შემდეგ' : 'After'}
               </div>
             </div>
-
-            {/* Drag hint - appears briefly */}
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-sm text-white/90 text-[10px] font-medium flex items-center gap-1.5 opacity-70 pointer-events-none">
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-              </svg>
-              <span>{locale === 'ka' ? 'გადაათრიე' : 'Drag to compare'}</span>
-            </div>
           </div>
         ) : (
-          /* Regular Image Display with Slider */
+          /* Regular Image Display */
           <div className="relative w-full h-full">
-            {/* Image with fade transition */}
-            <div className="relative w-full h-full">
-              <img
-                src={item.images[currentImageIndex] || '/placeholder.jpg'}
-                alt={item.title}
-                className={`w-full h-full object-cover transition-all duration-500 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
-                onLoad={() => setIsImageLoaded(true)}
-              />
-              {!isImageLoaded && (
-                <div className="absolute inset-0 bg-zinc-200 dark:bg-zinc-700 animate-pulse" />
-              )}
-            </div>
+            <img
+              src={item.images[currentImageIndex] || '/placeholder.jpg'}
+              alt={item.title}
+              className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
+              onLoad={() => setIsImageLoaded(true)}
+            />
+            {!isImageLoaded && (
+              <div className="absolute inset-0 bg-zinc-200 dark:bg-zinc-700 animate-pulse" />
+            )}
 
             {/* Navigation Arrows */}
             {hasMultipleImages && (
               <>
-                {/* Left Arrow */}
                 <button
                   onClick={prevImage}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 active:scale-95"
-                  aria-label="Previous image"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
-
-                {/* Right Arrow */}
                 <button
                   onClick={nextImage}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 active:scale-95"
-                  aria-label="Next image"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
 
-                {/* Image Counter */}
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-[11px] font-medium tabular-nums">
-                  {currentImageIndex + 1} / {totalImages}
-                </div>
-
-                {/* Progress Dots */}
-                <div className="absolute bottom-3 right-3 flex gap-1">
-                  {item.images.map((_, idx) => (
+                {/* Image Dots */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                  {item.images.slice(0, 5).map((_, idx) => (
                     <button
                       key={idx}
                       onClick={(e) => {
@@ -205,22 +203,28 @@ export default function FeedCard({ item, onLike }: FeedCardProps) {
                         e.stopPropagation();
                         setCurrentImageIndex(idx);
                       }}
-                      className={`h-1 rounded-full transition-all duration-300 ${
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
                         idx === currentImageIndex
-                          ? 'w-4 bg-white'
-                          : 'w-1 bg-white/40 hover:bg-white/60'
+                          ? 'w-5 bg-white'
+                          : 'w-1.5 bg-white/50 hover:bg-white/70'
                       }`}
-                      aria-label={`Go to image ${idx + 1}`}
                     />
                   ))}
+                  {item.images.length > 5 && (
+                    <span className="text-[10px] text-white/70 ml-1">+{item.images.length - 5}</span>
+                  )}
                 </div>
               </>
             )}
+
+            {/* Type Badge */}
+            <div className="absolute top-3 left-3 z-10">
+              <div className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold shadow-sm ${getTypeColor()}`}>
+                {getTypeLabel()}
+              </div>
+            </div>
           </div>
         )}
-
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
 
         {/* Like Button */}
         <div className="absolute top-3 right-3 z-10">
@@ -232,22 +236,39 @@ export default function FeedCard({ item, onLike }: FeedCardProps) {
             size="md"
           />
         </div>
+      </div>
 
-        {/* Pro Info Overlay */}
+      {/* Content Section */}
+      <div className="p-4">
+        {/* Title Row */}
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <h3 className="font-semibold text-[var(--color-text-primary)] text-base line-clamp-1 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+            {item.title}
+          </h3>
+          <span className="flex-shrink-0 text-[11px] text-[var(--color-text-tertiary)] px-2 py-0.5 rounded-full bg-[var(--color-bg-tertiary)]">
+            {formatTimeAgo(item.createdAt)}
+          </span>
+        </div>
+
+        {/* Description */}
+        {item.description && (
+          <p className="text-sm text-[var(--color-text-secondary)] line-clamp-2 mb-4">
+            {item.description}
+          </p>
+        )}
+
+        {/* Pro Info Row */}
         <Link
           href={`/professionals/${item.pro._id}`}
-          className="absolute bottom-3 left-3 right-3 flex items-center gap-2.5 group/pro"
+          className="flex items-center gap-3 p-2.5 -mx-1 rounded-xl hover:bg-[var(--color-bg-tertiary)] transition-colors group/pro"
+          onClick={(e) => e.stopPropagation()}
         >
-          <div className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-white/40 flex-shrink-0 transition-transform duration-200 group-hover/pro:scale-105">
+          <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-[var(--color-border)] flex-shrink-0">
             {item.pro.avatar ? (
-              <img
-                src={item.pro.avatar}
-                alt={item.pro.name}
-                className="w-full h-full object-cover"
-              />
+              <img src={item.pro.avatar} alt={item.pro.name} className="w-full h-full object-cover" />
             ) : (
               <div
-                className="w-full h-full flex items-center justify-center text-white font-semibold text-sm"
+                className="w-full h-full flex items-center justify-center text-white font-semibold"
                 style={{
                   background: `linear-gradient(135deg, hsl(${(item.pro.name.charCodeAt(0) * 7) % 360}, 65%, 50%) 0%, hsl(${(item.pro.name.charCodeAt(0) * 7 + 40) % 360}, 55%, 40%) 100%)`,
                 }}
@@ -257,72 +278,65 @@ export default function FeedCard({ item, onLike }: FeedCardProps) {
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="text-[13px] font-semibold text-white truncate group-hover/pro:underline decoration-white/50">
+            <h4 className="text-sm font-semibold text-[var(--color-text-primary)] truncate group-hover/pro:text-emerald-600 dark:group-hover/pro:text-emerald-400 transition-colors">
               {item.pro.name}
             </h4>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2 text-[12px] text-[var(--color-text-secondary)]">
               {item.pro.rating > 0 && (
-                <div className="flex items-center gap-0.5">
-                  <svg className="w-3 h-3 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                <div className="flex items-center gap-1">
+                  <svg className="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
-                  <span className="text-[11px] text-white/90 font-medium">
-                    {item.pro.rating.toFixed(1)}
-                  </span>
+                  <span className="font-medium">{item.pro.rating.toFixed(1)}</span>
                 </div>
               )}
               {item.pro.title && (
                 <>
-                  <span className="text-white/40">·</span>
-                  <span className="text-[11px] text-white/70 truncate">
-                    {item.pro.title}
-                  </span>
+                  <span className="text-[var(--color-text-muted)]">•</span>
+                  <span className="truncate">{item.pro.title}</span>
                 </>
               )}
             </div>
           </div>
+          <svg className="w-5 h-5 text-[var(--color-text-tertiary)] group-hover/pro:text-emerald-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
         </Link>
-      </div>
 
-      {/* Content Section - Compact */}
-      <div className="p-3">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-medium text-[var(--color-text-primary)] text-[15px] line-clamp-1 group-hover:text-[var(--color-accent)] transition-colors">
-            {item.title}
-          </h3>
-          <span className="text-[11px] text-[var(--color-text-tertiary)] whitespace-nowrap mt-0.5">
-            {formatTimeAgo(item.createdAt)}
-          </span>
-        </div>
-
-        {item.description && (
-          <p className="text-[13px] text-[var(--color-text-secondary)] line-clamp-1 mt-1">
-            {item.description}
-          </p>
-        )}
-
-        {/* Rating Stars - compact inline display */}
-        {item.rating && item.rating > 0 && (
-          <div className="flex items-center gap-1 mt-2">
-            <div className="flex items-center gap-0.5">
-              {[...Array(5)].map((_, i) => (
-                <svg
-                  key={i}
-                  className={`w-3 h-3 ${i < item.rating! ? 'text-amber-400' : 'text-zinc-300 dark:text-zinc-600'}`}
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-              ))}
-            </div>
-            {item.client?.name && (
-              <span className="text-[11px] text-[var(--color-text-tertiary)] ml-1">
-                {locale === 'ka' ? 'კლიენტი:' : 'by'} {item.client.name}
-              </span>
-            )}
+        {/* Bottom Stats Row */}
+        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[var(--color-border-subtle)]">
+          {/* Category Tag */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--color-bg-tertiary)]">
+            <svg className="w-3.5 h-3.5 text-[var(--color-text-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            </svg>
+            <span className="text-[11px] font-medium text-[var(--color-text-secondary)]">
+              {item.category}
+            </span>
           </div>
-        )}
+
+          {/* Location if available */}
+          {item.client?.city && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--color-bg-tertiary)]">
+              <svg className="w-3.5 h-3.5 text-[var(--color-text-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span className="text-[11px] font-medium text-[var(--color-text-secondary)]">{item.client.city}</span>
+            </div>
+          )}
+
+          {/* Spacer */}
+          <div className="flex-1" />
+
+          {/* Like Count */}
+          <div className="flex items-center gap-1.5 text-[var(--color-text-tertiary)]">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+            </svg>
+            <span className="text-[12px] font-semibold">{item.likeCount}</span>
+          </div>
+        </div>
       </div>
     </div>
   );

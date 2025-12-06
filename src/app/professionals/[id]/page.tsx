@@ -68,6 +68,7 @@ interface ProProfile {
   companies?: Company[];
   responseTime?: string;
   createdAt?: string;
+  avatar?: string; // Profile-level avatar (fallback)
 }
 
 interface Review {
@@ -360,9 +361,9 @@ export default function ProfessionalDetailPage() {
               {/* Avatar Section */}
               <div className="flex-shrink-0">
                 <div className="relative">
-                  {profile.userId.avatar ? (
+                  {(profile.avatar || profile.userId.avatar) ? (
                     <img
-                      src={profile.userId.avatar}
+                      src={profile.avatar || profile.userId.avatar}
                       alt={profile.userId.name}
                       className="w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-xl object-cover"
                       style={{ boxShadow: '0 0 0 1px var(--color-border)' }}
@@ -1251,8 +1252,8 @@ export default function ProfessionalDetailPage() {
             </div>
 
             <div className="flex items-center gap-3 p-3 rounded-lg mb-4" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
-              {profile.userId.avatar ? (
-                <img src={profile.userId.avatar} alt="" className="w-11 h-11 rounded-lg object-cover" />
+              {(profile.avatar || profile.userId.avatar) ? (
+                <img src={profile.avatar || profile.userId.avatar} alt="" className="w-11 h-11 rounded-lg object-cover" />
               ) : (
                 <div className="w-11 h-11 rounded-lg flex items-center justify-center font-semibold text-lg" style={{ backgroundColor: 'var(--color-bg-muted)', color: 'var(--color-text-secondary)' }}>
                   {profile.userId.name.charAt(0)}

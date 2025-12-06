@@ -21,67 +21,57 @@ import {
   Sparkles
 } from 'lucide-react';
 
-// Notification type configurations
-const notificationConfig: Record<NotificationType, { icon: any; color: string; bgColor: string; gradient: string }> = {
+// Notification type configurations with theme-aware colors
+const notificationConfig: Record<NotificationType, { icon: any; colorClass: string; bgClass: string }> = {
   new_proposal: {
     icon: Briefcase,
-    color: 'text-blue-400',
-    bgColor: 'bg-blue-500/10',
-    gradient: 'from-blue-500/20 to-blue-600/5'
+    colorClass: 'text-blue-600 dark:text-blue-400',
+    bgClass: 'bg-blue-100 dark:bg-blue-500/15',
   },
   proposal_accepted: {
     icon: CheckCheck,
-    color: 'text-emerald-400',
-    bgColor: 'bg-emerald-500/10',
-    gradient: 'from-emerald-500/20 to-emerald-600/5'
+    colorClass: 'text-emerald-600 dark:text-emerald-400',
+    bgClass: 'bg-emerald-100 dark:bg-emerald-500/15',
   },
   proposal_rejected: {
     icon: Briefcase,
-    color: 'text-red-400',
-    bgColor: 'bg-red-500/10',
-    gradient: 'from-red-500/20 to-red-600/5'
+    colorClass: 'text-red-600 dark:text-red-400',
+    bgClass: 'bg-red-100 dark:bg-red-500/15',
   },
   job_completed: {
     icon: CheckCheck,
-    color: 'text-emerald-400',
-    bgColor: 'bg-emerald-500/10',
-    gradient: 'from-emerald-500/20 to-emerald-600/5'
+    colorClass: 'text-emerald-600 dark:text-emerald-400',
+    bgClass: 'bg-emerald-100 dark:bg-emerald-500/15',
   },
   job_cancelled: {
     icon: Briefcase,
-    color: 'text-neutral-400',
-    bgColor: 'bg-neutral-500/10',
-    gradient: 'from-neutral-500/20 to-neutral-600/5'
+    colorClass: 'text-gray-600 dark:text-neutral-400',
+    bgClass: 'bg-gray-100 dark:bg-neutral-500/15',
   },
   new_message: {
     icon: MessageSquare,
-    color: 'text-violet-400',
-    bgColor: 'bg-violet-500/10',
-    gradient: 'from-violet-500/20 to-violet-600/5'
+    colorClass: 'text-violet-600 dark:text-violet-400',
+    bgClass: 'bg-violet-100 dark:bg-violet-500/15',
   },
   new_review: {
     icon: Star,
-    color: 'text-amber-400',
-    bgColor: 'bg-amber-500/10',
-    gradient: 'from-amber-500/20 to-amber-600/5'
+    colorClass: 'text-amber-600 dark:text-amber-400',
+    bgClass: 'bg-amber-100 dark:bg-amber-500/15',
   },
   account_verified: {
     icon: Shield,
-    color: 'text-emerald-400',
-    bgColor: 'bg-emerald-500/10',
-    gradient: 'from-emerald-500/20 to-emerald-600/5'
+    colorClass: 'text-emerald-600 dark:text-emerald-400',
+    bgClass: 'bg-emerald-100 dark:bg-emerald-500/15',
   },
   profile_update: {
     icon: Sparkles,
-    color: 'text-cyan-400',
-    bgColor: 'bg-cyan-500/10',
-    gradient: 'from-cyan-500/20 to-cyan-600/5'
+    colorClass: 'text-cyan-600 dark:text-cyan-400',
+    bgClass: 'bg-cyan-100 dark:bg-cyan-500/15',
   },
   system_announcement: {
     icon: Megaphone,
-    color: 'text-orange-400',
-    bgColor: 'bg-orange-500/10',
-    gradient: 'from-orange-500/20 to-orange-600/5'
+    colorClass: 'text-orange-600 dark:text-orange-400',
+    bgClass: 'bg-orange-100 dark:bg-orange-500/15',
   },
 };
 
@@ -181,9 +171,9 @@ export default function NotificationsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
         <div className="relative">
-          <div className="w-16 h-16 rounded-full border-2 border-primary-500/20 border-t-primary-500 animate-spin" />
+          <div className="w-16 h-16 rounded-full border-2 border-emerald-500/20 dark:border-primary-500/20 border-t-emerald-500 dark:border-t-primary-500 animate-spin" />
           <div className="absolute inset-0 flex items-center justify-center">
-            <Bell className="w-6 h-6 text-primary-400 animate-pulse" />
+            <Bell className="w-6 h-6 text-emerald-500 dark:text-primary-400 animate-pulse" />
           </div>
         </div>
       </div>
@@ -194,7 +184,7 @@ export default function NotificationsPage() {
     <div className="min-h-screen pb-20" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
       {/* Ambient background effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 dark:bg-primary-500/5 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-violet-500/5 rounded-full blur-3xl" />
       </div>
 
@@ -210,7 +200,8 @@ export default function NotificationsPage() {
           {/* Back Button */}
           <button
             onClick={() => router.push('/browse')}
-            className="group inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-200 transition-all duration-300 mb-6"
+            className="group inline-flex items-center gap-2 text-sm transition-all duration-300 mb-6"
+            style={{ color: 'var(--color-text-secondary)' }}
           >
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform duration-300" />
             <span>{locale === 'ka' ? 'უკან' : 'Back'}</span>
@@ -221,13 +212,9 @@ export default function NotificationsPage() {
               {/* Animated Bell Icon */}
               <div className="relative">
                 <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(52, 211, 153, 0.15) 0%, rgba(52, 211, 153, 0.05) 100%)',
-                    boxShadow: '0 0 40px rgba(52, 211, 153, 0.1)',
-                  }}
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center bg-emerald-100 dark:bg-emerald-500/15"
                 >
-                  <Bell className="w-6 h-6 text-primary-400" />
+                  <Bell className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 {unreadCount > 0 && (
                   <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[22px] h-[22px] px-1.5 text-xs font-bold text-white bg-gradient-to-r from-red-500 to-rose-500 rounded-full shadow-lg shadow-red-500/30">
@@ -236,10 +223,10 @@ export default function NotificationsPage() {
                 )}
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-serif font-medium text-neutral-50">
+                <h1 className="text-2xl sm:text-3xl font-medium" style={{ color: 'var(--color-text-primary)' }}>
                   {locale === 'ka' ? 'შეტყობინებები' : 'Notifications'}
                 </h1>
-                <p className="mt-1 text-neutral-400 text-sm">
+                <p className="mt-1 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                   {unreadCount > 0
                     ? locale === 'ka'
                       ? `${unreadCount} წაუკითხავი შეტყობინება`
@@ -256,12 +243,7 @@ export default function NotificationsPage() {
               <button
                 onClick={handleMarkAllRead}
                 disabled={unreadCount === 0}
-                className="group inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{
-                  backgroundColor: 'rgba(52, 211, 153, 0.1)',
-                  border: '1px solid rgba(52, 211, 153, 0.2)',
-                  color: 'rgb(52, 211, 153)',
-                }}
+                className="group inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20"
               >
                 <Check className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
                 <span className="hidden sm:inline">{locale === 'ka' ? 'ყველას წაკითხვა' : 'Mark all read'}</span>
@@ -269,12 +251,7 @@ export default function NotificationsPage() {
               <button
                 onClick={handleDeleteAll}
                 disabled={notifications.length === 0 || isDeleting}
-                className="group inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{
-                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                  border: '1px solid rgba(239, 68, 68, 0.2)',
-                  color: 'rgb(239, 68, 68)',
-                }}
+                className="group inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20"
               >
                 <Trash2 className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
                 <span className="hidden sm:inline">{locale === 'ka' ? 'ყველას წაშლა' : 'Clear all'}</span>
@@ -288,19 +265,15 @@ export default function NotificationsPage() {
               <button
                 key={filter.key}
                 onClick={() => setActiveFilter(filter.key)}
-                className={`relative px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap transition-all duration-300 ${
+                className={`relative px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap transition-all duration-300 border ${
                   activeFilter === filter.key
-                    ? 'text-dark-bg'
-                    : 'text-neutral-400 hover:text-neutral-200'
+                    ? 'bg-emerald-500 text-white border-emerald-500'
+                    : 'bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-600 dark:text-neutral-400 hover:bg-gray-200 dark:hover:bg-white/10'
                 }`}
-                style={{
-                  backgroundColor: activeFilter === filter.key ? 'rgb(52, 211, 153)' : 'rgba(255, 255, 255, 0.05)',
-                  border: activeFilter === filter.key ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
-                }}
               >
                 {locale === 'ka' ? filter.labelKa : filter.label}
                 {filter.key === 'unread' && unreadCount > 0 && (
-                  <span className="ml-1.5 px-1.5 py-0.5 text-xs rounded-full bg-white/20">
+                  <span className={`ml-1.5 px-1.5 py-0.5 text-xs rounded-full ${activeFilter === filter.key ? 'bg-white/20' : 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'}`}>
                     {unreadCount}
                   </span>
                 )}
@@ -318,13 +291,13 @@ export default function NotificationsPage() {
               <div
                 key={i}
                 className="rounded-2xl p-5 animate-pulse"
-                style={{ backgroundColor: 'var(--color-bg-secondary)' }}
+                style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}
               >
                 <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-neutral-700/50" />
+                  <div className="w-12 h-12 rounded-xl bg-gray-200 dark:bg-neutral-700/50" />
                   <div className="flex-1 space-y-3">
-                    <div className="h-4 w-3/4 rounded bg-neutral-700/50" />
-                    <div className="h-3 w-1/2 rounded bg-neutral-700/30" />
+                    <div className="h-4 w-3/4 rounded bg-gray-200 dark:bg-neutral-700/50" />
+                    <div className="h-3 w-1/2 rounded bg-gray-100 dark:bg-neutral-700/30" />
                   </div>
                 </div>
               </div>
@@ -340,19 +313,16 @@ export default function NotificationsPage() {
             }}
           >
             <div
-              className="w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-6"
-              style={{
-                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
-              }}
+              className="w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-6 bg-gray-100 dark:bg-white/5"
             >
-              <Bell className="h-10 w-10 text-neutral-600" />
+              <Bell className="h-10 w-10 text-gray-400 dark:text-neutral-600" />
             </div>
-            <h3 className="text-xl font-serif font-medium text-neutral-200 mb-2">
+            <h3 className="text-xl font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
               {activeFilter === 'unread'
                 ? locale === 'ka' ? 'წაუკითხავი შეტყობინებები არ არის' : 'No unread notifications'
                 : locale === 'ka' ? 'შეტყობინებები არ არის' : 'No notifications yet'}
             </h3>
-            <p className="text-neutral-500 max-w-sm mx-auto">
+            <p style={{ color: 'var(--color-text-tertiary)' }} className="max-w-sm mx-auto">
               {locale === 'ka'
                 ? 'როდესაც მიიღებთ შეტყობინებას, ის აქ გამოჩნდება'
                 : "When you receive notifications, they'll appear here"}
@@ -368,48 +338,47 @@ export default function NotificationsPage() {
                 <div
                   key={notification._id}
                   onClick={() => handleNotificationClick(notification)}
-                  className={`group relative rounded-2xl p-5 cursor-pointer transition-all duration-500 hover:scale-[1.01] ${
-                    !notification.isRead ? 'ring-1 ring-primary-500/30' : ''
+                  className={`group relative rounded-2xl p-5 cursor-pointer transition-all duration-300 hover:shadow-md ${
+                    !notification.isRead ? 'ring-1 ring-emerald-500/30 dark:ring-primary-500/30' : ''
                   }`}
                   style={{
                     backgroundColor: 'var(--color-bg-secondary)',
                     border: '1px solid var(--color-border)',
-                    animationDelay: `${index * 50}ms`,
                   }}
                 >
-                  {/* Unread indicator glow */}
+                  {/* Unread indicator background */}
                   {!notification.isRead && (
                     <div
-                      className="absolute inset-0 rounded-2xl opacity-50 pointer-events-none"
-                      style={{
-                        background: `linear-gradient(135deg, ${config.gradient})`,
-                      }}
+                      className="absolute inset-0 rounded-2xl opacity-30 dark:opacity-50 pointer-events-none bg-emerald-50 dark:bg-emerald-500/10"
                     />
                   )}
 
                   <div className="relative flex items-start gap-4">
                     {/* Icon */}
                     <div
-                      className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ${config.bgColor}`}
+                      className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ${config.bgClass}`}
                     >
-                      <Icon className={`w-5 h-5 ${config.color}`} />
+                      <Icon className={`w-5 h-5 ${config.colorClass}`} />
                     </div>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <h4 className={`font-medium text-sm sm:text-base ${!notification.isRead ? 'text-neutral-100' : 'text-neutral-300'}`}>
+                          <h4
+                            className="font-medium text-sm sm:text-base"
+                            style={{ color: !notification.isRead ? 'var(--color-text-primary)' : 'var(--color-text-secondary)' }}
+                          >
                             {notification.title}
                           </h4>
-                          <p className="mt-1 text-sm text-neutral-500 line-clamp-2">
+                          <p className="mt-1 text-sm line-clamp-2" style={{ color: 'var(--color-text-tertiary)' }}>
                             {notification.message}
                           </p>
                         </div>
 
                         {/* Time & Actions */}
                         <div className="flex items-center gap-3 flex-shrink-0">
-                          <div className="flex items-center gap-1.5 text-xs text-neutral-500">
+                          <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--color-text-muted)' }}>
                             <Clock className="w-3.5 h-3.5" />
                             <span>{formatTimeAgo(notification.createdAt)}</span>
                           </div>
@@ -420,7 +389,7 @@ export default function NotificationsPage() {
                               e.stopPropagation();
                               deleteNotification(notification._id);
                             }}
-                            className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-500/10 text-neutral-500 hover:text-red-400 transition-all duration-300"
+                            className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-500/10 text-gray-400 dark:text-neutral-500 hover:text-red-500 dark:hover:text-red-400 transition-all duration-300"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -429,7 +398,7 @@ export default function NotificationsPage() {
 
                       {/* Link indicator */}
                       {notification.link && (
-                        <div className="mt-3 flex items-center gap-1.5 text-xs text-primary-400 group-hover:text-primary-300 transition-colors duration-300">
+                        <div className="mt-3 flex items-center gap-1.5 text-xs text-emerald-600 dark:text-primary-400 group-hover:text-emerald-700 dark:group-hover:text-primary-300 transition-colors duration-300">
                           <span>{locale === 'ka' ? 'დეტალების ნახვა' : 'View details'}</span>
                           <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform duration-300" />
                         </div>
@@ -438,7 +407,7 @@ export default function NotificationsPage() {
 
                     {/* Unread dot */}
                     {!notification.isRead && (
-                      <div className="absolute top-5 right-5 w-2.5 h-2.5 rounded-full bg-primary-400 shadow-lg shadow-primary-400/50" />
+                      <div className="absolute top-5 right-5 w-2.5 h-2.5 rounded-full bg-emerald-500 dark:bg-primary-400 shadow-lg shadow-emerald-500/50 dark:shadow-primary-400/50" />
                     )}
                   </div>
                 </div>
