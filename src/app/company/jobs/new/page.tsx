@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 import { api } from '@/lib/api';
 import Link from 'next/link';
 import Select from '@/components/common/Select';
@@ -21,6 +22,7 @@ interface Employee {
 
 export default function CreateCompanyJobPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const { openLoginModal } = useAuthModal();
   const router = useRouter();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,10 +80,13 @@ export default function CreateCompanyJobPage() {
   ];
 
   useEffect(() => {
-    if (!isLoading && (!isAuthenticated || user?.role !== 'company')) {
-      router.push('/login');
+    if (!isLoading && !isAuthenticated) {
+      openLoginModal('/company/jobs/new');
     }
-  }, [isLoading, isAuthenticated, user, router]);
+    if (!isLoading && isAuthenticated && user?.role !== 'company') {
+      router.push('/');
+    }
+  }, [isLoading, isAuthenticated, user, router, openLoginModal]);
 
   useEffect(() => {
     if (isAuthenticated && user?.role === 'company') {

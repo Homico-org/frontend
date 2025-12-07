@@ -99,12 +99,14 @@ export default function CategorySection({
                 animationDelay: `${index * 50}ms`,
                 transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
                 background: isSelected
-                  ? 'linear-gradient(180deg, #0d6355 0%, #0a5248 100%)'
+                  ? 'linear-gradient(135deg, rgba(167, 243, 208, 0.6) 0%, rgba(110, 231, 183, 0.5) 100%)'
                   : 'var(--color-bg-secondary)',
-                color: isSelected ? '#ffffff' : 'var(--color-text-secondary)',
-                borderColor: isSelected ? 'rgba(13, 99, 85, 0.4)' : 'var(--color-border)',
+                backdropFilter: isSelected ? 'blur(12px)' : 'none',
+                WebkitBackdropFilter: isSelected ? 'blur(12px)' : 'none',
+                color: isSelected ? '#065f46' : 'var(--color-text-secondary)',
+                borderColor: isSelected ? 'rgba(110, 231, 183, 0.6)' : 'var(--color-border)',
                 boxShadow: isSelected
-                  ? '0 4px 12px rgba(13, 99, 85, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                  ? '0 4px 16px rgba(16, 185, 129, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.5)'
                   : 'var(--shadow-xs)',
               }}
             >
@@ -131,7 +133,7 @@ export default function CategorySection({
                   ${isHovered && !isSelected ? 'scale-110' : ''}
                 `}
                 style={{
-                  color: isSelected ? '#ffffff' : '#0d6355',
+                  color: isSelected ? '#047857' : '#0d6355',
                 }}
               />
 
@@ -147,7 +149,7 @@ export default function CategorySection({
                 ${isSelected ? 'w-4 opacity-100' : 'w-0 opacity-0'}
                 overflow-hidden
               `}>
-                <svg className="w-3.5 h-3.5 text-white/90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-3.5 h-3.5" style={{ color: '#047857' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
@@ -183,12 +185,14 @@ export default function CategorySection({
                   style={{
                     animationDelay: `${index * 30}ms`,
                     background: isSubSelected
-                      ? 'linear-gradient(180deg, #0d6355 0%, #0a5248 100%)'
+                      ? 'linear-gradient(135deg, rgba(167, 243, 208, 0.55) 0%, rgba(110, 231, 183, 0.45) 100%)'
                       : 'var(--color-bg-tertiary)',
-                    color: isSubSelected ? '#ffffff' : 'var(--color-text-secondary)',
-                    borderColor: isSubSelected ? 'rgba(13, 99, 85, 0.3)' : 'var(--color-border)',
+                    backdropFilter: isSubSelected ? 'blur(10px)' : 'none',
+                    WebkitBackdropFilter: isSubSelected ? 'blur(10px)' : 'none',
+                    color: isSubSelected ? '#065f46' : 'var(--color-text-secondary)',
+                    borderColor: isSubSelected ? 'rgba(110, 231, 183, 0.5)' : 'var(--color-border)',
                     boxShadow: isSubSelected
-                      ? '0 2px 8px rgba(13, 99, 85, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                      ? '0 2px 12px rgba(16, 185, 129, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.4)'
                       : 'none',
                   }}
                 >

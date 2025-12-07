@@ -131,6 +131,10 @@ export default function ProProfileSetupPage() {
         if (parsed.cadastralId) {
           setFormData(prev => ({ ...prev, cadastralId: parsed.cadastralId }));
         }
+        // Load portfolio projects if they were added during registration
+        if (parsed.portfolioProjects && Array.isArray(parsed.portfolioProjects)) {
+          setPortfolioProjects(parsed.portfolioProjects);
+        }
         sessionStorage.removeItem('proRegistrationData');
       } catch (err) {
         console.error('Failed to parse registration data:', err);

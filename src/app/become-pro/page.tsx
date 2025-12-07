@@ -1,7 +1,9 @@
 'use client';
 
 import CategorySubcategorySelector from '@/components/common/CategorySubcategorySelector';
+import PortfolioProjectsInput, { PortfolioProject } from '@/components/common/PortfolioProjectsInput';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -10,6 +12,7 @@ import { useEffect, useState } from 'react';
 export default function BecomeProPage() {
   const router = useRouter();
   const { user, isLoading: authLoading, isAuthenticated, login } = useAuth();
+  const { openLoginModal } = useAuthModal();
   const { locale } = useLanguage();
 
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -24,6 +27,7 @@ export default function BecomeProPage() {
   const [yearsExperience, setYearsExperience] = useState<number>(0);
   const [bio, setBio] = useState('');
   const [portfolioUrl, setPortfolioUrl] = useState('');
+  const [portfolioProjects, setPortfolioProjects] = useState<PortfolioProject[]>([]);
 
   useEffect(() => {
     setIsVisible(true);
@@ -33,15 +37,36 @@ export default function BecomeProPage() {
   useEffect(() => {
     if (!authLoading) {
       if (!isAuthenticated) {
-        router.push('/login?redirect=/become-pro');
+        openLoginModal('/become-pro');
       } else if (user?.role === 'pro') {
         router.push('/browse');
       }
     }
-  }, [authLoading, isAuthenticated, user, router]);
+  }, [authLoading, isAuthenticated, user, router, openLoginModal]);
+
+  // Validation state for progress tracking
+  const getValidationState = () => {
+    const hasCategory = !!selectedCategory;
+    const hasSpecialty = selectedSubcategories.length > 0 || customSpecialties.length > 0;
+
+    return {
+      category: hasCategory,
+      specialty: hasSpecialty,
+    };
+  };
+
+  const validation = getValidationState();
+  const completedFields = Object.values(validation).filter(Boolean).length;
+  const totalFields = Object.keys(validation).length;
 
   const canSubmit = () => {
-    return selectedSubcategories.length > 0 || customSpecialties.length > 0;
+    return validation.specialty;
+  };
+
+  const getFirstMissingField = () => {
+    if (!validation.category) return { key: 'category', label: locale === 'ka' ? 'კატეგორია' : 'Category' };
+    if (!validation.specialty) return { key: 'specialty', label: locale === 'ka' ? 'სპეციალობა' : 'Specialty' };
+    return null;
   };
 
   const handleSubmit = async () => {
@@ -64,6 +89,12 @@ export default function BecomeProPage() {
         yearsExperience,
         bio,
         portfolioUrl,
+        portfolioProjects: portfolioProjects.map(p => ({
+          title: p.title,
+          description: p.description,
+          location: p.location,
+          images: p.images,
+        })),
       }));
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/upgrade-to-pro`, {
@@ -207,7 +238,7 @@ export default function BecomeProPage() {
         </div>
       </header>
 
-      <main className={`relative z-10 pb-32 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+      <main className={`relative z-10 pb-24 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
         <div className="container-custom pt-8 md:pt-12">
           <div className="max-w-2xl mx-auto">
             {/* Hero Section */}
@@ -342,6 +373,15 @@ export default function BecomeProPage() {
                       }
                     </p>
                   </div>
+
+                  {/* Portfolio Projects */}
+                  <div className="pt-4 border-t border-[var(--color-border-subtle)]">
+                    <PortfolioProjectsInput
+                      projects={portfolioProjects}
+                      onChange={setPortfolioProjects}
+                      maxProjects={5}
+                    />
+                  </div>
                 </div>
 
                 {/* Info about profile completion */}
@@ -377,43 +417,85 @@ export default function BecomeProPage() {
                 </div>
               )}
 
-              {/* Submit Button - Fixed at bottom */}
-              <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-[var(--color-bg-primary)]/90 backdrop-blur-xl border-t border-[var(--color-border-subtle)]">
-                <div className="max-w-2xl mx-auto">
-                  <button
-                    type="submit"
-                    disabled={isSubmitting || !canSubmit()}
-                    className="w-full py-4 px-6 bg-[var(--color-accent)] text-white rounded-2xl font-medium text-lg transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-[0_8px_30px_rgba(13,150,104,0.3)] hover:-translate-y-0.5 disabled:hover:shadow-none disabled:hover:translate-y-0 flex items-center justify-center gap-2"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                        </svg>
-                        <span>{locale === 'ka' ? 'მიმდინარეობს...' : 'Processing...'}</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>{locale === 'ka' ? 'პროფილის შექმნა' : 'Create Profile'}</span>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                        </svg>
-                      </>
-                    )}
-                  </button>
-
-                  {!canSubmit() && (
-                    <p className="text-center text-sm text-[var(--color-text-tertiary)] mt-2">
-                      {locale === 'ka' ? 'აირჩიეთ მინიმუმ ერთი სპეციალობა' : 'Select at least one specialty'}
-                    </p>
-                  )}
-                </div>
-              </div>
             </form>
           </div>
         </div>
       </main>
+
+      {/* Fixed Actions Footer - compact design matching post-job */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--color-bg-primary)]/95 backdrop-blur-xl border-t border-[var(--color-border-subtle)] shadow-[0_-2px_10px_rgba(0,0,0,0.06)]">
+        <div className="max-w-2xl mx-auto px-4 py-3">
+          <div className="flex items-center gap-3">
+            {/* Progress indicator - compact */}
+            {!canSubmit() && (
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-[var(--color-bg-tertiary)] flex items-center justify-center relative">
+                  <svg className="w-8 h-8 -rotate-90">
+                    <circle
+                      cx="16"
+                      cy="16"
+                      r="12"
+                      fill="none"
+                      stroke="var(--color-border)"
+                      strokeWidth="3"
+                    />
+                    <circle
+                      cx="16"
+                      cy="16"
+                      r="12"
+                      fill="none"
+                      stroke="#10b981"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeDasharray={`${(completedFields / totalFields) * 75.4} 75.4`}
+                    />
+                  </svg>
+                  <span className="absolute text-[10px] font-bold text-[var(--color-text-secondary)]">
+                    {completedFields}/{totalFields}
+                  </span>
+                </div>
+                <span className="text-xs text-amber-600 dark:text-amber-400 font-medium hidden sm:block">
+                  {getFirstMissingField()?.label}
+                </span>
+              </div>
+            )}
+
+            {/* Submit button */}
+            <button
+              type="button"
+              onClick={() => {
+                const form = document.querySelector('form');
+                if (form) form.requestSubmit();
+              }}
+              disabled={isSubmitting || !canSubmit()}
+              className={`flex-1 py-3 px-5 rounded-xl font-medium text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
+                canSubmit()
+                  ? 'bg-[var(--color-accent)] text-white hover:shadow-[0_4px_20px_rgba(13,150,104,0.3)]'
+                  : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] cursor-not-allowed'
+              }`}
+            >
+              {isSubmitting ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  <span>{locale === 'ka' ? 'მიმდინარეობს...' : 'Processing...'}</span>
+                </>
+              ) : canSubmit() ? (
+                <>
+                  <span>{locale === 'ka' ? 'პროფილის შექმნა' : 'Create Profile'}</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </>
+              ) : (
+                <span>{locale === 'ka' ? 'აირჩიე სპეციალობა' : 'Select specialty'}</span>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

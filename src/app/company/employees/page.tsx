@@ -2,6 +2,7 @@
 
 import Header from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -24,6 +25,7 @@ interface Employee {
 
 export default function CompanyEmployeesPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { openLoginModal } = useAuthModal();
   const router = useRouter();
 
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -32,12 +34,12 @@ export default function CompanyEmployeesPage() {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      router.push('/login');
+      openLoginModal('/company/employees');
     }
     if (!authLoading && user?.role !== 'company') {
       router.push('/');
     }
-  }, [authLoading, isAuthenticated, user, router]);
+  }, [authLoading, isAuthenticated, user, router, openLoginModal]);
 
   useEffect(() => {
     if (!authLoading && user?.role === 'company') {

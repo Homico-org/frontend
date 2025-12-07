@@ -1,6 +1,7 @@
 import ClientLayout from '@/components/common/ClientLayout';
 import ToastContainer from '@/components/common/Toast';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthModalProvider } from '@/contexts/AuthModalContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { ToastProvider } from '@/contexts/ToastContext';
@@ -10,8 +11,8 @@ import '@/styles/globals.css';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Homico - Find Your Perfect Home Professional',
-  description: 'Marketplace for craftsmen, interior designers, architects, and renovation professionals',
+  title: 'Homico - იპოვე შენი იდეალური სახლის პროფესიონალი',
+  description: 'ხელოსნების, ინტერიერის დიზაინერების, არქიტექტორებისა და სარემონტო პროფესიონალების მარკეტპლეისი',
   icons: {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',
@@ -50,14 +51,16 @@ export default function RootLayout({
         <ThemeProvider>
           <LanguageProvider>
             <AuthProvider>
-              <ViewModeProvider>
-                <NotificationProvider>
-                  <ToastProvider>
-                    <ClientLayout>{children}</ClientLayout>
-                    <ToastContainer />
-                  </ToastProvider>
-                </NotificationProvider>
-              </ViewModeProvider>
+              <AuthModalProvider>
+                <ViewModeProvider>
+                  <NotificationProvider>
+                    <ToastProvider>
+                      <ClientLayout>{children}</ClientLayout>
+                      <ToastContainer />
+                    </ToastProvider>
+                  </NotificationProvider>
+                </ViewModeProvider>
+              </AuthModalProvider>
             </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>

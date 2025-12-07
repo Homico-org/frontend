@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
+import LoginModal from '@/components/auth/LoginModal';
 import AppBackground from './AppBackground';
 import SupportChat from './SupportChat';
 
@@ -16,6 +17,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       <AppBackground />
       {children}
       {isAuthenticated && <SupportChat />}
+      <LoginModal />
     </>
   );
 }

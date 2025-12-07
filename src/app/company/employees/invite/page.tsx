@@ -2,12 +2,14 @@
 
 import Header from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 export default function InviteEmployeePage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { openLoginModal } = useAuthModal();
   const router = useRouter();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,12 +30,12 @@ export default function InviteEmployeePage() {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      router.push('/login');
+      openLoginModal('/company/employees/invite');
     }
     if (!authLoading && user?.role !== 'company') {
       router.push('/');
     }
-  }, [authLoading, isAuthenticated, user, router]);
+  }, [authLoading, isAuthenticated, user, router, openLoginModal]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

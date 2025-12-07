@@ -2,6 +2,7 @@
 
 import Header from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -40,6 +41,7 @@ export default function TicketDetailPage() {
   const router = useRouter();
   const { t } = useLanguage();
   const { isAuthenticated, token, user, isLoading: authLoading } = useAuth();
+  const { openLoginModal } = useAuthModal();
   const [ticket, setTicket] = useState<SupportTicket | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [inputValue, setInputValue] = useState('');
@@ -53,9 +55,9 @@ export default function TicketDetailPage() {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      router.push('/login');
+      openLoginModal(`/help/ticket/${ticketId}`);
     }
-  }, [authLoading, isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, ticketId, openLoginModal]);
 
   useEffect(() => {
     if (token && ticketId) {

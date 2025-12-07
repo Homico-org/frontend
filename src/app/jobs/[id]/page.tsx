@@ -241,6 +241,16 @@ export default function JobDetailPage() {
     }
   }, [params.id, router]);
 
+  // Update document title when job loads
+  useEffect(() => {
+    if (job?.title) {
+      document.title = `${job.title} | Homico`;
+    }
+    return () => {
+      document.title = 'Homico - იპოვე შენი იდეალური სახლის პროფესიონალი';
+    };
+  }, [job?.title]);
+
   useEffect(() => {
     const fetchMyProposal = async () => {
       if (!user || user.role !== 'pro' || !params.id) return;

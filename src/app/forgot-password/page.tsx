@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -7,6 +8,7 @@ import { useState } from 'react';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
+  const { openLoginModal } = useAuthModal();
   const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
@@ -207,15 +209,15 @@ export default function ForgotPasswordPage() {
 
             {/* Back to Login */}
             <div className="mt-8 pt-6 border-t border-neutral-100 dark:border-dark-border">
-              <Link
-                href="/login"
-                className="flex items-center justify-center gap-2 text-sm text-neutral-600 dark:text-neutral-400 hover:text-forest-800 dark:hover:text-primary-400 transition-all duration-200 group"
+              <button
+                onClick={() => openLoginModal()}
+                className="flex items-center justify-center gap-2 text-sm text-neutral-600 dark:text-neutral-400 hover:text-forest-800 dark:hover:text-primary-400 transition-all duration-200 group w-full"
               >
                 <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
                 {t('forgotPassword.backToLogin')}
-              </Link>
+              </button>
             </div>
           </div>
 

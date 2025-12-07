@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -7,6 +8,7 @@ import { useState, useEffect } from 'react';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const { openLoginModal } = useAuthModal();
   const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -121,15 +123,15 @@ export default function ResetPasswordPage() {
               {t('forgotPassword.successMessage')}
             </p>
 
-            <Link
-              href="/login"
+            <button
+              onClick={() => openLoginModal()}
               className="w-full btn btn-primary py-3.5 flex items-center justify-center gap-2 group"
             >
               {t('forgotPassword.goToLogin')}
               <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
               </svg>
-            </Link>
+            </button>
           </div>
         </div>
       </div>

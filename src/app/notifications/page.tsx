@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNotifications, Notification, NotificationType } from '@/contexts/NotificationContext';
 import {
@@ -79,6 +80,7 @@ type FilterKey = 'all' | 'unread' | 'jobs' | 'messages' | 'reviews';
 
 export default function NotificationsPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { openLoginModal } = useAuthModal();
   const { locale } = useLanguage();
   const router = useRouter();
   const {
@@ -97,9 +99,9 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      router.push('/login');
+      openLoginModal('/notifications');
     }
-  }, [authLoading, isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, openLoginModal]);
 
   useEffect(() => {
     if (isAuthenticated) {

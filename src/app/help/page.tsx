@@ -2,6 +2,7 @@
 
 import Header from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
@@ -24,6 +25,7 @@ interface SupportTicket {
 export default function HelpPage() {
   const { t } = useLanguage();
   const { isAuthenticated, token, user } = useAuth();
+  const { openLoginModal } = useAuthModal();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [contactForm, setContactForm] = useState({
@@ -613,15 +615,15 @@ export default function HelpPage() {
               <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
                 {t('helpPage.signInPrompt')}
               </p>
-              <Link
-                href="/login"
+              <button
+                onClick={() => openLoginModal()}
                 className="inline-flex items-center gap-2 text-forest-800 dark:text-primary-400 font-medium text-sm hover:underline"
               >
                 {t('auth.signIn')}
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
-              </Link>
+              </button>
             </div>
           </section>
         )}

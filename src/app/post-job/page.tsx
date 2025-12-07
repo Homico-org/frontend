@@ -4,6 +4,7 @@ import AddressPicker from '@/components/common/AddressPicker';
 import CategorySubcategorySelector from '@/components/common/CategorySubcategorySelector';
 import DatePicker from '@/components/common/DatePicker';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useViewMode } from '@/contexts/ViewModeContext';
@@ -116,6 +117,7 @@ const BudgetIcon = ({ type, className = '' }: { type: string; className?: string
 
 export default function PostJobPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { openLoginModal } = useAuthModal();
   const { locale } = useLanguage();
   const { isClientMode } = useViewMode();
   const toast = useToast();
@@ -168,9 +170,9 @@ export default function PostJobPage() {
     const isClient = user?.role === 'client';
     const isProInClientMode = user?.role === 'pro' && isClientMode;
     if (!authLoading && (!isAuthenticated || (!isClient && !isProInClientMode))) {
-      router.push('/login?redirect=/post-job');
+      openLoginModal('/post-job');
     }
-  }, [authLoading, isAuthenticated, user, router, isClientMode]);
+  }, [authLoading, isAuthenticated, user, isClientMode, openLoginModal]);
 
   // Fetch job data for edit mode
   useEffect(() => {
@@ -437,7 +439,7 @@ export default function PostJobPage() {
         </div>
       </header>
 
-      <main className={`relative z-10 pb-32 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+      <main className={`relative z-10 pb-24 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
         <div className="container-custom pt-8 md:pt-12">
           <div className="max-w-2xl mx-auto">
             {/* Hero Section */}

@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Header from '@/components/common/Header';
 import Avatar from '@/components/common/Avatar';
@@ -10,6 +11,7 @@ import { User, Bell, Shield, CreditCard, Camera } from 'lucide-react';
 
 export default function SettingsPage() {
   const { user, isAuthenticated, isLoading, updateUser } = useAuth();
+  const { openLoginModal } = useAuthModal();
   const { t } = useLanguage();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('profile');
@@ -27,9 +29,9 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push('/login');
+      openLoginModal('/settings');
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoading, isAuthenticated, openLoginModal]);
 
   useEffect(() => {
     if (user) {
