@@ -9,6 +9,7 @@ import Header from '@/components/common/Header';
 import JobCard from '@/components/common/JobCard';
 import ProCard from '@/components/common/ProCard';
 import Select from '@/components/common/Select';
+import { CATEGORIES } from '@/constants/categories';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -221,6 +222,7 @@ function BrowseContent() {
   const categoriesFetchedRef = useRef(false);
   const dbCategoriesFetchedRef = useRef(false);
   const proposalsFetchedRef = useRef(false);
+  const profilesFetchingRef = useRef(false);
 
   useEffect(() => {
     setSortBy(isPro ? 'newest' : 'recommended');
@@ -358,6 +360,10 @@ function BrowseContent() {
     // Fetch profiles when NOT in pro mode (i.e., client or pro-in-client-mode)
     if (isAuthLoading || isPro) return;
 
+    // Prevent duplicate fetches
+    if (profilesFetchingRef.current) return;
+    profilesFetchingRef.current = true;
+
     if (pageNum === 1) {
       setIsLoading(true);
     } else {
@@ -399,10 +405,24 @@ function BrowseContent() {
           }
         });
         initializeLikeStates(likeStatesFromServer);
+      } else {
+        // Stop pagination on error response
+        setHasMore(false);
+        if (!append) {
+          setResults([]);
+          setTotalCount(0);
+        }
       }
     } catch (err) {
       console.error('Error fetching profiles:', err);
+      // Stop pagination on network error
+      setHasMore(false);
+      if (pageNum === 1) {
+        setResults([]);
+        setTotalCount(0);
+      }
     } finally {
+      profilesFetchingRef.current = false;
       setIsLoading(false);
       setIsLoadingMore(false);
       if (pageNum === 1) {
@@ -1281,10 +1301,19 @@ function BrowseContent() {
                   <p className="text-xs sm:text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                     <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{totalCount}</span> {t('browse.specialists') || 'სპეციალისტი'}
                     {selectedCategory && (
-                      <span className="hidden sm:inline-block ml-2 px-2 py-0.5 rounded-md text-xs" style={{ backgroundColor: 'var(--color-accent-soft)', color: 'var(--color-accent)' }}>
+                      <span className="inline-block ml-2 px-2 py-0.5 rounded-md text-xs" style={{ backgroundColor: 'var(--color-accent-soft)', color: 'var(--color-accent)' }}>
                         {(() => {
-                          const cat = dbCategories.find(c => c.key === selectedCategory);
-                          return locale === 'ka' ? (cat?.nameKa || cat?.name || selectedCategory) : (cat?.name || selectedCategory);
+                          const cat = CATEGORIES.find(c => c.key === selectedCategory);
+                          return locale === 'ka' ? (cat?.nameKa || selectedCategory) : (cat?.name || selectedCategory);
+                        })()}
+                      </span>
+                    )}
+                    {selectedSubcategory && (
+                      <span className="inline-block ml-1 px-2 py-0.5 rounded-md text-xs" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }}>
+                        {(() => {
+                          const cat = CATEGORIES.find(c => c.key === selectedCategory);
+                          const sub = cat?.subcategories?.find(s => s.key === selectedSubcategory);
+                          return locale === 'ka' ? (sub?.nameKa || selectedSubcategory) : (sub?.name || selectedSubcategory);
                         })()}
                       </span>
                     )}

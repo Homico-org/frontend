@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react';
 export default function ResetPasswordPage() {
   const router = useRouter();
   const { openLoginModal } = useAuthModal();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
@@ -154,7 +154,7 @@ export default function ResetPasswordPage() {
 
         <div className="relative z-10 flex flex-col justify-center px-16">
           <Link href="/" className="flex items-center gap-2 mb-12 group">
-            <span className="text-3xl font-serif font-semibold text-white group-hover:text-primary-300 transition-colors duration-300">Homico</span>
+            <span className="text-3xl font-serif font-semibold text-white group-hover:text-primary-300 transition-colors duration-300">{locale === 'ka' ? 'ჰომიკო' : 'Homico'}</span>
             <span className="w-2.5 h-2.5 rounded-full bg-primary-400 group-hover:scale-125 transition-transform duration-300"></span>
           </Link>
 
@@ -208,7 +208,7 @@ export default function ResetPasswordPage() {
         <div className="max-w-md w-full">
           {/* Mobile Logo */}
           <Link href="/" className="lg:hidden flex items-center justify-center gap-2 mb-10">
-            <span className="text-2xl font-serif font-semibold text-forest-800 dark:text-primary-400">Homico</span>
+            <span className="text-2xl font-serif font-semibold text-forest-800 dark:text-primary-400">{locale === 'ka' ? 'ჰომიკო' : 'Homico'}</span>
             <span className="w-2 h-2 rounded-full bg-primary-400"></span>
           </Link>
 

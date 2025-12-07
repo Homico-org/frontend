@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { CATEGORIES } from '@/constants/categories';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useState } from 'react';
 
 const categories = CATEGORIES;
 
@@ -88,53 +88,29 @@ export default function CategorySection({
               onMouseEnter={() => setHoveredCategory(category.key)}
               onMouseLeave={() => setHoveredCategory(null)}
               className={`
-                group relative flex items-center gap-1.5 sm:gap-2
-                px-3 sm:px-3.5 py-2 rounded-full
-                text-[13px] sm:text-sm font-medium
-                transition-all duration-250 ease-out
-                animate-fade-in
-                border flex-shrink-0
+                group relative flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2 rounded-full
+                text-[13px] sm:text-sm transition-all duration-200 ease-out animate-fade-in border flex-shrink-0
+                ${isSelected
+                  ? 'bg-emerald-500/[0.06] border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-medium'
+                  : isHovered
+                    ? 'border-emerald-500/20 text-[var(--color-text-secondary)]'
+                    : 'border-emerald-500/[0.12] text-[var(--color-text-secondary)]'
+                }
               `}
-              style={{
-                animationDelay: `${index * 50}ms`,
-                transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
-                background: isSelected
-                  ? 'linear-gradient(135deg, rgba(167, 243, 208, 0.6) 0%, rgba(110, 231, 183, 0.5) 100%)'
-                  : 'var(--color-bg-secondary)',
-                backdropFilter: isSelected ? 'blur(12px)' : 'none',
-                WebkitBackdropFilter: isSelected ? 'blur(12px)' : 'none',
-                color: isSelected ? '#065f46' : 'var(--color-text-secondary)',
-                borderColor: isSelected ? 'rgba(110, 231, 183, 0.6)' : 'var(--color-border)',
-                boxShadow: isSelected
-                  ? '0 4px 16px rgba(16, 185, 129, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.5)'
-                  : 'var(--shadow-xs)',
-              }}
+              style={{ animationDelay: `${index * 50}ms` }}
             >
-              {/* Subtle hover glow */}
-              <div
-                className={`
-                  absolute inset-0 rounded-full opacity-0 transition-opacity duration-300
-                  ${isHovered && !isSelected ? 'opacity-100' : ''}
-                `}
-                style={{
-                  background: 'radial-gradient(circle at 50% 50%, var(--color-accent-soft) 0%, transparent 70%)',
-                  filter: 'blur(4px)',
-                  transform: 'scale(1.1)',
-                  zIndex: -1,
-                }}
-              />
-
               {/* Icon */}
               <CategoryIcon
                 type={category.icon}
                 className={`
-                  w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0
-                  transition-all duration-250
-                  ${isHovered && !isSelected ? 'scale-110' : ''}
+                  w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0 transition-all duration-200
+                  ${isSelected
+                    ? 'text-emerald-600 dark:text-emerald-400'
+                    : isHovered
+                      ? 'text-emerald-600 dark:text-emerald-400 scale-105'
+                      : 'text-emerald-600/60 dark:text-emerald-400/60'
+                  }
                 `}
-                style={{
-                  color: isSelected ? '#047857' : '#0d6355',
-                }}
               />
 
               {/* Title only */}
@@ -143,14 +119,13 @@ export default function CategorySection({
               </span>
 
               {/* Selection tick - appears on selected */}
-              <div className={`
-                flex items-center justify-center
-                transition-all duration-200
-                ${isSelected ? 'w-4 opacity-100' : 'w-0 opacity-0'}
-                overflow-hidden
-              `}>
-                <svg className="w-3.5 h-3.5" style={{ color: '#047857' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+              <div
+                className={`flex items-center justify-center transition-all duration-200 overflow-hidden ${
+                  isSelected ? 'w-4 opacity-100' : 'w-0 opacity-0'
+                }`}
+              >
+                <svg className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
             </button>
@@ -177,24 +152,14 @@ export default function CategorySection({
                   key={sub.key}
                   onClick={() => onSelectSubcategory?.(isSubSelected ? null : sub.key)}
                   className={`
-                    px-3 py-1.5 rounded-full text-xs font-medium
-                    transition-all duration-200 ease-out
-                    animate-fade-in
-                    border
+                    px-3 py-1.5 rounded-full text-xs transition-all duration-200 ease-out animate-fade-in border
+                    hover:border-emerald-500/25
+                    ${isSubSelected
+                      ? 'bg-emerald-500/[0.06] border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-medium'
+                      : 'border-emerald-500/10 text-[var(--color-text-secondary)]'
+                    }
                   `}
-                  style={{
-                    animationDelay: `${index * 30}ms`,
-                    background: isSubSelected
-                      ? 'linear-gradient(135deg, rgba(167, 243, 208, 0.55) 0%, rgba(110, 231, 183, 0.45) 100%)'
-                      : 'var(--color-bg-tertiary)',
-                    backdropFilter: isSubSelected ? 'blur(10px)' : 'none',
-                    WebkitBackdropFilter: isSubSelected ? 'blur(10px)' : 'none',
-                    color: isSubSelected ? '#065f46' : 'var(--color-text-secondary)',
-                    borderColor: isSubSelected ? 'rgba(110, 231, 183, 0.5)' : 'var(--color-border)',
-                    boxShadow: isSubSelected
-                      ? '0 2px 12px rgba(16, 185, 129, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.4)'
-                      : 'none',
-                  }}
+                  style={{ animationDelay: `${index * 30}ms` }}
                 >
                   {locale === 'ka' ? sub.nameKa : sub.name}
                 </button>

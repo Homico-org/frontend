@@ -2,6 +2,7 @@
 
 import Header from '@/components/common/Header';
 import RatingBar from '@/components/common/RatingBar';
+import SimilarProfessionals from '@/components/professionals/SimilarProfessionals';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -499,50 +500,51 @@ export default function ProfessionalDetailPage() {
 
                     {/* Share dropdown */}
                     {showShareMenu && (
-                      <div className="absolute top-full right-0 mt-2 w-48 rounded-xl shadow-lg z-50 p-2" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
-                        <div className="space-y-1.5">
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(window.location.href);
-                              setShowShareMenu(false);
-                              toast.success('ბმული დაკოპირებულია!');
-                            }}
-                            className="w-full flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-200 text-left border border-emerald-500/40 bg-transparent hover:border-emerald-500/70"
+                      <div className="absolute top-full right-0 mt-2 rounded-lg shadow-md z-50 p-1" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(window.location.href);
+                            setShowShareMenu(false);
+                            toast.success('ბმული დაკოპირებულია!');
+                          }}
+                          className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-white/5 transition-colors"
+                          style={{ color: 'var(--color-text-primary)' }}
+                        >
+                          <svg className="w-4 h-4 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                          <span className="text-sm">კოპირება</span>
+                        </button>
+                        {profile.userId?.whatsapp && (
+                          <a
+                            href={`https://wa.me/${profile.userId.whatsapp}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => setShowShareMenu(false)}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-white/5 transition-colors"
+                            style={{ color: 'var(--color-text-primary)' }}
                           >
-                            <svg className="w-3.5 h-3.5 text-emerald-500/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            <svg className="w-4 h-4 opacity-60" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                             </svg>
-                            <span className="text-xs text-emerald-500/90">ბმულის კოპირება</span>
-                          </button>
-                          {profile.userId?.whatsapp && (
-                            <a
-                              href={`https://wa.me/${profile.userId.whatsapp}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={() => setShowShareMenu(false)}
-                              className="w-full flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-200 text-left border border-emerald-500/40 bg-transparent hover:border-emerald-500/70"
-                            >
-                              <svg className="w-3.5 h-3.5 text-emerald-500/80" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                              </svg>
-                              <span className="text-xs text-emerald-500/90">WhatsApp</span>
-                            </a>
-                          )}
-                          {profile.userId?.telegram && (
-                            <a
-                              href={`https://t.me/${profile.userId.telegram}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={() => setShowShareMenu(false)}
-                              className="w-full flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-200 text-left border border-emerald-500/40 bg-transparent hover:border-emerald-500/70"
-                            >
-                              <svg className="w-3.5 h-3.5 text-emerald-500/80" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-                              </svg>
-                              <span className="text-xs text-emerald-500/90">Telegram</span>
-                            </a>
-                          )}
-                        </div>
+                            <span className="text-sm">WhatsApp</span>
+                          </a>
+                        )}
+                        {profile.userId?.telegram && (
+                          <a
+                            href={`https://t.me/${profile.userId.telegram}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => setShowShareMenu(false)}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-white/5 transition-colors"
+                            style={{ color: 'var(--color-text-primary)' }}
+                          >
+                            <svg className="w-4 h-4 opacity-60" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                            </svg>
+                            <span className="text-sm">Telegram</span>
+                          </a>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1260,6 +1262,14 @@ export default function ProfessionalDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* Similar Professionals Section */}
+        {profile && profile.categories.length > 0 && (
+          <SimilarProfessionals
+            currentProId={profile._id}
+            categories={profile.categories}
+          />
+        )}
       </main>
 
       {/* Contact Modal */}
@@ -1341,164 +1351,297 @@ export default function ProfessionalDetailPage() {
         </div>
       )}
 
-      {/* Project Detail Modal */}
+      {/* Project Detail Modal - Soft Minimal Design */}
       {selectedProject && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setSelectedProject(null)}>
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+          onClick={() => setSelectedProject(null)}
+          style={{
+            background: 'rgba(28, 26, 23, 0.4)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+          }}
+        >
+          {/* Modal Container */}
           <div
-            className="bg-white dark:bg-[#222226] w-full sm:max-w-xl sm:rounded-lg rounded-t-xl max-h-[90vh] overflow-hidden shadow-xl"
+            className="w-full sm:max-w-lg max-h-[92vh] sm:max-h-[88vh] overflow-hidden flex flex-col rounded-t-2xl sm:rounded-2xl"
             onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'var(--color-bg-elevated)',
+              boxShadow: 'var(--shadow-xl)',
+              animation: 'softModalSlide 0.35s cubic-bezier(0.32, 0.72, 0, 1)',
+            }}
           >
-            {/* Header Image */}
-            <div className="relative h-56 sm:h-64">
-              {selectedProject.beforeImage && selectedProject.afterImage ? (
+            {/* Hero Image */}
+            <div className="relative flex-shrink-0 overflow-hidden" style={{ height: '240px' }}>
+              {selectedProject.images && selectedProject.images.length > 1 ? (
+                <div className="h-full flex gap-0.5">
+                  <div className="flex-1 relative overflow-hidden">
+                    <img
+                      src={selectedProject.images[0]}
+                      alt={selectedProject.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="w-20 flex flex-col gap-0.5">
+                    {selectedProject.images.slice(1, 3).map((img, idx) => (
+                      <div key={idx} className="flex-1 relative overflow-hidden">
+                        <img src={img} alt="" className="w-full h-full object-cover" />
+                        {idx === 1 && selectedProject.images && selectedProject.images.length > 3 && (
+                          <div
+                            className="absolute inset-0 flex items-center justify-center text-white text-sm font-semibold"
+                            style={{ background: 'rgba(28, 26, 23, 0.6)' }}
+                          >
+                            +{selectedProject.images.length - 3}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : selectedProject.beforeImage && selectedProject.afterImage ? (
                 <div className="h-full flex">
                   <div className="w-1/2 relative">
                     <img src={selectedProject.beforeImage} alt="მანამდე" className="w-full h-full object-cover" />
-                    <div className="absolute bottom-2 left-2 px-1.5 py-0.5 bg-black/70 text-white text-[10px] font-medium rounded">მანამდე</div>
+                    <span
+                      className="absolute bottom-3 left-3 px-2.5 py-1 text-xs font-medium rounded-md"
+                      style={{ background: 'var(--color-bg-elevated)', color: 'var(--color-text-secondary)' }}
+                    >
+                      მანამდე
+                    </span>
                   </div>
-                  <div className="w-1/2 relative border-l-2 border-white dark:border-[#222226]">
+                  <div className="w-1/2 relative" style={{ borderLeft: '2px solid var(--color-bg-elevated)' }}>
                     <img src={selectedProject.afterImage} alt="შემდეგ" className="w-full h-full object-cover" />
-                    <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-emerald-600 text-white text-[10px] font-medium rounded">შემდეგ</div>
+                    <span
+                      className="absolute bottom-3 right-3 px-2.5 py-1 text-xs font-medium rounded-md text-white"
+                      style={{ background: 'var(--color-accent)' }}
+                    >
+                      შემდეგ
+                    </span>
                   </div>
                 </div>
               ) : (
-                <img src={selectedProject.imageUrl} alt={selectedProject.title} className="w-full h-full object-cover" />
+                <img
+                  src={selectedProject.imageUrl}
+                  alt={selectedProject.title}
+                  className="w-full h-full object-cover"
+                />
               )}
+
+              {/* Close Button */}
               <button
                 onClick={() => setSelectedProject(null)}
-                className="absolute top-4 right-4 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-all duration-200 ease-out"
+                className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-transform duration-200 hover:scale-105"
+                style={{
+                  background: 'var(--color-bg-elevated)',
+                  color: 'var(--color-text-secondary)',
+                  boxShadow: 'var(--shadow-md)',
+                }}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
-              {/* Project type badge */}
-              <div className={`absolute top-4 left-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium ${getProjectTypeColor(selectedProject.projectType)}`}>
+
+              {/* Project Type Badge */}
+              <div
+                className="absolute top-3 left-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
+                style={{
+                  background: 'var(--color-bg-elevated)',
+                  color: selectedProject.projectType === 'quick'
+                    ? 'var(--color-accent)'
+                    : selectedProject.projectType === 'project'
+                    ? '#3b82f6'
+                    : '#8b5cf6',
+                  boxShadow: 'var(--shadow-sm)',
+                }}
+              >
                 {getProjectTypeIcon(selectedProject.projectType)}
                 {getProjectTypeLabel(selectedProject.projectType)}
               </div>
             </div>
 
             {/* Content */}
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-20rem)]">
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <div>
-                  <h3 className="text-xl font-bold text-neutral-900">{selectedProject.title}</h3>
-                  {selectedProject.location && (
-                    <div className="flex items-center gap-1.5 text-neutral-500 mt-1">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      </svg>
-                      {selectedProject.location}
-                    </div>
-                  )}
-                </div>
-                {selectedProject.rating && (
-                  <RatingBar rating={selectedProject.rating} size="sm" showValue={true} />
-                )}
-              </div>
-
-              {/* Meta info */}
-              <div className="flex flex-wrap gap-4 mb-6">
-                {selectedProject.duration && (
-                  <div className="flex items-center gap-2 text-neutral-600">
-                    <div className="w-8 h-8 bg-neutral-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-xs text-neutral-500">ხანგრძლივობა</p>
-                      <p className="text-sm font-medium">{selectedProject.duration}</p>
-                    </div>
-                  </div>
-                )}
-                {selectedProject.completedDate && (
-                  <div className="flex items-center gap-2 text-neutral-600">
-                    <div className="w-8 h-8 bg-neutral-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-xs text-neutral-500">დასრულდა</p>
-                      <p className="text-sm font-medium">{new Date(selectedProject.completedDate).toLocaleDateString('ka-GE', { month: 'long', year: 'numeric' })}</p>
-                    </div>
-                  </div>
-                )}
-                {selectedProject.category && (
-                  <div className="flex items-center gap-2 text-neutral-600">
-                    <div className="w-8 h-8 bg-neutral-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-xs text-neutral-500">კატეგორია</p>
-                      <p className="text-sm font-medium capitalize">{selectedProject.category.replace(/-/g, ' ')}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Description */}
-              {selectedProject.description && (
-                <div className="mb-6">
-                  <h4 className="text-sm font-semibold text-neutral-900 mb-2">პროექტის შესახებ</h4>
-                  <p className="text-neutral-600 leading-relaxed">{selectedProject.description}</p>
-                </div>
-              )}
-
-              {/* Client Review */}
-              {selectedProject.clientName && (
-                <div className="bg-neutral-50 rounded-xl p-5">
-                  <div className="flex items-center gap-3 mb-3">
-                    {selectedProject.clientAvatar ? (
-                      <img src={selectedProject.clientAvatar} alt={selectedProject.clientName} className="w-12 h-12 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-neutral-300 to-neutral-400 flex items-center justify-center text-white text-lg font-medium">
-                        {selectedProject.clientName.charAt(0)}
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-5">
+                {/* Header */}
+                <div className="mb-5">
+                  <h2
+                    className="text-xl font-semibold mb-1.5"
+                    style={{ color: 'var(--color-text-primary)', letterSpacing: '-0.02em' }}
+                  >
+                    {selectedProject.title}
+                  </h2>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    {selectedProject.location && (
+                      <div className="flex items-center gap-1.5" style={{ color: 'var(--color-text-tertiary)' }}>
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        </svg>
+                        <span className="text-sm">{selectedProject.location}</span>
                       </div>
                     )}
-                    <div>
-                      <p className="font-semibold text-neutral-900">{selectedProject.clientName}</p>
-                      <p className="text-sm text-neutral-500">{selectedProject.clientCity || 'მაძიებელი'}</p>
-                    </div>
+                    {selectedProject.rating && (
+                      <div className="flex items-center gap-1">
+                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20" style={{ color: '#f59e0b' }}>
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        <span className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+                          {selectedProject.rating.toFixed(1)}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  {selectedProject.review && (
-                    <p className="text-neutral-600 italic">"{selectedProject.review}"</p>
+                </div>
+
+                {/* Meta Pills */}
+                <div className="flex flex-wrap gap-2 mb-5">
+                  {selectedProject.duration && (
+                    <div
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm"
+                      style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text-secondary)' }}
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--color-text-tertiary)' }}>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {selectedProject.duration}
+                    </div>
+                  )}
+                  {selectedProject.completedDate && (
+                    <div
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm"
+                      style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text-secondary)' }}
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--color-text-tertiary)' }}>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      {new Date(selectedProject.completedDate).toLocaleDateString('ka-GE', { month: 'short', year: 'numeric' })}
+                    </div>
+                  )}
+                  {selectedProject.category && (
+                    <div
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm capitalize"
+                      style={{ background: 'var(--color-accent-soft)', color: 'var(--color-accent)' }}
+                    >
+                      {selectedProject.category.replace(/-/g, ' ')}
+                    </div>
                   )}
                 </div>
-              )}
 
-              {/* Tags */}
-              {selectedProject.tags && selectedProject.tags.length > 0 && (
-                <div className="mt-6 flex flex-wrap gap-2">
-                  {selectedProject.tags.map((tag, i) => (
-                    <span key={i} className="px-3 py-1 bg-neutral-100 text-neutral-600 text-sm rounded-full">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
+                {/* Description */}
+                {selectedProject.description && (
+                  <div className="mb-5">
+                    <p
+                      className="text-sm leading-relaxed"
+                      style={{ color: 'var(--color-text-secondary)' }}
+                    >
+                      {selectedProject.description}
+                    </p>
+                  </div>
+                )}
+
+                {/* Client Review */}
+                {selectedProject.clientName && (
+                  <div
+                    className="p-4 rounded-xl"
+                    style={{ background: 'var(--color-bg-secondary)' }}
+                  >
+                    <div className="flex items-start gap-3">
+                      {selectedProject.clientAvatar ? (
+                        <img
+                          src={selectedProject.clientAvatar}
+                          alt={selectedProject.clientName}
+                          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <div
+                          className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0"
+                          style={{ background: 'var(--color-accent)' }}
+                        >
+                          {selectedProject.clientName.charAt(0)}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                            {selectedProject.clientName}
+                          </span>
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" style={{ color: 'var(--color-accent)' }}>
+                            <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        {selectedProject.clientCity && (
+                          <p className="text-xs mb-2" style={{ color: 'var(--color-text-tertiary)' }}>
+                            {selectedProject.clientCity}
+                          </p>
+                        )}
+                        {selectedProject.review && (
+                          <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                            "{selectedProject.review}"
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tags */}
+                {selectedProject.tags && selectedProject.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-4">
+                    {selectedProject.tags.map((tag, i) => (
+                      <span
+                        key={i}
+                        className="px-2.5 py-1 text-xs rounded-md"
+                        style={{
+                          background: 'var(--color-bg-tertiary)',
+                          color: 'var(--color-text-tertiary)',
+                        }}
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Footer */}
-            <div className="border-t border-neutral-100 p-4">
+            {/* Footer CTA */}
+            <div
+              className="flex-shrink-0 p-4"
+              style={{ borderTop: '1px solid var(--color-border-subtle)' }}
+            >
               <button
                 onClick={() => {
                   setSelectedProject(null);
                   handleContact();
                 }}
-                className="w-full py-3.5 bg-neutral-900 hover:bg-neutral-800 text-white font-semibold rounded-xl transition-all duration-200 ease-out flex items-center justify-center gap-2"
+                className="w-full py-3.5 font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+                style={{
+                  background: 'var(--gradient-primary)',
+                  color: 'white',
+                  boxShadow: 'var(--shadow-button)',
+                }}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                <span>მსგავსი პროექტის შეკვეთა</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
-                დაკავშირება მსგავსი პროექტისთვის
               </button>
             </div>
           </div>
+
+          <style jsx>{`
+            @keyframes softModalSlide {
+              from {
+                opacity: 0;
+                transform: translateY(24px);
+              }
+              to {
+                opacity: 1;
+                transform: translateY(0);
+              }
+            }
+          `}</style>
         </div>
       )}
 

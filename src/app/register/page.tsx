@@ -1015,7 +1015,7 @@ function RegisterContent() {
               </svg>
             </div>
             <span className="text-xl font-semibold text-gray-900 dark:text-white">
-              Homico
+              {locale === 'ka' ? 'ჰომიკო' : 'Homico'}
             </span>
           </Link>
           <button
@@ -1101,55 +1101,70 @@ function RegisterContent() {
             >
               {locale === "ka" ? "ანგარიშის ტიპი" : "Account Type"}
             </h2>
-            <div
-              className="p-1.5 rounded-2xl inline-flex w-full sm:w-auto"
-              style={{ backgroundColor: "var(--color-bg-secondary)" }}
-            >
+            <div className="inline-flex gap-2 w-full sm:w-auto">
               {[
                 {
                   key: "client",
                   label: locale === "ka" ? "მომხმარებელი" : "Client",
+                  icon: (
+                    <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  ),
                 },
                 {
                   key: "pro",
                   label: locale === "ka" ? "პროფესიონალი" : "Professional",
+                  icon: (
+                    <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  ),
                 },
-              ].map((type) => (
-                <button
-                  key={type.key}
-                  type="button"
-                  onClick={() => {
-                    if (type.key !== "pro") {
-                      // Clear avatar when switching to client
-                      setAvatarFile(null);
-                      setAvatarPreview(null);
-                      if (avatarInputRef.current) {
-                        avatarInputRef.current.value = "";
+              ].map((type) => {
+                const isSelected = formData.role === type.key;
+                return (
+                  <button
+                    key={type.key}
+                    type="button"
+                    onClick={() => {
+                      if (type.key !== "pro") {
+                        // Clear avatar when switching to client
+                        setAvatarFile(null);
+                        setAvatarPreview(null);
+                        if (avatarInputRef.current) {
+                          avatarInputRef.current.value = "";
+                        }
                       }
-                    }
-                    setFormData({
-                      ...formData,
-                      role: type.key,
-                      selectedCategory: "",
-                      selectedSubcategories: [],
-                      avatar: type.key !== "pro" ? "" : formData.avatar,
-                    });
-                  }}
-                  className={`flex-1 sm:flex-none px-8 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
-                    formData.role === type.key
-                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25"
-                      : ""
-                  }`}
-                  style={{
-                    color:
-                      formData.role === type.key
-                        ? undefined
-                        : "var(--color-text-secondary)",
-                  }}
-                >
-                  {type.label}
-                </button>
-              ))}
+                      setFormData({
+                        ...formData,
+                        role: type.key,
+                        selectedCategory: "",
+                        selectedSubcategories: [],
+                        avatar: type.key !== "pro" ? "" : formData.avatar,
+                      });
+                    }}
+                    className={`
+                      flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-full
+                      text-sm transition-all duration-200 ease-out border
+                      ${isSelected
+                        ? 'bg-emerald-500/[0.06] border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-medium'
+                        : 'border-emerald-500/[0.12] text-[var(--color-text-secondary)] hover:border-emerald-500/20'
+                      }
+                    `}
+                  >
+                    <span className={isSelected ? 'text-emerald-600 dark:text-emerald-400' : 'text-emerald-600/60 dark:text-emerald-400/60'}>
+                      {type.icon}
+                    </span>
+                    <span>{type.label}</span>
+                    {isSelected && (
+                      <svg className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Account type description */}
@@ -2376,11 +2391,14 @@ function RegisterContent() {
                 }
               }}
               disabled={isLoading || !canSubmitForm()}
-              className={`flex-1 py-3 px-5 rounded-xl font-medium text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
-                canSubmitForm()
-                  ? "bg-[var(--color-accent)] text-white hover:shadow-[0_4px_20px_rgba(13,150,104,0.3)]"
-                  : "bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] cursor-not-allowed"
-              }`}
+              className={`
+                flex-1 py-3 px-6 rounded-full font-medium text-sm transition-all duration-200 ease-out
+                flex items-center justify-center gap-2 border
+                ${canSubmitForm()
+                  ? 'bg-emerald-500/[0.08] border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/[0.12] hover:border-emerald-500/50'
+                  : 'border-[var(--color-border)] text-[var(--color-text-muted)] cursor-not-allowed'
+                }
+              `}
             >
               {isLoading ? (
                 <>

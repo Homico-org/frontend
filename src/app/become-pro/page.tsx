@@ -218,7 +218,7 @@ export default function BecomeProPage() {
           <div className="flex items-center justify-between">
             <Link href="/" className="group flex items-center gap-2">
               <span className="text-xl font-semibold text-[var(--color-text-primary)] tracking-tight">
-                Homico
+                {locale === 'ka' ? 'ჰომიკო' : 'Homico'}
               </span>
               <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] group-hover:scale-125 transition-transform" />
             </Link>

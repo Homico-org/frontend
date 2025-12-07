@@ -527,7 +527,7 @@ export default function ProProfileSetupPage() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-6">
             <Link href="/" className="inline-flex items-center gap-2 group">
-              <span className="text-2xl font-serif font-semibold text-forest-800 dark:text-primary-400 group-hover:text-forest-600 dark:group-hover:text-primary-300 transition-colors">Homico</span>
+              <span className="text-2xl font-serif font-semibold text-forest-800 dark:text-primary-400 group-hover:text-forest-600 dark:group-hover:text-primary-300 transition-colors">{locale === 'ka' ? 'ჰომიკო' : 'Homico'}</span>
               <span className="w-2 h-2 rounded-full bg-primary-400" />
             </Link>
             {/* Category Badge */}
