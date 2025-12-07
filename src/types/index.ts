@@ -40,6 +40,8 @@ export interface User {
   selectedCategories?: string[];
   accountType?: 'individual' | 'organization';
   companyName?: string;
+  whatsapp?: string;
+  telegram?: string;
 }
 
 export interface Company {

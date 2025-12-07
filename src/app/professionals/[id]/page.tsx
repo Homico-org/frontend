@@ -49,6 +49,8 @@ interface ProProfile {
     email: string;
     avatar?: string;
     city?: string;
+    whatsapp?: string;
+    telegram?: string;
   };
   title: string;
   companyName?: string;
