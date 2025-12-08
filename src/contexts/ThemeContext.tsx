@@ -13,44 +13,33 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('dark');
+  // Default to light mode only - dark mode will be added in future
+  const [theme] = useState<Theme>('light');
   const [mounted, setMounted] = useState(false);
 
-  // Initialize theme from localStorage or system preference
   useEffect(() => {
     setMounted(true);
-    const savedTheme = localStorage.getItem('theme') as Theme | null;
-
-    if (savedTheme === 'light' || savedTheme === 'dark') {
-      setThemeState(savedTheme);
-    } else {
-      // Check system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setThemeState(prefersDark ? 'dark' : 'light');
-    }
+    // Always use light mode
+    localStorage.setItem('theme', 'light');
   }, []);
 
-  // Apply theme class to document
+  // Apply theme class to document (always light)
   useEffect(() => {
     if (mounted) {
-      if (theme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-      localStorage.setItem('theme', theme);
+      document.documentElement.classList.remove('dark');
     }
-  }, [theme, mounted]);
+  }, [mounted]);
 
+  // These are no-ops for now but kept for API compatibility
   const toggleTheme = useCallback(() => {
-    setThemeState(prev => prev === 'dark' ? 'light' : 'dark');
+    // No-op - dark mode disabled for now
   }, []);
 
-  const setTheme = useCallback((newTheme: Theme) => {
-    setThemeState(newTheme);
+  const setTheme = useCallback(() => {
+    // No-op - dark mode disabled for now
   }, []);
 
-  // Prevent flash of wrong theme
+  // Prevent flash
   if (!mounted) {
     return null;
   }

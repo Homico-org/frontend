@@ -4,7 +4,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNotifications } from "@/contexts/NotificationContext";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useViewMode } from "@/contexts/ViewModeContext";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -16,7 +15,6 @@ export default function Header() {
   const { t, locale } = useLanguage();
   const { viewMode, toggleViewMode } = useViewMode();
   const { unreadCount } = useNotifications();
-  const { theme, toggleTheme } = useTheme();
   const [showDropdown, setShowDropdown] = useState(false);
 
   // Handle ESC key to close dropdown
@@ -39,10 +37,7 @@ export default function Header() {
     <header
       className="sticky top-0 z-50 backdrop-blur-md border-b transition-colors duration-300"
       style={{
-        backgroundColor:
-          theme === "dark"
-            ? "rgba(40, 40, 44, 0.95)"
-            : "rgba(242, 240, 236, 0.95)",
+        backgroundColor: "rgba(242, 240, 236, 0.95)",
         borderColor: "var(--color-border)",
       }}
     >
@@ -199,76 +194,12 @@ export default function Header() {
                   </button>
                 )}
 
-                {/* Theme Toggle - Compact on mobile */}
-                <button
-                  onClick={toggleTheme}
-                  className="relative group flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl transition-all duration-500 touch-manipulation overflow-hidden"
-                  style={{
-                    background:
-                      theme === "dark"
-                        ? "rgba(92, 201, 142, 0.08)"
-                        : "rgba(16, 185, 129, 0.06)",
-                    border:
-                      theme === "dark"
-                        ? "1px solid rgba(92, 201, 142, 0.15)"
-                        : "1px solid rgba(16, 185, 129, 0.2)",
-                  }}
-                  aria-label={
-                    theme === "dark"
-                      ? "Switch to light mode"
-                      : "Switch to dark mode"
-                  }
-                >
-                  {/* Sun icon (shown in dark mode) */}
-                  <svg
-                    className={`absolute w-4 h-4 sm:w-5 sm:h-5 transition-all duration-500 ease-out ${
-                      theme === "dark"
-                        ? "opacity-100 rotate-0 scale-100"
-                        : "opacity-0 rotate-90 scale-50"
-                    }`}
-                    style={{ color: "#5cc98e" }}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  >
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="4"
-                      fill="currentColor"
-                      stroke="none"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41"
-                    />
-                  </svg>
-
-                  {/* Moon icon (shown in light mode) */}
-                  <svg
-                    className={`absolute w-4 h-4 sm:w-5 sm:h-5 transition-all duration-500 ease-out ${
-                      theme === "light"
-                        ? "opacity-100 rotate-0 scale-100"
-                        : "opacity-0 -rotate-90 scale-50"
-                    }`}
-                    style={{ color: "#059669" }}
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
-                  </svg>
-                </button>
-
                 {/* Notification Bell - Compact on mobile */}
                 <Link
                   href="/notifications"
                   className="relative group flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl transition-all duration-300"
                   style={{
-                    background:
-                      theme === "dark"
-                        ? "rgba(255, 255, 255, 0.05)"
-                        : "rgba(0, 0, 0, 0.03)",
+                    background: "rgba(0, 0, 0, 0.03)",
                   }}
                 >
                   <svg
@@ -735,84 +666,6 @@ export default function Header() {
                   >
                     იპოვე სამუშაო
                   </span>
-                </button>
-
-                {/* Theme Toggle for non-authenticated users - Green theme */}
-                <button
-                  onClick={toggleTheme}
-                  className="relative group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-500 touch-manipulation overflow-hidden"
-                  style={{
-                    background:
-                      theme === "dark"
-                        ? "rgba(92, 201, 142, 0.08)"
-                        : "rgba(16, 185, 129, 0.06)",
-                    border:
-                      theme === "dark"
-                        ? "1px solid rgba(92, 201, 142, 0.15)"
-                        : "1px solid rgba(16, 185, 129, 0.2)",
-                  }}
-                  aria-label={
-                    theme === "dark"
-                      ? "Switch to light mode"
-                      : "Switch to dark mode"
-                  }
-                >
-                  {/* Background glow on hover */}
-                  <div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    style={{
-                      background:
-                        "radial-gradient(circle at center, rgba(16, 185, 129, 0.15) 0%, transparent 70%)",
-                    }}
-                  />
-
-                  {/* Sun icon (shown in dark mode) */}
-                  <svg
-                    className={`absolute w-5 h-5 transition-all duration-500 ease-out ${
-                      theme === "dark"
-                        ? "opacity-100 rotate-0 scale-100"
-                        : "opacity-0 rotate-90 scale-50"
-                    }`}
-                    style={{ color: "#5cc98e" }}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  >
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="4"
-                      fill="currentColor"
-                      stroke="none"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41"
-                    />
-                  </svg>
-
-                  {/* Moon icon (shown in light mode) */}
-                  <svg
-                    className={`absolute w-5 h-5 transition-all duration-500 ease-out ${
-                      theme === "light"
-                        ? "opacity-100 rotate-0 scale-100"
-                        : "opacity-0 -rotate-90 scale-50"
-                    }`}
-                    style={{ color: "#059669" }}
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
-                  </svg>
-
-                  {/* Hover ring effect */}
-                  <div
-                    className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                    style={{
-                      border: "1px solid rgba(16, 185, 129, 0.3)",
-                    }}
-                  />
                 </button>
 
                 <button
