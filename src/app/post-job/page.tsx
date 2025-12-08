@@ -160,6 +160,7 @@ export default function PostJobPage() {
   const [existingMedia, setExistingMedia] = useState<{ type: 'image' | 'video'; url: string }[]>([]);
   const [newReferenceUrl, setNewReferenceUrl] = useState('');
   const [references, setReferences] = useState<Reference[]>([]);
+  const [notifyAllPros, setNotifyAllPros] = useState(false);
 
   useEffect(() => {
     setIsVisible(true);
@@ -353,6 +354,7 @@ export default function PostJobPage() {
       }
 
       if (references.length > 0) jobData.references = references;
+      if (notifyAllPros) jobData.notifyPros = true;
 
       if (uploadedMedia.length) {
         jobData.images = uploadedMedia.filter(m => m.type === 'image').map(m => m.url);
@@ -517,7 +519,7 @@ export default function PostJobPage() {
                   onSubcategoriesChange={setSelectedSubcategories}
                   customSpecialties={customSpecialties}
                   onCustomSpecialtiesChange={setCustomSpecialties}
-                  showCustomSpecialties={true}
+                  showCustomSpecialties={false}
                   singleCategoryMode={true}
                 />
               </section>
@@ -987,7 +989,7 @@ export default function PostJobPage() {
                         value={newReferenceUrl}
                         onChange={(e) => setNewReferenceUrl(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addReference())}
-                        placeholder={locale === 'ka' ? 'Pinterest, Instagram ბმული...' : 'Pinterest, Instagram URL...'}
+                        placeholder={locale === 'ka' ? 'ბმული ინსპირაციისთვის...' : 'Link for inspiration...'}
                         className="flex-1 px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
                       />
                       <button
@@ -1029,6 +1031,46 @@ export default function PostJobPage() {
                     )}
                   </div>
                 </div>
+              </section>
+
+              {/* Notify All Professionals */}
+              <section className="mb-6">
+                <label
+                  className="flex items-start gap-4 p-4 rounded-2xl bg-gradient-to-r from-[var(--color-accent-soft)]/50 to-[var(--color-highlight-soft)]/30 border border-[var(--color-accent)]/20 cursor-pointer group hover:border-[var(--color-accent)]/40 transition-all duration-300"
+                  onClick={() => setNotifyAllPros(!notifyAllPros)}
+                >
+                  <div className="relative flex-shrink-0 mt-0.5">
+                    <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-200 ${
+                      notifyAllPros
+                        ? 'bg-[var(--color-accent)] border-[var(--color-accent)]'
+                        : 'border-[var(--color-border)] bg-[var(--color-bg-primary)] group-hover:border-[var(--color-accent)]'
+                    }`}>
+                      {notifyAllPros && (
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <svg className="w-5 h-5 text-[var(--color-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                      </svg>
+                      <span className="font-semibold text-[var(--color-text-primary)]">
+                        {locale === 'ka' ? 'მიიღეთ მეტი შეთავაზება' : 'Get More Proposals'}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[var(--color-accent)] text-white">
+                        {locale === 'ka' ? 'რეკომენდებული' : 'Recommended'}
+                      </span>
+                    </div>
+                    <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                      {locale === 'ka'
+                        ? 'ჩართვით ადასტურებთ რომ მიუვიდეს შეტყობინება ყველა შესაბამის პროფესიონალს თქვენი პროექტის შესახებ რათა მიიღოთ მეტი შეთავაზება სწრაფად.'
+                        : 'Notify all matching professionals about your project and receive more proposals faster.'}
+                    </p>
+                  </div>
+                </label>
               </section>
 
               {/* Error */}

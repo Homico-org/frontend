@@ -2,6 +2,7 @@
 
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useRef, useState } from 'react';
+import AddressPicker from './AddressPicker';
 
 export interface BeforeAfterPair {
   id: string;
@@ -424,9 +425,11 @@ export default function PortfolioProjectsInput({
                 </div>
 
                 {project.description && (
-                  <p className="text-sm text-[var(--color-text-secondary)] mt-3 line-clamp-2">
-                    {project.description}
-                  </p>
+                  <div className="mt-3 pt-3 border-t border-[var(--color-border-subtle)]">
+                    <p className="text-sm text-[var(--color-text-secondary)] whitespace-pre-wrap">
+                      {project.description}
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
@@ -498,18 +501,14 @@ export default function PortfolioProjectsInput({
               />
             </div>
 
-            {/* Location */}
+            {/* Location with Google Maps */}
             <div>
-              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                {locale === 'ka' ? 'მდებარეობა' : 'Location'}
-              </label>
-              <input
-                type="text"
+              <AddressPicker
                 value={currentProject.location || ''}
-                onChange={(e) => setCurrentProject(prev => ({ ...prev, location: e.target.value }))}
-                placeholder={locale === 'ka' ? 'მაგ: თბილისი, ვაკე' : 'e.g., Tbilisi, Vake'}
-                className="w-full px-4 py-3 rounded-xl border-2 bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-emerald-500/50 transition-all"
-                style={{ borderColor: 'var(--color-border)' }}
+                onChange={(value) => setCurrentProject(prev => ({ ...prev, location: value }))}
+                locale={locale as 'ka' | 'en'}
+                label={locale === 'ka' ? 'მდებარეობა' : 'Location'}
+                required={false}
               />
             </div>
 

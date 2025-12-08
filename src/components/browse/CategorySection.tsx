@@ -2,52 +2,46 @@
 
 import { CATEGORIES } from '@/constants/categories';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useState } from 'react';
 
 const categories = CATEGORIES;
 
-// Refined minimal SVG icons - thinner strokes, elegant proportions
-const CategoryIcon = ({ type, className = '', style }: { type: string; className?: string; style?: React.CSSProperties }) => {
+// Clean, minimal icons with consistent style
+const CategoryIcon = ({ type, className = '' }: { type: string; className?: string }) => {
+  const iconProps = { className, viewBox: "0 0 24 24", fill: "none" };
+
   switch (type) {
     case 'designer':
       return (
-        <svg className={className} style={style} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4 16V14.5C4 13.67 4.67 13 5.5 13H18.5C19.33 13 20 13.67 20 14.5V16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-          <path d="M6 13V11.5C6 10.67 6.67 10 7.5 10H16.5C17.33 10 18 10.67 18 11.5V13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-          <rect x="4" y="16" width="16" height="3" rx="1" stroke="currentColor" strokeWidth="1.5"/>
-          <path d="M6 19V21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-          <path d="M18 19V21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-          <path d="M12 6L13.5 7.5L12 9L10.5 7.5L12 6Z" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round"/>
-          <circle cx="12" cy="4" r="1" fill="currentColor"/>
+        <svg {...iconProps}>
+          <path d="M20 19H4V17C4 15.9 4.9 15 6 15H18C19.1 15 20 15.9 20 17V19Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+          <path d="M18 15V13C18 11.9 17.1 11 16 11H8C6.9 11 6 11.9 6 13V15" stroke="currentColor" strokeWidth="1.5"/>
+          <path d="M12 11V8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          <circle cx="12" cy="6" r="2" stroke="currentColor" strokeWidth="1.5"/>
         </svg>
       );
     case 'architect':
       return (
-        <svg className={className} style={style} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4 20V10L12 4L20 10V20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M4 20H20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-          <rect x="7" y="11" width="3" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.25"/>
-          <rect x="14" y="11" width="3" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.25"/>
-          <path d="M10 20V17C10 16.45 10.45 16 11 16H13C13.55 16 14 16.45 14 17V20" stroke="currentColor" strokeWidth="1.25"/>
+        <svg {...iconProps}>
+          <path d="M3 20H21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M5 20V10L12 5L19 10V20" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+          <rect x="9" y="14" width="6" height="6" rx="0.5" stroke="currentColor" strokeWidth="1.5"/>
+          <path d="M12 14V20" stroke="currentColor" strokeWidth="1.5"/>
         </svg>
       );
     case 'craftsmen':
       return (
-        <svg className={className} style={style} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M7 17L10 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-          <path d="M5 19L7 17L9 19L7 21L5 19Z" fill="currentColor"/>
-          <path d="M16 5C14.34 5 13 6.34 13 8C13 8.56 13.15 9.09 13.42 9.55L9 14L11 16L15.45 11.58C15.91 11.85 16.44 12 17 12C18.66 12 20 10.66 20 9C20 8.75 19.95 8.5 19.9 8.25L18 10L16 8L17.75 6.1C17.5 6.05 17.25 6 17 6C16.65 6 16.3 6.05 16 6.1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M19 15L17 18H19L17 21" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/>
+        <svg {...iconProps}>
+          <path d="M14.7 6.3C14.3 5.5 13.5 5 12.6 5C11.2 5 10 6.2 10 7.6C10 8 10.1 8.4 10.3 8.7L5 14L7 16L12.3 10.7C12.6 10.9 13 11 13.4 11C14.8 11 16 9.8 16 8.4C16 8 15.9 7.6 15.7 7.3L14 9L12 7L14.7 6.3Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+          <path d="M5 14L3 19L8 17L5 14Z" fill="currentColor" stroke="currentColor" strokeWidth="1" strokeLinejoin="round"/>
         </svg>
       );
     case 'homecare':
       return (
-        <svg className={className} style={style} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4 11L12 5L20 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M6 10V19C6 19.55 6.45 20 7 20H17C17.55 20 18 19.55 18 19V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-          <path d="M12 12C13.1 12 14 12.9 14 14C14 15.5 12 17 12 17C12 17 10 15.5 10 14C10 12.9 10.9 12 12 12Z" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round"/>
-          <circle cx="8.5" cy="8" r="0.75" fill="currentColor"/>
-          <circle cx="15.5" cy="8" r="0.75" fill="currentColor"/>
+        <svg {...iconProps}>
+          <path d="M3 11L12 4L21 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M5 10V19C5 19.6 5.4 20 6 20H18C18.6 20 19 19.6 19 19V10" stroke="currentColor" strokeWidth="1.5"/>
+          <path d="M12 20V15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          <circle cx="12" cy="12" r="2" stroke="currentColor" strokeWidth="1.5"/>
         </svg>
       );
     default:
@@ -60,6 +54,9 @@ interface CategorySectionProps {
   onSelectCategory: (category: string | null) => void;
   selectedSubcategory?: string | null;
   onSelectSubcategory?: (subcategory: string | null) => void;
+  minRating?: number;
+  onRatingChange?: (rating: number) => void;
+  showRatingFilter?: boolean;
 }
 
 export default function CategorySection({
@@ -67,105 +64,134 @@ export default function CategorySection({
   onSelectCategory,
   selectedSubcategory,
   onSelectSubcategory,
+  minRating = 0,
+  onRatingChange,
+  showRatingFilter = false,
 }: CategorySectionProps) {
   const { locale } = useLanguage();
-  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
 
   const activeCategory = categories.find(c => c.key === selectedCategory);
 
+  const ratingOptions = [
+    { value: 0, label: locale === 'ka' ? 'ყველა' : 'All' },
+    { value: 4, label: '4+' },
+    { value: 4.5, label: '4.5+' },
+  ];
+
   return (
-    <div className="w-full">
-      {/* Main Categories - Horizontal scroll on mobile, wrap on desktop */}
-      <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 -mx-1 px-1 sm:mx-0 sm:px-0 sm:pb-0 sm:flex-wrap">
-        {categories.map((category, index) => {
+    <div className="w-full space-y-2.5">
+      {/* Categories - Clean horizontal layout */}
+      <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-0.5 -mx-1 px-1 sm:mx-0 sm:px-0 sm:flex-wrap">
+        {categories.map((category) => {
           const isSelected = selectedCategory === category.key;
-          const isHovered = hoveredCategory === category.key;
 
           return (
             <button
               key={category.key}
               onClick={() => onSelectCategory(isSelected ? null : category.key)}
-              onMouseEnter={() => setHoveredCategory(category.key)}
-              onMouseLeave={() => setHoveredCategory(null)}
               className={`
-                group relative flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2 rounded-full
-                text-[13px] sm:text-sm transition-all duration-200 ease-out animate-fade-in border flex-shrink-0
+                flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm
+                transition-all duration-150 flex-shrink-0
                 ${isSelected
-                  ? 'bg-emerald-500/[0.06] border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-medium'
-                  : isHovered
-                    ? 'border-emerald-500/20 text-[var(--color-text-secondary)]'
-                    : 'border-emerald-500/[0.12] text-[var(--color-text-secondary)]'
+                  ? 'bg-emerald-600 text-white font-medium shadow-sm'
+                  : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
                 }
               `}
-              style={{ animationDelay: `${index * 50}ms` }}
             >
-              {/* Icon */}
               <CategoryIcon
                 type={category.icon}
-                className={`
-                  w-4 h-4 sm:w-[18px] sm:h-[18px] flex-shrink-0 transition-all duration-200
-                  ${isSelected
-                    ? 'text-emerald-600 dark:text-emerald-400'
-                    : isHovered
-                      ? 'text-emerald-600 dark:text-emerald-400 scale-105'
-                      : 'text-emerald-600/60 dark:text-emerald-400/60'
-                  }
-                `}
+                className={`w-[18px] h-[18px] flex-shrink-0 ${isSelected ? 'opacity-90' : 'opacity-60'}`}
               />
-
-              {/* Title only */}
               <span className="whitespace-nowrap">
                 {locale === 'ka' ? category.nameKa : category.name}
               </span>
-
-              {/* Selection tick - appears on selected */}
-              <div
-                className={`flex items-center justify-center transition-all duration-200 overflow-hidden ${
-                  isSelected ? 'w-4 opacity-100' : 'w-0 opacity-0'
-                }`}
-              >
-                <svg className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
             </button>
           );
         })}
-      </div>
 
-      {/* Subcategories - Compact expandable pills */}
-      {activeCategory && activeCategory.subcategories && (
-        <div
-          className="mt-3 overflow-hidden animate-fade-in"
-          style={{ animationDuration: '200ms' }}
-        >
-          <div className="flex flex-wrap items-center gap-1.5">
-            {/* Subtle label */}
-            <span className="text-xs text-[var(--color-text-muted)] mr-1 py-1">
-              {locale === 'ka' ? 'ფილტრი:' : 'Filter:'}
-            </span>
-
-            {activeCategory.subcategories.map((sub, index) => {
-              const isSubSelected = selectedSubcategory === sub.key;
-              return (
+        {/* Rating filter - subtle inline control */}
+        {showRatingFilter && onRatingChange && (
+          <>
+            <div className="hidden sm:block h-4 w-px mx-1.5 bg-[var(--color-border)]" />
+            <div className="hidden sm:flex items-center gap-0.5 flex-shrink-0">
+              <span className="text-amber-500 mr-1">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              </span>
+              {ratingOptions.map((option) => (
                 <button
-                  key={sub.key}
-                  onClick={() => onSelectSubcategory?.(isSubSelected ? null : sub.key)}
+                  key={option.value}
+                  onClick={() => onRatingChange(option.value)}
                   className={`
-                    px-3 py-1.5 rounded-full text-xs transition-all duration-200 ease-out animate-fade-in border
-                    hover:border-emerald-500/25
-                    ${isSubSelected
-                      ? 'bg-emerald-500/[0.06] border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-medium'
-                      : 'border-emerald-500/10 text-[var(--color-text-secondary)]'
+                    px-2.5 py-1.5 rounded-lg text-xs transition-all duration-150
+                    ${minRating === option.value
+                      ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium'
+                      : 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
                     }
                   `}
-                  style={{ animationDelay: `${index * 30}ms` }}
                 >
-                  {locale === 'ka' ? sub.nameKa : sub.name}
+                  {option.label}
                 </button>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Subcategories - Appears when category selected */}
+      {activeCategory?.subcategories && (
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none -mx-1 px-1 sm:mx-0 sm:px-0 sm:flex-wrap">
+          <span className="text-xs text-[var(--color-text-muted)] mr-0.5 flex-shrink-0">
+            {locale === 'ka' ? 'სპეც:' : 'Type:'}
+          </span>
+          {activeCategory.subcategories.map((sub) => {
+            const isSubSelected = selectedSubcategory === sub.key;
+            return (
+              <button
+                key={sub.key}
+                onClick={() => onSelectSubcategory?.(isSubSelected ? null : sub.key)}
+                className={`
+                  px-2.5 py-1 rounded-lg text-xs transition-all duration-150
+                  ${isSubSelected
+                    ? 'bg-emerald-600 text-white font-medium'
+                    : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
+                  }
+                `}
+              >
+                {locale === 'ka' ? sub.nameKa : sub.name}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Mobile rating - Only shows on small screens */}
+      {showRatingFilter && onRatingChange && (
+        <div className="flex sm:hidden items-center gap-1.5">
+          <span className="text-amber-500 mr-0.5">
+            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+          </span>
+          <span className="text-xs text-[var(--color-text-muted)] mr-0.5">
+            {locale === 'ka' ? 'რეიტინგი:' : 'Rating:'}
+          </span>
+          {ratingOptions.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => onRatingChange(option.value)}
+              className={`
+                px-2.5 py-1 rounded-lg text-xs transition-all duration-150
+                ${minRating === option.value
+                  ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium'
+                  : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-tertiary)]'
+                }
+              `}
+            >
+              {option.label}
+            </button>
+          ))}
         </div>
       )}
     </div>

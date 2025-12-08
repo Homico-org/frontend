@@ -35,7 +35,7 @@ export default function BrowseTabSwitcher({
   ];
 
   return (
-    <div className="w-full grid grid-cols-2 gap-1.5 p-1 rounded-xl sm:rounded-2xl border border-emerald-500/15">
+    <div className="w-full flex gap-1.5">
       {tabs.map((tab) => {
         const isActive = activeTab === tab.key;
         return (
@@ -43,33 +43,18 @@ export default function BrowseTabSwitcher({
             key={tab.key}
             onClick={() => onTabChange(tab.key)}
             className={`
-              relative flex items-center justify-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-2.5 sm:py-3
-              rounded-lg sm:rounded-xl transition-all duration-200 ease-out touch-manipulation border
+              flex-1 flex items-center justify-center gap-2 px-4 py-2.5
+              rounded-xl transition-all duration-150 touch-manipulation
               ${isActive
-                ? 'bg-emerald-500/[0.06] border-emerald-500/25'
-                : 'bg-transparent border-transparent'
+                ? 'bg-emerald-600 text-white font-medium shadow-sm'
+                : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
               }
             `}
           >
-            {/* Icon */}
-            <span
-              className={`transition-colors duration-200 flex-shrink-0 ${
-                isActive
-                  ? 'text-emerald-600 dark:text-emerald-400'
-                  : 'text-[var(--color-text-tertiary)]'
-              }`}
-            >
+            <span className={`flex-shrink-0 ${isActive ? 'opacity-90' : 'opacity-60'}`}>
               {tab.icon}
             </span>
-
-            {/* Text content */}
-            <span
-              className={`text-[13px] sm:text-sm transition-colors duration-200 ${
-                isActive
-                  ? 'text-emerald-600 dark:text-emerald-400 font-medium'
-                  : 'text-[var(--color-text-secondary)] font-normal'
-              }`}
-            >
+            <span className="text-sm">
               {tab.label}
             </span>
           </button>

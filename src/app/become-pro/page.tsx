@@ -303,7 +303,7 @@ export default function BecomeProPage() {
                   onSubcategoriesChange={setSelectedSubcategories}
                   customSpecialties={customSpecialties}
                   onCustomSpecialtiesChange={setCustomSpecialties}
-                  showCustomSpecialties={true}
+                  showCustomSpecialties={false}
                   singleCategoryMode={true}
                 />
               </section>
@@ -344,6 +344,9 @@ export default function BecomeProPage() {
                   <div>
                     <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                       {locale === 'ka' ? 'მოკლე აღწერა' : 'Short Bio'}
+                      <span className="ml-2 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-[var(--color-accent-soft)] text-[var(--color-accent)]">
+                        {locale === 'ka' ? 'რეკომენდირებული' : 'Recommended'}
+                      </span>
                     </label>
                     <textarea
                       value={bio}
@@ -352,6 +355,12 @@ export default function BecomeProPage() {
                       placeholder={locale === 'ka' ? 'მოგვიყევი შენს გამოცდილებაზე...' : 'Tell us about your experience...'}
                       className="w-full px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all resize-none"
                     />
+                    <p className="text-xs text-[var(--color-text-tertiary)] mt-1.5">
+                      {locale === 'ka'
+                        ? 'ეს ტექსტი გამოჩნდება თქვენს პროფილზე და დაეხმარება კლიენტებს თქვენს გაცნობაში'
+                        : 'This text will appear on your profile and help clients learn about you'
+                      }
+                    </p>
                   </div>
 
                   {/* Portfolio URL */}
@@ -363,13 +372,13 @@ export default function BecomeProPage() {
                       type="url"
                       value={portfolioUrl}
                       onChange={(e) => setPortfolioUrl(e.target.value)}
-                      placeholder={locale === 'ka' ? 'https://თქვენი-საიტი.com ან Instagram/Behance' : 'https://your-website.com or Instagram/Behance'}
+                      placeholder={locale === 'ka' ? 'https://თქვენი-პორტფოლიო.com' : 'https://your-portfolio.com'}
                       className="w-full px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
                     />
                     <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
                       {locale === 'ka'
-                        ? 'ვებსაიტი, Instagram, Behance, Pinterest ან სხვა პორტფოლიო'
-                        : 'Website, Instagram, Behance, Pinterest or any portfolio link'
+                        ? 'ნებისმიერი ბმული თქვენი ნამუშევრების სანახავად'
+                        : 'Any link where clients can see your work'
                       }
                     </p>
                   </div>

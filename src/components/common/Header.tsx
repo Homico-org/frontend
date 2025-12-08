@@ -71,49 +71,63 @@ export default function Header() {
                 {user.role === "client" && (
                   <Link
                     href="/become-pro"
-                    className="hidden sm:flex group items-center gap-2 px-3.5 py-2 rounded-full text-sm font-medium transition-all duration-250 ease-out border hover:scale-[1.02] active:scale-[0.98]"
+                    className="hidden sm:flex group items-center gap-2.5 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ease-out hover:scale-[1.03] active:scale-[0.97] relative overflow-hidden"
                     style={{
-                      transitionTimingFunction:
-                        "cubic-bezier(0.22, 1, 0.36, 1)",
-                      background: "var(--color-bg-secondary)",
-                      color: "var(--color-text-secondary)",
-                      borderColor: "var(--color-border)",
-                      boxShadow: "var(--shadow-xs)",
+                      transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+                      background: "linear-gradient(135deg, #0d6355 0%, #0a4f44 100%)",
+                      color: "#ffffff",
+                      boxShadow: "0 2px 8px rgba(13, 99, 85, 0.25), 0 1px 2px rgba(13, 99, 85, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
                     }}
                   >
-                    {/* Rocket icon */}
+                    {/* Subtle shine effect on hover */}
+                    <span
+                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                      style={{
+                        background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%)",
+                        transform: "translateX(-100%)",
+                        animation: "none",
+                      }}
+                    />
+
+                    {/* Briefcase with arrow up icon - career growth */}
                     <svg
-                      className="w-[18px] h-[18px] flex-shrink-0"
-                      style={{ color: "#0d6355" }}
+                      className="w-[18px] h-[18px] flex-shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5"
                       viewBox="0 0 24 24"
                       fill="none"
                     >
-                      <path
-                        d="M12 2C12 2 9.5 6.5 9.5 11.5C9.5 14.5 10.5 16.5 12 18C13.5 16.5 14.5 14.5 14.5 11.5C14.5 6.5 12 2 12 2Z"
-                        fill="currentColor"
+                      <rect
+                        x="2"
+                        y="7"
+                        width="20"
+                        height="14"
+                        rx="2"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        fill="none"
                       />
                       <path
-                        d="M7 14C5.5 15 5 17 5 17L7 19C7 19 9 18.5 10 17"
+                        d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"
                         stroke="currentColor"
                         strokeWidth="1.5"
                         strokeLinecap="round"
                       />
                       <path
-                        d="M17 14C18.5 15 19 17 19 17L17 19C17 19 15 18.5 14 17"
+                        d="M12 11v6M12 11l2.5 2.5M12 11l-2.5 2.5"
                         stroke="currentColor"
-                        strokeWidth="1.5"
+                        strokeWidth="1.75"
                         strokeLinecap="round"
-                      />
-                      <circle
-                        cx="12"
-                        cy="22"
-                        r="1.5"
-                        fill="currentColor"
-                        className="opacity-60"
+                        strokeLinejoin="round"
+                        className="transition-transform duration-300 origin-center group-hover:-translate-y-0.5"
                       />
                     </svg>
 
-                    <span className="whitespace-nowrap">გახდი სპეცი</span>
+                    <span className="whitespace-nowrap relative z-10 tracking-wide">დასაქმდი</span>
+
+                    {/* Subtle pulse indicator */}
+                    <span className="relative flex h-2 w-2 ml-0.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white/40"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-white/60"></span>
+                    </span>
                   </Link>
                 )}
 
