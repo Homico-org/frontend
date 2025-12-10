@@ -1,14 +1,23 @@
 "use client";
 
+import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function BrowsePage() {
   const router = useRouter();
+  const { user, isLoading } = useAuth();
 
   useEffect(() => {
-    router.replace("/browse/professionals");
-  }, [router]);
+    if (!isLoading) {
+      const isPro = user?.role === "pro";
+      if (isPro) {
+        router.replace("/browse/jobs");
+      } else {
+        router.replace("/browse/portfolio");
+      }
+    }
+  }, [router, user, isLoading]);
 
   return (
     <div className="flex items-center justify-center py-20">
