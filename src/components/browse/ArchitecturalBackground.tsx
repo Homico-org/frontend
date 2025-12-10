@@ -225,12 +225,21 @@ const LevelTool = ({ size = 90, opacity = 0.04 }: { size?: number; opacity?: num
 
 export default function ArchitecturalBackground() {
   const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(true);
 
   useEffect(() => {
     setMounted(true);
+    // Check if mobile
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  if (!mounted) return null;
+  // Don't render on mobile or before mounting
+  if (!mounted || isMobile) return null;
 
   return (
     <>
@@ -274,8 +283,8 @@ export default function ArchitecturalBackground() {
         }
       `}</style>
 
-      {/* Fixed positioning to stay visible during scroll */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 1 }}>
+      {/* Fixed positioning to stay visible during scroll - hidden on mobile for cleaner UX */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden hidden md:block" style={{ zIndex: 1 }}>
         {/* Gradient overlays */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] opacity-30 dark:opacity-15">
           <div className="absolute inset-0 bg-gradient-to-bl from-emerald-500/20 via-transparent to-transparent blur-3xl" />

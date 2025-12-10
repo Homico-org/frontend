@@ -601,7 +601,7 @@ export default function PostJobPage() {
                         </span>
                       )}
                     </label>
-                    <div className="grid grid-cols-5 gap-2">
+                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                       {PROPERTY_TYPES.map((type) => (
                         <button
                           key={type.value}
@@ -610,7 +610,7 @@ export default function PostJobPage() {
                             updateFormData('propertyType', type.value);
                             if (type.value !== 'other') updateFormData('propertyTypeOther', '');
                           }}
-                          className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 ${
+                          className={`flex flex-col items-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-xl border-2 transition-all duration-200 ${
                             formData.propertyType === type.value
                               ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)]/50'
                               : 'border-[var(--color-border-subtle)] hover:border-[var(--color-border)] bg-[var(--color-bg-primary)]'
@@ -618,13 +618,13 @@ export default function PostJobPage() {
                         >
                           <PropertyIcon
                             type={type.icon}
-                            className={`w-6 h-6 transition-colors ${
+                            className={`w-5 h-5 sm:w-6 sm:h-6 transition-colors ${
                               formData.propertyType === type.value
                                 ? 'text-[var(--color-accent)]'
                                 : 'text-[var(--color-text-tertiary)]'
                             }`}
                           />
-                          <span className={`text-xs font-medium text-center transition-colors ${
+                          <span className={`text-[10px] sm:text-xs font-medium text-center transition-colors ${
                             formData.propertyType === type.value
                               ? 'text-[var(--color-accent)]'
                               : 'text-[var(--color-text-secondary)]'
@@ -646,7 +646,7 @@ export default function PostJobPage() {
                   </div>
 
                   {/* Size & Rooms */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                       <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                         {locale === 'ka' ? 'ფართობი (მ²)' : 'Area (m²)'}
@@ -733,15 +733,15 @@ export default function PostJobPage() {
                   </div>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)]">
+                <div className="p-4 sm:p-5 rounded-2xl bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)]">
                   {/* Budget Type Selection */}
-                  <div className="grid grid-cols-4 gap-2 mb-5">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
                     {BUDGET_TYPES.map((type) => (
                       <button
                         key={type.value}
                         type="button"
                         onClick={() => updateFormData('budgetType', type.value)}
-                        className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 ${
+                        className={`flex flex-col items-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-xl border-2 transition-all duration-200 ${
                           formData.budgetType === type.value
                             ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)]/50'
                             : 'border-[var(--color-border-subtle)] hover:border-[var(--color-border)] bg-[var(--color-bg-primary)]'
@@ -749,13 +749,13 @@ export default function PostJobPage() {
                       >
                         <BudgetIcon
                           type={type.icon}
-                          className={`w-5 h-5 transition-colors ${
+                          className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${
                             formData.budgetType === type.value
                               ? 'text-[var(--color-accent)]'
                               : 'text-[var(--color-text-tertiary)]'
                           }`}
                         />
-                        <span className={`text-xs font-medium text-center transition-colors ${
+                        <span className={`text-[10px] sm:text-xs font-medium text-center transition-colors ${
                           formData.budgetType === type.value
                             ? 'text-[var(--color-accent)]'
                             : 'text-[var(--color-text-secondary)]'

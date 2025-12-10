@@ -70,24 +70,24 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
   const showRatingFilter = pathname.includes("/browse/professionals");
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen relative bg-[var(--color-bg-primary)]">
       <Header />
 
-      <main className="relative z-10 pt-16 pb-24">
+      <main className="relative z-20 pt-14 sm:pt-16 pb-20 sm:pb-24">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          {/* Inline header - no card wrapper, seamless flow */}
-          <div className="pt-2 pb-4 sm:pb-5">
+          {/* Inline header - compact on mobile */}
+          <div className="pt-2 pb-3 sm:pb-5">
             {/* Title + Tabs Row */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
               <div className="min-w-0">
                 <h1
-                  className="text-2xl sm:text-3xl font-bold tracking-tight"
+                  className="text-xl sm:text-3xl font-bold tracking-tight"
                   style={{ color: "var(--color-text-primary)" }}
                 >
                   {getPageTitle()}
                 </h1>
                 <p
-                  className="text-sm mt-1 opacity-70"
+                  className="text-xs sm:text-sm mt-0.5 sm:mt-1 opacity-70 line-clamp-1"
                   style={{ color: "var(--color-text-secondary)" }}
                 >
                   {getPageSubtitle()}
@@ -96,7 +96,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
             </div>
 
             {/* Content Type Switcher */}
-            <div className="mb-4">
+            <div className="mb-3 sm:mb-4">
               <ContentTypeSwitcher isPro={isPro} />
             </div>
 
@@ -119,7 +119,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
 
           {/* Subtle separator before content */}
           <div
-            className="h-px mb-5 opacity-50"
+            className="h-px mb-3 sm:mb-5 opacity-50"
             style={{ backgroundColor: "var(--color-border)" }}
           />
 

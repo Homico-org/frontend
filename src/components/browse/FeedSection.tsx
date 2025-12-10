@@ -197,17 +197,16 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
 
   // Loading skeleton
   const FeedSkeleton = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+    <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 md:gap-6">
       {[...Array(6)].map((_, i) => (
         <div
           key={i}
-          className="bg-[var(--color-bg-secondary)] rounded-2xl overflow-hidden border border-[var(--color-border-subtle)] animate-pulse"
+          className="bg-[var(--color-bg-secondary)] rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--color-border-subtle)] animate-pulse"
         >
           <div className="aspect-[4/3] bg-[var(--color-bg-tertiary)]" />
-          <div className="p-4 space-y-3">
-            <div className="h-5 bg-[var(--color-bg-tertiary)] rounded w-3/4" />
-            <div className="h-4 bg-[var(--color-bg-tertiary)] rounded w-full" />
-            <div className="h-4 bg-[var(--color-bg-tertiary)] rounded w-2/3" />
+          <div className="p-2.5 sm:p-4 space-y-2 sm:space-y-3">
+            <div className="h-4 sm:h-5 bg-[var(--color-bg-tertiary)] rounded w-3/4" />
+            <div className="h-3 sm:h-4 bg-[var(--color-bg-tertiary)] rounded w-full" />
           </div>
         </div>
       ))}
@@ -260,7 +259,7 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
       ) : (
         <>
           {/* Feed Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 md:gap-6">
             {feedItems.map((item, index) => (
               <div
                 key={item._id}

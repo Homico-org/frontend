@@ -1,4 +1,5 @@
 import ClientLayout from '@/components/common/ClientLayout';
+import EnvBadge from '@/components/common/EnvBadge';
 import ToastContainer from '@/components/common/Toast';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { AuthModalProvider } from '@/contexts/AuthModalContext';
@@ -57,6 +58,7 @@ export default function RootLayout({
                     <ToastProvider>
                       <ClientLayout>{children}</ClientLayout>
                       <ToastContainer />
+                      <EnvBadge />
                     </ToastProvider>
                   </NotificationProvider>
                 </ViewModeProvider>

@@ -6,7 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Avatar from "./Avatar";
 
 export default function Header() {
@@ -16,9 +16,30 @@ export default function Header() {
   const { unreadCount } = useNotifications();
   const pathname = usePathname();
   const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Check if on register page to redirect to browse after login
   const isOnRegisterPage = pathname === '/register';
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    if (showDropdown) {
+      // Use setTimeout to avoid immediate closure from the same click that opened it
+      setTimeout(() => {
+        document.addEventListener("mousedown", handleClickOutside);
+      }, 0);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDropdown]);
 
   // Handle ESC key to close dropdown
   const handleEscKey = useCallback((e: KeyboardEvent) => {
@@ -69,7 +90,7 @@ export default function Header() {
                 {(user.role === "client" || user.role === "pro") && (
                   <Link
                     href="/post-job"
-                    className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 ease-out hover:scale-[1.03] active:scale-[0.97]"
+                    className="flex items-center justify-center gap-1.5 sm:gap-2 w-9 h-9 sm:w-auto sm:h-auto sm:px-4 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 ease-out hover:scale-[1.03] active:scale-[0.97]"
                     style={{
                       backgroundColor: "var(--color-accent)",
                       color: "#ffffff",
@@ -85,7 +106,7 @@ export default function Header() {
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                     </svg>
-                    <span className="whitespace-nowrap">
+                    <span className="hidden sm:inline whitespace-nowrap">
                       {locale === "ka" ? "განცხადება" : "Post Job"}
                     </span>
                   </Link>
@@ -191,7 +212,7 @@ export default function Header() {
                   )}
                 </Link>
 
-                <div className="relative">
+                <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setShowDropdown(!showDropdown)}
                     className="flex items-center hover:opacity-90 transition-opacity group touch-manipulation"
@@ -206,14 +227,9 @@ export default function Header() {
                   </button>
 
                   {showDropdown && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-40"
-                        onClick={() => setShowDropdown(false)}
-                      ></div>
-                      <div
-                        className="absolute right-0 top-full mt-2 sm:mt-3 w-[calc(100vw-24px)] sm:w-72 max-w-[280px] sm:max-w-72 bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-luxury dark:shadow-none overflow-hidden z-50 animate-scale-in max-h-[calc(100vh-80px)] overflow-y-auto"
-                      >
+                    <div
+                      className="absolute right-0 top-full mt-2 sm:mt-3 w-[calc(100vw-24px)] sm:w-72 max-w-[280px] sm:max-w-72 bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-luxury dark:shadow-none overflow-hidden z-[70] animate-scale-in max-h-[calc(100vh-80px)] overflow-y-auto"
+                    >
                         {/* User Info Header */}
                         <div
                           className="px-3 sm:px-5 py-3 sm:py-4"
@@ -555,7 +571,6 @@ export default function Header() {
                           </button>
                         </div>
                       </div>
-                    </>
                   )}
                 </div>
               </div>

@@ -15,6 +15,7 @@ export default function FeedCard({ item, onLike, isAuthenticated = false }: Feed
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const hasMultipleImages = item.images.length > 1;
   const isBeforeAfter = item.type === FeedItemType.BEFORE_AFTER && item.beforeImage && item.afterImage;
@@ -47,7 +48,7 @@ export default function FeedCard({ item, onLike, isAuthenticated = false }: Feed
       href={`/professionals/${item.pro._id}`}
       className="group block"
     >
-      <div className="relative rounded-xl overflow-hidden transition-all duration-200 hover:shadow-lg"
+      <div className="relative rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 hover:shadow-lg"
         style={{ backgroundColor: 'var(--color-bg-secondary)' }}
       >
         {/* Image */}
@@ -79,11 +80,20 @@ export default function FeedCard({ item, onLike, isAuthenticated = false }: Feed
             </div>
           ) : (
             <>
-              <img
-                src={item.images[currentImageIndex] || '/placeholder.jpg'}
-                alt={item.title}
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-              />
+              {!imageError ? (
+                <img
+                  src={item.images[currentImageIndex]}
+                  alt={item.title}
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                  onError={() => setImageError(true)}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--color-bg-tertiary)] to-[var(--color-bg-secondary)]">
+                  <svg className="w-12 h-12 text-[var(--color-text-muted)] opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                  </svg>
+                </div>
+              )}
               {hasMultipleImages && (
                 <>
                   <button onClick={prevImage} className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -119,15 +129,15 @@ export default function FeedCard({ item, onLike, isAuthenticated = false }: Feed
           )}
         </div>
 
-        {/* Simple footer */}
-        <div className="p-3 flex items-center gap-3">
+        {/* Simple footer - compact on mobile */}
+        <div className="p-2 sm:p-3 flex items-center gap-2 sm:gap-3">
           {/* Pro avatar */}
-          <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-[var(--color-border)]">
+          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-[var(--color-border)]">
             {item.pro.avatar ? (
               <img src={item.pro.avatar} alt="" className="w-full h-full object-cover" />
             ) : (
               <div
-                className="w-full h-full flex items-center justify-center text-white text-xs font-medium"
+                className="w-full h-full flex items-center justify-center text-white text-[10px] sm:text-xs font-medium"
                 style={{
                   background: `linear-gradient(135deg, hsl(${(item.pro.name.charCodeAt(0) * 7) % 360}, 60%, 50%), hsl(${(item.pro.name.charCodeAt(0) * 7 + 40) % 360}, 50%, 40%))`,
                 }}
@@ -139,13 +149,13 @@ export default function FeedCard({ item, onLike, isAuthenticated = false }: Feed
 
           {/* Title and Pro name */}
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-[var(--color-text-primary)] truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+            <p className="text-xs sm:text-sm font-medium text-[var(--color-text-primary)] truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
               {item.title}
             </p>
-            <p className="text-xs text-[var(--color-text-tertiary)] truncate">
+            <p className="text-[10px] sm:text-xs text-[var(--color-text-tertiary)] truncate">
               {item.pro.name}
               {item.pro.rating > 0 && (
-                <span className="inline-flex items-center ml-1.5">
+                <span className="hidden sm:inline-flex items-center ml-1.5">
                   <svg className="w-3 h-3 text-amber-500 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
