@@ -194,8 +194,7 @@ export default function SettingsPage() {
                       src={formData.avatar}
                       name={formData.name}
                       size="2xl"
-                      className="ring-4"
-                      style={{ ringColor: 'var(--color-border)' }}
+                      className="ring-4 ring-neutral-200 dark:ring-neutral-700"
                     />
                     <button
                       onClick={handleAvatarClick}
