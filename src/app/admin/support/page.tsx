@@ -304,11 +304,9 @@ export default function AdminSupportPage() {
                     key={filter}
                     onClick={() => setStatusFilter(filter)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
-                      statusFilter === filter
-                        ? 'bg-emerald-500 text-white'
-                        : 'hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                      statusFilter !== filter ? 'hover:bg-neutral-100 dark:hover:bg-neutral-800' : ''
                     }`}
-                    style={statusFilter !== filter ? { color: 'var(--color-text-secondary)' } : {}}
+                    style={statusFilter === filter ? { backgroundColor: 'var(--color-accent)', color: 'white' } : { color: 'var(--color-text-secondary)' }}
                   >
                     {filter === 'all' ? 'All' : filter.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                   </button>
@@ -335,9 +333,8 @@ export default function AdminSupportPage() {
                     <button
                       key={ticket._id}
                       onClick={() => selectTicket(ticket)}
-                      className={`w-full p-3 sm:p-4 text-left transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50 ${
-                        selectedTicket?._id === ticket._id ? 'bg-emerald-50 dark:bg-emerald-500/10' : ''
-                      }`}
+                      className="w-full p-3 sm:p-4 text-left transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+                    style={selectedTicket?._id === ticket._id ? { backgroundColor: 'var(--color-accent-soft)' } : {}}
                     >
                       <div className="flex items-start gap-3">
                         {/* Avatar */}
@@ -347,7 +344,7 @@ export default function AdminSupportPage() {
                           ) : (
                             <div
                               className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium text-white"
-                              style={{ backgroundColor: '#22543d' }}
+                              style={{ backgroundColor: 'var(--color-accent)' }}
                             >
                               {ticket.userId.name.charAt(0).toUpperCase()}
                             </div>
@@ -459,7 +456,7 @@ export default function AdminSupportPage() {
                             : 'rounded-2xl rounded-bl-md'
                         }`}
                         style={{
-                          backgroundColor: msg.isAdmin ? '#22543d' : 'var(--color-bg-primary)',
+                          backgroundColor: msg.isAdmin ? 'var(--color-accent)' : 'var(--color-bg-primary)',
                           color: msg.isAdmin ? 'white' : 'var(--color-text-primary)',
                           border: msg.isAdmin ? 'none' : '1px solid var(--color-border-subtle)',
                         }}
@@ -498,7 +495,9 @@ export default function AdminSupportPage() {
                         }}
                         placeholder="Type your response..."
                         rows={1}
-                        className="flex-1 px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 resize-none"
+                        className="flex-1 px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 resize-none"
+                        onFocus={(e) => e.currentTarget.style.boxShadow = '0 0 0 3px var(--color-accent-soft)'}
+                        onBlur={(e) => e.currentTarget.style.boxShadow = 'none'}
                         style={{
                           backgroundColor: 'var(--color-bg-primary)',
                           border: '1px solid var(--color-border)',
@@ -511,7 +510,7 @@ export default function AdminSupportPage() {
                         onClick={sendMessage}
                         disabled={!inputValue.trim() || isSending}
                         className="w-11 h-11 rounded-xl flex items-center justify-center transition-all disabled:opacity-50"
-                        style={{ background: 'linear-gradient(135deg, #22543d 0%, #38855e 100%)' }}
+                        style={{ backgroundColor: 'var(--color-accent)' }}
                       >
                         <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />

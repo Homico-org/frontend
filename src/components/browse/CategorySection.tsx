@@ -1,5 +1,6 @@
 'use client';
 
+import Button from '@/components/common/Button';
 import { CATEGORIES } from '@/constants/categories';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -86,26 +87,23 @@ export default function CategorySection({
           const isSelected = selectedCategory === category.key;
 
           return (
-            <button
+            <Button
               key={category.key}
-              onClick={() => onSelectCategory(isSelected ? null : category.key)}
-              className={`
-                flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm
-                transition-all duration-150 flex-shrink-0
-                ${isSelected
-                  ? 'bg-emerald-600 text-white font-medium shadow-sm'
-                  : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
-                }
-              `}
+              onClick={() => {
+                onSelectCategory(isSelected ? null : category.key);
+              }}
+              variant={isSelected ? 'primary' : 'outline'}
+              size="sm"
+              icon={
+                <CategoryIcon
+                  type={category.icon}
+                  className="w-full h-full"
+                />
+              }
+              className="rounded-xl flex-shrink-0"
             >
-              <CategoryIcon
-                type={category.icon}
-                className={`w-[18px] h-[18px] flex-shrink-0 ${isSelected ? 'opacity-90' : 'opacity-60'}`}
-              />
-              <span className="whitespace-nowrap">
-                {locale === 'ka' ? category.nameKa : category.name}
-              </span>
-            </button>
+              {locale === 'ka' ? category.nameKa : category.name}
+            </Button>
           );
         })}
 
@@ -148,19 +146,15 @@ export default function CategorySection({
           {activeCategory.subcategories.map((sub) => {
             const isSubSelected = selectedSubcategory === sub.key;
             return (
-              <button
+              <Button
                 key={sub.key}
                 onClick={() => onSelectSubcategory?.(isSubSelected ? null : sub.key)}
-                className={`
-                  px-2.5 py-1 rounded-lg text-xs transition-all duration-150
-                  ${isSubSelected
-                    ? 'bg-emerald-600 text-white font-medium'
-                    : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
-                  }
-                `}
+                variant={isSubSelected ? 'primary' : 'outline'}
+                size="sm"
+                className="rounded-lg"
               >
                 {locale === 'ka' ? sub.nameKa : sub.name}
-              </button>
+              </Button>
             );
           })}
         </div>

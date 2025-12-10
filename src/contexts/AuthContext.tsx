@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 
 interface User {
   id: string;
+  uid?: number;
   name: string;
   email: string;
   role: 'client' | 'pro' | 'company' | 'admin';
@@ -62,7 +63,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const userData = await response.json();
       return {
-        id: userData._id,
+        id: userData.id || userData._id,
+        uid: userData.uid,
         name: userData.name,
         email: userData.email,
         role: userData.role,

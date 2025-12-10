@@ -259,8 +259,8 @@ export default function SupportChat() {
           onClick={openChat}
           className="fixed bottom-20 right-3 sm:bottom-24 sm:right-6 z-40 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation"
           style={{
-            background: 'linear-gradient(135deg, #22543d 0%, #38855e 100%)',
-            boxShadow: '0 8px 32px rgba(34, 84, 61, 0.35)',
+            backgroundColor: 'var(--color-accent)',
+            boxShadow: '0 8px 32px var(--color-accent-soft)',
           }}
         >
           <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -287,7 +287,7 @@ export default function SupportChat() {
           <div
             className="flex-shrink-0 px-4 py-3 sm:py-4 flex items-center justify-between"
             style={{
-              background: 'linear-gradient(135deg, #22543d 0%, #38855e 100%)',
+              backgroundColor: 'var(--color-accent)',
             }}
           >
             <div className="flex items-center gap-3">
@@ -307,7 +307,7 @@ export default function SupportChat() {
                   {view === 'new-ticket' && (locale === 'ka' ? 'ახალი მოთხოვნა' : 'New Request')}
                   {view === 'chat' && (currentTicket?.subject || (locale === 'ka' ? 'ჩატი' : 'Chat'))}
                 </h3>
-                <p className="text-xs text-emerald-200">
+                <p className="text-xs text-white/70">
                   {view === 'tickets' && (locale === 'ka' ? 'როგორ შეგვიძლია დაგეხმაროთ?' : 'How can we help?')}
                   {view === 'new-ticket' && (locale === 'ka' ? 'აღწერეთ თქვენი პრობლემა' : 'Describe your issue')}
                   {view === 'chat' && currentTicket && getStatusLabel(currentTicket.status)}
@@ -332,11 +332,13 @@ export default function SupportChat() {
                 {/* New Ticket Button */}
                 <button
                   onClick={startNewTicket}
-                  className="w-full mb-4 p-3 sm:p-4 rounded-xl border-2 border-dashed flex items-center gap-3 transition-all hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
+                  className="w-full mb-4 p-3 sm:p-4 rounded-xl border-2 border-dashed flex items-center gap-3 transition-all hover:bg-[var(--color-accent-soft)]"
+                  onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--color-accent)'}
+                  onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--color-border)'}
                   style={{ borderColor: 'var(--color-border)' }}
                 >
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                    <svg className="w-5 h-5 text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'var(--color-accent-soft)' }}>
+                    <svg className="w-5 h-5" style={{ color: 'var(--color-accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                     </svg>
                   </div>
@@ -386,7 +388,7 @@ export default function SupportChat() {
                             {ticket.subject}
                           </p>
                           {ticket.hasUnreadAdminMessages && (
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0 mt-1.5" />
+                            <span className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" style={{ backgroundColor: 'var(--color-accent)' }} />
                           )}
                         </div>
                         <div className="flex items-center gap-2">
@@ -467,7 +469,9 @@ export default function SupportChat() {
                         value={newTicketData.subject}
                         onChange={(e) => setNewTicketData({ ...newTicketData, subject: e.target.value })}
                         placeholder={locale === 'ka' ? 'მოკლედ აღწერეთ პრობლემა' : 'Brief description of your issue'}
-                        className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                        className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2"
+                        onFocus={(e) => e.currentTarget.style.boxShadow = '0 0 0 3px var(--color-accent-soft)'}
+                        onBlur={(e) => e.currentTarget.style.boxShadow = 'none'}
                         style={{
                           backgroundColor: 'var(--color-bg-primary)',
                           border: '1px solid var(--color-border)',
@@ -486,7 +490,9 @@ export default function SupportChat() {
                         onChange={(e) => setNewTicketData({ ...newTicketData, message: e.target.value })}
                         placeholder={locale === 'ka' ? 'დეტალურად აღწერეთ თქვენი პრობლემა...' : 'Describe your issue in detail...'}
                         rows={4}
-                        className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 resize-none"
+                        className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 resize-none"
+                        onFocus={(e) => e.currentTarget.style.boxShadow = '0 0 0 3px var(--color-accent-soft)'}
+                        onBlur={(e) => e.currentTarget.style.boxShadow = 'none'}
                         style={{
                           backgroundColor: 'var(--color-bg-primary)',
                           border: '1px solid var(--color-border)',
@@ -501,7 +507,7 @@ export default function SupportChat() {
                       disabled={!newTicketData.subject || !newTicketData.message || isSending}
                       className="w-full py-3 rounded-xl font-medium text-sm text-white transition-all disabled:opacity-50"
                       style={{
-                        background: 'linear-gradient(135deg, #22543d 0%, #38855e 100%)',
+                        backgroundColor: 'var(--color-accent)',
                       }}
                     >
                       {isSending
@@ -528,13 +534,13 @@ export default function SupportChat() {
                           : 'rounded-2xl rounded-br-md'
                       }`}
                       style={{
-                        backgroundColor: msg.isAdmin ? 'var(--color-bg-primary)' : '#22543d',
+                        backgroundColor: msg.isAdmin ? 'var(--color-bg-primary)' : 'var(--color-accent)',
                         color: msg.isAdmin ? 'var(--color-text-primary)' : 'white',
                         border: msg.isAdmin ? '1px solid var(--color-border-subtle)' : 'none',
                       }}
                     >
                       {msg.isAdmin && (
-                        <p className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 mb-1">
+                        <p className="text-[10px] font-medium mb-1" style={{ color: 'var(--color-accent)' }}>
                           {locale === 'ka' ? 'მხარდაჭერა' : 'Support'}
                         </p>
                       )}
@@ -572,7 +578,9 @@ export default function SupportChat() {
                   }}
                   placeholder={locale === 'ka' ? 'დაწერეთ შეტყობინება...' : 'Type a message...'}
                   rows={1}
-                  className="flex-1 px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 resize-none"
+                  className="flex-1 px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 resize-none"
+                  onFocus={(e) => e.currentTarget.style.boxShadow = '0 0 0 3px var(--color-accent-soft)'}
+                  onBlur={(e) => e.currentTarget.style.boxShadow = 'none'}
                   style={{
                     backgroundColor: 'var(--color-bg-secondary)',
                     border: '1px solid var(--color-border)',
@@ -586,7 +594,7 @@ export default function SupportChat() {
                   disabled={!inputValue.trim() || isSending}
                   className="w-11 h-11 rounded-xl flex items-center justify-center transition-all disabled:opacity-50"
                   style={{
-                    background: 'linear-gradient(135deg, #22543d 0%, #38855e 100%)',
+                    backgroundColor: 'var(--color-accent)',
                   }}
                 >
                   <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>

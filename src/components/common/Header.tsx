@@ -4,8 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNotifications } from "@/contexts/NotificationContext";
-import { useViewMode } from "@/contexts/ViewModeContext";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import Avatar from "./Avatar";
 
@@ -13,9 +13,12 @@ export default function Header() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const { openLoginModal } = useAuthModal();
   const { t, locale } = useLanguage();
-  const { viewMode, toggleViewMode } = useViewMode();
   const { unreadCount } = useNotifications();
+  const pathname = usePathname();
   const [showDropdown, setShowDropdown] = useState(false);
+
+  // Check if on register page to redirect to browse after login
+  const isOnRegisterPage = pathname === '/register';
 
   // Handle ESC key to close dropdown
   const handleEscKey = useCallback((e: KeyboardEvent) => {
@@ -35,10 +38,10 @@ export default function Header() {
 
   return (
     <header
-      className="sticky top-0 z-50 backdrop-blur-md border-b transition-colors duration-300"
+      className="sticky top-0 z-50 backdrop-blur-xl border-b transition-colors duration-300"
       style={{
-        backgroundColor: "rgba(242, 240, 236, 0.95)",
-        borderColor: "var(--color-border)",
+        backgroundColor: "var(--color-bg-primary-transparent)",
+        borderColor: "var(--color-border-subtle)",
       }}
     >
       <div className="container-custom py-3 sm:py-4">
@@ -62,6 +65,32 @@ export default function Header() {
               <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-dark-card animate-pulse"></div>
             ) : isAuthenticated && user ? (
               <div className="flex items-center gap-2 sm:gap-3">
+                {/* Post Job Button for Client and Pro Users */}
+                {(user.role === "client" || user.role === "pro") && (
+                  <Link
+                    href="/post-job"
+                    className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 ease-out hover:scale-[1.03] active:scale-[0.97]"
+                    style={{
+                      backgroundColor: "var(--color-accent)",
+                      color: "#ffffff",
+                      boxShadow: "0 2px 8px var(--color-accent-soft)",
+                    }}
+                  >
+                    <svg
+                      className="w-4 h-4 sm:w-[18px] sm:h-[18px]"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    <span className="whitespace-nowrap">
+                      {locale === "ka" ? "განცხადება" : "Post Job"}
+                    </span>
+                  </Link>
+                )}
+
                 {/* Become Pro Button for Client Users - Hidden on mobile */}
                 {user.role === "client" && (
                   <Link
@@ -126,74 +155,6 @@ export default function Header() {
                   </Link>
                 )}
 
-                {/* View Mode Toggle for Pro Users - Compact on mobile */}
-                {user.role === "pro" && (
-                  <button
-                    onClick={toggleViewMode}
-                    className="flex items-center justify-center w-9 h-9 sm:w-auto sm:h-auto sm:gap-2 sm:px-3 sm:py-1.5 rounded-full transition-all duration-300 touch-manipulation"
-                    style={{
-                      backgroundColor:
-                        viewMode === "client"
-                          ? "rgba(245, 158, 11, 0.15)"
-                          : "rgba(52, 211, 153, 0.15)",
-                      border: `1px solid ${viewMode === "client" ? "rgba(245, 158, 11, 0.3)" : "rgba(52, 211, 153, 0.3)"}`,
-                    }}
-                    title={
-                      viewMode === "client"
-                        ? "მაძიებელი რეჟიმი"
-                        : "სპეციალისტი რეჟიმი"
-                    }
-                  >
-                    {/* Icon only on mobile */}
-                    <svg
-                      className="w-4 h-4 sm:hidden"
-                      style={{
-                        color: viewMode === "client" ? "#f59e0b" : "#34d399",
-                      }}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-                      />
-                    </svg>
-                    {/* Toggle switch on desktop */}
-                    <div
-                      className="hidden sm:block relative w-8 h-4 rounded-full transition-colors duration-300"
-                      style={{
-                        backgroundColor:
-                          viewMode === "client"
-                            ? "rgba(245, 158, 11, 0.3)"
-                            : "rgba(52, 211, 153, 0.3)",
-                      }}
-                    >
-                      <div
-                        className="absolute top-0.5 w-3 h-3 rounded-full transition-all duration-300 shadow-sm"
-                        style={{
-                          backgroundColor:
-                            viewMode === "client" ? "#f59e0b" : "#34d399",
-                          left:
-                            viewMode === "client" ? "2px" : "calc(100% - 14px)",
-                        }}
-                      />
-                    </div>
-                    <span
-                      className="hidden sm:inline text-xs font-medium transition-colors duration-300"
-                      style={{
-                        color: viewMode === "client" ? "#f59e0b" : "#34d399",
-                      }}
-                    >
-                      {viewMode === "client"
-                        ? "იპოვე სამუშაო"
-                        : "იპოვე სპეციალისტი"}
-                    </span>
-                  </button>
-                )}
-
                 {/* Notification Bell - Compact on mobile */}
                 <Link
                   href="/notifications"
@@ -247,15 +208,19 @@ export default function Header() {
                   {showDropdown && (
                     <>
                       <div
-                        className="fixed inset-0 z-10"
+                        className="fixed inset-0 z-40"
                         onClick={() => setShowDropdown(false)}
                       ></div>
                       <div
-                        key={viewMode}
-                        className="absolute right-0 top-full mt-2 sm:mt-3 w-[calc(100vw-24px)] sm:w-72 max-w-[280px] sm:max-w-72 bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-luxury dark:shadow-none overflow-hidden z-20 animate-scale-in max-h-[calc(100vh-80px)] overflow-y-auto"
+                        className="absolute right-0 top-full mt-2 sm:mt-3 w-[calc(100vw-24px)] sm:w-72 max-w-[280px] sm:max-w-72 bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-luxury dark:shadow-none overflow-hidden z-50 animate-scale-in max-h-[calc(100vh-80px)] overflow-y-auto"
                       >
                         {/* User Info Header */}
-                        <div className="px-3 sm:px-5 py-3 sm:py-4 bg-gradient-to-br from-forest-800 to-forest-700 dark:from-dark-elevated dark:to-dark-card">
+                        <div
+                          className="px-3 sm:px-5 py-3 sm:py-4"
+                          style={{
+                            background: "linear-gradient(135deg, var(--color-accent) 0%, color-mix(in srgb, var(--color-accent) 85%, #000) 100%)"
+                          }}
+                        >
                           <div className="flex items-center gap-2.5 sm:gap-3.5">
                             <Avatar
                               src={user.avatar}
@@ -272,6 +237,11 @@ export default function Header() {
                                 {user.email}
                               </p>
                               <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+                                {user.uid && (
+                                  <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium bg-white/10 text-white/80">
+                                    ID: {user.uid}
+                                  </span>
+                                )}
                                 <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium bg-primary-400/20 text-primary-300 capitalize">
                                   {user.role === "pro"
                                     ? "პრო"
@@ -283,19 +253,6 @@ export default function Header() {
                                           ? "ადმინი"
                                           : user.role}
                                 </span>
-                                {user.role === "pro" && (
-                                  <span
-                                    className={`inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium ${
-                                      viewMode === "client"
-                                        ? "bg-amber-400/20 text-amber-300"
-                                        : "bg-emerald-400/20 text-emerald-300"
-                                    }`}
-                                  >
-                                    {viewMode === "client"
-                                      ? "მაძიებელი"
-                                      : "სპეცი."}
-                                  </span>
-                                )}
                               </div>
                             </div>
                           </div>
@@ -604,72 +561,8 @@ export default function Header() {
               </div>
             ) : (
               <div className="flex items-center gap-2 sm:gap-3">
-                {/* Find Work Button for non-authenticated users */}
                 <button
-                  onClick={() => openLoginModal()}
-                  className="flex items-center justify-center w-9 h-9 sm:w-auto sm:h-auto sm:gap-2 sm:px-3 sm:py-1.5 rounded-full transition-all duration-300 touch-manipulation"
-                  style={{
-                    backgroundColor:
-                      viewMode === "client"
-                        ? "rgba(245, 158, 11, 0.15)"
-                        : "rgba(52, 211, 153, 0.15)",
-                    border: `1px solid ${viewMode === "client" ? "rgba(245, 158, 11, 0.3)" : "rgba(52, 211, 153, 0.3)"}`,
-                  }}
-                  title={
-                    viewMode === "client"
-                      ? "მაძიებელი რეჟიმი"
-                      : "სპეციალისტი რეჟიმი"
-                  }
-                >
-                  {/* Icon only on mobile */}
-                  <svg
-                    className="w-4 h-4 sm:hidden"
-                    style={{
-                      color: viewMode === "client" ? "#f59e0b" : "#34d399",
-                    }}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-                    />
-                  </svg>
-                  {/* Toggle switch on desktop */}
-                  <div
-                    className="hidden sm:block relative w-8 h-4 rounded-full transition-colors duration-300"
-                    style={{
-                      backgroundColor:
-                        viewMode === "client"
-                          ? "rgba(245, 158, 11, 0.3)"
-                          : "rgba(52, 211, 153, 0.3)",
-                    }}
-                  >
-                    <div
-                      className="absolute top-0.5 w-3 h-3 rounded-full transition-all duration-300 shadow-sm"
-                      style={{
-                        backgroundColor:
-                          viewMode === "client" ? "#f59e0b" : "#34d399",
-                        left:
-                          viewMode === "client" ? "2px" : "calc(100% - 14px)",
-                      }}
-                    />
-                  </div>
-                  <span
-                    className="hidden sm:inline text-xs font-medium transition-colors duration-300"
-                    style={{
-                      color: viewMode === "client" ? "#f59e0b" : "#34d399",
-                    }}
-                  >
-                    იპოვე სამუშაო
-                  </span>
-                </button>
-
-                <button
-                  onClick={() => openLoginModal()}
+                  onClick={() => openLoginModal(isOnRegisterPage ? '/browse' : undefined)}
                   className="font-medium transition-colors px-3 sm:px-4 py-2 text-sm sm:text-base touch-manipulation"
                   style={{ color: "var(--color-text-secondary)" }}
                 >

@@ -12,6 +12,7 @@
 :root {
   /* Warm Stone Background Palette - grounded and sophisticated */
   --color-bg-primary: #eae7e2;
+  --color-bg-primary-transparent: rgba(234, 231, 226, 0.8);
   --color-bg-secondary: #f5f3f0;
   --color-bg-tertiary: #dfdcd6;
   --color-bg-elevated: #faf9f7;
@@ -69,6 +70,7 @@
 .dark {
   /* Refined Dark Mode - softer twilight aesthetic */
   --color-bg-primary: #1e1e22;
+  --color-bg-primary-transparent: rgba(30, 30, 34, 0.8);
   --color-bg-secondary: #26262b;
   --color-bg-tertiary: #2e2e34;
   --color-bg-elevated: #2a2a30;
@@ -127,12 +129,18 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  html {
+    /* Prevent content jump when scrollbar appears/disappears */
+    overflow-y: scroll;
+  }
+
   html, body {
     @apply overflow-x-hidden;
   }
 
   body {
-    background-color: var(--color-bg-primary);
+    background: var(--color-bg-canvas);
+    background-attachment: fixed;
     color: var(--color-text-primary);
     @apply antialiased transition-colors duration-200;
   }

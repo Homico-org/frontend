@@ -1,6 +1,7 @@
 'use client';
 
 import CategorySubcategorySelector from '@/components/common/CategorySubcategorySelector';
+import Header from '@/components/common/Header';
 import PortfolioProjectsInput, { PortfolioProject } from '@/components/common/PortfolioProjectsInput';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
@@ -205,40 +206,10 @@ export default function BecomeProPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-primary)] overflow-x-hidden">
-      {/* Ambient background */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[var(--color-accent-soft)] rounded-full blur-[120px] translate-x-1/3 -translate-y-1/3 opacity-60" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[var(--color-highlight-soft)] rounded-full blur-[100px] -translate-x-1/3 translate-y-1/3 opacity-40" />
-      </div>
+    <div className="min-h-screen overflow-x-hidden">
+      <Header />
 
-      {/* Header */}
-      <header className="relative z-10 py-6 sticky top-0 bg-[var(--color-bg-primary)]/80 backdrop-blur-xl border-b border-[var(--color-border-subtle)]">
-        <div className="container-custom">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="group flex items-center gap-2">
-              <span className="text-xl font-semibold text-[var(--color-text-primary)] tracking-tight">
-                {locale === 'ka' ? 'ჰომიკო' : 'Homico'}
-              </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] group-hover:scale-125 transition-transform" />
-            </Link>
-
-            {/* User info */}
-            {user && (
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-[var(--color-text-secondary)]">
-                  {user.name || user.email}
-                </span>
-                <div className="w-8 h-8 rounded-full bg-[var(--color-accent-soft)] flex items-center justify-center text-[var(--color-accent)] font-medium text-sm">
-                  {(user.name || user.email || '?')[0].toUpperCase()}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
-
-      <main className={`relative z-10 pb-24 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+      <main className={`relative z-10 pt-16 pb-24 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
         <div className="container-custom pt-8 md:pt-12">
           <div className="max-w-2xl mx-auto">
             {/* Hero Section */}

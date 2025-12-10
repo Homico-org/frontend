@@ -1,5 +1,6 @@
 "use client";
 
+import Header from "@/components/common/Header";
 import PortfolioProjectsInput, {
   PortfolioProject,
 } from "@/components/common/PortfolioProjectsInput";
@@ -1010,52 +1011,11 @@ function RegisterContent() {
   }
 
   return (
-    <div
-      className="min-h-screen"
-      style={{ backgroundColor: "var(--color-bg-primary)" }}
-    >
-      {/* Header */}
-      <header
-        className="sticky top-0 z-50 border-b bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl"
-        style={{ borderColor: "var(--color-border)" }}
-      >
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center">
-              <svg
-                className="w-5 h-5 text-white"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"
-                />
-              </svg>
-            </div>
-            <span className="text-xl font-semibold text-gray-900 dark:text-white">
-              {locale === 'ka' ? 'ჰომიკო' : 'Homico'}
-            </span>
-          </Link>
-          <button
-            onClick={() => openLoginModal()}
-            className="text-sm font-medium px-4 py-2 rounded-lg transition-colors text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-          >
-            {locale === "ka"
-              ? "უკვე გაქვს ანგარიში?"
-              : "Already have an account?"}{" "}
-            <span className="text-emerald-600 dark:text-emerald-400">
-              {locale === "ka" ? "შესვლა" : "Sign in"}
-            </span>
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen relative">
+      <Header />
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-24">
+      <main className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-24">
         {/* Title */}
         <div className="text-center mb-10">
           <h1

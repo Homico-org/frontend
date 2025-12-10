@@ -295,7 +295,7 @@ export default function LoginModal() {
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  {demoAccounts.slice(0, 4).map((account) => (
+                  {demoAccounts.filter(a => a.role === 'client' || a.role === 'pro').slice(0, 4).map((account) => (
                     <button
                       key={account.email}
                       type="button"

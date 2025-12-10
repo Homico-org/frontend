@@ -135,7 +135,167 @@ export default function SimilarProfessionals({ currentProId, categories, subcate
   }
 
   if (similarPros.length === 0) {
-    return null;
+    return (
+      <section className="mt-6 sm:mt-8">
+        {/* Section Header - matching შესახებ and ნამუშევრები style */}
+        <div className="flex items-center gap-3 mb-4">
+          <div
+            className="h-[3px] flex-1 max-w-[40px] rounded-sm"
+            style={{
+              background: 'linear-gradient(90deg, var(--color-accent), color-mix(in srgb, var(--color-accent) 60%, #fff))'
+            }}
+          />
+          <h2
+            className="text-xs font-bold uppercase tracking-[0.2em]"
+            style={{ color: 'var(--color-text-tertiary)' }}
+          >
+            {locale === 'ka' ? 'მსგავსი სპეციალისტები' : 'Similar Professionals'}
+          </h2>
+        </div>
+
+        {/* Empty State - Clean, no card background */}
+        <div className="relative py-8 sm:py-12">
+          {/* Floating avatar placeholders - decorative */}
+          <div className="absolute top-4 right-0 sm:right-4 flex -space-x-2 opacity-60">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center"
+                style={{
+                  backgroundColor: 'var(--color-bg-tertiary)',
+                  borderColor: 'var(--color-bg-primary)',
+                  animation: `bounce-subtle 2.5s ease-in-out ${i * 0.15}s infinite`,
+                  opacity: 0.5 + (i * 0.15)
+                }}
+              >
+                <svg
+                  className="w-4 h-4 sm:w-5 sm:h-5"
+                  style={{ color: 'var(--color-text-muted)' }}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+            ))}
+            <div
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center"
+              style={{
+                backgroundColor: 'var(--color-accent-soft)',
+                borderColor: 'var(--color-bg-primary)',
+                animation: 'pulse-slow 2s ease-in-out infinite'
+              }}
+            >
+              <span className="text-sm font-bold" style={{ color: 'var(--color-accent)' }}>?</span>
+            </div>
+          </div>
+
+          {/* Main content */}
+          <div className="flex flex-col sm:flex-row items-start gap-5">
+            {/* Icon */}
+            <div className="relative flex-shrink-0">
+              <div
+                className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center"
+                style={{
+                  backgroundColor: 'var(--color-bg-tertiary)',
+                  border: '1px solid var(--color-border)'
+                }}
+              >
+                <svg
+                  className="w-7 h-7 sm:w-8 sm:h-8"
+                  viewBox="0 0 32 32"
+                  fill="none"
+                >
+                  <circle
+                    cx="13"
+                    cy="13"
+                    r="8"
+                    stroke="var(--color-accent)"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    opacity="0.7"
+                  />
+                  <path
+                    d="M19 19L26 26"
+                    stroke="var(--color-accent)"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    opacity="0.7"
+                  />
+                  <circle
+                    cx="13"
+                    cy="11"
+                    r="2.5"
+                    fill="var(--color-text-muted)"
+                    opacity="0.5"
+                  />
+                  <path
+                    d="M9 17c0-2.5 2-4 4-4s4 1.5 4 4"
+                    stroke="var(--color-text-muted)"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    opacity="0.5"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            {/* Text content */}
+            <div className="flex-1 min-w-0">
+              <h3
+                className="text-base sm:text-lg font-semibold mb-1.5"
+                style={{ color: 'var(--color-text-primary)' }}
+              >
+                {locale === 'ka'
+                  ? 'პირველი თავის კატეგორიაში'
+                  : 'First in their category'}
+              </h3>
+              <p
+                className="text-sm leading-relaxed mb-4"
+                style={{ color: 'var(--color-text-secondary)' }}
+              >
+                {locale === 'ka'
+                  ? 'ეს სპეციალისტი უნიკალურია! გამოიკვლიეთ სხვა კატეგორიები.'
+                  : 'This professional is unique! Explore other categories.'}
+              </p>
+
+              {/* Action button */}
+              <a
+                href="/browse"
+                className="group inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200"
+                style={{
+                  backgroundColor: 'var(--color-accent-soft)',
+                  color: 'var(--color-accent)'
+                }}
+              >
+                <span>{locale === 'ka' ? 'კატეგორიების დათვალიერება' : 'Browse Categories'}</span>
+                <svg
+                  className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* CSS Animations */}
+        <style jsx>{`
+          @keyframes bounce-subtle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+          }
+          @keyframes pulse-slow {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+          }
+        `}</style>
+      </section>
+    );
   }
 
   return (

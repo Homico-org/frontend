@@ -252,46 +252,13 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
   );
 
   return (
-    <div className="space-y-5">
-      {/* Search Bar */}
-      <div className="relative">
-        <svg
-          className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
-        <input
-          type="text"
-          placeholder={locale === 'ka' ? 'ნამუშევრების ძებნა...' : 'Search portfolio...'}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full h-12 pl-10 pr-4 rounded-xl border text-base sm:text-sm bg-[var(--color-bg-secondary)] border-[var(--color-border)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)]/50 transition-all"
-        />
-      </div>
-
+    <div className="space-y-4">
       {isLoading ? (
         <FeedSkeleton />
       ) : feedItems.length === 0 ? (
         <EmptyState />
       ) : (
         <>
-          {/* Results count */}
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              {locale === 'ka'
-                ? `ნაჩვენებია ${feedItems.length} / ${totalCount} ნამუშევარი`
-                : `Showing ${feedItems.length} of ${totalCount} items`}
-            </p>
-          </div>
-
           {/* Feed Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {feedItems.map((item, index) => (
