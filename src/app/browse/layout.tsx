@@ -25,7 +25,8 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
 
   const isPro = user?.role === "pro";
 
-  // Redirect /browse based on user role
+  // Only redirect /browse to the default page based on user role
+  // No other automatic redirects - let users navigate freely
   useEffect(() => {
     if (pathname === "/browse" && !isAuthLoading) {
       if (isPro) {
@@ -35,13 +36,6 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
       }
     }
   }, [pathname, router, isPro, isAuthLoading]);
-
-  // Redirect non-pros from jobs page to professionals
-  useEffect(() => {
-    if (!isAuthLoading && pathname.includes("/browse/jobs") && !isPro) {
-      router.replace("/browse/professionals");
-    }
-  }, [isAuthLoading, isPro, pathname, router]);
 
   // Determine page title based on route
   const getPageTitle = () => {
