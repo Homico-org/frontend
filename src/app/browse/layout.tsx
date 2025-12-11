@@ -70,7 +70,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
   const showRatingFilter = pathname.includes("/browse/professionals");
 
   return (
-    <div className="min-h-screen relative bg-[var(--color-bg-primary)]">
+    <div className="min-h-screen relative">
       <Header />
 
       <main className="relative z-20 pt-14 sm:pt-16 pb-20 sm:pb-24">
