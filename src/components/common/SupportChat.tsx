@@ -229,7 +229,7 @@ export default function SupportChat() {
     switch (status) {
       case 'open': return 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400';
       case 'in_progress': return 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400';
-      case 'resolved': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400';
+      case 'resolved': return 'bg-terracotta-100 text-terracotta-600 dark:bg-terracotta-500/20 dark:text-terracotta-400';
       case 'closed': return 'bg-neutral-100 text-neutral-600 dark:bg-neutral-500/20 dark:text-neutral-400';
       default: return 'bg-neutral-100 text-neutral-600';
     }
@@ -257,17 +257,16 @@ export default function SupportChat() {
       {view === 'button' && (
         <button
           onClick={openChat}
-          className="fixed bottom-20 right-3 sm:bottom-24 sm:right-6 z-40 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation"
+          className="fixed bottom-20 right-3 sm:bottom-24 sm:right-6 z-40 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation group bg-terracotta-500 hover:bg-terracotta-600"
           style={{
-            backgroundColor: 'var(--color-accent)',
-            boxShadow: '0 8px 32px var(--color-accent-soft)',
+            boxShadow: '0 8px 32px rgba(201, 109, 77, 0.35)',
           }}
         >
-          <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white transition-transform duration-300 group-hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
           </svg>
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
               {unreadCount}
             </span>
           )}
@@ -285,10 +284,7 @@ export default function SupportChat() {
         >
           {/* Header */}
           <div
-            className="flex-shrink-0 px-4 py-3 sm:py-4 flex items-center justify-between"
-            style={{
-              backgroundColor: 'var(--color-accent)',
-            }}
+            className="flex-shrink-0 px-4 py-3 sm:py-4 flex items-center justify-between bg-terracotta-500"
           >
             <div className="flex items-center gap-3">
               {view !== 'tickets' && (
@@ -332,13 +328,13 @@ export default function SupportChat() {
                 {/* New Ticket Button */}
                 <button
                   onClick={startNewTicket}
-                  className="w-full mb-4 p-3 sm:p-4 rounded-xl border-2 border-dashed flex items-center gap-3 transition-all hover:bg-[var(--color-accent-soft)]"
-                  onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--color-accent)'}
+                  className="w-full mb-4 p-3 sm:p-4 rounded-xl border-2 border-dashed flex items-center gap-3 transition-all hover:bg-terracotta-50 dark:hover:bg-terracotta-500/10 group"
+                  onMouseEnter={(e) => e.currentTarget.style.borderColor = '#C96D4D'}
                   onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--color-border)'}
                   style={{ borderColor: 'var(--color-border)' }}
                 >
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'var(--color-accent-soft)' }}>
-                    <svg className="w-5 h-5" style={{ color: 'var(--color-accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-terracotta-100 dark:bg-terracotta-500/20 group-hover:bg-terracotta-200 dark:group-hover:bg-terracotta-500/30 transition-colors">
+                    <svg className="w-5 h-5 text-terracotta-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                     </svg>
                   </div>
@@ -380,7 +376,7 @@ export default function SupportChat() {
                         className="w-full p-3 rounded-xl text-left transition-all hover:shadow-md"
                         style={{
                           backgroundColor: 'var(--color-bg-primary)',
-                          border: `1px solid ${ticket.hasUnreadAdminMessages ? 'var(--color-accent)' : 'var(--color-border-subtle)'}`,
+                          border: `1px solid ${ticket.hasUnreadAdminMessages ? '#C96D4D' : 'var(--color-border-subtle)'}`,
                         }}
                       >
                         <div className="flex items-start justify-between gap-2 mb-1.5">
@@ -388,7 +384,7 @@ export default function SupportChat() {
                             {ticket.subject}
                           </p>
                           {ticket.hasUnreadAdminMessages && (
-                            <span className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" style={{ backgroundColor: 'var(--color-accent)' }} />
+                            <span className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5 bg-terracotta-500 animate-pulse" />
                           )}
                         </div>
                         <div className="flex items-center gap-2">
@@ -470,7 +466,7 @@ export default function SupportChat() {
                         onChange={(e) => setNewTicketData({ ...newTicketData, subject: e.target.value })}
                         placeholder={locale === 'ka' ? 'მოკლედ აღწერეთ პრობლემა' : 'Brief description of your issue'}
                         className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2"
-                        onFocus={(e) => e.currentTarget.style.boxShadow = '0 0 0 3px var(--color-accent-soft)'}
+                        onFocus={(e) => e.currentTarget.style.boxShadow = '0 0 0 3px rgba(201, 109, 77, 0.2)'}
                         onBlur={(e) => e.currentTarget.style.boxShadow = 'none'}
                         style={{
                           backgroundColor: 'var(--color-bg-primary)',
@@ -491,7 +487,7 @@ export default function SupportChat() {
                         placeholder={locale === 'ka' ? 'დეტალურად აღწერეთ თქვენი პრობლემა...' : 'Describe your issue in detail...'}
                         rows={4}
                         className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 resize-none"
-                        onFocus={(e) => e.currentTarget.style.boxShadow = '0 0 0 3px var(--color-accent-soft)'}
+                        onFocus={(e) => e.currentTarget.style.boxShadow = '0 0 0 3px rgba(201, 109, 77, 0.2)'}
                         onBlur={(e) => e.currentTarget.style.boxShadow = 'none'}
                         style={{
                           backgroundColor: 'var(--color-bg-primary)',
@@ -505,10 +501,7 @@ export default function SupportChat() {
                     <button
                       onClick={createTicket}
                       disabled={!newTicketData.subject || !newTicketData.message || isSending}
-                      className="w-full py-3 rounded-xl font-medium text-sm text-white transition-all disabled:opacity-50"
-                      style={{
-                        backgroundColor: 'var(--color-accent)',
-                      }}
+                      className="w-full py-3 rounded-xl font-medium text-sm text-white transition-all disabled:opacity-50 bg-terracotta-500 hover:bg-terracotta-600"
                     >
                       {isSending
                         ? (locale === 'ka' ? 'იგზავნება...' : 'Sending...')
@@ -534,13 +527,13 @@ export default function SupportChat() {
                           : 'rounded-2xl rounded-br-md'
                       }`}
                       style={{
-                        backgroundColor: msg.isAdmin ? 'var(--color-bg-primary)' : 'var(--color-accent)',
+                        backgroundColor: msg.isAdmin ? 'var(--color-bg-primary)' : '#C96D4D',
                         color: msg.isAdmin ? 'var(--color-text-primary)' : 'white',
                         border: msg.isAdmin ? '1px solid var(--color-border-subtle)' : 'none',
                       }}
                     >
                       {msg.isAdmin && (
-                        <p className="text-[10px] font-medium mb-1" style={{ color: 'var(--color-accent)' }}>
+                        <p className="text-[10px] font-medium mb-1 text-terracotta-500">
                           {locale === 'ka' ? 'მხარდაჭერა' : 'Support'}
                         </p>
                       )}
@@ -579,7 +572,7 @@ export default function SupportChat() {
                   placeholder={locale === 'ka' ? 'დაწერეთ შეტყობინება...' : 'Type a message...'}
                   rows={1}
                   className="flex-1 px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 resize-none"
-                  onFocus={(e) => e.currentTarget.style.boxShadow = '0 0 0 3px var(--color-accent-soft)'}
+                  onFocus={(e) => e.currentTarget.style.boxShadow = '0 0 0 3px rgba(201, 109, 77, 0.2)'}
                   onBlur={(e) => e.currentTarget.style.boxShadow = 'none'}
                   style={{
                     backgroundColor: 'var(--color-bg-secondary)',
@@ -592,10 +585,7 @@ export default function SupportChat() {
                 <button
                   onClick={sendMessage}
                   disabled={!inputValue.trim() || isSending}
-                  className="w-11 h-11 rounded-xl flex items-center justify-center transition-all disabled:opacity-50"
-                  style={{
-                    backgroundColor: 'var(--color-accent)',
-                  }}
+                  className="w-11 h-11 rounded-xl flex items-center justify-center transition-all disabled:opacity-50 bg-terracotta-500 hover:bg-terracotta-600"
                 >
                   <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />

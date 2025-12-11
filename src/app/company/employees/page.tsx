@@ -169,7 +169,7 @@ export default function CompanyEmployeesPage() {
             <div className="text-sm text-neutral-500 dark:text-neutral-400">Total Employees</div>
           </div>
           <div className="bg-white dark:bg-dark-card rounded-xl border border-neutral-200 dark:border-dark-border p-4">
-            <div className="text-2xl font-bold text-green-600">{employees.filter(e => e.status === 'active').length}</div>
+            <div className="text-2xl font-bold text-[#D2691E]">{employees.filter(e => e.status === 'active').length}</div>
             <div className="text-sm text-neutral-500 dark:text-neutral-400">Active</div>
           </div>
           <div className="bg-white dark:bg-dark-card rounded-xl border border-neutral-200 dark:border-dark-border p-4">

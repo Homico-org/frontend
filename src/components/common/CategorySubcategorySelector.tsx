@@ -172,24 +172,32 @@ export default function CategorySubcategorySelector({
             key={category.key}
             className={`relative rounded-2xl border-2 overflow-hidden transition-all duration-300 animate-fade-in ${
               isSelected
-                ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)]/50'
-                : 'border-[var(--color-border-subtle)] bg-[var(--color-bg-secondary)] hover:border-[var(--color-border)]'
+                ? 'border-terracotta-500 bg-terracotta-50 dark:bg-terracotta-500/10'
+                : 'border-[var(--color-border-subtle)] bg-[var(--color-bg-secondary)] hover:border-terracotta-300 dark:hover:border-terracotta-700'
             }`}
             style={{ animationDelay: `${categoryIndex * 80}ms`, animationFillMode: 'forwards' }}
           >
             {/* Category Header */}
-            <button
-              type="button"
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => {
                 handleCategorySelect(category.key);
                 if (!isExpanded) toggleCategoryExpand(category.key);
               }}
-              className="w-full flex items-center gap-4 p-4 text-left"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleCategorySelect(category.key);
+                  if (!isExpanded) toggleCategoryExpand(category.key);
+                }
+              }}
+              className="w-full flex items-center gap-4 p-4 text-left cursor-pointer"
             >
               {/* Icon */}
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
                 isSelected
-                  ? 'bg-[var(--color-accent)] shadow-lg shadow-[var(--color-accent)]/20 text-white'
+                  ? 'bg-terracotta-500 shadow-lg shadow-terracotta-500/20 text-white'
                   : 'bg-[var(--color-bg-muted)] text-[var(--color-text-secondary)]'
               }`}>
                 <CategoryIcon type={category.icon} className="w-7 h-7" />
@@ -199,12 +207,12 @@ export default function CategorySubcategorySelector({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <h3 className={`font-semibold text-base transition-colors ${
-                    isSelected ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-primary)]'
+                    isSelected ? 'text-terracotta-600 dark:text-terracotta-400' : 'text-[var(--color-text-primary)]'
                   }`}>
                     {locale === 'ka' ? category.nameKa : category.name}
                   </h3>
                   {categorySubcategoryCount > 0 && (
-                    <span className="px-2 py-0.5 rounded-full bg-[var(--color-accent)] text-white text-xs font-medium">
+                    <span className="px-2 py-0.5 rounded-full bg-terracotta-500 text-white text-xs font-medium">
                       {categorySubcategoryCount}
                     </span>
                   )}
@@ -219,7 +227,7 @@ export default function CategorySubcategorySelector({
                 {/* Check indicator */}
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
                   isSelected
-                    ? 'bg-[var(--color-accent)] scale-100'
+                    ? 'bg-terracotta-500 scale-100'
                     : 'bg-[var(--color-border)] scale-75 opacity-40'
                 }`}>
                   <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -248,7 +256,7 @@ export default function CategorySubcategorySelector({
                   </svg>
                 </button>
               </div>
-            </button>
+            </div>
 
             {/* Subcategories Panel */}
             <div
@@ -279,9 +287,9 @@ export default function CategorySubcategorySelector({
                         disabled={!canSelect && !isSubSelected}
                         className={`group relative px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 animate-fade-in ${
                           isSubSelected
-                            ? 'bg-[var(--color-accent)] text-white shadow-md shadow-[var(--color-accent)]/20'
+                            ? 'bg-terracotta-500 text-white shadow-md shadow-terracotta-500/20'
                             : canSelect
-                              ? 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-border)] hover:text-[var(--color-text-primary)]'
+                              ? 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-terracotta-100 dark:hover:bg-terracotta-500/20 hover:text-terracotta-600 dark:hover:text-terracotta-400'
                               : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] opacity-50 cursor-not-allowed'
                         }`}
                         style={{ animationDelay: `${subIndex * 30}ms`, animationFillMode: 'forwards' }}
@@ -322,19 +330,19 @@ export default function CategorySubcategorySelector({
               {customSpecialties.map((specialty, i) => (
                 <div
                   key={specialty}
-                  className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 animate-fade-in"
+                  className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-terracotta-100 dark:bg-terracotta-500/20 border border-terracotta-200 dark:border-terracotta-500/30 animate-fade-in"
                   style={{ animationDelay: `${i * 50}ms` }}
                 >
-                  <svg className="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-3.5 h-3.5 text-terracotta-500" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
-                  <span className="text-sm font-medium text-amber-700 dark:text-amber-400">{specialty}</span>
+                  <span className="text-sm font-medium text-terracotta-700 dark:text-terracotta-400">{specialty}</span>
                   <button
                     type="button"
                     onClick={() => removeCustomSpecialty(specialty)}
-                    className="ml-0.5 p-0.5 rounded-full hover:bg-amber-500/20 transition-colors"
+                    className="ml-0.5 p-0.5 rounded-full hover:bg-terracotta-200 dark:hover:bg-terracotta-500/30 transition-colors"
                   >
-                    <svg className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 text-terracotta-600 dark:text-terracotta-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
@@ -348,16 +356,16 @@ export default function CategorySubcategorySelector({
             <button
               type="button"
               onClick={() => setShowCustomInput(true)}
-              className="group w-full p-4 rounded-xl border-2 border-dashed border-[var(--color-border)] hover:border-amber-500/50 bg-gradient-to-br from-amber-500/5 via-transparent to-orange-500/5 hover:from-amber-500/10 hover:to-orange-500/10 transition-all duration-300"
+              className="group w-full p-4 rounded-xl border-2 border-dashed border-terracotta-200 dark:border-terracotta-700/50 hover:border-terracotta-400 dark:hover:border-terracotta-500 bg-terracotta-50/50 dark:bg-terracotta-500/5 hover:bg-terracotta-100/50 dark:hover:bg-terracotta-500/10 transition-all duration-300"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <svg className="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-10 h-10 rounded-xl bg-terracotta-100 dark:bg-terracotta-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-5 h-5 text-terracotta-600 dark:text-terracotta-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                 </div>
                 <div className="text-left">
-                  <p className="font-medium text-[var(--color-text-primary)] group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                  <p className="font-medium text-[var(--color-text-primary)] group-hover:text-terracotta-600 dark:group-hover:text-terracotta-400 transition-colors">
                     {locale === 'ka' ? 'დაამატე საკუთარი სპეციალობა' : 'Add your own specialty'}
                   </p>
                   <p className="text-xs text-[var(--color-text-tertiary)]">
@@ -367,9 +375,9 @@ export default function CategorySubcategorySelector({
               </div>
             </button>
           ) : (
-            <div className="p-4 rounded-xl border-2 border-amber-500/30 bg-gradient-to-br from-amber-500/5 via-transparent to-orange-500/5 animate-fade-in">
+            <div className="p-4 rounded-xl border-2 border-terracotta-300 dark:border-terracotta-500/40 bg-terracotta-50/50 dark:bg-terracotta-500/5 animate-fade-in">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-terracotta-500 flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
@@ -382,7 +390,7 @@ export default function CategorySubcategorySelector({
                 <button
                   type="button"
                   onClick={() => setShowCustomInput(false)}
-                  className="ml-auto p-1.5 rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                  className="ml-auto p-1.5 rounded-lg hover:bg-terracotta-100 dark:hover:bg-terracotta-500/20 transition-colors"
                 >
                   <svg className="w-4 h-4 text-[var(--color-text-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -397,7 +405,7 @@ export default function CategorySubcategorySelector({
                   onChange={(e) => setCustomSpecialtyInput(e.target.value)}
                   onKeyDown={handleCustomInputKeyDown}
                   placeholder={locale === 'ka' ? 'მაგ: 3D ვიზუალიზაცია, ავეჯის რესტავრაცია...' : 'e.g. 3D Visualization, Furniture restoration...'}
-                  className="flex-1 px-4 py-3 bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all text-sm"
+                  className="flex-1 px-4 py-3 bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-terracotta-500 focus:ring-2 focus:ring-terracotta-500/20 transition-all text-sm"
                   maxLength={50}
                   autoFocus
                 />
@@ -405,7 +413,7 @@ export default function CategorySubcategorySelector({
                   type="button"
                   onClick={addCustomSpecialty}
                   disabled={!customSpecialtyInput.trim() || customSpecialties.length >= 5}
-                  className="px-4 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-medium transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-amber-500/25 hover:-translate-y-0.5 disabled:hover:shadow-none disabled:hover:translate-y-0"
+                  className="px-4 py-3 bg-terracotta-500 text-white rounded-xl font-medium transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-terracotta-600 hover:shadow-lg hover:shadow-terracotta-500/25 hover:-translate-y-0.5 disabled:hover:shadow-none disabled:hover:translate-y-0"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -414,11 +422,11 @@ export default function CategorySubcategorySelector({
               </div>
 
               {/* Info note */}
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                <svg className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-terracotta-100 dark:bg-terracotta-500/15 border border-terracotta-200 dark:border-terracotta-500/20">
+                <svg className="w-4 h-4 text-terracotta-600 dark:text-terracotta-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <div className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
+                <div className="text-xs text-terracotta-700 dark:text-terracotta-300 leading-relaxed">
                   {locale === 'ka' ? (
                     <>
                       <span className="font-semibold">გამოირჩიე კონკურენციიდან!</span>
@@ -434,7 +442,7 @@ export default function CategorySubcategorySelector({
               </div>
 
               {customSpecialties.length >= 5 && (
-                <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
+                <p className="mt-2 text-xs text-terracotta-600 dark:text-terracotta-400">
                   {locale === 'ka' ? 'მაქსიმუმ 5 სპეციალობა' : 'Maximum 5 specialties'}
                 </p>
               )}
@@ -445,9 +453,9 @@ export default function CategorySubcategorySelector({
 
       {/* Selection summary */}
       {totalSelected > 0 && (
-        <div className="mt-4 p-4 rounded-xl bg-[var(--color-accent-soft)] border border-[var(--color-accent)]/20">
+        <div className="mt-4 p-4 rounded-xl bg-terracotta-50 dark:bg-terracotta-500/10 border border-terracotta-200 dark:border-terracotta-500/20">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[var(--color-accent)] flex items-center justify-center text-white">
+            <div className="w-8 h-8 rounded-lg bg-terracotta-500 flex items-center justify-center text-white">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
@@ -460,7 +468,7 @@ export default function CategorySubcategorySelector({
                 }
               </p>
               {customSpecialties.length > 0 && (
-                <p className="text-xs text-[var(--color-text-tertiary)]">
+                <p className="text-xs text-terracotta-500">
                   {customSpecialties.length} {locale === 'ka' ? 'უნიკალური' : 'custom'}
                 </p>
               )}

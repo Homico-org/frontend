@@ -147,7 +147,7 @@ export default function SettingsPage() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ease-out whitespace-nowrap touch-manipulation ${
                     activeTab === tab.id
-                      ? 'bg-emerald-600 text-white'
+                      ? 'bg-[#D2691E] text-white'
                       : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                   }`}
                 >
@@ -225,7 +225,7 @@ export default function SettingsPage() {
                     </p>
                     <button
                       onClick={handleAvatarClick}
-                      className="mt-2 text-sm font-medium text-emerald-600 hover:text-emerald-700 transition-all duration-200 ease-out touch-manipulation"
+                      className="mt-2 text-sm font-medium text-[#D2691E] hover:text-[#B8560E] transition-all duration-200 ease-out touch-manipulation"
                     >
                       {t('settings.profile.uploadPhoto')}
                     </button>
@@ -329,7 +329,7 @@ export default function SettingsPage() {
                   <button
                     onClick={handleSaveProfile}
                     disabled={isSaving}
-                    className="w-full sm:w-auto px-6 py-3 sm:py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 touch-manipulation"
+                    className="w-full sm:w-auto px-6 py-3 sm:py-2.5 bg-[#D2691E] hover:bg-[#B8560E] text-white rounded-xl transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 touch-manipulation"
                   >
                     {isSaving ? (
                       <>
@@ -374,7 +374,7 @@ export default function SettingsPage() {
                       </span>
                       <label className="relative inline-flex items-center cursor-pointer touch-manipulation">
                         <input type="checkbox" className="sr-only peer" defaultChecked />
-                        <div className="w-11 h-6 bg-neutral-300 dark:bg-neutral-600 rounded-full peer peer-checked:bg-emerald-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all duration-200" />
+                        <div className="w-11 h-6 bg-neutral-300 dark:bg-neutral-600 rounded-full peer peer-checked:bg-[#D2691E] peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all duration-200" />
                       </label>
                     </div>
                   ))}
@@ -444,7 +444,7 @@ export default function SettingsPage() {
                   </div>
                   <div className="flex justify-end pt-4">
                     <button
-                      className="w-full sm:w-auto px-6 py-3 sm:py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-all duration-200 ease-out touch-manipulation"
+                      className="w-full sm:w-auto px-6 py-3 sm:py-2.5 bg-[#D2691E] hover:bg-[#B8560E] text-white rounded-xl transition-all duration-200 ease-out touch-manipulation"
                     >
                       {t('settings.security.updatePassword')}
                     </button>
@@ -473,7 +473,7 @@ export default function SettingsPage() {
                     {t('settings.payments.noMethods')}
                   </p>
                   <button
-                    className="mt-4 w-full sm:w-auto px-6 py-3 sm:py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-all duration-200 ease-out touch-manipulation"
+                    className="mt-4 w-full sm:w-auto px-6 py-3 sm:py-2.5 bg-[#D2691E] hover:bg-[#B8560E] text-white rounded-xl transition-all duration-200 ease-out touch-manipulation"
                   >
                     {t('settings.payments.addMethod')}
                   </button>

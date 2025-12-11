@@ -849,7 +849,7 @@ function RegisterContent() {
         className="min-h-screen flex items-center justify-center"
         style={{ backgroundColor: "var(--color-bg-primary)" }}
       >
-        <div className="w-12 h-12 rounded-full border-2 border-emerald-200 dark:border-emerald-800 border-t-emerald-500 animate-spin" />
+        <div className="w-12 h-12 rounded-full border-2 border-[#D2691E]/20 dark:border-[#D2691E]/30 border-t-[#D2691E] animate-spin" />
       </div>
     );
   }
@@ -890,9 +890,9 @@ function RegisterContent() {
           </button>
 
           <div className="text-center mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-[#D2691E]/10 dark:bg-[#D2691E]/20 flex items-center justify-center mx-auto mb-4">
               <svg
-                className="w-8 h-8 text-emerald-600 dark:text-emerald-400"
+                className="w-8 h-8 text-[#D2691E] dark:text-[#CD853F]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -944,7 +944,7 @@ function RegisterContent() {
                 style={{
                   backgroundColor: "var(--color-bg-tertiary)",
                   borderColor: phoneOtp[index]
-                    ? "#10b981"
+                    ? "#D2691E"
                     : "var(--color-border)",
                   color: "var(--color-text-primary)",
                 }}
@@ -957,7 +957,7 @@ function RegisterContent() {
             disabled={isLoading || phoneOtp.join("").length !== 4}
             className="w-full py-4 rounded-xl text-white font-semibold transition-all duration-300 disabled:opacity-60"
             style={{
-              background: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
+              background: "linear-gradient(135deg, #B8560E 0%, #D2691E 100%)",
             }}
           >
             {isLoading ? (
@@ -995,7 +995,7 @@ function RegisterContent() {
               disabled={resendTimer > 0 || isLoading}
               className="text-sm font-medium transition-colors disabled:opacity-50"
               style={{
-                color: resendTimer > 0 ? "var(--color-text-muted)" : "#10b981",
+                color: resendTimer > 0 ? "var(--color-text-muted)" : "#D2691E",
               }}
             >
               {resendTimer > 0
@@ -1130,17 +1130,17 @@ function RegisterContent() {
                       flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-full
                       text-sm transition-all duration-200 ease-out border
                       ${isSelected
-                        ? 'bg-emerald-500/[0.06] border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-medium'
-                        : 'border-emerald-500/[0.12] text-[var(--color-text-secondary)] hover:border-emerald-500/20'
+                        ? 'bg-[#D2691E]/[0.06] border-[#D2691E]/30 text-[#D2691E] dark:text-[#CD853F] font-medium'
+                        : 'border-[#D2691E]/[0.12] text-[var(--color-text-secondary)] hover:border-[#D2691E]/20'
                       }
                     `}
                   >
-                    <span className={isSelected ? 'text-emerald-600 dark:text-emerald-400' : 'text-emerald-600/60 dark:text-emerald-400/60'}>
+                    <span className={isSelected ? 'text-[#D2691E] dark:text-[#CD853F]' : 'text-[#D2691E]/60 dark:text-[#CD853F]/60'}>
                       {type.icon}
                     </span>
                     <span>{type.label}</span>
                     {isSelected && (
-                      <svg className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-3.5 h-3.5 text-[#D2691E] dark:text-[#CD853F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     )}
@@ -1167,7 +1167,7 @@ function RegisterContent() {
                 <div
                   className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
                     formData.role === "pro"
-                      ? "bg-emerald-500 text-white"
+                      ? "bg-[#D2691E] text-white"
                       : "bg-gray-100 dark:bg-gray-800"
                   }`}
                 >
@@ -1239,7 +1239,7 @@ function RegisterContent() {
                 <div
                   className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm transition-all duration-300 ${
                     validation.avatar
-                      ? "bg-emerald-500 text-white"
+                      ? "bg-[#D2691E] text-white"
                       : "bg-gray-100 dark:bg-gray-800 text-gray-500"
                   }`}
                 >
@@ -1302,7 +1302,7 @@ function RegisterContent() {
                   <div
                     className={`w-28 h-28 rounded-2xl flex items-center justify-center overflow-hidden transition-all duration-300 ${
                       avatarPreview
-                        ? "ring-4 ring-emerald-500/20"
+                        ? "ring-4 ring-[#D2691E]/20"
                         : "border-2 border-dashed"
                     }`}
                     style={{
@@ -1377,7 +1377,7 @@ function RegisterContent() {
                     className={`inline-flex items-center gap-2 px-5 py-3 rounded-xl font-medium text-sm cursor-pointer transition-all duration-200 ${
                       avatarPreview
                         ? "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
-                        : "bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-500/25"
+                        : "bg-[#D2691E] text-white hover:bg-[#B8560E] shadow-lg shadow-[#D2691E]/25"
                     }`}
                     style={{
                       color: avatarPreview
@@ -1419,7 +1419,7 @@ function RegisterContent() {
                   {avatarUploading && (
                     <div className="mt-3 flex items-center gap-2">
                       <svg
-                        className="animate-spin h-4 w-4 text-emerald-500"
+                        className="animate-spin h-4 w-4 text-[#D2691E]"
                         fill="none"
                         viewBox="0 0 24 24"
                       >
@@ -1437,7 +1437,7 @@ function RegisterContent() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      <span className="text-sm text-emerald-600 dark:text-emerald-400">
+                      <span className="text-sm text-[#D2691E] dark:text-[#CD853F]">
                         {locale === "ka" ? "იტვირთება..." : "Uploading..."}
                       </span>
                     </div>
@@ -1456,7 +1456,7 @@ function RegisterContent() {
                   validation.lastName &&
                   validation.idNumber &&
                   validation.phone
-                    ? "bg-emerald-500 text-white"
+                    ? "bg-[#D2691E] text-white"
                     : "bg-gray-100 dark:bg-gray-800 text-gray-500"
                 }`}
               >
@@ -1497,7 +1497,7 @@ function RegisterContent() {
                 >
                   <span>{locale === "ka" ? "სახელი" : "First Name"}</span>
                   {validation.firstName ? (
-                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500">
+                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#D2691E]">
                       <svg
                         className="w-2.5 h-2.5 text-white"
                         fill="none"
@@ -1530,7 +1530,7 @@ function RegisterContent() {
                   className="w-full px-4 py-3 rounded-xl text-base transition-all duration-200 outline-none"
                   style={{
                     backgroundColor: "var(--color-bg-secondary)",
-                    border: `2px solid ${focusedField === "firstName" ? "#10b981" : "var(--color-border)"}`,
+                    border: `2px solid ${focusedField === "firstName" ? "#D2691E" : "var(--color-border)"}`,
                     color: "var(--color-text-primary)",
                   }}
                 />
@@ -1544,7 +1544,7 @@ function RegisterContent() {
                 >
                   <span>{locale === "ka" ? "გვარი" : "Last Name"}</span>
                   {validation.lastName ? (
-                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500">
+                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#D2691E]">
                       <svg
                         className="w-2.5 h-2.5 text-white"
                         fill="none"
@@ -1577,7 +1577,7 @@ function RegisterContent() {
                   className="w-full px-4 py-3 rounded-xl text-base transition-all duration-200 outline-none"
                   style={{
                     backgroundColor: "var(--color-bg-secondary)",
-                    border: `2px solid ${focusedField === "lastName" ? "#10b981" : "var(--color-border)"}`,
+                    border: `2px solid ${focusedField === "lastName" ? "#D2691E" : "var(--color-border)"}`,
                     color: "var(--color-text-primary)",
                   }}
                 />
@@ -1591,7 +1591,7 @@ function RegisterContent() {
                 >
                   <span>{locale === "ka" ? "პირადი ნომერი" : "ID Number"}</span>
                   {validation.idNumber ? (
-                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500">
+                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#D2691E]">
                       <svg
                         className="w-2.5 h-2.5 text-white"
                         fill="none"
@@ -1628,7 +1628,7 @@ function RegisterContent() {
                   className="w-full px-4 py-3 rounded-xl text-base transition-all duration-200 outline-none"
                   style={{
                     backgroundColor: "var(--color-bg-secondary)",
-                    border: `2px solid ${focusedField === "idNumber" ? "#10b981" : fieldErrors.idNumber ? "#ef4444" : "var(--color-border)"}`,
+                    border: `2px solid ${focusedField === "idNumber" ? "#D2691E" : fieldErrors.idNumber ? "#ef4444" : "var(--color-border)"}`,
                     color: "var(--color-text-primary)",
                   }}
                   placeholder="01234567890"
@@ -1648,7 +1648,7 @@ function RegisterContent() {
                 >
                   <span>{locale === "ka" ? "ტელეფონი" : "Phone"}</span>
                   {validation.phone ? (
-                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500">
+                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#D2691E]">
                       <svg
                         className="w-2.5 h-2.5 text-white"
                         fill="none"
@@ -1700,7 +1700,7 @@ function RegisterContent() {
                     className="flex-1 px-4 py-3 rounded-xl text-base transition-all duration-200 outline-none"
                     style={{
                       backgroundColor: "var(--color-bg-secondary)",
-                      border: `2px solid ${focusedField === "phone" ? "#10b981" : "var(--color-border)"}`,
+                      border: `2px solid ${focusedField === "phone" ? "#D2691E" : "var(--color-border)"}`,
                       color: "var(--color-text-primary)",
                     }}
                     placeholder="555 123 456"
@@ -1716,7 +1716,7 @@ function RegisterContent() {
                 >
                   <span>{locale === "ka" ? "პაროლი" : "Password"}</span>
                   {validation.password ? (
-                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500">
+                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#D2691E]">
                       <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
@@ -1738,7 +1738,7 @@ function RegisterContent() {
                     className="w-full px-4 py-3 pr-12 rounded-xl text-base transition-all duration-200 outline-none"
                     style={{
                       backgroundColor: "var(--color-bg-secondary)",
-                      border: `2px solid ${focusedField === "password" ? "#10b981" : fieldErrors.password ? "#ef4444" : "var(--color-border)"}`,
+                      border: `2px solid ${focusedField === "password" ? "#D2691E" : fieldErrors.password ? "#ef4444" : "var(--color-border)"}`,
                       color: "var(--color-text-primary)",
                     }}
                     placeholder="••••••••"
@@ -1774,7 +1774,7 @@ function RegisterContent() {
                 >
                   <span>{locale === "ka" ? "გაიმეორეთ პაროლი" : "Confirm Password"}</span>
                   {validation.passwordMatch ? (
-                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500">
+                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#D2691E]">
                       <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
@@ -1796,7 +1796,7 @@ function RegisterContent() {
                     className="w-full px-4 py-3 pr-12 rounded-xl text-base transition-all duration-200 outline-none"
                     style={{
                       backgroundColor: "var(--color-bg-secondary)",
-                      border: `2px solid ${focusedField === "confirmPassword" ? "#10b981" : fieldErrors.confirmPassword ? "#ef4444" : "var(--color-border)"}`,
+                      border: `2px solid ${focusedField === "confirmPassword" ? "#D2691E" : fieldErrors.confirmPassword ? "#ef4444" : "var(--color-border)"}`,
                       color: "var(--color-text-primary)",
                     }}
                     placeholder="••••••••"
@@ -1847,7 +1847,7 @@ function RegisterContent() {
                   className="w-full px-4 py-3 rounded-xl text-base transition-all duration-200 outline-none"
                   style={{
                     backgroundColor: "var(--color-bg-secondary)",
-                    border: `2px solid ${focusedField === "email" ? "#10b981" : "var(--color-border)"}`,
+                    border: `2px solid ${focusedField === "email" ? "#D2691E" : "var(--color-border)"}`,
                     color: "var(--color-text-primary)",
                   }}
                   placeholder="example@email.com"
@@ -1878,7 +1878,7 @@ function RegisterContent() {
                   className="w-full px-4 py-3 rounded-xl text-base transition-all duration-200 outline-none"
                   style={{
                     backgroundColor: "var(--color-bg-secondary)",
-                    border: `2px solid ${focusedField === "city" ? "#10b981" : "var(--color-border)"}`,
+                    border: `2px solid ${focusedField === "city" ? "#D2691E" : "var(--color-border)"}`,
                     color: "var(--color-text-primary)",
                   }}
                   placeholder={
@@ -2000,7 +2000,7 @@ function RegisterContent() {
                 <div
                   className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm transition-all duration-300 ${
                     validation.category
-                      ? "bg-emerald-500 text-white"
+                      ? "bg-[#D2691E] text-white"
                       : "bg-gray-100 dark:bg-gray-800 text-gray-500"
                   }`}
                 >
@@ -2062,7 +2062,7 @@ function RegisterContent() {
                       key={category.key}
                       className={`rounded-xl border-2 overflow-hidden transition-all duration-200 ${
                         isSelected
-                          ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-500/10"
+                          ? "border-[#D2691E] bg-[#D2691E]/5 dark:bg-[#D2691E]/10"
                           : "border-transparent"
                       }`}
                       style={{
@@ -2080,7 +2080,7 @@ function RegisterContent() {
                         <div
                           className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${
                             isSelected
-                              ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25"
+                              ? "bg-[#D2691E] text-white shadow-lg shadow-[#D2691E]/25"
                               : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
                           }`}
                         >
@@ -2096,7 +2096,7 @@ function RegisterContent() {
                               className="font-semibold"
                               style={{
                                 color: isSelected
-                                  ? "#059669"
+                                  ? "#D2691E"
                                   : "var(--color-text-primary)",
                               }}
                             >
@@ -2105,7 +2105,7 @@ function RegisterContent() {
                                 : category.name}
                             </h3>
                             {selectedSubCount > 0 && (
-                              <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-xs font-medium">
+                              <span className="px-2 py-0.5 rounded-full bg-[#D2691E] text-white text-xs font-medium">
                                 {selectedSubCount}
                               </span>
                             )}
@@ -2123,7 +2123,7 @@ function RegisterContent() {
                         <div
                           className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${
                             isSelected
-                              ? "bg-emerald-500"
+                              ? "bg-[#D2691E]"
                               : "bg-gray-200 dark:bg-gray-700"
                           }`}
                         >
@@ -2171,7 +2171,7 @@ function RegisterContent() {
                                   disabled={!isSelected}
                                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                                     isSubSelected
-                                      ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20"
+                                      ? "bg-[#D2691E] text-white shadow-md shadow-[#D2691E]/20"
                                       : isSelected
                                         ? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                                         : "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 opacity-50"
@@ -2202,7 +2202,7 @@ function RegisterContent() {
                               <button
                                 type="button"
                                 onClick={() => setShowCustomInput(true)}
-                                className="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-emerald-500/50 hover:text-emerald-600 dark:hover:text-emerald-400"
+                                className="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-[#D2691E]/50 hover:text-[#D2691E] dark:hover:text-[#CD853F]"
                               >
                                 <svg className="w-3.5 h-3.5 inline mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -2220,7 +2220,7 @@ function RegisterContent() {
                                   onChange={(e) => setCustomSubcategory(e.target.value)}
                                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCustomSubcategory())}
                                   placeholder={locale === "ka" ? "ჩაწერე სპეციალობა..." : "Enter specialty..."}
-                                  className="flex-1 px-3 py-2 rounded-lg text-sm border-2 bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-emerald-500 transition-all"
+                                  className="flex-1 px-3 py-2 rounded-lg text-sm border-2 bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[#D2691E] transition-all"
                                   style={{ borderColor: 'var(--color-border)' }}
                                   autoFocus
                                 />
@@ -2228,7 +2228,7 @@ function RegisterContent() {
                                   type="button"
                                   onClick={handleAddCustomSubcategory}
                                   disabled={!customSubcategory.trim()}
-                                  className="px-3 py-2 rounded-lg text-sm font-medium bg-emerald-500 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-emerald-600 transition-colors"
+                                  className="px-3 py-2 rounded-lg text-sm font-medium bg-[#D2691E] text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#B8560E] transition-colors"
                                 >
                                   {locale === "ka" ? "დამატება" : "Add"}
                                 </button>
@@ -2252,7 +2252,7 @@ function RegisterContent() {
                                   key={customSub}
                                   type="button"
                                   onClick={() => handleRemoveCustomSubcategory(customSub)}
-                                  className="px-3 py-2 rounded-lg text-sm font-medium bg-emerald-500 text-white shadow-md shadow-emerald-500/20 flex items-center gap-1.5"
+                                  className="px-3 py-2 rounded-lg text-sm font-medium bg-[#D2691E] text-white shadow-md shadow-[#D2691E]/20 flex items-center gap-1.5"
                                 >
                                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
@@ -2308,7 +2308,7 @@ function RegisterContent() {
                       cy="16"
                       r="12"
                       fill="none"
-                      stroke="#10b981"
+                      stroke="#D2691E"
                       strokeWidth="3"
                       strokeLinecap="round"
                       strokeDasharray={`${(completedFields / totalFields) * 75.4} 75.4`}
@@ -2338,7 +2338,7 @@ function RegisterContent() {
                 flex-1 py-3 px-6 rounded-full font-medium text-sm transition-all duration-200 ease-out
                 flex items-center justify-center gap-2 border
                 ${canSubmitForm()
-                  ? 'bg-emerald-500/[0.08] border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/[0.12] hover:border-emerald-500/50'
+                  ? 'bg-[#D2691E]/[0.08] border-[#D2691E]/40 text-[#D2691E] dark:text-[#CD853F] hover:bg-[#D2691E]/[0.12] hover:border-[#D2691E]/50'
                   : 'border-[var(--color-border)] text-[var(--color-text-muted)] cursor-not-allowed'
                 }
               `}
@@ -2408,7 +2408,7 @@ export default function RegisterPage() {
           className="min-h-screen flex items-center justify-center"
           style={{ backgroundColor: "var(--color-bg-primary)" }}
         >
-          <div className="w-12 h-12 rounded-full border-2 border-emerald-200 dark:border-emerald-800 border-t-emerald-500 animate-spin" />
+          <div className="w-12 h-12 rounded-full border-2 border-[#D2691E]/20 dark:border-[#D2691E]/30 border-t-[#D2691E] animate-spin" />
         </div>
       }
     >

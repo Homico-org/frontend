@@ -103,8 +103,8 @@ export default function ButtonGroup({
       ${fullWidth ? 'flex-1' : ''}
       ${isDisabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
       ${isActive
-        ? 'text-[var(--color-accent)]'
-        : 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'
+        ? 'text-terracotta-600 dark:text-terracotta-400'
+        : 'text-neutral-500 dark:text-neutral-400 hover:text-terracotta-500 dark:hover:text-terracotta-400'
       }
       touch-manipulation whitespace-nowrap
     `;
@@ -116,13 +116,13 @@ export default function ButtonGroup({
             className={`
               ${styles.iconSize} flex-shrink-0
               transition-transform duration-200
-              ${isActive ? 'scale-105' : 'group-hover:scale-105'}
+              ${isActive ? 'scale-110' : 'group-hover:scale-105'}
             `}
           >
             {item.icon}
           </span>
         )}
-        <span className="relative font-medium">
+        <span className="relative font-semibold tracking-tight">
           {item.label}
         </span>
       </>
@@ -167,23 +167,24 @@ export default function ButtonGroup({
       className={`
         relative inline-flex items-center
         ${styles.container}
-        bg-[var(--color-bg-secondary)]
-        border border-[var(--color-border)]
-        shadow-sm
+        bg-terracotta-50/60 dark:bg-terracotta-950/40
+        backdrop-blur-sm
+        border border-terracotta-200/50 dark:border-terracotta-700/30
+        shadow-[0_2px_12px_rgba(201,109,77,0.08)]
         ${fullWidth ? 'w-full' : ''}
         ${className}
       `}
     >
-      {/* Sliding underline indicator */}
+      {/* Sliding underline indicator with terracotta */}
       <div
         className={`
-          absolute z-0 bottom-0 h-[3px] rounded-full
+          absolute z-0 bottom-0 h-[3px] rounded-full bg-terracotta-500
           ${mounted ? 'transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]' : ''}
         `}
         style={{
           left: `${indicatorStyle.left}px`,
           width: `${indicatorStyle.width}px`,
-          backgroundColor: 'var(--color-accent)',
+          boxShadow: '0 0 8px rgba(201, 109, 77, 0.4)',
         }}
       />
 

@@ -298,7 +298,7 @@ export default function MyJobsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'open': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'open': return 'bg-[#D2691E]/5 text-[#D2691E] border-[#D2691E]/20';
       case 'in_progress': return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'completed': return 'bg-sky-50 text-sky-700 border-sky-200';
       case 'cancelled': return 'bg-rose-50 text-rose-700 border-rose-200';
@@ -309,7 +309,7 @@ export default function MyJobsPage() {
   const getProposalStatusColor = (status: string) => {
     switch (status) {
       case 'pending': return 'bg-amber-50 text-amber-700';
-      case 'accepted': return 'bg-emerald-50 text-emerald-700';
+      case 'accepted': return 'bg-[#D2691E]/5 text-[#D2691E]';
       case 'rejected': return 'bg-rose-50 text-rose-700';
       case 'withdrawn': return 'bg-neutral-100 text-neutral-500';
       default: return 'bg-neutral-50 text-neutral-600';
@@ -415,8 +415,8 @@ export default function MyJobsPage() {
 
             <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--color-bg-primary)', border: '1px solid var(--color-border)' }}>
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                  <Play className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                <div className="p-2 rounded-lg bg-[#D2691E]/10 dark:bg-[#D2691E]/20">
+                  <Play className="h-5 w-5 text-[#D2691E] dark:text-[#CD853F]" />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50">{stats.open}</p>
@@ -614,7 +614,7 @@ export default function MyJobsPage() {
                           {/* Status Badge - Floating on image */}
                           <div className="absolute top-3 right-3">
                             <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm shadow-sm ${
-                              job.status === 'open' ? 'bg-emerald-500/90 text-white' :
+                              job.status === 'open' ? 'bg-[#D2691E]/90 text-white' :
                               job.status === 'in_progress' ? 'bg-amber-500/90 text-white' :
                               job.status === 'completed' ? 'bg-sky-500/90 text-white' :
                               'bg-neutral-500/90 text-white'
@@ -635,12 +635,12 @@ export default function MyJobsPage() {
                           {!hasMedia && (
                             <div className="mb-3">
                               <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${
-                                job.status === 'open' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' :
+                                job.status === 'open' ? 'bg-[#D2691E]/10 dark:bg-[#D2691E]/20 text-[#D2691E] dark:text-[#CD853F]' :
                                 job.status === 'in_progress' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' :
                                 job.status === 'completed' ? 'bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400' :
                                 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
                               }`}>
-                                {job.status === 'open' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />}
+                                {job.status === 'open' && <span className="w-1.5 h-1.5 rounded-full bg-[#D2691E] dark:bg-[#CD853F] animate-pulse" />}
                                 {getStatusLabel(job.status)}
                               </span>
                             </div>
@@ -841,7 +841,7 @@ export default function MyJobsPage() {
                                         </Link>
                                         <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
                                           proposal.status === 'pending' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' :
-                                          proposal.status === 'accepted' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' :
+                                          proposal.status === 'accepted' ? 'bg-[#D2691E]/10 dark:bg-[#D2691E]/20 text-[#D2691E] dark:text-[#CD853F]' :
                                           proposal.status === 'rejected' ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400' :
                                           'bg-neutral-100 dark:bg-neutral-800 text-neutral-500'
                                         }`}>
@@ -887,12 +887,12 @@ export default function MyJobsPage() {
 
                                   {/* Contact Info (if revealed) */}
                                   {proposal.contactRevealed && proposal.proProfileId?.userId && (
-                                    <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-900/10 border border-emerald-200 dark:border-emerald-800/50">
+                                    <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-[#D2691E]/5 to-[#D2691E]/10 dark:from-[#D2691E]/10 dark:to-[#D2691E]/5 border border-[#D2691E]/20 dark:border-[#D2691E]/30">
                                       <div className="flex items-center gap-2 mb-2">
-                                        <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                                        <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">{language === 'ka' ? 'საკონტაქტო ინფორმაცია' : 'Contact Information'}</p>
+                                        <CheckCircle className="h-4 w-4 text-[#D2691E] dark:text-[#CD853F]" />
+                                        <p className="text-sm font-semibold text-[#D2691E] dark:text-[#CD853F]">{language === 'ka' ? 'საკონტაქტო ინფორმაცია' : 'Contact Information'}</p>
                                       </div>
-                                      <div className="flex flex-wrap gap-4 text-sm text-emerald-700 dark:text-emerald-400">
+                                      <div className="flex flex-wrap gap-4 text-sm text-[#D2691E] dark:text-[#CD853F]">
                                         <a href={`mailto:${proposal.proProfileId.userId.email}`} className="hover:underline flex items-center gap-1.5">
                                           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>

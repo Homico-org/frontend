@@ -188,7 +188,7 @@ export default function AdminDashboardPage() {
 
   const getActivityColor = (type: string) => {
     switch (type) {
-      case 'user_signup': return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400';
+      case 'user_signup': return 'bg-[#D2691E]/10 text-[#D2691E] dark:text-[#CD853F]';
       case 'job_created': return 'bg-blue-500/10 text-blue-600 dark:text-blue-400';
       case 'proposal_sent': return 'bg-amber-500/10 text-amber-600 dark:text-amber-400';
       case 'ticket_created': return 'bg-rose-500/10 text-rose-600 dark:text-rose-400';
@@ -222,7 +222,7 @@ export default function AdminDashboardPage() {
         <div className="flex items-center justify-center py-32">
           <div className="flex flex-col items-center gap-4">
             <div className="relative">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center animate-pulse">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#D2691E] to-[#D2691E] flex items-center justify-center animate-pulse">
                 <BarChart3 className="w-8 h-8 text-white" />
               </div>
               <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-amber-400 flex items-center justify-center animate-bounce">
@@ -244,7 +244,7 @@ export default function AdminDashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#D2691E] to-[#D2691E] flex items-center justify-center shadow-lg shadow-[#D2691E]/20">
                   <BarChart3 className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -285,14 +285,14 @@ export default function AdminDashboardPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {/* Total Users */}
           <div className="group relative overflow-hidden rounded-2xl p-5 transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#D2691E]/10 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
             <div className="relative">
               <div className="flex items-start justify-between mb-3">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#D2691E] to-[#D2691E] flex items-center justify-center shadow-lg shadow-[#D2691E]/20">
                   <Users className="w-5 h-5 text-white" />
                 </div>
                 {stats && stats.users.growth !== 0 && (
-                  <div className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${stats.users.growth > 0 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'}`}>
+                  <div className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${stats.users.growth > 0 ? 'bg-[#D2691E]/10 text-[#D2691E] dark:text-[#CD853F]' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'}`}>
                     {stats.users.growth > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                     {Math.abs(stats.users.growth)}%
                   </div>
@@ -318,7 +318,7 @@ export default function AdminDashboardPage() {
                   <Briefcase className="w-5 h-5 text-white" />
                 </div>
                 {stats && stats.jobs.growth !== 0 && (
-                  <div className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${stats.jobs.growth > 0 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'}`}>
+                  <div className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${stats.jobs.growth > 0 ? 'bg-[#D2691E]/10 text-[#D2691E] dark:text-[#CD853F]' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'}`}>
                     {stats.jobs.growth > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                     {Math.abs(stats.jobs.growth)}%
                   </div>
@@ -329,7 +329,7 @@ export default function AdminDashboardPage() {
               </p>
               <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">{t('admin.totalJobs')}</p>
               <div className="mt-3 pt-3 border-t flex items-center gap-4 text-xs" style={{ borderColor: 'var(--color-border)' }}>
-                <span className="text-emerald-600 dark:text-emerald-400">{stats?.jobs.open || 0} {t('admin.open')}</span>
+                <span className="text-[#D2691E] dark:text-[#CD853F]">{stats?.jobs.open || 0} {t('admin.open')}</span>
                 <span className="text-amber-600 dark:text-amber-400">{stats?.jobs.inProgress || 0} {t('admin.active')}</span>
               </div>
             </div>
@@ -354,7 +354,7 @@ export default function AdminDashboardPage() {
               <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">{t('admin.totalProposals')}</p>
               <div className="mt-3 pt-3 border-t flex items-center gap-4 text-xs" style={{ borderColor: 'var(--color-border)' }}>
                 <span className="text-amber-600 dark:text-amber-400">{stats?.proposals.pending || 0} {t('admin.pending')}</span>
-                <span className="text-emerald-600 dark:text-emerald-400">{stats?.proposals.accepted || 0} {t('admin.accepted')}</span>
+                <span className="text-[#D2691E] dark:text-[#CD853F]">{stats?.proposals.accepted || 0} {t('admin.accepted')}</span>
               </div>
             </div>
           </div>
@@ -380,7 +380,7 @@ export default function AdminDashboardPage() {
               <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">{t('admin.supportTickets')}</p>
               <div className="mt-3 pt-3 border-t flex items-center gap-4 text-xs" style={{ borderColor: 'var(--color-border)' }}>
                 <span className="text-rose-600 dark:text-rose-400">{stats?.support.open || 0} {t('admin.open')}</span>
-                <span className="text-emerald-600 dark:text-emerald-400">{stats?.support.resolved || 0} {t('admin.resolved')}</span>
+                <span className="text-[#D2691E] dark:text-[#CD853F]">{stats?.support.resolved || 0} {t('admin.resolved')}</span>
               </div>
             </div>
           </div>
@@ -396,7 +396,7 @@ export default function AdminDashboardPage() {
             </div>
             <div className="space-y-4">
               {[
-                { label: t('admin.clients'), value: stats?.users.clients || 0, icon: Users, color: 'bg-emerald-500', bgColor: 'bg-emerald-500/10' },
+                { label: t('admin.clients'), value: stats?.users.clients || 0, icon: Users, color: 'bg-[#D2691E]', bgColor: 'bg-[#D2691E]/10' },
                 { label: t('admin.professionals'), value: stats?.users.pros || 0, icon: Shield, color: 'bg-blue-500', bgColor: 'bg-blue-500/10' },
                 { label: t('admin.companies'), value: stats?.users.companies || 0, icon: Building2, color: 'bg-purple-500', bgColor: 'bg-purple-500/10' },
                 { label: t('admin.verifiedPros'), value: stats?.users.verifiedPros || 0, icon: UserCheck, color: 'bg-amber-500', bgColor: 'bg-amber-500/10' },
@@ -432,7 +432,7 @@ export default function AdminDashboardPage() {
               {dailySignups.map((day, i) => (
                 <div key={day._id} className="flex-1 flex flex-col items-center gap-1 group">
                   <div
-                    className="w-full bg-emerald-500 rounded-t transition-all duration-300 group-hover:bg-emerald-400"
+                    className="w-full bg-[#D2691E] rounded-t transition-all duration-300 group-hover:bg-[#CD853F]"
                     style={{ height: `${(day.count / maxDailySignup) * 100}%`, minHeight: day.count > 0 ? '4px' : '2px' }}
                   />
                   <span className="text-[10px] text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -557,7 +557,7 @@ export default function AdminDashboardPage() {
                 <Users className="w-4 h-4 text-neutral-400" />
                 <h3 className="font-semibold text-neutral-900 dark:text-neutral-50">{t('admin.recentUsers')}</h3>
               </div>
-              <Link href="/admin/users" className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1">
+              <Link href="/admin/users" className="text-xs text-[#D2691E] dark:text-[#CD853F] hover:underline flex items-center gap-1">
                 {t('admin.viewAll')} <ChevronRight className="w-3 h-3" />
               </Link>
             </div>
@@ -580,7 +580,7 @@ export default function AdminDashboardPage() {
                         user.role === 'pro' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' :
                         user.role === 'company' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400' :
                         user.role === 'admin' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' :
-                        'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                        'bg-[#D2691E]/10 text-[#D2691E] dark:text-[#CD853F]'
                       }`}>
                         {user.role}
                       </span>
@@ -598,7 +598,7 @@ export default function AdminDashboardPage() {
                 <Briefcase className="w-4 h-4 text-neutral-400" />
                 <h3 className="font-semibold text-neutral-900 dark:text-neutral-50">{t('admin.recentJobs')}</h3>
               </div>
-              <Link href="/admin/jobs" className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1">
+              <Link href="/admin/jobs" className="text-xs text-[#D2691E] dark:text-[#CD853F] hover:underline flex items-center gap-1">
                 {t('admin.viewAll')} <ChevronRight className="w-3 h-3" />
               </Link>
             </div>
@@ -628,7 +628,7 @@ export default function AdminDashboardPage() {
                         </div>
                       </div>
                       <span className={`px-2 py-0.5 text-xs font-medium rounded-full flex-shrink-0 ${
-                        job.status === 'open' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
+                        job.status === 'open' ? 'bg-[#D2691E]/10 text-[#D2691E] dark:text-[#CD853F]' :
                         job.status === 'in_progress' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
                         job.status === 'completed' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' :
                         'bg-neutral-500/10 text-neutral-600 dark:text-neutral-400'
@@ -646,7 +646,7 @@ export default function AdminDashboardPage() {
         {/* Quick Actions */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: t('admin.manageUsers'), icon: Users, href: '/admin/users', color: 'from-emerald-500 to-emerald-600' },
+            { label: t('admin.manageUsers'), icon: Users, href: '/admin/users', color: 'from-[#D2691E] to-[#D2691E]' },
             { label: t('admin.manageJobs'), icon: Briefcase, href: '/admin/jobs', color: 'from-blue-500 to-blue-600' },
             { label: t('admin.supportTicketsAction'), icon: MessageCircle, href: '/admin/support', color: 'from-amber-500 to-amber-600' },
             { label: t('admin.viewReports'), icon: BarChart3, href: '/admin/reports', color: 'from-purple-500 to-purple-600' },

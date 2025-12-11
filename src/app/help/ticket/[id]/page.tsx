@@ -152,7 +152,7 @@ export default function TicketDetailPage() {
       case 'in_progress':
         return 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400';
       case 'resolved':
-        return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400';
+        return 'bg-[#D2691E]/5 text-[#D2691E] dark:bg-[#D2691E]/10 dark:text-[#CD853F]';
       case 'closed':
         return 'bg-neutral-100 text-neutral-600 dark:bg-neutral-500/10 dark:text-neutral-400';
       default:

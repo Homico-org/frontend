@@ -69,12 +69,12 @@ const icons = {
 
 const colors = {
   success: {
-    bg: 'bg-emerald-50 dark:bg-emerald-950/50',
-    border: 'border-emerald-200 dark:border-emerald-800/50',
-    icon: 'text-emerald-600 dark:text-emerald-400',
-    title: 'text-emerald-900 dark:text-emerald-100',
-    desc: 'text-emerald-700 dark:text-emerald-300',
-    progress: 'bg-emerald-500',
+    bg: 'bg-[#D2691E]/5 dark:bg-[#D2691E]/10',
+    border: 'border-[#D2691E]/20 dark:border-[#D2691E]/30',
+    icon: 'text-[#D2691E] dark:text-[#CD853F]',
+    title: 'text-[#B8560E] dark:text-[#CD853F]',
+    desc: 'text-[#D2691E] dark:text-[#CD853F]',
+    progress: 'bg-[#D2691E]',
   },
   error: {
     bg: 'bg-rose-50 dark:bg-rose-950/50',

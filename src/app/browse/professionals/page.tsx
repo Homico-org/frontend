@@ -150,36 +150,28 @@ export default function ProfessionalsPage() {
           {[...Array(6)].map((_, i) => (
             <div
               key={i}
-              className="rounded-2xl border p-4 sm:p-5 animate-pulse"
-              style={{
-                backgroundColor: "var(--color-bg-secondary)",
-                borderColor: "var(--color-border)",
-              }}
+              className="rounded-2xl border border-[#D2691E]/10 bg-[#D2691E]/[0.02] overflow-hidden animate-pulse"
             >
-              <div className="flex items-center gap-3 sm:gap-4 mb-4">
-                <div
-                  className="w-12 sm:w-14 h-12 sm:h-14 rounded-xl"
-                  style={{ backgroundColor: "var(--color-bg-tertiary)" }}
-                />
-                <div className="flex-1">
-                  <div
-                    className="h-5 rounded-lg w-3/4 mb-2"
-                    style={{ backgroundColor: "var(--color-bg-tertiary)" }}
-                  />
-                  <div
-                    className="h-4 rounded-lg w-1/2"
-                    style={{ backgroundColor: "var(--color-bg-tertiary)" }}
-                  />
+              {/* Image skeleton */}
+              <div className="aspect-[4/3] bg-gradient-to-br from-[#D2691E]/5 to-[#CD853F]/10 relative">
+                {/* Status badge skeleton */}
+                <div className="absolute top-2.5 right-2.5 w-16 h-5 rounded-full bg-[#D2691E]/10" />
+                {/* Stats overlay skeleton */}
+                <div className="absolute bottom-0 left-0 right-0 p-3">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-12 h-3 rounded bg-white/20" />
+                    <div className="w-10 h-3 rounded bg-white/20" />
+                  </div>
+                  <div className="w-32 h-5 rounded bg-white/30" />
                 </div>
               </div>
-              <div
-                className="h-4 rounded-lg w-full mb-2"
-                style={{ backgroundColor: "var(--color-bg-tertiary)" }}
-              />
-              <div
-                className="h-4 rounded-lg w-2/3"
-                style={{ backgroundColor: "var(--color-bg-tertiary)" }}
-              />
+              {/* Content skeleton */}
+              <div className="p-3">
+                {/* Category */}
+                <div className="h-4 rounded w-2/3 mb-2 bg-[#D2691E]/10" />
+                {/* Bio */}
+                <div className="h-3 rounded w-full bg-[#D2691E]/5" />
+              </div>
             </div>
           ))}
         </div>
@@ -238,7 +230,7 @@ export default function ProfessionalsPage() {
       <div ref={loaderRef} className="py-10">
         {isLoadingMore && (
           <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--color-accent)] border-t-transparent" />
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#D2691E] border-t-transparent" />
           </div>
         )}
       </div>

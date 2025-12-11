@@ -189,7 +189,7 @@ export default function HelpPage() {
       case 'in_progress':
         return 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400';
       case 'resolved':
-        return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400';
+        return 'bg-[#D2691E]/5 text-[#D2691E] dark:bg-[#D2691E]/10 dark:text-[#CD853F]';
       case 'closed':
         return 'bg-neutral-100 text-neutral-600 dark:bg-neutral-500/10 dark:text-neutral-400';
       default:
@@ -244,13 +244,13 @@ export default function HelpPage() {
 
         {/* Success Message */}
         {submitSuccess && (
-          <div className="mb-8 p-4 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-xl flex items-center gap-3 animate-fade-in">
-            <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-              <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="mb-8 p-4 bg-[#D2691E]/5 dark:bg-[#D2691E]/10 border border-[#D2691E]/20 dark:border-[#D2691E]/20 rounded-xl flex items-center gap-3 animate-fade-in">
+            <div className="w-8 h-8 rounded-full bg-[#D2691E]/10 dark:bg-[#D2691E]/20 flex items-center justify-center flex-shrink-0">
+              <svg className="w-4 h-4 text-[#D2691E] dark:text-[#CD853F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <p className="text-sm text-emerald-700 dark:text-emerald-300">{t('helpPage.contact.success')}</p>
+            <p className="text-sm text-[#D2691E] dark:text-[#CD853F]">{t('helpPage.contact.success')}</p>
           </div>
         )}
 
@@ -279,7 +279,7 @@ export default function HelpPage() {
 
             {/* New Ticket Form */}
             {showTicketForm && (
-              <div ref={formRef} className="mb-6 bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border p-6 animate-fade-in">
+              <div ref={formRef} className="mb-6 bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm rounded-2xl border border-[#D2691E]/10 dark:border-[#CD853F]/15 shadow-[0_2px_12px_rgba(210,105,30,0.06)] p-6 animate-fade-in">
                 <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-50 mb-4">
                   {t('helpPage.myTickets.createTicket')}
                 </h3>
@@ -381,11 +381,11 @@ export default function HelpPage() {
 
             {/* Tickets List */}
             {loadingTickets ? (
-              <div className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border p-8 flex items-center justify-center">
-                <div className="w-8 h-8 border-2 border-neutral-200 dark:border-dark-border border-t-forest-800 dark:border-t-primary-400 rounded-full animate-spin" />
+              <div className="bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm rounded-2xl border border-[#D2691E]/10 dark:border-[#CD853F]/15 p-8 flex items-center justify-center">
+                <div className="w-8 h-8 border-2 border-[#D2691E]/20 dark:border-[#CD853F]/20 border-t-[#D2691E] dark:border-t-[#CD853F] rounded-full animate-spin" />
               </div>
             ) : myTickets.length > 0 ? (
-              <div className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border overflow-hidden">
+              <div className="bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm rounded-2xl border border-[#D2691E]/10 dark:border-[#CD853F]/15 shadow-[0_2px_12px_rgba(210,105,30,0.06)] overflow-hidden">
                 <div className="divide-y divide-neutral-100 dark:divide-dark-border">
                   {myTickets.map((ticket) => (
                     <Link
@@ -397,13 +397,13 @@ export default function HelpPage() {
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
                           ticket.status === 'open' ? 'bg-amber-50 dark:bg-amber-500/10' :
                           ticket.status === 'in_progress' ? 'bg-blue-50 dark:bg-blue-500/10' :
-                          ticket.status === 'resolved' ? 'bg-emerald-50 dark:bg-emerald-500/10' :
+                          ticket.status === 'resolved' ? 'bg-[#D2691E]/5 dark:bg-[#D2691E]/10' :
                           'bg-neutral-100 dark:bg-neutral-500/10'
                         }`}>
                           <svg className={`w-5 h-5 ${
                             ticket.status === 'open' ? 'text-amber-600 dark:text-amber-400' :
                             ticket.status === 'in_progress' ? 'text-blue-600 dark:text-blue-400' :
-                            ticket.status === 'resolved' ? 'text-emerald-600 dark:text-emerald-400' :
+                            ticket.status === 'resolved' ? 'text-[#D2691E] dark:text-[#CD853F]' :
                             'text-neutral-500 dark:text-neutral-400'
                           }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
@@ -436,9 +436,9 @@ export default function HelpPage() {
                 </div>
               </div>
             ) : (
-              <div className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border p-8 text-center">
-                <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-cream-100 dark:bg-dark-elevated flex items-center justify-center">
-                  <svg className="w-6 h-6 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm rounded-2xl border border-[#D2691E]/10 dark:border-[#CD853F]/15 p-8 text-center">
+                <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-[#D2691E]/10 dark:bg-[#CD853F]/15 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-[#D2691E] dark:text-[#CD853F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
                   </svg>
                 </div>
@@ -468,8 +468,8 @@ export default function HelpPage() {
                 onClick={() => setActiveCategory(cat.id)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                   activeCategory === cat.id
-                    ? 'bg-forest-800 text-white dark:bg-primary-400 dark:text-forest-900'
-                    : 'bg-white dark:bg-dark-card text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-dark-elevated border border-neutral-200 dark:border-dark-border'
+                    ? 'bg-gradient-to-r from-[#D2691E] to-[#CD853F] text-white shadow-lg shadow-[#D2691E]/20'
+                    : 'bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm text-neutral-600 dark:text-neutral-400 hover:bg-[#D2691E]/5 dark:hover:bg-[#CD853F]/10 border border-[#D2691E]/10 dark:border-[#CD853F]/15'
                 }`}
               >
                 {cat.label}
@@ -478,7 +478,7 @@ export default function HelpPage() {
           </div>
 
           {/* FAQ Items */}
-          <div className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border overflow-hidden">
+          <div className="bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm rounded-2xl border border-[#D2691E]/10 dark:border-[#CD853F]/15 shadow-[0_2px_12px_rgba(210,105,30,0.06)] overflow-hidden">
             {filteredFaqs.map((faq, index) => (
               <div
                 key={index}

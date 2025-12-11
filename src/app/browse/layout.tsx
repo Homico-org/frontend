@@ -2,6 +2,7 @@
 
 import CategorySection from "@/components/browse/CategorySection";
 import ContentTypeSwitcher from "@/components/browse/ContentTypeSwitcher";
+import AppBackground from "@/components/common/AppBackground";
 import Header from "@/components/common/Header";
 import { useAuth } from "@/contexts/AuthContext";
 import { BrowseProvider, useBrowseContext } from "@/contexts/BrowseContext";
@@ -71,6 +72,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen relative">
+      <AppBackground />
       <Header />
 
       <main className="relative z-20 pt-14 sm:pt-16 pb-20 sm:pb-24">

@@ -424,7 +424,7 @@ export default function BecomeProPage() {
                       cy="16"
                       r="12"
                       fill="none"
-                      stroke="#10b981"
+                      stroke="#D2691E"
                       strokeWidth="3"
                       strokeLinecap="round"
                       strokeDasharray={`${(completedFields / totalFields) * 75.4} 75.4`}

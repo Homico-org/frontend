@@ -41,8 +41,8 @@ export default function RatingBar({
 
   // Color based on rating
   const getBarColor = () => {
-    if (rating >= 4.5) return 'bg-emerald-500';
-    if (rating >= 4.0) return 'bg-green-500';
+    if (rating >= 4.5) return 'bg-[#D2691E]';
+    if (rating >= 4.0) return 'bg-[#CD853F]';
     if (rating >= 3.5) return 'bg-lime-500';
     if (rating >= 3.0) return 'bg-yellow-500';
     if (rating >= 2.0) return 'bg-orange-500';

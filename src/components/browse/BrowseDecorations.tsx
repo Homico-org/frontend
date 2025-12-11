@@ -444,8 +444,8 @@ export default function BrowseDecorations() {
               <Icon
                 className={`w-full h-full ${
                   isDark
-                    ? 'text-emerald-400/[0.20]'
-                    : 'text-emerald-700/[0.25]'
+                    ? 'text-[#CD853F]/[0.20]'
+                    : 'text-[#D2691E]/[0.25]'
                 } transition-colors duration-500`}
               />
             </ToolIcon>
@@ -455,7 +455,7 @@ export default function BrowseDecorations() {
         {/* Subtle gradient orbs for depth - more visible in light mode */}
         <div
           className={`absolute top-[10%] right-[10%] w-[300px] h-[300px] rounded-full blur-[100px] ${
-            isDark ? 'bg-emerald-500/8' : 'bg-emerald-500/15'
+            isDark ? 'bg-[#D2691E]/8' : 'bg-[#D2691E]/15'
           }`}
         />
         <div

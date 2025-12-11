@@ -54,9 +54,9 @@ export default function Button({
 
   const variantStyles = {
     primary: {
-      background: '#10b981',
+      backgroundColor: '#C96D4D',
       color: '#ffffff',
-      boxShadow: '0 2px 8px rgba(16, 185, 129, 0.25)',
+      boxShadow: '0 2px 8px rgba(201, 109, 77, 0.35)',
     },
     secondary: {
       background: '#ffffff',

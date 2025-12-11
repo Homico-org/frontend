@@ -205,7 +205,7 @@ export default function AdminSupportPage() {
     switch (status) {
       case 'open': return 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400';
       case 'in_progress': return 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400';
-      case 'resolved': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400';
+      case 'resolved': return 'bg-[#D2691E]/10 text-[#D2691E] dark:bg-[#D2691E]/20 dark:text-[#CD853F]';
       case 'closed': return 'bg-neutral-100 text-neutral-600 dark:bg-neutral-500/20 dark:text-neutral-400';
       default: return 'bg-neutral-100 text-neutral-600';
     }
@@ -262,7 +262,7 @@ export default function AdminSupportPage() {
               { label: t('admin.reportsPage.totalReports'), value: stats.total, color: 'bg-neutral-500' },
               { label: t('admin.open'), value: stats.open, color: 'bg-amber-500' },
               { label: t('admin.supportPage.inProgress'), value: stats.inProgress, color: 'bg-blue-500' },
-              { label: t('admin.resolved'), value: stats.resolved, color: 'bg-emerald-500' },
+              { label: t('admin.resolved'), value: stats.resolved, color: 'bg-[#D2691E]' },
               { label: t('admin.unread'), value: stats.unread, color: 'bg-red-500' },
             ].map((stat) => (
               <div

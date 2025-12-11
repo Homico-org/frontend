@@ -1,5 +1,6 @@
 'use client';
 
+import AppBackground from '@/components/common/AppBackground';
 import Button, { ButtonIcons } from '@/components/common/Button';
 import Header from '@/components/common/Header';
 import SimilarProfessionals from '@/components/professionals/SimilarProfessionals';
@@ -8,7 +9,7 @@ import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface Company {
   name: string;
@@ -384,13 +385,29 @@ export default function ProfessionalDetailPage() {
   const avatarUrl = profile.avatar || profile.userId.avatar;
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-primary)]">
+    <div className="min-h-screen relative overflow-hidden">
+      <AppBackground />
+
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap');
 
         .pro-page {
           --font-display: 'Syne', sans-serif;
           --font-body: 'Outfit', sans-serif;
+
+          /* Terracotta color palette override */
+          --color-accent: #C87259;
+          --color-accent-hover: #B86349;
+          --color-accent-soft: rgba(200, 114, 89, 0.12);
+          --color-accent-muted: rgba(200, 114, 89, 0.18);
+        }
+
+        :root:has(.pro-page) .dark .pro-page,
+        .dark .pro-page {
+          --color-accent: #E0917A;
+          --color-accent-hover: #D4A08C;
+          --color-accent-soft: rgba(224, 145, 122, 0.15);
+          --color-accent-muted: rgba(224, 145, 122, 0.2);
         }
 
         .pro-page .font-display {
@@ -446,35 +463,37 @@ export default function ProfessionalDetailPage() {
           justify-content: center;
         }
 
-        /* Glass morphism card */
+        /* Glass morphism card - Terracotta themed - transparent without gradients */
         .glass-card {
-          background: linear-gradient(
-            135deg,
-            color-mix(in srgb, var(--color-bg-secondary) 80%, transparent) 0%,
-            color-mix(in srgb, var(--color-bg-secondary) 60%, transparent) 100%
-          );
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+          background: rgba(255, 255, 255, 0.6);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(210, 105, 30, 0.1);
         }
 
-        /* Premium accent line */
+        .dark .glass-card {
+          background: rgba(17, 24, 39, 0.4);
+          border: 1px solid rgba(205, 133, 63, 0.15);
+        }
+
+        /* Premium accent line - Terracotta solid */
         .accent-line {
           height: 3px;
-          background: linear-gradient(90deg, var(--color-accent), color-mix(in srgb, var(--color-accent) 60%, #fff));
+          background: #C96D4D;
           border-radius: 2px;
         }
 
-        /* Glowing button */
+        /* Glowing button - Terracotta solid */
         .btn-glow {
-          background: var(--color-accent);
-          box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 40%, transparent);
+          background: #C96D4D;
+          box-shadow: 0 4px 15px rgba(201, 109, 77, 0.3);
           transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .btn-glow:hover {
+          background: #b85a3d;
           transform: translateY(-2px);
-          box-shadow: 0 8px 30px color-mix(in srgb, var(--color-accent) 35%, transparent);
+          box-shadow: 0 8px 30px rgba(201, 109, 77, 0.4);
         }
 
         /* Portfolio item with refined aesthetic */
@@ -509,23 +528,70 @@ export default function ProfessionalDetailPage() {
           transform: scale(1.08);
         }
 
-        /* Stat pill */
+        /* Stat pill - Terracotta tinted transparent */
         .stat-pill {
-          background: var(--color-bg-tertiary);
+          background: rgba(201, 109, 77, 0.06);
+          border: 1px solid rgba(201, 109, 77, 0.12);
           border-radius: 100px;
           padding: 8px 16px;
           display: inline-flex;
           align-items: center;
           gap: 8px;
+          backdrop-filter: blur(8px);
+          transition: all 0.2s ease;
         }
 
-        /* Review card with quote styling */
+        .stat-pill:hover {
+          background: rgba(201, 109, 77, 0.1);
+          border-color: rgba(201, 109, 77, 0.2);
+        }
+
+        .dark .stat-pill {
+          background: rgba(201, 109, 77, 0.12);
+          border: 1px solid rgba(201, 109, 77, 0.18);
+        }
+
+        .dark .stat-pill:hover {
+          background: rgba(201, 109, 77, 0.18);
+          border-color: rgba(201, 109, 77, 0.28);
+        }
+
+        /* Info card - Terracotta transparent bordered - no gradients */
+        .info-card {
+          background: rgba(255, 255, 255, 0.6);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(210, 105, 30, 0.1);
+          border-radius: 16px;
+          transition: all 0.3s ease;
+        }
+
+        .dark .info-card {
+          background: rgba(17, 24, 39, 0.4);
+          border: 1px solid rgba(205, 133, 63, 0.15);
+        }
+
+        .info-card:hover {
+          border-color: rgba(210, 105, 30, 0.2);
+        }
+
+        .dark .info-card:hover {
+          border-color: rgba(205, 133, 63, 0.25);
+        }
+
+        /* Review card with quote styling - Terracotta transparent - no gradients */
         .review-bubble {
           position: relative;
-          background: var(--color-bg-secondary);
-          border: 1px solid var(--color-border-subtle);
+          background: rgba(255, 255, 255, 0.6);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(210, 105, 30, 0.1);
           border-radius: 16px;
           padding: 16px;
+        }
+
+        .dark .review-bubble {
+          background: rgba(17, 24, 39, 0.4);
+          border: 1px solid rgba(205, 133, 63, 0.15);
         }
 
         .review-bubble::before {
@@ -535,7 +601,7 @@ export default function ProfessionalDetailPage() {
           left: 24px;
           width: 40px;
           height: 3px;
-          background: var(--color-accent);
+          background: #C96D4D;
           border-radius: 0 0 4px 4px;
         }
 
@@ -696,29 +762,55 @@ export default function ProfessionalDetailPage() {
           left: 12px;
           font-size: 48px;
           font-family: Georgia, serif;
-          color: var(--color-accent);
+          color: #D2691E;
           opacity: 0.3;
           line-height: 1;
         }
 
+        :is(.dark) .review-quote::before {
+          color: #CD853F;
+        }
+
         .gallery-thumb {
           transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+          border: 1px solid rgba(210, 105, 30, 0.1);
+        }
+
+        :is(.dark) .gallery-thumb {
+          border-color: rgba(205, 133, 63, 0.15);
         }
 
         .gallery-thumb:hover {
-          transform: scale(1.05) translateY(-2px);
-          box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.3);
+          transform: scale(1.03) translateY(-2px);
+          box-shadow: 0 12px 24px -8px rgba(210, 105, 30, 0.2);
+          border-color: rgba(210, 105, 30, 0.25);
+        }
+
+        :is(.dark) .gallery-thumb:hover {
+          box-shadow: 0 12px 24px -8px rgba(205, 133, 63, 0.2);
+          border-color: rgba(205, 133, 63, 0.3);
         }
 
         .tag-pill {
-          background: linear-gradient(135deg, var(--color-bg-tertiary) 0%, var(--color-bg-secondary) 100%);
-          border: 1px solid var(--color-border);
+          background: rgba(210, 105, 30, 0.08);
+          border: 1px solid rgba(210, 105, 30, 0.15);
           transition: all 0.2s ease;
         }
 
+        :is(.dark) .tag-pill {
+          background: rgba(205, 133, 63, 0.12);
+          border-color: rgba(205, 133, 63, 0.18);
+        }
+
         .tag-pill:hover {
-          border-color: var(--color-accent);
+          background: rgba(210, 105, 30, 0.15);
+          border-color: rgba(210, 105, 30, 0.25);
           transform: translateY(-1px);
+        }
+
+        :is(.dark) .tag-pill:hover {
+          background: rgba(205, 133, 63, 0.2);
+          border-color: rgba(205, 133, 63, 0.3);
         }
       `}</style>
 
@@ -763,7 +855,7 @@ export default function ProfessionalDetailPage() {
 
                         {/* Availability badge */}
                         {profile.isAvailable && (
-                          <div className="absolute -bottom-0.5 -right-0.5 px-2 py-0.5 bg-emerald-500 rounded-full text-[9px] font-bold text-white uppercase tracking-wider shadow-lg">
+                          <div className="absolute -bottom-0.5 -right-0.5 px-2 py-0.5 bg-gradient-to-r from-[#D2691E] to-[#CD853F] rounded-full text-[9px] font-bold text-white uppercase tracking-wider shadow-lg shadow-[#D2691E]/30">
                             {locale === 'ka' ? 'აქტ' : 'Avail'}
                           </div>
                         )}
@@ -847,7 +939,7 @@ export default function ProfessionalDetailPage() {
                             <div className="h-px w-8 bg-gradient-to-r from-transparent to-[var(--color-accent)] opacity-50" />
                             <p className="text-[10px] uppercase tracking-[0.2em] text-[var(--color-accent)] font-medium">
                               {profile.pricingModel === 'from'
-                                ? (locale === 'ka' ? 'დაწყებული ფასი' : 'Starting From')
+                                ? (locale === 'ka' ? 'საწყისი ფასი' : 'Starting From')
                                 : profile.pricingModel === 'hourly'
                                   ? (locale === 'ka' ? 'საათობრივი' : 'Per Hour')
                                   : (locale === 'ka' ? 'ფასი' : 'Rate')}
@@ -908,9 +1000,9 @@ export default function ProfessionalDetailPage() {
                             rel="noopener noreferrer"
                             className="group flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                             style={{
-                              background: 'linear-gradient(135deg, rgba(37, 211, 102, 0.1) 0%, rgba(37, 211, 102, 0.05) 100%)',
-                              border: '1px solid rgba(37, 211, 102, 0.3)',
-                              color: '#25D366',
+                              background: 'linear-gradient(135deg, rgba(200, 114, 89, 0.08) 0%, rgba(200, 114, 89, 0.04) 100%)',
+                              border: '1px solid rgba(200, 114, 89, 0.2)',
+                              color: '#C87259',
                             }}
                           >
                             <svg className="w-4 h-4 transition-transform duration-300 group-hover:-translate-y-0.5" fill="currentColor" viewBox="0 0 24 24">
@@ -925,9 +1017,9 @@ export default function ProfessionalDetailPage() {
                             rel="noopener noreferrer"
                             className="group flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                             style={{
-                              background: 'linear-gradient(135deg, rgba(0, 136, 204, 0.1) 0%, rgba(0, 136, 204, 0.05) 100%)',
-                              border: '1px solid rgba(0, 136, 204, 0.3)',
-                              color: '#0088cc',
+                              background: 'linear-gradient(135deg, rgba(200, 114, 89, 0.08) 0%, rgba(200, 114, 89, 0.04) 100%)',
+                              border: '1px solid rgba(200, 114, 89, 0.2)',
+                              color: '#C87259',
                             }}
                           >
                             <svg className="w-4 h-4 transition-transform duration-300 group-hover:-translate-y-0.5" fill="currentColor" viewBox="0 0 24 24">
@@ -937,7 +1029,12 @@ export default function ProfessionalDetailPage() {
                         )}
                         <button
                           onClick={handleShare}
-                          className="group flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                          className="group flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                          style={{
+                            background: 'linear-gradient(135deg, rgba(200, 114, 89, 0.08) 0%, rgba(200, 114, 89, 0.04) 100%)',
+                            border: '1px solid rgba(200, 114, 89, 0.2)',
+                            color: '#C87259',
+                          }}
                         >
                           <svg className="w-4 h-4 transition-transform duration-300 group-hover:-translate-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -971,18 +1068,27 @@ export default function ProfessionalDetailPage() {
             <div className="flex-1 min-w-0">
               <div className="py-4 sm:py-5 lg:py-6 space-y-6">
 
-              {/* About Section - Editorial Style */}
+              {/* About Section - Glassmorphic Transparent Card */}
               <section className="px-4 sm:px-5 lg:px-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="accent-line flex-1 max-w-[40px]" />
-                  <h2 className="font-display text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-text-tertiary)]">
+                  <div className="h-[3px] w-8 rounded-full bg-[#D2691E]" />
+                  <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#D2691E]/50 dark:text-[#CD853F]/50">
                     {locale === 'ka' ? 'შესახებ' : 'About'}
                   </h2>
                 </div>
 
-                <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed whitespace-pre-wrap max-w-2xl">
-                  {profile.description}
-                </p>
+                <div
+                  className="p-4 sm:p-5 rounded-2xl backdrop-blur-md"
+                  style={{
+                    background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.15) 100%)',
+                    border: '1px solid rgba(210, 105, 30, 0.1)',
+                    boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+                  }}
+                >
+                  <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed whitespace-pre-wrap">
+                    {profile.description}
+                  </p>
+                </div>
               </section>
 
               {/* Portfolio Section - Smart Gallery */}
@@ -1268,7 +1374,7 @@ export default function ProfessionalDetailPage() {
           <div
             className="absolute inset-0 pointer-events-none opacity-30"
             style={{
-              background: `radial-gradient(ellipse at center, rgba(16, 185, 129, 0.15) 0%, transparent 70%)`,
+              background: `radial-gradient(ellipse at center, rgba(200, 114, 89, 0.2) 0%, transparent 70%)`,
               filter: 'blur(100px)',
             }}
           />
@@ -1379,32 +1485,24 @@ export default function ProfessionalDetailPage() {
         </div>
       )}
 
-      {/* Project Modal - Refined Editorial Design */}
+      {/* Project Modal - Terracotta Transparent Design */}
       {selectedProject && (
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
           onClick={() => setSelectedProject(null)}
         >
-          {/* Backdrop with subtle grain texture */}
-          <div
-            className="absolute inset-0 bg-black/85 backdrop-blur-xl"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-              backgroundBlendMode: 'overlay',
-            }}
-          />
+          {/* Backdrop with terracotta tint */}
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-md" />
 
           <div
-            className="relative w-full sm:max-w-[520px] max-h-[95vh] sm:max-h-[92vh] overflow-hidden flex flex-col shadow-2xl project-modal-enter"
+            className="relative w-full sm:max-w-[520px] max-h-[95vh] sm:max-h-[92vh] overflow-hidden flex flex-col project-modal-enter bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t sm:border border-[#D2691E]/20 dark:border-[#CD853F]/20 sm:rounded-2xl rounded-t-2xl"
             style={{
-              background: 'var(--color-bg-primary)',
-              borderRadius: '24px 24px 0 0',
-              boxShadow: '0 -10px 60px -15px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05)',
+              boxShadow: '0 -10px 60px -15px rgba(210, 105, 30, 0.15), 0 25px 50px -12px rgba(0, 0, 0, 0.25)',
             }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Mobile drag indicator */}
-            <div className="sm:hidden absolute top-3 left-1/2 -translate-x-1/2 z-20 w-10 h-1 bg-white/30 rounded-full" />
+            <div className="sm:hidden absolute top-3 left-1/2 -translate-x-1/2 z-20 w-10 h-1 bg-[#D2691E]/30 rounded-full" />
 
             {/* Hero Image Section - Taller and more cinematic */}
             <div className="relative aspect-[4/3] sm:aspect-[16/9] flex-shrink-0 overflow-hidden">
@@ -1492,8 +1590,8 @@ export default function ProfessionalDetailPage() {
                         <div
                           className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
                             selectedProject.status === 'completed'
-                              ? 'bg-emerald-500/90 text-white'
-                              : 'bg-amber-500/90 text-white'
+                              ? 'bg-[#D2691E] text-white'
+                              : 'bg-[#CD853F]/80 text-white'
                           }`}
                         >
                           {selectedProject.status === 'completed'
@@ -1563,27 +1661,21 @@ export default function ProfessionalDetailPage() {
                 {(selectedProject.location || selectedProject.completedDate || selectedProject.duration || selectedProject.category) && (
                   <div className="flex flex-wrap gap-2">
                     {selectedProject.category && (
-                      <div
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg"
-                        style={{
-                          background: 'linear-gradient(135deg, var(--color-accent-soft) 0%, color-mix(in srgb, var(--color-accent-soft) 50%, transparent) 100%)',
-                          border: '1px solid color-mix(in srgb, var(--color-accent) 30%, transparent)'
-                        }}
-                      >
-                        <span className="text-xs font-semibold text-[var(--color-accent)]">{getCategoryLabel(selectedProject.category)}</span>
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D2691E]/10 dark:bg-[#CD853F]/15 border border-[#D2691E]/15 dark:border-[#CD853F]/20">
+                        <span className="text-xs font-semibold text-[#D2691E] dark:text-[#CD853F]">{getCategoryLabel(selectedProject.category)}</span>
                       </div>
                     )}
                     {selectedProject.location && (
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]">
-                        <svg className="w-3.5 h-3.5 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/60 dark:bg-gray-800/40 border border-[#D2691E]/10 dark:border-[#CD853F]/15">
+                        <svg className="w-3.5 h-3.5 text-[#D2691E]/60 dark:text-[#CD853F]/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         </svg>
                         <span className="text-xs text-[var(--color-text-secondary)]">{selectedProject.location}</span>
                       </div>
                     )}
                     {selectedProject.completedDate && (
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]">
-                        <svg className="w-3.5 h-3.5 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/60 dark:bg-gray-800/40 border border-[#D2691E]/10 dark:border-[#CD853F]/15">
+                        <svg className="w-3.5 h-3.5 text-[#D2691E]/60 dark:text-[#CD853F]/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         <span className="text-xs text-[var(--color-text-secondary)]">
@@ -1592,8 +1684,8 @@ export default function ProfessionalDetailPage() {
                       </div>
                     )}
                     {selectedProject.duration && (
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]">
-                        <svg className="w-3.5 h-3.5 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/60 dark:bg-gray-800/40 border border-[#D2691E]/10 dark:border-[#CD853F]/15">
+                        <svg className="w-3.5 h-3.5 text-[#D2691E]/60 dark:text-[#CD853F]/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span className="text-xs text-[var(--color-text-secondary)]">{selectedProject.duration}</span>
@@ -1630,18 +1722,9 @@ export default function ProfessionalDetailPage() {
 
                 {/* Client Review - Editorial quote style */}
                 {selectedProject.review && (
-                  <div
-                    className="relative p-5 rounded-2xl review-quote overflow-hidden"
-                    style={{
-                      background: 'linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-tertiary) 100%)',
-                      border: '1px solid var(--color-border)'
-                    }}
-                  >
+                  <div className="relative p-5 rounded-2xl overflow-hidden bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-[#D2691E]/10 dark:border-[#CD853F]/15">
                     {/* Decorative accent line */}
-                    <div
-                      className="absolute top-0 left-0 w-1 h-full rounded-l-2xl"
-                      style={{ background: 'var(--color-accent)' }}
-                    />
+                    <div className="absolute top-0 left-0 w-1 h-full rounded-l-2xl bg-[#D2691E]" />
 
                     <p
                       className="text-sm leading-relaxed mb-4 pl-2"
@@ -1658,15 +1741,10 @@ export default function ProfessionalDetailPage() {
                         <img
                           src={selectedProject.clientAvatar}
                           alt={selectedProject.clientName || ''}
-                          className="w-9 h-9 rounded-full object-cover ring-2 ring-[var(--color-border)]"
+                          className="w-9 h-9 rounded-full object-cover ring-2 ring-[#D2691E]/20"
                         />
                       ) : selectedProject.clientName && (
-                        <div
-                          className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold text-white"
-                          style={{
-                            background: `linear-gradient(135deg, var(--color-accent) 0%, color-mix(in srgb, var(--color-accent) 70%, #000) 100%)`
-                          }}
-                        >
+                        <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold text-white bg-[#D2691E]">
                           {selectedProject.clientName.charAt(0)}
                         </div>
                       )}
@@ -1683,11 +1761,11 @@ export default function ProfessionalDetailPage() {
                         )}
                       </div>
                       {selectedProject.rating && (
-                        <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/10">
-                          <svg className="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                        <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#D2691E]/10 border border-[#D2691E]/10">
+                          <svg className="w-3.5 h-3.5 text-[#D2691E]" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                           </svg>
-                          <span className="text-xs font-bold text-amber-600">{selectedProject.rating}</span>
+                          <span className="text-xs font-bold text-[#D2691E]">{selectedProject.rating}</span>
                         </div>
                       )}
                     </div>
@@ -1698,11 +1776,11 @@ export default function ProfessionalDetailPage() {
                 {selectedProject.images && selectedProject.images.length > 0 && (
                   <div>
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="h-px flex-1 bg-[var(--color-border)]" />
-                      <span className="text-[10px] uppercase tracking-[0.15em] text-[var(--color-text-muted)] font-medium">
+                      <div className="h-px flex-1 bg-[#D2691E]/20 dark:bg-[#CD853F]/20" />
+                      <span className="text-[10px] uppercase tracking-[0.15em] text-[#D2691E]/50 dark:text-[#CD853F]/50 font-medium">
                         {locale === 'ka' ? 'გალერეა' : 'Gallery'}
                       </span>
-                      <div className="h-px flex-1 bg-[var(--color-border)]" />
+                      <div className="h-px flex-1 bg-[#D2691E]/20 dark:bg-[#CD853F]/20" />
                     </div>
 
                     <div className={`grid gap-2 ${

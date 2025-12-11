@@ -287,7 +287,7 @@ export default function ArchitecturalBackground() {
       <div className="fixed inset-0 pointer-events-none overflow-hidden hidden md:block" style={{ zIndex: 1 }}>
         {/* Gradient overlays */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] opacity-30 dark:opacity-15">
-          <div className="absolute inset-0 bg-gradient-to-bl from-emerald-500/20 via-transparent to-transparent blur-3xl" />
+          <div className="absolute inset-0 bg-gradient-to-bl from-[#D2691E]/20 via-transparent to-transparent blur-3xl" />
         </div>
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] opacity-25 dark:opacity-10">
           <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/20 via-transparent to-transparent blur-3xl" />
@@ -295,7 +295,7 @@ export default function ArchitecturalBackground() {
 
         {/* Floating architectural elements - carefully positioned */}
         {/* Light mode: stronger colors, Dark mode: subtle colors */}
-        <div className="text-emerald-700/50 dark:text-emerald-400/35">
+        <div className="text-[#D2691E]/50 dark:text-[#CD853F]/35">
           {/* Top left area */}
           <FloatingElement x={5} y={8} delay={0} duration={25}>
             <FloorPlanRoom size={90} opacity={0.12} />

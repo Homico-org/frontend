@@ -123,9 +123,9 @@ export default function LoginModal() {
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="absolute top-0 left-0 right-0 h-1" style={{ background: 'linear-gradient(90deg, #059669 0%, #10b981 50%, #34d399 100%)' }} />
+          <div className="absolute top-0 left-0 right-0 h-1" style={{ background: 'linear-gradient(90deg, #B8560E 0%, #D2691E 50%, #CD853F 100%)' }} />
 
-          <div className="absolute -top-32 -right-32 w-64 h-64 rounded-full pointer-events-none opacity-40" style={{ background: 'radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, transparent 70%)', filter: 'blur(60px)' }} />
+          <div className="absolute -top-32 -right-32 w-64 h-64 rounded-full pointer-events-none opacity-40" style={{ background: 'radial-gradient(circle, rgba(210, 105, 30, 0.25) 0%, transparent 70%)', filter: 'blur(60px)' }} />
 
           <button
             onClick={closeLoginModal}
@@ -144,8 +144,8 @@ export default function LoginModal() {
           <div className="relative px-8 sm:px-10 pt-16 pb-8 sm:pb-10">
             <div className="text-center mb-6">
               <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4 relative">
-                <div className="absolute inset-0 rounded-2xl" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(52, 211, 153, 0.08) 100%)', border: '1px solid rgba(16, 185, 129, 0.2)' }} />
-                <svg className="w-7 h-7 text-emerald-500 relative" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <div className="absolute inset-0 rounded-2xl" style={{ background: 'linear-gradient(135deg, rgba(210, 105, 30, 0.15) 0%, rgba(205, 133, 63, 0.08) 100%)', border: '1px solid rgba(210, 105, 30, 0.2)' }} />
+                <svg className="w-7 h-7 text-[#D2691E] relative" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75" />
                 </svg>
               </div>
@@ -180,13 +180,13 @@ export default function LoginModal() {
                     className="w-full px-4 py-3.5 pr-12 rounded-xl text-base transition-all duration-200 outline-none"
                     style={{
                       backgroundColor: 'var(--color-bg-secondary)',
-                      border: `2px solid ${focusedField === 'identifier' ? '#10b981' : 'var(--color-border)'}`,
+                      border: `2px solid ${focusedField === 'identifier' ? '#D2691E' : 'var(--color-border)'}`,
                       color: 'var(--color-text-primary)',
-                      boxShadow: focusedField === 'identifier' ? '0 0 0 4px rgba(16, 185, 129, 0.1)' : 'none',
+                      boxShadow: focusedField === 'identifier' ? '0 0 0 4px rgba(210, 105, 30, 0.1)' : 'none',
                     }}
                     placeholder="+995 555 123 456"
                   />
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors duration-200" style={{ color: focusedField === 'identifier' ? '#10b981' : 'var(--color-text-muted)' }}>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors duration-200" style={{ color: focusedField === 'identifier' ? '#D2691E' : 'var(--color-text-muted)' }}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
@@ -210,9 +210,9 @@ export default function LoginModal() {
                     className="w-full px-4 py-3.5 pr-12 rounded-xl text-base transition-all duration-200 outline-none"
                     style={{
                       backgroundColor: 'var(--color-bg-secondary)',
-                      border: `2px solid ${focusedField === 'password' ? '#10b981' : 'var(--color-border)'}`,
+                      border: `2px solid ${focusedField === 'password' ? '#D2691E' : 'var(--color-border)'}`,
                       color: 'var(--color-text-primary)',
-                      boxShadow: focusedField === 'password' ? '0 0 0 4px rgba(16, 185, 129, 0.1)' : 'none',
+                      boxShadow: focusedField === 'password' ? '0 0 0 4px rgba(210, 105, 30, 0.1)' : 'none',
                     }}
                     placeholder="••••••••"
                   />
@@ -220,7 +220,7 @@ export default function LoginModal() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors hover:opacity-70"
-                    style={{ color: focusedField === 'password' ? '#10b981' : 'var(--color-text-muted)' }}
+                    style={{ color: focusedField === 'password' ? '#D2691E' : 'var(--color-text-muted)' }}
                   >
                     {showPassword ? (
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -237,7 +237,7 @@ export default function LoginModal() {
               </div>
 
               <div className="flex justify-end">
-                <Link href="/forgot-password" onClick={closeLoginModal} className="text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
+                <Link href="/forgot-password" onClick={closeLoginModal} className="text-sm font-medium text-[#D2691E] dark:text-[#CD853F] hover:text-[#B8560E] dark:hover:text-[#FFDAB9] transition-colors">
                   {locale === 'ka' ? 'დაგავიწყდა პაროლი?' : 'Forgot password?'}
                 </Link>
               </div>
@@ -245,8 +245,8 @@ export default function LoginModal() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="relative w-full py-3 px-5 rounded-xl text-white font-medium text-sm transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-emerald-500/15 hover:-translate-y-0.5 active:translate-y-0 overflow-hidden"
-                style={{ background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)' }}
+                className="relative w-full py-3 px-5 rounded-xl text-white font-medium text-sm transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-[#D2691E]/15 hover:-translate-y-0.5 active:translate-y-0 overflow-hidden"
+                style={{ background: 'linear-gradient(135deg, #B8560E 0%, #D2691E 100%)' }}
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -276,7 +276,7 @@ export default function LoginModal() {
             <div className="text-center mb-6">
               <p className="text-[15px]" style={{ color: 'var(--color-text-secondary)' }}>
                 {locale === 'ka' ? 'არ გაქვს ანგარიში?' : "Don't have an account?"}{' '}
-                <Link href="/register" onClick={closeLoginModal} className="font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
+                <Link href="/register" onClick={closeLoginModal} className="font-semibold text-[#D2691E] dark:text-[#CD853F] hover:text-[#B8560E] dark:hover:text-[#FFDAB9] transition-colors">
                   {locale === 'ka' ? 'დარეგისტრირდი' : 'Sign up'}
                 </Link>
               </p>
@@ -300,11 +300,11 @@ export default function LoginModal() {
                       key={account.email}
                       type="button"
                       onClick={() => setFormData({ identifier: account.email, password: 'demo123' })}
-                      className="flex items-center justify-between text-xs rounded-lg px-3 py-2.5 transition-all duration-200 group hover:border-emerald-300 dark:hover:border-emerald-700"
+                      className="flex items-center justify-between text-xs rounded-lg px-3 py-2.5 transition-all duration-200 group hover:border-[#D2691E]/50 dark:hover:border-[#CD853F]/50"
                       style={{ backgroundColor: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)' }}
                     >
                       <span className="capitalize font-medium" style={{ color: 'var(--color-text-secondary)' }}>{account.role}</span>
-                      <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#D2691E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                       </svg>
                     </button>

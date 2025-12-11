@@ -38,13 +38,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
   if (variant === 'default') {
     return (
       <Link href={`/professionals/${profile._id}`} className="group block touch-manipulation">
-        <div
-          className="relative rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
-          style={{
-            backgroundColor: 'var(--color-bg-secondary)',
-            border: '1px solid var(--color-border)',
-          }}
-        >
+        <div className="relative rounded-2xl overflow-hidden transition-all duration-300 shadow-sm shadow-[#D2691E]/5 hover:shadow-xl hover:shadow-[#D2691E]/10 hover:-translate-y-0.5 border border-[#D2691E]/10 bg-[#D2691E]/[0.02] hover:bg-[#D2691E]/[0.04]">
           {/* Hero Image Section with Gradient Blur */}
           <div className="relative aspect-[4/3] overflow-hidden">
             {avatarUrl ? (
@@ -55,12 +49,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
               />
             ) : (
               <div
-                className="absolute inset-0 w-full h-full"
-                style={{
-                  background: `linear-gradient(135deg,
-                    hsl(${(displayName.charCodeAt(0) * 7) % 360}, 65%, 45%) 0%,
-                    hsl(${(displayName.charCodeAt(0) * 7 + 40) % 360}, 55%, 35%) 100%)`
-                }}
+                className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#D2691E]/20 to-[#CD853F]/30"
               />
             )}
 
@@ -69,7 +58,6 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
               className="absolute inset-0"
               style={{
                 background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 35%, rgba(0,0,0,0.1) 60%, transparent 100%)',
-                backdropFilter: 'blur(0px)',
               }}
             />
 
@@ -142,7 +130,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
               </div>
 
               {/* Name */}
-              <h3 className="font-bold text-lg text-white truncate leading-tight mb-1 group-hover:text-emerald-300 transition-colors">
+              <h3 className="font-bold text-lg text-white truncate leading-tight mb-1 group-hover:text-[#FFDAB9] transition-colors">
                 {displayName}
               </h3>
 
@@ -160,17 +148,13 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
               {profile.categories.slice(0, 3).map((cat, i) => (
                 <span
                   key={i}
-                  className="px-2.5 py-1 text-xs font-medium rounded-lg"
-                  style={{
-                    backgroundColor: 'var(--color-bg-tertiary)',
-                    color: 'var(--color-text-secondary)'
-                  }}
+                  className="px-2.5 py-1 text-xs font-medium rounded-lg bg-[#D2691E]/10 text-[#D2691E]"
                 >
                   {getCategoryLabel(cat)}
                 </span>
               ))}
               {profile.categories.length > 3 && (
-                <span className="px-2 py-1 text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                <span className="px-2 py-1 text-xs text-[var(--color-text-tertiary)]">
                   +{profile.categories.length - 3}
                 </span>
               )}
@@ -178,10 +162,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
 
             {/* Bio/Description */}
             {bioText && (
-              <p
-                className="text-sm leading-relaxed line-clamp-2"
-                style={{ color: 'var(--color-text-secondary)' }}
-              >
+              <p className="text-sm leading-relaxed line-clamp-2 text-[var(--color-text-secondary)]">
                 {bioText}
               </p>
             )}
@@ -195,13 +176,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
   if (variant === 'compact') {
     return (
       <Link href={`/professionals/${profile._id}`} className="group block h-full">
-        <div
-          className="relative h-full rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
-          style={{
-            backgroundColor: 'var(--color-bg-secondary)',
-            border: '1px solid var(--color-border)',
-          }}
-        >
+        <div className="relative h-full rounded-2xl overflow-hidden transition-all duration-300 shadow-sm shadow-[#D2691E]/5 hover:shadow-xl hover:shadow-[#D2691E]/10 hover:-translate-y-0.5 border border-[#D2691E]/10 bg-[#D2691E]/[0.02] hover:bg-[#D2691E]/[0.04]">
           {/* Hero Image with gradient blur */}
           <div className="relative aspect-[4/3] overflow-hidden">
             {avatarUrl ? (
@@ -211,14 +186,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
               />
             ) : (
-              <div
-                className="absolute inset-0 w-full h-full"
-                style={{
-                  background: `linear-gradient(135deg,
-                    hsl(${(displayName.charCodeAt(0) * 7) % 360}, 65%, 45%) 0%,
-                    hsl(${(displayName.charCodeAt(0) * 7 + 40) % 360}, 55%, 35%) 100%)`
-                }}
-              />
+              <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#D2691E]/20 to-[#CD853F]/30" />
             )}
 
             {/* Gradient blur overlay */}
@@ -254,7 +222,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
                 </div>
               </div>
 
-              <h3 className="font-semibold text-[15px] text-white truncate leading-tight group-hover:text-emerald-300 transition-colors">
+              <h3 className="font-semibold text-[15px] text-white truncate leading-tight group-hover:text-[#FFDAB9] transition-colors">
                 {displayName}
               </h3>
             </div>
@@ -263,19 +231,13 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
           {/* Content */}
           <div className="p-3">
             {/* Category - Prominent */}
-            <p
-              className="text-sm font-medium truncate mb-2"
-              style={{ color: 'var(--color-text-primary)' }}
-            >
+            <p className="text-sm font-medium truncate mb-2 text-[var(--color-text-primary)]">
               {profile.title || getCategoryLabel(profile.categories[0])}
             </p>
 
             {/* Bio - 1 line */}
             {bioText && (
-              <p
-                className="text-xs line-clamp-1"
-                style={{ color: 'var(--color-text-tertiary)' }}
-              >
+              <p className="text-xs line-clamp-1 text-[var(--color-text-tertiary)]">
                 {bioText}
               </p>
             )}
@@ -289,13 +251,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
   if (variant === 'horizontal') {
     return (
       <Link href={`/professionals/${profile._id}`} className="group block">
-        <div
-          className="relative flex gap-4 p-4 rounded-xl transition-all duration-200 hover:shadow-lg"
-          style={{
-            backgroundColor: 'var(--color-bg-secondary)',
-            border: '1px solid var(--color-border)'
-          }}
-        >
+        <div className="relative flex gap-4 p-4 rounded-xl transition-all duration-200 shadow-sm shadow-[#D2691E]/5 hover:shadow-lg hover:shadow-[#D2691E]/10 border border-[#D2691E]/10 bg-[#D2691E]/[0.02] hover:bg-[#D2691E]/[0.04]">
           {/* Avatar with gradient blur effect */}
           <div className="relative flex-shrink-0">
             <div className="w-20 h-20 rounded-xl overflow-hidden">
@@ -315,14 +271,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
                   />
                 </>
               ) : (
-                <div
-                  className="w-full h-full flex items-center justify-center"
-                  style={{
-                    background: `linear-gradient(135deg,
-                      hsl(${(displayName.charCodeAt(0) * 7) % 360}, 70%, 40%) 0%,
-                      hsl(${(displayName.charCodeAt(0) * 7 + 40) % 360}, 60%, 30%) 100%)`
-                  }}
-                >
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#D2691E]/30 to-[#CD853F]/40">
                   <span className="text-2xl font-bold text-white">{displayName.charAt(0)}</span>
                 </div>
               )}
@@ -336,10 +285,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
           {/* Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2 mb-1">
-              <h3
-                className="font-semibold text-base truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors"
-                style={{ color: 'var(--color-text-primary)' }}
-              >
+              <h3 className="font-semibold text-base truncate group-hover:text-[#D2691E] transition-colors text-[var(--color-text-primary)]">
                 {displayName}
               </h3>
               {isTopRated && (
@@ -353,23 +299,23 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
             </div>
 
             {/* Category - Larger */}
-            <p className="text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+            <p className="text-sm font-medium mb-2 text-[var(--color-text-secondary)]">
               {profile.title || getCategoryLabel(profile.categories[0])}
             </p>
 
             {/* Stats row - simplified */}
-            <div className="flex items-center gap-3 text-xs mb-2" style={{ color: 'var(--color-text-tertiary)' }}>
+            <div className="flex items-center gap-3 text-xs mb-2 text-[var(--color-text-tertiary)]">
               <div className="flex items-center gap-1">
                 <svg className="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
-                <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                <span className="font-semibold text-[var(--color-text-primary)]">
                   {profile.avgRating > 0 ? profile.avgRating.toFixed(1) : '—'}
                 </span>
                 {profile.totalReviews > 0 && <span>({profile.totalReviews})</span>}
               </div>
               <span className="flex items-center gap-1">
-                <svg className="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5 text-[#D2691E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 {profile.yearsExperience}+ წელი
@@ -378,10 +324,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
 
             {/* Bio */}
             {bioText && (
-              <p
-                className="text-xs line-clamp-1"
-                style={{ color: 'var(--color-text-tertiary)' }}
-              >
+              <p className="text-xs line-clamp-1 text-[var(--color-text-tertiary)]">
                 {bioText}
               </p>
             )}
@@ -391,17 +334,13 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
               {profile.categories.slice(0, 2).map((cat, i) => (
                 <span
                   key={i}
-                  className="px-2 py-0.5 text-xs font-medium rounded-md"
-                  style={{
-                    backgroundColor: 'var(--color-bg-tertiary)',
-                    color: 'var(--color-text-secondary)'
-                  }}
+                  className="px-2 py-0.5 text-xs font-medium rounded-md bg-[#D2691E]/10 text-[#D2691E]"
                 >
                   {getCategoryLabel(cat)}
                 </span>
               ))}
               {profile.categories.length > 2 && (
-                <span className="px-1.5 py-0.5 text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                <span className="px-1.5 py-0.5 text-xs text-[var(--color-text-tertiary)]">
                   +{profile.categories.length - 2}
                 </span>
               )}
@@ -411,8 +350,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
           {/* Arrow */}
           <div className="flex-shrink-0 self-center">
             <svg
-              className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1"
-              style={{ color: 'var(--color-text-tertiary)' }}
+              className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1 text-[#D2691E]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"

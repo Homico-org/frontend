@@ -824,16 +824,16 @@ input:-webkit-autofill:focus {
   -webkit-text-fill-color: #f8f8fa;
 }
 
-/* Smooth image loading */
+/* Smooth image loading - only hide images that haven't loaded yet */
 img {
   @apply transition-opacity duration-300;
 }
 
-img[loading] {
+img.loading {
   @apply opacity-0;
 }
 
-img:not([loading]) {
+img:not(.loading) {
   @apply opacity-100;
 }
 

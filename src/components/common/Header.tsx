@@ -8,6 +8,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Avatar from "./Avatar";
+import Button, { ButtonIcons } from "./Button";
 
 export default function Header() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -78,7 +79,7 @@ export default function Header() {
             >
               {locale === "ka" ? "ჰომიკო" : "Homico"}
             </span>
-            <span className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-emerald-500 group-hover:scale-125 transition-transform duration-200"></span>
+            <span className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-[#D2691E] group-hover:scale-125 transition-transform duration-200"></span>
           </Link>
 
           <nav className="flex gap-4 items-center">
@@ -88,28 +89,28 @@ export default function Header() {
               <div className="flex items-center gap-2 sm:gap-3">
                 {/* Post Job Button for Client and Pro Users */}
                 {(user.role === "client" || user.role === "pro") && (
-                  <Link
-                    href="/post-job"
-                    className="flex items-center justify-center gap-1.5 sm:gap-2 w-9 h-9 sm:w-auto sm:h-auto sm:px-4 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 ease-out hover:scale-[1.03] active:scale-[0.97]"
-                    style={{
-                      backgroundColor: "var(--color-accent)",
-                      color: "#ffffff",
-                      boxShadow: "0 2px 8px var(--color-accent-soft)",
-                    }}
-                  >
-                    <svg
-                      className="w-4 h-4 sm:w-[18px] sm:h-[18px]"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
+                  <>
+                    {/* Mobile: Icon-only button */}
+                    <Button
+                      href="/post-job"
+                      variant="primary"
+                      size="sm"
+                      icon={<ButtonIcons.Plus />}
+                      className="sm:hidden !w-9 !h-9 !p-0 !gap-0"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    <span className="hidden sm:inline whitespace-nowrap">
+                      <span className="sr-only">{locale === "ka" ? "განცხადება" : "Post Job"}</span>
+                    </Button>
+                    {/* Desktop: Full button */}
+                    <Button
+                      href="/post-job"
+                      variant="primary"
+                      size="md"
+                      icon={<ButtonIcons.Plus />}
+                      className="hidden sm:inline-flex"
+                    >
                       {locale === "ka" ? "განცხადება" : "Post Job"}
-                    </span>
-                  </Link>
+                    </Button>
+                  </>
                 )}
 
                 {/* Become Pro Button for Client Users - Hidden on mobile */}
@@ -228,37 +229,72 @@ export default function Header() {
 
                   {showDropdown && (
                     <div
-                      className="absolute right-0 top-full mt-2 sm:mt-3 w-[calc(100vw-24px)] sm:w-72 max-w-[280px] sm:max-w-72 bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-luxury dark:shadow-none overflow-hidden z-[70] animate-scale-in max-h-[calc(100vh-80px)] overflow-y-auto"
+                      className="absolute right-0 top-full mt-2 sm:mt-3 w-[calc(100vw-24px)] sm:w-72 max-w-[280px] sm:max-w-72 rounded-xl sm:rounded-2xl overflow-hidden z-[70] animate-scale-in max-h-[calc(100vh-80px)] overflow-y-auto"
+                      style={{
+                        background: 'linear-gradient(145deg, rgba(255, 253, 250, 0.95) 0%, rgba(255, 250, 245, 0.98) 100%)',
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(200, 114, 89, 0.15)',
+                        boxShadow: '0 20px 40px -12px rgba(200, 114, 89, 0.2), 0 8px 16px -8px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+                      }}
                     >
-                        {/* User Info Header */}
+                        {/* User Info Header - Terracotta gradient */}
                         <div
-                          className="px-3 sm:px-5 py-3 sm:py-4"
+                          className="px-3 sm:px-5 py-3 sm:py-4 relative overflow-hidden"
                           style={{
-                            background: "linear-gradient(135deg, var(--color-accent) 0%, color-mix(in srgb, var(--color-accent) 85%, #000) 100%)"
+                            background: "linear-gradient(135deg, #C87259 0%, #B86349 50%, #A85A42 100%)"
                           }}
                         >
-                          <div className="flex items-center gap-2.5 sm:gap-3.5">
-                            <Avatar
-                              src={user.avatar}
-                              name={user.name}
-                              size="md"
-                              rounded="xl"
-                              className="ring-2 ring-white/20 w-10 h-10 sm:w-12 sm:h-12"
-                            />
+                          {/* Decorative pattern overlay */}
+                          <div
+                            className="absolute inset-0 opacity-10"
+                            style={{
+                              backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='white'/%3E%3C/svg%3E")`,
+                              backgroundSize: '20px 20px',
+                            }}
+                          />
+                          <div className="flex items-center gap-2.5 sm:gap-3.5 relative z-10">
+                            <div className="relative">
+                              <Avatar
+                                src={user.avatar}
+                                name={user.name}
+                                size="md"
+                                rounded="xl"
+                                className="w-10 h-10 sm:w-12 sm:h-12"
+                                style={{
+                                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(255, 255, 255, 0.2)',
+                                }}
+                              />
+                              {/* Online indicator */}
+                              <div
+                                className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-[#C87259]"
+                                style={{ background: 'linear-gradient(135deg, #4ade80 0%, #22c55e 100%)' }}
+                              />
+                            </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs sm:text-sm font-semibold text-white truncate">
+                              <p className="text-xs sm:text-sm font-semibold text-white truncate drop-shadow-sm">
                                 {user.name}
                               </p>
-                              <p className="text-[10px] sm:text-xs text-white/70 truncate mb-1 sm:mb-1.5">
+                              <p className="text-[10px] sm:text-xs text-white/80 truncate mb-1 sm:mb-1.5">
                                 {user.email}
                               </p>
                               <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
                                 {user.uid && (
-                                  <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium bg-white/10 text-white/80">
+                                  <span
+                                    className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-medium text-white/90"
+                                    style={{ background: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(4px)' }}
+                                  >
                                     ID: {user.uid}
                                   </span>
                                 )}
-                                <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium bg-primary-400/20 text-primary-300 capitalize">
+                                <span
+                                  className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-semibold capitalize"
+                                  style={{
+                                    background: 'rgba(255, 255, 255, 0.95)',
+                                    color: '#B86349',
+                                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                                  }}
+                                >
                                   {user.role === "pro"
                                     ? "პრო"
                                     : user.role === "client"
@@ -281,13 +317,20 @@ export default function Header() {
                             <>
                               <Link
                                 href="/company/jobs"
-                                className="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 hover:bg-cream-100 dark:hover:bg-dark-elevated transition-colors"
+                                className="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm transition-all duration-200"
+                                style={{ color: 'var(--color-text-secondary)' }}
                                 onClick={() => setShowDropdown(false)}
                               >
-                                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-neutral-50 dark:bg-dark-elevated flex items-center justify-center group-hover:bg-forest-800/5 dark:group-hover:bg-primary-400/10 transition-colors flex-shrink-0">
-                                  {/* Building with briefcase icon */}
+                                <div
+                                  className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0 group-hover:scale-105"
+                                  style={{
+                                    background: 'rgba(200, 114, 89, 0.08)',
+                                    border: '1px solid rgba(200, 114, 89, 0.1)',
+                                  }}
+                                >
                                   <svg
-                                    className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-neutral-500 dark:text-neutral-400 group-hover:text-forest-800 dark:group-hover:text-primary-400"
+                                    className="w-4 h-4 sm:w-[18px] sm:h-[18px] transition-colors duration-200"
+                                    style={{ color: '#C87259' }}
                                     viewBox="0 0 24 24"
                                     fill="none"
                                     stroke="currentColor"
@@ -306,19 +349,26 @@ export default function Header() {
                                     />
                                   </svg>
                                 </div>
-                                <span className="group-hover:text-forest-800 dark:group-hover:text-primary-400 transition-colors truncate">
+                                <span className="group-hover:text-[#C87259] transition-colors truncate">
                                   {t("menu.companyJobs")}
                                 </span>
                               </Link>
                               <Link
                                 href="/company/employees"
-                                className="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 hover:bg-cream-100 dark:hover:bg-dark-elevated transition-colors"
+                                className="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm transition-all duration-200"
+                                style={{ color: 'var(--color-text-secondary)' }}
                                 onClick={() => setShowDropdown(false)}
                               >
-                                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-neutral-50 dark:bg-dark-elevated flex items-center justify-center group-hover:bg-forest-800/5 dark:group-hover:bg-primary-400/10 transition-colors flex-shrink-0">
-                                  {/* Team with org chart icon */}
+                                <div
+                                  className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0 group-hover:scale-105"
+                                  style={{
+                                    background: 'rgba(200, 114, 89, 0.08)',
+                                    border: '1px solid rgba(200, 114, 89, 0.1)',
+                                  }}
+                                >
                                   <svg
-                                    className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-neutral-500 dark:text-neutral-400 group-hover:text-forest-800 dark:group-hover:text-primary-400"
+                                    className="w-4 h-4 sm:w-[18px] sm:h-[18px] transition-colors duration-200"
+                                    style={{ color: '#C87259' }}
                                     viewBox="0 0 24 24"
                                     fill="none"
                                     stroke="currentColor"
@@ -348,19 +398,25 @@ export default function Header() {
                                     />
                                   </svg>
                                 </div>
-                                <span className="group-hover:text-forest-800 dark:group-hover:text-primary-400 transition-colors truncate">
+                                <span className="group-hover:text-[#C87259] transition-colors truncate">
                                   {t("menu.team")}
                                 </span>
                               </Link>
                               <Link
                                 href="/company/jobs/new"
-                                className="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 hover:bg-cream-100 dark:hover:bg-dark-elevated transition-colors"
+                                className="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm transition-all duration-200"
                                 onClick={() => setShowDropdown(false)}
                               >
-                                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-primary-400/10 flex items-center justify-center group-hover:bg-primary-400/20 transition-colors flex-shrink-0">
-                                  {/* Plus in circle icon */}
+                                <div
+                                  className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0 group-hover:scale-105"
+                                  style={{
+                                    background: 'linear-gradient(135deg, rgba(200, 114, 89, 0.15) 0%, rgba(200, 114, 89, 0.1) 100%)',
+                                    border: '1px solid rgba(200, 114, 89, 0.2)',
+                                  }}
+                                >
                                   <svg
-                                    className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-forest-800 dark:text-primary-400"
+                                    className="w-4 h-4 sm:w-[18px] sm:h-[18px]"
+                                    style={{ color: '#C87259' }}
                                     viewBox="0 0 24 24"
                                     fill="none"
                                     stroke="currentColor"
@@ -378,7 +434,7 @@ export default function Header() {
                                     />
                                   </svg>
                                 </div>
-                                <span className="text-forest-800 dark:text-primary-400 font-medium truncate">
+                                <span className="font-medium truncate" style={{ color: '#C87259' }}>
                                   {t("menu.createJob")}
                                 </span>
                               </Link>
@@ -389,13 +445,20 @@ export default function Header() {
                           {user.role === "admin" && (
                             <Link
                               href="/admin"
-                              className="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 hover:bg-cream-100 dark:hover:bg-dark-elevated transition-colors"
+                              className="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm transition-all duration-200"
+                              style={{ color: 'var(--color-text-secondary)' }}
                               onClick={() => setShowDropdown(false)}
                             >
-                              <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-neutral-50 dark:bg-dark-elevated flex items-center justify-center group-hover:bg-forest-800/5 dark:group-hover:bg-primary-400/10 transition-colors flex-shrink-0">
-                                {/* Dashboard grid icon */}
+                              <div
+                                className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0 group-hover:scale-105"
+                                style={{
+                                  background: 'rgba(200, 114, 89, 0.08)',
+                                  border: '1px solid rgba(200, 114, 89, 0.1)',
+                                }}
+                              >
                                 <svg
-                                  className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-neutral-500 dark:text-neutral-400 group-hover:text-forest-800 dark:group-hover:text-primary-400"
+                                  className="w-4 h-4 sm:w-[18px] sm:h-[18px]"
+                                  style={{ color: '#C87259' }}
                                   viewBox="0 0 24 24"
                                   fill="none"
                                   stroke="currentColor"
@@ -434,7 +497,7 @@ export default function Header() {
                                   />
                                 </svg>
                               </div>
-                              <span className="group-hover:text-forest-800 dark:group-hover:text-primary-400 transition-colors truncate">
+                              <span className="group-hover:text-[#C87259] transition-colors truncate">
                                 პანელი
                               </span>
                             </Link>
@@ -443,18 +506,28 @@ export default function Header() {
                           {/* Common Settings Items - Divider only for non-admin or after admin panel */}
                           {(user.role === "company" ||
                             user.role === "admin") && (
-                            <div className="border-t border-neutral-100 dark:border-dark-border my-1.5 sm:my-2 mx-3 sm:mx-4"></div>
+                            <div
+                              className="my-1.5 sm:my-2 mx-3 sm:mx-4 h-px"
+                              style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(200, 114, 89, 0.2) 50%, transparent 100%)' }}
+                            />
                           )}
 
                           <Link
                             href="/settings"
-                            className="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 hover:bg-cream-100 dark:hover:bg-dark-elevated transition-colors"
+                            className="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm transition-all duration-200"
+                            style={{ color: 'var(--color-text-secondary)' }}
                             onClick={() => setShowDropdown(false)}
                           >
-                            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-neutral-50 dark:bg-dark-elevated flex items-center justify-center group-hover:bg-forest-800/5 dark:group-hover:bg-primary-400/10 transition-colors flex-shrink-0">
-                              {/* Sliders/settings icon */}
+                            <div
+                              className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0 group-hover:scale-105"
+                              style={{
+                                background: 'rgba(200, 114, 89, 0.08)',
+                                border: '1px solid rgba(200, 114, 89, 0.1)',
+                              }}
+                            >
                               <svg
-                                className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-neutral-500 dark:text-neutral-400 group-hover:text-forest-800 dark:group-hover:text-primary-400"
+                                className="w-4 h-4 sm:w-[18px] sm:h-[18px]"
+                                style={{ color: '#C87259' }}
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="currentColor"
@@ -484,20 +557,27 @@ export default function Header() {
                                 />
                               </svg>
                             </div>
-                            <span className="group-hover:text-forest-800 dark:group-hover:text-primary-400 transition-colors truncate">
+                            <span className="group-hover:text-[#C87259] transition-colors truncate">
                               {t("nav.settings")}
                             </span>
                           </Link>
 
                           <Link
                             href="/notifications"
-                            className="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 hover:bg-cream-100 dark:hover:bg-dark-elevated transition-colors"
+                            className="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm transition-all duration-200"
+                            style={{ color: 'var(--color-text-secondary)' }}
                             onClick={() => setShowDropdown(false)}
                           >
-                            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-neutral-50 dark:bg-dark-elevated flex items-center justify-center group-hover:bg-forest-800/5 dark:group-hover:bg-primary-400/10 transition-colors flex-shrink-0">
-                              {/* Bell with badge icon */}
+                            <div
+                              className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0 group-hover:scale-105 relative"
+                              style={{
+                                background: 'rgba(200, 114, 89, 0.08)',
+                                border: '1px solid rgba(200, 114, 89, 0.1)',
+                              }}
+                            >
                               <svg
-                                className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-neutral-500 dark:text-neutral-400 group-hover:text-forest-800 dark:group-hover:text-primary-400"
+                                className="w-4 h-4 sm:w-[18px] sm:h-[18px]"
+                                style={{ color: '#C87259' }}
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="currentColor"
@@ -514,34 +594,54 @@ export default function Header() {
                                   strokeWidth={1.5}
                                   d="M13.73 21a2 2 0 01-3.46 0"
                                 />
-                                <circle
-                                  cx="18"
-                                  cy="5"
-                                  r="2.5"
-                                  fill="currentColor"
-                                  stroke="none"
-                                  className="text-primary-400"
-                                />
                               </svg>
+                              {/* Notification dot */}
+                              {unreadCount > 0 && (
+                                <div
+                                  className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full"
+                                  style={{ background: '#C87259', boxShadow: '0 0 0 2px rgba(255, 253, 250, 0.95)' }}
+                                />
+                              )}
                             </div>
-                            <span className="group-hover:text-forest-800 dark:group-hover:text-primary-400 transition-colors truncate">
+                            <span className="group-hover:text-[#C87259] transition-colors truncate">
                               {t("menu.notifications")}
                             </span>
+                            {unreadCount > 0 && (
+                              <span
+                                className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                                style={{
+                                  background: 'linear-gradient(135deg, #C87259 0%, #B86349 100%)',
+                                  color: 'white',
+                                }}
+                              >
+                                {unreadCount > 99 ? "99+" : unreadCount}
+                              </span>
+                            )}
                           </Link>
 
-                          <div className="border-t border-neutral-100 dark:border-dark-border my-1.5 sm:my-2 mx-3 sm:mx-4"></div>
+                          <div
+                            className="my-1.5 sm:my-2 mx-3 sm:mx-4 h-px"
+                            style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(200, 114, 89, 0.2) 50%, transparent 100%)' }}
+                          />
 
                           <button
                             onClick={() => {
                               setShowDropdown(false);
                               logout();
                             }}
-                            className="group flex items-center gap-2 sm:gap-3 w-full px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 hover:bg-terracotta-50 dark:hover:bg-terracotta-500/10 transition-colors"
+                            className="group flex items-center gap-2 sm:gap-3 w-full px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm transition-all duration-200"
+                            style={{ color: 'var(--color-text-secondary)' }}
                           >
-                            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-neutral-50 dark:bg-dark-elevated flex items-center justify-center group-hover:bg-terracotta-100 dark:group-hover:bg-terracotta-500/20 transition-colors flex-shrink-0">
-                              {/* Door exit icon */}
+                            <div
+                              className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0 group-hover:scale-105"
+                              style={{
+                                background: 'rgba(200, 114, 89, 0.08)',
+                                border: '1px solid rgba(200, 114, 89, 0.1)',
+                              }}
+                            >
                               <svg
-                                className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-neutral-500 dark:text-neutral-400 group-hover:text-terracotta-600 dark:group-hover:text-terracotta-400"
+                                className="w-4 h-4 sm:w-[18px] sm:h-[18px] transition-colors"
+                                style={{ color: '#C87259' }}
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="currentColor"
@@ -565,7 +665,7 @@ export default function Header() {
                                 />
                               </svg>
                             </div>
-                            <span className="group-hover:text-terracotta-600 dark:group-hover:text-terracotta-400 transition-colors truncate">
+                            <span className="group-hover:text-[#C87259] transition-colors truncate">
                               {t("nav.signOut")}
                             </span>
                           </button>
@@ -585,7 +685,7 @@ export default function Header() {
                 </button>
                 <Link
                   href="/register"
-                  className="bg-emerald-500/[0.06] border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-medium p-5 px-3 sm:px-4 py-2 rounded-full hover:bg-emerald-500/10 hover:border-emerald-500/50 transition-colors"
+                  className="bg-[#D2691E]/[0.06] border border-[#D2691E]/30 text-[#D2691E] dark:text-[#CD853F] font-medium px-3 sm:px-4 py-2 rounded-full hover:bg-[#D2691E]/10 hover:border-[#D2691E]/50 transition-colors"
                 >
                   <span className="relative z-10 tracking-wide">
                     {t("nav.signUp")}

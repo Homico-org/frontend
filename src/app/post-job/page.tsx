@@ -416,9 +416,9 @@ export default function PostJobPage() {
             {/* Hero Section */}
             <section className="mb-12">
               {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--color-accent-soft)] border border-[var(--color-accent)]/20 mb-6">
-                <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] animate-pulse" />
-                <span className="text-xs font-medium text-[var(--color-accent)] uppercase tracking-wider">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-terracotta-50 dark:bg-terracotta-500/10 border border-terracotta-200 dark:border-terracotta-500/20 mb-6">
+                <div className="w-1.5 h-1.5 rounded-full bg-terracotta-500 animate-pulse" />
+                <span className="text-xs font-medium text-terracotta-600 dark:text-terracotta-400 uppercase tracking-wider">
                   {locale === 'ka' ? 'ახალი პროექტი' : 'New Project'}
                 </span>
               </div>
@@ -427,15 +427,15 @@ export default function PostJobPage() {
               <h1 className="text-3xl md:text-5xl font-bold text-[var(--color-text-primary)] leading-[1.1] tracking-tight mb-4">
                 {isEditMode ? (
                   locale === 'ka' ? (
-                    <>პროექტის <span className="text-[var(--color-accent)]">რედაქტირება</span></>
+                    <>პროექტის <span className="text-terracotta-500">რედაქტირება</span></>
                   ) : (
-                    <>Edit Your <span className="text-[var(--color-accent)]">Project</span></>
+                    <>Edit Your <span className="text-terracotta-500">Project</span></>
                   )
                 ) : (
                   locale === 'ka' ? (
-                    <>აღწერე შენი <span className="text-[var(--color-accent)]">პროექტი</span></>
+                    <>აღწერე შენი <span className="text-terracotta-500">პროექტი</span></>
                   ) : (
-                    <>Describe Your <span className="text-[var(--color-accent)]">Project</span></>
+                    <>Describe Your <span className="text-terracotta-500">Project</span></>
                   )
                 )}
               </h1>
@@ -455,8 +455,8 @@ export default function PostJobPage() {
                 <div className="flex items-center gap-3 mb-6">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${
                     validation.category && validation.specialty
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-[var(--color-accent)] text-white'
+                      ? 'bg-terracotta-500 text-white'
+                      : 'bg-terracotta-500 text-white'
                   }`}>
                     {validation.category && validation.specialty ? (
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -498,9 +498,9 @@ export default function PostJobPage() {
                 <div className="flex items-center gap-3 mb-6">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${
                     validation.title && validation.description && validation.propertyType
-                      ? 'bg-emerald-500 text-white'
+                      ? 'bg-terracotta-500 text-white'
                       : totalSpecialties > 0
-                        ? 'bg-[var(--color-accent)] text-white'
+                        ? 'bg-terracotta-400 text-white'
                         : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)]'
                   }`}>
                     {validation.title && validation.description && validation.propertyType ? (
@@ -532,14 +532,14 @@ export default function PostJobPage() {
                     <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                       <span>{locale === 'ka' ? 'პროექტის სათაური' : 'Project Title'}</span>
                       {validation.title ? (
-                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500">
+                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-terracotta-500">
                           <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         </span>
                       ) : (
-                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/30">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-terracotta-500/20 border border-terracotta-500/30">
+                          <span className="w-1.5 h-1.5 rounded-full bg-terracotta-500" />
                         </span>
                       )}
                     </label>
@@ -550,8 +550,8 @@ export default function PostJobPage() {
                       placeholder={locale === 'ka' ? 'მაგ: 2 ოთახიანი ბინის რემონტი' : 'e.g. 2-bedroom apartment renovation'}
                       className={`w-full px-4 py-3 bg-[var(--color-bg-primary)] border rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 transition-all ${
                         validation.title
-                          ? 'border-emerald-500/30 focus:border-emerald-500 focus:ring-emerald-500/20'
-                          : 'border-[var(--color-border-subtle)] focus:border-[var(--color-accent)] focus:ring-[var(--color-accent-soft)]'
+                          ? 'border-terracotta-500/30 focus:border-terracotta-500 focus:ring-terracotta-500/20'
+                          : 'border-[var(--color-border-subtle)] focus:border-terracotta-500 focus:ring-terracotta-500/20'
                       }`}
                     />
                   </div>
@@ -561,14 +561,14 @@ export default function PostJobPage() {
                     <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                       <span>{locale === 'ka' ? 'აღწერა' : 'Description'}</span>
                       {validation.description ? (
-                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500">
+                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-terracotta-500">
                           <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         </span>
                       ) : (
-                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/30">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-terracotta-500/20 border border-terracotta-500/30">
+                          <span className="w-1.5 h-1.5 rounded-full bg-terracotta-500" />
                         </span>
                       )}
                     </label>
@@ -579,8 +579,8 @@ export default function PostJobPage() {
                       placeholder={locale === 'ka' ? 'დეტალურად აღწერე რა გინდა გაკეთდეს...' : 'Describe what you need in detail...'}
                       className={`w-full px-4 py-3 bg-[var(--color-bg-primary)] border rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 transition-all resize-none ${
                         validation.description
-                          ? 'border-emerald-500/30 focus:border-emerald-500 focus:ring-emerald-500/20'
-                          : 'border-[var(--color-border-subtle)] focus:border-[var(--color-accent)] focus:ring-[var(--color-accent-soft)]'
+                          ? 'border-terracotta-500/30 focus:border-terracotta-500 focus:ring-terracotta-500/20'
+                          : 'border-[var(--color-border-subtle)] focus:border-terracotta-500 focus:ring-terracotta-500/20'
                       }`}
                     />
                   </div>
@@ -590,14 +590,14 @@ export default function PostJobPage() {
                     <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] mb-3">
                       <span>{locale === 'ka' ? 'ობიექტის ტიპი' : 'Property Type'}</span>
                       {validation.propertyType ? (
-                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500">
+                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-terracotta-500">
                           <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         </span>
                       ) : (
-                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/30">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-terracotta-500/20 border border-terracotta-500/30">
+                          <span className="w-1.5 h-1.5 rounded-full bg-terracotta-500" />
                         </span>
                       )}
                     </label>
@@ -612,21 +612,21 @@ export default function PostJobPage() {
                           }}
                           className={`flex flex-col items-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-xl border-2 transition-all duration-200 ${
                             formData.propertyType === type.value
-                              ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)]/50'
-                              : 'border-[var(--color-border-subtle)] hover:border-[var(--color-border)] bg-[var(--color-bg-primary)]'
+                              ? 'border-terracotta-500 bg-terracotta-50 dark:bg-terracotta-500/10'
+                              : 'border-[var(--color-border-subtle)] hover:border-terracotta-300 bg-[var(--color-bg-primary)]'
                           }`}
                         >
                           <PropertyIcon
                             type={type.icon}
                             className={`w-5 h-5 sm:w-6 sm:h-6 transition-colors ${
                               formData.propertyType === type.value
-                                ? 'text-[var(--color-accent)]'
+                                ? 'text-terracotta-500'
                                 : 'text-[var(--color-text-tertiary)]'
                             }`}
                           />
                           <span className={`text-[10px] sm:text-xs font-medium text-center transition-colors ${
                             formData.propertyType === type.value
-                              ? 'text-[var(--color-accent)]'
+                              ? 'text-terracotta-600 dark:text-terracotta-400'
                               : 'text-[var(--color-text-secondary)]'
                           }`}>
                             {locale === 'ka' ? type.labelKa : type.label}
@@ -705,9 +705,9 @@ export default function PostJobPage() {
                 <div className="flex items-center gap-3 mb-6">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${
                     validation.budget
-                      ? 'bg-emerald-500 text-white'
+                      ? 'bg-terracotta-500 text-white'
                       : validation.title && validation.description && validation.propertyType
-                        ? 'bg-[var(--color-accent)] text-white'
+                        ? 'bg-terracotta-400 text-white'
                         : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)]'
                   }`}>
                     {validation.budget ? (
@@ -743,21 +743,21 @@ export default function PostJobPage() {
                         onClick={() => updateFormData('budgetType', type.value)}
                         className={`flex flex-col items-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-xl border-2 transition-all duration-200 ${
                           formData.budgetType === type.value
-                            ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)]/50'
-                            : 'border-[var(--color-border-subtle)] hover:border-[var(--color-border)] bg-[var(--color-bg-primary)]'
+                            ? 'border-terracotta-500 bg-terracotta-50 dark:bg-terracotta-500/10'
+                            : 'border-[var(--color-border-subtle)] hover:border-terracotta-300 bg-[var(--color-bg-primary)]'
                         }`}
                       >
                         <BudgetIcon
                           type={type.icon}
                           className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${
                             formData.budgetType === type.value
-                              ? 'text-[var(--color-accent)]'
+                              ? 'text-terracotta-500'
                               : 'text-[var(--color-text-tertiary)]'
                           }`}
                         />
                         <span className={`text-[10px] sm:text-xs font-medium text-center transition-colors ${
                           formData.budgetType === type.value
-                            ? 'text-[var(--color-accent)]'
+                            ? 'text-terracotta-600 dark:text-terracotta-400'
                             : 'text-[var(--color-text-secondary)]'
                         }`}>
                           {locale === 'ka' ? type.labelKa : type.label}
@@ -835,8 +835,8 @@ export default function PostJobPage() {
                   )}
 
                   {formData.budgetType === 'negotiable' && (
-                    <div className="p-4 rounded-xl bg-[var(--color-accent-soft)]/50 border border-[var(--color-accent)]/20 text-center">
-                      <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-[var(--color-accent)] flex items-center justify-center">
+                    <div className="p-4 rounded-xl bg-terracotta-50 dark:bg-terracotta-500/10 border border-terracotta-200 dark:border-terracotta-500/20 text-center">
+                      <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-terracotta-500 flex items-center justify-center">
                         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
@@ -965,7 +965,7 @@ export default function PostJobPage() {
                         type="button"
                         onClick={addReference}
                         disabled={!newReferenceUrl.trim()}
-                        className="px-4 py-3 bg-[var(--color-accent)] text-white rounded-xl font-medium transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-[var(--color-accent)]/25"
+                        className="px-4 py-3 bg-terracotta-500 text-white rounded-xl font-medium transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-terracotta-600 hover:shadow-lg hover:shadow-terracotta-500/25"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -1005,14 +1005,14 @@ export default function PostJobPage() {
               {/* Notify All Professionals */}
               <section className="mb-6">
                 <label
-                  className="flex items-start gap-4 p-4 rounded-2xl bg-gradient-to-r from-[var(--color-accent-soft)]/50 to-[var(--color-highlight-soft)]/30 border border-[var(--color-accent)]/20 cursor-pointer group hover:border-[var(--color-accent)]/40 transition-all duration-300"
+                  className="flex items-start gap-4 p-4 rounded-2xl bg-terracotta-50 dark:bg-terracotta-500/10 border border-terracotta-200 dark:border-terracotta-500/20 cursor-pointer group hover:border-terracotta-400 dark:hover:border-terracotta-500/40 transition-all duration-300"
                   onClick={() => setNotifyAllPros(!notifyAllPros)}
                 >
                   <div className="relative flex-shrink-0 mt-0.5">
                     <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-200 ${
                       notifyAllPros
-                        ? 'bg-[var(--color-accent)] border-[var(--color-accent)]'
-                        : 'border-[var(--color-border)] bg-[var(--color-bg-primary)] group-hover:border-[var(--color-accent)]'
+                        ? 'bg-terracotta-500 border-terracotta-500'
+                        : 'border-[var(--color-border)] bg-[var(--color-bg-primary)] group-hover:border-terracotta-500'
                     }`}>
                       {notifyAllPros && (
                         <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1023,13 +1023,13 @@ export default function PostJobPage() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <svg className="w-5 h-5 text-[var(--color-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-terracotta-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                       </svg>
                       <span className="font-semibold text-[var(--color-text-primary)]">
                         {locale === 'ka' ? 'მიიღეთ მეტი შეთავაზება' : 'Get More Proposals'}
                       </span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[var(--color-accent)] text-white">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-terracotta-500 text-white">
                         {locale === 'ka' ? 'რეკომენდებული' : 'Recommended'}
                       </span>
                     </div>
@@ -1079,7 +1079,7 @@ export default function PostJobPage() {
                       cy="16"
                       r="12"
                       fill="none"
-                      stroke="#10b981"
+                      stroke="#C96D4D"
                       strokeWidth="3"
                       strokeLinecap="round"
                       strokeDasharray={`${(completedFields / totalFields) * 75.4} 75.4`}
@@ -1089,7 +1089,7 @@ export default function PostJobPage() {
                     {completedFields}/{totalFields}
                   </span>
                 </div>
-                <span className="text-xs text-amber-600 dark:text-amber-400 font-medium hidden sm:block">
+                <span className="text-xs text-terracotta-600 dark:text-terracotta-400 font-medium hidden sm:block">
                   {getFirstMissingField()?.label}
                 </span>
               </div>
@@ -1105,7 +1105,7 @@ export default function PostJobPage() {
               disabled={isSubmitting || !canSubmit()}
               className={`flex-1 py-3 px-5 rounded-xl font-medium text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
                 canSubmit()
-                  ? 'bg-[var(--color-accent)] text-white hover:shadow-[0_4px_20px_rgba(13,150,104,0.3)]'
+                  ? 'bg-terracotta-500 text-white hover:bg-terracotta-600 hover:shadow-[0_4px_20px_rgba(201,109,77,0.3)]'
                   : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] cursor-not-allowed'
               }`}
             >

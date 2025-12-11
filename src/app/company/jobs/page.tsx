@@ -182,9 +182,9 @@ export default function CompanyJobsPage() {
           </button>
           <button
             onClick={() => setFilter({ ...filter, status: 'completed' })}
-            className={`bg-white dark:bg-dark-card rounded-xl border p-4 text-left transition-all duration-200 ease-out ${filter.status === 'completed' ? 'border-green-500 ring-2 ring-green-100' : 'border-neutral-200 dark:border-dark-border hover:border-neutral-300'}`}
+            className={`bg-white dark:bg-dark-card rounded-xl border p-4 text-left transition-all duration-200 ease-out ${filter.status === 'completed' ? 'border-[#D2691E] ring-2 ring-[#D2691E]/10' : 'border-neutral-200 dark:border-dark-border hover:border-neutral-300'}`}
           >
-            <div className="text-2xl font-bold text-green-600">{jobs.filter(j => j.status === 'completed').length}</div>
+            <div className="text-2xl font-bold text-[#D2691E]">{jobs.filter(j => j.status === 'completed').length}</div>
             <div className="text-sm text-neutral-500 dark:text-neutral-400">Completed</div>
           </button>
         </div>

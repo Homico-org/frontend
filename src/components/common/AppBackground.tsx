@@ -43,7 +43,7 @@ export default function AppBackground() {
         }}
       />
 
-      {/* Large Sage Gradient Orb - Top Right */}
+      {/* Terracotta Gradient Orb - Top Right */}
       <div
         className="absolute rounded-full animate-pulse"
         style={{
@@ -51,7 +51,7 @@ export default function AppBackground() {
           right: '-100px',
           width: '600px',
           height: '600px',
-          background: 'radial-gradient(circle, rgba(61, 153, 112, 0.15) 0%, rgba(61, 153, 112, 0.05) 40%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(210, 105, 30, 0.12) 0%, rgba(210, 105, 30, 0.04) 40%, transparent 70%)',
           filter: 'blur(40px)',
         }}
       />
@@ -64,7 +64,7 @@ export default function AppBackground() {
           left: '-150px',
           width: '500px',
           height: '500px',
-          background: 'radial-gradient(circle, rgba(196, 93, 62, 0.12) 0%, rgba(196, 93, 62, 0.04) 40%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(205, 133, 63, 0.10) 0%, rgba(205, 133, 63, 0.03) 40%, transparent 70%)',
           filter: 'blur(30px)',
           animation: 'float 20s ease-in-out infinite',
         }}
@@ -79,7 +79,7 @@ export default function AppBackground() {
           transform: 'translate(-50%, -50%)',
           width: '400px',
           height: '400px',
-          background: 'radial-gradient(circle, rgba(61, 153, 112, 0.08) 0%, transparent 60%)',
+          background: 'radial-gradient(circle, rgba(210, 105, 30, 0.06) 0%, transparent 60%)',
           filter: 'blur(50px)',
         }}
       />
@@ -94,7 +94,7 @@ export default function AppBackground() {
             left: '15%',
             width: '80px',
             height: '80px',
-            border: '2px solid rgba(61, 153, 112, 0.15)',
+            border: '2px solid rgba(210, 105, 30, 0.12)',
             borderRadius: '8px',
             animation: 'floatRotate 30s ease-in-out infinite',
           }}
@@ -108,7 +108,7 @@ export default function AppBackground() {
             right: '12%',
             width: '100px',
             height: '100px',
-            border: '2px solid rgba(196, 93, 62, 0.12)',
+            border: '2px solid rgba(205, 133, 63, 0.10)',
             borderRadius: '50%',
             animation: 'floatRotate 25s ease-in-out infinite reverse',
           }}
@@ -122,7 +122,7 @@ export default function AppBackground() {
             right: '30%',
             width: '12px',
             height: '12px',
-            background: 'rgba(61, 153, 112, 0.25)',
+            background: 'rgba(210, 105, 30, 0.20)',
             animation: 'float 15s ease-in-out infinite',
           }}
         />
@@ -135,7 +135,7 @@ export default function AppBackground() {
             left: '25%',
             width: '8px',
             height: '8px',
-            background: 'rgba(196, 93, 62, 0.2)',
+            background: 'rgba(205, 133, 63, 0.15)',
             animation: 'float 18s ease-in-out infinite reverse',
           }}
         />
@@ -148,7 +148,7 @@ export default function AppBackground() {
             right: '25%',
             width: '50px',
             height: '50px',
-            border: '2px solid rgba(61, 153, 112, 0.12)',
+            border: '2px solid rgba(210, 105, 30, 0.10)',
             transform: 'rotate(45deg)',
             animation: 'floatDiamond 22s ease-in-out infinite',
           }}
@@ -162,7 +162,7 @@ export default function AppBackground() {
             left: '40%',
             width: '30px',
             height: '30px',
-            border: '1.5px solid rgba(196, 93, 62, 0.1)',
+            border: '1.5px solid rgba(205, 133, 63, 0.08)',
             transform: 'rotate(45deg)',
             animation: 'floatDiamond 28s ease-in-out infinite reverse',
           }}
@@ -176,7 +176,7 @@ export default function AppBackground() {
             left: '10%',
             right: '10%',
             height: '1px',
-            background: 'linear-gradient(90deg, transparent 0%, rgba(61, 153, 112, 0.1) 30%, rgba(61, 153, 112, 0.1) 70%, transparent 100%)',
+            background: 'linear-gradient(90deg, transparent 0%, rgba(210, 105, 30, 0.08) 30%, rgba(210, 105, 30, 0.08) 70%, transparent 100%)',
           }}
         />
 
@@ -188,7 +188,7 @@ export default function AppBackground() {
             left: '15%',
             right: '15%',
             height: '1px',
-            background: 'linear-gradient(90deg, transparent 0%, rgba(196, 93, 62, 0.08) 30%, rgba(196, 93, 62, 0.08) 70%, transparent 100%)',
+            background: 'linear-gradient(90deg, transparent 0%, rgba(205, 133, 63, 0.06) 30%, rgba(205, 133, 63, 0.06) 70%, transparent 100%)',
           }}
         />
 
@@ -200,7 +200,7 @@ export default function AppBackground() {
             left: '8%',
             width: '24px',
             height: '2px',
-            background: 'rgba(61, 153, 112, 0.15)',
+            background: 'rgba(210, 105, 30, 0.12)',
             animation: 'float 20s ease-in-out infinite',
           }}
         >
@@ -211,7 +211,7 @@ export default function AppBackground() {
               left: '11px',
               width: '2px',
               height: '24px',
-              background: 'rgba(61, 153, 112, 0.15)',
+              background: 'rgba(210, 105, 30, 0.12)',
             }}
           />
         </div>
@@ -224,7 +224,7 @@ export default function AppBackground() {
             right: '10%',
             width: '20px',
             height: '2px',
-            background: 'rgba(196, 93, 62, 0.12)',
+            background: 'rgba(205, 133, 63, 0.10)',
             animation: 'float 25s ease-in-out infinite reverse',
           }}
         >
@@ -235,27 +235,27 @@ export default function AppBackground() {
               left: '9px',
               width: '2px',
               height: '20px',
-              background: 'rgba(196, 93, 62, 0.12)',
+              background: 'rgba(205, 133, 63, 0.10)',
             }}
           />
         </div>
 
         {/* Corner brackets - architectural detail */}
         <div className="absolute top-6 left-6 w-16 h-16">
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[rgba(61,153,112,0.2)] to-transparent" />
-          <div className="absolute top-0 left-0 w-[2px] h-full bg-gradient-to-b from-[rgba(61,153,112,0.2)] to-transparent" />
+          <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[rgba(210,105,30,0.15)] to-transparent" />
+          <div className="absolute top-0 left-0 w-[2px] h-full bg-gradient-to-b from-[rgba(210,105,30,0.15)] to-transparent" />
         </div>
         <div className="absolute top-6 right-6 w-16 h-16">
-          <div className="absolute top-0 right-0 w-full h-[2px] bg-gradient-to-l from-[rgba(61,153,112,0.2)] to-transparent" />
-          <div className="absolute top-0 right-0 w-[2px] h-full bg-gradient-to-b from-[rgba(61,153,112,0.2)] to-transparent" />
+          <div className="absolute top-0 right-0 w-full h-[2px] bg-gradient-to-l from-[rgba(210,105,30,0.15)] to-transparent" />
+          <div className="absolute top-0 right-0 w-[2px] h-full bg-gradient-to-b from-[rgba(210,105,30,0.15)] to-transparent" />
         </div>
         <div className="absolute bottom-6 left-6 w-16 h-16">
-          <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-[rgba(196,93,62,0.15)] to-transparent" />
-          <div className="absolute bottom-0 left-0 w-[2px] h-full bg-gradient-to-t from-[rgba(196,93,62,0.15)] to-transparent" />
+          <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-[rgba(205,133,63,0.12)] to-transparent" />
+          <div className="absolute bottom-0 left-0 w-[2px] h-full bg-gradient-to-t from-[rgba(205,133,63,0.12)] to-transparent" />
         </div>
         <div className="absolute bottom-6 right-6 w-16 h-16">
-          <div className="absolute bottom-0 right-0 w-full h-[2px] bg-gradient-to-l from-[rgba(196,93,62,0.15)] to-transparent" />
-          <div className="absolute bottom-0 right-0 w-[2px] h-full bg-gradient-to-t from-[rgba(196,93,62,0.15)] to-transparent" />
+          <div className="absolute bottom-0 right-0 w-full h-[2px] bg-gradient-to-l from-[rgba(205,133,63,0.12)] to-transparent" />
+          <div className="absolute bottom-0 right-0 w-[2px] h-full bg-gradient-to-t from-[rgba(205,133,63,0.12)] to-transparent" />
         </div>
 
         {/* Large decorative ring */}
@@ -266,7 +266,7 @@ export default function AppBackground() {
             right: '-100px',
             width: '300px',
             height: '300px',
-            border: '1px solid rgba(61, 153, 112, 0.06)',
+            border: '1px solid rgba(210, 105, 30, 0.05)',
             borderRadius: '50%',
             animation: 'spinSlow 60s linear infinite',
           }}

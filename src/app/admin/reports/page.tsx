@@ -31,7 +31,7 @@ export default function AdminReportsPage() {
   const stats = [
     { label: t('admin.reportsPage.totalReports'), value: '0', icon: Flag, color: 'bg-blue-500' },
     { label: t('admin.pending'), value: '0', icon: Clock, color: 'bg-yellow-500' },
-    { label: t('admin.resolved'), value: '0', icon: CheckCircle, color: 'bg-green-500' },
+    { label: t('admin.resolved'), value: '0', icon: CheckCircle, color: 'bg-[#D2691E]' },
     { label: t('admin.reportsPage.urgent'), value: '0', icon: AlertTriangle, color: 'bg-red-500' },
   ];
 

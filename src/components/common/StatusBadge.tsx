@@ -12,9 +12,9 @@ interface StatusBadgeProps {
 
 const statusConfig = {
   active: {
-    color: 'bg-emerald-500',
-    ring: 'ring-emerald-400/30',
-    glow: 'shadow-emerald-500/40',
+    color: 'bg-[#D2691E]',
+    ring: 'ring-[#D2691E]/30',
+    glow: 'shadow-[#D2691E]/40',
     labelKa: 'აქტიური',
     labelEn: 'Active',
   },
@@ -90,7 +90,7 @@ export default function StatusBadge({
         <span
           className={`
             ${textSize} font-semibold
-            ${status === 'active' ? 'text-emerald-700 dark:text-emerald-400' : ''}
+            ${status === 'active' ? 'text-[#D2691E] dark:text-[#CD853F]' : ''}
             ${status === 'busy' ? 'text-amber-700 dark:text-amber-400' : ''}
             ${status === 'away' ? 'text-zinc-500 dark:text-zinc-400' : ''}
           `}

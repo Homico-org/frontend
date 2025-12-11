@@ -240,7 +240,7 @@ export default function ProProfileSetupPage() {
         description: formData.bio,
         categories: [selectedCategory || 'interior-design'],
         yearsExperience: parseInt(formData.yearsExperience) || 0,
-        avatar: formData.avatar,
+        avatar: formData.avatar || user?.avatar,
         pricingModel,
         basePrice: parseFloat(formData.basePrice) || undefined,
         serviceAreas: formData.nationwide && locationData ? [locationData.nationwide] : formData.serviceAreas,
@@ -362,7 +362,7 @@ export default function ProProfileSetupPage() {
                 <div className="flex items-center gap-3 mb-6">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${
                     validation.bio && validation.experience
-                      ? 'bg-emerald-500 text-white'
+                      ? 'bg-[#D2691E] text-white'
                       : 'bg-[var(--color-accent)] text-white'
                   }`}>
                     {validation.bio && validation.experience ? (
@@ -389,51 +389,68 @@ export default function ProProfileSetupPage() {
                 </div>
 
                 <div className="p-5 rounded-2xl bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] space-y-5">
-                  {/* Avatar */}
-                  <div className="flex items-center gap-4">
-                    <div className="relative">
-                      {avatarPreview ? (
-                        <img src={avatarPreview} alt="" className="w-20 h-20 rounded-2xl object-cover border-2 border-[var(--color-border)]" />
-                      ) : (
-                        <div className="w-20 h-20 rounded-2xl bg-[var(--color-bg-tertiary)] border-2 border-dashed border-[var(--color-border)] flex items-center justify-center">
-                          <svg className="w-8 h-8 text-[var(--color-text-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  {/* Avatar - only show upload section if no avatar from registration */}
+                  {!user?.avatar ? (
+                    <div className="flex items-center gap-4">
+                      <div className="relative">
+                        {avatarPreview ? (
+                          <img src={avatarPreview} alt="" className="w-20 h-20 rounded-2xl object-cover border-2 border-[var(--color-border)]" />
+                        ) : (
+                          <div className="w-20 h-20 rounded-2xl bg-[var(--color-bg-tertiary)] border-2 border-dashed border-[var(--color-border)] flex items-center justify-center">
+                            <svg className="w-8 h-8 text-[var(--color-text-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => avatarInputRef.current?.click()}
+                          className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-[var(--color-accent)] text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                           </svg>
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => avatarInputRef.current?.click()}
-                        className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-[var(--color-accent)] text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                      </button>
-                      <input
-                        ref={avatarInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleAvatarChange}
-                        className="hidden"
-                      />
+                        </button>
+                        <input
+                          ref={avatarInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleAvatarChange}
+                          className="hidden"
+                        />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-[var(--color-text-primary)]">
+                          {locale === 'ka' ? 'პროფილის სურათი' : 'Profile Photo'}
+                        </p>
+                        <p className="text-xs text-[var(--color-text-tertiary)]">
+                          {locale === 'ka' ? 'PNG, JPG მაქს. 2MB' : 'PNG, JPG up to 2MB'}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                        {locale === 'ka' ? 'პროფილის სურათი' : 'Profile Photo'}
-                      </p>
-                      <p className="text-xs text-[var(--color-text-tertiary)]">
-                        {locale === 'ka' ? 'PNG, JPG მაქს. 2MB' : 'PNG, JPG up to 2MB'}
-                      </p>
+                  ) : (
+                    <div className="flex items-center gap-4">
+                      <img src={user.avatar} alt="" className="w-20 h-20 rounded-2xl object-cover border-2 border-[#D2691E]/20" />
+                      <div>
+                        <p className="text-sm font-medium text-[var(--color-text-primary)]">
+                          {locale === 'ka' ? 'პროფილის სურათი' : 'Profile Photo'}
+                        </p>
+                        <p className="text-xs text-[#D2691E]/70 flex items-center gap-1">
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          {locale === 'ka' ? 'ატვირთულია რეგისტრაციისას' : 'Uploaded during registration'}
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Years Experience */}
                   <div>
                     <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                       <span>{locale === 'ka' ? 'გამოცდილება (წელი)' : 'Years of Experience'}</span>
                       {validation.experience ? (
-                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500">
+                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#D2691E]">
                           <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
@@ -452,7 +469,7 @@ export default function ProProfileSetupPage() {
                       onChange={(e) => setFormData(prev => ({ ...prev, yearsExperience: e.target.value }))}
                       className={`w-full px-4 py-3 bg-[var(--color-bg-primary)] border rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:ring-2 transition-all ${
                         validation.experience
-                          ? 'border-emerald-500/30 focus:border-emerald-500 focus:ring-emerald-500/20'
+                          ? 'border-[#D2691E]/30 focus:border-[#D2691E] focus:ring-[#D2691E]/20'
                           : 'border-[var(--color-border-subtle)] focus:border-[var(--color-accent)] focus:ring-[var(--color-accent-soft)]'
                       }`}
                       placeholder="0"
@@ -464,7 +481,7 @@ export default function ProProfileSetupPage() {
                     <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                       <span>{locale === 'ka' ? 'შენს შესახებ' : 'About You'}</span>
                       {validation.bio ? (
-                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500">
+                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#D2691E]">
                           <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
@@ -481,7 +498,7 @@ export default function ProProfileSetupPage() {
                       onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
                       className={`w-full px-4 py-3 bg-[var(--color-bg-primary)] border rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 transition-all resize-none ${
                         validation.bio
-                          ? 'border-emerald-500/30 focus:border-emerald-500 focus:ring-emerald-500/20'
+                          ? 'border-[#D2691E]/30 focus:border-[#D2691E] focus:ring-[#D2691E]/20'
                           : 'border-[var(--color-border-subtle)] focus:border-[var(--color-accent)] focus:ring-[var(--color-accent-soft)]'
                       }`}
                       placeholder={locale === 'ka' ? 'მოკლედ აღწერე შენი გამოცდილება და უნარები...' : 'Briefly describe your experience and skills...'}
@@ -496,7 +513,7 @@ export default function ProProfileSetupPage() {
                   <div className="flex items-center gap-3 mb-6">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${
                       validation.designStyles
-                        ? 'bg-emerald-500 text-white'
+                        ? 'bg-[#D2691E] text-white'
                         : 'bg-[var(--color-accent)] text-white'
                     }`}>
                       {validation.designStyles ? (
@@ -643,7 +660,7 @@ export default function ProProfileSetupPage() {
                 <div className="flex items-center gap-3 mb-6">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${
                     validation.pricing
-                      ? 'bg-emerald-500 text-white'
+                      ? 'bg-[#D2691E] text-white'
                       : validation.bio && validation.experience && validation.designStyles
                         ? 'bg-[var(--color-accent)] text-white'
                         : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)]'
@@ -683,7 +700,7 @@ export default function ProProfileSetupPage() {
                         }
                       </span>
                       {validation.pricing ? (
-                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500">
+                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#D2691E]">
                           <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
@@ -701,7 +718,7 @@ export default function ProProfileSetupPage() {
                         onChange={(e) => setFormData(prev => ({ ...prev, basePrice: e.target.value }))}
                         className={`w-full px-4 py-3 bg-[var(--color-bg-primary)] border rounded-xl text-[var(--color-text-primary)] text-lg font-medium pr-16 focus:outline-none focus:ring-2 transition-all ${
                           validation.pricing
-                            ? 'border-emerald-500/30 focus:border-emerald-500 focus:ring-emerald-500/20'
+                            ? 'border-[#D2691E]/30 focus:border-[#D2691E] focus:ring-[#D2691E]/20'
                             : 'border-[var(--color-border-subtle)] focus:border-[var(--color-accent)] focus:ring-[var(--color-accent-soft)]'
                         }`}
                         placeholder={selectedCategory === 'interior-design' ? '50' : '500'}
@@ -760,7 +777,7 @@ export default function ProProfileSetupPage() {
                 <div className="flex items-center gap-3 mb-6">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${
                     validation.serviceAreas
-                      ? 'bg-emerald-500 text-white'
+                      ? 'bg-[#D2691E] text-white'
                       : validation.pricing
                         ? 'bg-[var(--color-accent)] text-white'
                         : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)]'
@@ -903,7 +920,7 @@ export default function ProProfileSetupPage() {
                       cy="16"
                       r="12"
                       fill="none"
-                      stroke="#10b981"
+                      stroke="#D2691E"
                       strokeWidth="3"
                       strokeLinecap="round"
                       strokeDasharray={`${(completedFields / totalFields) * 75.4} 75.4`}

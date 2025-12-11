@@ -30,7 +30,7 @@ export default function AdminJobsPage() {
   const stats = [
     { label: t('admin.totalJobs'), value: '0', icon: Briefcase, color: 'bg-blue-500' },
     { label: t('admin.jobsPage.pendingReview'), value: '0', icon: Clock, color: 'bg-yellow-500' },
-    { label: t('admin.jobsPage.approved'), value: '0', icon: CheckCircle, color: 'bg-green-500' },
+    { label: t('admin.jobsPage.approved'), value: '0', icon: CheckCircle, color: 'bg-[#D2691E]' },
     { label: t('admin.jobsPage.flagged'), value: '0', icon: AlertTriangle, color: 'bg-red-500' },
   ];
 

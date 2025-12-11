@@ -493,7 +493,7 @@ export default function SimilarProfessionals({ currentProId, categories, subcate
                     {/* Jobs Done */}
                     <div className="flex flex-col items-center text-center">
                       <div className="flex items-center gap-1">
-                        <svg className="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-3.5 h-3.5 text-[#D2691E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>

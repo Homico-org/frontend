@@ -201,12 +201,21 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
       {[...Array(6)].map((_, i) => (
         <div
           key={i}
-          className="bg-[var(--color-bg-secondary)] rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--color-border-subtle)] animate-pulse"
+          className="rounded-xl sm:rounded-2xl overflow-hidden border border-[#D2691E]/10 bg-[#D2691E]/[0.02] shadow-sm animate-pulse"
         >
-          <div className="aspect-[4/3] bg-[var(--color-bg-tertiary)]" />
-          <div className="p-2.5 sm:p-4 space-y-2 sm:space-y-3">
-            <div className="h-4 sm:h-5 bg-[var(--color-bg-tertiary)] rounded w-3/4" />
-            <div className="h-3 sm:h-4 bg-[var(--color-bg-tertiary)] rounded w-full" />
+          {/* Image skeleton */}
+          <div className="aspect-[4/3] bg-gradient-to-br from-[#D2691E]/5 to-[#CD853F]/10 relative">
+            {/* Like button skeleton */}
+            <div className="absolute top-2 right-2 w-8 h-8 rounded-full bg-[#D2691E]/10" />
+          </div>
+          {/* Footer skeleton */}
+          <div className="p-2 sm:p-3 flex items-center gap-2 sm:gap-3">
+            {/* Avatar skeleton */}
+            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[#D2691E]/10" />
+            <div className="flex-1">
+              <div className="h-3 sm:h-4 bg-[#D2691E]/10 rounded w-3/4 mb-1" />
+              <div className="h-2 sm:h-3 bg-[#D2691E]/5 rounded w-1/2" />
+            </div>
           </div>
         </div>
       ))}
@@ -283,7 +292,7 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
           <div ref={loaderRef} className="flex justify-center py-8">
             {isLoadingMore && (
               <div className="flex items-center gap-3">
-                <div className="w-5 h-5 border-2 border-[var(--color-accent)] border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-[#D2691E] border-t-transparent rounded-full animate-spin" />
                 <span className="text-sm text-[var(--color-text-secondary)]">
                   {locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
                 </span>
