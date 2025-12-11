@@ -1,13 +1,7 @@
 import ClientLayout from '@/components/common/ClientLayout';
 import EnvBadge from '@/components/common/EnvBadge';
 import ToastContainer from '@/components/common/Toast';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { AuthModalProvider } from '@/contexts/AuthModalContext';
-import { LanguageProvider } from '@/contexts/LanguageContext';
-import { ThemeProvider } from '@/contexts/ThemeContext';
-import { ToastProvider } from '@/contexts/ToastContext';
-import { ViewModeProvider } from '@/contexts/ViewModeContext';
-import { NotificationProvider } from '@/contexts/NotificationContext';
+import Providers from '@/components/common/Providers';
 import '@/styles/globals.css';
 import type { Metadata } from 'next';
 
@@ -49,23 +43,11 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <ThemeProvider>
-          <LanguageProvider>
-            <AuthProvider>
-              <AuthModalProvider>
-                <ViewModeProvider>
-                  <NotificationProvider>
-                    <ToastProvider>
-                      <ClientLayout>{children}</ClientLayout>
-                      <ToastContainer />
-                      <EnvBadge />
-                    </ToastProvider>
-                  </NotificationProvider>
-                </ViewModeProvider>
-              </AuthModalProvider>
-            </AuthProvider>
-          </LanguageProvider>
-        </ThemeProvider>
+        <Providers>
+          <ClientLayout>{children}</ClientLayout>
+          <ToastContainer />
+          <EnvBadge />
+        </Providers>
       </body>
     </html>
   );
