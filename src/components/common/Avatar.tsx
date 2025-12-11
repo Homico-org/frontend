@@ -10,6 +10,7 @@ interface AvatarProps {
   onClick?: () => void;
   showBorder?: boolean;
   rounded?: 'full' | 'xl' | 'lg' | 'md';
+  style?: React.CSSProperties;
 }
 
 const sizeClasses = {
@@ -36,6 +37,7 @@ export default function Avatar({
   onClick,
   showBorder = false,
   rounded = 'full',
+  style,
 }: AvatarProps) {
   const [imageError, setImageError] = useState(false);
 
@@ -80,6 +82,7 @@ export default function Avatar({
         onClick={handleClick}
         onError={() => setImageError(true)}
         className={`${sizeClasses[size]} ${roundedClasses[rounded]} ${borderClass} ${cursorClass} object-cover ${className}`}
+        style={style}
       />
     );
   }
@@ -88,6 +91,7 @@ export default function Avatar({
     <div
       onClick={handleClick}
       className={`${sizeClasses[size]} ${roundedClasses[rounded]} ${borderClass} ${cursorClass} ${getColorFromName(name)} flex items-center justify-center text-white font-medium ${className}`}
+      style={style}
     >
       {initials}
     </div>
