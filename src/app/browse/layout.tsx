@@ -11,7 +11,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ReactNode, useEffect } from "react";
-import { Briefcase } from "lucide-react";
+import { Briefcase, Send } from "lucide-react";
 
 function BrowseLayoutContent({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -102,16 +102,30 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                 </p>
               </div>
 
-              {/* My Jobs Link */}
-              {user && (user.role === "client" || user.role === "pro") && (
-                <Link
-                  href="/my-jobs"
-                  className="flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[#D2691E] transition-colors"
-                >
-                  <Briefcase className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{locale === "ka" ? "ჩემი განცხადებები" : "My Jobs"}</span>
-                </Link>
-              )}
+              {/* Navigation Links */}
+              <div className="flex items-center gap-3">
+                {/* My Proposals - for pros */}
+                {user?.role === "pro" && (
+                  <Link
+                    href="/my-proposals"
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-[#D2691E]/10 text-[#D2691E] hover:bg-[#D2691E]/20 transition-colors"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">{locale === "ka" ? "შეთავაზებები" : "My Proposals"}</span>
+                  </Link>
+                )}
+                
+                {/* My Jobs Link */}
+                {user && (user.role === "client" || user.role === "pro") && (
+                  <Link
+                    href="/my-jobs"
+                    className="flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[#D2691E] transition-colors"
+                  >
+                    <Briefcase className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">{locale === "ka" ? "ჩემი განცხადებები" : "My Jobs"}</span>
+                  </Link>
+                )}
+              </div>
             </div>
 
             {/* Content Type Switcher */}

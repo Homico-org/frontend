@@ -503,9 +503,71 @@ export default function Header() {
                             </Link>
                           )}
 
+                          {/* Pro Menu Items */}
+                          {user.role === "pro" && (
+                            <>
+                              <Link
+                                href="/my-proposals"
+                                className="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm transition-all duration-200"
+                                style={{ color: 'var(--color-text-secondary)' }}
+                                onClick={() => setShowDropdown(false)}
+                              >
+                                <div
+                                  className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0 group-hover:scale-105"
+                                  style={{
+                                    background: 'rgba(200, 114, 89, 0.08)',
+                                    border: '1px solid rgba(200, 114, 89, 0.1)',
+                                  }}
+                                >
+                                  <svg
+                                    className="w-4 h-4 sm:w-[18px] sm:h-[18px]"
+                                    style={{ color: '#C87259' }}
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                  >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M22 2L11 13M22 2L15 22L11 13M22 2L2 8.5L11 13" />
+                                  </svg>
+                                </div>
+                                <span className="group-hover:text-[#C87259] transition-colors truncate">
+                                  {locale === 'ka' ? 'ჩემი შეთავაზებები' : 'My Proposals'}
+                                </span>
+                              </Link>
+                              <Link
+                                href="/my-work"
+                                className="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm transition-all duration-200"
+                                style={{ color: 'var(--color-text-secondary)' }}
+                                onClick={() => setShowDropdown(false)}
+                              >
+                                <div
+                                  className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0 group-hover:scale-105"
+                                  style={{
+                                    background: 'rgba(200, 114, 89, 0.08)',
+                                    border: '1px solid rgba(200, 114, 89, 0.1)',
+                                  }}
+                                >
+                                  <svg
+                                    className="w-4 h-4 sm:w-[18px] sm:h-[18px]"
+                                    style={{ color: '#C87259' }}
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                  >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  </svg>
+                                </div>
+                                <span className="group-hover:text-[#C87259] transition-colors truncate">
+                                  {locale === 'ka' ? 'აქტიური სამუშაოები' : 'Active Work'}
+                                </span>
+                              </Link>
+                            </>
+                          )}
+
                           {/* Common Settings Items - Divider only for non-admin or after admin panel */}
                           {(user.role === "company" ||
-                            user.role === "admin") && (
+                            user.role === "admin" ||
+                            user.role === "pro") && (
                             <div
                               className="my-1.5 sm:my-2 mx-3 sm:mx-4 h-px"
                               style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(200, 114, 89, 0.2) 50%, transparent 100%)' }}

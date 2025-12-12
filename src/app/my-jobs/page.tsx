@@ -1,46 +1,46 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import AppBackground from '@/components/common/AppBackground';
+import Avatar from '@/components/common/Avatar';
+import Button from '@/components/common/Button';
+import Card, { CardBadge, CardContent, CardFooter, CardImage } from '@/components/common/Card';
+import Header from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
 import { storage } from '@/services/storage';
-import Avatar from '@/components/common/Avatar';
-import Button from '@/components/common/Button';
-import Header from '@/components/common/Header';
-import AppBackground from '@/components/common/AppBackground';
-import Card, { CardImage, CardContent, CardBadge, CardFooter } from '@/components/common/Card';
-import Link from 'next/link';
 import {
-  Briefcase,
-  Eye,
-  Clock,
-  CheckCircle,
-  XCircle,
-  FileText,
-  MapPin,
-  Calendar,
-  MoreVertical,
-  Trash2,
-  Edit3,
-  ChevronDown,
-  Search,
-  Plus,
-  ArrowLeft,
-  Play,
-  Users,
-  Star,
-  Mail,
-  Phone,
-  Check,
-  MessageCircle,
-  ExternalLink,
-  X,
   AlertCircle,
-  Sparkles
+  ArrowLeft,
+  Briefcase,
+  Calendar,
+  Check,
+  CheckCircle,
+  ChevronDown,
+  Clock,
+  Edit3,
+  ExternalLink,
+  Eye,
+  FileText,
+  Mail,
+  MapPin,
+  MessageCircle,
+  MoreVertical,
+  Phone,
+  Play,
+  Plus,
+  Search,
+  Sparkles,
+  Star,
+  Trash2,
+  Users,
+  X,
+  XCircle
 } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Delete reasons for Georgian users
 const DELETE_REASONS = [
@@ -107,8 +107,10 @@ interface Proposal {
   proposedPrice: number;
   estimatedDuration: number;
   estimatedDurationUnit: string;
-  status: 'pending' | 'accepted' | 'rejected' | 'withdrawn';
+  status: 'pending' | 'in_discussion' | 'accepted' | 'rejected' | 'withdrawn' | 'completed';
   contactRevealed: boolean;
+  conversationId?: string;
+  clientRespondedAt?: string;
   createdAt: string;
 }
 
@@ -135,6 +137,16 @@ export default function MyJobsPage() {
   const [deleteReason, setDeleteReason] = useState<string>('');
   const [customReason, setCustomReason] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Chat modal state
+  const [chatModalProposal, setChatModalProposal] = useState<Proposal | null>(null);
+  const [chatMessage, setChatMessage] = useState('');
+  const [isSendingChat, setIsSendingChat] = useState(false);
+
+  // Reject modal state
+  const [rejectModalProposal, setRejectModalProposal] = useState<Proposal | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [isRejecting, setIsRejecting] = useState(false);
 
   const canAccessMyJobs = user?.role === 'client' || user?.role === 'pro';
   const hasFetched = useRef(false);
@@ -166,19 +178,37 @@ export default function MyJobsPage() {
     }
   }, [isAuthenticated, canAccessMyJobs, fetchMyJobs]);
 
-  const fetchProposalsForJob = async (jobId: string) => {
-    if (proposalsByJob[jobId]) {
+  const fetchProposalsForJob = async (jobId: string, expectedCount?: number) => {
+    const cachedProposals = proposalsByJob[jobId];
+    
+    // If we have cached proposals and the count matches, just toggle
+    if (cachedProposals && cachedProposals.length > 0) {
       setExpandedJobId(expandedJobId === jobId ? null : jobId);
       return;
     }
+    
+    // If we have cached but empty, and we're just toggling closed, allow it
+    if (cachedProposals && expandedJobId === jobId) {
+      setExpandedJobId(null);
+      return;
+    }
 
+    // Fetch fresh data
     try {
       setLoadingProposals(jobId);
       const response = await api.get(`/jobs/${jobId}/proposals`);
-      setProposalsByJob(prev => ({ ...prev, [jobId]: response.data }));
+      const proposals = Array.isArray(response.data) ? response.data : [];
+      setProposalsByJob(prev => ({ ...prev, [jobId]: proposals }));
       setExpandedJobId(jobId);
     } catch (err: any) {
       console.error('Failed to fetch proposals:', err);
+      toast.error(
+        language === 'ka' ? 'შეცდომა' : 'Error',
+        language === 'ka' ? 'შეთავაზებების ჩატვირთვა ვერ მოხერხდა' : 'Failed to load proposals'
+      );
+      // Set empty array to show "no proposals" message instead of infinite loading
+      setProposalsByJob(prev => ({ ...prev, [jobId]: [] }));
+      setExpandedJobId(jobId);
     } finally {
       setLoadingProposals(null);
     }
@@ -202,6 +232,82 @@ export default function MyJobsPage() {
       setProposalsByJob(prev => ({ ...prev, [jobId]: response.data }));
     } catch (err: any) {
       console.error('Failed to reveal contact:', err);
+    }
+  };
+
+  const handleStartChat = async () => {
+    if (!chatModalProposal || !chatMessage.trim()) return;
+    
+    setIsSendingChat(true);
+    try {
+      const response = await api.post(`/jobs/proposals/${chatModalProposal._id}/start-chat`, {
+        message: chatMessage.trim()
+      });
+      
+      // Update local state
+      const jobId = chatModalProposal.jobId;
+      setProposalsByJob(prev => ({
+        ...prev,
+        [jobId]: prev[jobId]?.map(p => 
+          p._id === chatModalProposal._id 
+            ? { ...p, status: 'in_discussion', conversationId: response.data.conversation._id }
+            : p
+        ) || []
+      }));
+      
+      toast.success(
+        language === 'ka' ? 'მესიჯი გაიგზავნა' : 'Message sent',
+        language === 'ka' ? 'პროფესიონალი მიიღებს შეტყობინებას' : 'The professional will receive your message'
+      );
+      
+      setChatModalProposal(null);
+      setChatMessage('');
+      
+      // Redirect to conversation
+      router.push(`/messages?conversation=${response.data.conversation._id}`);
+    } catch (err: any) {
+      toast.error(
+        language === 'ka' ? 'შეცდომა' : 'Error',
+        err.response?.data?.message || 'Failed to start chat'
+      );
+    } finally {
+      setIsSendingChat(false);
+    }
+  };
+
+  const handleRejectProposal = async () => {
+    if (!rejectModalProposal) return;
+    
+    setIsRejecting(true);
+    try {
+      await api.post(`/jobs/proposals/${rejectModalProposal._id}/reject`, {
+        reason: rejectReason
+      });
+      
+      const jobId = rejectModalProposal.jobId;
+      setProposalsByJob(prev => ({
+        ...prev,
+        [jobId]: prev[jobId]?.map(p => 
+          p._id === rejectModalProposal._id 
+            ? { ...p, status: 'rejected' }
+            : p
+        ) || []
+      }));
+      
+      toast.success(
+        language === 'ka' ? 'შეთავაზება უარყოფილია' : 'Proposal rejected',
+        language === 'ka' ? 'პროფესიონალი მიიღებს შეტყობინებას' : 'The professional will be notified'
+      );
+      
+      setRejectModalProposal(null);
+      setRejectReason('');
+    } catch (err: any) {
+      toast.error(
+        language === 'ka' ? 'შეცდომა' : 'Error',
+        err.response?.data?.message || 'Failed to reject proposal'
+      );
+    } finally {
+      setIsRejecting(false);
     }
   };
 
@@ -505,7 +611,7 @@ export default function MyJobsPage() {
                     <div className={`flex flex-col ${hasMedia ? 'lg:flex-row' : ''}`}>
                       {/* Media Section */}
                       {hasMedia && (
-                        <div className="relative lg:w-72 flex-shrink-0">
+                        <div className="relative w-full lg:w-72 flex-shrink-0 overflow-hidden rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none">
                           <CardImage aspectRatio="16/10" overlay="gradient" className="h-48 lg:h-full lg:min-h-[220px]">
                             <img
                               src={storage.getFileUrl(allMedia[0].url)}
@@ -773,25 +879,50 @@ export default function MyJobsPage() {
                                 )}
 
                                 {/* Actions */}
-                                {proposal.status === 'pending' && (
+                                {(proposal.status === 'pending' || proposal.status === 'in_discussion') && (
                                   <div className="flex flex-wrap items-center gap-2 mt-4">
+                                    {/* Start Chat - Primary action for pending */}
+                                    {proposal.status === 'pending' && (
+                                      <Button
+                                        onClick={() => setChatModalProposal(proposal)}
+                                        size="sm"
+                                        variant="outline"
+                                        icon={<MessageCircle className="w-4 h-4" />}
+                                      >
+                                        {language === 'ka' ? 'მესიჯი' : 'Message'}
+                                      </Button>
+                                    )}
+                                    
+                                    {/* Continue Chat - for in_discussion */}
+                                    {proposal.status === 'in_discussion' && proposal.conversationId && (
+                                      <Button
+                                        href={`/messages?conversation=${proposal.conversationId}`}
+                                        size="sm"
+                                        icon={<MessageCircle className="w-4 h-4" />}
+                                      >
+                                        {language === 'ka' ? 'მიმოწერა' : 'Continue Chat'}
+                                      </Button>
+                                    )}
+                                    
+                                    {/* Accept */}
                                     <Button
                                       onClick={() => handleAcceptProposal(proposal._id, job._id)}
                                       size="sm"
                                       icon={<Check className="w-4 h-4" />}
+                                      className="!bg-emerald-500 hover:!bg-emerald-600"
                                     >
                                       {language === 'ka' ? 'მიღება' : 'Accept'}
                                     </Button>
-                                    {!proposal.contactRevealed && (
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handleRevealContact(proposal._id, job._id)}
-                                        icon={<Eye className="w-4 h-4" />}
-                                      >
-                                        {language === 'ka' ? 'კონტაქტი' : 'Contact'}
-                                      </Button>
-                                    )}
+                                    
+                                    {/* Reject */}
+                                    <button
+                                      onClick={() => setRejectModalProposal(proposal)}
+                                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors"
+                                    >
+                                      <X className="w-4 h-4" />
+                                      {language === 'ka' ? 'უარყოფა' : 'Reject'}
+                                    </button>
+                                    
                                     <Link
                                       href={`/professionals/${proposal.proProfileId?._id}`}
                                       className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-[#D2691E] hover:underline"
@@ -802,15 +933,28 @@ export default function MyJobsPage() {
                                   </div>
                                 )}
 
-                                {proposal.status === 'accepted' && (
+                                {(proposal.status === 'accepted' || proposal.status === 'completed') && (
                                   <div className="flex flex-wrap items-center gap-2 mt-4">
                                     <Button
-                                      href={`/messages?pro=${proposal.proProfileId?._id}`}
+                                      href={proposal.conversationId ? `/messages?conversation=${proposal.conversationId}` : `/messages?pro=${proposal.proProfileId?._id}`}
                                       size="sm"
                                       icon={<MessageCircle className="w-4 h-4" />}
                                     >
                                       {language === 'ka' ? 'მესიჯი' : 'Message'}
                                     </Button>
+                                    <Link
+                                      href={`/professionals/${proposal.proProfileId?._id}`}
+                                      className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-[#D2691E] hover:underline"
+                                    >
+                                      {language === 'ka' ? 'პროფილი' : 'Profile'}
+                                      <ExternalLink className="w-3 h-3" />
+                                    </Link>
+                                  </div>
+                                )}
+                                
+                                {proposal.status === 'rejected' && (
+                                  <div className="mt-3 text-xs text-[var(--color-text-tertiary)]">
+                                    {language === 'ka' ? 'ეს შეთავაზება უარყოფილია' : 'This proposal has been rejected'}
                                   </div>
                                 )}
                               </div>
@@ -943,6 +1087,185 @@ export default function MyJobsPage() {
                   </>
                 )}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Start Chat Modal */}
+      {chatModalProposal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setChatModalProposal(null)} />
+          
+          <div className="relative w-full max-w-lg bg-[var(--color-bg-elevated)] rounded-2xl border shadow-2xl overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
+            <div className="p-6">
+              <div className="flex items-start gap-4 mb-5">
+                <div className="w-12 h-12 rounded-xl bg-[#D2691E]/10 flex items-center justify-center flex-shrink-0">
+                  <MessageCircle className="w-6 h-6 text-[#D2691E]" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                    {language === 'ka' ? 'მესიჯის გაგზავნა' : 'Send Message'}
+                  </h3>
+                  <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
+                    {language === 'ka' 
+                      ? `მიწერე ${chatModalProposal.proProfileId?.userId?.name || 'პროფესიონალს'} შეთავაზების შესახებ`
+                      : `Message ${chatModalProposal.proProfileId?.userId?.name || 'the professional'} about their proposal`}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setChatModalProposal(null)}
+                  className="p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                  style={{ color: 'var(--color-text-tertiary)' }}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Proposal Summary */}
+              <div className="mb-4 p-3 rounded-xl bg-[#D2691E]/5 border border-[#E8D5C4]/40 dark:border-[#3d2f24]/40">
+                <div className="flex items-center gap-3 mb-2">
+                  <Avatar
+                    src={chatModalProposal.proProfileId?.userId?.avatar}
+                    name={chatModalProposal.proProfileId?.userId?.name || 'Pro'}
+                    size="sm"
+                  />
+                  <div>
+                    <p className="font-medium text-sm" style={{ color: 'var(--color-text-primary)' }}>
+                      {chatModalProposal.proProfileId?.userId?.name}
+                    </p>
+                    <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                      {chatModalProposal.proProfileId?.title}
+                    </p>
+                  </div>
+                  <div className="ml-auto text-right">
+                    <p className="font-bold text-[#D2691E]">
+                      ₾{chatModalProposal.proposedPrice?.toLocaleString()}
+                    </p>
+                    <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                      {chatModalProposal.estimatedDuration} {
+                        chatModalProposal.estimatedDurationUnit === 'days' ? (language === 'ka' ? 'დღე' : 'days') :
+                        chatModalProposal.estimatedDurationUnit === 'weeks' ? (language === 'ka' ? 'კვირა' : 'weeks') :
+                        (language === 'ka' ? 'თვე' : 'months')
+                      }
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Message Input */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+                  {language === 'ka' ? 'შენი მესიჯი' : 'Your message'}
+                </label>
+                <textarea
+                  value={chatMessage}
+                  onChange={(e) => setChatMessage(e.target.value)}
+                  placeholder={language === 'ka' 
+                    ? 'დაწერე მესიჯი... მაგ: გამარჯობა, მაინტერესებს თქვენი შეთავაზება...'
+                    : 'Write a message... e.g., Hi, I am interested in your proposal...'}
+                  className="w-full px-4 py-3 rounded-xl border text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#D2691E]/30"
+                  style={{
+                    backgroundColor: 'var(--color-bg-tertiary)',
+                    borderColor: 'var(--color-border)',
+                    color: 'var(--color-text-primary)'
+                  }}
+                  rows={4}
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setChatModalProposal(null)} className="flex-1">
+                  {language === 'ka' ? 'გაუქმება' : 'Cancel'}
+                </Button>
+                <Button
+                  onClick={handleStartChat}
+                  disabled={!chatMessage.trim() || isSendingChat}
+                  className="flex-1"
+                  icon={isSendingChat ? undefined : <MessageCircle className="w-4 h-4" />}
+                >
+                  {isSendingChat 
+                    ? (language === 'ka' ? 'იგზავნება...' : 'Sending...') 
+                    : (language === 'ka' ? 'გაგზავნა' : 'Send Message')}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Proposal Modal */}
+      {rejectModalProposal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setRejectModalProposal(null)} />
+          
+          <div className="relative w-full max-w-md bg-[var(--color-bg-elevated)] rounded-2xl border shadow-2xl overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
+            <div className="p-6">
+              <div className="flex items-start gap-4 mb-5">
+                <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                  <XCircle className="w-6 h-6 text-red-500" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                    {language === 'ka' ? 'შეთავაზების უარყოფა' : 'Reject Proposal'}
+                  </h3>
+                  <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
+                    {language === 'ka' 
+                      ? `უარყოფა ${rejectModalProposal.proProfileId?.userId?.name || 'პროფესიონალის'} შეთავაზებაზე`
+                      : `Reject proposal from ${rejectModalProposal.proProfileId?.userId?.name || 'the professional'}`}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setRejectModalProposal(null)}
+                  className="p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                  style={{ color: 'var(--color-text-tertiary)' }}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+                  {language === 'ka' ? 'მიზეზი (არასავალდებულო)' : 'Reason (optional)'}
+                </label>
+                <textarea
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  placeholder={language === 'ka' 
+                    ? 'მაგ: ფასი არ შეესაბამება ბიუჯეტს...'
+                    : 'e.g., The price does not match my budget...'}
+                  className="w-full px-4 py-3 rounded-xl border text-sm resize-none focus:outline-none focus:ring-2 focus:ring-red-500/30"
+                  style={{
+                    backgroundColor: 'var(--color-bg-tertiary)',
+                    borderColor: 'var(--color-border)',
+                    color: 'var(--color-text-primary)'
+                  }}
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setRejectModalProposal(null)} className="flex-1">
+                  {language === 'ka' ? 'გაუქმება' : 'Cancel'}
+                </Button>
+                <button
+                  onClick={handleRejectProposal}
+                  disabled={isRejecting}
+                  className="flex-1 px-4 py-3 rounded-xl text-sm font-semibold text-white bg-red-500 hover:bg-red-600 transition-all flex items-center justify-center gap-2"
+                >
+                  {isRejecting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      {language === 'ka' ? 'მიმდინარეობს...' : 'Rejecting...'}
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="w-4 h-4" />
+                      {language === 'ka' ? 'უარყოფა' : 'Reject'}
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
