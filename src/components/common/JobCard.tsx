@@ -407,7 +407,7 @@ export default function JobCard({
     return (
       <Link
         href={`/jobs/${job._id}`}
-        className="group block rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-0.5 bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-[#D2691E]/10 dark:border-[#CD853F]/15 hover:border-[#D2691E]/20"
+        className="group block rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-0.5 bg-transparent backdrop-blur-sm border-2 border-terracotta-200 dark:border-terracotta-500/30 hover:border-terracotta-400 dark:hover:border-terracotta-500/50"
       >
         <div className="aspect-[4/3] relative overflow-hidden">
           <ImageSlider images={allImages} />
@@ -435,7 +435,7 @@ export default function JobCard({
     return (
       <Link
         href={`/jobs/${job._id}`}
-        className="group flex items-center gap-3 py-3 border-b border-[#D2691E]/10 hover:bg-[#D2691E]/[0.03] transition-colors -mx-2 px-2 rounded-lg"
+        className="group flex items-center gap-3 py-3 border-b-2 border-terracotta-200 dark:border-terracotta-500/30 hover:bg-terracotta-500/5 transition-colors -mx-2 px-2 rounded-lg"
       >
         <Avatar
           src={job.clientId?.avatar}
@@ -462,13 +462,13 @@ export default function JobCard({
   return (
     <Link
       href={`/jobs/${job._id}`}
-      className={`group relative block h-full rounded-2xl transition-all duration-300 ease-out overflow-hidden backdrop-blur-sm ${
+      className={`group relative block h-full rounded-2xl transition-all duration-300 ease-out overflow-hidden backdrop-blur-sm bg-transparent ${
         isUrgent
-          ? "bg-white/20 dark:bg-gray-900/50 border-2 border-[#D2691E]/25"
+          ? "border-2 border-terracotta-500 shadow-lg"
           : isExpired
-            ? "bg-white/10 dark:bg-gray-900/40 border-2 border-red-400/20"
-            : "bg-white/10 dark:bg-gray-900/40 border-2 border-[#D2691E]/10 dark:border-[#CD853F]/15"
-      } hover:border-[#D2691E]/20 hover:-translate-y-0.5`}
+            ? "border-2 border-red-400/40 dark:border-red-500/30"
+            : "border-2 border-terracotta-200 dark:border-terracotta-500/30"
+      } hover:border-terracotta-400 dark:hover:border-terracotta-500/50 hover:-translate-y-0.5`}
     >
       {/* Image Slider Section - Always show */}
       <div className="aspect-[16/10] relative overflow-hidden">
@@ -538,7 +538,7 @@ export default function JobCard({
         </div>
 
         {/* Bottom: Client + Actions */}
-        <div className="flex items-center justify-between pt-3 border-t border-[#D2691E]/10">
+        <div className="flex items-center justify-between pt-3 border-t border-terracotta-200 dark:border-terracotta-500/30">
           <div className="flex items-center gap-2">
             <Avatar
               src={job.clientId?.avatar}
@@ -621,10 +621,10 @@ export default function JobCard({
         <div
           className={`px-4 py-2 flex items-center justify-center gap-2 border-t ${
             isExpired
-              ? "border-red-200/30 dark:border-red-800/20"
+              ? "border-red-300/40 dark:border-red-500/30"
               : isUrgent
-                ? "border-[#D2691E]/20"
-                : "border-[#D2691E]/10"
+                ? "border-terracotta-400 dark:border-terracotta-500/50"
+                : "border-terracotta-200 dark:border-terracotta-500/30"
           }`}
         >
           <svg

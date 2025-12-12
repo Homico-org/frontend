@@ -4,11 +4,14 @@ import CategorySection from "@/components/browse/CategorySection";
 import ContentTypeSwitcher from "@/components/browse/ContentTypeSwitcher";
 import AppBackground from "@/components/common/AppBackground";
 import Header from "@/components/common/Header";
+import Button from "@/components/common/Button";
 import { useAuth } from "@/contexts/AuthContext";
 import { BrowseProvider, useBrowseContext } from "@/contexts/BrowseContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { ReactNode, useEffect } from "react";
+import { Briefcase } from "lucide-react";
 
 function BrowseLayoutContent({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -95,6 +98,17 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                   {getPageSubtitle()}
                 </p>
               </div>
+
+              {/* My Jobs Button - Show for authenticated client and pro users */}
+              {user && (user.role === "client" || user.role === "pro") && (
+                <Link
+                  href="/my-jobs"
+                  className="group inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] bg-white dark:bg-dark-card border border-terracotta-200 dark:border-terracotta-500/30 text-terracotta-600 dark:text-terracotta-400 hover:bg-terracotta-50 dark:hover:bg-terracotta-500/10 hover:border-terracotta-400 dark:hover:border-terracotta-500/50 shadow-sm"
+                >
+                  <Briefcase className="w-4 h-4" />
+                  <span>{locale === "ka" ? "ჩემი განცხადებები" : "My Jobs"}</span>
+                </Link>
+              )}
             </div>
 
             {/* Content Type Switcher */}

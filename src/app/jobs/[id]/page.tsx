@@ -471,7 +471,7 @@ export default function JobDetailPage() {
 
               {/* Budget Card */}
               {budgetDisplay && (
-                <div className="flex-shrink-0 p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white/40 dark:bg-neutral-900/30 backdrop-blur-sm border border-terracotta-300/40 dark:border-terracotta-700/25">
+                <div className="flex-shrink-0 p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-transparent backdrop-blur-sm border-2 border-terracotta-200 dark:border-terracotta-500/30">
                   <p className="text-xs uppercase tracking-wider mb-1 text-terracotta-500/70 dark:text-terracotta-400/70">ბიუჯეტი</p>
                   <p className="text-lg sm:text-xl font-semibold text-terracotta-600 dark:text-terracotta-400">{budgetDisplay}</p>
                   {job.budgetType === 'per_sqm' && job.areaSize && job.pricePerUnit && (
@@ -489,7 +489,7 @@ export default function JobDetailPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
           {/* My Proposal Banner */}
           {myProposal && user?.role === 'pro' && (
-            <div className="mb-6 sm:mb-10 rounded-xl sm:rounded-2xl overflow-hidden animate-fade-in bg-white/40 dark:bg-neutral-900/30 backdrop-blur-sm border border-terracotta-300/40 dark:border-terracotta-700/25">
+            <div className="mb-6 sm:mb-10 rounded-xl sm:rounded-2xl overflow-hidden animate-fade-in bg-transparent backdrop-blur-sm border-2 border-terracotta-200 dark:border-terracotta-500/30">
               <div className="px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-terracotta-200/30 dark:border-terracotta-700/20">
                 <div className="flex items-center gap-3">
                   <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-xl flex items-center justify-center bg-terracotta-500 flex-shrink-0 shadow-md shadow-terracotta-500/20">
@@ -539,7 +539,7 @@ export default function JobDetailPage() {
             <div className="lg:col-span-2 space-y-6 sm:space-y-10">
               {/* Media Gallery */}
               {allMedia.length > 0 && (
-                <div className="rounded-xl sm:rounded-2xl overflow-hidden bg-white/40 dark:bg-neutral-900/30 backdrop-blur-sm border border-terracotta-300/40 dark:border-terracotta-700/25">
+                <div className="rounded-xl sm:rounded-2xl overflow-hidden bg-transparent backdrop-blur-sm border-2 border-terracotta-200 dark:border-terracotta-500/30">
                   <div className="aspect-[4/3] sm:aspect-[16/10] relative group">
                     {currentMedia?.type === 'video' ? (
                       <div className="w-full h-full relative" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
@@ -628,31 +628,31 @@ export default function JobDetailPage() {
               {(job.propertyType || job.areaSize || job.roomCount || job.floorCount || job.deadline) && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                   {job.propertyType && (
-                    <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-white/40 dark:bg-neutral-900/30 backdrop-blur-sm border border-terracotta-300/40 dark:border-terracotta-700/25">
+                    <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-transparent backdrop-blur-sm border-2 border-terracotta-200 dark:border-terracotta-500/30">
                       <p className="text-[10px] sm:text-[11px] uppercase tracking-wider mb-1 text-terracotta-500/60 dark:text-terracotta-400/60">ტიპი</p>
                       <p className="font-medium text-sm sm:text-base text-neutral-900 dark:text-white">{propertyTypeMap[job.propertyType] || job.propertyType}</p>
                     </div>
                   )}
                   {job.areaSize && (
-                    <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-white/40 dark:bg-neutral-900/30 backdrop-blur-sm border border-terracotta-300/40 dark:border-terracotta-700/25">
+                    <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-transparent backdrop-blur-sm border-2 border-terracotta-200 dark:border-terracotta-500/30">
                       <p className="text-[10px] sm:text-[11px] uppercase tracking-wider mb-1 text-terracotta-500/60 dark:text-terracotta-400/60">ფართი</p>
                       <p className="font-medium text-sm sm:text-base text-neutral-900 dark:text-white">{job.areaSize} მ²</p>
                     </div>
                   )}
                   {job.roomCount && (
-                    <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-white/40 dark:bg-neutral-900/30 backdrop-blur-sm border border-terracotta-300/40 dark:border-terracotta-700/25">
+                    <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-transparent backdrop-blur-sm border-2 border-terracotta-200 dark:border-terracotta-500/30">
                       <p className="text-[10px] sm:text-[11px] uppercase tracking-wider mb-1 text-terracotta-500/60 dark:text-terracotta-400/60">ოთახები</p>
                       <p className="font-medium text-sm sm:text-base text-neutral-900 dark:text-white">{job.roomCount}</p>
                     </div>
                   )}
                   {job.floorCount && (
-                    <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-white/40 dark:bg-neutral-900/30 backdrop-blur-sm border border-terracotta-300/40 dark:border-terracotta-700/25">
+                    <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-transparent backdrop-blur-sm border-2 border-terracotta-200 dark:border-terracotta-500/30">
                       <p className="text-[10px] sm:text-[11px] uppercase tracking-wider mb-1 text-terracotta-500/60 dark:text-terracotta-400/60">სართულები</p>
                       <p className="font-medium text-sm sm:text-base text-neutral-900 dark:text-white">{job.floorCount}</p>
                     </div>
                   )}
                   {job.deadline && (
-                    <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-white/40 dark:bg-neutral-900/30 backdrop-blur-sm border border-terracotta-300/40 dark:border-terracotta-700/25">
+                    <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-transparent backdrop-blur-sm border-2 border-terracotta-200 dark:border-terracotta-500/30">
                       <p className="text-[10px] sm:text-[11px] uppercase tracking-wider mb-1 text-terracotta-500/60 dark:text-terracotta-400/60">ვადა</p>
                       <p className="font-medium text-sm sm:text-base text-neutral-900 dark:text-white">
                         {new Date(job.deadline).toLocaleDateString('ka-GE', { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -664,7 +664,7 @@ export default function JobDetailPage() {
 
               {/* Description */}
               {job.description && (
-                <section className="p-5 sm:p-6 rounded-xl sm:rounded-2xl bg-white/40 dark:bg-neutral-900/30 backdrop-blur-sm border border-terracotta-300/40 dark:border-terracotta-700/25">
+                <section className="p-5 sm:p-6 rounded-xl sm:rounded-2xl bg-transparent backdrop-blur-sm border-2 border-terracotta-200 dark:border-terracotta-500/30">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="h-[3px] w-5 rounded-full bg-terracotta-500" />
                     <h2 className="text-xs uppercase tracking-wider font-medium text-terracotta-500/70 dark:text-terracotta-400/70">აღწერა</h2>
@@ -677,7 +677,7 @@ export default function JobDetailPage() {
 
               {/* Work Types */}
               {job.workTypes && job.workTypes.length > 0 && (
-                <section className="p-5 sm:p-6 rounded-xl sm:rounded-2xl bg-white/40 dark:bg-neutral-900/30 backdrop-blur-sm border border-terracotta-300/40 dark:border-terracotta-700/25">
+                <section className="p-5 sm:p-6 rounded-xl sm:rounded-2xl bg-transparent backdrop-blur-sm border-2 border-terracotta-200 dark:border-terracotta-500/30">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="h-[3px] w-5 rounded-full bg-terracotta-500" />
                     <h2 className="text-xs uppercase tracking-wider font-medium text-terracotta-500/70 dark:text-terracotta-400/70">სამუშაოს ტიპები</h2>
@@ -694,7 +694,7 @@ export default function JobDetailPage() {
 
               {/* Design Style & Rooms */}
               {(job.designStyle || (job.roomsToDesign && job.roomsToDesign.length > 0)) && (
-                <section className="p-5 sm:p-6 rounded-xl sm:rounded-2xl bg-white/40 dark:bg-neutral-900/30 backdrop-blur-sm border border-terracotta-300/40 dark:border-terracotta-700/25">
+                <section className="p-5 sm:p-6 rounded-xl sm:rounded-2xl bg-transparent backdrop-blur-sm border-2 border-terracotta-200 dark:border-terracotta-500/30">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="h-[3px] w-5 rounded-full bg-terracotta-500" />
                     <h2 className="text-xs uppercase tracking-wider font-medium text-terracotta-500/70 dark:text-terracotta-400/70">დიზაინის დეტალები</h2>
@@ -726,7 +726,7 @@ export default function JobDetailPage() {
 
               {/* Additional Features */}
               {(job.furnitureIncluded || job.visualizationNeeded || job.materialsProvided !== undefined || job.occupiedDuringWork) && (
-                <section className="p-5 sm:p-6 rounded-xl sm:rounded-2xl bg-white/40 dark:bg-neutral-900/30 backdrop-blur-sm border border-terracotta-300/40 dark:border-terracotta-700/25">
+                <section className="p-5 sm:p-6 rounded-xl sm:rounded-2xl bg-transparent backdrop-blur-sm border-2 border-terracotta-200 dark:border-terracotta-500/30">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="h-[3px] w-5 rounded-full bg-terracotta-500" />
                     <h2 className="text-xs uppercase tracking-wider font-medium text-terracotta-500/70 dark:text-terracotta-400/70">დამატებითი ინფორმაცია</h2>
@@ -770,7 +770,7 @@ export default function JobDetailPage() {
 
               {/* Skills */}
               {job.skills && job.skills.length > 0 && (
-                <section className="p-5 sm:p-6 rounded-xl sm:rounded-2xl bg-white/40 dark:bg-neutral-900/30 backdrop-blur-sm border border-terracotta-300/40 dark:border-terracotta-700/25">
+                <section className="p-5 sm:p-6 rounded-xl sm:rounded-2xl bg-transparent backdrop-blur-sm border-2 border-terracotta-200 dark:border-terracotta-500/30">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="h-[3px] w-5 rounded-full bg-terracotta-500" />
                     <h2 className="text-xs uppercase tracking-wider font-medium text-terracotta-500/70 dark:text-terracotta-400/70">უნარები</h2>
@@ -787,7 +787,7 @@ export default function JobDetailPage() {
 
               {/* References */}
               {job.references && job.references.length > 0 && (
-                <section className="p-5 sm:p-6 rounded-xl sm:rounded-2xl bg-white/40 dark:bg-neutral-900/30 backdrop-blur-sm border border-terracotta-300/40 dark:border-terracotta-700/25">
+                <section className="p-5 sm:p-6 rounded-xl sm:rounded-2xl bg-transparent backdrop-blur-sm border-2 border-terracotta-200 dark:border-terracotta-500/30">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="h-[3px] w-5 rounded-full bg-terracotta-500" />
                     <h2 className="text-xs uppercase tracking-wider font-medium text-terracotta-500/70 dark:text-terracotta-400/70">რეფერენსები</h2>
@@ -836,7 +836,7 @@ export default function JobDetailPage() {
                       წინადადების გაგზავნა
                     </button>
                   ) : (
-                    <form onSubmit={handleSubmitProposal} className="p-6 rounded-2xl space-y-6 animate-fade-in bg-white/40 dark:bg-neutral-900/30 backdrop-blur-sm border border-terracotta-300/40 dark:border-terracotta-700/25">
+                    <form onSubmit={handleSubmitProposal} className="p-6 rounded-2xl space-y-6 animate-fade-in bg-transparent backdrop-blur-sm border-2 border-terracotta-200 dark:border-terracotta-500/30">
                       <div className="flex items-center justify-between">
                         <h2 className="text-lg font-medium" style={{ color: 'var(--color-text-primary)' }}>წინადადების გაგზავნა</h2>
                         <button type="button" onClick={() => setShowProposalForm(false)} className="p-2 rounded-lg transition-colors" style={{ color: 'var(--color-text-muted)' }}>
@@ -973,7 +973,7 @@ export default function JobDetailPage() {
               <div className="lg:sticky lg:top-24 space-y-3 sm:space-y-4">
                 {/* Client Card */}
                 {job.clientId && (
-                  <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white/40 dark:bg-neutral-900/30 backdrop-blur-sm border border-terracotta-300/40 dark:border-terracotta-700/25">
+                  <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-transparent backdrop-blur-sm border-2 border-terracotta-200 dark:border-terracotta-500/30">
                     <div className="flex items-center justify-between mb-3 sm:mb-4">
                       <div className="flex items-center gap-2">
                         <div className="h-[3px] w-6 rounded-full bg-terracotta-500" />
@@ -1006,7 +1006,7 @@ export default function JobDetailPage() {
                 {/* Category & Quick Info - Combined on mobile */}
                 <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4">
                   {/* Category */}
-                  <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white/40 dark:bg-neutral-900/30 backdrop-blur-sm border border-terracotta-300/40 dark:border-terracotta-700/25">
+                  <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-transparent backdrop-blur-sm border-2 border-terracotta-200 dark:border-terracotta-500/30">
                     <p className="text-xs uppercase tracking-wider font-medium mb-1.5 sm:mb-2 text-terracotta-500/60 dark:text-terracotta-400/60">კატეგორია</p>
                     <p className="font-medium text-sm sm:text-base text-neutral-900 dark:text-white">
                       {categoryMap[job.category] || job.category}
@@ -1014,7 +1014,7 @@ export default function JobDetailPage() {
                   </div>
 
                   {/* Quick Info */}
-                  <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white/40 dark:bg-neutral-900/30 backdrop-blur-sm border border-terracotta-300/40 dark:border-terracotta-700/25 space-y-2 sm:space-y-3">
+                  <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-transparent backdrop-blur-sm border-2 border-terracotta-200 dark:border-terracotta-500/30 space-y-2 sm:space-y-3">
                     <div className="flex items-center justify-between text-xs sm:text-sm">
                       <span className="text-neutral-500 dark:text-neutral-400">ID</span>
                       <span className="font-mono text-xs text-terracotta-500/70 dark:text-terracotta-400/70">{job._id.slice(-8)}</span>
