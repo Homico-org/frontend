@@ -1,10 +1,11 @@
 "use client";
 
-import JobCard from "@/components/common/JobCard";
 import { BUDGET_FILTERS } from "@/components/browse/JobsFilterSection";
+import JobCard from "@/components/common/JobCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBrowseContext } from "@/contexts/BrowseContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const SAVED_JOBS_KEY = "homi_saved_jobs";
@@ -51,8 +52,16 @@ export default function JobsPage() {
   const { locale } = useLanguage();
   const { user, isLoading: isAuthLoading } = useAuth();
   const { selectedBudget } = useBrowseContext();
+  const router = useRouter();
 
   const isPro = user?.role === "pro";
+
+  // Redirect non-pro users to portfolio page
+  useEffect(() => {
+    if (!isAuthLoading && !isPro) {
+      router.replace("/browse/portfolio");
+    }
+  }, [isAuthLoading, isPro, router]);
 
   // Get user's categories from their profile
   const userCategories = user?.selectedCategories || [];
@@ -268,12 +277,11 @@ export default function JobsPage() {
     }
   }, [page]);
 
-  if (!isPro) {
+  // Show loading while auth is loading or redirecting non-pro users
+  if (isAuthLoading || !isPro) {
     return (
-      <div className="text-center py-16">
-        <p style={{ color: "var(--color-text-secondary)" }}>
-          {locale === "ka" ? "მხოლოდ პროფესიონალებისთვის" : "Only available for professionals"}
-        </p>
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--color-accent)] border-t-transparent" />
       </div>
     );
   }
