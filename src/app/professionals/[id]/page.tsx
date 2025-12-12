@@ -1,6 +1,7 @@
 'use client';
 
 import AppBackground from '@/components/common/AppBackground';
+import BackButton from '@/components/common/BackButton';
 import Button, { ButtonIcons } from '@/components/common/Button';
 import Header from '@/components/common/Header';
 import SimilarProfessionals from '@/components/professionals/SimilarProfessionals';
@@ -818,6 +819,10 @@ export default function ProfessionalDetailPage() {
 
       {/* Main Content */}
       <main className="pro-page">
+        {/* Back Button */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+          <BackButton href="/browse/professionals" />
+        </div>
         <div
           className={`transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
         >

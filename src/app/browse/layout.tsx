@@ -2,9 +2,9 @@
 
 import CategorySection from "@/components/browse/CategorySection";
 import ContentTypeSwitcher from "@/components/browse/ContentTypeSwitcher";
+import JobsFilterSection from "@/components/browse/JobsFilterSection";
 import AppBackground from "@/components/common/AppBackground";
 import Header from "@/components/common/Header";
-import Button from "@/components/common/Button";
 import { useAuth } from "@/contexts/AuthContext";
 import { BrowseProvider, useBrowseContext } from "@/contexts/BrowseContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -25,6 +25,8 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
     setSelectedSubcategory,
     minRating,
     setMinRating,
+    selectedBudget,
+    setSelectedBudget,
   } = useBrowseContext();
 
   const isPro = user?.role === "pro";
@@ -68,8 +70,9 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
       : "Find the best specialists for your project";
   };
 
-  // Don't show categories for jobs page
-  const showCategories = !pathname.includes("/browse/jobs");
+  // Show different filters for different pages
+  const isJobsPage = pathname.includes("/browse/jobs");
+  const showCategories = !isJobsPage;
   // Show rating filter only for professionals
   const showRatingFilter = pathname.includes("/browse/professionals");
 
@@ -78,41 +81,41 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
       <AppBackground />
       <Header />
 
-      <main className="relative z-20 pt-14 sm:pt-16 pb-20 sm:pb-24">
+      <main className="relative z-20 pt-14 sm:pt-14 pb-20 sm:pb-24">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           {/* Inline header - compact on mobile */}
-          <div className="pt-2 pb-3 sm:pb-5">
-            {/* Title + Tabs Row */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
+          <div className="pt-1 pb-2 sm:pb-3">
+            {/* Title Row */}
+            <div className="flex items-center justify-between gap-3 mb-2 sm:mb-3">
               <div className="min-w-0">
                 <h1
-                  className="text-xl sm:text-3xl font-bold tracking-tight"
+                  className="text-lg sm:text-2xl font-bold tracking-tight"
                   style={{ color: "var(--color-text-primary)" }}
                 >
                   {getPageTitle()}
                 </h1>
                 <p
-                  className="text-xs sm:text-sm mt-0.5 sm:mt-1 opacity-70 line-clamp-1"
+                  className="text-xs sm:text-sm mt-0.5 opacity-70 line-clamp-1"
                   style={{ color: "var(--color-text-secondary)" }}
                 >
                   {getPageSubtitle()}
                 </p>
               </div>
 
-              {/* My Jobs Button - Show for authenticated client and pro users */}
+              {/* My Jobs Link */}
               {user && (user.role === "client" || user.role === "pro") && (
                 <Link
                   href="/my-jobs"
-                  className="group inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] bg-white dark:bg-dark-card border border-terracotta-200 dark:border-terracotta-500/30 text-terracotta-600 dark:text-terracotta-400 hover:bg-terracotta-50 dark:hover:bg-terracotta-500/10 hover:border-terracotta-400 dark:hover:border-terracotta-500/50 shadow-sm"
+                  className="flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[#D2691E] transition-colors"
                 >
-                  <Briefcase className="w-4 h-4" />
-                  <span>{locale === "ka" ? "ჩემი განცხადებები" : "My Jobs"}</span>
+                  <Briefcase className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{locale === "ka" ? "ჩემი განცხადებები" : "My Jobs"}</span>
                 </Link>
               )}
             </div>
 
             {/* Content Type Switcher */}
-            <div className="mb-3 sm:mb-4">
+            <div className="mb-2 sm:mb-2.5">
               <ContentTypeSwitcher isPro={isPro} />
             </div>
 
@@ -131,11 +134,19 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                 showRatingFilter={showRatingFilter}
               />
             )}
+
+            {/* Jobs Budget Filter */}
+            {isJobsPage && (
+              <JobsFilterSection
+                selectedBudget={selectedBudget}
+                onSelectBudget={setSelectedBudget}
+              />
+            )}
           </div>
 
           {/* Subtle separator before content */}
           <div
-            className="h-px mb-3 sm:mb-5 opacity-50"
+            className="h-px mb-2 sm:mb-3 opacity-50"
             style={{ backgroundColor: "var(--color-border)" }}
           />
 

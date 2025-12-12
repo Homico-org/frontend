@@ -3,7 +3,18 @@
 import { storage } from "@/services/storage";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import Avatar from "./Avatar";
+import Card, {
+  CardImage,
+  CardContent,
+  CardBadge,
+  CardFooter,
+  CardTitle,
+  CardMeta,
+  CardMetaItem,
+  CardTags,
+} from "./Card";
 
 interface MediaItem {
   type: "image" | "video";
@@ -62,26 +73,28 @@ const getPropertyTypeLabel = (type?: string): string => {
   return type ? labels[type] || type : "";
 };
 
-const getCategoryLabel = (category?: string): string => {
-  const labels: Record<string, string> = {
-    renovation: "რემონტი",
-    plumbing: "სანტექნიკა",
-    electrical: "ელექტრობა",
-    painting: "მალიარობა",
-    flooring: "იატაკი",
-    roofing: "სახურავი",
-    hvac: "გათბობა/გაგრილება",
-    cleaning: "დალაგება",
-    landscaping: "ლანდშაფტი",
-    moving: "გადაზიდვა",
-    furniture: "ავეჯი",
-    appliances: "ტექნიკა",
-    windows: "ფანჯრები",
-    doors: "კარები",
-    security: "უსაფრთხოება",
-    other: "სხვა",
+const getCategoryLabel = (category?: string, locale: string = 'ka'): string => {
+  const labels: Record<string, { en: string; ka: string }> = {
+    renovation: { en: "Renovation", ka: "რემონტი" },
+    plumbing: { en: "Plumbing", ka: "სანტექნიკა" },
+    electrical: { en: "Electrical", ka: "ელექტრობა" },
+    painting: { en: "Painting", ka: "მალიარობა" },
+    flooring: { en: "Flooring", ka: "იატაკი" },
+    roofing: { en: "Roofing", ka: "სახურავი" },
+    hvac: { en: "HVAC", ka: "გათბობა/გაგრილება" },
+    cleaning: { en: "Cleaning", ka: "დალაგება" },
+    landscaping: { en: "Landscaping", ka: "ლანდშაფტი" },
+    moving: { en: "Moving", ka: "გადაზიდვა" },
+    furniture: { en: "Furniture", ka: "ავეჯი" },
+    appliances: { en: "Appliances", ka: "ტექნიკა" },
+    windows: { en: "Windows", ka: "ფანჯრები" },
+    doors: { en: "Doors", ka: "კარები" },
+    security: { en: "Security", ka: "უსაფრთხოება" },
+    other: { en: "Other", ka: "სხვა" },
   };
-  return category ? labels[category] || category : "";
+  if (!category) return "";
+  const label = labels[category];
+  return label ? label[locale as 'en' | 'ka'] : category;
 };
 
 // Image Slider Component
@@ -302,6 +315,7 @@ export default function JobCard({
   onSave,
   isSaved = false,
 }: JobCardProps) {
+  const { locale } = useLanguage();
   const [timeLeft, setTimeLeft] = useState<string>("");
   const [daysLeft, setDaysLeft] = useState<number | null>(null);
   const [isNew, setIsNew] = useState(false);
@@ -405,93 +419,84 @@ export default function JobCard({
   // Compact variant
   if (variant === "compact") {
     return (
-      <Link
-        href={`/jobs/${job._id}`}
-        className="group block rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-0.5 bg-transparent backdrop-blur-sm border-2 border-terracotta-200 dark:border-terracotta-500/30 hover:border-terracotta-400 dark:hover:border-terracotta-500/50"
-      >
-        <div className="aspect-[4/3] relative overflow-hidden">
+      <Card href={`/jobs/${job._id}`} variant="default" hover="lift" className="group">
+        <CardImage aspectRatio="4/3">
           <ImageSlider images={allImages} />
-          {/* Compact price badge */}
-          <div className="absolute top-2.5 right-2.5 px-2 py-1 rounded-lg bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-[#D2691E]/10">
-            <span className="text-xs font-bold text-[#D2691E]">
-              {formatBudget()}
-            </span>
-          </div>
-        </div>
-        <div className="p-3.5">
-          <h3 className="font-medium text-[13px] line-clamp-2 mb-1.5 text-[var(--color-text-primary)] group-hover:text-[#D2691E] transition-colors">
+          <CardBadge position="top-right" variant="glass" color="primary">
+            {formatBudget()}
+          </CardBadge>
+        </CardImage>
+        <CardContent spacing="tight">
+          <CardTitle size="sm" truncate={2} className="mb-1.5">
             {job.title}
-          </h3>
+          </CardTitle>
           <p className="text-[11px] text-[var(--color-text-muted)]">
             {truncateLocation(job.location)}
           </p>
-        </div>
-      </Link>
+        </CardContent>
+      </Card>
     );
   }
 
   // List variant
   if (variant === "list") {
     return (
-      <Link
-        href={`/jobs/${job._id}`}
-        className="group flex items-center gap-3 py-3 border-b-2 border-terracotta-200 dark:border-terracotta-500/30 hover:bg-terracotta-500/5 transition-colors -mx-2 px-2 rounded-lg"
-      >
-        <Avatar
-          src={job.clientId?.avatar}
-          name={job.clientId?.name || "Client"}
-          size="sm"
-          rounded="full"
-        />
-        <div className="flex-1 min-w-0">
-          <h3 className="font-medium text-sm text-[var(--color-text-primary)] group-hover:text-[#D2691E] transition-colors truncate">
-            {job.title}
-          </h3>
-          <p className="text-xs text-[var(--color-text-muted)]">
-            {truncateLocation(job.location)} · {getTimeAgo(job.createdAt)}
-          </p>
+      <Card href={`/jobs/${job._id}`} variant="subtle" hover="lift" padding="sm" className="group">
+        <div className="flex items-center gap-3">
+          <Avatar
+            src={job.clientId?.avatar}
+            name={job.clientId?.name || "Client"}
+            size="sm"
+            rounded="full"
+          />
+          <div className="flex-1 min-w-0">
+            <h3 className="font-medium text-sm text-[var(--color-text-primary)] group-hover:text-[#D2691E] transition-colors truncate">
+              {job.title}
+            </h3>
+            <p className="text-xs text-[var(--color-text-muted)]">
+              {truncateLocation(job.location)} · {getTimeAgo(job.createdAt)}
+            </p>
+          </div>
+          <span className="font-bold text-sm text-[#D2691E]">
+            {formatBudget()}
+          </span>
         </div>
-        <span className="font-bold text-sm text-[#D2691E]">
-          {formatBudget()}
-        </span>
-      </Link>
+      </Card>
     );
   }
 
-  // Default variant - Transparent terracotta card
+  // Default variant - Using Card component
   return (
-    <Link
+    <Card
       href={`/jobs/${job._id}`}
-      className={`group relative block h-full rounded-2xl transition-all duration-300 ease-out overflow-hidden backdrop-blur-sm bg-transparent ${
+      variant={isUrgent ? "elevated" : "default"}
+      hover="lift"
+      className={`group h-full ${
         isUrgent
-          ? "border-2 border-terracotta-500 shadow-lg"
+          ? "ring-2 ring-[#D2691E] ring-offset-2 ring-offset-[#FFFDF9] dark:ring-offset-[#1c1917]"
           : isExpired
-            ? "border-2 border-red-400/40 dark:border-red-500/30"
-            : "border-2 border-terracotta-200 dark:border-terracotta-500/30"
-      } hover:border-terracotta-400 dark:hover:border-terracotta-500/50 hover:-translate-y-0.5`}
+            ? "opacity-75"
+            : ""
+      }`}
     >
-      {/* Image Slider Section - Always show */}
-      <div className="aspect-[16/10] relative overflow-hidden">
+      {/* Image Slider Section */}
+      <CardImage aspectRatio="16/10">
         <ImageSlider images={allImages} />
 
         {/* Budget badge - top right */}
-        <div className="absolute top-3 right-3 z-20">
-          <div className="px-3 py-1.5 rounded-xl bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-[#D2691E]/10">
-            <span className="text-sm font-bold text-[#D2691E]">
-              {formatBudget()}
-            </span>
-          </div>
-        </div>
+        <CardBadge position="top-right" variant="glass" color="primary" className="px-3 py-1.5">
+          <span className="text-sm font-bold">{formatBudget()}</span>
+        </CardBadge>
 
         {/* Category badge - top left */}
         {job.category && (
-          <div className="absolute top-3 left-3 px-2.5 py-1 rounded-lg text-[10px] font-semibold uppercase tracking-wider z-20 bg-[#D2691E] text-white">
-            {getCategoryLabel(job.category)}
-          </div>
+          <CardBadge position="top-left" variant="solid" color="primary" className="text-[10px] uppercase tracking-wider">
+            {getCategoryLabel(job.category, locale)}
+          </CardBadge>
         )}
-      </div>
+      </CardImage>
 
-      <div className="p-4 flex flex-col">
+      <CardContent spacing="normal">
         {/* Top row: New badge + Time */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
@@ -508,9 +513,9 @@ export default function JobCard({
         </div>
 
         {/* Title */}
-        <h3 className="text-[15px] font-semibold leading-snug text-[var(--color-text-primary)] group-hover:text-[#D2691E] transition-colors line-clamp-2 mb-2">
+        <CardTitle size="md" truncate={2} className="mb-2">
           {job.title}
-        </h3>
+        </CardTitle>
 
         {/* Description */}
         <p className="text-[12px] leading-relaxed text-[var(--color-text-tertiary)] line-clamp-2 mb-3">
@@ -518,113 +523,109 @@ export default function JobCard({
         </p>
 
         {/* Meta items */}
-        <div className="flex items-center gap-1.5 flex-wrap text-[11px] text-[var(--color-text-muted)] mb-3">
+        <CardMeta className="mb-3">
           {metaItems.map((item, i) => (
-            <span key={i} className="flex items-center gap-1">
-              {i > 0 && <span className="text-[#D2691E]/30">·</span>}
+            <CardMetaItem key={i}>
+              {i > 0 && <span className="text-[#D2691E]/30 mr-1.5">·</span>}
               {item}
-            </span>
+            </CardMetaItem>
           ))}
           {job.proposalCount > 0 && (
-            <>
-              {metaItems.length > 0 && (
-                <span className="text-[#D2691E]/30">·</span>
-              )}
-              <span className="text-[#D2691E] font-medium">
-                {job.proposalCount} შეთავაზება
-              </span>
-            </>
+            <CardMetaItem highlight>
+              {metaItems.length > 0 && <span className="text-[#D2691E]/30 mr-1.5">·</span>}
+              {job.proposalCount} შეთავაზება
+            </CardMetaItem>
           )}
-        </div>
+        </CardMeta>
+      </CardContent>
 
-        {/* Bottom: Client + Actions */}
-        <div className="flex items-center justify-between pt-3 border-t border-terracotta-200 dark:border-terracotta-500/30">
-          <div className="flex items-center gap-2">
-            <Avatar
-              src={job.clientId?.avatar}
-              name={job.clientId?.name || "Client"}
-              size="sm"
-              rounded="full"
-            />
-            <div className="min-w-0">
-              <p className="text-[12px] font-medium text-[var(--color-text-primary)] truncate max-w-[100px]">
-                {job.clientId?.name || "კლიენტი"}
+      {/* Footer: Client + Actions */}
+      <CardFooter className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Avatar
+            src={job.clientId?.avatar}
+            name={job.clientId?.name || "Client"}
+            size="sm"
+            rounded="full"
+          />
+          <div className="min-w-0">
+            <p className="text-[12px] font-medium text-[var(--color-text-primary)] truncate max-w-[100px]">
+              {job.clientId?.name || "კლიენტი"}
+            </p>
+            {truncateLocation(job.location) && (
+              <p className="text-[10px] text-[var(--color-text-muted)] truncate max-w-[100px]">
+                {truncateLocation(job.location)}
               </p>
-              {truncateLocation(job.location) && (
-                <p className="text-[10px] text-[var(--color-text-muted)] truncate max-w-[100px]">
-                  {truncateLocation(job.location)}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onSave?.(job._id);
-              }}
-              className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors ${
-                isSaved
-                  ? "bg-[#D2691E] text-white"
-                  : "bg-[#D2691E]/10 text-[#D2691E] hover:bg-[#D2691E]/20"
-              }`}
-            >
-              <svg
-                className="w-3.5 h-3.5"
-                fill={isSaved ? "currentColor" : "none"}
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"
-                />
-              </svg>
-              {isSaved ? "შენახული" : "შენახვა"}
-            </button>
-
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                window.location.href = `/users/${job.clientId?._id}`;
-              }}
-              className="p-1.5 rounded-lg bg-[#D2691E]/10 text-[#D2691E] hover:bg-[#D2691E]/20 transition-colors"
-            >
-              <svg
-                className="w-3.5 h-3.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-                />
-              </svg>
-            </button>
+            )}
           </div>
         </div>
-      </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onSave?.(job._id);
+            }}
+            className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors ${
+              isSaved
+                ? "bg-[#D2691E] text-white"
+                : "bg-[#D2691E]/10 text-[#D2691E] hover:bg-[#D2691E]/20"
+            }`}
+          >
+            <svg
+              className="w-3.5 h-3.5"
+              fill={isSaved ? "currentColor" : "none"}
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"
+              />
+            </svg>
+            {isSaved ? "შენახული" : "შენახვა"}
+          </button>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              window.location.href = `/users/${job.clientId?._id}`;
+            }}
+            className="p-1.5 rounded-lg bg-[#D2691E]/10 text-[#D2691E] hover:bg-[#D2691E]/20 transition-colors"
+          >
+            <svg
+              className="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+              />
+            </svg>
+          </button>
+        </div>
+      </CardFooter>
 
       {/* Deadline bar - minimal */}
       {job.deadline && timeLeft && (
         <div
           className={`px-4 py-2 flex items-center justify-center gap-2 border-t ${
             isExpired
-              ? "border-red-300/40 dark:border-red-500/30"
+              ? "border-red-300/40 dark:border-red-500/30 bg-red-50/50 dark:bg-red-900/10"
               : isUrgent
-                ? "border-terracotta-400 dark:border-terracotta-500/50"
-                : "border-terracotta-200 dark:border-terracotta-500/30"
+                ? "border-[#D2691E]/30 dark:border-[#CD853F]/40 bg-[#D2691E]/5"
+                : "border-[#E8D5C4]/40 dark:border-[#3d2f24]/40"
           }`}
         >
           <svg
@@ -664,6 +665,6 @@ export default function JobCard({
           )}
         </div>
       )}
-    </Link>
+    </Card>
   );
 }

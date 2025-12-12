@@ -353,7 +353,7 @@ export default function PostJobPage() {
       }
 
       if (references.length > 0) jobData.references = references;
-      if (notifyAllPros) jobData.notifyPros = true;
+      // Note: notifyPros feature not yet implemented in backend
 
       if (uploadedMedia.length) {
         jobData.images = uploadedMedia.filter(m => m.type === 'image').map(m => m.url);
@@ -415,6 +415,17 @@ export default function PostJobPage() {
           <div className="max-w-2xl mx-auto">
             {/* Hero Section */}
             <section className="mb-12">
+              {/* Back Button */}
+              <button
+                onClick={() => router.back()}
+                className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors group mb-6"
+              >
+                <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+                </svg>
+                {locale === 'ka' ? 'უკან' : 'Back'}
+              </button>
+
               {/* Badge */}
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-terracotta-50 dark:bg-terracotta-500/10 border border-terracotta-200 dark:border-terracotta-500/20 mb-6">
                 <div className="w-1.5 h-1.5 rounded-full bg-terracotta-500 animate-pulse" />

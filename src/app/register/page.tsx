@@ -1,5 +1,6 @@
 "use client";
 
+import BackButton from "@/components/common/BackButton";
 import Header from "@/components/common/Header";
 import PortfolioProjectsInput, {
   PortfolioProject,
@@ -1016,6 +1017,9 @@ function RegisterContent() {
 
       {/* Main Content */}
       <main className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-24">
+        <div className="mb-6">
+          <BackButton />
+        </div>
         {/* Title */}
         <div className="text-center mb-10">
           <h1

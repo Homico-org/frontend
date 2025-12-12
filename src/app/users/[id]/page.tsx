@@ -1,8 +1,10 @@
 'use client';
 
+import BackButton from '@/components/common/BackButton';
 import Header from '@/components/common/Header';
 import Avatar from '@/components/common/Avatar';
 import JobCard from '@/components/common/JobCard';
+import ArchitecturalBackground from '@/components/browse/ArchitecturalBackground';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
@@ -201,6 +203,7 @@ export default function UserProfilePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[var(--color-bg-primary)]">
+        <ArchitecturalBackground />
         <Header />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="flex flex-col items-center gap-4">
@@ -217,6 +220,7 @@ export default function UserProfilePage() {
   if (error || !profile) {
     return (
       <div className="min-h-screen bg-[var(--color-bg-primary)]">
+        <ArchitecturalBackground />
         <Header />
         <div className="py-16 text-center">
           <div className="max-w-md mx-auto">
@@ -242,6 +246,7 @@ export default function UserProfilePage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-primary)]">
+      <ArchitecturalBackground />
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap');
 
@@ -316,6 +321,9 @@ export default function UserProfilePage() {
 
       {/* Main Content */}
       <main className="user-page">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-4">
+          <BackButton />
+        </div>
         <div className={`transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
 
           {/* Profile Section */}

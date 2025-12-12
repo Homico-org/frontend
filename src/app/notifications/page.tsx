@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNotifications, Notification, NotificationType } from '@/contexts/NotificationContext';
+import Header from '@/components/common/Header';
 import AppBackground from '@/components/common/AppBackground';
 import {
   ArrowLeft,
@@ -113,8 +114,6 @@ export default function NotificationsPage() {
   const filters: { key: FilterKey; label: string; labelKa: string }[] = [
     { key: 'all', label: 'All', labelKa: 'ყველა' },
     { key: 'unread', label: 'Unread', labelKa: 'წაუკითხავი' },
-    { key: 'jobs', label: 'Jobs', labelKa: 'სამუშაოები' },
-    { key: 'messages', label: 'Messages', labelKa: 'შეტყობინებები' },
     { key: 'reviews', label: 'Reviews', labelKa: 'შეფასებები' },
   ];
 
@@ -184,10 +183,14 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="min-h-screen pb-20 relative overflow-hidden">
+    <div className="min-h-screen pb-20 relative overflow-hidden" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+      {/* Background with decorative objects */}
       <AppBackground />
 
-      {/* Header Section */}
+      {/* Main Header */}
+      <Header />
+
+      {/* Page Header Section */}
       <div
         className="relative border-b backdrop-blur-xl"
         style={{
@@ -198,12 +201,22 @@ export default function NotificationsPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {/* Back Button */}
           <button
-            onClick={() => router.push('/browse')}
+            onClick={() => router.back()}
             className="group inline-flex items-center gap-2 text-sm transition-all duration-300 mb-6"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform duration-300" />
-            <span>{locale === 'ka' ? 'უკან' : 'Back'}</span>
+            <div
+              className="w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-105"
+              style={{
+                background: 'rgba(210, 105, 30, 0.08)',
+                border: '1px solid rgba(210, 105, 30, 0.12)',
+              }}
+            >
+              <ArrowLeft className="h-4 w-4 text-[#D2691E] dark:text-[#CD853F] group-hover:-translate-x-0.5 transition-transform duration-300" />
+            </div>
+            <span className="group-hover:text-[#D2691E] dark:group-hover:text-[#CD853F] transition-colors">
+              {locale === 'ka' ? 'უკან' : 'Back'}
+            </span>
           </button>
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

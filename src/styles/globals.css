@@ -30,11 +30,11 @@
   --color-border-subtle: #dddad4;
   --color-border-strong: #b5b2ab;
 
-  /* Deep Sage Emerald - primary brand accent */
-  --color-accent: #3d9970;
-  --color-accent-hover: #2d8760;
-  --color-accent-soft: rgba(61, 153, 112, 0.1);
-  --color-accent-muted: rgba(61, 153, 112, 0.15);
+  /* Warm Terracotta - primary brand accent */
+  --color-accent: #D2691E;
+  --color-accent-hover: #B8560E;
+  --color-accent-soft: rgba(210, 105, 30, 0.1);
+  --color-accent-muted: rgba(210, 105, 30, 0.15);
 
   /* Warm Terracotta Highlight */
   --color-highlight: #c45d3e;
@@ -88,11 +88,11 @@
   --color-border-subtle: #32323a;
   --color-border-strong: #52525a;
 
-  /* Brighter Sage for dark mode visibility */
-  --color-accent: #5cc98e;
-  --color-accent-hover: #7dd9a6;
-  --color-accent-soft: rgba(92, 201, 142, 0.12);
-  --color-accent-muted: rgba(92, 201, 142, 0.18);
+  /* Warm Terracotta for dark mode */
+  --color-accent: #CD853F;
+  --color-accent-hover: #D2691E;
+  --color-accent-soft: rgba(205, 133, 63, 0.12);
+  --color-accent-muted: rgba(205, 133, 63, 0.18);
 
   /* Warm Terracotta for dark mode */
   --color-highlight: #e87a5c;

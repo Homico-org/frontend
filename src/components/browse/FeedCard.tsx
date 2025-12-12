@@ -1,6 +1,7 @@
 'use client';
 
 import LikeButton from '@/components/common/LikeButton';
+import Card, { CardImage, CardContent, CardBadge } from '@/components/common/Card';
 import { FeedItem, FeedItemType } from '@/types';
 import Link from 'next/link';
 import { useState, useCallback } from 'react';
@@ -44,106 +45,101 @@ export default function FeedCard({ item, onLike, isAuthenticated = false }: Feed
   };
 
   return (
-    <Link
-      href={`/professionals/${item.pro._id}`}
-      className="group block"
-    >
-      <div className="relative rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 shadow-sm shadow-[#D2691E]/5 hover:shadow-lg hover:shadow-[#D2691E]/10 border border-[#D2691E]/10 bg-[#D2691E]/[0.02] hover:bg-[#D2691E]/[0.04]">
-        {/* Image */}
-        <div className="relative aspect-[4/3] overflow-hidden">
-          {isBeforeAfter ? (
-            <div
-              className="relative w-full h-full cursor-ew-resize select-none"
-              onMouseDown={() => setIsDragging(true)}
-              onMouseUp={() => setIsDragging(false)}
-              onMouseLeave={() => setIsDragging(false)}
-              onMouseMove={handleSliderMove}
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSliderMove(e); }}
-              onTouchStart={() => setIsDragging(true)}
-              onTouchEnd={() => setIsDragging(false)}
-              onTouchMove={handleSliderMove}
-            >
-              <img src={item.afterImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
-              <div className="absolute inset-0 overflow-hidden" style={{ width: `${sliderPosition}%` }}>
-                <img src={item.beforeImage} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ width: `${100 / (sliderPosition / 100)}%`, maxWidth: 'none' }} />
-              </div>
-              <div className="absolute top-0 bottom-0 z-20" style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}>
-                <div className="absolute inset-0 w-0.5 bg-white/80" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/90 shadow flex items-center justify-center">
-                  <svg className="w-3 h-3 text-[#D2691E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-                  </svg>
-                </div>
-              </div>
-              {/* Before/After labels */}
-              <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/50 text-white text-[10px] font-medium z-10">
-                მანამდე
-              </div>
-              <div className="absolute top-2 right-2 px-2 py-0.5 rounded bg-[#D2691E] text-white text-[10px] font-medium z-10">
-                შემდეგ
+    <Card href={`/professionals/${item.pro._id}`} variant="default" hover="lift" className="group">
+      {/* Image Section */}
+      <CardImage aspectRatio="4/3">
+        {isBeforeAfter ? (
+          <div
+            className="relative w-full h-full cursor-ew-resize select-none"
+            onMouseDown={() => setIsDragging(true)}
+            onMouseUp={() => setIsDragging(false)}
+            onMouseLeave={() => setIsDragging(false)}
+            onMouseMove={handleSliderMove}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSliderMove(e); }}
+            onTouchStart={() => setIsDragging(true)}
+            onTouchEnd={() => setIsDragging(false)}
+            onTouchMove={handleSliderMove}
+          >
+            <img src={item.afterImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 overflow-hidden" style={{ width: `${sliderPosition}%` }}>
+              <img src={item.beforeImage} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ width: `${100 / (sliderPosition / 100)}%`, maxWidth: 'none' }} />
+            </div>
+            <div className="absolute top-0 bottom-0 z-20" style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}>
+              <div className="absolute inset-0 w-0.5 bg-white/80" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/90 shadow flex items-center justify-center">
+                <svg className="w-3 h-3 text-[#D2691E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+                </svg>
               </div>
             </div>
-          ) : (
-            <>
-              {!imageError ? (
-                <img
-                  src={item.images[currentImageIndex]}
-                  alt={item.title}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                  onError={() => setImageError(true)}
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#D2691E]/5 to-[#CD853F]/10">
-                  <svg className="w-12 h-12 text-[#D2691E]/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                  </svg>
-                </div>
-              )}
-              {hasMultipleImages && (
-                <>
-                  <button onClick={prevImage} className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                    <svg className="w-3.5 h-3.5 text-[#D2691E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                  <button onClick={nextImage} className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                    <svg className="w-3.5 h-3.5 text-[#D2691E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-black/50 text-white text-[10px] z-10">
-                    {currentImageIndex + 1} / {totalImages}
-                  </div>
-                </>
-              )}
-            </>
-          )}
-
-          {/* Like - top right */}
-          {isAuthenticated && (
-            <div className="absolute top-2 right-2 z-10" onClick={(e) => e.preventDefault()}>
-              <LikeButton
-                isLiked={item.isLiked}
-                likeCount={item.likeCount}
-                onToggle={onLike || (() => {})}
-                variant="minimal"
-                size="sm"
-                showCount={false}
+            {/* Before/After labels */}
+            <CardBadge position="top-left" variant="glass" color="neutral" className="!bg-black/50 !text-white !border-0">
+              მანამდე
+            </CardBadge>
+            <CardBadge position="top-right" variant="solid" color="primary">
+              შემდეგ
+            </CardBadge>
+          </div>
+        ) : (
+          <>
+            {!imageError ? (
+              <img
+                src={item.images[currentImageIndex]}
+                alt={item.title}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                onError={() => setImageError(true)}
               />
-            </div>
-          )}
-        </div>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#D2691E]/5 to-[#CD853F]/10">
+                <svg className="w-12 h-12 text-[#D2691E]/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                </svg>
+              </div>
+            )}
+            {hasMultipleImages && (
+              <>
+                <button onClick={prevImage} className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 border border-[#D2691E]/10">
+                  <svg className="w-3.5 h-3.5 text-[#D2691E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button onClick={nextImage} className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 border border-[#D2691E]/10">
+                  <svg className="w-3.5 h-3.5 text-[#D2691E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-lg bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm text-[#D2691E] text-[10px] font-semibold z-20 border border-[#D2691E]/10">
+                  {currentImageIndex + 1} / {totalImages}
+                </div>
+              </>
+            )}
+          </>
+        )}
 
-        {/* Simple footer - compact on mobile */}
-        <div className="p-2 sm:p-3 flex items-center gap-2 sm:gap-3">
+        {/* Like button - top right (only if not before/after, since that uses badges) */}
+        {isAuthenticated && !isBeforeAfter && (
+          <div className="absolute top-2 right-2 z-20" onClick={(e) => e.preventDefault()}>
+            <LikeButton
+              isLiked={item.isLiked}
+              likeCount={item.likeCount}
+              onToggle={onLike || (() => {})}
+              variant="minimal"
+              size="sm"
+              showCount={false}
+            />
+          </div>
+        )}
+      </CardImage>
+
+      {/* Footer - using CardContent for consistency */}
+      <CardContent spacing="tight">
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Pro avatar */}
           <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-[#D2691E]/20">
             {item.pro.avatar ? (
               <img src={item.pro.avatar} alt="" className="w-full h-full object-cover" />
             ) : (
-              <div
-                className="w-full h-full flex items-center justify-center text-white text-[10px] sm:text-xs font-medium bg-gradient-to-br from-[#D2691E] to-[#CD853F]"
-              >
+              <div className="w-full h-full flex items-center justify-center text-white text-[10px] sm:text-xs font-medium bg-gradient-to-br from-[#D2691E] to-[#CD853F]">
                 {item.pro.name.charAt(0)}
               </div>
             )}
@@ -167,7 +163,7 @@ export default function FeedCard({ item, onLike, isAuthenticated = false }: Feed
             </p>
           </div>
         </div>
-      </div>
-    </Link>
+      </CardContent>
+    </Card>
   );
 }

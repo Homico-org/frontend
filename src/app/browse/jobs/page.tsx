@@ -1,20 +1,13 @@
 "use client";
 
 import JobCard from "@/components/common/JobCard";
+import { BUDGET_FILTERS } from "@/components/browse/JobsFilterSection";
 import { useAuth } from "@/contexts/AuthContext";
+import { useBrowseContext } from "@/contexts/BrowseContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const SAVED_JOBS_KEY = "homi_saved_jobs";
-
-// Budget filter options
-const BUDGET_FILTERS = [
-  { key: 'all', name: 'Any Budget', nameKa: 'ნებისმიერი' },
-  { key: 'under-500', name: 'Under ₾500', nameKa: '₾500-მდე', max: 500 },
-  { key: '500-2000', name: '₾500 - ₾2000', nameKa: '₾500 - ₾2000', min: 500, max: 2000 },
-  { key: '2000-5000', name: '₾2000 - ₾5000', nameKa: '₾2000 - ₾5000', min: 2000, max: 5000 },
-  { key: 'over-5000', name: 'Over ₾5000', nameKa: '₾5000+', min: 5000 },
-];
 
 interface MediaItem {
   type: "image" | "video";
@@ -57,13 +50,12 @@ interface Job {
 export default function JobsPage() {
   const { locale } = useLanguage();
   const { user, isLoading: isAuthLoading } = useAuth();
+  const { selectedBudget } = useBrowseContext();
 
   const isPro = user?.role === "pro";
 
   // Get user's categories from their profile
   const userCategories = user?.selectedCategories || [];
-
-  const [selectedBudget, setSelectedBudget] = useState<string>('all');
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -288,54 +280,6 @@ export default function JobsPage() {
 
   return (
     <>
-      {/* Jobs Filters */}
-      <div className="mb-6 space-y-4">
-        {/* Budget Filter */}
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-medium text-[var(--color-text-tertiary)]">
-            {locale === 'ka' ? 'ბიუჯეტი:' : 'Budget:'}
-          </span>
-          <div className="flex flex-wrap gap-1.5">
-            {BUDGET_FILTERS.map((budget) => (
-              <button
-                key={budget.key}
-                onClick={() => setSelectedBudget(budget.key)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all duration-200 ${
-                  selectedBudget === budget.key
-                    ? 'bg-[#D2691E]/15 text-[#D2691E] border border-[#D2691E]/30'
-                    : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[#D2691E]/5 border border-transparent'
-                }`}
-              >
-                {locale === 'ka' ? budget.nameKa : budget.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Results count */}
-        {!isLoading && (
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-[var(--color-text-tertiary)]">
-              {totalCount > 0 ? (
-                locale === 'ka'
-                  ? `${totalCount} შეთავაზება მოიძებნა`
-                  : `${totalCount} opportunities found`
-              ) : (
-                locale === 'ka' ? 'შეთავაზებები არ მოიძებნა' : 'No opportunities found'
-              )}
-            </p>
-            {selectedBudget !== 'all' && (
-              <button
-                onClick={() => setSelectedBudget('all')}
-                className="text-xs font-medium text-[#D2691E] hover:text-[#B8560E] transition-colors"
-              >
-                {locale === 'ka' ? 'ფილტრის გასუფთავება' : 'Clear filter'}
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-
       {/* Jobs Grid */}
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">

@@ -16,7 +16,7 @@ export default function AppBackground() {
   if (isMobile) return null;
 
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: -1 }}>
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
       {/* Visible Grid Pattern */}
       <div
         className="absolute inset-0"

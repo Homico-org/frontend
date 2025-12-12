@@ -9,6 +9,8 @@ interface BrowseContextType {
   setSelectedSubcategory: (subcategory: string | null) => void;
   minRating: number;
   setMinRating: (rating: number) => void;
+  selectedBudget: string;
+  setSelectedBudget: (budget: string) => void;
 }
 
 const BrowseContext = createContext<BrowseContextType | null>(null);
@@ -35,6 +37,7 @@ export function BrowseProvider({
   const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(initialSubcategory);
   const [minRating, setMinRating] = useState<number>(0);
+  const [selectedBudget, setSelectedBudget] = useState<string>('all');
 
   return (
     <BrowseContext.Provider
@@ -45,6 +48,8 @@ export function BrowseProvider({
         setSelectedSubcategory,
         minRating,
         setMinRating,
+        selectedBudget,
+        setSelectedBudget,
       }}
     >
       {children}
