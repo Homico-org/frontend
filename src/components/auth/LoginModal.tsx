@@ -273,7 +273,17 @@ export default function LoginModal() {
                   onClick={() => setFormData({ identifier: 'client@demo.com', password: 'demo123' })}
                   className="auth-demo-btn group"
                 >
-                  <span>{locale === 'ka' ? 'კლიენტი' : 'Client'}</span>
+                  <span>{locale === 'ka' ? 'კლიენტი 1' : 'Client 1'}</span>
+                  <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#D2691E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ identifier: 'lasha.client@demo.com', password: 'demo123' })}
+                  className="auth-demo-btn group"
+                >
+                  <span>{locale === 'ka' ? 'კლიენტი 2' : 'Client 2'}</span>
                   <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#D2691E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
@@ -283,7 +293,17 @@ export default function LoginModal() {
                   onClick={() => setFormData({ identifier: 'giorgi.pro@demo.com', password: 'demo123' })}
                   className="auth-demo-btn group"
                 >
-                  <span>{locale === 'ka' ? 'პრო' : 'Pro'}</span>
+                  <span>{locale === 'ka' ? 'პრო 1' : 'Pro 1'}</span>
+                  <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#D2691E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ identifier: 'nino.pro@demo.com', password: 'demo123' })}
+                  className="auth-demo-btn group"
+                >
+                  <span>{locale === 'ka' ? 'პრო 2' : 'Pro 2'}</span>
                   <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#D2691E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
