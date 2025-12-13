@@ -62,7 +62,6 @@ export default function ProfessionalsPage() {
         );
 
         if (!response.ok) {
-          // Stop infinite scroll on error
           setHasMore(false);
           throw new Error("Failed to fetch");
         }
@@ -92,11 +91,9 @@ export default function ProfessionalsPage() {
         }
 
         setTotalCount(pagination.total || result.total || result.totalCount || 0);
-        // Use pagination.hasMore if available, otherwise fallback to checking length
         setHasMore(pagination.hasMore ?? (profiles.length === 12 && profiles.length > 0));
       } catch (error) {
         console.error("Error fetching professionals:", error);
-        // Stop infinite scroll on any error
         setHasMore(false);
       } finally {
         setIsLoading(false);
@@ -142,46 +139,96 @@ export default function ProfessionalsPage() {
     await toggleLike(LikeTargetType.PRO_PROFILE, proId);
   };
 
+  // Premium Loading skeleton
+  const ProfessionalsSkeleton = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      {[...Array(6)].map((_, i) => (
+        <div
+          key={i}
+          className="pro-card-premium overflow-hidden animate-pulse"
+          style={{ animationDelay: `${i * 100}ms` }}
+        >
+          {/* Image skeleton */}
+          <div className="aspect-[4/3] bg-gradient-to-br from-[#D2691E]/5 to-[#CD853F]/10 relative">
+            <div className="absolute inset-0 shimmer-premium" />
+            {/* Status badge skeleton */}
+            <div className="absolute top-3 right-3 w-16 h-6 rounded-full bg-[#D2691E]/10" />
+            {/* Stats overlay skeleton */}
+            <div className="absolute bottom-0 left-0 right-0 p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-14 h-4 rounded bg-white/20" />
+                <div className="w-12 h-4 rounded bg-white/20" />
+              </div>
+              <div className="w-36 h-6 rounded bg-white/30" />
+            </div>
+          </div>
+          {/* Content skeleton */}
+          <div className="p-4">
+            <div className="h-5 rounded-lg w-2/3 mb-3 bg-[#D2691E]/10" />
+            <div className="h-4 rounded-lg w-full bg-[#D2691E]/5" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  // Premium Empty state
+  const EmptyState = () => (
+    <div className="flex flex-col items-center justify-center py-20 px-4">
+      <div className="relative mb-6">
+        <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#D2691E]/10 to-[#CD853F]/5 flex items-center justify-center -rotate-3">
+          <svg
+            className="w-12 h-12 text-[#D2691E]/40"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.5"
+              d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"
+            />
+          </svg>
+        </div>
+        <div className="absolute -top-2 -left-2 w-6 h-6 rounded-full bg-[#D2691E]/20 animate-float-slow" />
+        <div className="absolute -bottom-1 -right-3 w-4 h-4 rounded-full bg-[#CD853F]/15 animate-float-slower" />
+      </div>
+
+      <h3 className="browse-title text-xl sm:text-2xl text-gradient-terracotta mb-2">
+        {locale === "ka" ? "სპეციალისტები არ მოიძებნა" : "No professionals found"}
+      </h3>
+      <p className="text-sm sm:text-base text-[var(--color-text-secondary)] text-center max-w-md font-serif-italic">
+        {locale === "ka"
+          ? "სცადეთ სხვა ფილტრები ან კატეგორია სასურველი სპეციალისტის მოსაძებნად"
+          : "Try adjusting your filters or explore different categories to find the right professional"}
+      </p>
+    </div>
+  );
+
   return (
-    <>
+    <div className="space-y-6">
+      {/* Results count */}
+      {!isLoading && results.length > 0 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-[var(--color-text-tertiary)]">
+            <span className="font-semibold text-[#D2691E]">{totalCount}</span>
+            {' '}
+            {locale === 'ka' ? 'სპეციალისტი' : 'professionals'}
+          </p>
+        </div>
+      )}
+
       {/* Results Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
-          {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className="rounded-2xl border border-[#D2691E]/10 bg-[#D2691E]/[0.02] overflow-hidden animate-pulse"
-            >
-              {/* Image skeleton */}
-              <div className="aspect-[4/3] bg-gradient-to-br from-[#D2691E]/5 to-[#CD853F]/10 relative">
-                {/* Status badge skeleton */}
-                <div className="absolute top-2.5 right-2.5 w-16 h-5 rounded-full bg-[#D2691E]/10" />
-                {/* Stats overlay skeleton */}
-                <div className="absolute bottom-0 left-0 right-0 p-3">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-12 h-3 rounded bg-white/20" />
-                    <div className="w-10 h-3 rounded bg-white/20" />
-                  </div>
-                  <div className="w-32 h-5 rounded bg-white/30" />
-                </div>
-              </div>
-              {/* Content skeleton */}
-              <div className="p-3">
-                {/* Category */}
-                <div className="h-4 rounded w-2/3 mb-2 bg-[#D2691E]/10" />
-                {/* Bio */}
-                <div className="h-3 rounded w-full bg-[#D2691E]/5" />
-              </div>
-            </div>
-          ))}
-        </div>
+        <ProfessionalsSkeleton />
       ) : results.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {results.map((profile, index) => (
             <div
               key={profile._id}
-              className="animate-fade-in"
-              style={{ animationDelay: `${Math.min(index, 8) * 50}ms` }}
+              className="animate-stagger"
+              style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
             >
               <ProCard
                 profile={{
@@ -197,43 +244,32 @@ export default function ProfessionalsPage() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-16">
-          <div
-            className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: "var(--color-bg-tertiary)" }}
-          >
-            <svg
-              className="w-8 h-8"
-              style={{ color: "var(--color-text-tertiary)" }}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-                d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"
-              />
-            </svg>
-          </div>
-          <h3 className="text-lg font-semibold mb-2" style={{ color: "var(--color-text-primary)" }}>
-            {locale === "ka" ? "სპეციალისტები არ მოიძებნა" : "No professionals found"}
-          </h3>
-          <p style={{ color: "var(--color-text-secondary)" }}>
-            {locale === "ka" ? "სცადეთ სხვა ფილტრები" : "Try adjusting your filters"}
-          </p>
-        </div>
+        <EmptyState />
       )}
 
       {/* Infinite scroll loader */}
-      <div ref={loaderRef} className="py-10">
+      <div ref={loaderRef} className="flex justify-center py-10">
         {isLoadingMore && (
-          <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#D2691E] border-t-transparent" />
+          <div className="flex items-center gap-4 px-6 py-3 rounded-2xl glass-card">
+            <div className="relative w-5 h-5">
+              <div className="absolute inset-0 rounded-full border-2 border-[#D2691E]/20" />
+              <div className="absolute inset-0 rounded-full border-2 border-[#D2691E] border-t-transparent animate-spin" />
+            </div>
+            <span className="text-sm font-medium text-[var(--color-text-secondary)]">
+              {locale === 'ka' ? 'იტვირთება...' : 'Loading more...'}
+            </span>
+          </div>
+        )}
+        {!hasMore && results.length > 0 && (
+          <div className="flex items-center gap-2 text-sm text-[var(--color-text-tertiary)]">
+            <div className="w-8 h-px bg-gradient-to-r from-transparent via-[#D2691E]/20 to-transparent" />
+            <span className="font-serif-italic">
+              {locale === 'ka' ? 'ყველა სპეციალისტი ნაჩვენებია' : 'All professionals displayed'}
+            </span>
+            <div className="w-8 h-px bg-gradient-to-r from-transparent via-[#D2691E]/20 to-transparent" />
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }

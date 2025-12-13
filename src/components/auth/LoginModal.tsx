@@ -116,46 +116,39 @@ export default function LoginModal() {
         style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
       >
         <div
-          className="relative rounded-[28px] overflow-hidden"
-          style={{
-            backgroundColor: 'var(--color-bg-primary)',
-            boxShadow: '0 40px 80px -20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08)',
-          }}
+          className="auth-modal-premium relative"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="absolute top-0 left-0 right-0 h-1" style={{ background: 'linear-gradient(90deg, #B8560E 0%, #D2691E 50%, #CD853F 100%)' }} />
-
-          <div className="absolute -top-32 -right-32 w-64 h-64 rounded-full pointer-events-none opacity-40" style={{ background: 'radial-gradient(circle, rgba(210, 105, 30, 0.25) 0%, transparent 70%)', filter: 'blur(60px)' }} />
-
           <button
             onClick={closeLoginModal}
-            className="absolute top-5 right-5 w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 group z-10 hover:scale-105 active:scale-95"
-            style={{ backgroundColor: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)' }}
+            className="auth-close-btn"
           >
-            <svg className="w-5 h-5 transition-transform duration-300 group-hover:rotate-90" style={{ color: 'var(--color-text-tertiary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
 
-          <div className="absolute top-6 left-6 px-2 py-1 rounded-md text-[10px] font-medium uppercase tracking-wider hidden sm:block" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)' }}>
+          <div className="auth-esc-badge hidden sm:block">
             ESC
           </div>
 
-          <div className="relative px-8 sm:px-10 pt-16 pb-8 sm:pb-10">
-            <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4 relative">
-                <div className="absolute inset-0 rounded-2xl" style={{ background: 'linear-gradient(135deg, rgba(210, 105, 30, 0.15) 0%, rgba(205, 133, 63, 0.08) 100%)', border: '1px solid rgba(210, 105, 30, 0.2)' }} />
-                <svg className="w-7 h-7 text-[#D2691E] relative" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <div className="relative px-8 sm:px-10 pt-16 pb-8 sm:pb-10 z-10">
+            <div className="text-center mb-8">
+              <div className="auth-icon-premium mx-auto mb-5">
+                <svg className="w-8 h-8 text-[#D2691E]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75" />
                 </svg>
               </div>
-              <h2 className="text-xl sm:text-2xl font-semibold" style={{ color: 'var(--color-text-primary)', letterSpacing: '-0.02em' }}>
-                {locale === 'ka' ? 'შესვლა' : 'Sign in'}
+              <h2 className="text-2xl sm:text-[28px] font-bold tracking-tight" style={{ color: 'var(--color-text-primary)' }}>
+                {locale === 'ka' ? 'კეთილი იყოს შენი დაბრუნება' : 'Welcome back'}
               </h2>
+              <p className="mt-2 text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+                {locale === 'ka' ? 'შედი შენს ანგარიშზე' : 'Sign in to your account'}
+              </p>
             </div>
 
             {error && (
-              <div className="mb-6 p-4 rounded-xl flex items-start gap-3" style={{ backgroundColor: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+              <div className="auth-error mb-6">
                 <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -165,7 +158,7 @@ export default function LoginModal() {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label htmlFor="login-identifier" className="block text-sm font-medium mb-2.5" style={{ color: 'var(--color-text-secondary)' }}>
+                <label htmlFor="login-identifier" className="auth-label">
                   {locale === 'ka' ? 'ტელეფონი ან ელ-ფოსტა' : 'Phone or Email'}
                 </label>
                 <div className="relative">
@@ -177,14 +170,12 @@ export default function LoginModal() {
                     onChange={(e) => setFormData({ ...formData, identifier: e.target.value })}
                     onFocus={() => setFocusedField('identifier')}
                     onBlur={() => setFocusedField(null)}
-                    className="w-full px-4 py-3.5 pr-12 rounded-xl text-base transition-all duration-200 outline-none"
-                    style={{
-                      backgroundColor: 'var(--color-bg-secondary)',
-                      border: `2px solid ${focusedField === 'identifier' ? '#D2691E' : 'var(--color-border)'}`,
-                      color: 'var(--color-text-primary)',
-                      boxShadow: focusedField === 'identifier' ? '0 0 0 4px rgba(210, 105, 30, 0.1)' : 'none',
-                    }}
+                    className={`auth-input-premium ${focusedField === 'identifier' ? 'focused' : ''}`}
                     placeholder="+995 555 123 456"
+                    style={{
+                      borderColor: focusedField === 'identifier' ? '#D2691E' : undefined,
+                      boxShadow: focusedField === 'identifier' ? '0 0 0 4px rgba(210, 105, 30, 0.12), 0 4px 12px -4px rgba(210, 105, 30, 0.15)' : undefined,
+                    }}
                   />
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors duration-200" style={{ color: focusedField === 'identifier' ? '#D2691E' : 'var(--color-text-muted)' }}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -195,7 +186,7 @@ export default function LoginModal() {
               </div>
 
               <div>
-                <label htmlFor="login-password" className="block text-sm font-medium mb-2.5" style={{ color: 'var(--color-text-secondary)' }}>
+                <label htmlFor="login-password" className="auth-label">
                   {locale === 'ka' ? 'პაროლი' : 'Password'}
                 </label>
                 <div className="relative">
@@ -207,14 +198,12 @@ export default function LoginModal() {
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     onFocus={() => setFocusedField('password')}
                     onBlur={() => setFocusedField(null)}
-                    className="w-full px-4 py-3.5 pr-12 rounded-xl text-base transition-all duration-200 outline-none"
-                    style={{
-                      backgroundColor: 'var(--color-bg-secondary)',
-                      border: `2px solid ${focusedField === 'password' ? '#D2691E' : 'var(--color-border)'}`,
-                      color: 'var(--color-text-primary)',
-                      boxShadow: focusedField === 'password' ? '0 0 0 4px rgba(210, 105, 30, 0.1)' : 'none',
-                    }}
+                    className={`auth-input-premium ${focusedField === 'password' ? 'focused' : ''}`}
                     placeholder="••••••••"
+                    style={{
+                      borderColor: focusedField === 'password' ? '#D2691E' : undefined,
+                      boxShadow: focusedField === 'password' ? '0 0 0 4px rgba(210, 105, 30, 0.12), 0 4px 12px -4px rgba(210, 105, 30, 0.15)' : undefined,
+                    }}
                   />
                   <button
                     type="button"
@@ -237,7 +226,7 @@ export default function LoginModal() {
               </div>
 
               <div className="flex justify-end">
-                <Link href="/forgot-password" onClick={closeLoginModal} className="text-sm font-medium text-[#D2691E] dark:text-[#CD853F] hover:text-[#B8560E] dark:hover:text-[#FFDAB9] transition-colors">
+                <Link href="/forgot-password" onClick={closeLoginModal} className="auth-link text-sm">
                   {locale === 'ka' ? 'დაგავიწყდა პაროლი?' : 'Forgot password?'}
                 </Link>
               </div>
@@ -245,52 +234,51 @@ export default function LoginModal() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="relative w-full py-3 px-5 rounded-xl text-white font-medium text-sm transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-[#D2691E]/15 hover:-translate-y-0.5 active:translate-y-0 overflow-hidden"
-                style={{ background: 'linear-gradient(135deg, #B8560E 0%, #D2691E 100%)' }}
+                className="auth-btn-premium w-full"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                     {locale === 'ka' ? 'შესვლა...' : 'Signing in...'}
                   </span>
                 ) : (
-                  locale === 'ka' ? 'შესვლა' : 'Sign in'
+                  <span className="flex items-center justify-center gap-2">
+                    {locale === 'ka' ? 'შესვლა' : 'Sign in'}
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                  </span>
                 )}
               </button>
             </form>
 
-            <div className="relative my-7">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full h-px" style={{ background: 'linear-gradient(90deg, transparent 0%, var(--color-border) 20%, var(--color-border) 80%, transparent 100%)' }} />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="px-4 text-sm font-medium" style={{ backgroundColor: 'var(--color-bg-primary)', color: 'var(--color-text-muted)' }}>
-                  {locale === 'ka' ? 'ან' : 'or'}
-                </span>
-              </div>
+            <div className="auth-divider">
+              <span className="auth-divider-text">
+                {locale === 'ka' ? 'ან' : 'or'}
+              </span>
             </div>
 
             <div className="text-center mb-6">
               <p className="text-[15px]" style={{ color: 'var(--color-text-secondary)' }}>
                 {locale === 'ka' ? 'არ გაქვს ანგარიში?' : "Don't have an account?"}{' '}
-                <Link href="/register" onClick={closeLoginModal} className="font-semibold text-[#D2691E] dark:text-[#CD853F] hover:text-[#B8560E] dark:hover:text-[#FFDAB9] transition-colors">
+                <Link href="/register" onClick={closeLoginModal} className="auth-link">
                   {locale === 'ka' ? 'დარეგისტრირდი' : 'Sign up'}
                 </Link>
               </p>
             </div>
 
             {demoAccounts.length > 0 && (
-              <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
+              <div className="auth-demo-section">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center">
                     <svg className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <p className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+                  <p className="text-xs font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
                     {locale === 'ka' ? 'დემო ანგარიშები' : 'Demo Accounts'}
                   </p>
                 </div>
@@ -300,10 +288,9 @@ export default function LoginModal() {
                       key={account.email}
                       type="button"
                       onClick={() => setFormData({ identifier: account.email, password: 'demo123' })}
-                      className="flex items-center justify-between text-xs rounded-lg px-3 py-2.5 transition-all duration-200 group hover:border-[#D2691E]/50 dark:hover:border-[#CD853F]/50"
-                      style={{ backgroundColor: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)' }}
+                      className="auth-demo-btn group"
                     >
-                      <span className="capitalize font-medium" style={{ color: 'var(--color-text-secondary)' }}>{account.role}</span>
+                      <span className="capitalize">{account.role}</span>
                       <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#D2691E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                       </svg>

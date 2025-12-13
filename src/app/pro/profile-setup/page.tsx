@@ -208,6 +208,7 @@ export default function ProProfileSetupPage() {
   // Progress calculation
   const completedFields = Object.values(validation).filter(Boolean).length;
   const totalFields = Object.keys(validation).length;
+  const progressPercentage = (completedFields / totalFields) * 100;
 
   const handleSubmit = async () => {
     setError('');
@@ -280,9 +281,9 @@ export default function ProProfileSetupPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-primary)]">
+      <div className="pro-setup-page-premium flex items-center justify-center">
         <div className="relative">
-          <div className="w-12 h-12 rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-accent)] animate-spin" />
+          <div className="w-12 h-12 rounded-full border-2 border-[rgba(210,105,30,0.2)] border-t-[#D2691E] animate-spin" />
         </div>
       </div>
     );
@@ -290,64 +291,89 @@ export default function ProProfileSetupPage() {
 
   const categoryInfo = getCategoryInfo();
 
+  // Helper to get step number based on category
+  const getStepNumber = (section: 'about' | 'styles' | 'pricing' | 'portfolio' | 'areas') => {
+    const hasStylesSection = selectedCategory === 'interior-design';
+    const hasAvailabilitySection = selectedCategory === 'home-care';
+    const hasCredentialsSection = selectedCategory === 'architecture';
+
+    switch (section) {
+      case 'about': return 1;
+      case 'styles': return 2;
+      case 'pricing':
+        if (hasStylesSection || hasAvailabilitySection || hasCredentialsSection) return 3;
+        return 2;
+      case 'portfolio':
+        if (hasStylesSection || hasAvailabilitySection || hasCredentialsSection) return 4;
+        return 3;
+      case 'areas':
+        if (hasStylesSection || hasAvailabilitySection || hasCredentialsSection) return 5;
+        return 4;
+      default: return 1;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[var(--color-bg-primary)] overflow-x-hidden">
-      {/* Ambient background */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[var(--color-accent-soft)] rounded-full blur-[120px] translate-x-1/3 -translate-y-1/3 opacity-60" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[var(--color-highlight-soft)] rounded-full blur-[100px] -translate-x-1/3 translate-y-1/3 opacity-40" />
+    <div className="pro-setup-page-premium overflow-x-hidden">
+      {/* Animated background orbs */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="pro-setup-orb pro-setup-orb-1" />
+        <div className="pro-setup-orb pro-setup-orb-2" />
+        <div className="pro-setup-orb pro-setup-orb-3" />
       </div>
 
-      {/* Header */}
-      <header className="relative z-10 py-6 sticky top-0 bg-[var(--color-bg-primary)]/80 backdrop-blur-xl border-b border-[var(--color-border-subtle)]">
+      {/* Premium Header */}
+      <header className="pro-setup-header-premium">
         <div className="container-custom">
           <div className="flex items-center justify-between">
-            <Link href="/browse" className="group flex items-center gap-2">
-              <span className="text-xl font-semibold text-[var(--color-text-primary)] tracking-tight">
+            <Link href="/browse" className="pro-setup-logo group">
+              <span className="pro-setup-logo-text">
                 {locale === 'ka' ? 'ჰომიკო' : 'Homico'}
               </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] group-hover:scale-125 transition-transform" />
+              <span className="pro-setup-logo-dot group-hover:scale-125 transition-transform" />
             </Link>
 
             {user && (
               <div className="flex items-center gap-3">
-                <span className="text-sm text-[var(--color-text-secondary)] hidden sm:block">
+                <span className="text-sm text-[#8B7355] dark:text-[#A89080] hidden sm:block">
                   {user.name || user.email}
                 </span>
-                {avatarPreview ? (
-                  <img src={avatarPreview} alt="" className="w-8 h-8 rounded-full object-cover" />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-[var(--color-accent-soft)] flex items-center justify-center text-[var(--color-accent)] font-medium text-sm">
-                    {(user.name || user.email || '?')[0].toUpperCase()}
-                  </div>
-                )}
+                <div className="pro-setup-user-avatar">
+                  {avatarPreview ? (
+                    <img src={avatarPreview} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-white text-sm font-bold bg-gradient-to-br from-[#D2691E] to-[#B8560E]">
+                      {(user.name || user.email || '?')[0].toUpperCase()}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
         </div>
       </header>
 
-      <main className={`relative z-10 pb-24 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+      <main className={`relative z-10 pb-28 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
         <div className="container-custom pt-8 md:pt-12">
           <div className="max-w-2xl mx-auto">
             {/* Hero Section */}
-            <section className="mb-12">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--color-accent-soft)] border border-[var(--color-accent)]/20 mb-6">
-                <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] animate-pulse" />
-                <span className="text-xs font-medium text-[var(--color-accent)] uppercase tracking-wider">
+            <section className="mb-10">
+              <div className="pro-setup-badge">
+                <span className="pro-setup-badge-dot" />
+                <span className="pro-setup-badge-text">
                   {locale === 'ka' ? 'პროფილის შექმნა' : 'Profile Setup'}
                 </span>
               </div>
 
-              <h1 className="text-3xl md:text-5xl font-bold text-[var(--color-text-primary)] leading-[1.1] tracking-tight mb-4">
+              <h1 className="pro-setup-title">
                 {locale === 'ka' ? (
-                  <>დაასრულე შენი <span className="text-[var(--color-accent)]">პროფილი</span></>
+                  <>დაასრულე შენი <span className="pro-setup-title-accent">პროფილი</span></>
                 ) : (
-                  <>Create Your <span className="text-[var(--color-accent)]">Profile</span></>
+                  <>Create Your <span className="pro-setup-title-accent">Profile</span></>
                 )}
               </h1>
 
-              <p className="text-base md:text-lg text-[var(--color-text-secondary)] max-w-xl mb-8 leading-relaxed">
+              <p className="text-base md:text-lg text-[#8B7355] dark:text-[#A89080] max-w-xl leading-relaxed">
                 {locale === 'ka'
                   ? 'შეავსე პროფილი რომ კლიენტებმა გიპოვონ და დაგიკავშირდნენ.'
                   : 'Complete your profile so clients can find and contact you.'
@@ -358,296 +384,253 @@ export default function ProProfileSetupPage() {
             {/* Main Form */}
             <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
               {/* Section 1: Basic Profile */}
-              <section className="mb-10">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${
-                    validation.bio && validation.experience
-                      ? 'bg-[#D2691E] text-white'
-                      : 'bg-[var(--color-accent)] text-white'
-                  }`}>
+              <section className={`pro-setup-section ${validation.bio && validation.experience ? 'completed' : ''}`}>
+                <div className="pro-setup-section-header">
+                  <div className={`pro-setup-step-number ${validation.bio && validation.experience ? 'completed' : 'active'}`}>
                     {validation.bio && validation.experience ? (
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                       </svg>
-                    ) : '1'}
+                    ) : <span>1</span>}
                   </div>
                   <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h2 className="pro-setup-section-title">
                         {locale === 'ka' ? 'შენს შესახებ' : 'About You'}
                       </h2>
                       {(!validation.bio || !validation.experience) && (
-                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                        <span className="pro-setup-required-badge">
                           {locale === 'ka' ? 'სავალდებულო' : 'Required'}
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-[var(--color-text-tertiary)]">
+                    <p className="pro-setup-section-subtitle">
                       {locale === 'ka' ? 'პროფილის ძირითადი ინფორმაცია' : 'Basic profile information'}
                     </p>
                   </div>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] space-y-5">
-                  {/* Avatar - only show upload section if no avatar from registration */}
-                  {!user?.avatar ? (
-                    <div className="flex items-center gap-4">
-                      <div className="relative">
-                        {avatarPreview ? (
-                          <img src={avatarPreview} alt="" className="w-20 h-20 rounded-2xl object-cover border-2 border-[var(--color-border)]" />
-                        ) : (
-                          <div className="w-20 h-20 rounded-2xl bg-[var(--color-bg-tertiary)] border-2 border-dashed border-[var(--color-border)] flex items-center justify-center">
-                            <svg className="w-8 h-8 text-[var(--color-text-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                          </div>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => avatarInputRef.current?.click()}
-                          className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-[var(--color-accent)] text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                          </svg>
-                        </button>
-                        <input
-                          ref={avatarInputRef}
-                          type="file"
-                          accept="image/*"
-                          onChange={handleAvatarChange}
-                          className="hidden"
-                        />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                          {locale === 'ka' ? 'პროფილის სურათი' : 'Profile Photo'}
-                        </p>
-                        <p className="text-xs text-[var(--color-text-tertiary)]">
-                          {locale === 'ka' ? 'PNG, JPG მაქს. 2MB' : 'PNG, JPG up to 2MB'}
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-4">
-                      <img src={user.avatar} alt="" className="w-20 h-20 rounded-2xl object-cover border-2 border-[#D2691E]/20" />
-                      <div>
-                        <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                          {locale === 'ka' ? 'პროფილის სურათი' : 'Profile Photo'}
-                        </p>
-                        <p className="text-xs text-[#D2691E]/70 flex items-center gap-1">
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                          {locale === 'ka' ? 'ატვირთულია რეგისტრაციისას' : 'Uploaded during registration'}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Years Experience */}
-                  <div>
-                    <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                      <span>{locale === 'ka' ? 'გამოცდილება (წელი)' : 'Years of Experience'}</span>
-                      {validation.experience ? (
-                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#D2691E]">
-                          <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </span>
+                {/* Avatar */}
+                {!user?.avatar ? (
+                  <div
+                    className="pro-setup-avatar-upload mb-6"
+                    onClick={() => avatarInputRef.current?.click()}
+                  >
+                    <div className="pro-setup-avatar-preview">
+                      {avatarPreview ? (
+                        <img src={avatarPreview} alt="" />
                       ) : (
-                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/30">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                        </span>
+                        <svg className="w-8 h-8 pro-setup-avatar-preview-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
                       )}
-                    </label>
+                      <button type="button" className="pro-setup-avatar-add-btn">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div className="pro-setup-avatar-info">
+                      <h4>{locale === 'ka' ? 'პროფილის სურათი' : 'Profile Photo'}</h4>
+                      <p>{locale === 'ka' ? 'PNG, JPG მაქს. 2MB' : 'PNG, JPG up to 2MB'}</p>
+                    </div>
                     <input
-                      type="number"
-                      min="0"
-                      max="50"
-                      value={formData.yearsExperience}
-                      onChange={(e) => setFormData(prev => ({ ...prev, yearsExperience: e.target.value }))}
-                      className={`w-full px-4 py-3 bg-[var(--color-bg-primary)] border rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:ring-2 transition-all ${
-                        validation.experience
-                          ? 'border-[#D2691E]/30 focus:border-[#D2691E] focus:ring-[#D2691E]/20'
-                          : 'border-[var(--color-border-subtle)] focus:border-[var(--color-accent)] focus:ring-[var(--color-accent-soft)]'
-                      }`}
-                      placeholder="0"
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarChange}
+                      className="hidden"
                     />
                   </div>
+                ) : (
+                  <div className="pro-setup-avatar-existing mb-6">
+                    <img src={user.avatar} alt="" className="pro-setup-avatar-existing-img" />
+                    <div className="pro-setup-avatar-existing-info">
+                      <h4>{locale === 'ka' ? 'პროფილის სურათი' : 'Profile Photo'}</h4>
+                      <span className="pro-setup-avatar-existing-badge">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        {locale === 'ka' ? 'ატვირთულია რეგისტრაციისას' : 'Uploaded during registration'}
+                      </span>
+                    </div>
+                  </div>
+                )}
 
-                  {/* Bio */}
-                  <div>
-                    <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                      <span>{locale === 'ka' ? 'შენს შესახებ' : 'About You'}</span>
-                      {validation.bio ? (
-                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#D2691E]">
-                          <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </span>
-                      ) : (
-                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/30">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                        </span>
+                {/* Years Experience */}
+                <div className="pro-setup-input-group">
+                  <label className="pro-setup-label">
+                    <span>{locale === 'ka' ? 'გამოცდილება (წელი)' : 'Years of Experience'}</span>
+                    <span className={`pro-setup-label-check ${validation.experience ? 'completed' : 'pending'}`}>
+                      {validation.experience && (
+                        <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
                       )}
-                    </label>
-                    <textarea
-                      rows={4}
-                      value={formData.bio}
-                      onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                      className={`w-full px-4 py-3 bg-[var(--color-bg-primary)] border rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 transition-all resize-none ${
-                        validation.bio
-                          ? 'border-[#D2691E]/30 focus:border-[#D2691E] focus:ring-[#D2691E]/20'
-                          : 'border-[var(--color-border-subtle)] focus:border-[var(--color-accent)] focus:ring-[var(--color-accent-soft)]'
-                      }`}
-                      placeholder={locale === 'ka' ? 'მოკლედ აღწერე შენი გამოცდილება და უნარები...' : 'Briefly describe your experience and skills...'}
-                    />
-                  </div>
+                    </span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="50"
+                    value={formData.yearsExperience}
+                    onChange={(e) => setFormData(prev => ({ ...prev, yearsExperience: e.target.value }))}
+                    className={`pro-setup-input-premium ${validation.experience ? 'valid' : ''}`}
+                    placeholder="0"
+                  />
+                </div>
+
+                {/* Bio */}
+                <div className="pro-setup-input-group">
+                  <label className="pro-setup-label">
+                    <span>{locale === 'ka' ? 'შენს შესახებ' : 'About You'}</span>
+                    <span className={`pro-setup-label-check ${validation.bio ? 'completed' : 'pending'}`}>
+                      {validation.bio && (
+                        <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </span>
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={formData.bio}
+                    onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                    className={`pro-setup-textarea-premium ${validation.bio ? 'valid' : ''}`}
+                    placeholder={locale === 'ka' ? 'მოკლედ აღწერე შენი გამოცდილება და უნარები...' : 'Briefly describe your experience and skills...'}
+                  />
                 </div>
               </section>
 
-              {/* Section 2: Design Styles (for interior-design) - Pill/tag style */}
+              {/* Section 2: Design Styles (for interior-design) */}
               {selectedCategory === 'interior-design' && (
-                <section className="mb-10">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${
-                      validation.designStyles
-                        ? 'bg-[#D2691E] text-white'
-                        : 'bg-[var(--color-accent)] text-white'
-                    }`}>
+                <section className={`pro-setup-section ${validation.designStyles ? 'completed' : ''}`}>
+                  <div className="pro-setup-section-header">
+                    <div className={`pro-setup-step-number ${validation.designStyles ? 'completed' : validation.bio && validation.experience ? 'active' : ''}`}>
                       {validation.designStyles ? (
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                         </svg>
-                      ) : '2'}
+                      ) : <span>2</span>}
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2 className="pro-setup-section-title">
                           {locale === 'ka' ? 'დიზაინის სტილები' : 'Design Styles'}
                         </h2>
                         {!validation.designStyles && (
-                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                          <span className="pro-setup-required-badge">
                             {locale === 'ka' ? 'სავალდებულო' : 'Required'}
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-[var(--color-text-tertiary)]">
+                      <p className="pro-setup-section-subtitle">
                         {locale === 'ka' ? 'აირჩიე სტილები რომლებშიც მუშაობ' : 'Select styles you work with'}
                       </p>
                     </div>
                   </div>
 
-                  <div className="p-5 rounded-2xl bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)]">
-                    <div className="flex flex-wrap gap-2">
-                      {designStyles.map((style) => (
-                        <button
-                          key={style.key}
-                          type="button"
-                          onClick={() => toggleDesignStyle(style.key)}
-                          className={`px-4 py-2.5 rounded-xl border-2 transition-all duration-200 font-medium text-sm ${
-                            formData.designStyles.includes(style.key)
-                              ? 'border-[var(--color-accent)] bg-[var(--color-accent)] text-white'
-                              : 'border-[var(--color-border-subtle)] hover:border-[var(--color-accent)]/50 text-[var(--color-text-secondary)] bg-[var(--color-bg-primary)]'
-                          }`}
-                        >
+                  <div className="pro-setup-pill-container">
+                    {designStyles.map((style) => (
+                      <button
+                        key={style.key}
+                        type="button"
+                        onClick={() => toggleDesignStyle(style.key)}
+                        className={`pro-setup-pill ${formData.designStyles.includes(style.key) ? 'selected' : ''}`}
+                      >
+                        <span>
                           {formData.designStyles.includes(style.key) && (
-                            <svg className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="pro-setup-pill-check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                             </svg>
                           )}
                           {locale === 'ka' ? style.nameKa : style.name}
-                        </button>
-                      ))}
-                    </div>
+                        </span>
+                      </button>
+                    ))}
                   </div>
                 </section>
               )}
 
-              {/* Section: Availability (for home-care) - Pill/tag style */}
+              {/* Section: Availability (for home-care) */}
               {selectedCategory === 'home-care' && (
-                <section className="mb-10">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold bg-[var(--color-accent)] text-white">
-                      2
+                <section className="pro-setup-section">
+                  <div className="pro-setup-section-header">
+                    <div className="pro-setup-step-number active">
+                      <span>2</span>
                     </div>
                     <div className="flex-1">
-                      <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
+                      <h2 className="pro-setup-section-title">
                         {locale === 'ka' ? 'ხელმისაწვდომობა' : 'Availability'}
                       </h2>
-                      <p className="text-sm text-[var(--color-text-tertiary)]">
+                      <p className="pro-setup-section-subtitle">
                         {locale === 'ka' ? 'როდის ხარ ხელმისაწვდომი' : 'When are you available'}
                       </p>
                     </div>
                   </div>
 
-                  <div className="p-5 rounded-2xl bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)]">
-                    <div className="flex flex-wrap gap-2">
-                      {availabilityOptions.map((option) => (
-                        <button
-                          key={option.key}
-                          type="button"
-                          onClick={() => toggleAvailability(option.key)}
-                          className={`px-4 py-2.5 rounded-xl border-2 transition-all duration-200 font-medium text-sm ${
-                            formData.availability.includes(option.key)
-                              ? 'border-[var(--color-accent)] bg-[var(--color-accent)] text-white'
-                              : 'border-[var(--color-border-subtle)] hover:border-[var(--color-accent)]/50 text-[var(--color-text-secondary)] bg-[var(--color-bg-primary)]'
-                          }`}
-                        >
+                  <div className="pro-setup-pill-container">
+                    {availabilityOptions.map((option) => (
+                      <button
+                        key={option.key}
+                        type="button"
+                        onClick={() => toggleAvailability(option.key)}
+                        className={`pro-setup-pill ${formData.availability.includes(option.key) ? 'selected' : ''}`}
+                      >
+                        <span>
                           {formData.availability.includes(option.key) && (
-                            <svg className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="pro-setup-pill-check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                             </svg>
                           )}
                           {locale === 'ka' ? option.nameKa : option.name}
-                        </button>
-                      ))}
-                    </div>
+                        </span>
+                      </button>
+                    ))}
                   </div>
                 </section>
               )}
 
               {/* Section: Credentials (for architecture) */}
               {selectedCategory === 'architecture' && (
-                <section className="mb-10">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)]">
-                      2
+                <section className="pro-setup-section">
+                  <div className="pro-setup-section-header">
+                    <div className="pro-setup-step-number">
+                      <span>2</span>
                     </div>
                     <div className="flex-1">
-                      <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
+                      <h2 className="pro-setup-section-title">
                         {locale === 'ka' ? 'კვალიფიკაცია' : 'Credentials'}
                       </h2>
-                      <p className="text-sm text-[var(--color-text-tertiary)]">
+                      <p className="pro-setup-section-subtitle">
                         {locale === 'ka' ? 'არასავალდებულო' : 'Optional'}
                       </p>
                     </div>
                   </div>
 
-                  <div className="p-5 rounded-2xl bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] space-y-5">
-                    <div>
-                      <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                  <div className="space-y-5">
+                    <div className="pro-setup-input-group">
+                      <label className="pro-setup-label">
                         {locale === 'ka' ? 'ლიცენზიის ნომერი' : 'License Number'}
                       </label>
                       <input
                         type="text"
                         value={formData.licenseNumber}
                         onChange={(e) => setFormData(prev => ({ ...prev, licenseNumber: e.target.value }))}
-                        className="w-full px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-soft)] focus:border-[var(--color-accent)] text-[var(--color-text-primary)] transition-all"
+                        className="pro-setup-input-premium"
                         placeholder={locale === 'ka' ? 'არქიტექტორის ლიცენზია' : 'Architect License'}
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                    <div className="pro-setup-input-group">
+                      <label className="pro-setup-label">
                         {locale === 'ka' ? 'საკადასტრო ID' : 'Cadastral ID'}
                       </label>
                       <input
                         type="text"
                         value={formData.cadastralId}
                         onChange={(e) => setFormData(prev => ({ ...prev, cadastralId: e.target.value }))}
-                        className="w-full px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-soft)] focus:border-[var(--color-accent)] text-[var(--color-text-primary)] transition-all"
+                        className="pro-setup-input-premium"
                         placeholder={locale === 'ka' ? 'საკადასტრო იდენტიფიკატორი' : 'Cadastral Identifier'}
                       />
                     </div>
@@ -656,217 +639,181 @@ export default function ProProfileSetupPage() {
               )}
 
               {/* Section: Pricing */}
-              <section className="mb-10">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${
-                    validation.pricing
-                      ? 'bg-[#D2691E] text-white'
-                      : validation.bio && validation.experience && validation.designStyles
-                        ? 'bg-[var(--color-accent)] text-white'
-                        : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)]'
-                  }`}>
+              <section className={`pro-setup-section ${validation.pricing ? 'completed' : ''}`}>
+                <div className="pro-setup-section-header">
+                  <div className={`pro-setup-step-number ${validation.pricing ? 'completed' : validation.designStyles && validation.bio && validation.experience ? 'active' : ''}`}>
                     {validation.pricing ? (
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                       </svg>
-                    ) : selectedCategory === 'interior-design' ? '3' : selectedCategory === 'architecture' || selectedCategory === 'home-care' ? '3' : '2'}
+                    ) : <span>{getStepNumber('pricing')}</span>}
                   </div>
                   <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h2 className="pro-setup-section-title">
                         {locale === 'ka' ? 'ფასები' : 'Pricing'}
                       </h2>
                       {validation.bio && validation.experience && validation.designStyles && !validation.pricing && (
-                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                        <span className="pro-setup-required-badge">
                           {locale === 'ka' ? 'სავალდებულო' : 'Required'}
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-[var(--color-text-tertiary)]">
+                    <p className="pro-setup-section-subtitle">
                       {locale === 'ka' ? 'საწყისი ფასი' : 'Starting price'}
                     </p>
                   </div>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)]">
-                  <div>
-                    <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                      <span>
-                        {selectedCategory === 'interior-design'
-                          ? (locale === 'ka' ? 'ფასი კვ.მ-ზე' : 'Price per m²')
-                          : selectedCategory === 'craftsmen' || selectedCategory === 'home-care'
-                          ? (locale === 'ka' ? 'საათობრივი ტარიფი' : 'Hourly Rate')
-                          : (locale === 'ka' ? 'საბაზისო ფასი' : 'Base Price')
-                        }
-                      </span>
-                      {validation.pricing ? (
-                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#D2691E]">
-                          <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </span>
-                      ) : (
-                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/30">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                        </span>
-                      )}
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="number"
-                        value={formData.basePrice}
-                        onChange={(e) => setFormData(prev => ({ ...prev, basePrice: e.target.value }))}
-                        className={`w-full px-4 py-3 bg-[var(--color-bg-primary)] border rounded-xl text-[var(--color-text-primary)] text-lg font-medium pr-16 focus:outline-none focus:ring-2 transition-all ${
-                          validation.pricing
-                            ? 'border-[#D2691E]/30 focus:border-[#D2691E] focus:ring-[#D2691E]/20'
-                            : 'border-[var(--color-border-subtle)] focus:border-[var(--color-accent)] focus:ring-[var(--color-accent-soft)]'
-                        }`}
-                        placeholder={selectedCategory === 'interior-design' ? '50' : '500'}
-                      />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] font-medium">
-                        {selectedCategory === 'interior-design' ? '₾/m²' : selectedCategory === 'craftsmen' || selectedCategory === 'home-care' ? '₾/სთ' : '₾'}
-                      </span>
-                    </div>
-                    <p className="text-xs text-[var(--color-text-tertiary)] mt-2">
+                <div className="pro-setup-input-group">
+                  <label className="pro-setup-label">
+                    <span>
                       {selectedCategory === 'interior-design'
-                        ? (locale === 'ka' ? 'კლიენტები დაინახავენ "დან XX ₾/m²"' : 'Clients will see "from XX ₾/m²"')
-                        : (locale === 'ka' ? 'საწყისი ფასი' : 'Starting price')
+                        ? (locale === 'ka' ? 'ფასი კვ.მ-ზე' : 'Price per m²')
+                        : selectedCategory === 'craftsmen' || selectedCategory === 'home-care'
+                        ? (locale === 'ka' ? 'საათობრივი ტარიფი' : 'Hourly Rate')
+                        : (locale === 'ka' ? 'საბაზისო ფასი' : 'Base Price')
                       }
-                    </p>
+                    </span>
+                    <span className={`pro-setup-label-check ${validation.pricing ? 'completed' : 'pending'}`}>
+                      {validation.pricing && (
+                        <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </span>
+                  </label>
+                  <div className="pro-setup-price-input">
+                    <input
+                      type="number"
+                      value={formData.basePrice}
+                      onChange={(e) => setFormData(prev => ({ ...prev, basePrice: e.target.value }))}
+                      className={`pro-setup-input-premium ${validation.pricing ? 'valid' : ''}`}
+                      placeholder={selectedCategory === 'interior-design' ? '50' : '500'}
+                    />
+                    <span className="pro-setup-price-currency">
+                      {selectedCategory === 'interior-design' ? '₾/m²' : selectedCategory === 'craftsmen' || selectedCategory === 'home-care' ? '₾/სთ' : '₾'}
+                    </span>
                   </div>
+                  <p className="text-xs text-[#8B7355] dark:text-[#A89080] mt-2">
+                    {selectedCategory === 'interior-design'
+                      ? (locale === 'ka' ? 'კლიენტები დაინახავენ "დან XX ₾/m²"' : 'Clients will see "from XX ₾/m²"')
+                      : (locale === 'ka' ? 'საწყისი ფასი' : 'Starting price')
+                    }
+                  </p>
                 </div>
               </section>
 
               {/* Section: Portfolio URL */}
-              <section className="mb-10">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)]">
-                    {selectedCategory === 'interior-design' ? '4' : selectedCategory === 'architecture' || selectedCategory === 'home-care' ? '4' : '3'}
+              <section className="pro-setup-section">
+                <div className="pro-setup-section-header">
+                  <div className="pro-setup-step-number">
+                    <span>{getStepNumber('portfolio')}</span>
                   </div>
                   <div className="flex-1">
-                    <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
+                    <h2 className="pro-setup-section-title">
                       {locale === 'ka' ? 'პორტფოლიო' : 'Portfolio'}
                     </h2>
-                    <p className="text-sm text-[var(--color-text-tertiary)]">
+                    <p className="pro-setup-section-subtitle">
                       {locale === 'ka' ? 'არასავალდებულო' : 'Optional'}
                     </p>
                   </div>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)]">
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                      {locale === 'ka' ? 'პორტფოლიოს ბმული' : 'Portfolio URL'}
-                    </label>
-                    <input
-                      type="url"
-                      value={formData.portfolioUrl}
-                      onChange={(e) => setFormData(prev => ({ ...prev, portfolioUrl: e.target.value }))}
-                      className="w-full px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-soft)] focus:border-[var(--color-accent)] text-[var(--color-text-primary)] transition-all"
-                      placeholder="https://behance.net/yourprofile"
-                    />
-                    <p className="text-xs text-[var(--color-text-tertiary)] mt-2">
-                      {locale === 'ka' ? 'Behance, Dribbble, Pinterest ან სხვა პლატფორმა' : 'Behance, Dribbble, Pinterest or other platform'}
-                    </p>
-                  </div>
+                <div className="pro-setup-input-group">
+                  <label className="pro-setup-label">
+                    {locale === 'ka' ? 'პორტფოლიოს ბმული' : 'Portfolio URL'}
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.portfolioUrl}
+                    onChange={(e) => setFormData(prev => ({ ...prev, portfolioUrl: e.target.value }))}
+                    className="pro-setup-input-premium"
+                    placeholder="https://behance.net/yourprofile"
+                  />
+                  <p className="text-xs text-[#8B7355] dark:text-[#A89080] mt-2">
+                    {locale === 'ka' ? 'Behance, Dribbble, Pinterest ან სხვა პლატფორმა' : 'Behance, Dribbble, Pinterest or other platform'}
+                  </p>
                 </div>
               </section>
 
               {/* Section: Service Areas */}
-              <section className="mb-10">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${
-                    validation.serviceAreas
-                      ? 'bg-[#D2691E] text-white'
-                      : validation.pricing
-                        ? 'bg-[var(--color-accent)] text-white'
-                        : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)]'
-                  }`}>
+              <section className={`pro-setup-section ${validation.serviceAreas ? 'completed' : ''}`}>
+                <div className="pro-setup-section-header">
+                  <div className={`pro-setup-step-number ${validation.serviceAreas ? 'completed' : validation.pricing ? 'active' : ''}`}>
                     {validation.serviceAreas ? (
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                       </svg>
-                    ) : selectedCategory === 'interior-design' ? '5' : selectedCategory === 'architecture' || selectedCategory === 'home-care' ? '5' : '4'}
+                    ) : <span>{getStepNumber('areas')}</span>}
                   </div>
                   <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h2 className="pro-setup-section-title">
                         {locale === 'ka' ? 'მომსახურების ზონები' : 'Service Areas'}
                       </h2>
                       {validation.pricing && !validation.serviceAreas && (
-                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                        <span className="pro-setup-required-badge">
                           {locale === 'ka' ? 'სავალდებულო' : 'Required'}
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-[var(--color-text-tertiary)]">
+                    <p className="pro-setup-section-subtitle">
                       {locale === 'ka' ? 'სად მუშაობ' : 'Where you work'}
                     </p>
                   </div>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] space-y-4">
-                  {/* Nationwide option */}
-                  {locationData && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFormData(prev => ({
-                          ...prev,
-                          nationwide: !prev.nationwide,
-                          serviceAreas: !prev.nationwide ? [] : prev.serviceAreas
-                        }));
-                      }}
-                      className={`w-full p-4 rounded-xl border-2 transition-all duration-200 flex items-center gap-4 ${
-                        formData.nationwide
-                          ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)]/50'
-                          : 'border-[var(--color-border-subtle)] hover:border-[var(--color-accent)]/50 bg-[var(--color-bg-primary)]'
-                      }`}
-                    >
-                      <div className="flex-1 text-left">
-                        <h4 className="font-semibold text-[var(--color-text-primary)]">
-                          {locationData.nationwide}
-                        </h4>
-                        <p className="text-xs text-[var(--color-text-tertiary)]">
-                          {locale === 'ka' ? 'მომსახურება მთელი ქვეყნის მასშტაბით' : 'Serve clients across the entire country'}
-                        </p>
-                      </div>
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                        formData.nationwide
-                          ? 'border-[var(--color-accent)] bg-[var(--color-accent)]'
-                          : 'border-[var(--color-border)]'
-                      }`}>
-                        {formData.nationwide && (
-                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                          </svg>
-                        )}
-                      </div>
-                    </button>
-                  )}
-
-                  {/* Regions */}
-                  {locationData && !formData.nationwide && (
-                    <div className="space-y-3 max-h-[300px] overflow-y-auto">
-                      <p className="text-sm text-[var(--color-text-secondary)] font-medium">
-                        {locale === 'ka' ? 'ან აირჩიე ქალაქები:' : 'Or select cities:'}
+                {/* Nationwide option */}
+                {locationData && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData(prev => ({
+                        ...prev,
+                        nationwide: !prev.nationwide,
+                        serviceAreas: !prev.nationwide ? [] : prev.serviceAreas
+                      }));
+                    }}
+                    className={`pro-setup-nationwide-card w-full mb-4 ${formData.nationwide ? 'selected' : ''}`}
+                  >
+                    <div className="pro-setup-nationwide-content">
+                      <h4 className="pro-setup-nationwide-title">
+                        {locationData.nationwide}
+                      </h4>
+                      <p className="pro-setup-nationwide-subtitle">
+                        {locale === 'ka' ? 'მომსახურება მთელი ქვეყნის მასშტაბით' : 'Serve clients across the entire country'}
                       </p>
+                    </div>
+                    <div className={`pro-setup-radio ${formData.nationwide ? 'selected' : ''}`}>
+                      {formData.nationwide && (
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
+                  </button>
+                )}
+
+                {/* Regions */}
+                {locationData && !formData.nationwide && (
+                  <>
+                    <div className="pro-setup-divider-text">
+                      {locale === 'ka' ? 'ან აირჩიე ქალაქები' : 'Or select cities'}
+                    </div>
+                    <div className="pro-setup-regions-scroll">
                       {Object.entries(locationData.regions).map(([regionName, cities]) => (
-                        <div key={regionName} className="space-y-2">
-                          <p className="text-xs font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider">
+                        <div key={regionName}>
+                          <p className="pro-setup-region-header">
                             {regionName}
                           </p>
-                          <div className="flex flex-wrap gap-2">
+                          <div className="pro-setup-city-chips">
                             {cities.map((city) => (
                               <button
                                 key={city}
                                 type="button"
                                 onClick={() => toggleServiceArea(city)}
-                                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                                  formData.serviceAreas.includes(city)
-                                    ? 'bg-[var(--color-accent)] text-white'
-                                    : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent-soft)]'
-                                }`}
+                                className={`pro-setup-city-chip ${formData.serviceAreas.includes(city) ? 'selected' : ''}`}
                               >
                                 {formData.serviceAreas.includes(city) && (
                                   <svg className="w-3 h-3 inline mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -880,17 +827,17 @@ export default function ProProfileSetupPage() {
                         </div>
                       ))}
                     </div>
-                  )}
-                </div>
+                  </>
+                )}
               </section>
 
               {/* Error */}
               {error && (
-                <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-3">
-                  <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="pro-setup-error">
+                  <svg className="w-5 h-5 pro-setup-error-icon flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                  <p className="pro-setup-error-text">{error}</p>
                 </div>
               )}
             </form>
@@ -898,84 +845,74 @@ export default function ProProfileSetupPage() {
         </div>
       </main>
 
-      {/* Fixed Footer - matching post-job exactly */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--color-bg-primary)]/95 backdrop-blur-xl border-t border-[var(--color-border-subtle)] shadow-[0_-2px_10px_rgba(0,0,0,0.06)]">
-        <div className="max-w-2xl mx-auto px-4 py-3">
-          <div className="flex items-center gap-3">
-            {/* Progress indicator - compact */}
-            {!isFormValid && (
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <div className="w-8 h-8 rounded-full bg-[var(--color-bg-tertiary)] flex items-center justify-center relative">
-                  <svg className="w-8 h-8 -rotate-90">
-                    <circle
-                      cx="16"
-                      cy="16"
-                      r="12"
-                      fill="none"
-                      stroke="var(--color-border)"
-                      strokeWidth="3"
-                    />
-                    <circle
-                      cx="16"
-                      cy="16"
-                      r="12"
-                      fill="none"
-                      stroke="#D2691E"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeDasharray={`${(completedFields / totalFields) * 75.4} 75.4`}
-                    />
-                  </svg>
-                  <span className="absolute text-[10px] font-bold text-[var(--color-text-secondary)]">
-                    {completedFields}/{totalFields}
-                  </span>
-                </div>
-              </div>
+      {/* Fixed Footer */}
+      <div className="pro-setup-footer-premium">
+        <div className="pro-setup-footer-content">
+          {/* Progress ring */}
+          {!isFormValid && (
+            <div className="pro-setup-progress-ring">
+              <svg width="44" height="44" viewBox="0 0 44 44">
+                <defs>
+                  <linearGradient id="pro-setup-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#D2691E" />
+                    <stop offset="100%" stopColor="#CD853F" />
+                  </linearGradient>
+                </defs>
+                <circle
+                  className="pro-setup-progress-bg"
+                  cx="22"
+                  cy="22"
+                  r="18"
+                />
+                <circle
+                  className="pro-setup-progress-fill"
+                  cx="22"
+                  cy="22"
+                  r="18"
+                  strokeDasharray={`${(progressPercentage / 100) * 113.1} 113.1`}
+                />
+              </svg>
+              <span className="pro-setup-progress-text">
+                {completedFields}/{totalFields}
+              </span>
+            </div>
+          )}
+
+          {/* Later button */}
+          <button
+            type="button"
+            onClick={() => router.push('/browse')}
+            className="pro-setup-btn-secondary"
+          >
+            {locale === 'ka' ? 'მოგვიანებით' : 'Later'}
+          </button>
+
+          {/* Submit button */}
+          <button
+            type="button"
+            onClick={() => {
+              const form = document.querySelector('form');
+              if (form) form.requestSubmit();
+            }}
+            disabled={isLoading || !isFormValid}
+            className="pro-setup-btn-primary"
+          >
+            {isLoading ? (
+              <>
+                <span className="pro-setup-btn-spinner" />
+                <span>{locale === 'ka' ? 'იქმნება...' : 'Creating...'}</span>
+              </>
+            ) : isFormValid ? (
+              <>
+                <span>{locale === 'ka' ? 'პროფილის შექმნა' : 'Create Profile'}</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </>
+            ) : (
+              <span>{locale === 'ka' ? 'შეავსე ველები' : 'Fill required fields'}</span>
             )}
-
-            {/* Later button */}
-            <button
-              type="button"
-              onClick={() => router.push('/browse')}
-              className="px-4 py-3 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] font-medium text-sm rounded-xl border border-[var(--color-border)] hover:border-[var(--color-border-dark)] transition-all flex-shrink-0"
-            >
-              {locale === 'ka' ? 'მოგვიანებით' : 'Later'}
-            </button>
-
-            {/* Submit button */}
-            <button
-              type="button"
-              onClick={() => {
-                const form = document.querySelector('form');
-                if (form) form.requestSubmit();
-              }}
-              disabled={isLoading || !isFormValid}
-              className={`flex-1 py-3 px-5 rounded-xl font-medium text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
-                isFormValid
-                  ? 'bg-[var(--color-accent)] text-white hover:shadow-[0_4px_20px_rgba(13,150,104,0.3)]'
-                  : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] cursor-not-allowed'
-              }`}
-            >
-              {isLoading ? (
-                <>
-                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  <span>{locale === 'ka' ? 'იქმნება...' : 'Creating...'}</span>
-                </>
-              ) : isFormValid ? (
-                <>
-                  <span>{locale === 'ka' ? 'პროფილის შექმნა' : 'Create Profile'}</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </>
-              ) : (
-                <span>{locale === 'ka' ? 'შეავსე ველები' : 'Fill required fields'}</span>
-              )}
-            </button>
-          </div>
+          </button>
         </div>
       </div>
     </div>

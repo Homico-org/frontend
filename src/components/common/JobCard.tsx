@@ -419,7 +419,7 @@ export default function JobCard({
   // Compact variant
   if (variant === "compact") {
     return (
-      <Card href={`/jobs/${job._id}`} variant="default" hover="lift" className="group">
+      <Card href={`/jobs/${job._id}`} variant="default" hover="lift" className="group job-card-premium">
         <CardImage aspectRatio="4/3">
           <ImageSlider images={allImages} />
           <CardBadge position="top-right" variant="glass" color="primary">
@@ -441,7 +441,7 @@ export default function JobCard({
   // List variant
   if (variant === "list") {
     return (
-      <Card href={`/jobs/${job._id}`} variant="subtle" hover="lift" padding="sm" className="group">
+      <Card href={`/jobs/${job._id}`} variant="subtle" hover="lift" padding="sm" className="group job-card-premium">
         <div className="flex items-center gap-3">
           <Avatar
             src={job.clientId?.avatar}
@@ -471,9 +471,9 @@ export default function JobCard({
       href={`/jobs/${job._id}`}
       variant={isUrgent ? "elevated" : "default"}
       hover="lift"
-      className={`group h-full ${
+      className={`group h-full job-card-premium ${
         isUrgent
-          ? "ring-2 ring-[#D2691E] ring-offset-2 ring-offset-[#FFFDF9] dark:ring-offset-[#1c1917]"
+          ? "urgent ring-2 ring-[#D2691E] ring-offset-2 ring-offset-[#FFFDF9] dark:ring-offset-[#1c1917]"
           : isExpired
             ? "opacity-75"
             : ""

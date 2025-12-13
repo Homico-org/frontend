@@ -44,7 +44,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
   // Default card variant - Hero image with gradient blur and overlaid stats
   if (variant === 'default') {
     return (
-      <Card href={`/professionals/${profile._id}`} variant="default" hover="lift" className="group touch-manipulation">
+      <Card href={`/professionals/${profile._id}`} variant="default" hover="lift" className="group touch-manipulation pro-card-premium">
         {/* Hero Image Section with Gradient Blur */}
         <CardImage aspectRatio="4/3" overlay="gradient">
           {avatarUrl ? (
@@ -160,7 +160,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
   // Compact variant - Clean grid card with hero image
   if (variant === 'compact') {
     return (
-      <Card href={`/professionals/${profile._id}`} variant="default" hover="lift" className="group h-full">
+      <Card href={`/professionals/${profile._id}`} variant="default" hover="lift" className="group h-full pro-card-premium">
         {/* Hero Image with gradient blur */}
         <CardImage aspectRatio="4/3" overlay="gradient">
           {avatarUrl ? (
@@ -225,7 +225,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
   // Horizontal variant - For list views
   if (variant === 'horizontal') {
     return (
-      <Card href={`/professionals/${profile._id}`} variant="default" hover="lift" padding="md" className="group">
+      <Card href={`/professionals/${profile._id}`} variant="default" hover="lift" padding="md" className="group pro-card-premium">
         <div className="flex gap-4">
           {/* Avatar with gradient blur effect */}
           <div className="relative flex-shrink-0">

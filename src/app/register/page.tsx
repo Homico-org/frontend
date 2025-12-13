@@ -1012,7 +1012,7 @@ function RegisterContent() {
   }
 
   return (
-    <div className="min-h-screen relative">
+    <div className="register-page-premium">
       <Header />
 
       {/* Main Content */}
@@ -1022,8 +1022,13 @@ function RegisterContent() {
         </div>
         {/* Title */}
         <div className="text-center mb-10">
+          <div className="auth-icon-premium mx-auto mb-5">
+            <svg className="w-8 h-8 text-[#D2691E]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
+            </svg>
+          </div>
           <h1
-            className="text-3xl sm:text-4xl font-semibold mb-3"
+            className="text-3xl sm:text-4xl font-bold tracking-tight mb-3"
             style={{ color: "var(--color-text-primary)" }}
           >
             {locale === "ka" ? "შექმენი ანგარიში" : "Create your account"}
@@ -1040,7 +1045,7 @@ function RegisterContent() {
 
         {/* Error */}
         {error && (
-          <div className="mb-8 p-4 rounded-xl border bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20 flex items-start gap-3">
+          <div className="auth-error mb-8">
             <svg
               className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5"
               fill="none"
@@ -1130,21 +1135,14 @@ function RegisterContent() {
                         avatar: type.key !== "pro" ? "" : formData.avatar,
                       });
                     }}
-                    className={`
-                      flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-full
-                      text-sm transition-all duration-200 ease-out border
-                      ${isSelected
-                        ? 'bg-[#D2691E]/[0.06] border-[#D2691E]/30 text-[#D2691E] dark:text-[#CD853F] font-medium'
-                        : 'border-[#D2691E]/[0.12] text-[var(--color-text-secondary)] hover:border-[#D2691E]/20'
-                      }
-                    `}
+                    className={`auth-toggle-btn flex-1 sm:flex-none ${isSelected ? 'active' : ''}`}
                   >
-                    <span className={isSelected ? 'text-[#D2691E] dark:text-[#CD853F]' : 'text-[#D2691E]/60 dark:text-[#CD853F]/60'}>
+                    <span className={isSelected ? 'text-white' : 'text-[#D2691E]/60 dark:text-[#CD853F]/60'}>
                       {type.icon}
                     </span>
                     <span>{type.label}</span>
                     {isSelected && (
-                      <svg className="w-3.5 h-3.5 text-[#D2691E] dark:text-[#CD853F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     )}
@@ -1156,16 +1154,12 @@ function RegisterContent() {
             {/* Account type description */}
             {formData.role && (
               <div
-                className="mt-4 p-4 rounded-xl border flex items-start gap-3"
+                className={`mt-4 auth-section-premium flex items-start gap-3 ${formData.role === 'pro' ? 'border-emerald-500/20' : ''}`}
                 style={{
                   backgroundColor:
                     formData.role === "pro"
                       ? "rgba(16, 185, 129, 0.05)"
-                      : "var(--color-bg-secondary)",
-                  borderColor:
-                    formData.role === "pro"
-                      ? "rgba(16, 185, 129, 0.2)"
-                      : "var(--color-border)",
+                      : undefined,
                 }}
               >
                 <div

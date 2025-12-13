@@ -1,6 +1,7 @@
 'use client';
 
 import AddressPicker from '@/components/common/AddressPicker';
+import AppBackground from '@/components/common/AppBackground';
 import CategorySubcategorySelector from '@/components/common/CategorySubcategorySelector';
 import DatePicker from '@/components/common/DatePicker';
 import Header from '@/components/common/Header';
@@ -8,9 +9,30 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
-import { useViewMode } from '@/contexts/ViewModeContext';
 import { api } from '@/lib/api';
 import { storage } from '@/services/storage';
+import {
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  Bell,
+  Briefcase,
+  Building2,
+  Calendar,
+  Check,
+  DollarSign,
+  FileText,
+  Home,
+  Image,
+  Link2,
+  MapPin,
+  MessageSquare,
+  Plus,
+  Sparkles,
+  Trash2,
+  Upload,
+  X
+} from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
@@ -41,30 +63,15 @@ const BUDGET_TYPES = [
   { value: 'negotiable', label: 'Negotiable', labelKa: 'შეთანხმებით', icon: 'negotiable' },
 ];
 
-// Property Type Icons
+// Property Type Icons Component
 const PropertyIcon = ({ type, className = '' }: { type: string; className?: string }) => {
   switch (type) {
     case 'apartment':
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <rect x="4" y="4" width="16" height="16" rx="2" />
-          <path d="M9 4v16M15 4v16M4 9h16M4 15h16" />
-        </svg>
-      );
+      return <Building2 className={className} />;
     case 'house':
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M3 10.5L12 4l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V10.5z" />
-          <path d="M9 21V14h6v7" />
-        </svg>
-      );
+      return <Home className={className} />;
     case 'office':
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <rect x="4" y="3" width="16" height="18" rx="2" />
-          <path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2" strokeLinecap="round" />
-        </svg>
-      );
+      return <Briefcase className={className} />;
     case 'building':
       return (
         <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -73,25 +80,15 @@ const PropertyIcon = ({ type, className = '' }: { type: string; className?: stri
         </svg>
       );
     default:
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 8v4M12 16h.01" strokeLinecap="round" />
-        </svg>
-      );
+      return <Sparkles className={className} />;
   }
 };
 
-// Budget Type Icons
+// Budget Type Icons Component
 const BudgetIcon = ({ type, className = '' }: { type: string; className?: string }) => {
   switch (type) {
     case 'fixed':
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 6v12M9 9h6M9 15h6" strokeLinecap="round" />
-        </svg>
-      );
+      return <DollarSign className={className} />;
     case 'range':
       return (
         <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -106,12 +103,7 @@ const BudgetIcon = ({ type, className = '' }: { type: string; className?: string
         </svg>
       );
     default:
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M8 12h8M12 3v18" strokeLinecap="round" />
-          <circle cx="12" cy="12" r="9" />
-        </svg>
-      );
+      return <MessageSquare className={className} />;
   }
 };
 
@@ -119,7 +111,6 @@ export default function PostJobPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { openLoginModal } = useAuthModal();
   const { locale } = useLanguage();
-  const { isClientMode } = useViewMode();
   const toast = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -166,7 +157,7 @@ export default function PostJobPage() {
     setIsVisible(true);
   }, []);
 
-  // Auth check - allow both client and pro users
+  // Auth check
   useEffect(() => {
     const canPostJob = user?.role === 'client' || user?.role === 'pro';
     if (!authLoading && (!isAuthenticated || !canPostJob)) {
@@ -257,7 +248,7 @@ export default function PostJobPage() {
     setReferences(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Validation state for each field
+  // Validation state
   const getValidationState = () => {
     const hasCategory = !!selectedCategory;
     const hasSpecialty = selectedSubcategories.length > 0 || customSpecialties.length > 0;
@@ -283,12 +274,12 @@ export default function PostJobPage() {
   const validation = getValidationState();
   const completedFields = Object.values(validation).filter(Boolean).length;
   const totalFields = Object.keys(validation).length;
+  const progressPercent = (completedFields / totalFields) * 100;
 
   const canSubmit = (): boolean => {
     return Object.values(validation).every(Boolean);
   };
 
-  // Get first missing field for display
   const getFirstMissingField = () => {
     if (!validation.category) return { key: 'category', label: locale === 'ka' ? 'კატეგორია' : 'Category' };
     if (!validation.specialty) return { key: 'specialty', label: locale === 'ka' ? 'სპეციალობა' : 'Specialty' };
@@ -353,7 +344,6 @@ export default function PostJobPage() {
       }
 
       if (references.length > 0) jobData.references = references;
-      // Note: notifyPros feature not yet implemented in backend
 
       if (uploadedMedia.length) {
         jobData.images = uploadedMedia.filter(m => m.type === 'image').map(m => m.url);
@@ -373,20 +363,20 @@ export default function PostJobPage() {
 
       toast.success(
         isEditMode
-          ? (locale === 'ka' ? 'სამუშაო განახლდა' : 'Job updated')
-          : (locale === 'ka' ? 'სამუშაო შეიქმნა' : 'Job created'),
+          ? (locale === 'ka' ? 'პროექტი განახლდა' : 'Project updated')
+          : (locale === 'ka' ? 'პროექტი შეიქმნა' : 'Project created'),
         isEditMode
-          ? (locale === 'ka' ? 'თქვენი სამუშაო წარმატებით განახლდა' : 'Your job has been successfully updated')
-          : (locale === 'ka' ? 'თქვენი სამუშაო წარმატებით გამოქვეყნდა' : 'Your job has been successfully posted')
+          ? (locale === 'ka' ? 'თქვენი პროექტი წარმატებით განახლდა' : 'Your project has been successfully updated')
+          : (locale === 'ka' ? 'თქვენი პროექტი წარმატებით გამოქვეყნდა' : 'Your project has been successfully posted')
       );
 
       router.push('/my-jobs');
     } catch (err: any) {
       console.error('Failed to save job:', err);
-      setError(err.response?.data?.message || `Failed to ${isEditMode ? 'update' : 'create'} job`);
+      setError(err.response?.data?.message || `Failed to ${isEditMode ? 'update' : 'create'} project`);
       toast.error(
         locale === 'ka' ? 'შეცდომა' : 'Error',
-        locale === 'ka' ? `სამუშაოს ${isEditMode ? 'განახლება' : 'შექმნა'} ვერ მოხერხდა` : `Failed to ${isEditMode ? 'update' : 'create'} job`
+        locale === 'ka' ? `პროექტის ${isEditMode ? 'განახლება' : 'შექმნა'} ვერ მოხერხდა` : `Failed to ${isEditMode ? 'update' : 'create'} project`
       );
     } finally {
       setIsSubmitting(false);
@@ -394,11 +384,24 @@ export default function PostJobPage() {
     }
   };
 
+  // Loading State
   if (authLoading || isLoadingJob) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-primary)]">
-        <div className="relative">
-          <div className="w-12 h-12 rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-accent)] animate-spin" />
+      <div className="postjob-container">
+        <div className="postjob-background" />
+        <Header />
+        <div className="relative z-20 flex items-center justify-center min-h-[80vh]">
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#D2691E]/10 to-[#CD853F]/10 flex items-center justify-center">
+                <FileText className="w-8 h-8 text-[#D2691E] animate-pulse" />
+              </div>
+              <div className="absolute inset-0 w-16 h-16 rounded-2xl border-2 border-[#D2691E]/20 border-t-[#D2691E] animate-spin" />
+            </div>
+            <p className="text-sm font-medium text-[var(--color-text-secondary)]">
+              {locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -406,92 +409,111 @@ export default function PostJobPage() {
 
   const totalSpecialties = selectedSubcategories.length + customSpecialties.length;
 
+  // Progress steps configuration
+  const progressSteps = [
+    { key: 'category', label: locale === 'ka' ? 'კატეგორია' : 'Category', completed: validation.category && validation.specialty },
+    { key: 'details', label: locale === 'ka' ? 'დეტალები' : 'Details', completed: validation.title && validation.description && validation.propertyType },
+    { key: 'budget', label: locale === 'ka' ? 'ბიუჯეტი' : 'Budget', completed: validation.budget },
+    { key: 'media', label: locale === 'ka' ? 'მედია' : 'Media', completed: true }, // Optional
+  ];
+
   return (
-    <div className="min-h-screen overflow-x-hidden">
+    <div className="postjob-container">
+      <div className="postjob-background" />
+      <AppBackground />
       <Header />
 
-      <main className={`relative z-10 pt-16 pb-24 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-        <div className="container-custom pt-8 md:pt-12">
-          <div className="max-w-2xl mx-auto">
-            {/* Hero Section */}
-            <section className="mb-12">
-              {/* Back Button */}
-              <button
-                onClick={() => router.back()}
-                className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors group mb-6"
-              >
-                <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-                </svg>
-                {locale === 'ka' ? 'უკან' : 'Back'}
-              </button>
+      <main className={`relative z-20 pt-20 sm:pt-24 pb-28 transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="max-w-2xl mx-auto px-4 sm:px-6">
+          {/* Header Section */}
+          <div className="postjob-header animate-postjob-fade-in" style={{ animationDelay: '0ms' }}>
+            {/* Back Button */}
+            <button onClick={() => router.back()} className="postjob-back group">
+              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+              <span>{locale === 'ka' ? 'უკან' : 'Back'}</span>
+            </button>
 
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-terracotta-50 dark:bg-terracotta-500/10 border border-terracotta-200 dark:border-terracotta-500/20 mb-6">
-                <div className="w-1.5 h-1.5 rounded-full bg-terracotta-500 animate-pulse" />
-                <span className="text-xs font-medium text-terracotta-600 dark:text-terracotta-400 uppercase tracking-wider">
-                  {locale === 'ka' ? 'ახალი პროექტი' : 'New Project'}
-                </span>
+            {/* Badge */}
+            <div className="postjob-badge">
+              <span className="postjob-badge-dot" />
+              <span className="postjob-badge-text">
+                {isEditMode
+                  ? (locale === 'ka' ? 'რედაქტირება' : 'Editing')
+                  : (locale === 'ka' ? 'ახალი პროექტი' : 'New Project')}
+              </span>
+            </div>
+
+            {/* Title */}
+            <h1 className="postjob-title">
+              {isEditMode ? (
+                locale === 'ka' ? (
+                  <>პროექტის <span>რედაქტირება</span></>
+                ) : (
+                  <>Edit Your <span>Project</span></>
+                )
+              ) : (
+                locale === 'ka' ? (
+                  <>აღწერე შენი <span>პროექტი</span></>
+                ) : (
+                  <>Describe Your <span>Project</span></>
+                )
+              )}
+            </h1>
+
+            <p className="postjob-subtitle">
+              {locale === 'ka'
+                ? 'შეავსე დეტალები და მიიღე შეთავაზებები საუკეთესო პროფესიონალებისგან.'
+                : 'Fill in the details and receive proposals from top professionals.'}
+            </p>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="animate-postjob-fade-in" style={{ animationDelay: '100ms' }}>
+            <div className="postjob-progress-bar mb-6">
+              <div
+                className="postjob-progress-fill"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+            <div className="postjob-progress-steps">
+              {progressSteps.map((step, index) => {
+                const isActive = index === progressSteps.findIndex(s => !s.completed);
+                return (
+                  <div key={step.key} className="postjob-progress-step">
+                    <div className={`postjob-progress-dot ${step.completed ? 'completed' : isActive ? 'active' : ''}`}>
+                      {step.completed ? <Check className="w-4 h-4" /> : index + 1}
+                    </div>
+                    <span className="postjob-progress-label">{step.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Main Form */}
+          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="mt-8">
+            {/* Section 1: Category & Specializations */}
+            <section className="postjob-section animate-postjob-slide-up" style={{ animationDelay: '150ms' }}>
+              <div className="postjob-section-header">
+                <div className={`postjob-section-number ${validation.category && validation.specialty ? 'completed' : totalSpecialties > 0 || selectedCategory ? 'active' : ''}`}>
+                  {validation.category && validation.specialty ? <Check className="w-6 h-6" /> : '1'}
+                </div>
+                <div className="postjob-section-info">
+                  <div className="postjob-section-title">
+                    <h2>{locale === 'ka' ? 'რა გჭირდება?' : 'What do you need?'}</h2>
+                    {!validation.category && (
+                      <span className="postjob-section-required">
+                        {locale === 'ka' ? 'სავალდებულო' : 'Required'}
+                      </span>
+                    )}
+                  </div>
+                  <p className="postjob-section-desc">
+                    {locale === 'ka' ? 'აირჩიე კატეგორია და სპეციალობა' : 'Select category and specialty'}
+                  </p>
+                </div>
               </div>
 
-              {/* Main headline */}
-              <h1 className="text-3xl md:text-5xl font-bold text-[var(--color-text-primary)] leading-[1.1] tracking-tight mb-4">
-                {isEditMode ? (
-                  locale === 'ka' ? (
-                    <>პროექტის <span className="text-terracotta-500">რედაქტირება</span></>
-                  ) : (
-                    <>Edit Your <span className="text-terracotta-500">Project</span></>
-                  )
-                ) : (
-                  locale === 'ka' ? (
-                    <>აღწერე შენი <span className="text-terracotta-500">პროექტი</span></>
-                  ) : (
-                    <>Describe Your <span className="text-terracotta-500">Project</span></>
-                  )
-                )}
-              </h1>
-
-              <p className="text-base md:text-lg text-[var(--color-text-secondary)] max-w-xl mb-8 leading-relaxed">
-                {locale === 'ka'
-                  ? 'შეავსე დეტალები და მიიღე შეთავაზებები საუკეთესო სპეციალისტებისგან.'
-                  : 'Fill in the details and receive proposals from top professionals.'
-                }
-              </p>
-            </section>
-
-            {/* Main Form */}
-            <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-              {/* Section 1: Category & Specializations */}
-              <section className="mb-10">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${
-                    validation.category && validation.specialty
-                      ? 'bg-terracotta-500 text-white'
-                      : 'bg-terracotta-500 text-white'
-                  }`}>
-                    {validation.category && validation.specialty ? (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                      </svg>
-                    ) : '1'}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-                        {locale === 'ka' ? 'რა გჭირდება?' : 'What do you need?'}
-                      </h2>
-                      {!validation.category && (
-                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                          {locale === 'ka' ? 'სავალდებულო' : 'Required'}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-[var(--color-text-tertiary)]">
-                      {locale === 'ka' ? 'აირჩიე კატეგორია და სპეციალობა' : 'Select category and specialty'}
-                    </p>
-                  </div>
-                </div>
-
+              <div className="postjob-card">
                 <CategorySubcategorySelector
                   selectedCategory={selectedCategory}
                   selectedSubcategories={selectedSubcategories}
@@ -502,644 +524,497 @@ export default function PostJobPage() {
                   showCustomSpecialties={false}
                   singleCategoryMode={true}
                 />
-              </section>
+              </div>
+            </section>
 
-              {/* Section 2: Project Details */}
-              <section className="mb-10">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${
-                    validation.title && validation.description && validation.propertyType
-                      ? 'bg-terracotta-500 text-white'
-                      : totalSpecialties > 0
-                        ? 'bg-terracotta-400 text-white'
-                        : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)]'
-                  }`}>
-                    {validation.title && validation.description && validation.propertyType ? (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                      </svg>
-                    ) : '2'}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-                        {locale === 'ka' ? 'პროექტის დეტალები' : 'Project Details'}
-                      </h2>
-                      {totalSpecialties > 0 && (!validation.title || !validation.description || !validation.propertyType) && (
-                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                          {locale === 'ka' ? 'შეავსე' : 'Fill in'}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-[var(--color-text-tertiary)]">
-                      {locale === 'ka' ? 'აღწერე რა გინდა გაკეთდეს' : 'Describe what needs to be done'}
-                    </p>
-                  </div>
+            {/* Section 2: Project Details */}
+            <section className="postjob-section animate-postjob-slide-up" style={{ animationDelay: '200ms' }}>
+              <div className="postjob-section-header">
+                <div className={`postjob-section-number ${validation.title && validation.description && validation.propertyType ? 'completed' : totalSpecialties > 0 ? 'active' : ''}`}>
+                  {validation.title && validation.description && validation.propertyType ? <Check className="w-6 h-6" /> : '2'}
                 </div>
-
-                <div className="space-y-5 p-5 rounded-2xl bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)]">
-                  {/* Title */}
-                  <div>
-                    <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                      <span>{locale === 'ka' ? 'პროექტის სათაური' : 'Project Title'}</span>
-                      {validation.title ? (
-                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-terracotta-500">
-                          <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </span>
-                      ) : (
-                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-terracotta-500/20 border border-terracotta-500/30">
-                          <span className="w-1.5 h-1.5 rounded-full bg-terracotta-500" />
-                        </span>
-                      )}
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.title}
-                      onChange={(e) => updateFormData('title', e.target.value)}
-                      placeholder={locale === 'ka' ? 'მაგ: 2 ოთახიანი ბინის რემონტი' : 'e.g. 2-bedroom apartment renovation'}
-                      className={`w-full px-4 py-3 bg-[var(--color-bg-primary)] border rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 transition-all ${
-                        validation.title
-                          ? 'border-terracotta-500/30 focus:border-terracotta-500 focus:ring-terracotta-500/20'
-                          : 'border-[var(--color-border-subtle)] focus:border-terracotta-500 focus:ring-terracotta-500/20'
-                      }`}
-                    />
-                  </div>
-
-                  {/* Description */}
-                  <div>
-                    <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                      <span>{locale === 'ka' ? 'აღწერა' : 'Description'}</span>
-                      {validation.description ? (
-                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-terracotta-500">
-                          <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </span>
-                      ) : (
-                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-terracotta-500/20 border border-terracotta-500/30">
-                          <span className="w-1.5 h-1.5 rounded-full bg-terracotta-500" />
-                        </span>
-                      )}
-                    </label>
-                    <textarea
-                      value={formData.description}
-                      onChange={(e) => updateFormData('description', e.target.value)}
-                      rows={4}
-                      placeholder={locale === 'ka' ? 'დეტალურად აღწერე რა გინდა გაკეთდეს...' : 'Describe what you need in detail...'}
-                      className={`w-full px-4 py-3 bg-[var(--color-bg-primary)] border rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 transition-all resize-none ${
-                        validation.description
-                          ? 'border-terracotta-500/30 focus:border-terracotta-500 focus:ring-terracotta-500/20'
-                          : 'border-[var(--color-border-subtle)] focus:border-terracotta-500 focus:ring-terracotta-500/20'
-                      }`}
-                    />
-                  </div>
-
-                  {/* Property Type */}
-                  <div>
-                    <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] mb-3">
-                      <span>{locale === 'ka' ? 'ობიექტის ტიპი' : 'Property Type'}</span>
-                      {validation.propertyType ? (
-                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-terracotta-500">
-                          <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </span>
-                      ) : (
-                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-terracotta-500/20 border border-terracotta-500/30">
-                          <span className="w-1.5 h-1.5 rounded-full bg-terracotta-500" />
-                        </span>
-                      )}
-                    </label>
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                      {PROPERTY_TYPES.map((type) => (
-                        <button
-                          key={type.value}
-                          type="button"
-                          onClick={() => {
-                            updateFormData('propertyType', type.value);
-                            if (type.value !== 'other') updateFormData('propertyTypeOther', '');
-                          }}
-                          className={`flex flex-col items-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-xl border-2 transition-all duration-200 ${
-                            formData.propertyType === type.value
-                              ? 'border-terracotta-500 bg-terracotta-50 dark:bg-terracotta-500/10'
-                              : 'border-[var(--color-border-subtle)] hover:border-terracotta-300 bg-[var(--color-bg-primary)]'
-                          }`}
-                        >
-                          <PropertyIcon
-                            type={type.icon}
-                            className={`w-5 h-5 sm:w-6 sm:h-6 transition-colors ${
-                              formData.propertyType === type.value
-                                ? 'text-terracotta-500'
-                                : 'text-[var(--color-text-tertiary)]'
-                            }`}
-                          />
-                          <span className={`text-[10px] sm:text-xs font-medium text-center transition-colors ${
-                            formData.propertyType === type.value
-                              ? 'text-terracotta-600 dark:text-terracotta-400'
-                              : 'text-[var(--color-text-secondary)]'
-                          }`}>
-                            {locale === 'ka' ? type.labelKa : type.label}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                    {formData.propertyType === 'other' && (
-                      <input
-                        type="text"
-                        value={formData.propertyTypeOther}
-                        onChange={(e) => updateFormData('propertyTypeOther', e.target.value)}
-                        placeholder={locale === 'ka' ? 'მიუთითე ობიექტის ტიპი...' : 'Specify property type...'}
-                        className="w-full mt-3 px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
-                      />
+                <div className="postjob-section-info">
+                  <div className="postjob-section-title">
+                    <h2>{locale === 'ka' ? 'პროექტის დეტალები' : 'Project Details'}</h2>
+                    {totalSpecialties > 0 && (!validation.title || !validation.description || !validation.propertyType) && (
+                      <span className="postjob-section-required">
+                        {locale === 'ka' ? 'შეავსე' : 'Fill in'}
+                      </span>
                     )}
                   </div>
-
-                  {/* Size & Rooms */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                        {locale === 'ka' ? 'ფართობი (მ²)' : 'Area (m²)'}
-                      </label>
-                      <input
-                        type="number"
-                        value={formData.areaSize}
-                        onChange={(e) => updateFormData('areaSize', e.target.value)}
-                        placeholder="100"
-                        className="w-full px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                        {locale === 'ka' ? 'ოთახების რაოდენობა' : 'Number of Rooms'}
-                      </label>
-                      <input
-                        type="number"
-                        value={formData.roomCount}
-                        onChange={(e) => updateFormData('roomCount', e.target.value)}
-                        placeholder="3"
-                        className="w-full px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Deadline */}
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                      {locale === 'ka' ? 'სასურველი დასრულების თარიღი' : 'Preferred Deadline'}
-                    </label>
-                    <DatePicker
-                      value={formData.deadline}
-                      onChange={(value) => updateFormData('deadline', value)}
-                      min={new Date().toISOString().split('T')[0]}
-                      locale={locale}
-                      placeholder={locale === 'ka' ? 'აირჩიე თარიღი' : 'Select date'}
-                    />
-                  </div>
-
-                  {/* Location */}
-                  <div>
-                    <AddressPicker
-                      value={formData.location}
-                      onChange={(value) => updateFormData('location', value)}
-                      locale={locale}
-                      label={locale === 'ka' ? 'მდებარეობა' : 'Location'}
-                      required={false}
-                    />
-                  </div>
+                  <p className="postjob-section-desc">
+                    {locale === 'ka' ? 'აღწერე რა გინდა გაკეთდეს' : 'Describe what needs to be done'}
+                  </p>
                 </div>
-              </section>
+              </div>
 
-              {/* Section 3: Budget */}
-              <section className="mb-10">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${
-                    validation.budget
-                      ? 'bg-terracotta-500 text-white'
-                      : validation.title && validation.description && validation.propertyType
-                        ? 'bg-terracotta-400 text-white'
-                        : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)]'
-                  }`}>
-                    {validation.budget ? (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                      </svg>
-                    ) : '3'}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-                        {locale === 'ka' ? 'ბიუჯეტი' : 'Budget'}
-                      </h2>
-                      {validation.title && validation.description && validation.propertyType && !validation.budget && (
-                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                          {locale === 'ka' ? 'მიუთითე' : 'Specify'}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-[var(--color-text-tertiary)]">
-                      {locale === 'ka' ? 'რამდენის დახარჯვა გეგმავ?' : 'How much are you planning to spend?'}
-                    </p>
-                  </div>
+              <div className="postjob-card space-y-5">
+                {/* Title */}
+                <div>
+                  <label className="postjob-label">
+                    <span>{locale === 'ka' ? 'პროექტის სათაური' : 'Project Title'}</span>
+                    <span className={`postjob-label-check ${validation.title ? 'filled' : 'empty'}`}>
+                      {validation.title && <Check className="w-3 h-3 text-white" />}
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => updateFormData('title', e.target.value)}
+                    placeholder={locale === 'ka' ? 'მაგ: 2 ოთახიანი ბინის რემონტი' : 'e.g. 2-bedroom apartment renovation'}
+                    className={`postjob-input ${validation.title ? 'filled' : ''}`}
+                  />
                 </div>
 
-                <div className="p-4 sm:p-5 rounded-2xl bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)]">
-                  {/* Budget Type Selection */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
-                    {BUDGET_TYPES.map((type) => (
+                {/* Description */}
+                <div>
+                  <label className="postjob-label">
+                    <span>{locale === 'ka' ? 'აღწერა' : 'Description'}</span>
+                    <span className={`postjob-label-check ${validation.description ? 'filled' : 'empty'}`}>
+                      {validation.description && <Check className="w-3 h-3 text-white" />}
+                    </span>
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => updateFormData('description', e.target.value)}
+                    rows={4}
+                    placeholder={locale === 'ka' ? 'დეტალურად აღწერე რა გინდა გაკეთდეს...' : 'Describe what you need in detail...'}
+                    className="postjob-textarea"
+                  />
+                </div>
+
+                {/* Property Type */}
+                <div>
+                  <label className="postjob-label">
+                    <span>{locale === 'ka' ? 'ობიექტის ტიპი' : 'Property Type'}</span>
+                    <span className={`postjob-label-check ${validation.propertyType ? 'filled' : 'empty'}`}>
+                      {validation.propertyType && <Check className="w-3 h-3 text-white" />}
+                    </span>
+                  </label>
+                  <div className="postjob-option-grid cols-5">
+                    {PROPERTY_TYPES.map((type) => (
                       <button
                         key={type.value}
                         type="button"
-                        onClick={() => updateFormData('budgetType', type.value)}
-                        className={`flex flex-col items-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-xl border-2 transition-all duration-200 ${
-                          formData.budgetType === type.value
-                            ? 'border-terracotta-500 bg-terracotta-50 dark:bg-terracotta-500/10'
-                            : 'border-[var(--color-border-subtle)] hover:border-terracotta-300 bg-[var(--color-bg-primary)]'
-                        }`}
+                        onClick={() => {
+                          updateFormData('propertyType', type.value);
+                          if (type.value !== 'other') updateFormData('propertyTypeOther', '');
+                        }}
+                        className={`postjob-option ${formData.propertyType === type.value ? 'selected' : ''}`}
                       >
-                        <BudgetIcon
-                          type={type.icon}
-                          className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${
-                            formData.budgetType === type.value
-                              ? 'text-terracotta-500'
-                              : 'text-[var(--color-text-tertiary)]'
-                          }`}
-                        />
-                        <span className={`text-[10px] sm:text-xs font-medium text-center transition-colors ${
-                          formData.budgetType === type.value
-                            ? 'text-terracotta-600 dark:text-terracotta-400'
-                            : 'text-[var(--color-text-secondary)]'
-                        }`}>
+                        <PropertyIcon type={type.icon} className="postjob-option-icon" />
+                        <span className="postjob-option-label">
                           {locale === 'ka' ? type.labelKa : type.label}
+                        </span>
+                        <span className="postjob-option-check">
+                          <Check className="w-3 h-3 text-white" />
                         </span>
                       </button>
                     ))}
                   </div>
-
-                  {/* Budget Input Fields */}
-                  {formData.budgetType === 'fixed' && (
-                    <div>
-                      <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                        {locale === 'ka' ? 'ბიუჯეტის თანხა (₾)' : 'Budget Amount (₾)'}
-                      </label>
-                      <input
-                        type="number"
-                        value={formData.budgetAmount}
-                        onChange={(e) => updateFormData('budgetAmount', e.target.value)}
-                        placeholder="5000"
-                        className="w-full px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] text-lg font-medium placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
-                      />
-                    </div>
-                  )}
-
-                  {formData.budgetType === 'range' && (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                          {locale === 'ka' ? 'მინიმუმ (₾)' : 'Minimum (₾)'}
-                        </label>
-                        <input
-                          type="number"
-                          value={formData.budgetMin}
-                          onChange={(e) => updateFormData('budgetMin', e.target.value)}
-                          placeholder="3000"
-                          className="w-full px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] text-lg font-medium placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                          {locale === 'ka' ? 'მაქსიმუმ (₾)' : 'Maximum (₾)'}
-                        </label>
-                        <input
-                          type="number"
-                          value={formData.budgetMax}
-                          onChange={(e) => updateFormData('budgetMax', e.target.value)}
-                          placeholder="8000"
-                          className="w-full px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] text-lg font-medium placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {formData.budgetType === 'per_sqm' && (
-                    <div>
-                      <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                        {locale === 'ka' ? 'ფასი კვ.მ-ზე (₾)' : 'Price per m² (₾)'}
-                      </label>
-                      <input
-                        type="number"
-                        value={formData.pricePerUnit}
-                        onChange={(e) => updateFormData('pricePerUnit', e.target.value)}
-                        placeholder="50"
-                        className="w-full px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] text-lg font-medium placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
-                      />
-                      {formData.areaSize && formData.pricePerUnit && (
-                        <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-                          {locale === 'ka' ? 'სავარაუდო ჯამი:' : 'Estimated total:'}{' '}
-                          <span className="font-semibold text-[var(--color-text-primary)]">
-                            ₾{(Number(formData.areaSize) * Number(formData.pricePerUnit)).toLocaleString()}
-                          </span>
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {formData.budgetType === 'negotiable' && (
-                    <div className="p-4 rounded-xl bg-terracotta-50 dark:bg-terracotta-500/10 border border-terracotta-200 dark:border-terracotta-500/20 text-center">
-                      <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-terracotta-500 flex items-center justify-center">
-                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
-                      </div>
-                      <p className="text-sm text-[var(--color-text-secondary)]">
-                        {locale === 'ka'
-                          ? 'სპეციალისტები შემოგთავაზებენ საკუთარ ფასებს'
-                          : 'Professionals will propose their own prices'}
-                      </p>
-                    </div>
+                  {formData.propertyType === 'other' && (
+                    <input
+                      type="text"
+                      value={formData.propertyTypeOther}
+                      onChange={(e) => updateFormData('propertyTypeOther', e.target.value)}
+                      placeholder={locale === 'ka' ? 'მიუთითე ობიექტის ტიპი...' : 'Specify property type...'}
+                      className="postjob-input mt-3"
+                    />
                   )}
                 </div>
-              </section>
 
-              {/* Section 4: Media & References (Optional) */}
-              <section className="mb-10">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-[var(--color-bg-tertiary)] flex items-center justify-center text-[var(--color-text-secondary)] font-bold border border-[var(--color-border-subtle)]">
-                    4
+                {/* Size & Rooms */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="postjob-label">
+                      <span>{locale === 'ka' ? 'ფართობი (მ²)' : 'Area (m²)'}</span>
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.areaSize}
+                      onChange={(e) => updateFormData('areaSize', e.target.value)}
+                      placeholder="100"
+                      className="postjob-input"
+                    />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-                      {locale === 'ka' ? 'ფოტოები და ინსპირაცია' : 'Photos & Inspiration'}
-                    </h2>
-                    <p className="text-sm text-[var(--color-text-tertiary)]">
-                      {locale === 'ka' ? 'არასავალდებულო - დაეხმარე სპეციალისტს' : 'Optional - help pros understand'}
+                    <label className="postjob-label">
+                      <span>{locale === 'ka' ? 'ოთახების რაოდენობა' : 'Number of Rooms'}</span>
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.roomCount}
+                      onChange={(e) => updateFormData('roomCount', e.target.value)}
+                      placeholder="3"
+                      className="postjob-input"
+                    />
+                  </div>
+                </div>
+
+                {/* Deadline */}
+                <div>
+                  <label className="postjob-label">
+                    <Calendar className="w-4 h-4 text-[#D2691E]" />
+                    <span>{locale === 'ka' ? 'სასურველი დასრულების თარიღი' : 'Preferred Deadline'}</span>
+                  </label>
+                  <DatePicker
+                    value={formData.deadline}
+                    onChange={(value) => updateFormData('deadline', value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    locale={locale}
+                    placeholder={locale === 'ka' ? 'აირჩიე თარიღი' : 'Select date'}
+                  />
+                </div>
+
+                {/* Location */}
+                <div>
+                  <AddressPicker
+                    value={formData.location}
+                    onChange={(value) => updateFormData('location', value)}
+                    locale={locale}
+                    label={locale === 'ka' ? 'მდებარეობა' : 'Location'}
+                    required={false}
+                  />
+                </div>
+              </div>
+            </section>
+
+            {/* Section 3: Budget */}
+            <section className="postjob-section animate-postjob-slide-up" style={{ animationDelay: '250ms' }}>
+              <div className="postjob-section-header">
+                <div className={`postjob-section-number ${validation.budget ? 'completed' : validation.title && validation.description && validation.propertyType ? 'active' : ''}`}>
+                  {validation.budget ? <Check className="w-6 h-6" /> : '3'}
+                </div>
+                <div className="postjob-section-info">
+                  <div className="postjob-section-title">
+                    <h2>{locale === 'ka' ? 'ბიუჯეტი' : 'Budget'}</h2>
+                    {validation.title && validation.description && validation.propertyType && !validation.budget && (
+                      <span className="postjob-section-required">
+                        {locale === 'ka' ? 'მიუთითე' : 'Specify'}
+                      </span>
+                    )}
+                  </div>
+                  <p className="postjob-section-desc">
+                    {locale === 'ka' ? 'რამდენის დახარჯვა გეგმავ?' : 'How much are you planning to spend?'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="postjob-card">
+                {/* Budget Type Selection */}
+                <div className="postjob-option-grid cols-4 mb-5">
+                  {BUDGET_TYPES.map((type) => (
+                    <button
+                      key={type.value}
+                      type="button"
+                      onClick={() => updateFormData('budgetType', type.value)}
+                      className={`postjob-option ${formData.budgetType === type.value ? 'selected' : ''}`}
+                    >
+                      <BudgetIcon type={type.icon} className="postjob-option-icon" />
+                      <span className="postjob-option-label">
+                        {locale === 'ka' ? type.labelKa : type.label}
+                      </span>
+                      <span className="postjob-option-check">
+                        <Check className="w-3 h-3 text-white" />
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Budget Input Fields */}
+                {formData.budgetType === 'fixed' && (
+                  <div>
+                    <label className="postjob-label">
+                      <DollarSign className="w-4 h-4 text-[#D2691E]" />
+                      <span>{locale === 'ka' ? 'ბიუჯეტის თანხა (₾)' : 'Budget Amount (₾)'}</span>
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.budgetAmount}
+                      onChange={(e) => updateFormData('budgetAmount', e.target.value)}
+                      placeholder="5000"
+                      className="postjob-input text-lg font-semibold"
+                    />
+                  </div>
+                )}
+
+                {formData.budgetType === 'range' && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="postjob-label">
+                        <span>{locale === 'ka' ? 'მინიმუმ (₾)' : 'Minimum (₾)'}</span>
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.budgetMin}
+                        onChange={(e) => updateFormData('budgetMin', e.target.value)}
+                        placeholder="3000"
+                        className="postjob-input text-lg font-semibold"
+                      />
+                    </div>
+                    <div>
+                      <label className="postjob-label">
+                        <span>{locale === 'ka' ? 'მაქსიმუმ (₾)' : 'Maximum (₾)'}</span>
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.budgetMax}
+                        onChange={(e) => updateFormData('budgetMax', e.target.value)}
+                        placeholder="8000"
+                        className="postjob-input text-lg font-semibold"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {formData.budgetType === 'per_sqm' && (
+                  <div>
+                    <label className="postjob-label">
+                      <span>{locale === 'ka' ? 'ფასი კვ.მ-ზე (₾)' : 'Price per m² (₾)'}</span>
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.pricePerUnit}
+                      onChange={(e) => updateFormData('pricePerUnit', e.target.value)}
+                      placeholder="50"
+                      className="postjob-input text-lg font-semibold"
+                    />
+                    {formData.areaSize && formData.pricePerUnit && (
+                      <p className="mt-3 text-sm text-[var(--color-text-secondary)] flex items-center gap-2">
+                        <span>{locale === 'ka' ? 'სავარაუდო ჯამი:' : 'Estimated total:'}</span>
+                        <span className="font-bold text-[#D2691E] text-lg">
+                          ₾{(Number(formData.areaSize) * Number(formData.pricePerUnit)).toLocaleString()}
+                        </span>
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {formData.budgetType === 'negotiable' && (
+                  <div className="postjob-negotiable">
+                    <div className="postjob-negotiable-icon">
+                      <MessageSquare className="w-7 h-7 text-white" />
+                    </div>
+                    <p className="postjob-negotiable-text">
+                      {locale === 'ka'
+                        ? 'პროფესიონალები შემოგთავაზებენ საკუთარ ფასებს'
+                        : 'Professionals will propose their own prices'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* Section 4: Media & References */}
+            <section className="postjob-section animate-postjob-slide-up" style={{ animationDelay: '300ms' }}>
+              <div className="postjob-section-header">
+                <div className="postjob-section-number">
+                  4
+                </div>
+                <div className="postjob-section-info">
+                  <div className="postjob-section-title">
+                    <h2>{locale === 'ka' ? 'ფოტოები და ინსპირაცია' : 'Photos & Inspiration'}</h2>
+                  </div>
+                  <p className="postjob-section-desc">
+                    {locale === 'ka' ? 'არასავალდებულო - დაეხმარე პროფესიონალს' : 'Optional - help pros understand'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="postjob-card space-y-5">
+                {/* Existing Media (Edit Mode) */}
+                {isEditMode && existingMedia.length > 0 && (
+                  <div>
+                    <label className="postjob-label">
+                      <Image className="w-4 h-4 text-[#D2691E]" />
+                      <span>{locale === 'ka' ? 'არსებული ფოტოები' : 'Current Photos'} ({existingMedia.length})</span>
+                    </label>
+                    <div className="postjob-media-grid">
+                      {existingMedia.map((media, idx) => (
+                        <div key={idx} className="postjob-media-item">
+                          <img src={storage.getFileUrl(media.url)} alt="" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Upload Area */}
+                <div>
+                  <label className="postjob-label">
+                    <Upload className="w-4 h-4 text-[#D2691E]" />
+                    <span>{locale === 'ka' ? 'ატვირთე ფოტოები' : 'Upload Photos'}</span>
+                  </label>
+                  <div onClick={() => fileInputRef.current?.click()} className="postjob-upload">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*,video/*"
+                      multiple
+                      onChange={handleFileSelect}
+                      className="hidden"
+                    />
+                    <div className="postjob-upload-icon">
+                      <Image />
+                    </div>
+                    <p className="postjob-upload-title">
+                      {locale === 'ka' ? 'ატვირთე ფოტოები' : 'Upload photos'}
+                    </p>
+                    <p className="postjob-upload-subtitle">
+                      PNG, JPG, MP4
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-5 p-5 rounded-2xl bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)]">
-                  {/* Existing Media (Edit Mode) */}
-                  {isEditMode && existingMedia.length > 0 && (
-                    <div>
-                      <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-3">
-                        {locale === 'ka' ? 'არსებული ფოტოები' : 'Current Photos'} ({existingMedia.length})
-                      </label>
-                      <div className="grid grid-cols-4 gap-2">
-                        {existingMedia.map((media, idx) => (
-                          <div key={idx} className="relative aspect-square rounded-xl overflow-hidden">
-                            <img
-                              src={storage.getFileUrl(media.url)}
-                              alt=""
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Upload Area */}
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-3">
-                      {locale === 'ka' ? 'ატვირთე ფოტოები' : 'Upload Photos'}
-                    </label>
-                    <div
-                      onClick={() => fileInputRef.current?.click()}
-                      className="group p-8 rounded-xl border-2 border-dashed border-[var(--color-border)] hover:border-[var(--color-accent)] bg-[var(--color-bg-primary)] cursor-pointer transition-all duration-300"
-                    >
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*,video/*"
-                        multiple
-                        onChange={handleFileSelect}
-                        className="hidden"
-                      />
-                      <div className="text-center">
-                        <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-[var(--color-bg-tertiary)] flex items-center justify-center group-hover:bg-[var(--color-accent-soft)] group-hover:scale-110 transition-all duration-300">
-                          <svg className="w-7 h-7 text-[var(--color-text-tertiary)] group-hover:text-[var(--color-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
+                {/* New Files Preview */}
+                {mediaFiles.length > 0 && (
+                  <div className="postjob-media-grid">
+                    {mediaFiles.map((media, idx) => (
+                      <div key={idx} className="postjob-media-item">
+                        {media.type === 'image' ? (
+                          <img src={media.preview} alt="" />
+                        ) : (
+                          <video src={media.preview} />
+                        )}
+                        <div className="postjob-media-overlay">
+                          <button type="button" onClick={() => removeMediaFile(idx)} className="postjob-media-remove">
+                            <Trash2 className="w-4 h-4 text-white" />
+                          </button>
                         </div>
-                        <p className="font-medium text-[var(--color-text-primary)] mb-1">
-                          {locale === 'ka' ? 'ატვირთე ფოტოები' : 'Upload photos'}
-                        </p>
-                        <p className="text-sm text-[var(--color-text-tertiary)]">
-                          PNG, JPG, MP4
-                        </p>
                       </div>
-                    </div>
+                    ))}
                   </div>
+                )}
 
-                  {/* New Files Preview */}
-                  {mediaFiles.length > 0 && (
-                    <div className="grid grid-cols-4 gap-2">
-                      {mediaFiles.map((media, idx) => (
-                        <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group">
-                          {media.type === 'image' ? (
-                            <img src={media.preview} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <video src={media.preview} className="w-full h-full object-cover" />
-                          )}
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <button
-                              type="button"
-                              onClick={() => removeMediaFile(idx)}
-                              className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30"
-                            >
-                              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </button>
-                          </div>
+                {/* References/Inspiration Links */}
+                <div>
+                  <label className="postjob-label">
+                    <Link2 className="w-4 h-4 text-[#D2691E]" />
+                    <span>{locale === 'ka' ? 'ინსპირაციის ბმულები' : 'Inspiration Links'}</span>
+                  </label>
+                  <div className="postjob-ref-input">
+                    <input
+                      type="url"
+                      value={newReferenceUrl}
+                      onChange={(e) => setNewReferenceUrl(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addReference())}
+                      placeholder={locale === 'ka' ? 'Pinterest, Instagram...' : 'Pinterest, Instagram...'}
+                      className="postjob-input flex-1"
+                    />
+                    <button
+                      type="button"
+                      onClick={addReference}
+                      disabled={!newReferenceUrl.trim()}
+                      className="postjob-ref-add"
+                    >
+                      <Plus className="w-5 h-5" />
+                    </button>
+                  </div>
+                  {references.length > 0 && (
+                    <div className="postjob-ref-list">
+                      {references.map((ref, idx) => (
+                        <div key={idx} className="postjob-ref-item">
+                          <Link2 className="postjob-ref-icon" />
+                          <span className="postjob-ref-url">{ref.url}</span>
+                          <button type="button" onClick={() => removeReference(idx)} className="postjob-ref-remove">
+                            <X className="w-4 h-4" />
+                          </button>
                         </div>
                       ))}
                     </div>
                   )}
-
-                  {/* References/Inspiration Links */}
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                      {locale === 'ka' ? 'ინსპირაციის ბმულები' : 'Inspiration Links'}
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="url"
-                        value={newReferenceUrl}
-                        onChange={(e) => setNewReferenceUrl(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addReference())}
-                        placeholder={locale === 'ka' ? 'ბმული ინსპირაციისთვის...' : 'Link for inspiration...'}
-                        className="flex-1 px-4 py-3 bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-soft)] transition-all"
-                      />
-                      <button
-                        type="button"
-                        onClick={addReference}
-                        disabled={!newReferenceUrl.trim()}
-                        className="px-4 py-3 bg-terracotta-500 text-white rounded-xl font-medium transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-terracotta-600 hover:shadow-lg hover:shadow-terracotta-500/25"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                      </button>
-                    </div>
-                    {references.length > 0 && (
-                      <div className="mt-3 space-y-2">
-                        {references.map((ref, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center gap-3 p-3 rounded-xl bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)]"
-                          >
-                            <svg className="w-4 h-4 text-[var(--color-text-tertiary)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                            </svg>
-                            <span className="flex-1 text-sm text-[var(--color-text-secondary)] truncate">
-                              {ref.url}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => removeReference(idx)}
-                              className="p-1 text-[var(--color-text-tertiary)] hover:text-red-500 transition-colors"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
                 </div>
-              </section>
+              </div>
+            </section>
 
-              {/* Notify All Professionals */}
-              <section className="mb-6">
-                <label
-                  className="flex items-start gap-4 p-4 rounded-2xl bg-terracotta-50 dark:bg-terracotta-500/10 border border-terracotta-200 dark:border-terracotta-500/20 cursor-pointer group hover:border-terracotta-400 dark:hover:border-terracotta-500/40 transition-all duration-300"
-                  onClick={() => setNotifyAllPros(!notifyAllPros)}
-                >
-                  <div className="relative flex-shrink-0 mt-0.5">
-                    <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-200 ${
-                      notifyAllPros
-                        ? 'bg-terracotta-500 border-terracotta-500'
-                        : 'border-[var(--color-border)] bg-[var(--color-bg-primary)] group-hover:border-terracotta-500'
-                    }`}>
-                      {notifyAllPros && (
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <svg className="w-5 h-5 text-terracotta-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                      </svg>
-                      <span className="font-semibold text-[var(--color-text-primary)]">
-                        {locale === 'ka' ? 'მიიღეთ მეტი შეთავაზება' : 'Get More Proposals'}
-                      </span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-terracotta-500 text-white">
-                        {locale === 'ka' ? 'რეკომენდებული' : 'Recommended'}
-                      </span>
-                    </div>
-                    <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
-                      {locale === 'ka'
-                        ? 'ჩართვით ადასტურებთ რომ მიუვიდეს შეტყობინება ყველა შესაბამის პროფესიონალს თქვენი პროექტის შესახებ რათა მიიღოთ მეტი შეთავაზება სწრაფად.'
-                        : 'Notify all matching professionals about your project and receive more proposals faster.'}
-                    </p>
-                  </div>
-                </label>
-              </section>
-
-              {/* Error */}
-              {error && (
-                <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-3 animate-fade-in">
-                  <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            {/* Notify All Professionals */}
+            <section className="postjob-section animate-postjob-slide-up" style={{ animationDelay: '350ms' }}>
+              <div
+                onClick={() => setNotifyAllPros(!notifyAllPros)}
+                className={`postjob-notify ${notifyAllPros ? 'active' : ''}`}
+              >
+                <div className="postjob-notify-checkbox">
+                  {notifyAllPros && <Check className="w-4 h-4 text-white" />}
                 </div>
-              )}
+                <div className="postjob-notify-content">
+                  <div className="postjob-notify-header">
+                    <Bell className="postjob-notify-icon" />
+                    <span className="postjob-notify-title">
+                      {locale === 'ka' ? 'მიიღეთ მეტი შეთავაზება' : 'Get More Proposals'}
+                    </span>
+                    <span className="postjob-notify-badge">
+                      {locale === 'ka' ? 'რეკომენდებული' : 'Recommended'}
+                    </span>
+                  </div>
+                  <p className="postjob-notify-desc">
+                    {locale === 'ka'
+                      ? 'ჩართვით ადასტურებთ რომ მიუვიდეს შეტყობინება ყველა შესაბამის პროფესიონალს თქვენი პროექტის შესახებ.'
+                      : 'Notify all matching professionals about your project and receive more proposals faster.'}
+                  </p>
+                </div>
+              </div>
+            </section>
 
-            </form>
-          </div>
+            {/* Error */}
+            {error && (
+              <div className="postjob-error animate-postjob-fade-in">
+                <AlertCircle className="postjob-error-icon" />
+                <p className="postjob-error-text">{error}</p>
+              </div>
+            )}
+          </form>
         </div>
       </main>
 
-      {/* Submit Button - Fixed at bottom, compact design */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--color-bg-primary)]/95 backdrop-blur-xl border-t border-[var(--color-border-subtle)] shadow-[0_-2px_10px_rgba(0,0,0,0.06)]">
-        <div className="max-w-2xl mx-auto px-4 py-3">
-          <div className="flex items-center gap-3">
-            {/* Progress indicator - compact */}
-            {!canSubmit() && (
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <div className="w-8 h-8 rounded-full bg-[var(--color-bg-tertiary)] flex items-center justify-center relative">
-                  <svg className="w-8 h-8 -rotate-90">
-                    <circle
-                      cx="16"
-                      cy="16"
-                      r="12"
-                      fill="none"
-                      stroke="var(--color-border)"
-                      strokeWidth="3"
-                    />
-                    <circle
-                      cx="16"
-                      cy="16"
-                      r="12"
-                      fill="none"
-                      stroke="#C96D4D"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeDasharray={`${(completedFields / totalFields) * 75.4} 75.4`}
-                    />
-                  </svg>
-                  <span className="absolute text-[10px] font-bold text-[var(--color-text-secondary)]">
-                    {completedFields}/{totalFields}
-                  </span>
-                </div>
-                <span className="text-xs text-terracotta-600 dark:text-terracotta-400 font-medium hidden sm:block">
-                  {getFirstMissingField()?.label}
-                </span>
+      {/* Submit Footer */}
+      <div className="postjob-footer">
+        <div className="postjob-footer-inner">
+          {/* Progress indicator */}
+          {!canSubmit() && (
+            <div className="postjob-footer-progress">
+              <div className="postjob-footer-ring">
+                <svg viewBox="0 0 36 36">
+                  <circle className="postjob-footer-ring-bg" cx="18" cy="18" r="14" />
+                  <circle
+                    className="postjob-footer-ring-fill"
+                    cx="18"
+                    cy="18"
+                    r="14"
+                    strokeDasharray={`${progressPercent * 0.88} 88`}
+                  />
+                </svg>
+                <span className="postjob-footer-ring-text">{completedFields}/{totalFields}</span>
               </div>
-            )}
+              <span className="postjob-footer-hint">
+                {getFirstMissingField()?.label}
+              </span>
+            </div>
+          )}
 
-            {/* Submit button */}
-            <button
-              type="button"
-              onClick={() => {
-                const form = document.querySelector('form');
-                if (form) form.requestSubmit();
-              }}
-              disabled={isSubmitting || !canSubmit()}
-              className={`flex-1 py-3 px-5 rounded-xl font-medium text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
-                canSubmit()
-                  ? 'bg-terracotta-500 text-white hover:bg-terracotta-600 hover:shadow-[0_4px_20px_rgba(201,109,77,0.3)]'
-                  : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] cursor-not-allowed'
-              }`}
-            >
-              {isSubmitting ? (
-                <>
-                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  <span>{uploadProgress > 0 ? `${uploadProgress}%` : (locale === 'ka' ? 'მიმდინარეობს...' : 'Processing...')}</span>
-                </>
-              ) : canSubmit() ? (
-                <>
-                  <span>{isEditMode ? (locale === 'ka' ? 'შენახვა' : 'Save') : (locale === 'ka' ? 'გამოქვეყნება' : 'Publish')}</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </>
-              ) : (
-                <span>{locale === 'ka' ? 'შეავსე ველები' : 'Fill required fields'}</span>
-              )}
-            </button>
-          </div>
+          {/* Submit button */}
+          <button
+            type="button"
+            onClick={() => {
+              const form = document.querySelector('form');
+              if (form) form.requestSubmit();
+            }}
+            disabled={isSubmitting || !canSubmit()}
+            className={`postjob-submit ${canSubmit() ? 'ready' : 'disabled'}`}
+          >
+            {isSubmitting ? (
+              <>
+                <div className="postjob-submit-spinner" />
+                <span>{uploadProgress > 0 ? `${uploadProgress}%` : (locale === 'ka' ? 'მიმდინარეობს...' : 'Processing...')}</span>
+              </>
+            ) : canSubmit() ? (
+              <>
+                <span>{isEditMode ? (locale === 'ka' ? 'შენახვა' : 'Save Changes') : (locale === 'ka' ? 'გამოქვეყნება' : 'Publish Project')}</span>
+                <ArrowRight className="w-5 h-5" />
+              </>
+            ) : (
+              <span>{locale === 'ka' ? 'შეავსე ველები' : 'Fill required fields'}</span>
+            )}
+          </button>
         </div>
       </div>
     </div>

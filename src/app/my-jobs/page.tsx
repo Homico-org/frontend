@@ -3,7 +3,6 @@
 import AppBackground from '@/components/common/AppBackground';
 import Avatar from '@/components/common/Avatar';
 import Button from '@/components/common/Button';
-import Card, { CardBadge, CardContent, CardFooter, CardImage } from '@/components/common/Card';
 import Header from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -23,23 +22,25 @@ import {
   ExternalLink,
   Eye,
   FileText,
+  Filter,
   Mail,
   MapPin,
   MessageCircle,
   MoreVertical,
   Phone,
   Play,
-  Plus,
+  RefreshCw,
   Search,
   Sparkles,
   Star,
+  Timer,
   Trash2,
   Users,
   X,
   XCircle
 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Delete reasons for Georgian users
@@ -114,13 +115,23 @@ interface Proposal {
   createdAt: string;
 }
 
-type StatusFilter = 'all' | 'open' | 'in_progress' | 'completed' | 'cancelled';
+type StatusFilter = 'all' | 'in_progress' | 'completed' | 'cancelled' | 'expired';
+type ProposalFilter = 'all' | 'pending' | 'in_discussion' | 'accepted' | 'rejected';
+
+// Helper to check if a job is expired (deadline has passed and job is still open)
+const isJobExpired = (job: Job): boolean => {
+  if (!job.deadline || job.status !== 'open') return false;
+  const deadline = new Date(job.deadline);
+  const now = new Date();
+  return deadline < now;
+};
 
 export default function MyJobsPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { locale: language } = useLanguage();
   const toast = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [proposalsByJob, setProposalsByJob] = useState<Record<string, Proposal[]>>({});
@@ -131,12 +142,17 @@ export default function MyJobsPage() {
   const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
   const [loadingProposals, setLoadingProposals] = useState<string | null>(null);
   const [actionMenuJobId, setActionMenuJobId] = useState<string | null>(null);
+  const [proposalFilter, setProposalFilter] = useState<ProposalFilter>('all');
 
   // Delete modal state
   const [deleteModalJobId, setDeleteModalJobId] = useState<string | null>(null);
   const [deleteReason, setDeleteReason] = useState<string>('');
   const [customReason, setCustomReason] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Renew modal state
+  const [renewModalJobId, setRenewModalJobId] = useState<string | null>(null);
+  const [isRenewing, setIsRenewing] = useState(false);
 
   // Chat modal state
   const [chatModalProposal, setChatModalProposal] = useState<Proposal | null>(null);
@@ -150,6 +166,27 @@ export default function MyJobsPage() {
 
   const canAccessMyJobs = user?.role === 'client' || user?.role === 'pro';
   const hasFetched = useRef(false);
+  const jobCardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const hasScrolledToExpanded = useRef(false);
+
+  // Read expanded job from URL on mount
+  useEffect(() => {
+    const expandedParam = searchParams.get('expanded');
+    if (expandedParam) {
+      setExpandedJobId(expandedParam);
+    }
+  }, [searchParams]);
+
+  // Update URL when expanded job changes
+  const updateExpandedInUrl = useCallback((jobId: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (jobId) {
+      params.set('expanded', jobId);
+    } else {
+      params.delete('expanded');
+    }
+    router.replace(`/my-jobs?${params.toString()}`, { scroll: false });
+  }, [router, searchParams]);
 
   useEffect(() => {
     if (!authLoading && (!isAuthenticated || !canAccessMyJobs)) {
@@ -178,37 +215,63 @@ export default function MyJobsPage() {
     }
   }, [isAuthenticated, canAccessMyJobs, fetchMyJobs]);
 
-  const fetchProposalsForJob = async (jobId: string, expectedCount?: number) => {
-    const cachedProposals = proposalsByJob[jobId];
-    
-    // If we have cached proposals and the count matches, just toggle
-    if (cachedProposals && cachedProposals.length > 0) {
-      setExpandedJobId(expandedJobId === jobId ? null : jobId);
-      return;
+  // Auto-fetch proposals when expanded from URL
+  useEffect(() => {
+    if (expandedJobId && !proposalsByJob[expandedJobId] && !loadingProposals) {
+      fetchProposalsForJob(expandedJobId, true);
     }
-    
-    // If we have cached but empty, and we're just toggling closed, allow it
-    if (cachedProposals && expandedJobId === jobId) {
+  }, [expandedJobId, proposalsByJob, loadingProposals]);
+
+  // Scroll to expanded job card when page loads with expanded param
+  useEffect(() => {
+    if (expandedJobId && !isLoading && !hasScrolledToExpanded.current) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        const cardElement = jobCardRefs.current.get(expandedJobId);
+        if (cardElement) {
+          cardElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          hasScrolledToExpanded.current = true;
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [expandedJobId, isLoading]);
+
+  const fetchProposalsForJob = async (jobId: string, fromUrl = false) => {
+    const cachedProposals = proposalsByJob[jobId];
+
+    // If clicking same expanded card, collapse it
+    if (!fromUrl && expandedJobId === jobId) {
       setExpandedJobId(null);
+      updateExpandedInUrl(null);
       return;
     }
 
-    // Fetch fresh data
+    // If we have cached proposals, just expand
+    if (cachedProposals) {
+      setExpandedJobId(jobId);
+      updateExpandedInUrl(jobId);
+      setProposalFilter('all'); // Reset filter when opening new
+      return;
+    }
+
     try {
       setLoadingProposals(jobId);
       const response = await api.get(`/jobs/${jobId}/proposals`);
       const proposals = Array.isArray(response.data) ? response.data : [];
       setProposalsByJob(prev => ({ ...prev, [jobId]: proposals }));
       setExpandedJobId(jobId);
+      updateExpandedInUrl(jobId);
+      setProposalFilter('all');
     } catch (err: any) {
       console.error('Failed to fetch proposals:', err);
       toast.error(
         language === 'ka' ? 'შეცდომა' : 'Error',
         language === 'ka' ? 'შეთავაზებების ჩატვირთვა ვერ მოხერხდა' : 'Failed to load proposals'
       );
-      // Set empty array to show "no proposals" message instead of infinite loading
       setProposalsByJob(prev => ({ ...prev, [jobId]: [] }));
       setExpandedJobId(jobId);
+      updateExpandedInUrl(jobId);
     } finally {
       setLoadingProposals(null);
     }
@@ -220,50 +283,46 @@ export default function MyJobsPage() {
       const response = await api.get(`/jobs/${jobId}/proposals`);
       setProposalsByJob(prev => ({ ...prev, [jobId]: response.data }));
       fetchMyJobs();
+      toast.success(
+        language === 'ka' ? 'შეთავაზება მიღებულია' : 'Proposal accepted',
+        language === 'ka' ? 'პროფესიონალს ეცნობა' : 'The professional has been notified'
+      );
     } catch (err: any) {
       console.error('Failed to accept proposal:', err);
-    }
-  };
-
-  const handleRevealContact = async (proposalId: string, jobId: string) => {
-    try {
-      await api.post(`/jobs/proposals/${proposalId}/reveal-contact`);
-      const response = await api.get(`/jobs/${jobId}/proposals`);
-      setProposalsByJob(prev => ({ ...prev, [jobId]: response.data }));
-    } catch (err: any) {
-      console.error('Failed to reveal contact:', err);
+      toast.error(
+        language === 'ka' ? 'შეცდომა' : 'Error',
+        language === 'ka' ? 'შეთავაზების მიღება ვერ მოხერხდა' : 'Failed to accept proposal'
+      );
     }
   };
 
   const handleStartChat = async () => {
     if (!chatModalProposal || !chatMessage.trim()) return;
-    
+
     setIsSendingChat(true);
     try {
       const response = await api.post(`/jobs/proposals/${chatModalProposal._id}/start-chat`, {
         message: chatMessage.trim()
       });
-      
-      // Update local state
+
       const jobId = chatModalProposal.jobId;
       setProposalsByJob(prev => ({
         ...prev,
-        [jobId]: prev[jobId]?.map(p => 
-          p._id === chatModalProposal._id 
+        [jobId]: prev[jobId]?.map(p =>
+          p._id === chatModalProposal._id
             ? { ...p, status: 'in_discussion', conversationId: response.data.conversation._id }
             : p
         ) || []
       }));
-      
+
       toast.success(
         language === 'ka' ? 'მესიჯი გაიგზავნა' : 'Message sent',
         language === 'ka' ? 'პროფესიონალი მიიღებს შეტყობინებას' : 'The professional will receive your message'
       );
-      
+
       setChatModalProposal(null);
       setChatMessage('');
-      
-      // Redirect to conversation
+
       router.push(`/messages?conversation=${response.data.conversation._id}`);
     } catch (err: any) {
       toast.error(
@@ -277,28 +336,28 @@ export default function MyJobsPage() {
 
   const handleRejectProposal = async () => {
     if (!rejectModalProposal) return;
-    
+
     setIsRejecting(true);
     try {
       await api.post(`/jobs/proposals/${rejectModalProposal._id}/reject`, {
         reason: rejectReason
       });
-      
+
       const jobId = rejectModalProposal.jobId;
       setProposalsByJob(prev => ({
         ...prev,
-        [jobId]: prev[jobId]?.map(p => 
-          p._id === rejectModalProposal._id 
+        [jobId]: prev[jobId]?.map(p =>
+          p._id === rejectModalProposal._id
             ? { ...p, status: 'rejected' }
             : p
         ) || []
       }));
-      
+
       toast.success(
         language === 'ka' ? 'შეთავაზება უარყოფილია' : 'Proposal rejected',
         language === 'ka' ? 'პროფესიონალი მიიღებს შეტყობინებას' : 'The professional will be notified'
       );
-      
+
       setRejectModalProposal(null);
       setRejectReason('');
     } catch (err: any) {
@@ -324,6 +383,46 @@ export default function MyJobsPage() {
     setCustomReason('');
   };
 
+  const openRenewModal = (jobId: string) => {
+    setRenewModalJobId(jobId);
+    setActionMenuJobId(null);
+  };
+
+  const closeRenewModal = () => {
+    setRenewModalJobId(null);
+  };
+
+  const handleRenewJob = async () => {
+    if (!renewModalJobId) return;
+
+    setIsRenewing(true);
+    try {
+      // Renew the job by extending deadline by 30 days
+      const newDeadline = new Date();
+      newDeadline.setDate(newDeadline.getDate() + 30);
+
+      await api.patch(`/jobs/${renewModalJobId}`, {
+        deadline: newDeadline.toISOString()
+      });
+
+      // Refresh jobs list
+      fetchMyJobs();
+      closeRenewModal();
+      toast.success(
+        language === 'ka' ? 'პროექტი განახლდა' : 'Project renewed',
+        language === 'ka' ? 'პროექტის ვადა გაგრძელდა 30 დღით' : 'Project deadline extended by 30 days'
+      );
+    } catch (err: any) {
+      console.error('Failed to renew job:', err);
+      toast.error(
+        language === 'ka' ? 'შეცდომა' : 'Error',
+        language === 'ka' ? 'პროექტის განახლება ვერ მოხერხდა' : 'Failed to renew the project'
+      );
+    } finally {
+      setIsRenewing(false);
+    }
+  };
+
   const handleDeleteJob = async () => {
     if (!deleteModalJobId || !deleteReason) return;
 
@@ -331,25 +430,36 @@ export default function MyJobsPage() {
     try {
       await api.delete(`/jobs/${deleteModalJobId}`);
       setJobs(prev => prev.filter(job => job._id !== deleteModalJobId));
+      if (expandedJobId === deleteModalJobId) {
+        setExpandedJobId(null);
+        updateExpandedInUrl(null);
+      }
       closeDeleteModal();
       toast.success(
-        language === 'ka' ? 'სამუშაო წაიშალა' : 'Job deleted',
-        language === 'ka' ? 'სამუშაო წარმატებით წაიშალა' : 'The job has been successfully deleted'
+        language === 'ka' ? 'პროექტი წაიშალა' : 'Project deleted',
+        language === 'ka' ? 'პროექტი წარმატებით წაიშალა' : 'The project has been successfully deleted'
       );
     } catch (err: any) {
       console.error('Failed to delete job:', err);
       toast.error(
         language === 'ka' ? 'შეცდომა' : 'Error',
-        language === 'ka' ? 'სამუშაოს წაშლა ვერ მოხერხდა' : 'Failed to delete the job'
+        language === 'ka' ? 'პროექტის წაშლა ვერ მოხერხდა' : 'Failed to delete the project'
       );
     } finally {
       setIsDeleting(false);
     }
   };
 
+  // Helper to get effective status (considers expiration)
+  const getEffectiveStatus = (job: Job): string => {
+    if (isJobExpired(job)) return 'expired';
+    return job.status;
+  };
+
   // Filter and search jobs
   const filteredJobs = jobs.filter(job => {
-    const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
+    const effectiveStatus = getEffectiveStatus(job);
+    const matchesStatus = statusFilter === 'all' || effectiveStatus === statusFilter;
     const matchesSearch = searchQuery === '' ||
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -357,23 +467,38 @@ export default function MyJobsPage() {
     return matchesStatus && matchesSearch;
   });
 
-  // Calculate stats
+  // Calculate stats (considering expiration)
   const stats = {
     total: jobs.length,
-    open: jobs.filter(j => j.status === 'open').length,
+    expired: jobs.filter(j => isJobExpired(j)).length,
     inProgress: jobs.filter(j => j.status === 'in_progress').length,
     completed: jobs.filter(j => j.status === 'completed').length,
   };
 
+  // Filter proposals
+  const getFilteredProposals = (proposals: Proposal[]) => {
+    if (proposalFilter === 'all') return proposals;
+    return proposals.filter(p => p.status === proposalFilter);
+  };
+
+  // Get proposal stats for current expanded job
+  const getProposalStats = (proposals: Proposal[]) => ({
+    total: proposals.length,
+    pending: proposals.filter(p => p.status === 'pending').length,
+    inDiscussion: proposals.filter(p => p.status === 'in_discussion').length,
+    accepted: proposals.filter(p => p.status === 'accepted').length,
+    rejected: proposals.filter(p => p.status === 'rejected').length,
+  });
+
   const formatBudget = (job: Job) => {
     if (job.budgetType === 'fixed' && job.budgetAmount) {
-      return `₾${job.budgetAmount.toLocaleString()}`;
+      return `${job.budgetAmount.toLocaleString()}`;
     }
     if (job.budgetType === 'range' && job.budgetMin && job.budgetMax) {
-      return `₾${job.budgetMin.toLocaleString()} - ₾${job.budgetMax.toLocaleString()}`;
+      return `${job.budgetMin.toLocaleString()} - ${job.budgetMax.toLocaleString()}`;
     }
     if (job.budgetType === 'per_sqm' && job.pricePerUnit) {
-      return `₾${job.pricePerUnit}/მ²`;
+      return `${job.pricePerUnit}/მ²`;
     }
     return language === 'ka' ? 'შეთანხმებით' : 'Negotiable';
   };
@@ -390,19 +515,24 @@ export default function MyJobsPage() {
     if (language === 'ka') {
       switch (status) {
         case 'pending': return 'მოლოდინში';
+        case 'in_discussion': return 'განხილვაში';
         case 'accepted': return 'მიღებული';
         case 'rejected': return 'უარყოფილი';
         case 'withdrawn': return 'გაუქმებული';
         default: return status;
       }
     }
-    return status.charAt(0).toUpperCase() + status.slice(1);
+    switch (status) {
+      case 'in_discussion': return 'In Discussion';
+      default: return status.charAt(0).toUpperCase() + status.slice(1);
+    }
   };
 
   const getStatusLabel = (status: string) => {
     if (language === 'ka') {
       switch (status) {
-        case 'open': return 'ღია';
+        case 'open': return 'აქტიური';
+        case 'expired': return 'ვადაგასული';
         case 'in_progress': return 'მიმდინარე';
         case 'completed': return 'დასრულებული';
         case 'cancelled': return 'გაუქმებული';
@@ -410,7 +540,8 @@ export default function MyJobsPage() {
       }
     }
     switch (status) {
-      case 'open': return 'Open';
+      case 'open': return 'Active';
+      case 'expired': return 'Expired';
       case 'in_progress': return 'In Progress';
       case 'completed': return 'Completed';
       case 'cancelled': return 'Cancelled';
@@ -421,6 +552,7 @@ export default function MyJobsPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'open': return Play;
+      case 'expired': return Timer;
       case 'in_progress': return Clock;
       case 'completed': return CheckCircle;
       case 'cancelled': return XCircle;
@@ -437,13 +569,13 @@ export default function MyJobsPage() {
         <div className="relative z-20 flex items-center justify-center min-h-[60vh]">
           <div className="flex flex-col items-center gap-4">
             <div className="relative">
-              <div className="w-16 h-16 rounded-2xl bg-[var(--color-accent)]/10 flex items-center justify-center">
-                <Briefcase className="w-8 h-8 text-[var(--color-accent)] animate-pulse" />
+              <div className="myjobs-stat-icon w-16 h-16">
+                <Briefcase className="w-8 h-8 text-[#D2691E] animate-pulse" />
               </div>
-              <div className="absolute inset-0 w-16 h-16 rounded-2xl border-2 border-[var(--color-accent)]/20 border-t-[var(--color-accent)] animate-spin" />
+              <div className="absolute inset-0 w-16 h-16 rounded-2xl border-2 border-[#D2691E]/20 border-t-[#D2691E] animate-spin" />
             </div>
-            <p className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-              {language === 'ka' ? 'იტვირთება...' : 'Loading your jobs...'}
+            <p className="text-sm font-medium text-[var(--color-text-secondary)]">
+              {language === 'ka' ? 'იტვირთება...' : 'Loading your projects...'}
             </p>
           </div>
         </div>
@@ -458,14 +590,14 @@ export default function MyJobsPage() {
         <AppBackground />
         <Header />
         <div className="relative z-20 flex items-center justify-center min-h-[60vh] p-4">
-          <div className="rounded-2xl bg-[var(--color-bg-elevated)] border border-[var(--color-border)] shadow-xl p-8 sm:p-12 text-center max-w-md w-full">
-            <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-red-500/10 flex items-center justify-center">
-              <AlertCircle className="w-8 h-8 text-red-500" />
+          <div className="myjobs-card p-8 sm:p-12 text-center max-w-md w-full animate-myjobs-scale-in">
+            <div className="myjobs-modal-icon danger mx-auto mb-6">
+              <AlertCircle className="w-8 h-8" />
             </div>
-            <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--color-text-primary)' }}>
+            <h2 className="text-xl font-semibold mb-2 text-[var(--color-text-primary)]">
               {language === 'ka' ? 'დაფიქსირდა შეცდომა' : 'Something went wrong'}
             </h2>
-            <p className="mb-6" style={{ color: 'var(--color-text-secondary)' }}>{error}</p>
+            <p className="mb-6 text-[var(--color-text-secondary)]">{error}</p>
             <Button onClick={fetchMyJobs}>
               {language === 'ka' ? 'თავიდან ცდა' : 'Try Again'}
             </Button>
@@ -480,240 +612,225 @@ export default function MyJobsPage() {
       <AppBackground />
       <Header />
 
-      <main className="relative z-20 pt-14 sm:pt-14 pb-20 sm:pb-24">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          {/* Inline header - matching browse layout style */}
-          <div className="pt-1 pb-2 sm:pb-3">
-            {/* Title Row */}
-            <div className="flex items-center justify-between gap-3 mb-2 sm:mb-3">
-              <div className="flex items-center gap-3 min-w-0">
-                <button
-                  onClick={() => router.push('/browse')}
-                  className="p-1.5 rounded-lg hover:bg-[var(--color-accent)]/10 transition-colors"
-                  style={{ color: 'var(--color-text-tertiary)' }}
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </button>
-                <div>
-                  <h1 className="text-lg sm:text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text-primary)' }}>
-                    {language === 'ka' ? 'ჩემი განცხადებები' : 'My Jobs'}
-                  </h1>
-                  <p className="text-xs sm:text-sm mt-0.5 opacity-70 line-clamp-1" style={{ color: 'var(--color-text-secondary)' }}>
-                    {language === 'ka'
-                      ? `${stats.total} განცხადება სულ`
-                      : `${stats.total} jobs total`}
-                  </p>
-                </div>
-              </div>
-
-              <Button href="/post-job" size="sm" icon={<Plus className="w-3.5 h-3.5" />}>
-                {language === 'ka' ? 'ახალი' : 'New Job'}
-              </Button>
-            </div>
-
-            {/* Filter tabs - matching browse style */}
-            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-0.5">
-              {[
-                { label: language === 'ka' ? 'სულ' : 'All', value: stats.total, filter: 'all' as StatusFilter },
-                { label: language === 'ka' ? 'ღია' : 'Open', value: stats.open, filter: 'open' as StatusFilter },
-                { label: language === 'ka' ? 'მიმდინარე' : 'Active', value: stats.inProgress, filter: 'in_progress' as StatusFilter },
-                { label: language === 'ka' ? 'დასრულებული' : 'Done', value: stats.completed, filter: 'completed' as StatusFilter },
-              ].map((stat) => {
-                const isActive = statusFilter === stat.filter;
-                return (
-                  <button
-                    key={stat.filter}
-                    onClick={() => setStatusFilter(stat.filter)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
-                      isActive
-                        ? 'bg-[var(--color-accent)]/15 text-[var(--color-accent)] border border-[var(--color-accent)]/30'
-                        : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent)]/5 border border-transparent'
-                    }`}
-                  >
-                    <span>{stat.label}</span>
-                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                      isActive ? 'bg-[var(--color-accent)]/20' : 'bg-black/5 dark:bg-white/10'
-                    }`}>
-                      {stat.value}
-                    </span>
-                  </button>
-                );
-              })}
-
-              {/* Search inline */}
-              <div className="relative ml-auto pl-2">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: 'var(--color-accent)' }} />
-                <input
-                  type="text"
-                  placeholder={language === 'ka' ? 'ძებნა...' : 'Search...'}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-32 sm:w-40 pl-8 pr-3 py-1.5 rounded-lg bg-[var(--color-bg-tertiary)] border border-transparent text-xs placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[var(--color-accent)]/30 transition-all"
-                  style={{ color: 'var(--color-text-primary)' }}
-                />
+      <main className="relative z-20 pt-16 sm:pt-20 pb-20 sm:pb-24">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Hero Header Section */}
+          <div className="myjobs-header py-6 sm:py-8 mb-6 animate-myjobs-fade-in" style={{ animationDelay: '0ms' }}>
+            <div className="flex items-start gap-4">
+              <button
+                onClick={() => router.push('/browse')}
+                className="mt-1 p-2 rounded-xl hover:bg-[#D2691E]/10 transition-all text-[var(--color-text-tertiary)] hover:text-[#D2691E]"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <div>
+                <h1 className="myjobs-title">
+                  {language === 'ka' ? 'ჩემი პროექტები' : 'My Projects'}
+                </h1>
+                <p className="myjobs-subtitle">
+                  {language === 'ka'
+                    ? 'მართე შენი განცხადებები და შეთავაზებები'
+                    : 'Manage your listings and proposals'}
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Separator */}
-          <div className="h-px mb-2 sm:mb-3 opacity-50" style={{ backgroundColor: 'var(--color-border)' }} />
+          {/* Stats Cards + Search Row */}
+          <div className="flex flex-col lg:flex-row gap-4 mb-6 animate-myjobs-fade-in" style={{ animationDelay: '100ms' }}>
+            {/* Stats Cards */}
+            <div className="flex-1 grid grid-cols-4 gap-2 sm:gap-3">
+              {[
+                { key: 'all' as StatusFilter, value: stats.total, label: language === 'ka' ? 'სულ' : 'Total', icon: Briefcase },
+                { key: 'expired' as StatusFilter, value: stats.expired, label: language === 'ka' ? 'ვადაგასული' : 'Expired', icon: Timer },
+                { key: 'in_progress' as StatusFilter, value: stats.inProgress, label: language === 'ka' ? 'მიმდინარე' : 'Progress', icon: Clock },
+                { key: 'completed' as StatusFilter, value: stats.completed, label: language === 'ka' ? 'დასრული' : 'Done', icon: CheckCircle },
+              ].map((stat) => {
+                const Icon = stat.icon;
+                return (
+                  <button
+                    key={stat.key}
+                    onClick={() => setStatusFilter(stat.key)}
+                    className={`myjobs-stat-card text-left ${statusFilter === stat.key ? 'active' : ''} ${stat.key === 'expired' && stat.value > 0 ? 'expired' : ''}`}
+                  >
+                    <div className="myjobs-stat-icon">
+                      <Icon className={`w-4 h-4 ${stat.key === 'expired' && stat.value > 0 ? 'text-orange-500' : 'text-[#D2691E]'}`} />
+                    </div>
+                    <div className={`myjobs-stat-value text-xl sm:text-2xl ${stat.key === 'expired' && stat.value > 0 ? 'text-orange-500' : ''}`}>{stat.value}</div>
+                    <div className="myjobs-stat-label text-[10px] sm:text-xs truncate">{stat.label}</div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Search Input */}
+            <div className="myjobs-search lg:w-64">
+              <Search className="myjobs-search-icon" />
+              <input
+                type="text"
+                placeholder={language === 'ka' ? 'ძებნა...' : 'Search projects...'}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="myjobs-search-input w-full"
+              />
+            </div>
+          </div>
 
           {/* Jobs List */}
           {filteredJobs.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="w-20 h-20 rounded-2xl bg-[var(--color-accent)]/10 mx-auto mb-5 flex items-center justify-center">
-                <Briefcase className="w-10 h-10 text-[var(--color-accent)]" />
+            <div className="myjobs-empty animate-myjobs-fade-in" style={{ animationDelay: '200ms' }}>
+              <div className="myjobs-empty-icon">
+                <Briefcase />
               </div>
-              <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-text-primary)' }}>
+              <h3 className="myjobs-empty-title">
                 {jobs.length === 0
-                  ? (language === 'ka' ? 'ჯერ არ გაქვს განცხადება' : 'No jobs posted yet')
-                  : (language === 'ka' ? 'შედეგი ვერ მოიძებნა' : 'No matching jobs')}
+                  ? (language === 'ka' ? 'ჯერ არ გაქვს პროექტი' : 'No projects yet')
+                  : (language === 'ka' ? 'შედეგი ვერ მოიძებნა' : 'No matching projects')}
               </h3>
-              <p className="max-w-sm mx-auto text-sm mb-6" style={{ color: 'var(--color-text-secondary)' }}>
+              <p className="myjobs-empty-description">
                 {jobs.length === 0
                   ? (language === 'ka'
                       ? 'შექმენი პირველი პროექტი და დაიწყე პროფესიონალებისგან შეთავაზებების მიღება'
-                      : 'Create your first project and start receiving proposals')
+                      : 'Create your first project and start receiving proposals from professionals')
                   : (language === 'ka'
                       ? 'სცადე ფილტრების შეცვლა'
                       : 'Try adjusting your filters')}
               </p>
               {jobs.length === 0 && (
                 <Button href="/post-job" icon={<Sparkles className="w-4 h-4" />}>
-                  {language === 'ka' ? 'პირველი განცხადება' : 'Post Your First Job'}
+                  {language === 'ka' ? 'პირველი პროექტი' : 'Create First Project'}
                 </Button>
               )}
             </div>
           ) : (
             <div className="space-y-4">
-              {filteredJobs.map((job) => {
+              {filteredJobs.map((job, index) => {
                 const proposals = proposalsByJob[job._id] || [];
                 const isExpanded = expandedJobId === job._id;
-                const pendingProposals = proposals.filter(p => p.status === 'pending').length;
+                const filteredProposals = getFilteredProposals(proposals);
+                const proposalStats = getProposalStats(proposals);
+                const pendingProposals = proposalStats.pending;
                 const allMedia = [
                   ...(job.media || []).map(m => ({ url: m.url, type: m.type })),
                   ...(job.images || []).filter(img => !job.media?.some(m => m.url === img)).map(url => ({ url, type: 'image' as const }))
                 ];
                 const hasMedia = allMedia.length > 0;
-                const StatusIcon = getStatusIcon(job.status);
+                const effectiveStatus = getEffectiveStatus(job);
+                const StatusIcon = getStatusIcon(effectiveStatus);
+                const jobIsExpired = isJobExpired(job);
 
                 return (
-                  <Card
+                  <div
                     key={job._id}
-                    variant="elevated"
-                    hover="lift"
-                    className={`group ${
-                      job.status === 'open'
-                        ? 'ring-2 ring-[#D2691E]/30 ring-offset-1 ring-offset-[#FFFDF9] dark:ring-offset-[#1c1917]'
-                        : ''
-                    }`}
+                    ref={(el) => {
+                      if (el) jobCardRefs.current.set(job._id, el);
+                    }}
+                    className={`myjobs-card status-${effectiveStatus} animate-myjobs-fade-in group`}
+                    style={{ animationDelay: `${200 + index * 50}ms` }}
                   >
                     <div className={`flex flex-col ${hasMedia ? 'lg:flex-row' : ''}`}>
                       {/* Media Section */}
                       {hasMedia && (
-                        <div className="relative w-full lg:w-72 flex-shrink-0 overflow-hidden rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none">
-                          <CardImage aspectRatio="16/10" overlay="gradient" className="h-48 lg:h-full lg:min-h-[220px]">
-                            <img
-                              src={storage.getFileUrl(allMedia[0].url)}
-                              alt=""
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                            />
-                            {allMedia.length > 1 && (
-                              <CardBadge position="bottom-left" variant="glass" color="neutral">
-                                {allMedia.length} {language === 'ka' ? 'ფოტო' : 'photos'}
-                              </CardBadge>
-                            )}
-                          </CardImage>
-                        </div>
+                        <Link
+                          href={`/jobs/${job._id}`}
+                          className="myjobs-card-media w-full lg:w-56 xl:w-64 flex-shrink-0 h-40 lg:h-auto lg:min-h-[180px] rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none"
+                        >
+                          <img
+                            src={storage.getFileUrl(allMedia[0].url)}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                          {allMedia.length > 1 && (
+                            <div className="myjobs-card-media-count">
+                              <span className="flex items-center gap-1">
+                                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                                  <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+                                  <path d="M21 15l-5-5L5 21" />
+                                </svg>
+                                {allMedia.length}
+                              </span>
+                            </div>
+                          )}
+                        </Link>
                       )}
 
                       {/* Content Section */}
-                      <CardContent spacing="relaxed" className="flex-1">
-                        <div className="flex items-start justify-between gap-4">
+                      <div className="myjobs-card-content flex-1 p-4 sm:p-5">
+                        <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">
-                            {/* Status Badge */}
-                            <div className="flex items-center gap-2 mb-3">
-                              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${
-                                job.status === 'open' ? 'bg-[#D2691E]/15 text-[#D2691E]' :
-                                job.status === 'in_progress' ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400' :
-                                job.status === 'completed' ? 'bg-[#D2691E]/10 text-[#D2691E]/80' :
-                                'bg-neutral-500/15 text-neutral-500'
-                              }`}>
-                                {job.status === 'open' && (
-                                  <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-                                )}
+                            {/* Status Badge Row */}
+                            <div className="flex items-center gap-2 flex-wrap mb-2">
+                              <span className={`myjobs-status-badge ${effectiveStatus}`}>
+                                {effectiveStatus === 'open' && <span className="myjobs-status-indicator" />}
                                 <StatusIcon className="w-3 h-3" />
-                                {getStatusLabel(job.status)}
+                                {getStatusLabel(effectiveStatus)}
                               </span>
                               {job.proposalCount > 0 && (
-                                <span className="px-2 py-1 rounded-lg text-xs font-medium bg-[#D2691E]/10 text-[#D2691E]">
-                                  {job.proposalCount} {language === 'ka' ? 'შეთავაზება' : 'proposals'}
+                                <span className="text-xs text-[var(--color-text-tertiary)] flex items-center gap-1">
+                                  <FileText className="w-3 h-3" />
+                                  {job.proposalCount}
+                                </span>
+                              )}
+                              {pendingProposals > 0 && isExpanded && (
+                                <span className="myjobs-new-badge text-[10px]">
+                                  {pendingProposals} {language === 'ka' ? 'ახალი' : 'new'}
                                 </span>
                               )}
                             </div>
 
                             {/* Title */}
-                            <Link href={`/jobs/${job._id}`} className="block group/title">
-                              <h3 className="text-lg font-semibold leading-snug line-clamp-2 transition-colors text-[var(--color-text-primary)] group-hover/title:text-[#D2691E]">
+                            <Link href={`/jobs/${job._id}`}>
+                              <h3 className="myjobs-card-title text-base sm:text-lg line-clamp-1">
                                 {job.title}
                               </h3>
                             </Link>
 
                             {/* Meta info */}
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2.5 text-sm text-[var(--color-text-secondary)]">
-                              <span className="flex items-center gap-1.5">
-                                <MapPin className="w-3.5 h-3.5 text-[#D2691E]/60" />
-                                {job.location}
+                            <div className="myjobs-card-meta text-xs sm:text-sm mt-1.5">
+                              <span className="myjobs-card-meta-item">
+                                <MapPin className="w-3 h-3" />
+                                <span className="truncate max-w-[100px]">{job.location}</span>
                               </span>
-                              <span className="flex items-center gap-1.5 font-semibold text-[#D2691E]">
-                                {formatBudget(job)}
+                              <span className="myjobs-card-budget text-sm">
+                                ₾{formatBudget(job)}
                               </span>
-                              <span className="flex items-center gap-1.5 opacity-60">
-                                <Calendar className="w-3.5 h-3.5" />
+                              <span className="myjobs-card-meta-item opacity-60 hidden sm:flex">
+                                <Calendar className="w-3 h-3" />
                                 {formatDate(job.createdAt)}
                               </span>
                             </div>
-
-                            {/* Description */}
-                            {job.description && (
-                              <p className="mt-3 text-sm line-clamp-2 leading-relaxed text-[var(--color-text-tertiary)]">
-                                {job.description}
-                              </p>
-                            )}
                           </div>
 
                           {/* Actions Menu */}
                           <div className="relative flex-shrink-0">
                             <button
                               onClick={() => setActionMenuJobId(actionMenuJobId === job._id ? null : job._id)}
-                              className="p-2 rounded-xl hover:bg-[#D2691E]/10 transition-all text-[var(--color-text-tertiary)]"
+                              className="p-1.5 rounded-lg hover:bg-[#D2691E]/10 transition-all text-[var(--color-text-tertiary)]"
                             >
-                              <MoreVertical className="w-5 h-5" />
+                              <MoreVertical className="w-4 h-4" />
                             </button>
 
                             {actionMenuJobId === job._id && (
                               <>
                                 <div className="fixed inset-0 z-40" onClick={() => setActionMenuJobId(null)} />
-                                <div className="absolute right-0 top-full mt-2 w-48 bg-[var(--color-bg-elevated)] rounded-xl border border-[#E8D5C4]/40 dark:border-[#3d2f24]/40 shadow-xl z-50 overflow-hidden py-1">
-                                  <Link
-                                    href={`/jobs/${job._id}`}
-                                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--color-text-secondary)] hover:bg-[#D2691E]/5 transition-colors"
-                                  >
+                                <div className="myjobs-action-menu animate-myjobs-scale-in">
+                                  <Link href={`/jobs/${job._id}`} className="myjobs-action-menu-item">
                                     <Eye className="w-4 h-4" />
-                                    {language === 'ka' ? 'დეტალები' : 'View Details'}
+                                    {language === 'ka' ? 'დეტალები' : 'View'}
                                   </Link>
-                                  <Link
-                                    href={`/post-job?edit=${job._id}`}
-                                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--color-text-secondary)] hover:bg-[#D2691E]/5 transition-colors"
-                                  >
+                                  <Link href={`/post-job?edit=${job._id}`} className="myjobs-action-menu-item">
                                     <Edit3 className="w-4 h-4" />
-                                    {language === 'ka' ? 'რედაქტირება' : 'Edit Job'}
+                                    {language === 'ka' ? 'რედაქტირება' : 'Edit'}
                                   </Link>
-                                  <div className="mx-3 my-1 border-t border-[#E8D5C4]/40 dark:border-[#3d2f24]/40" />
-                                  <button
-                                    onClick={() => openDeleteModal(job._id)}
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-500/10 transition-colors"
-                                  >
+                                  {jobIsExpired && (
+                                    <button onClick={() => openRenewModal(job._id)} className="myjobs-action-menu-item renew">
+                                      <RefreshCw className="w-4 h-4" />
+                                      {language === 'ka' ? 'განახლება' : 'Renew'}
+                                    </button>
+                                  )}
+                                  <div className="mx-3 my-1 border-t border-[var(--color-border-subtle)]" />
+                                  <button onClick={() => openDeleteModal(job._id)} className="myjobs-action-menu-item danger">
                                     <Trash2 className="w-4 h-4" />
                                     {language === 'ka' ? 'წაშლა' : 'Delete'}
                                   </button>
@@ -722,58 +839,45 @@ export default function MyJobsPage() {
                             )}
                           </div>
                         </div>
-                      </CardContent>
-                    </div>
 
-                    {/* Stats & Proposals Row - Using CardFooter */}
-                    <CardFooter className="flex flex-wrap items-center gap-3">
-                      <div className="flex items-center gap-1.5 text-sm text-[var(--color-text-tertiary)]">
-                        <Eye className="w-4 h-4" />
-                        <span>{job.viewCount} {language === 'ka' ? 'ნახვა' : 'views'}</span>
+                        {/* Footer Row - Inline with content */}
+                        <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-[var(--color-border-subtle)]">
+                          <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-tertiary)]">
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>{job.viewCount}</span>
+                          </div>
+
+                          <div className="w-px h-3 bg-[var(--color-border-subtle)]" />
+
+                          {/* Proposals button */}
+                          <button
+                            onClick={() => fetchProposalsForJob(job._id)}
+                            className={`myjobs-proposals-btn text-xs py-1.5 px-3 ${job.proposalCount > 0 ? 'has-proposals' : 'empty'}`}
+                          >
+                            <FileText className="w-3.5 h-3.5" />
+                            <span>{job.proposalCount}</span>
+                            <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                          </button>
+
+                          <Link
+                            href={`/jobs/${job._id}`}
+                            className="ml-auto flex items-center gap-1 text-xs font-medium text-[#D2691E] hover:underline"
+                          >
+                            {language === 'ka' ? 'ვრცლად' : 'Details'}
+                            <ExternalLink className="w-3 h-3" />
+                          </Link>
+                        </div>
                       </div>
-
-                      <div className="w-px h-4 bg-[#E8D5C4]/40 dark:bg-[#3d2f24]/40" />
-
-                      {/* Proposals button */}
-                      <button
-                        onClick={() => fetchProposalsForJob(job._id)}
-                        className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all ${
-                          job.proposalCount > 0
-                            ? 'bg-[#D2691E] text-white shadow-sm hover:shadow-md'
-                            : 'bg-[#D2691E]/5 border border-[#E8D5C4]/40 dark:border-[#3d2f24]/40 text-[var(--color-text-secondary)] hover:border-[#D2691E]/30'
-                        }`}
-                      >
-                        <FileText className="w-4 h-4" />
-                        <span>
-                          {job.proposalCount} {language === 'ka' ? 'შეთავაზება' : 'proposals'}
-                        </span>
-                        <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
-                      </button>
-
-                      {pendingProposals > 0 && (
-                        <span className="relative flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400">
-                          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-amber-500 rounded-full animate-ping" />
-                          {pendingProposals} {language === 'ka' ? 'ახალი' : 'new'}
-                        </span>
-                      )}
-
-                      <Link
-                        href={`/jobs/${job._id}`}
-                        className="ml-auto hidden sm:flex items-center gap-1.5 text-sm font-medium text-[#D2691E] hover:underline"
-                      >
-                        {language === 'ka' ? 'სრულად' : 'View details'}
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </Link>
-                    </CardFooter>
+                    </div>
 
                     {/* Loading Proposals */}
                     {loadingProposals === job._id && (
                       <div className="px-5 pb-5">
-                        <div className="flex items-center justify-center py-10 rounded-xl bg-[#D2691E]/5 border border-[#E8D5C4]/40 dark:border-[#3d2f24]/40">
+                        <div className="myjobs-loading">
                           <div className="flex flex-col items-center gap-3">
-                            <div className="w-8 h-8 rounded-full border-2 border-[#D2691E]/20 border-t-[#D2691E] animate-spin" />
+                            <div className="myjobs-loading-spinner" />
                             <span className="text-sm text-[var(--color-text-secondary)]">
-                              {language === 'ka' ? 'შეთავაზებები იტვირთება...' : 'Loading proposals...'}
+                              {language === 'ka' ? 'იტვირთება...' : 'Loading...'}
                             </span>
                           </div>
                         </div>
@@ -782,33 +886,67 @@ export default function MyJobsPage() {
 
                     {/* Expanded Proposals */}
                     {isExpanded && proposals.length > 0 && (
-                      <div className="px-5 pb-5 border-t border-[#E8D5C4]/40 dark:border-[#3d2f24]/40 bg-[#D2691E]/[0.02]">
-                        <div className="pt-5">
-                          <div className="flex items-center justify-between mb-4">
-                            <h4 className="text-sm font-semibold flex items-center gap-2 text-[var(--color-text-primary)]">
-                              <Users className="w-4 h-4 text-[#D2691E]" />
-                              {language === 'ka' ? 'შეთავაზებები' : 'Proposals'}
-                              <span className="font-normal text-[var(--color-text-tertiary)]">({proposals.length})</span>
-                            </h4>
-                          </div>
+                      <div className="myjobs-proposals-section animate-myjobs-scale-in">
+                        {/* Proposals Header with Filter */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                          <h4 className="myjobs-proposals-title">
+                            <Users className="w-4 h-4" />
+                            {language === 'ka' ? 'შეთავაზებები' : 'Proposals'}
+                            <span className="font-normal text-[var(--color-text-tertiary)]">
+                              ({filteredProposals.length}{proposalFilter !== 'all' ? `/${proposals.length}` : ''})
+                            </span>
+                          </h4>
 
-                          <div className="space-y-3">
-                            {proposals.map((proposal) => (
-                              <div
-                                key={proposal._id}
-                                className="p-4 rounded-xl bg-[var(--color-bg-elevated)] border border-[#E8D5C4]/40 dark:border-[#3d2f24]/40 transition-all hover:border-[#D2691E]/30 hover:shadow-sm"
+                          {/* Proposal Filter Pills */}
+                          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+                            <Filter className="w-3.5 h-3.5 text-[var(--color-text-tertiary)] flex-shrink-0" />
+                            {[
+                              { key: 'all' as ProposalFilter, label: language === 'ka' ? 'ყველა' : 'All', count: proposalStats.total },
+                              { key: 'pending' as ProposalFilter, label: language === 'ka' ? 'ახალი' : 'New', count: proposalStats.pending },
+                              { key: 'in_discussion' as ProposalFilter, label: language === 'ka' ? 'მიმოწერა' : 'Chat', count: proposalStats.inDiscussion },
+                              { key: 'accepted' as ProposalFilter, label: language === 'ka' ? 'მიღებული' : 'Accepted', count: proposalStats.accepted },
+                            ].filter(f => f.count > 0 || f.key === 'all').map((filter) => (
+                              <button
+                                key={filter.key}
+                                onClick={() => setProposalFilter(filter.key)}
+                                className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-medium whitespace-nowrap transition-all ${
+                                  proposalFilter === filter.key
+                                    ? 'bg-[#D2691E] text-white'
+                                    : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[#D2691E]/10'
+                                }`}
                               >
-                                <div className="flex flex-col sm:flex-row gap-4">
+                                {filter.label}
+                                {filter.count > 0 && (
+                                  <span className={`px-1 rounded text-[9px] ${
+                                    proposalFilter === filter.key ? 'bg-white/20' : 'bg-black/5 dark:bg-white/10'
+                                  }`}>
+                                    {filter.count}
+                                  </span>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {filteredProposals.length === 0 ? (
+                          <div className="text-center py-6 text-sm text-[var(--color-text-tertiary)]">
+                            {language === 'ka' ? 'ამ სტატუსით შეთავაზებები არ არის' : 'No proposals with this status'}
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {filteredProposals.map((proposal) => (
+                              <div key={proposal._id} className="myjobs-proposal-card">
+                                <div className="flex flex-col sm:flex-row gap-3">
                                   {/* Pro Info */}
                                   <div className="flex items-start gap-3 flex-1">
-                                    <div className="relative flex-shrink-0">
+                                    <div className="myjobs-pro-avatar">
                                       <Avatar
                                         src={proposal.proProfileId?.userId?.avatar}
                                         name={proposal.proProfileId?.userId?.name || 'Pro'}
                                         size="md"
                                       />
                                       {proposal.proProfileId?.avgRating > 0 && (
-                                        <div className="absolute -bottom-1 -right-1 flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-amber-500 text-white text-[10px] font-bold shadow">
+                                        <div className="myjobs-pro-rating">
                                           <Star className="w-2.5 h-2.5 fill-current" />
                                           {proposal.proProfileId.avgRating.toFixed(1)}
                                         </div>
@@ -819,20 +957,15 @@ export default function MyJobsPage() {
                                       <div className="flex items-center gap-2 flex-wrap mb-0.5">
                                         <Link
                                           href={`/professionals/${proposal.proProfileId?._id}`}
-                                          className="font-semibold text-[var(--color-text-primary)] hover:text-[#D2691E] transition-colors"
+                                          className="myjobs-pro-name text-sm"
                                         >
                                           {proposal.proProfileId?.userId?.name || 'Professional'}
                                         </Link>
-                                        <span className={`px-2 py-0.5 rounded-md text-xs font-medium ${
-                                          proposal.status === 'pending' ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400' :
-                                          proposal.status === 'accepted' ? 'bg-[#D2691E]/15 text-[#D2691E]' :
-                                          proposal.status === 'rejected' ? 'bg-red-500/15 text-red-600 dark:text-red-400' :
-                                          'bg-neutral-500/15 text-neutral-500'
-                                        }`}>
+                                        <span className={`myjobs-proposal-status ${proposal.status}`}>
                                           {getProposalStatusLabel(proposal.status)}
                                         </span>
                                       </div>
-                                      <p className="text-sm text-[var(--color-text-tertiary)]">
+                                      <p className="text-xs text-[var(--color-text-tertiary)] truncate">
                                         {proposal.proProfileId?.title || 'Professional'}
                                       </p>
                                     </div>
@@ -840,37 +973,35 @@ export default function MyJobsPage() {
 
                                   {/* Price */}
                                   <div className="flex sm:flex-col items-baseline sm:items-end gap-2 sm:gap-0.5">
-                                    <p className="text-xl font-bold text-[#D2691E]">
+                                    <p className="myjobs-proposal-price text-lg">
                                       ₾{proposal.proposedPrice?.toLocaleString() || 'N/A'}
                                     </p>
-                                    <p className="text-xs text-[var(--color-text-tertiary)]">
-                                      {proposal.estimatedDuration} {proposal.estimatedDurationUnit === 'days' ? (language === 'ka' ? 'დღე' : 'days') : proposal.estimatedDurationUnit === 'weeks' ? (language === 'ka' ? 'კვირა' : 'weeks') : (language === 'ka' ? 'თვე' : 'months')}
+                                    <p className="myjobs-proposal-duration text-[10px]">
+                                      {proposal.estimatedDuration} {proposal.estimatedDurationUnit === 'days' ? (language === 'ka' ? 'დღე' : 'days') : proposal.estimatedDurationUnit === 'weeks' ? (language === 'ka' ? 'კვ.' : 'wk') : (language === 'ka' ? 'თვე' : 'mo')}
                                     </p>
                                   </div>
                                 </div>
 
                                 {/* Cover Letter */}
-                                <div className="mt-3 p-3 rounded-lg bg-[#D2691E]/5 border border-[#E8D5C4]/30 dark:border-[#3d2f24]/30 text-sm leading-relaxed text-[var(--color-text-secondary)]">
-                                  "{proposal.coverLetter}"
+                                <div className="myjobs-cover-letter text-xs mt-3">
+                                  "{proposal.coverLetter.length > 200 ? proposal.coverLetter.slice(0, 200) + '...' : proposal.coverLetter}"
                                 </div>
 
                                 {/* Contact Info */}
                                 {proposal.contactRevealed && proposal.proProfileId?.userId && (
-                                  <div className="mt-3 p-3 rounded-lg bg-[#D2691E]/10 border border-[#D2691E]/20">
-                                    <div className="flex items-center gap-2 mb-2">
-                                      <Check className="w-4 h-4 text-[#D2691E]" />
-                                      <p className="text-sm font-semibold text-[#D2691E]">
-                                        {language === 'ka' ? 'საკონტაქტო' : 'Contact Info'}
-                                      </p>
+                                  <div className="myjobs-contact-revealed mt-3">
+                                    <div className="myjobs-contact-revealed-badge text-xs">
+                                      <Check className="w-3.5 h-3.5" />
+                                      {language === 'ka' ? 'საკონტაქტო' : 'Contact'}
                                     </div>
-                                    <div className="flex flex-wrap gap-4 text-sm text-[#D2691E]">
-                                      <a href={`mailto:${proposal.proProfileId.userId.email}`} className="flex items-center gap-1.5 hover:underline">
-                                        <Mail className="w-3.5 h-3.5" />
+                                    <div className="flex flex-wrap gap-3 text-xs">
+                                      <a href={`mailto:${proposal.proProfileId.userId.email}`} className="myjobs-contact-link">
+                                        <Mail className="w-3 h-3" />
                                         {proposal.proProfileId.userId.email}
                                       </a>
                                       {proposal.proProfileId.userId.phone && (
-                                        <a href={`tel:${proposal.proProfileId.userId.phone}`} className="flex items-center gap-1.5 hover:underline">
-                                          <Phone className="w-3.5 h-3.5" />
+                                        <a href={`tel:${proposal.proProfileId.userId.phone}`} className="myjobs-contact-link">
+                                          <Phone className="w-3 h-3" />
                                           {proposal.proProfileId.userId.phone}
                                         </a>
                                       )}
@@ -880,96 +1011,77 @@ export default function MyJobsPage() {
 
                                 {/* Actions */}
                                 {(proposal.status === 'pending' || proposal.status === 'in_discussion') && (
-                                  <div className="flex flex-wrap items-center gap-2 mt-4">
-                                    {/* Start Chat - Primary action for pending */}
+                                  <div className="myjobs-proposal-actions text-xs">
                                     {proposal.status === 'pending' && (
-                                      <Button
-                                        onClick={() => setChatModalProposal(proposal)}
-                                        size="sm"
-                                        variant="outline"
-                                        icon={<MessageCircle className="w-4 h-4" />}
-                                      >
+                                      <button onClick={() => setChatModalProposal(proposal)} className="myjobs-action-btn outline py-1.5 px-2.5">
+                                        <MessageCircle className="w-3.5 h-3.5" />
                                         {language === 'ka' ? 'მესიჯი' : 'Message'}
-                                      </Button>
+                                      </button>
                                     )}
-                                    
-                                    {/* Continue Chat - for in_discussion */}
+
                                     {proposal.status === 'in_discussion' && proposal.conversationId && (
-                                      <Button
-                                        href={`/messages?conversation=${proposal.conversationId}`}
-                                        size="sm"
-                                        icon={<MessageCircle className="w-4 h-4" />}
-                                      >
-                                        {language === 'ka' ? 'მიმოწერა' : 'Continue Chat'}
-                                      </Button>
+                                      <Link href={`/messages?conversation=${proposal.conversationId}`} className="myjobs-action-btn primary py-1.5 px-2.5">
+                                        <MessageCircle className="w-3.5 h-3.5" />
+                                        {language === 'ka' ? 'ჩატი' : 'Chat'}
+                                      </Link>
                                     )}
-                                    
-                                    {/* Accept */}
-                                    <Button
-                                      onClick={() => handleAcceptProposal(proposal._id, job._id)}
-                                      size="sm"
-                                      icon={<Check className="w-4 h-4" />}
-                                      className="!bg-emerald-500 hover:!bg-emerald-600"
-                                    >
+
+                                    <button onClick={() => handleAcceptProposal(proposal._id, job._id)} className="myjobs-action-btn success py-1.5 px-2.5">
+                                      <Check className="w-3.5 h-3.5" />
                                       {language === 'ka' ? 'მიღება' : 'Accept'}
-                                    </Button>
-                                    
-                                    {/* Reject */}
-                                    <button
-                                      onClick={() => setRejectModalProposal(proposal)}
-                                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors"
-                                    >
-                                      <X className="w-4 h-4" />
-                                      {language === 'ka' ? 'უარყოფა' : 'Reject'}
                                     </button>
-                                    
+
+                                    <button onClick={() => setRejectModalProposal(proposal)} className="myjobs-action-btn danger py-1.5 px-2.5">
+                                      <X className="w-3.5 h-3.5" />
+                                    </button>
+
                                     <Link
                                       href={`/professionals/${proposal.proProfileId?._id}`}
-                                      className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-[#D2691E] hover:underline"
+                                      className="ml-auto text-xs font-medium text-[#D2691E] hover:underline flex items-center gap-1"
                                     >
                                       {language === 'ka' ? 'პროფილი' : 'Profile'}
-                                      <ExternalLink className="w-3 h-3" />
+                                      <ExternalLink className="w-2.5 h-2.5" />
                                     </Link>
                                   </div>
                                 )}
 
                                 {(proposal.status === 'accepted' || proposal.status === 'completed') && (
-                                  <div className="flex flex-wrap items-center gap-2 mt-4">
-                                    <Button
+                                  <div className="myjobs-proposal-actions text-xs">
+                                    <Link
                                       href={proposal.conversationId ? `/messages?conversation=${proposal.conversationId}` : `/messages?pro=${proposal.proProfileId?._id}`}
-                                      size="sm"
-                                      icon={<MessageCircle className="w-4 h-4" />}
+                                      className="myjobs-action-btn primary py-1.5 px-2.5"
                                     >
+                                      <MessageCircle className="w-3.5 h-3.5" />
                                       {language === 'ka' ? 'მესიჯი' : 'Message'}
-                                    </Button>
+                                    </Link>
                                     <Link
                                       href={`/professionals/${proposal.proProfileId?._id}`}
-                                      className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-[#D2691E] hover:underline"
+                                      className="ml-auto text-xs font-medium text-[#D2691E] hover:underline flex items-center gap-1"
                                     >
                                       {language === 'ka' ? 'პროფილი' : 'Profile'}
-                                      <ExternalLink className="w-3 h-3" />
+                                      <ExternalLink className="w-2.5 h-2.5" />
                                     </Link>
                                   </div>
                                 )}
-                                
+
                                 {proposal.status === 'rejected' && (
-                                  <div className="mt-3 text-xs text-[var(--color-text-tertiary)]">
-                                    {language === 'ka' ? 'ეს შეთავაზება უარყოფილია' : 'This proposal has been rejected'}
+                                  <div className="mt-2 text-[10px] text-[var(--color-text-tertiary)] italic">
+                                    {language === 'ka' ? 'უარყოფილი' : 'Rejected'}
                                   </div>
                                 )}
                               </div>
                             ))}
                           </div>
-                        </div>
+                        )}
                       </div>
                     )}
 
                     {/* Empty proposals */}
                     {isExpanded && proposals.length === 0 && !loadingProposals && (
                       <div className="px-5 pb-5">
-                        <div className="text-center py-10 rounded-xl bg-[#D2691E]/5 border border-[#E8D5C4]/40 dark:border-[#3d2f24]/40">
-                          <div className="w-12 h-12 rounded-xl bg-[#D2691E]/10 mx-auto mb-3 flex items-center justify-center">
-                            <FileText className="w-6 h-6 text-[#D2691E]/60" />
+                        <div className="myjobs-proposals-empty">
+                          <div className="myjobs-proposals-empty-icon">
+                            <FileText />
                           </div>
                           <p className="text-sm font-medium text-[var(--color-text-secondary)]">
                             {language === 'ka' ? 'შეთავაზებები ჯერ არ მიგიღიათ' : 'No proposals yet'}
@@ -980,7 +1092,7 @@ export default function MyJobsPage() {
                         </div>
                       </div>
                     )}
-                  </Card>
+                  </div>
                 );
               })}
             </div>
@@ -990,46 +1102,34 @@ export default function MyJobsPage() {
 
       {/* Delete Modal */}
       {deleteModalJobId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeDeleteModal} />
-
-          <div className="relative w-full max-w-md bg-[var(--color-bg-elevated)] rounded-2xl border shadow-2xl overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
-            <div className="p-6">
-              <div className="flex items-start gap-4 mb-5">
-                <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center flex-shrink-0">
-                  <Trash2 className="w-6 h-6 text-red-500" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                    {language === 'ka' ? 'სამუშაოს წაშლა' : 'Delete Job'}
-                  </h3>
-                  <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
-                    {language === 'ka' ? 'ეს მოქმედება შეუქცევადია' : 'This action cannot be undone'}
-                  </p>
-                </div>
-                <button
-                  onClick={closeDeleteModal}
-                  className="p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
-                  style={{ color: 'var(--color-text-tertiary)' }}
-                >
-                  <X className="w-5 h-5" />
-                </button>
+        <div className="myjobs-modal-overlay">
+          <div className="myjobs-modal-backdrop" onClick={closeDeleteModal} />
+          <div className="myjobs-modal animate-myjobs-scale-in">
+            <div className="myjobs-modal-header">
+              <div className="myjobs-modal-icon danger">
+                <Trash2 />
               </div>
+              <div className="flex-1">
+                <h3 className="myjobs-modal-title">
+                  {language === 'ka' ? 'პროექტის წაშლა' : 'Delete Project'}
+                </h3>
+                <p className="myjobs-modal-subtitle">
+                  {language === 'ka' ? 'ეს მოქმედება შეუქცევადია' : 'This action cannot be undone'}
+                </p>
+              </div>
+              <button onClick={closeDeleteModal} className="p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors text-[var(--color-text-tertiary)]">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-              <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
+            <div className="myjobs-modal-content">
+              <p className="text-sm mb-4 text-[var(--color-text-secondary)]">
                 {language === 'ka' ? 'გთხოვთ, მიუთითეთ წაშლის მიზეზი:' : 'Please select a reason:'}
               </p>
 
               <div className="space-y-2">
                 {DELETE_REASONS.map((reason) => (
-                  <label
-                    key={reason.id}
-                    className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${
-                      deleteReason === reason.id
-                        ? 'bg-red-500/10 border-red-500/30'
-                        : 'border-[var(--color-border)] hover:border-[var(--color-accent)]/30'
-                    }`}
-                  >
+                  <label key={reason.id} className={`myjobs-radio-option ${deleteReason === reason.id ? 'selected' : ''}`}>
                     <input
                       type="radio"
                       name="deleteReason"
@@ -1038,12 +1138,10 @@ export default function MyJobsPage() {
                       onChange={(e) => setDeleteReason(e.target.value)}
                       className="sr-only"
                     />
-                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                      deleteReason === reason.id ? 'border-red-500 bg-red-500' : 'border-[var(--color-border)]'
-                    }`}>
-                      {deleteReason === reason.id && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    <div className="myjobs-radio-circle">
+                      {deleteReason === reason.id && <div className="myjobs-radio-dot" />}
                     </div>
-                    <span className={`text-sm ${deleteReason === reason.id ? 'text-red-600 dark:text-red-400 font-medium' : ''}`} style={deleteReason !== reason.id ? { color: 'var(--color-text-secondary)' } : {}}>
+                    <span className={`text-sm ${deleteReason === reason.id ? 'text-red-600 dark:text-red-400 font-medium' : 'text-[var(--color-text-secondary)]'}`}>
                       {language === 'ka' ? reason.label : reason.labelEn}
                     </span>
                   </label>
@@ -1055,26 +1153,17 @@ export default function MyJobsPage() {
                   value={customReason}
                   onChange={(e) => setCustomReason(e.target.value)}
                   placeholder={language === 'ka' ? 'დაწერეთ მიზეზი...' : 'Specify your reason...'}
-                  className="w-full mt-3 px-4 py-3 rounded-xl bg-[var(--color-bg-tertiary)] border text-sm placeholder:text-[var(--color-text-tertiary)] resize-none focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500"
-                  style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
+                  className="myjobs-textarea mt-3"
                   rows={3}
                 />
               )}
             </div>
 
-            <div className="p-4 pt-0 flex gap-3">
-              <Button variant="outline" onClick={closeDeleteModal} fullWidth>
+            <div className="myjobs-modal-footer">
+              <button onClick={closeDeleteModal} className="myjobs-btn outline flex-1">
                 {language === 'ka' ? 'გაუქმება' : 'Cancel'}
-              </Button>
-              <button
-                onClick={handleDeleteJob}
-                disabled={!deleteReason || isDeleting}
-                className={`flex-1 px-4 py-3 rounded-xl text-sm font-semibold text-white transition-all flex items-center justify-center gap-2 ${
-                  !deleteReason || isDeleting
-                    ? 'bg-neutral-300 dark:bg-neutral-700 cursor-not-allowed'
-                    : 'bg-red-500 hover:bg-red-600 shadow-md hover:shadow-lg'
-                }`}
-              >
+              </button>
+              <button onClick={handleDeleteJob} disabled={!deleteReason || isDeleting} className="myjobs-btn danger flex-1">
                 {isDeleting ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -1094,101 +1183,71 @@ export default function MyJobsPage() {
 
       {/* Start Chat Modal */}
       {chatModalProposal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setChatModalProposal(null)} />
-          
-          <div className="relative w-full max-w-lg bg-[var(--color-bg-elevated)] rounded-2xl border shadow-2xl overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
-            <div className="p-6">
-              <div className="flex items-start gap-4 mb-5">
-                <div className="w-12 h-12 rounded-xl bg-[#D2691E]/10 flex items-center justify-center flex-shrink-0">
-                  <MessageCircle className="w-6 h-6 text-[#D2691E]" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                    {language === 'ka' ? 'მესიჯის გაგზავნა' : 'Send Message'}
-                  </h3>
-                  <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
-                    {language === 'ka' 
-                      ? `მიწერე ${chatModalProposal.proProfileId?.userId?.name || 'პროფესიონალს'} შეთავაზების შესახებ`
-                      : `Message ${chatModalProposal.proProfileId?.userId?.name || 'the professional'} about their proposal`}
-                  </p>
-                </div>
-                <button
-                  onClick={() => setChatModalProposal(null)}
-                  className="p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
-                  style={{ color: 'var(--color-text-tertiary)' }}
-                >
-                  <X className="w-5 h-5" />
-                </button>
+        <div className="myjobs-modal-overlay">
+          <div className="myjobs-modal-backdrop" onClick={() => setChatModalProposal(null)} />
+          <div className="myjobs-modal max-w-lg animate-myjobs-scale-in">
+            <div className="myjobs-modal-header">
+              <div className="myjobs-modal-icon primary">
+                <MessageCircle />
               </div>
+              <div className="flex-1">
+                <h3 className="myjobs-modal-title">
+                  {language === 'ka' ? 'მესიჯის გაგზავნა' : 'Send Message'}
+                </h3>
+                <p className="myjobs-modal-subtitle">
+                  {chatModalProposal.proProfileId?.userId?.name || 'Professional'}
+                </p>
+              </div>
+              <button onClick={() => setChatModalProposal(null)} className="p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors text-[var(--color-text-tertiary)]">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-              {/* Proposal Summary */}
-              <div className="mb-4 p-3 rounded-xl bg-[#D2691E]/5 border border-[#E8D5C4]/40 dark:border-[#3d2f24]/40">
-                <div className="flex items-center gap-3 mb-2">
-                  <Avatar
-                    src={chatModalProposal.proProfileId?.userId?.avatar}
-                    name={chatModalProposal.proProfileId?.userId?.name || 'Pro'}
-                    size="sm"
-                  />
-                  <div>
-                    <p className="font-medium text-sm" style={{ color: 'var(--color-text-primary)' }}>
-                      {chatModalProposal.proProfileId?.userId?.name}
-                    </p>
-                    <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                      {chatModalProposal.proProfileId?.title}
-                    </p>
+            <div className="myjobs-modal-content">
+              <div className="myjobs-proposal-card mb-4 p-3">
+                <div className="flex items-center gap-3">
+                  <Avatar src={chatModalProposal.proProfileId?.userId?.avatar} name={chatModalProposal.proProfileId?.userId?.name || 'Pro'} size="sm" />
+                  <div className="flex-1">
+                    <p className="font-medium text-sm text-[var(--color-text-primary)]">{chatModalProposal.proProfileId?.userId?.name}</p>
+                    <p className="text-xs text-[var(--color-text-tertiary)]">{chatModalProposal.proProfileId?.title}</p>
                   </div>
-                  <div className="ml-auto text-right">
-                    <p className="font-bold text-[#D2691E]">
-                      ₾{chatModalProposal.proposedPrice?.toLocaleString()}
-                    </p>
-                    <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                      {chatModalProposal.estimatedDuration} {
-                        chatModalProposal.estimatedDurationUnit === 'days' ? (language === 'ka' ? 'დღე' : 'days') :
-                        chatModalProposal.estimatedDurationUnit === 'weeks' ? (language === 'ka' ? 'კვირა' : 'weeks') :
-                        (language === 'ka' ? 'თვე' : 'months')
-                      }
-                    </p>
+                  <div className="text-right">
+                    <p className="font-bold text-[#D2691E]">₾{chatModalProposal.proposedPrice?.toLocaleString()}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Message Input */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+              <div>
+                <label className="block text-sm font-medium mb-2 text-[var(--color-text-secondary)]">
                   {language === 'ka' ? 'შენი მესიჯი' : 'Your message'}
                 </label>
                 <textarea
                   value={chatMessage}
                   onChange={(e) => setChatMessage(e.target.value)}
-                  placeholder={language === 'ka' 
-                    ? 'დაწერე მესიჯი... მაგ: გამარჯობა, მაინტერესებს თქვენი შეთავაზება...'
-                    : 'Write a message... e.g., Hi, I am interested in your proposal...'}
-                  className="w-full px-4 py-3 rounded-xl border text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#D2691E]/30"
-                  style={{
-                    backgroundColor: 'var(--color-bg-tertiary)',
-                    borderColor: 'var(--color-border)',
-                    color: 'var(--color-text-primary)'
-                  }}
+                  placeholder={language === 'ka' ? 'დაწერე მესიჯი...' : 'Write a message...'}
+                  className="myjobs-textarea"
                   rows={4}
                 />
               </div>
+            </div>
 
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setChatModalProposal(null)} className="flex-1">
-                  {language === 'ka' ? 'გაუქმება' : 'Cancel'}
-                </Button>
-                <Button
-                  onClick={handleStartChat}
-                  disabled={!chatMessage.trim() || isSendingChat}
-                  className="flex-1"
-                  icon={isSendingChat ? undefined : <MessageCircle className="w-4 h-4" />}
-                >
-                  {isSendingChat 
-                    ? (language === 'ka' ? 'იგზავნება...' : 'Sending...') 
-                    : (language === 'ka' ? 'გაგზავნა' : 'Send Message')}
-                </Button>
-              </div>
+            <div className="myjobs-modal-footer">
+              <button onClick={() => setChatModalProposal(null)} className="myjobs-btn outline flex-1">
+                {language === 'ka' ? 'გაუქმება' : 'Cancel'}
+              </button>
+              <button onClick={handleStartChat} disabled={!chatMessage.trim() || isSendingChat} className="myjobs-btn primary flex-1">
+                {isSendingChat ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    {language === 'ka' ? 'იგზავნება...' : 'Sending...'}
+                  </>
+                ) : (
+                  <>
+                    <MessageCircle className="w-4 h-4" />
+                    {language === 'ka' ? 'გაგზავნა' : 'Send'}
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
@@ -1196,76 +1255,118 @@ export default function MyJobsPage() {
 
       {/* Reject Proposal Modal */}
       {rejectModalProposal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setRejectModalProposal(null)} />
-          
-          <div className="relative w-full max-w-md bg-[var(--color-bg-elevated)] rounded-2xl border shadow-2xl overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
-            <div className="p-6">
-              <div className="flex items-start gap-4 mb-5">
-                <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center flex-shrink-0">
-                  <XCircle className="w-6 h-6 text-red-500" />
+        <div className="myjobs-modal-overlay">
+          <div className="myjobs-modal-backdrop" onClick={() => setRejectModalProposal(null)} />
+          <div className="myjobs-modal animate-myjobs-scale-in">
+            <div className="myjobs-modal-header">
+              <div className="myjobs-modal-icon danger">
+                <XCircle />
+              </div>
+              <div className="flex-1">
+                <h3 className="myjobs-modal-title">
+                  {language === 'ka' ? 'შეთავაზების უარყოფა' : 'Reject Proposal'}
+                </h3>
+                <p className="myjobs-modal-subtitle">
+                  {rejectModalProposal.proProfileId?.userId?.name || 'Professional'}
+                </p>
+              </div>
+              <button onClick={() => setRejectModalProposal(null)} className="p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors text-[var(--color-text-tertiary)]">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="myjobs-modal-content">
+              <label className="block text-sm font-medium mb-2 text-[var(--color-text-secondary)]">
+                {language === 'ka' ? 'მიზეზი (არასავალდებულო)' : 'Reason (optional)'}
+              </label>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder={language === 'ka' ? 'მაგ: ფასი არ შეესაბამება ბიუჯეტს...' : 'e.g., The price does not match my budget...'}
+                className="myjobs-textarea"
+                rows={3}
+              />
+            </div>
+
+            <div className="myjobs-modal-footer">
+              <button onClick={() => setRejectModalProposal(null)} className="myjobs-btn outline flex-1">
+                {language === 'ka' ? 'გაუქმება' : 'Cancel'}
+              </button>
+              <button onClick={handleRejectProposal} disabled={isRejecting} className="myjobs-btn danger flex-1">
+                {isRejecting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    {language === 'ka' ? 'მიმდინარეობს...' : 'Rejecting...'}
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="w-4 h-4" />
+                    {language === 'ka' ? 'უარყოფა' : 'Reject'}
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Renew Job Modal */}
+      {renewModalJobId && (
+        <div className="myjobs-modal-overlay">
+          <div className="myjobs-modal-backdrop" onClick={closeRenewModal} />
+          <div className="myjobs-modal animate-myjobs-scale-in">
+            <div className="myjobs-modal-header">
+              <div className="myjobs-modal-icon renew">
+                <RefreshCw />
+              </div>
+              <div className="flex-1">
+                <h3 className="myjobs-modal-title">
+                  {language === 'ka' ? 'პროექტის განახლება' : 'Renew Project'}
+                </h3>
+                <p className="myjobs-modal-subtitle">
+                  {language === 'ka' ? 'ვადა გაგრძელდება 30 დღით' : 'Deadline will be extended by 30 days'}
+                </p>
+              </div>
+              <button onClick={closeRenewModal} className="p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors text-[var(--color-text-tertiary)]">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="myjobs-modal-content">
+              <div className="flex items-center gap-4 p-4 rounded-xl bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/20">
+                <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center">
+                  <Timer className="w-6 h-6 text-orange-500" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                    {language === 'ka' ? 'შეთავაზების უარყოფა' : 'Reject Proposal'}
-                  </h3>
-                  <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
-                    {language === 'ka' 
-                      ? `უარყოფა ${rejectModalProposal.proProfileId?.userId?.name || 'პროფესიონალის'} შეთავაზებაზე`
-                      : `Reject proposal from ${rejectModalProposal.proProfileId?.userId?.name || 'the professional'}`}
+                  <p className="font-medium text-[var(--color-text-primary)]">
+                    {language === 'ka' ? 'პროექტის ვადა ამოიწურა' : 'Project deadline has expired'}
+                  </p>
+                  <p className="text-sm text-[var(--color-text-secondary)] mt-0.5">
+                    {language === 'ka'
+                      ? 'განახლების შემდეგ პროექტი ხელახლა გამოჩნდება პროფესიონალებისთვის'
+                      : 'After renewal, the project will be visible to professionals again'}
                   </p>
                 </div>
-                <button
-                  onClick={() => setRejectModalProposal(null)}
-                  className="p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
-                  style={{ color: 'var(--color-text-tertiary)' }}
-                >
-                  <X className="w-5 h-5" />
-                </button>
               </div>
+            </div>
 
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-                  {language === 'ka' ? 'მიზეზი (არასავალდებულო)' : 'Reason (optional)'}
-                </label>
-                <textarea
-                  value={rejectReason}
-                  onChange={(e) => setRejectReason(e.target.value)}
-                  placeholder={language === 'ka' 
-                    ? 'მაგ: ფასი არ შეესაბამება ბიუჯეტს...'
-                    : 'e.g., The price does not match my budget...'}
-                  className="w-full px-4 py-3 rounded-xl border text-sm resize-none focus:outline-none focus:ring-2 focus:ring-red-500/30"
-                  style={{
-                    backgroundColor: 'var(--color-bg-tertiary)',
-                    borderColor: 'var(--color-border)',
-                    color: 'var(--color-text-primary)'
-                  }}
-                  rows={3}
-                />
-              </div>
-
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setRejectModalProposal(null)} className="flex-1">
-                  {language === 'ka' ? 'გაუქმება' : 'Cancel'}
-                </Button>
-                <button
-                  onClick={handleRejectProposal}
-                  disabled={isRejecting}
-                  className="flex-1 px-4 py-3 rounded-xl text-sm font-semibold text-white bg-red-500 hover:bg-red-600 transition-all flex items-center justify-center gap-2"
-                >
-                  {isRejecting ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      {language === 'ka' ? 'მიმდინარეობს...' : 'Rejecting...'}
-                    </>
-                  ) : (
-                    <>
-                      <XCircle className="w-4 h-4" />
-                      {language === 'ka' ? 'უარყოფა' : 'Reject'}
-                    </>
-                  )}
-                </button>
-              </div>
+            <div className="myjobs-modal-footer">
+              <button onClick={closeRenewModal} className="myjobs-btn outline flex-1">
+                {language === 'ka' ? 'გაუქმება' : 'Cancel'}
+              </button>
+              <button onClick={handleRenewJob} disabled={isRenewing} className="myjobs-btn renew flex-1">
+                {isRenewing ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    {language === 'ka' ? 'მიმდინარეობს...' : 'Renewing...'}
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4" />
+                    {language === 'ka' ? 'განახლება' : 'Renew'}
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
