@@ -7,11 +7,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
-interface DemoAccount {
-  email: string;
-  role: string;
-  name: string;
-}
 
 export default function LoginModal() {
   const router = useRouter();
@@ -22,7 +17,6 @@ export default function LoginModal() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [demoAccounts, setDemoAccounts] = useState<DemoAccount[]>([]);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -46,15 +40,6 @@ export default function LoginModal() {
     return () => document.removeEventListener('keydown', handleEscKey);
   }, [isLoginModalOpen, handleEscKey]);
 
-  useEffect(() => {
-    const fetchDemoAccounts = async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/demo-accounts`);
-        if (response.ok) setDemoAccounts(await response.json());
-      } catch (err) { console.error('Failed to fetch demo accounts:', err); }
-    };
-    if (isLoginModalOpen) fetchDemoAccounts();
-  }, [isLoginModalOpen]);
 
   useEffect(() => {
     if (!isLoginModalOpen) {
@@ -270,35 +255,41 @@ export default function LoginModal() {
               </p>
             </div>
 
-            {demoAccounts.length > 0 && (
-              <div className="auth-demo-section">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center">
-                    <svg className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <p className="text-xs font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
-                    {locale === 'ka' ? 'დემო ანგარიშები' : 'Demo Accounts'}
-                  </p>
+            {/* Static Demo Accounts - Always Visible */}
+            <div className="auth-demo-section">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center">
+                  <svg className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  {demoAccounts.filter(a => a.role === 'client' || a.role === 'pro').slice(0, 4).map((account) => (
-                    <button
-                      key={account.email}
-                      type="button"
-                      onClick={() => setFormData({ identifier: account.email, password: 'demo123' })}
-                      className="auth-demo-btn group"
-                    >
-                      <span className="capitalize">{account.role}</span>
-                      <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#D2691E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                      </svg>
-                    </button>
-                  ))}
-                </div>
+                <p className="text-xs font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+                  {locale === 'ka' ? 'დემო ანგარიშები' : 'Demo Accounts'}
+                </p>
               </div>
-            )}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setFormData({ identifier: 'client@demo.com', password: 'demo123' })}
+                  className="auth-demo-btn group"
+                >
+                  <span>{locale === 'ka' ? 'კლიენტი' : 'Client'}</span>
+                  <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#D2691E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ identifier: 'giorgi.pro@demo.com', password: 'demo123' })}
+                  className="auth-demo-btn group"
+                >
+                  <span>{locale === 'ka' ? 'პრო' : 'Pro'}</span>
+                  <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#D2691E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

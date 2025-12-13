@@ -120,9 +120,9 @@ export default function Header() {
                     className="hidden sm:flex group items-center gap-2.5 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ease-out hover:scale-[1.03] active:scale-[0.97] relative overflow-hidden"
                     style={{
                       transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
-                      background: "linear-gradient(135deg, #0d6355 0%, #0a4f44 100%)",
+                      background: "linear-gradient(135deg, #D2691E 0%, #B8560E 100%)",
                       color: "#ffffff",
-                      boxShadow: "0 2px 8px rgba(13, 99, 85, 0.25), 0 1px 2px rgba(13, 99, 85, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+                      boxShadow: "0 2px 8px rgba(210, 105, 30, 0.25), 0 1px 2px rgba(210, 105, 30, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
                     }}
                   >
                     {/* Subtle shine effect on hover */}
