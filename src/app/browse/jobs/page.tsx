@@ -372,10 +372,10 @@ export default function JobsPage() {
             </svg>
           </div>
           <h3 className="text-lg font-semibold mb-2" style={{ color: "var(--color-text-primary)" }}>
-            {locale === "ka" ? "შეთავაზებები არ მოიძებნა" : "No opportunities found"}
+            {locale === "ka" ? "სამუშაოები არ მოიძებნა" : "No jobs found"}
           </h3>
           <p style={{ color: "var(--color-text-secondary)" }}>
-            {locale === "ka" ? "ახალი შეთავაზებები მალე გამოჩნდება" : "New opportunities coming soon"}
+            {locale === "ka" ? "ახალი სამუშაოები მალე გამოჩნდება" : "New jobs coming soon"}
           </p>
         </div>
       )}

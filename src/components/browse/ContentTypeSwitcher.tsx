@@ -1,9 +1,9 @@
 'use client';
 
 import { useLanguage } from '@/contexts/LanguageContext';
-import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 export type ContentType = 'jobs' | 'portfolio' | 'professionals';
 
@@ -33,27 +33,27 @@ export default function ContentTypeSwitcher({
       key: 'jobs' as ContentType,
       route: '/browse/jobs',
       label: 'Opportunities',
-      labelKa: 'შესაძლებლობები',
+      labelKa: 'სამუშაოები',
       description: 'Find projects',
-      descriptionKa: 'იპოვე პროექტები',
+      descriptionKa: 'სამუშაოების ძებნა',
       showFor: 'pro' as const,
     },
     {
       key: 'portfolio' as ContentType,
       route: '/browse/portfolio',
       label: 'Portfolio',
-      labelKa: 'პორტფოლიო',
+      labelKa: 'სხვების ნამუშევრები',
       description: 'View work samples',
-      descriptionKa: 'ნამუშევრები',
+      descriptionKa: 'სხვების ნამუშევრების ნახვა',
       showFor: 'all' as const,
     },
     {
       key: 'professionals' as ContentType,
       route: '/browse/professionals',
       label: 'Professionals',
-      labelKa: 'პროფესიონალები',
+      labelKa: 'სპეციალისტები',
       description: 'Browse experts',
-      descriptionKa: 'სპეციალისტები',
+      descriptionKa: 'სპეციალისტების დათვალიერება',
       showFor: 'all' as const,
     },
   ], []);

@@ -110,7 +110,7 @@ export default function MyProposalsPage() {
   const fetchMyProposals = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await api.get('/jobs/my-proposals/detailed');
+      const response = await api.get('/jobs/my-proposals/list');
       setProposals(Array.isArray(response.data) ? response.data : []);
       setError(null);
     } catch (err: any) {

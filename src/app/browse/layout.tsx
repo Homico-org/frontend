@@ -8,10 +8,10 @@ import Header from "@/components/common/Header";
 import { useAuth } from "@/contexts/AuthContext";
 import { BrowseProvider, useBrowseContext } from "@/contexts/BrowseContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { ReactNode, useEffect, useState } from "react";
 import { Briefcase, Send, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { ReactNode, useEffect, useState } from "react";
 
 // Decorative architectural elements
 function ArchitecturalDecorations() {
@@ -80,12 +80,12 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
   // Determine page title based on route
   const getPageTitle = () => {
     if (pathname.includes("/browse/jobs")) {
-      return locale === "ka" ? "შესაძლებლობები" : "Opportunities";
+      return locale === "ka" ? "სამუშაოები" : "Jobs";
     }
     if (pathname.includes("/browse/portfolio")) {
-      return locale === "ka" ? "პორტფოლიო" : "Portfolio";
+      return locale === "ka" ? "სხვების პორტფოლიო" : "Other's Portfolio";
     }
-    return locale === "ka" ? "პროფესიონალები" : "Professionals";
+    return locale === "ka" ? "სპეციალისტები" : "Professionals";
   };
 
   const getPageSubtitle = () => {
@@ -154,7 +154,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                       transition-all duration-300 hover:shadow-md hover:shadow-[#D2691E]/10"
                   >
                     <Send className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                    <span className="hidden sm:inline">{locale === "ka" ? "შეთავაზებები" : "My Proposals"}</span>
+                    <span className="hidden sm:inline">{locale === "ka" ? "ჩემი შეთავაზებები" : "My Proposals"}</span>
                   </Link>
                 )}
 
@@ -168,7 +168,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                       transition-all duration-300"
                   >
                     <Briefcase className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
-                    <span className="hidden sm:inline">{locale === "ka" ? "ჩემი განცხადებები" : "My Jobs"}</span>
+                    <span className="hidden sm:inline">{locale === "ka" ? "ჩემი პროექტები" : "My Jobs"}</span>
                   </Link>
                 )}
               </div>

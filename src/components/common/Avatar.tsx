@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface AvatarProps {
   src?: string | null;
@@ -41,6 +41,11 @@ export default function Avatar({
 }: AvatarProps) {
   const [imageError, setImageError] = useState(false);
 
+  // Reset error state when src changes
+  useEffect(() => {
+    setImageError(false);
+  }, [src]);
+
   const initials = name
     .split(' ')
     .map(word => word[0])
@@ -76,7 +81,8 @@ export default function Avatar({
 
   // Handle relative URLs by prefixing with API URL
   const getFullUrl = (url: string) => {
-    if (url.startsWith('http')) return url;
+    // Already a full URL or base64 data URL
+    if (url.startsWith('http') || url.startsWith('data:')) return url;
     return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
   };
 

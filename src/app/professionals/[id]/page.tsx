@@ -336,9 +336,69 @@ export default function ProfessionalDetailPage() {
   const getMemberSince = () => {
     if (profile?.createdAt) {
       const date = new Date(profile.createdAt);
-      return date.toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', { month: 'short', year: 'numeric' });
+      if (locale === 'ka') {
+        const months = ['იან', 'თებ', 'მარ', 'აპრ', 'მაი', 'ივნ', 'ივლ', 'აგვ', 'სექ', 'ოქტ', 'ნოე', 'დეკ'];
+        return `${months[date.getMonth()]} ${date.getFullYear()}`;
+      }
+      return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
     }
     return '';
+  };
+
+  // Format date in Georgian or English
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    if (locale === 'ka') {
+      const months = ['იან', 'თებ', 'მარ', 'აპრ', 'მაი', 'ივნ', 'ივლ', 'აგვ', 'სექ', 'ოქტ', 'ნოე', 'დეკ'];
+      return `${months[date.getMonth()]} ${date.getFullYear()}`;
+    }
+    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  };
+
+  // Translate service area names
+  const getServiceAreaLabel = (area: string) => {
+    if (locale === 'ka') {
+      const areaTranslations: Record<string, string> = {
+        'Countrywide': 'საქართველო',
+        'Tbilisi': 'თბილისი',
+        'Batumi': 'ბათუმი',
+        'Kutaisi': 'ქუთაისი',
+        'Rustavi': 'რუსთავი',
+        'Zugdidi': 'ზუგდიდი',
+        'Gori': 'გორი',
+        'Poti': 'ფოთი',
+        'Samtredia': 'სამტრედია',
+        'Khashuri': 'ხაშური',
+        'Senaki': 'სენაკი',
+        'Zestafoni': 'ზესტაფონი',
+        'Marneuli': 'მარნეული',
+        'Telavi': 'თელავი',
+        'Akhaltsikhe': 'ახალციხე',
+        'Kobuleti': 'ქობულეთი',
+        'Ozurgeti': 'ოზურგეთი',
+        'Kaspi': 'კასპი',
+        'Chiatura': 'ჭიათურა',
+        'Tkibuli': 'ტყიბული',
+        'Borjomi': 'ბორჯომი',
+        'Tskhinvali': 'ცხინვალი',
+        'Sachkhere': 'საჩხერე',
+        'Gardabani': 'გარდაბანი',
+        'Tkvarcheli': 'ტყვარჩელი',
+        'Tskaltubo': 'წყალტუბო',
+        'Sagarejo': 'საგარეჯო',
+        'Lagodekhi': 'ლაგოდეხი',
+        'Gurjaani': 'გურჯაანი',
+        'Kvareli': 'ყვარელი',
+        'Akhalkalaki': 'ახალქალაქი',
+        'Mestia': 'მესტია',
+        'Oni': 'ონი',
+        'Ambrolauri': 'ამბროლაური',
+        'Tsageri': 'ცაგერი',
+        'Lentekhi': 'ლენტეხი',
+      };
+      return areaTranslations[area] || area;
+    }
+    return area;
   };
 
   if (isLoading) {
@@ -383,7 +443,9 @@ export default function ProfessionalDetailPage() {
     );
   }
 
-  const avatarUrl = profile.avatar || profile.userId.avatar;
+  // Avatar priority: prefer user's avatar (more up-to-date), skip broken /uploads/ URLs
+  const isProfileAvatarBroken = profile.avatar?.includes('/uploads/');
+  const avatarUrl = (!isProfileAvatarBroken && profile.avatar) || profile.userId.avatar;
 
   return (
     <div className="min-h-screen relative overflow-hidden pro-profile-page">
@@ -477,10 +539,10 @@ export default function ProfessionalDetailPage() {
 
                     {/* Category Tags */}
                     <div className="flex flex-wrap justify-center gap-1.5 mb-5">
-                      {profile.categories.slice(0, 2).map((cat, i) => (
+                      {profile.categories.slice(0, 3).map((cat, i) => (
                         <span
                           key={i}
-                          className="px-2 py-0.5 text-[10px] font-medium rounded-full border border-[var(--color-border)] text-[var(--color-text-secondary)] uppercase tracking-wider"
+                          className="px-2.5 py-1 text-[10px] font-semibold rounded-lg bg-[#D2691E]/10 text-[#D2691E] dark:text-[#CD853F] border border-[#D2691E]/20"
                         >
                           {getCategoryLabel(cat)}
                         </span>
@@ -630,11 +692,11 @@ export default function ProfessionalDetailPage() {
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           </svg>
-                          <span className="truncate max-w-[80px]">{profile.serviceAreas[0]}</span>
+                          <span className="truncate max-w-[100px]">{getServiceAreaLabel(profile.serviceAreas[0])}</span>
                         </div>
                       )}
                       {getMemberSince() && (
-                        <span>{getMemberSince()}</span>
+                        <span>{locale === 'ka' ? 'წევრი ' : 'Since '}{getMemberSince()}</span>
                       )}
                     </div>
                   </div>
@@ -809,7 +871,7 @@ export default function ProfessionalDetailPage() {
                                 {review.isAnonymous ? (locale === 'ka' ? 'ანონიმური' : 'Anonymous') : review.clientId.name}
                               </p>
                               <span className="text-[9px] text-[var(--color-text-tertiary)]">
-                                {new Date(review.createdAt).toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', { month: 'short', year: 'numeric' })}
+                                {formatDate(review.createdAt)}
                               </span>
                               {/* Stars */}
                               <div className="flex items-center gap-0.5 ml-auto">
@@ -1257,7 +1319,7 @@ export default function ProfessionalDetailPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         <span className="text-xs text-[var(--color-text-secondary)]">
-                          {new Date(selectedProject.completedDate).toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', { month: 'short', year: 'numeric' })}
+                          {formatDate(selectedProject.completedDate)}
                         </span>
                       </div>
                     )}

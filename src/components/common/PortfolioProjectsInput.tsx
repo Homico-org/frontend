@@ -229,7 +229,7 @@ export default function PortfolioProjectsInput({
 
       const data = await response.json();
       if (data?.url) {
-        return data.url.startsWith('http')
+        return data.url.startsWith('http') || data.url.startsWith('data:')
           ? data.url
           : `${process.env.NEXT_PUBLIC_API_URL}${data.url}`;
       }

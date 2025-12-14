@@ -112,12 +112,18 @@ export default function SettingsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    console.log('File selected:', file.name, file.size, 'bytes');
+
     // For demo purposes, we'll convert to base64 data URL
     // In production, you'd upload to a CDN/cloud storage
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64 = reader.result as string;
+      console.log('Base64 generated, length:', base64.length);
       setFormData(prev => ({ ...prev, avatar: base64 }));
+    };
+    reader.onerror = () => {
+      console.error('FileReader error:', reader.error);
     };
     reader.readAsDataURL(file);
   };

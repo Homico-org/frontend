@@ -95,13 +95,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      // Get locally stored user data
+      const storedUserStr = localStorage.getItem('user');
+      const storedUser = storedUserStr ? JSON.parse(storedUserStr) : null;
+
       // Validate token with backend
       const validatedUser = await validateToken(accessToken);
 
       if (validatedUser) {
+        // Merge with local data - prefer local avatar if it's a data URL (recently uploaded)
+        // or if the backend avatar is empty/undefined
+        let finalUser = validatedUser;
+        if (storedUser?.avatar) {
+          const isLocalDataUrl = storedUser.avatar.startsWith('data:');
+          const isBackendAvatarEmpty = !validatedUser.avatar;
+          if (isLocalDataUrl || isBackendAvatarEmpty) {
+            finalUser = { ...validatedUser, avatar: storedUser.avatar };
+          }
+        }
+
         // Token is valid, update user state and localStorage
-        localStorage.setItem('user', JSON.stringify(validatedUser));
-        setUser(validatedUser);
+        localStorage.setItem('user', JSON.stringify(finalUser));
+        setUser(finalUser);
         setToken(accessToken);
       } else {
         // Token is invalid, clear auth data

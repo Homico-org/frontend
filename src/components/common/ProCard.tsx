@@ -37,10 +37,17 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
   };
 
   const isTopRated = profile.avgRating >= 4.8 && profile.totalReviews >= 5;
-  const rawAvatarUrl = profile.avatar || proUser?.avatar;
-  // Ensure avatar URL is absolute
+
+  // Avatar priority: prefer user's avatar (more up-to-date), then profile avatar
+  // Skip profile.avatar if it's a broken /uploads/ URL (ephemeral storage)
+  const isProfileAvatarBroken = profile.avatar?.includes('/uploads/');
+  const rawAvatarUrl = (!isProfileAvatarBroken && profile.avatar) || proUser?.avatar;
+
+  // Ensure avatar URL is absolute (handle http, https, data: URLs, or relative paths)
   const avatarUrl = rawAvatarUrl
-    ? (rawAvatarUrl.startsWith('http') ? rawAvatarUrl : `${process.env.NEXT_PUBLIC_API_URL}${rawAvatarUrl}`)
+    ? (rawAvatarUrl.startsWith('http') || rawAvatarUrl.startsWith('data:')
+        ? rawAvatarUrl
+        : `${process.env.NEXT_PUBLIC_API_URL}${rawAvatarUrl}`)
     : null;
   const displayName = proUser?.name || profile.title || 'Professional';
   const bioText = profile.bio || profile.description || '';

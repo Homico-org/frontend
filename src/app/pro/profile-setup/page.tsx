@@ -1,20 +1,14 @@
 'use client';
 
 import { CATEGORIES, getCategoryByKey } from '@/constants/categories';
+import Header from '@/components/common/Header';
+import AppBackground from '@/components/common/AppBackground';
+import PortfolioProjectsInput, { PortfolioProject } from '@/components/common/PortfolioProjectsInput';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-
-interface PortfolioProject {
-  title: string;
-  description: string;
-  images: string[];
-  location?: string;
-  year?: string;
-  budget?: string;
-}
 
 // Design styles for designers - no icons
 const designStyles = [
@@ -62,8 +56,41 @@ export default function ProProfileSetupPage() {
 
   const [portfolioProjects, setPortfolioProjects] = useState<PortfolioProject[]>([]);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+
+  // Store initial avatar from localStorage in a ref so it persists
+  const initialAvatarRef = useRef<string | null>(null);
+
+  // Initialize avatar from localStorage on mount
+  useEffect(() => {
+    if (initialAvatarRef.current === null) {
+      try {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const parsed = JSON.parse(storedUser);
+          if (parsed.avatar) {
+            const avatarUrl = parsed.avatar.startsWith('http') || parsed.avatar.startsWith('data:')
+              ? parsed.avatar
+              : `${process.env.NEXT_PUBLIC_API_URL}${parsed.avatar}`;
+            initialAvatarRef.current = avatarUrl;
+            setAvatarPreview(avatarUrl);
+            setFormData(prev => ({ ...prev, avatar: avatarUrl }));
+          }
+        }
+      } catch (e) {
+        console.error('Failed to get avatar from localStorage:', e);
+      }
+      // Mark as initialized even if no avatar found
+      if (initialAvatarRef.current === null) {
+        initialAvatarRef.current = '';
+      }
+    }
+  }, []);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [existingProfileId, setExistingProfileId] = useState<string | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const hasFetchedProfile = useRef(false);
   const [locationData, setLocationData] = useState<{
     country: string;
     nationwide: string;
@@ -75,59 +102,211 @@ export default function ProProfileSetupPage() {
     setIsVisible(true);
   }, []);
 
-  // Load registration data from sessionStorage or user profile
+  // Fetch existing profile data if user is a pro (only once)
   useEffect(() => {
-    const storedData = sessionStorage.getItem('proRegistrationData');
-    if (storedData) {
-      try {
-        const parsed = JSON.parse(storedData);
-        setSelectedCategory(parsed.category || 'interior-design');
-        setSelectedSubcategories(parsed.subcategories || []);
-        if (parsed.pinterestLinks?.[0]) {
-          setFormData(prev => ({ ...prev, portfolioUrl: parsed.pinterestLinks[0] }));
-        }
-        if (parsed.cadastralId) {
-          setFormData(prev => ({ ...prev, cadastralId: parsed.cadastralId }));
-        }
-        if (parsed.portfolioProjects && Array.isArray(parsed.portfolioProjects)) {
-          const cleanedProjects = parsed.portfolioProjects.map((p: any) => ({
-            title: p.title || '',
-            description: p.description || '',
-            images: p.images || [],
-            location: p.location,
-            year: p.year,
-            budget: p.budget,
-          }));
-          setPortfolioProjects(cleanedProjects);
-        }
-        // Load avatar from registration
-        if (parsed.avatar) {
-          const avatarFullUrl = parsed.avatar.startsWith('http')
-            ? parsed.avatar
-            : `${process.env.NEXT_PUBLIC_API_URL}${parsed.avatar}`;
-          setFormData(prev => ({ ...prev, avatar: avatarFullUrl }));
-          setAvatarPreview(avatarFullUrl);
-        }
-        sessionStorage.removeItem('proRegistrationData');
-      } catch (err) {
-        console.error('Failed to parse registration data:', err);
-        setSelectedCategory('interior-design');
+    const fetchExistingProfile = async () => {
+      // Skip if already fetched or not a pro user
+      if (hasFetchedProfile.current) {
+        return;
       }
-    } else if (user?.selectedCategories && user.selectedCategories.length > 0) {
-      setSelectedCategory(user.selectedCategories[0]);
-    } else {
-      setSelectedCategory('interior-design');
-    }
 
-    // Only load user avatar if we didn't already get one from sessionStorage
-    if (user?.avatar && !avatarPreview) {
-      const avatarFullUrl = user.avatar.startsWith('http')
+      if (!user || user.role !== 'pro') {
+        setProfileLoading(false);
+        return;
+      }
+
+      hasFetchedProfile.current = true;
+
+      // First check sessionStorage for new registration data
+      const storedData = sessionStorage.getItem('proRegistrationData');
+      if (storedData) {
+        try {
+          const parsed = JSON.parse(storedData);
+          setSelectedCategory(parsed.category || 'interior-design');
+          setSelectedSubcategories(parsed.subcategories || []);
+          if (parsed.pinterestLinks?.[0]) {
+            setFormData(prev => ({ ...prev, portfolioUrl: parsed.pinterestLinks[0] }));
+          }
+          if (parsed.cadastralId) {
+            setFormData(prev => ({ ...prev, cadastralId: parsed.cadastralId }));
+          }
+          if (parsed.portfolioProjects && Array.isArray(parsed.portfolioProjects)) {
+            const cleanedProjects = parsed.portfolioProjects.map((p: any, idx: number) => ({
+              id: p.id || `project-${Date.now()}-${idx}`,
+              title: p.title || '',
+              description: p.description || '',
+              images: p.images || [],
+              location: p.location,
+              beforeAfterPairs: p.beforeAfterPairs || [],
+            }));
+            setPortfolioProjects(cleanedProjects);
+          }
+          if (parsed.avatar) {
+            const avatarFullUrl = parsed.avatar.startsWith('http') || parsed.avatar.startsWith('data:')
+              ? parsed.avatar
+              : `${process.env.NEXT_PUBLIC_API_URL}${parsed.avatar}`;
+            setFormData(prev => ({ ...prev, avatar: avatarFullUrl }));
+            setAvatarPreview(avatarFullUrl);
+          }
+          sessionStorage.removeItem('proRegistrationData');
+          setProfileLoading(false);
+          return;
+        } catch (err) {
+          console.error('Failed to parse registration data:', err);
+        }
+      }
+
+      // Try to fetch existing profile
+      try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pro-profiles/my-profile`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const profile = await response.json();
+          setExistingProfileId(profile._id);
+          setIsEditMode(true);
+
+          // Prefill form data
+          setSelectedCategory(profile.categories?.[0] || 'interior-design');
+          setSelectedSubcategories(profile.subcategories || []);
+
+          setFormData(prev => ({
+            ...prev,
+            title: profile.title || '',
+            bio: profile.description || profile.bio || '',
+            yearsExperience: profile.yearsExperience?.toString() || '',
+            avatar: profile.avatar || user?.avatar || '',
+            designStyles: profile.designStyles || [],
+            portfolioUrl: profile.pinterestLinks?.[0] || '',
+            licenseNumber: profile.architectLicenseNumber || '',
+            cadastralId: profile.cadastralId || '',
+            availability: profile.availability || [],
+            basePrice: profile.basePrice?.toString() || '',
+            serviceAreas: profile.serviceAreas?.includes('Countrywide') ? [] : (profile.serviceAreas || []),
+            nationwide: profile.serviceAreas?.includes('Countrywide') || false,
+          }));
+
+          // Set avatar preview - prefer data URLs (locally uploaded) over http URLs
+          // Priority: initialRef (data URL) > user context (data URL) > profile avatar > user avatar
+          let avatarUrl: string | null = null;
+
+          // First check if we have a data URL from initial load - these are most reliable
+          if (initialAvatarRef.current && initialAvatarRef.current.startsWith('data:')) {
+            avatarUrl = initialAvatarRef.current;
+          }
+          // Check user context for data URL
+          else if (user?.avatar && user.avatar.startsWith('data:')) {
+            avatarUrl = user.avatar;
+          }
+          // Check localStorage for data URL
+          else {
+            try {
+              const storedUser = localStorage.getItem('user');
+              if (storedUser) {
+                const parsedUser = JSON.parse(storedUser);
+                if (parsedUser.avatar && parsedUser.avatar.startsWith('data:')) {
+                  avatarUrl = parsedUser.avatar;
+                }
+              }
+            } catch (e) {
+              console.error('Failed to parse stored user:', e);
+            }
+          }
+
+          // If no data URL found, fall back to profile/user avatar URLs
+          if (!avatarUrl) {
+            avatarUrl = profile.avatar || user?.avatar || initialAvatarRef.current || null;
+          }
+
+          if (avatarUrl) {
+            const fullUrl = avatarUrl.startsWith('http') || avatarUrl.startsWith('data:')
+              ? avatarUrl
+              : `${process.env.NEXT_PUBLIC_API_URL}${avatarUrl}`;
+            setAvatarPreview(fullUrl);
+            setFormData(prev => ({ ...prev, avatar: fullUrl }));
+          }
+
+          // Load portfolio projects from profile or fetch from portfolio endpoint
+          let loadedProjects: PortfolioProject[] = [];
+
+          // First check if profile has embedded portfolioProjects
+          if (profile.portfolioProjects && profile.portfolioProjects.length > 0) {
+            loadedProjects = profile.portfolioProjects.map((p: any, idx: number) => ({
+              id: p.id || `project-${Date.now()}-${idx}`,
+              title: p.title || '',
+              description: p.description || '',
+              images: p.images || [],
+              location: p.location || '',
+              beforeAfterPairs: p.beforeAfterPairs || [],
+            }));
+          }
+
+          // Also fetch from portfolio endpoint
+          try {
+            const portfolioRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/portfolio/pro/${profile._id}`);
+            if (portfolioRes.ok) {
+              const portfolioData = await portfolioRes.json();
+              if (portfolioData && portfolioData.length > 0) {
+                const fetchedProjects = portfolioData.map((p: any, idx: number) => ({
+                  id: p.id || p._id || `portfolio-${Date.now()}-${idx}`,
+                  title: p.title || '',
+                  description: p.description || '',
+                  images: p.images || [p.imageUrl].filter(Boolean),
+                  location: p.location || '',
+                  beforeAfterPairs: p.beforeAfterPairs || [],
+                }));
+                // Merge with embedded projects, avoiding duplicates by title
+                const existingTitles = new Set(loadedProjects.map(p => p.title));
+                fetchedProjects.forEach((p: PortfolioProject) => {
+                  if (!existingTitles.has(p.title)) {
+                    loadedProjects.push(p);
+                  }
+                });
+              }
+            }
+          } catch (portfolioErr) {
+            console.error('Failed to fetch portfolio:', portfolioErr);
+          }
+
+          if (loadedProjects.length > 0) {
+            setPortfolioProjects(loadedProjects);
+          }
+        } else {
+          // No existing profile - check user categories
+          if (user?.selectedCategories && user.selectedCategories.length > 0) {
+            setSelectedCategory(user.selectedCategories[0]);
+          } else {
+            setSelectedCategory('interior-design');
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch existing profile:', err);
+        setSelectedCategory('interior-design');
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    fetchExistingProfile();
+  }, [user]);
+
+  // Load user avatar only if not already initialized from localStorage
+  // This runs only once when profileLoading becomes false and there's no avatar yet
+  const hasSetAvatarFromUser = useRef(false);
+  useEffect(() => {
+    if (!hasSetAvatarFromUser.current && user?.avatar && !avatarPreview && !profileLoading) {
+      hasSetAvatarFromUser.current = true;
+      const avatarFullUrl = user.avatar.startsWith('http') || user.avatar.startsWith('data:')
         ? user.avatar
         : `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}`;
       setFormData(prev => ({ ...prev, avatar: avatarFullUrl }));
       setAvatarPreview(avatarFullUrl);
     }
-  }, [user]);
+  }, [user?.avatar, avatarPreview, profileLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch location data
   useEffect(() => {
@@ -242,8 +421,7 @@ export default function ProProfileSetupPage() {
         description: p.description,
         images: p.images,
         location: p.location,
-        year: p.year,
-        budget: p.budget,
+        beforeAfterPairs: p.beforeAfterPairs || [],
       }));
 
       const requestBody: Record<string, any> = {
@@ -268,8 +446,15 @@ export default function ProProfileSetupPage() {
         requestBody.designStyles = formData.designStyles;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pro-profiles`, {
-        method: 'POST',
+      // Use PATCH for update, POST for create
+      const url = isEditMode && existingProfileId
+        ? `${process.env.NEXT_PUBLIC_API_URL}/pro-profiles/${existingProfileId}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/pro-profiles`;
+
+      const method = isEditMode && existingProfileId ? 'PATCH' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
@@ -280,18 +465,18 @@ export default function ProProfileSetupPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to create profile');
+        throw new Error(data.message || (isEditMode ? 'Failed to update profile' : 'Failed to create profile'));
       }
 
       router.push('/browse');
     } catch (err: any) {
-      setError(err.message || 'Failed to create profile');
+      setError(err.message || (isEditMode ? 'Failed to update profile' : 'Failed to create profile'));
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (authLoading) {
+  if (authLoading || profileLoading) {
     return (
       <div className="pro-setup-page-premium flex items-center justify-center">
         <div className="relative">
@@ -326,69 +511,52 @@ export default function ProProfileSetupPage() {
   };
 
   return (
-    <div className="pro-setup-page-premium overflow-x-hidden">
-      {/* Animated background orbs */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="pro-setup-orb pro-setup-orb-1" />
-        <div className="pro-setup-orb pro-setup-orb-2" />
-        <div className="pro-setup-orb pro-setup-orb-3" />
-      </div>
+    <div className="min-h-screen overflow-x-hidden bg-[var(--color-bg-base)]">
+      {/* Background - same as browse page */}
+      <AppBackground />
 
-      {/* Premium Header */}
-      <header className="pro-setup-header-premium">
-        <div className="container-custom">
-          <div className="flex items-center justify-between">
-            <Link href="/browse" className="pro-setup-logo group">
-              <span className="pro-setup-logo-text">
-                {locale === 'ka' ? 'ჰომიკო' : 'Homico'}
-              </span>
-              <span className="pro-setup-logo-dot group-hover:scale-125 transition-transform" />
-            </Link>
+      {/* Header - same as browse page */}
+      <Header />
 
-            {user && (
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-[#8B7355] dark:text-[#A89080] hidden sm:block">
-                  {user.name || user.email}
-                </span>
-                <div className="pro-setup-user-avatar">
-                  {avatarPreview ? (
-                    <img src={avatarPreview} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white text-sm font-bold bg-gradient-to-br from-[#D2691E] to-[#B8560E]">
-                      {(user.name || user.email || '?')[0].toUpperCase()}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
-
-      <main className={`relative z-10 pb-28 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-        <div className="container-custom pt-8 md:pt-12">
+      <main className={`relative z-10 pt-20 pb-28 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div className="container-custom pt-4 md:pt-8">
           <div className="max-w-2xl mx-auto">
             {/* Hero Section */}
             <section className="mb-10">
               <div className="pro-setup-badge">
                 <span className="pro-setup-badge-dot" />
                 <span className="pro-setup-badge-text">
-                  {locale === 'ka' ? 'პროფილის შექმნა' : 'Profile Setup'}
+                  {isEditMode
+                    ? (locale === 'ka' ? 'პროფილის რედაქტირება' : 'Edit Profile')
+                    : (locale === 'ka' ? 'პროფილის შექმნა' : 'Profile Setup')
+                  }
                 </span>
               </div>
 
               <h1 className="pro-setup-title">
-                {locale === 'ka' ? (
-                  <>დაასრულე შენი <span className="pro-setup-title-accent">პროფილი</span></>
+                {isEditMode ? (
+                  locale === 'ka' ? (
+                    <>განაახლე შენი <span className="pro-setup-title-accent">პროფილი</span></>
+                  ) : (
+                    <>Update Your <span className="pro-setup-title-accent">Profile</span></>
+                  )
                 ) : (
-                  <>Create Your <span className="pro-setup-title-accent">Profile</span></>
+                  locale === 'ka' ? (
+                    <>დაასრულე შენი <span className="pro-setup-title-accent">პროფილი</span></>
+                  ) : (
+                    <>Create Your <span className="pro-setup-title-accent">Profile</span></>
+                  )
                 )}
               </h1>
 
               <p className="text-base md:text-lg text-[#8B7355] dark:text-[#A89080] max-w-xl leading-relaxed">
-                {locale === 'ka'
-                  ? 'შეავსე პროფილი რომ კლიენტებმა გიპოვონ და დაგიკავშირდნენ.'
-                  : 'Complete your profile so clients can find and contact you.'
+                {isEditMode
+                  ? (locale === 'ka'
+                      ? 'განაახლე შენი ინფორმაცია რომ კლიენტებმა ნახონ უახლესი მონაცემები.'
+                      : 'Update your information so clients see the latest details.')
+                  : (locale === 'ka'
+                      ? 'შეავსე პროფილი რომ კლიენტებმა გიპოვონ და დაგიკავშირდნენ.'
+                      : 'Complete your profile so clients can find and contact you.')
                 }
               </p>
             </section>
@@ -729,6 +897,43 @@ export default function ProProfileSetupPage() {
                     </div>
                   </div>
 
+                  {/* Show existing portfolio projects */}
+                  {portfolioProjects.length > 0 && (
+                    <div className="mb-6">
+                      <label className="pro-setup-label mb-3">
+                        {locale === 'ka' ? 'შენი პროექტები' : 'Your Projects'}
+                        <span className="ml-2 text-xs font-normal text-[#8B7355]">
+                          ({portfolioProjects.length} {locale === 'ka' ? 'პროექტი' : 'project(s)'})
+                        </span>
+                      </label>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {portfolioProjects.flatMap((project, pIdx) =>
+                          project.images.slice(0, 1).map((img, iIdx) => (
+                            <div key={`${pIdx}-${iIdx}`} className="relative aspect-square rounded-xl overflow-hidden group">
+                              <img
+                                src={img.startsWith('http') || img.startsWith('data:') ? img : `${process.env.NEXT_PUBLIC_API_URL}${img}`}
+                                alt={project.title}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                              <div className="absolute bottom-0 left-0 right-0 p-2">
+                                <p className="text-white text-xs font-medium truncate">{project.title}</p>
+                                {project.location && (
+                                  <p className="text-white/70 text-[10px] truncate">{project.location}</p>
+                                )}
+                              </div>
+                              {project.images.length > 1 && (
+                                <div className="absolute top-2 right-2 bg-black/50 px-1.5 py-0.5 rounded text-white text-[10px]">
+                                  +{project.images.length - 1}
+                                </div>
+                              )}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="pro-setup-input-group">
                     <label className="pro-setup-label">
                       {locale === 'ka' ? 'პორტფოლიოს ბმული' : 'Portfolio URL'}
@@ -747,77 +952,14 @@ export default function ProProfileSetupPage() {
                 </section>
               )}
 
-              {/* Section: Work Photos - For craftsmen and home-care */}
+              {/* Section: Portfolio Projects - For craftsmen and home-care */}
               {(selectedCategory === 'craftsmen' || selectedCategory === 'home-care') && (
                 <section className="pro-setup-section">
-                  <div className="pro-setup-section-header">
-                    <div className="pro-setup-step-number">
-                      <span>{getStepNumber('portfolio')}</span>
-                    </div>
-                    <div className="flex-1">
-                      <h2 className="pro-setup-section-title">
-                        {locale === 'ka' ? 'სამუშაოს ფოტოები' : 'Work Photos'}
-                      </h2>
-                      <p className="pro-setup-section-subtitle">
-                        {locale === 'ka' ? 'არასავალდებულო - აჩვენე შენი ნამუშევრები' : 'Optional - showcase your work'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="pro-setup-input-group">
-                    <p className="text-sm text-[#8B7355] dark:text-[#A89080] mb-4">
-                      {locale === 'ka'
-                        ? 'დაამატე ფოტოები შენი შესრულებული სამუშაოებიდან. კლიენტები დაინახავენ მას შენს პროფილზე.'
-                        : 'Add photos from your completed work. Clients will see them on your profile.'}
-                    </p>
-
-                    {/* Work photos display */}
-                    {portfolioProjects.length > 0 ? (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {portfolioProjects.flatMap((project, pIdx) =>
-                          project.images.map((img, iIdx) => (
-                            <div key={`${pIdx}-${iIdx}`} className="relative aspect-square rounded-xl overflow-hidden group">
-                              <img
-                                src={img.startsWith('http') ? img : `${process.env.NEXT_PUBLIC_API_URL}${img}`}
-                                alt=""
-                                className="w-full h-full object-cover"
-                              />
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const newProjects = [...portfolioProjects];
-                                    newProjects[pIdx].images = newProjects[pIdx].images.filter((_, i) => i !== iIdx);
-                                    if (newProjects[pIdx].images.length === 0) {
-                                      newProjects.splice(pIdx, 1);
-                                    }
-                                    setPortfolioProjects(newProjects);
-                                  }}
-                                  className="w-8 h-8 rounded-full bg-red-500/90 flex items-center justify-center text-white hover:bg-red-600 transition-colors"
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                </button>
-                              </div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8 bg-[#F5F0EB] dark:bg-[#2A2520] rounded-xl border-2 border-dashed border-[#D2691E]/30">
-                        <svg className="w-12 h-12 mx-auto text-[#D2691E]/50 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <p className="text-sm text-[#8B7355] dark:text-[#A89080]">
-                          {locale === 'ka' ? 'ჯერ არ გაქვს ფოტოები დამატებული' : 'No photos added yet'}
-                        </p>
-                        <p className="text-xs text-[#8B7355]/60 dark:text-[#A89080]/60 mt-1">
-                          {locale === 'ka' ? 'შეგიძლია დაამატო პროფილის შექმნის შემდეგ' : 'You can add them after creating your profile'}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                  <PortfolioProjectsInput
+                    projects={portfolioProjects}
+                    onChange={setPortfolioProjects}
+                    maxProjects={5}
+                  />
                 </section>
               )}
 
@@ -984,11 +1126,17 @@ export default function ProProfileSetupPage() {
             {isLoading ? (
               <>
                 <span className="pro-setup-btn-spinner" />
-                <span>{locale === 'ka' ? 'იქმნება...' : 'Creating...'}</span>
+                <span>{isEditMode
+                  ? (locale === 'ka' ? 'ინახება...' : 'Saving...')
+                  : (locale === 'ka' ? 'იქმნება...' : 'Creating...')
+                }</span>
               </>
             ) : isFormValid ? (
               <>
-                <span>{locale === 'ka' ? 'პროფილის შექმნა' : 'Create Profile'}</span>
+                <span>{isEditMode
+                  ? (locale === 'ka' ? 'ცვლილებების შენახვა' : 'Save Changes')
+                  : (locale === 'ka' ? 'პროფილის შექმნა' : 'Create Profile')
+                }</span>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
