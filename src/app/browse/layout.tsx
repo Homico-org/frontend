@@ -11,7 +11,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Briefcase, Send, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, Suspense, useEffect, useState } from "react";
 
 // Decorative architectural elements
 function ArchitecturalDecorations() {
@@ -223,7 +223,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
   );
 }
 
-export default function BrowseLayout({ children }: { children: ReactNode }) {
+function BrowseLayoutWithParams({ children }: { children: ReactNode }) {
   const searchParams = useSearchParams();
 
   return (
@@ -233,5 +233,17 @@ export default function BrowseLayout({ children }: { children: ReactNode }) {
     >
       <BrowseLayoutContent>{children}</BrowseLayoutContent>
     </BrowseProvider>
+  );
+}
+
+export default function BrowseLayout({ children }: { children: ReactNode }) {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#D2691E]"></div>
+      </div>
+    }>
+      <BrowseLayoutWithParams>{children}</BrowseLayoutWithParams>
+    </Suspense>
   );
 }
