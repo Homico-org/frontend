@@ -423,19 +423,15 @@ export default function ProProfileSetupPage() {
                 </div>
 
                 {/* Avatar */}
-                {!user?.avatar ? (
+                {!avatarPreview ? (
                   <div
                     className="pro-setup-avatar-upload mb-6"
                     onClick={() => avatarInputRef.current?.click()}
                   >
                     <div className="pro-setup-avatar-preview">
-                      {avatarPreview ? (
-                        <img src={avatarPreview} alt="" />
-                      ) : (
-                        <svg className="w-8 h-8 pro-setup-avatar-preview-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                      )}
+                      <svg className="w-8 h-8 pro-setup-avatar-preview-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
                       <button type="button" className="pro-setup-avatar-add-btn">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -456,7 +452,7 @@ export default function ProProfileSetupPage() {
                   </div>
                 ) : (
                   <div className="pro-setup-avatar-existing mb-6">
-                    <img src={user.avatar} alt="" className="pro-setup-avatar-existing-img" />
+                    <img src={avatarPreview} alt="" className="pro-setup-avatar-existing-img" />
                     <div className="pro-setup-avatar-existing-info">
                       <h4>{locale === 'ka' ? 'პროფილის სურათი' : 'Profile Photo'}</h4>
                       <span className="pro-setup-avatar-existing-badge">
