@@ -831,6 +831,7 @@ function RegisterContent() {
             subcategories: formData.selectedSubcategories,
             portfolioProjects:
               portfolioProjects.length > 0 ? portfolioProjects : undefined,
+            avatar: avatarUrl || data.user.avatar || undefined,
           })
         );
         router.push("/pro/profile-setup");
@@ -1525,6 +1526,7 @@ function RegisterContent() {
                   }
                   onFocus={() => setFocusedField("firstName")}
                   onBlur={() => setFocusedField(null)}
+                  placeholder={locale === "ka" ? "გიორგი" : "John"}
                   className="w-full px-4 py-3 rounded-xl text-base transition-all duration-200 outline-none"
                   style={{
                     backgroundColor: "var(--color-bg-secondary)",
@@ -1572,6 +1574,7 @@ function RegisterContent() {
                   }
                   onFocus={() => setFocusedField("lastName")}
                   onBlur={() => setFocusedField(null)}
+                  placeholder={locale === "ka" ? "გელაშვილი" : "Doe"}
                   className="w-full px-4 py-3 rounded-xl text-base transition-all duration-200 outline-none"
                   style={{
                     backgroundColor: "var(--color-bg-secondary)",

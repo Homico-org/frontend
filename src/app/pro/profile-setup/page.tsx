@@ -100,6 +100,14 @@ export default function ProProfileSetupPage() {
           }));
           setPortfolioProjects(cleanedProjects);
         }
+        // Load avatar from registration
+        if (parsed.avatar) {
+          const avatarFullUrl = parsed.avatar.startsWith('http')
+            ? parsed.avatar
+            : `${process.env.NEXT_PUBLIC_API_URL}${parsed.avatar}`;
+          setFormData(prev => ({ ...prev, avatar: avatarFullUrl }));
+          setAvatarPreview(avatarFullUrl);
+        }
         sessionStorage.removeItem('proRegistrationData');
       } catch (err) {
         console.error('Failed to parse registration data:', err);
@@ -111,9 +119,13 @@ export default function ProProfileSetupPage() {
       setSelectedCategory('interior-design');
     }
 
-    if (user?.avatar) {
-      setFormData(prev => ({ ...prev, avatar: user.avatar || '' }));
-      setAvatarPreview(user.avatar);
+    // Only load user avatar if we didn't already get one from sessionStorage
+    if (user?.avatar && !avatarPreview) {
+      const avatarFullUrl = user.avatar.startsWith('http')
+        ? user.avatar
+        : `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}`;
+      setFormData(prev => ({ ...prev, avatar: avatarFullUrl }));
+      setAvatarPreview(avatarFullUrl);
     }
   }, [user]);
 
@@ -704,38 +716,114 @@ export default function ProProfileSetupPage() {
                 </div>
               </section>
 
-              {/* Section: Portfolio URL */}
-              <section className="pro-setup-section">
-                <div className="pro-setup-section-header">
-                  <div className="pro-setup-step-number">
-                    <span>{getStepNumber('portfolio')}</span>
+              {/* Section: Portfolio - Role-appropriate */}
+              {(selectedCategory === 'interior-design' || selectedCategory === 'architecture') && (
+                <section className="pro-setup-section">
+                  <div className="pro-setup-section-header">
+                    <div className="pro-setup-step-number">
+                      <span>{getStepNumber('portfolio')}</span>
+                    </div>
+                    <div className="flex-1">
+                      <h2 className="pro-setup-section-title">
+                        {locale === 'ka' ? 'პორტფოლიო' : 'Portfolio'}
+                      </h2>
+                      <p className="pro-setup-section-subtitle">
+                        {locale === 'ka' ? 'არასავალდებულო' : 'Optional'}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h2 className="pro-setup-section-title">
-                      {locale === 'ka' ? 'პორტფოლიო' : 'Portfolio'}
-                    </h2>
-                    <p className="pro-setup-section-subtitle">
-                      {locale === 'ka' ? 'არასავალდებულო' : 'Optional'}
+
+                  <div className="pro-setup-input-group">
+                    <label className="pro-setup-label">
+                      {locale === 'ka' ? 'პორტფოლიოს ბმული' : 'Portfolio URL'}
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.portfolioUrl}
+                      onChange={(e) => setFormData(prev => ({ ...prev, portfolioUrl: e.target.value }))}
+                      className="pro-setup-input-premium"
+                      placeholder="https://behance.net/yourprofile"
+                    />
+                    <p className="text-xs text-[#8B7355] dark:text-[#A89080] mt-2">
+                      {locale === 'ka' ? 'Behance, Dribbble, Pinterest ან სხვა პლატფორმა' : 'Behance, Dribbble, Pinterest or other platform'}
                     </p>
                   </div>
-                </div>
+                </section>
+              )}
 
-                <div className="pro-setup-input-group">
-                  <label className="pro-setup-label">
-                    {locale === 'ka' ? 'პორტფოლიოს ბმული' : 'Portfolio URL'}
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.portfolioUrl}
-                    onChange={(e) => setFormData(prev => ({ ...prev, portfolioUrl: e.target.value }))}
-                    className="pro-setup-input-premium"
-                    placeholder="https://behance.net/yourprofile"
-                  />
-                  <p className="text-xs text-[#8B7355] dark:text-[#A89080] mt-2">
-                    {locale === 'ka' ? 'Behance, Dribbble, Pinterest ან სხვა პლატფორმა' : 'Behance, Dribbble, Pinterest or other platform'}
-                  </p>
-                </div>
-              </section>
+              {/* Section: Work Photos - For craftsmen and home-care */}
+              {(selectedCategory === 'craftsmen' || selectedCategory === 'home-care') && (
+                <section className="pro-setup-section">
+                  <div className="pro-setup-section-header">
+                    <div className="pro-setup-step-number">
+                      <span>{getStepNumber('portfolio')}</span>
+                    </div>
+                    <div className="flex-1">
+                      <h2 className="pro-setup-section-title">
+                        {locale === 'ka' ? 'სამუშაოს ფოტოები' : 'Work Photos'}
+                      </h2>
+                      <p className="pro-setup-section-subtitle">
+                        {locale === 'ka' ? 'არასავალდებულო - აჩვენე შენი ნამუშევრები' : 'Optional - showcase your work'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="pro-setup-input-group">
+                    <p className="text-sm text-[#8B7355] dark:text-[#A89080] mb-4">
+                      {locale === 'ka'
+                        ? 'დაამატე ფოტოები შენი შესრულებული სამუშაოებიდან. კლიენტები დაინახავენ მას შენს პროფილზე.'
+                        : 'Add photos from your completed work. Clients will see them on your profile.'}
+                    </p>
+
+                    {/* Work photos display */}
+                    {portfolioProjects.length > 0 ? (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {portfolioProjects.flatMap((project, pIdx) =>
+                          project.images.map((img, iIdx) => (
+                            <div key={`${pIdx}-${iIdx}`} className="relative aspect-square rounded-xl overflow-hidden group">
+                              <img
+                                src={img.startsWith('http') ? img : `${process.env.NEXT_PUBLIC_API_URL}${img}`}
+                                alt=""
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const newProjects = [...portfolioProjects];
+                                    newProjects[pIdx].images = newProjects[pIdx].images.filter((_, i) => i !== iIdx);
+                                    if (newProjects[pIdx].images.length === 0) {
+                                      newProjects.splice(pIdx, 1);
+                                    }
+                                    setPortfolioProjects(newProjects);
+                                  }}
+                                  className="w-8 h-8 rounded-full bg-red-500/90 flex items-center justify-center text-white hover:bg-red-600 transition-colors"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 bg-[#F5F0EB] dark:bg-[#2A2520] rounded-xl border-2 border-dashed border-[#D2691E]/30">
+                        <svg className="w-12 h-12 mx-auto text-[#D2691E]/50 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <p className="text-sm text-[#8B7355] dark:text-[#A89080]">
+                          {locale === 'ka' ? 'ჯერ არ გაქვს ფოტოები დამატებული' : 'No photos added yet'}
+                        </p>
+                        <p className="text-xs text-[#8B7355]/60 dark:text-[#A89080]/60 mt-1">
+                          {locale === 'ka' ? 'შეგიძლია დაამატო პროფილის შექმნის შემდეგ' : 'You can add them after creating your profile'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
 
               {/* Section: Service Areas */}
               <section className={`pro-setup-section ${validation.serviceAreas ? 'completed' : ''}`}>
