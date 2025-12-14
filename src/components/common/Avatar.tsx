@@ -74,10 +74,16 @@ export default function Avatar({
     return colors[Math.abs(hash) % colors.length];
   };
 
+  // Handle relative URLs by prefixing with API URL
+  const getFullUrl = (url: string) => {
+    if (url.startsWith('http')) return url;
+    return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
+  };
+
   if (src && !imageError) {
     return (
       <img
-        src={src}
+        src={getFullUrl(src)}
         alt={name}
         onClick={handleClick}
         onError={() => setImageError(true)}
