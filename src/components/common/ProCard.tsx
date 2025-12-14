@@ -38,7 +38,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
 
   const isTopRated = profile.avgRating >= 4.8 && profile.totalReviews >= 5;
   const avatarUrl = profile.avatar || proUser?.avatar;
-  const displayName = proUser?.name || 'Professional';
+  const displayName = proUser?.name || profile.title || 'Professional';
   const bioText = profile.bio || profile.description || '';
 
   // Default card variant - Hero image with gradient blur and overlaid stats
