@@ -37,7 +37,11 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
   };
 
   const isTopRated = profile.avgRating >= 4.8 && profile.totalReviews >= 5;
-  const avatarUrl = profile.avatar || proUser?.avatar;
+  const rawAvatarUrl = profile.avatar || proUser?.avatar;
+  // Ensure avatar URL is absolute
+  const avatarUrl = rawAvatarUrl
+    ? (rawAvatarUrl.startsWith('http') ? rawAvatarUrl : `${process.env.NEXT_PUBLIC_API_URL}${rawAvatarUrl}`)
+    : null;
   const displayName = proUser?.name || profile.title || 'Professional';
   const bioText = profile.bio || profile.description || '';
 
