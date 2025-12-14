@@ -41,7 +41,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 // Delete reasons for Georgian users
 const DELETE_REASONS = [
@@ -126,7 +126,7 @@ const isJobExpired = (job: Job): boolean => {
   return deadline < now;
 };
 
-export default function MyJobsPage() {
+function MyJobsPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { locale: language } = useLanguage();
   const toast = useToast();
@@ -1372,5 +1372,17 @@ export default function MyJobsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MyJobsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#D2691E]"></div>
+      </div>
+    }>
+      <MyJobsPageContent />
+    </Suspense>
   );
 }

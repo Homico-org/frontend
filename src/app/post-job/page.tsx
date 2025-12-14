@@ -34,7 +34,7 @@ import {
   X
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 
 interface Reference {
   type: 'link' | 'image' | 'pinterest' | 'instagram';
@@ -107,7 +107,7 @@ const BudgetIcon = ({ type, className = '' }: { type: string; className?: string
   }
 };
 
-export default function PostJobPage() {
+function PostJobPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { openLoginModal } = useAuthModal();
   const { locale } = useLanguage();
@@ -1018,5 +1018,17 @@ export default function PostJobPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PostJobPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#D2691E]"></div>
+      </div>
+    }>
+      <PostJobPageContent />
+    </Suspense>
   );
 }
