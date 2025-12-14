@@ -55,11 +55,17 @@ export default function LoginModal() {
     setError('');
     setIsLoading(true);
 
+    // Auto-add +995 prefix for Georgian phone numbers
+    let identifier = formData.identifier.trim();
+    if (/^\d{9}$/.test(identifier) && identifier.startsWith('5')) {
+      identifier = `+995${identifier}`;
+    }
+
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, identifier }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Login failed');
@@ -156,7 +162,7 @@ export default function LoginModal() {
                     onFocus={() => setFocusedField('identifier')}
                     onBlur={() => setFocusedField(null)}
                     className={`auth-input-premium ${focusedField === 'identifier' ? 'focused' : ''}`}
-                    placeholder="+995 555 123 456"
+                    placeholder="555 555 55 55"
                     style={{
                       borderColor: focusedField === 'identifier' ? '#D2691E' : undefined,
                       boxShadow: focusedField === 'identifier' ? '0 0 0 4px rgba(210, 105, 30, 0.12), 0 4px 12px -4px rgba(210, 105, 30, 0.15)' : undefined,
