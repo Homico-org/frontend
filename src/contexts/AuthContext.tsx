@@ -13,6 +13,7 @@ interface User {
   city?: string;
   phone?: string;
   selectedCategories?: string[];
+  selectedSubcategories?: string[];
   accountType?: 'individual' | 'organization';
   companyName?: string;
 }
@@ -72,6 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         city: userData.city,
         phone: userData.phone,
         selectedCategories: userData.selectedCategories,
+        selectedSubcategories: userData.selectedSubcategories,
         accountType: userData.accountType,
         companyName: userData.companyName
       };

@@ -538,7 +538,7 @@ export default function ProfessionalDetailPage() {
                     </div>
 
                     {/* Category Tags */}
-                    <div className="flex flex-wrap justify-center gap-1.5 mb-5">
+                    <div className="flex flex-wrap justify-center gap-1.5 mb-3">
                       {profile.categories.slice(0, 3).map((cat, i) => (
                         <span
                           key={i}
@@ -548,6 +548,30 @@ export default function ProfessionalDetailPage() {
                         </span>
                       ))}
                     </div>
+
+                    {/* Subcategories / Services */}
+                    {profile.subcategories && profile.subcategories.length > 0 && (
+                      <div className="mb-5">
+                        <p className="text-[10px] text-[var(--color-text-tertiary)] uppercase tracking-wider text-center mb-2">
+                          {locale === 'ka' ? 'სერვისები' : 'Services'}
+                        </p>
+                        <div className="flex flex-wrap justify-center gap-1.5">
+                          {profile.subcategories.map((sub, i) => {
+                            // Handle custom subcategories (prefixed with 'custom:')
+                            const isCustom = sub.startsWith('custom:');
+                            const displayName = isCustom ? sub.replace('custom:', '') : t(`subcategories.${sub}`) || sub.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                            return (
+                              <span
+                                key={i}
+                                className="px-2 py-0.5 text-[9px] font-medium rounded-md bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)]"
+                              >
+                                {displayName}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Price - Luxury Editorial Style */}
                     {profile.basePrice > 0 && (

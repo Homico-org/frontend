@@ -38,6 +38,7 @@ export interface User {
   phone?: string;
   city?: string;
   selectedCategories?: string[];
+  selectedSubcategories?: string[];
   accountType?: 'individual' | 'organization';
   companyName?: string;
   whatsapp?: string;

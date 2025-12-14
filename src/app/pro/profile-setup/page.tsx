@@ -430,6 +430,7 @@ export default function ProProfileSetupPage() {
         bio: formData.bio,
         description: formData.bio,
         categories: [selectedCategory || 'interior-design'],
+        subcategories: selectedSubcategories.length > 0 ? selectedSubcategories : (user?.selectedSubcategories || []),
         yearsExperience: parseInt(formData.yearsExperience) || 0,
         avatar: formData.avatar || user?.avatar,
         pricingModel,
