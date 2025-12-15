@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, ReactNode, useState } from "react";
+import { createContext, useContext, ReactNode, useState, useCallback } from "react";
 
 interface BrowseContextType {
   selectedCategory: string | null;
@@ -11,6 +11,12 @@ interface BrowseContextType {
   setMinRating: (rating: number) => void;
   selectedBudget: string;
   setSelectedBudget: (budget: string) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  sortBy: string;
+  setSortBy: (sort: string) => void;
+  clearAllFilters: () => void;
+  hasActiveFilters: boolean;
 }
 
 const BrowseContext = createContext<BrowseContextType | null>(null);
@@ -38,6 +44,23 @@ export function BrowseProvider({
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(initialSubcategory);
   const [minRating, setMinRating] = useState<number>(0);
   const [selectedBudget, setSelectedBudget] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [sortBy, setSortBy] = useState<string>('recommended');
+
+  const clearAllFilters = useCallback(() => {
+    setSelectedCategory(null);
+    setSelectedSubcategory(null);
+    setMinRating(0);
+    setSelectedBudget('all');
+    setSearchQuery('');
+    setSortBy('recommended');
+  }, []);
+
+  const hasActiveFilters = selectedCategory !== null ||
+    selectedSubcategory !== null ||
+    minRating > 0 ||
+    selectedBudget !== 'all' ||
+    searchQuery !== '';
 
   return (
     <BrowseContext.Provider
@@ -50,6 +73,12 @@ export function BrowseProvider({
         setMinRating,
         selectedBudget,
         setSelectedBudget,
+        searchQuery,
+        setSearchQuery,
+        sortBy,
+        setSortBy,
+        clearAllFilters,
+        hasActiveFilters,
       }}
     >
       {children}

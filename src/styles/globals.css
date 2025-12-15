@@ -1376,29 +1376,19 @@ img:not(.loading) {
 /* Content switcher with morphing indicator */
 .switcher-container {
   @apply relative p-1.5 rounded-2xl;
-  background: linear-gradient(
-    135deg,
-    rgba(210, 105, 30, 0.08) 0%,
-    rgba(205, 133, 63, 0.04) 100%
-  );
+  background: rgba(210, 105, 30, 0.06);
   border: 1px solid rgba(210, 105, 30, 0.12);
 }
 
 .dark .switcher-container {
-  background: linear-gradient(
-    135deg,
-    rgba(205, 133, 63, 0.1) 0%,
-    rgba(205, 133, 63, 0.05) 100%
-  );
+  background: rgba(205, 133, 63, 0.08);
   border: 1px solid rgba(205, 133, 63, 0.15);
 }
 
 .switcher-indicator {
   @apply absolute rounded-xl;
-  background: linear-gradient(135deg, #D2691E 0%, #B8560E 100%);
-  box-shadow:
-    0 4px 16px -2px rgba(210, 105, 30, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  background-color: #D2691E;
+  box-shadow: 0 4px 16px -2px rgba(210, 105, 30, 0.35);
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -1611,6 +1601,517 @@ img:not(.loading) {
   font-family: 'Instrument Serif', Georgia, serif;
   font-style: italic;
   color: var(--color-text-secondary);
+}
+
+/* Browse page action buttons */
+.browse-action-btn {
+  @apply inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl text-sm font-medium;
+  @apply transition-all duration-300 ease-out;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+.browse-action-btn-primary {
+  background-color: #D2691E;
+  color: white;
+  box-shadow: 0 2px 8px rgba(210, 105, 30, 0.3);
+  @apply focus:ring-[#D2691E]/50;
+}
+
+.browse-action-btn-primary:hover {
+  background-color: #C25F1A;
+  box-shadow: 0 4px 12px rgba(210, 105, 30, 0.35);
+  transform: translateY(-1px);
+}
+
+.browse-action-btn-secondary {
+  background: rgba(210, 105, 30, 0.08);
+  color: #B8560E;
+  border: 1px solid rgba(210, 105, 30, 0.2);
+  @apply focus:ring-[#D2691E]/30;
+}
+
+.dark .browse-action-btn-secondary {
+  background: rgba(205, 133, 63, 0.12);
+  color: #CD853F;
+  border-color: rgba(205, 133, 63, 0.25);
+}
+
+.browse-action-btn-secondary:hover {
+  background: rgba(210, 105, 30, 0.15);
+  border-color: rgba(210, 105, 30, 0.35);
+  transform: translateY(-1px);
+}
+
+.dark .browse-action-btn-secondary:hover {
+  background: rgba(205, 133, 63, 0.2);
+  border-color: rgba(205, 133, 63, 0.4);
+}
+
+/* Compact browse buttons */
+.browse-btn-compact {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium;
+  @apply transition-all duration-200 ease-out;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-1;
+}
+
+.browse-btn-primary {
+  background-color: #D2691E;
+  color: white;
+  box-shadow: 0 1px 4px rgba(210, 105, 30, 0.25);
+  @apply focus:ring-[#D2691E]/50;
+}
+
+.browse-btn-primary:hover {
+  background-color: #C25F1A;
+  box-shadow: 0 2px 6px rgba(210, 105, 30, 0.3);
+}
+
+.browse-btn-secondary {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-subtle);
+  @apply focus:ring-[var(--color-border)];
+}
+
+.browse-btn-secondary:hover {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+
+/* Browse scroll container */
+.browse-scroll-container {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+.browse-scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.browse-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.browse-scroll-container::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 3px;
+}
+
+.browse-scroll-container::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-border-strong);
+}
+
+/* Mobile drawer slide-in animation */
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.25s ease-out forwards;
+}
+
+/* ============================================
+   FILTER SIDEBAR - Modern Soft Design
+   ============================================ */
+
+.filter-sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.filter-sidebar-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.filter-sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.filter-sidebar-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 2px;
+}
+
+/* Search Input */
+.filter-search-default {
+  background: var(--color-bg-secondary);
+  border: 1.5px solid var(--color-border-subtle);
+  border-radius: 10px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.filter-search-focused {
+  background: var(--color-bg-elevated);
+  border: 1.5px solid #D2691E;
+  border-radius: 10px;
+  box-shadow: 0 0 0 3px rgba(210, 105, 30, 0.08);
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Section Labels */
+.filter-section-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-tertiary);
+}
+
+/* Active Badge */
+.filter-active-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  background: #D2691E;
+  border-radius: 9px;
+}
+
+/* Clear Button */
+.filter-clear-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+  background: transparent;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.filter-clear-btn:hover {
+  color: #D2691E;
+  background: rgba(210, 105, 30, 0.08);
+}
+
+/* Sort Options */
+.filter-sort-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 6px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-secondary);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filter-sort-option:hover {
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-border-subtle);
+}
+
+.filter-sort-active {
+  color: #D2691E;
+  background: rgba(210, 105, 30, 0.08);
+  border-color: rgba(210, 105, 30, 0.2);
+}
+
+.filter-sort-active:hover {
+  background: rgba(210, 105, 30, 0.12);
+  border-color: rgba(210, 105, 30, 0.25);
+}
+
+/* Category Button */
+.filter-category-wrapper {
+  overflow: hidden;
+}
+
+.filter-category-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-secondary);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.filter-category-btn:hover {
+  background: var(--color-bg-tertiary);
+}
+
+.filter-category-active {
+  color: #D2691E;
+  background: rgba(210, 105, 30, 0.08);
+}
+
+.filter-category-active:hover {
+  background: rgba(210, 105, 30, 0.12);
+}
+
+/* Category Icon */
+.filter-category-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--color-text-tertiary);
+  background: var(--color-bg-tertiary);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.filter-category-icon-active {
+  color: #D2691E;
+  background: rgba(210, 105, 30, 0.15);
+}
+
+/* Subcategories */
+.filter-subcategories {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: all 0.25s ease-out;
+}
+
+.filter-subcategories-open {
+  max-height: 500px;
+  opacity: 1;
+  padding-left: 12px;
+}
+
+.filter-subcategory-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  background: transparent;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.filter-subcategory-btn:hover {
+  color: var(--color-text-secondary);
+  background: var(--color-bg-tertiary);
+}
+
+.filter-subcategory-active {
+  color: #D2691E;
+  background: rgba(210, 105, 30, 0.06);
+}
+
+.filter-subcategory-active:hover {
+  background: rgba(210, 105, 30, 0.1);
+}
+
+.filter-subcategory-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--color-border);
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.filter-subcategory-dot-active {
+  width: 8px;
+  height: 8px;
+  background: #D2691E;
+  box-shadow: 0 0 0 3px rgba(210, 105, 30, 0.15);
+}
+
+/* Rating Buttons */
+.filter-rating-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+  background: var(--color-bg-secondary);
+  border-radius: 16px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.filter-rating-btn:hover {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.filter-rating-active {
+  color: #d97706;
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.filter-rating-active:hover {
+  background: rgba(245, 158, 11, 0.2);
+}
+
+/* Active Filters Section */
+.filter-active-section {
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/* Filter Tags */
+.filter-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px 5px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 16px;
+  transition: all 0.15s ease;
+}
+
+.filter-tag-category {
+  color: #D2691E;
+  background: rgba(210, 105, 30, 0.1);
+}
+
+.filter-tag-sub {
+  color: var(--color-text-secondary);
+  background: var(--color-bg-tertiary);
+}
+
+.filter-tag-rating {
+  color: #d97706;
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.filter-tag-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 50%;
+  opacity: 0.6;
+  transition: all 0.15s ease;
+}
+
+.filter-tag-remove:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.dark .filter-tag-remove:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Browse page divider */
+.browse-divider {
+  @apply w-full h-px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(210, 105, 30, 0.15) 20%,
+    rgba(210, 105, 30, 0.2) 50%,
+    rgba(210, 105, 30, 0.15) 80%,
+    transparent 100%
+  );
+}
+
+.dark .browse-divider {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(205, 133, 63, 0.2) 20%,
+    rgba(205, 133, 63, 0.25) 50%,
+    rgba(205, 133, 63, 0.2) 80%,
+    transparent 100%
+  );
+}
+
+/* Browse page subtle dot pattern */
+.browse-dot-pattern {
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    rgba(210, 105, 30, 0.04) 1px,
+    transparent 0
+  );
+  background-size: 40px 40px;
+  opacity: 0.5;
+}
+
+.dark .browse-dot-pattern {
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    rgba(205, 133, 63, 0.06) 1px,
+    transparent 0
+  );
+}
+
+/* Browse page title animations */
+@keyframes title-reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-title-reveal {
+  animation: title-reveal 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Browse page stagger animation */
+@keyframes stagger-in {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-stagger {
+  animation: stagger-in 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Soft pulse animation */
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 3s ease-in-out infinite;
 }
 
 /* Shimmer loading effect for cards */
@@ -6269,6 +6770,44 @@ img:not(.loading) {
 .pro-card-premium .card-tag:hover {
   background: linear-gradient(135deg, rgba(210, 105, 30, 0.2) 0%, rgba(205, 133, 63, 0.15) 100%);
   transform: translateY(-1px);
+}
+
+/* ============ PRO CARD MODERN - Compact Editorial Design ============ */
+
+.pro-card-modern {
+  position: relative;
+  display: block;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 2px 8px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pro-card-modern:hover {
+  border-color: rgba(210, 105, 30, 0.25);
+  box-shadow:
+    0 4px 12px rgba(210, 105, 30, 0.08),
+    0 8px 24px rgba(139, 69, 19, 0.06);
+  transform: translateY(-2px);
+}
+
+.dark .pro-card-modern {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border-subtle);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.dark .pro-card-modern:hover {
+  border-color: rgba(205, 133, 63, 0.3);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.25),
+    0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 /* ============ FEED CARD - Portfolio/Work Cards ============ */

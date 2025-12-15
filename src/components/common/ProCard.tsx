@@ -3,15 +3,7 @@
 import Link from 'next/link';
 import { ProProfile, ProStatus } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
-import StatusBadge from './StatusBadge';
-import LikeButton from './LikeButton';
-import Card, {
-  CardImage,
-  CardContent,
-  CardBadge,
-  CardTitle,
-  CardTags,
-} from './Card';
+import { Heart, Star, Clock, MapPin, CheckCircle2, Briefcase } from 'lucide-react';
 
 interface ProCardProps {
   profile: ProProfile;
@@ -21,7 +13,7 @@ interface ProCardProps {
 }
 
 export default function ProCard({ profile, variant = 'default', onLike, showLikeButton = true }: ProCardProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const proUser = typeof profile.userId === 'object' ? profile.userId : null;
   const status = profile.status || (profile.isAvailable ? ProStatus.ACTIVE : ProStatus.AWAY);
 
@@ -40,339 +32,280 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
   const isPremium = profile.isPremium || false;
   const premiumTier = profile.premiumTier || 'none';
 
-  // Premium badge component
-  const PremiumBadge = ({ size = 'default' }: { size?: 'sm' | 'default' }) => {
-    if (!isPremium) return null;
-
-    const tierConfig = {
-      basic: { label: 'Premium', gradient: 'from-amber-500 to-orange-500', icon: '⭐' },
-      pro: { label: 'Pro', gradient: 'from-purple-500 to-indigo-500', icon: '💎' },
-      elite: { label: 'Elite', gradient: 'from-amber-400 via-yellow-300 to-amber-500', icon: '👑' },
-      none: { label: 'Premium', gradient: 'from-amber-500 to-orange-500', icon: '⭐' },
-    };
-
-    const config = tierConfig[premiumTier as keyof typeof tierConfig] || tierConfig.basic;
-
-    return (
-      <div
-        className={`
-          inline-flex items-center gap-1
-          ${size === 'sm' ? 'px-1.5 py-0.5 text-[9px]' : 'px-2 py-0.5 text-[10px]'}
-          rounded-full font-bold uppercase tracking-wide
-          bg-gradient-to-r ${config.gradient}
-          text-white shadow-lg shadow-amber-500/30
-          animate-pulse-subtle
-        `}
-      >
-        <span>{config.icon}</span>
-        <span>{config.label}</span>
-      </div>
-    );
-  };
-
-  // Avatar priority: prefer user's avatar (more up-to-date), then profile avatar
-  // Skip profile.avatar if it's a broken /uploads/ URL (ephemeral storage)
+  // Avatar priority
   const isProfileAvatarBroken = profile.avatar?.includes('/uploads/');
   const rawAvatarUrl = (!isProfileAvatarBroken && profile.avatar) || proUser?.avatar;
-
-  // Ensure avatar URL is absolute (handle http, https, data: URLs, or relative paths)
   const avatarUrl = rawAvatarUrl
     ? (rawAvatarUrl.startsWith('http') || rawAvatarUrl.startsWith('data:')
         ? rawAvatarUrl
         : `${process.env.NEXT_PUBLIC_API_URL}${rawAvatarUrl}`)
     : null;
+
   const displayName = proUser?.name || profile.title || 'Professional';
   const bioText = profile.bio || profile.description || '';
+  const completedJobs = (profile.completedJobs || 0) + (profile.externalCompletedJobs || 0);
 
-  // Default card variant - Hero image with gradient blur and overlaid stats
-  if (variant === 'default') {
+  // Status config
+  const statusConfig = {
+    [ProStatus.ACTIVE]: {
+      label: locale === 'ka' ? 'თავისუფალი' : 'Available',
+      color: 'bg-emerald-500',
+      ring: 'ring-emerald-500/20'
+    },
+    [ProStatus.BUSY]: {
+      label: locale === 'ka' ? 'დაკავებული' : 'Busy',
+      color: 'bg-amber-500',
+      ring: 'ring-amber-500/20'
+    },
+    [ProStatus.AWAY]: {
+      label: locale === 'ka' ? 'არ არის' : 'Away',
+      color: 'bg-gray-400',
+      ring: 'ring-gray-400/20'
+    },
+  };
+
+  const currentStatus = statusConfig[status] || statusConfig[ProStatus.AWAY];
+
+  // Compact card - the new default for browse grid
+  if (variant === 'compact' || variant === 'default') {
     return (
-      <Card href={`/professionals/${profile._id}`} variant="default" hover="lift" className="group touch-manipulation pro-card-premium">
-        {/* Hero Image Section with Gradient Blur */}
-        <CardImage aspectRatio="4/3" overlay="gradient">
-          {avatarUrl ? (
-            <img
-              src={avatarUrl}
-              alt={displayName}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-            />
-          ) : (
-            <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#D2691E]/20 to-[#CD853F]/30" />
-          )}
-
-          {/* Blur overlay at the very bottom for extra softness */}
-          <div
-            className="absolute bottom-0 left-0 right-0 h-1/3 z-[1]"
-            style={{
-              backdropFilter: 'blur(2px)',
-              WebkitBackdropFilter: 'blur(2px)',
-              maskImage: 'linear-gradient(to top, black 0%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to top, black 0%, transparent 100%)',
-            }}
-          />
-
-          {/* Status badge and Premium badge - top right */}
-          <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
-            <PremiumBadge />
-            <StatusBadge status={status} variant="minimal" />
-          </div>
-
-          {/* Like button - top left */}
-          {showLikeButton && (
-            <div className="absolute top-3 left-3 z-20">
-              <LikeButton
-                isLiked={profile.isLiked || false}
-                likeCount={profile.likeCount || 0}
-                onToggle={onLike || (() => {})}
-                variant="minimal"
-                size="sm"
-                showCount={false}
-              />
-            </div>
-          )}
-
-          {/* Stats overlay on image - bottom */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 z-20">
-            {/* Stats row */}
-            <div className="flex items-center gap-4 mb-3">
-              {/* Rating */}
-              <div className="flex items-center gap-1.5">
-                <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-                <span className="text-sm font-semibold text-white">
-                  {profile.avgRating > 0 ? profile.avgRating.toFixed(1) : '—'}
-                </span>
-                {profile.totalReviews > 0 && (
-                  <span className="text-xs text-white/60">({profile.totalReviews})</span>
-                )}
-              </div>
-
-              {/* Experience */}
-              <div className="flex items-center gap-1.5">
-                <svg className="w-4 h-4 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="text-sm font-medium text-white">
-                  {profile.yearsExperience || 0}+ წელი
-                </span>
-              </div>
-
-              {/* Top rated badge */}
-              {isTopRated && (
-                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 backdrop-blur-sm">
-                  <svg className="w-3 h-3 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                  <span className="text-[10px] font-bold text-amber-300 uppercase tracking-wide">Top</span>
+      <Link
+        href={`/professionals/${profile._id}`}
+        className="pro-card-modern group"
+      >
+        {/* Top Section - Avatar and Quick Info */}
+        <div className="flex gap-3 p-3">
+          {/* Avatar */}
+          <div className="relative flex-shrink-0">
+            <div className="w-14 h-14 rounded-xl overflow-hidden ring-2 ring-[var(--color-border-subtle)] group-hover:ring-[#D2691E]/30 transition-all duration-300">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={displayName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-[#D2691E]/20 to-[#CD853F]/30 flex items-center justify-center">
+                  <span className="text-lg font-bold text-[#D2691E]">{displayName.charAt(0)}</span>
                 </div>
               )}
             </div>
-
-            {/* Name */}
-            <h3 className="font-bold text-lg text-white truncate leading-tight mb-1 group-hover:text-[#FFDAB9] transition-colors">
-              {displayName}
-            </h3>
-
-            {/* Category - Larger and more prominent */}
-            <p className="text-sm font-medium text-white/80 truncate">
-              {profile.title || getCategoryLabel(profile.categories[0])}
-            </p>
-          </div>
-        </CardImage>
-
-        {/* Content Section - Categories and Bio */}
-        <CardContent spacing="normal">
-          {/* Categories - Using CardTags */}
-          <CardTags
-            tags={profile.categories.slice(0, 3).map(cat => getCategoryLabel(cat))}
-            max={3}
-            className="mb-3"
-          />
-
-          {/* Bio/Description */}
-          {bioText && (
-            <p className="text-sm leading-relaxed line-clamp-2 text-[var(--color-text-secondary)]">
-              {bioText}
-            </p>
-          )}
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Compact variant - Clean grid card with hero image
-  if (variant === 'compact') {
-    return (
-      <Card href={`/professionals/${profile._id}`} variant="default" hover="lift" className="group h-full pro-card-premium">
-        {/* Hero Image with gradient blur */}
-        <CardImage aspectRatio="4/3" overlay="gradient">
-          {avatarUrl ? (
-            <img
-              src={avatarUrl}
-              alt={displayName}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-            />
-          ) : (
-            <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#D2691E]/20 to-[#CD853F]/30" />
-          )}
-
-          {/* Status badge and Premium badge */}
-          <div className="absolute top-2.5 right-2.5 z-20 flex items-center gap-1.5">
-            <PremiumBadge size="sm" />
-            <StatusBadge status={status} variant="minimal" size="sm" />
+            {/* Status dot */}
+            <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full ${currentStatus.color} ring-2 ring-[var(--color-bg-elevated)]`} />
           </div>
 
-          {/* Stats and name overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-3 z-20">
-            {/* Stats row */}
-            <div className="flex items-center gap-3 mb-2">
-              <div className="flex items-center gap-1">
-                <svg className="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-                <span className="text-xs font-semibold text-white">
-                  {profile.avgRating > 0 ? profile.avgRating.toFixed(1) : '—'}
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            {/* Name row */}
+            <div className="flex items-center gap-2 mb-0.5">
+              <h3 className="font-semibold text-[15px] text-[var(--color-text-primary)] truncate group-hover:text-[#D2691E] transition-colors">
+                {displayName}
+              </h3>
+              {isPremium && (
+                <span className="flex-shrink-0 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide rounded bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+                  PRO
                 </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <svg className="w-3.5 h-3.5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="text-xs font-medium text-white/80">{profile.yearsExperience || 0}+ წ</span>
-              </div>
+              )}
             </div>
 
-            <h3 className="font-semibold text-[15px] text-white truncate leading-tight group-hover:text-[#FFDAB9] transition-colors">
-              {displayName}
-            </h3>
+            {/* Category */}
+            <p className="text-xs font-medium text-[var(--color-text-secondary)] truncate mb-1.5">
+              {profile.title || getCategoryLabel(profile.categories[0])}
+            </p>
+
+            {/* Quick stats row */}
+            <div className="flex items-center gap-2.5 text-[11px]">
+              {/* Rating */}
+              <div className="flex items-center gap-1">
+                <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                <span className="font-semibold text-[var(--color-text-primary)]">
+                  {profile.avgRating > 0 ? profile.avgRating.toFixed(1) : '—'}
+                </span>
+                {profile.totalReviews > 0 && (
+                  <span className="text-[var(--color-text-tertiary)]">({profile.totalReviews})</span>
+                )}
+              </div>
+
+              <span className="w-px h-3 bg-[var(--color-border-subtle)]" />
+
+              {/* Experience */}
+              <div className="flex items-center gap-1 text-[var(--color-text-tertiary)]">
+                <Clock className="w-3 h-3" />
+                <span>{profile.yearsExperience || 0}{locale === 'ka' ? 'წ' : 'y'}</span>
+              </div>
+
+              {completedJobs > 0 && (
+                <>
+                  <span className="w-px h-3 bg-[var(--color-border-subtle)]" />
+                  <div className="flex items-center gap-1 text-[var(--color-text-tertiary)]">
+                    <Briefcase className="w-3 h-3" />
+                    <span>{completedJobs}</span>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
-        </CardImage>
 
-        {/* Content */}
-        <CardContent spacing="tight">
-          {/* Category - Prominent */}
-          <p className="text-sm font-medium truncate mb-2 text-[var(--color-text-primary)]">
-            {profile.title || getCategoryLabel(profile.categories[0])}
-          </p>
+          {/* Like button */}
+          {showLikeButton && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onLike?.();
+              }}
+              className={`
+                flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center
+                transition-all duration-200
+                ${profile.isLiked
+                  ? 'bg-red-50 dark:bg-red-500/10 text-red-500'
+                  : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10'
+                }
+              `}
+            >
+              <Heart className={`w-4 h-4 ${profile.isLiked ? 'fill-current' : ''}`} />
+            </button>
+          )}
+        </div>
 
-          {/* Bio - 1 line */}
+        {/* Bottom Section - Bio preview and badges */}
+        <div className="px-3 pb-3">
+          {/* Bio */}
           {bioText && (
-            <p className="text-xs line-clamp-1 text-[var(--color-text-tertiary)]">
+            <p className="text-[11px] leading-relaxed text-[var(--color-text-tertiary)] line-clamp-2 mb-2">
               {bioText}
             </p>
           )}
-        </CardContent>
-      </Card>
+
+          {/* Tags row */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {profile.categories.slice(0, 2).map((cat, i) => (
+              <span
+                key={i}
+                className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-[#D2691E]/8 text-[#D2691E] dark:bg-[#D2691E]/15"
+              >
+                {getCategoryLabel(cat)}
+              </span>
+            ))}
+            {isTopRated && (
+              <span className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400 flex items-center gap-1">
+                <Star className="w-2.5 h-2.5 fill-current" />
+                Top
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Hover accent line */}
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#D2691E] to-[#CD853F] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+      </Link>
     );
   }
 
   // Horizontal variant - For list views
   if (variant === 'horizontal') {
     return (
-      <Card href={`/professionals/${profile._id}`} variant="default" hover="lift" padding="md" className="group pro-card-premium">
-        <div className="flex gap-4">
-          {/* Avatar with gradient blur effect */}
-          <div className="relative flex-shrink-0">
-            <div className="w-20 h-20 rounded-xl overflow-hidden">
-              {avatarUrl ? (
-                <>
-                  <img
-                    src={avatarUrl}
-                    alt={displayName}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  {/* Subtle gradient on avatar */}
-                  <div
-                    className="absolute inset-0 rounded-xl"
-                    style={{
-                      background: 'linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 50%)',
-                    }}
-                  />
-                </>
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#D2691E]/30 to-[#CD853F]/40">
-                  <span className="text-2xl font-bold text-white">{displayName.charAt(0)}</span>
-                </div>
-              )}
-            </div>
-            {/* Status indicator */}
-            <div className="absolute -bottom-0.5 -right-0.5">
-              <StatusBadge status={status} variant="minimal" size="sm" />
-            </div>
-          </div>
-
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2 mb-1">
-              <h3 className="font-semibold text-base truncate group-hover:text-[#D2691E] transition-colors text-[var(--color-text-primary)]">
-                {displayName}
-              </h3>
-              <div className="flex items-center gap-1.5 flex-shrink-0">
-                <PremiumBadge size="sm" />
-                {isTopRated && (
-                  <div className="flex items-center gap-1 px-2 py-0.5 bg-amber-100 dark:bg-amber-400/20 rounded-full">
-                    <svg className="w-3 h-3 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400">TOP</span>
-                  </div>
-                )}
+      <Link
+        href={`/professionals/${profile._id}`}
+        className="pro-card-modern group flex items-center gap-4 p-4"
+      >
+        {/* Avatar */}
+        <div className="relative flex-shrink-0">
+          <div className="w-16 h-16 rounded-xl overflow-hidden ring-2 ring-[var(--color-border-subtle)] group-hover:ring-[#D2691E]/30 transition-all">
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={displayName}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-[#D2691E]/20 to-[#CD853F]/30 flex items-center justify-center">
+                <span className="text-xl font-bold text-[#D2691E]">{displayName.charAt(0)}</span>
               </div>
-            </div>
-
-            {/* Category - Larger */}
-            <p className="text-sm font-medium mb-2 text-[var(--color-text-secondary)]">
-              {profile.title || getCategoryLabel(profile.categories[0])}
-            </p>
-
-            {/* Stats row - simplified */}
-            <div className="flex items-center gap-3 text-xs mb-2 text-[var(--color-text-tertiary)]">
-              <div className="flex items-center gap-1">
-                <svg className="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-                <span className="font-semibold text-[var(--color-text-primary)]">
-                  {profile.avgRating > 0 ? profile.avgRating.toFixed(1) : '—'}
-                </span>
-                {profile.totalReviews > 0 && <span>({profile.totalReviews})</span>}
-              </div>
-              <span className="flex items-center gap-1">
-                <svg className="w-3.5 h-3.5 text-[#D2691E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {profile.yearsExperience}+ წელი
-              </span>
-            </div>
-
-            {/* Bio */}
-            {bioText && (
-              <p className="text-xs line-clamp-1 text-[var(--color-text-tertiary)]">
-                {bioText}
-              </p>
             )}
+          </div>
+          <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full ${currentStatus.color} ring-2 ring-[var(--color-bg-elevated)]`} />
+        </div>
 
-            {/* Category pills */}
-            <CardTags
-              tags={profile.categories.slice(0, 2).map(cat => getCategoryLabel(cat))}
-              max={2}
-              className="mt-2"
-            />
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-semibold text-base text-[var(--color-text-primary)] truncate group-hover:text-[#D2691E] transition-colors">
+              {displayName}
+            </h3>
+            {isPremium && (
+              <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide rounded bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+                PRO
+              </span>
+            )}
+            {isTopRated && (
+              <span className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400 flex items-center gap-1">
+                <Star className="w-2.5 h-2.5 fill-current" />
+                Top
+              </span>
+            )}
           </div>
 
-          {/* Arrow */}
-          <div className="flex-shrink-0 self-center">
-            <svg
-              className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1 text-[#D2691E]"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-            </svg>
+          <p className="text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
+            {profile.title || getCategoryLabel(profile.categories[0])}
+          </p>
+
+          <div className="flex items-center gap-3 text-xs text-[var(--color-text-tertiary)]">
+            <div className="flex items-center gap-1">
+              <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+              <span className="font-semibold text-[var(--color-text-primary)]">
+                {profile.avgRating > 0 ? profile.avgRating.toFixed(1) : '—'}
+              </span>
+              {profile.totalReviews > 0 && <span>({profile.totalReviews})</span>}
+            </div>
+            <span className="flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5" />
+              {profile.yearsExperience}+ {locale === 'ka' ? 'წელი' : 'years'}
+            </span>
+            {completedJobs > 0 && (
+              <span className="flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                {completedJobs} {locale === 'ka' ? 'პროექტი' : 'jobs'}
+              </span>
+            )}
           </div>
         </div>
-      </Card>
+
+        {/* Right side */}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {showLikeButton && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onLike?.();
+              }}
+              className={`
+                w-9 h-9 rounded-full flex items-center justify-center transition-all
+                ${profile.isLiked
+                  ? 'bg-red-50 dark:bg-red-500/10 text-red-500'
+                  : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] hover:bg-red-50 hover:text-red-500'
+                }
+              `}
+            >
+              <Heart className={`w-4 h-4 ${profile.isLiked ? 'fill-current' : ''}`} />
+            </button>
+          )}
+
+          {/* Arrow */}
+          <svg
+            className="w-5 h-5 text-[var(--color-text-tertiary)] group-hover:text-[#D2691E] group-hover:translate-x-1 transition-all"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+
+        {/* Hover accent */}
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#D2691E] to-[#CD853F] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+      </Link>
     );
   }
 

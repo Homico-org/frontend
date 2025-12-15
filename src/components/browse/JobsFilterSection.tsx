@@ -25,10 +25,10 @@ export default function JobsFilterSection({
   const { locale } = useLanguage();
 
   return (
-    <div className="w-full space-y-2.5">
-      {/* Budget Filter - matches CategorySection styling */}
-      <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-0.5 -mx-1 px-1 sm:mx-0 sm:px-0 sm:flex-wrap">
-        <span className="text-xs text-terracotta-400 dark:text-terracotta-500 mr-0.5 flex-shrink-0 font-medium">
+    <div className="w-full">
+      {/* Budget Filter - compact styling */}
+      <div className="flex items-center gap-1 overflow-x-auto scrollbar-none pb-0.5 -mx-1 px-1 sm:mx-0 sm:px-0 sm:flex-wrap">
+        <span className="text-[11px] text-[var(--color-text-muted)] mr-1 flex-shrink-0 font-medium">
           {locale === 'ka' ? 'ბიუჯეტი:' : 'Budget:'}
         </span>
         {BUDGET_FILTERS.map((budget) => (
@@ -36,10 +36,10 @@ export default function JobsFilterSection({
             key={budget.key}
             onClick={() => onSelectBudget(budget.key)}
             className={`
-              px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 flex-shrink-0
+              px-2 py-1.5 rounded text-[11px] font-medium transition-all duration-150 flex-shrink-0
               ${selectedBudget === budget.key
-                ? 'bg-[#D2691E]/15 text-[#D2691E] border border-[#D2691E]/30'
-                : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[#D2691E]/5 border border-transparent'
+                ? 'bg-[#D2691E]/15 text-[#D2691E]'
+                : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[#D2691E]/5'
               }
             `}
           >
