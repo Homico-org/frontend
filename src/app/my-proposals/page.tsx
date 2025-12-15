@@ -309,22 +309,24 @@ export default function MyProposalsPage() {
 
         {/* Filters */}
         <div className="myproposals-filters">
-          <div className="myproposals-filter-tabs">
-            {filterTabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = statusFilter === tab.key;
-              return (
-                <button
-                  key={tab.key}
-                  onClick={() => setStatusFilter(tab.key as ProposalStatus)}
-                  className={`myproposals-filter-tab ${isActive ? 'active' : ''}`}
-                >
-                  <Icon />
-                  <span>{tab.label}</span>
-                  <span className="myproposals-filter-count">{tab.count}</span>
-                </button>
-              );
-            })}
+          <div className="myproposals-filters-row">
+            <div className="myproposals-filter-tabs">
+              {filterTabs.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = statusFilter === tab.key;
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => setStatusFilter(tab.key as ProposalStatus)}
+                    className={`myproposals-filter-tab ${isActive ? 'active' : ''}`}
+                  >
+                    <Icon />
+                    <span>{tab.label}</span>
+                    <span className="myproposals-filter-count">{tab.count}</span>
+                  </button>
+                );
+              })}
+            </div>
 
             {/* Search */}
             <div className="myproposals-search">
