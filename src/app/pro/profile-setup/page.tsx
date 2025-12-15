@@ -51,6 +51,8 @@ export default function ProProfileSetupPage() {
     cadastralId: '',
     availability: [] as string[],
     basePrice: '',
+    maxPrice: '',
+    pricingModel: '' as 'hourly' | 'daily' | 'sqm' | 'project_based' | '',
     serviceAreas: [] as string[],
     nationwide: false,
   });
@@ -187,6 +189,8 @@ export default function ProProfileSetupPage() {
             cadastralId: profile.cadastralId || '',
             availability: profile.availability || [],
             basePrice: profile.basePrice?.toString() || '',
+            maxPrice: profile.maxPrice?.toString() || '',
+            pricingModel: profile.pricingModel || '',
             serviceAreas: profile.serviceAreas?.includes('Countrywide') ? [] : (profile.serviceAreas || []),
             nationwide: profile.serviceAreas?.includes('Countrywide') || false,
           }));
@@ -410,11 +414,14 @@ export default function ProProfileSetupPage() {
       const token = localStorage.getItem('access_token');
       const categoryInfo = getCategoryInfo();
 
-      let pricingModel = 'project_based';
-      if (selectedCategory === 'interior-design' || selectedCategory === '') {
-        pricingModel = 'from';
-      } else if (selectedCategory === 'craftsmen' || selectedCategory === 'home-care') {
-        pricingModel = 'hourly';
+      // Use user-selected pricing model, or fallback to category default
+      let pricingModel = formData.pricingModel || 'project_based';
+      if (!formData.pricingModel) {
+        if (selectedCategory === 'interior-design' || selectedCategory === '') {
+          pricingModel = 'sqm';
+        } else if (selectedCategory === 'craftsmen' || selectedCategory === 'home-care') {
+          pricingModel = 'hourly';
+        }
       }
 
       const cleanedPortfolioProjects = portfolioProjects.map(p => ({
@@ -436,6 +443,7 @@ export default function ProProfileSetupPage() {
         avatar: formData.avatar || user?.avatar,
         pricingModel,
         basePrice: parseFloat(formData.basePrice) || undefined,
+        maxPrice: parseFloat(formData.maxPrice) || undefined,
         serviceAreas: formData.nationwide && locationData ? [locationData.nationwide] : formData.serviceAreas,
         portfolioProjects: cleanedPortfolioProjects,
         pinterestLinks: formData.portfolioUrl ? [formData.portfolioUrl] : undefined,
@@ -879,21 +887,43 @@ export default function ProProfileSetupPage() {
                       )}
                     </div>
                     <p className="pro-setup-section-subtitle">
-                      {locale === 'ka' ? 'საწყისი ფასი' : 'Starting price'}
+                      {locale === 'ka' ? 'განსაზღვრე შენი ფასების დიაპაზონი' : 'Set your price range'}
                     </p>
                   </div>
                 </div>
 
+                {/* Pricing Model Selector */}
                 <div className="pro-setup-input-group">
                   <label className="pro-setup-label">
-                    <span>
-                      {selectedCategory === 'interior-design'
-                        ? (locale === 'ka' ? 'ფასი კვ.მ-ზე' : 'Price per m²')
-                        : selectedCategory === 'craftsmen' || selectedCategory === 'home-care'
-                        ? (locale === 'ka' ? 'საათობრივი ტარიფი' : 'Hourly Rate')
-                        : (locale === 'ka' ? 'საბაზისო ფასი' : 'Base Price')
-                      }
-                    </span>
+                    <span>{locale === 'ka' ? 'ფასის ტიპი' : 'Pricing Type'}</span>
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { key: 'hourly', label: locale === 'ka' ? 'საათობრივი' : 'Hourly', suffix: '₾/სთ' },
+                      { key: 'daily', label: locale === 'ka' ? 'დღიური' : 'Daily', suffix: '₾/დღე' },
+                      { key: 'sqm', label: locale === 'ka' ? 'კვ.მ' : 'Per m²', suffix: '₾/m²' },
+                      { key: 'project_based', label: locale === 'ka' ? 'პროექტზე' : 'Per Project', suffix: '₾' },
+                    ].map((option) => (
+                      <button
+                        key={option.key}
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, pricingModel: option.key as any }))}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                          formData.pricingModel === option.key
+                            ? 'bg-[#D2691E] text-white'
+                            : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)]'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Price Range */}
+                <div className="pro-setup-input-group mt-4">
+                  <label className="pro-setup-label">
+                    <span>{locale === 'ka' ? 'ფასის დიაპაზონი' : 'Price Range'}</span>
                     <span className={`pro-setup-label-check ${validation.pricing ? 'completed' : 'pending'}`}>
                       {validation.pricing && (
                         <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -902,22 +932,41 @@ export default function ProProfileSetupPage() {
                       )}
                     </span>
                   </label>
-                  <div className="pro-setup-price-input">
-                    <input
-                      type="number"
-                      value={formData.basePrice}
-                      onChange={(e) => setFormData(prev => ({ ...prev, basePrice: e.target.value }))}
-                      className={`pro-setup-input-premium ${validation.pricing ? 'valid' : ''}`}
-                      placeholder={selectedCategory === 'interior-design' ? '50' : '500'}
-                    />
-                    <span className="pro-setup-price-currency">
-                      {selectedCategory === 'interior-design' ? '₾/m²' : selectedCategory === 'craftsmen' || selectedCategory === 'home-care' ? '₾/სთ' : '₾'}
-                    </span>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <div className="pro-setup-price-input">
+                        <input
+                          type="number"
+                          min="1"
+                          max="10000"
+                          value={formData.basePrice}
+                          onChange={(e) => setFormData(prev => ({ ...prev, basePrice: e.target.value }))}
+                          className={`pro-setup-input-premium ${validation.pricing ? 'valid' : ''}`}
+                          placeholder={locale === 'ka' ? 'დან' : 'From'}
+                        />
+                        <span className="pro-setup-price-currency">₾</span>
+                      </div>
+                    </div>
+                    <span className="text-[var(--color-text-tertiary)]">—</span>
+                    <div className="flex-1">
+                      <div className="pro-setup-price-input">
+                        <input
+                          type="number"
+                          min="1"
+                          max="10000"
+                          value={formData.maxPrice}
+                          onChange={(e) => setFormData(prev => ({ ...prev, maxPrice: e.target.value }))}
+                          className="pro-setup-input-premium"
+                          placeholder={locale === 'ka' ? 'მდე' : 'To'}
+                        />
+                        <span className="pro-setup-price-currency">₾</span>
+                      </div>
+                    </div>
                   </div>
                   <p className="text-xs text-[#8B7355] dark:text-[#A89080] mt-2">
-                    {selectedCategory === 'interior-design'
-                      ? (locale === 'ka' ? 'კლიენტები დაინახავენ "დან XX ₾/m²"' : 'Clients will see "from XX ₾/m²"')
-                      : (locale === 'ka' ? 'საწყისი ფასი' : 'Starting price')
+                    {locale === 'ka'
+                      ? `კლიენტები დაინახავენ "${formData.basePrice || '...'} - ${formData.maxPrice || '...'} ₾${formData.pricingModel === 'hourly' ? '/სთ' : formData.pricingModel === 'daily' ? '/დღე' : formData.pricingModel === 'sqm' ? '/m²' : ''}"`
+                      : `Clients will see "${formData.basePrice || '...'} - ${formData.maxPrice || '...'} ₾${formData.pricingModel === 'hourly' ? '/hr' : formData.pricingModel === 'daily' ? '/day' : formData.pricingModel === 'sqm' ? '/m²' : ''}"`
                     }
                   </p>
                 </div>
