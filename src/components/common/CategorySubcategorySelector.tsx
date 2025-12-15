@@ -90,6 +90,41 @@ export default function CategorySubcategorySelector({
   );
   const [customSpecialtyInput, setCustomSpecialtyInput] = useState('');
   const [showCustomInput, setShowCustomInput] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter categories and subcategories based on search query using regex
+  const getFilteredCategories = () => {
+    if (!searchQuery.trim()) return CATEGORIES;
+
+    try {
+      // Create case-insensitive regex from search query
+      const regex = new RegExp(searchQuery.trim(), 'i');
+
+      return CATEGORIES.map(category => {
+        // Check if category name matches
+        const categoryMatches = regex.test(category.name) || regex.test(category.nameKa);
+
+        // Filter subcategories that match
+        const matchingSubcategories = category.subcategories.filter(
+          sub => regex.test(sub.name) || regex.test(sub.nameKa)
+        );
+
+        // Include category if it matches or has matching subcategories
+        if (categoryMatches || matchingSubcategories.length > 0) {
+          return {
+            ...category,
+            subcategories: categoryMatches ? category.subcategories : matchingSubcategories,
+          };
+        }
+        return null;
+      }).filter(Boolean) as typeof CATEGORIES;
+    } catch {
+      // If regex is invalid, return all categories
+      return CATEGORIES;
+    }
+  };
+
+  const filteredCategories = getFilteredCategories();
 
   const toggleCategoryExpand = (categoryKey: string) => {
     const newExpanded = new Set(expandedCategories);
@@ -159,8 +194,75 @@ export default function CategorySubcategorySelector({
 
   return (
     <div className="space-y-4">
+      {/* Search Input */}
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+          <svg
+            className="w-5 h-5 text-[var(--color-text-tertiary)]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+        </div>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            // Auto-expand all categories when searching
+            if (e.target.value.trim()) {
+              setExpandedCategories(new Set(CATEGORIES.map(c => c.key)));
+            }
+          }}
+          placeholder={locale === 'ka' ? 'მოძებნე კატეგორია ან სერვისი...' : 'Search categories or services...'}
+          className="w-full pl-12 pr-10 py-3.5 bg-[var(--color-bg-secondary)] border-2 border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-terracotta-500 focus:ring-2 focus:ring-terracotta-500/20 transition-all text-sm"
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={() => setSearchQuery('')}
+            className="absolute inset-y-0 right-0 pr-4 flex items-center"
+          >
+            <svg
+              className="w-5 h-5 text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] transition-colors"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+      </div>
+
+      {/* No results message */}
+      {filteredCategories.length === 0 && searchQuery && (
+        <div className="text-center py-8 px-4">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--color-bg-tertiary)] flex items-center justify-center">
+            <svg className="w-8 h-8 text-[var(--color-text-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <p className="text-[var(--color-text-secondary)] font-medium">
+            {locale === 'ka' ? 'შედეგი ვერ მოიძებნა' : 'No results found'}
+          </p>
+          <p className="text-sm text-[var(--color-text-tertiary)] mt-1">
+            {locale === 'ka'
+              ? `"${searchQuery}" არ შეესაბამება არცერთ კატეგორიას`
+              : `"${searchQuery}" doesn't match any category`}
+          </p>
+        </div>
+      )}
+
       {/* Category cards with integrated subcategories */}
-      {CATEGORIES.map((category, categoryIndex) => {
+      {filteredCategories.map((category, categoryIndex) => {
         const isSelected = selectedCategory === category.key;
         const isExpanded = expandedCategories.has(category.key) || isSelected;
         const categorySubcategoryCount = selectedSubcategories.filter(sub =>
