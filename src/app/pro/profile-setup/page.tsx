@@ -11,18 +11,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-// Design styles for designers - no icons
-const designStyles = [
-  { key: 'modern', name: 'Modern', nameKa: 'თანამედროვე' },
-  { key: 'minimalist', name: 'Minimalist', nameKa: 'მინიმალისტური' },
-  { key: 'classic', name: 'Classic', nameKa: 'კლასიკური' },
-  { key: 'scandinavian', name: 'Scandinavian', nameKa: 'სკანდინავიური' },
-  { key: 'industrial', name: 'Industrial', nameKa: 'ინდუსტრიული' },
-  { key: 'bohemian', name: 'Bohemian', nameKa: 'ბოჰემური' },
-  { key: 'contemporary', name: 'Contemporary', nameKa: 'კონტემპორარული' },
-  { key: 'mediterranean', name: 'Mediterranean', nameKa: 'ხმელთაშუაზღვური' },
-];
-
 // Availability options
 const availabilityOptions = [
   { key: 'weekdays', name: 'Weekdays', nameKa: 'სამუშაო დღეები' },
@@ -36,7 +24,7 @@ export default function ProProfileSetupPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { locale } = useLanguage();
   const [isVisible, setIsVisible] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -45,7 +33,6 @@ export default function ProProfileSetupPage() {
     bio: '',
     yearsExperience: '',
     avatar: '',
-    designStyles: [] as string[],
     portfolioUrl: '',
     licenseNumber: '',
     cadastralId: '',
@@ -125,7 +112,9 @@ export default function ProProfileSetupPage() {
       if (storedData) {
         try {
           const parsed = JSON.parse(storedData);
-          setSelectedCategory(parsed.category || 'interior-design');
+          // Support both old single category and new multiple categories format
+          const categories = parsed.categories || (parsed.category ? [parsed.category] : ['interior-design']);
+          setSelectedCategories(categories);
           setSelectedSubcategories(parsed.subcategories || []);
           if (parsed.pinterestLinks?.[0]) {
             setFormData(prev => ({ ...prev, portfolioUrl: parsed.pinterestLinks[0] }));
@@ -174,7 +163,7 @@ export default function ProProfileSetupPage() {
           setIsEditMode(true);
 
           // Prefill form data
-          setSelectedCategory(profile.categories?.[0] || 'interior-design');
+          setSelectedCategories(profile.categories || ['interior-design']);
           setSelectedSubcategories(profile.subcategories || []);
 
           setFormData(prev => ({
@@ -183,7 +172,6 @@ export default function ProProfileSetupPage() {
             bio: profile.description || profile.bio || '',
             yearsExperience: profile.yearsExperience?.toString() || '',
             avatar: profile.avatar || user?.avatar || '',
-            designStyles: profile.designStyles || [],
             portfolioUrl: profile.pinterestLinks?.[0] || '',
             licenseNumber: profile.architectLicenseNumber || '',
             cadastralId: profile.cadastralId || '',
@@ -283,14 +271,14 @@ export default function ProProfileSetupPage() {
         } else {
           // No existing profile - check user categories
           if (user?.selectedCategories && user.selectedCategories.length > 0) {
-            setSelectedCategory(user.selectedCategories[0]);
+            setSelectedCategories(user.selectedCategories);
           } else {
-            setSelectedCategory('interior-design');
+            setSelectedCategories(['interior-design']);
           }
         }
       } catch (err) {
         console.error('Failed to fetch existing profile:', err);
-        setSelectedCategory('interior-design');
+        setSelectedCategories(['interior-design']);
       } finally {
         setProfileLoading(false);
       }
@@ -341,8 +329,11 @@ export default function ProProfileSetupPage() {
     }
   }, [user, authLoading, router]);
 
+  // Get the primary category (first selected) for display purposes
+  const primaryCategory = selectedCategories[0] || 'interior-design';
+
   const getCategoryInfo = () => {
-    return getCategoryByKey(selectedCategory) || CATEGORIES[0];
+    return getCategoryByKey(primaryCategory) || CATEGORIES[0];
   };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -361,15 +352,6 @@ export default function ProProfileSetupPage() {
       };
       reader.readAsDataURL(file);
     }
-  };
-
-  const toggleDesignStyle = (style: string) => {
-    setFormData(prev => ({
-      ...prev,
-      designStyles: prev.designStyles.includes(style)
-        ? prev.designStyles.filter(s => s !== style)
-        : [...prev.designStyles, style]
-    }));
   };
 
   const toggleAvailability = (option: string) => {
@@ -394,12 +376,11 @@ export default function ProProfileSetupPage() {
   const validation = {
     bio: !!formData.bio.trim(),
     experience: !!formData.yearsExperience,
-    designStyles: selectedCategory !== 'interior-design' || formData.designStyles.length > 0,
     pricing: !!formData.basePrice,
     serviceAreas: formData.nationwide || formData.serviceAreas.length > 0,
   };
 
-  const isFormValid = validation.bio && validation.experience && validation.designStyles && validation.pricing && validation.serviceAreas;
+  const isFormValid = validation.bio && validation.experience && validation.pricing && validation.serviceAreas;
 
   // Progress calculation
   const completedFields = Object.values(validation).filter(Boolean).length;
@@ -417,9 +398,9 @@ export default function ProProfileSetupPage() {
       // Use user-selected pricing model, or fallback to category default
       let pricingModel = formData.pricingModel || 'project_based';
       if (!formData.pricingModel) {
-        if (selectedCategory === 'interior-design' || selectedCategory === '') {
+        if (selectedCategories.includes('interior-design') || selectedCategories.length === 0) {
           pricingModel = 'sqm';
-        } else if (selectedCategory === 'craftsmen' || selectedCategory === 'home-care') {
+        } else if (selectedCategories.includes('craftsmen') || selectedCategories.includes('home-care')) {
           pricingModel = 'hourly';
         }
       }
@@ -437,7 +418,7 @@ export default function ProProfileSetupPage() {
         title: formData.title || (locale === 'ka' ? categoryInfo.nameKa : categoryInfo.name),
         bio: formData.bio,
         description: formData.bio,
-        categories: [selectedCategory || 'interior-design'],
+        categories: selectedCategories.length > 0 ? selectedCategories : ['interior-design'],
         subcategories: selectedSubcategories.length > 0 ? selectedSubcategories : (user?.selectedSubcategories || []),
         yearsExperience: parseInt(formData.yearsExperience) || 0,
         avatar: formData.avatar || user?.avatar,
@@ -447,14 +428,10 @@ export default function ProProfileSetupPage() {
         serviceAreas: formData.nationwide && locationData ? [locationData.nationwide] : formData.serviceAreas,
         portfolioProjects: cleanedPortfolioProjects,
         pinterestLinks: formData.portfolioUrl ? [formData.portfolioUrl] : undefined,
-        architectLicenseNumber: selectedCategory === 'architecture' ? formData.licenseNumber : undefined,
-        cadastralId: selectedCategory === 'architecture' ? formData.cadastralId : undefined,
-        availability: selectedCategory === 'home-care' ? formData.availability : undefined,
+        architectLicenseNumber: selectedCategories.includes('architecture') ? formData.licenseNumber : undefined,
+        cadastralId: selectedCategories.includes('architecture') ? formData.cadastralId : undefined,
+        availability: selectedCategories.includes('home-care') ? formData.availability : undefined,
       };
-
-      if (selectedCategory === 'interior-design' && formData.designStyles.length > 0) {
-        requestBody.designStyles = formData.designStyles;
-      }
 
       // Use PATCH for update, POST for create
       const url = isEditMode && existingProfileId
@@ -499,24 +476,23 @@ export default function ProProfileSetupPage() {
   const categoryInfo = getCategoryInfo();
 
   // Helper to get step number based on category
-  // Section order: 1. About, 2. Categories, 3. Styles/Availability/Credentials (conditional), 4. Pricing, 5. Portfolio, 6. Areas
+  // Section order: 1. About, 2. Categories, 3. Availability/Credentials (conditional), 4. Pricing, 5. Portfolio, 6. Areas
   const getStepNumber = (section: 'about' | 'categories' | 'styles' | 'pricing' | 'portfolio' | 'areas') => {
-    const hasStylesSection = selectedCategory === 'interior-design';
-    const hasAvailabilitySection = selectedCategory === 'home-care';
-    const hasCredentialsSection = selectedCategory === 'architecture';
+    const hasAvailabilitySection = selectedCategories.includes('home-care');
+    const hasCredentialsSection = selectedCategories.includes('architecture');
 
     switch (section) {
       case 'about': return 1;
       case 'categories': return 2;
-      case 'styles': return 3; // Only shows for interior-design
+      case 'styles': return 3; // Only shows for home-care or architecture
       case 'pricing':
-        if (hasStylesSection || hasAvailabilitySection || hasCredentialsSection) return 4;
+        if (hasAvailabilitySection || hasCredentialsSection) return 4;
         return 3;
       case 'portfolio':
-        if (hasStylesSection || hasAvailabilitySection || hasCredentialsSection) return 5;
+        if (hasAvailabilitySection || hasCredentialsSection) return 5;
         return 4;
       case 'areas':
-        if (hasStylesSection || hasAvailabilitySection || hasCredentialsSection) return 6;
+        if (hasAvailabilitySection || hasCredentialsSection) return 6;
         return 5;
       default: return 1;
     }
@@ -691,10 +667,10 @@ export default function ProProfileSetupPage() {
               </section>
 
               {/* Section: Categories & Services */}
-              <section className={`pro-setup-section ${selectedCategory && selectedSubcategories.length > 0 ? 'completed' : ''}`}>
+              <section className={`pro-setup-section ${selectedCategories.length > 0 && selectedSubcategories.length > 0 ? 'completed' : ''}`}>
                 <div className="pro-setup-section-header">
-                  <div className={`pro-setup-step-number ${selectedCategory && selectedSubcategories.length > 0 ? 'completed' : validation.bio && validation.experience ? 'active' : ''}`}>
-                    {selectedCategory && selectedSubcategories.length > 0 ? (
+                  <div className={`pro-setup-step-number ${selectedCategories.length > 0 && selectedSubcategories.length > 0 ? 'completed' : validation.bio && validation.experience ? 'active' : ''}`}>
+                    {selectedCategories.length > 0 && selectedSubcategories.length > 0 ? (
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                       </svg>
@@ -705,82 +681,33 @@ export default function ProProfileSetupPage() {
                       <h2 className="pro-setup-section-title">
                         {locale === 'ka' ? 'კატეგორიები და სერვისები' : 'Categories & Services'}
                       </h2>
-                      {(!selectedCategory || selectedSubcategories.length === 0) && (
+                      {(selectedCategories.length === 0 || selectedSubcategories.length === 0) && (
                         <span className="pro-setup-required-badge">
                           {locale === 'ka' ? 'სავალდებულო' : 'Required'}
                         </span>
                       )}
                     </div>
                     <p className="pro-setup-section-subtitle">
-                      {locale === 'ka' ? 'აირჩიე რა ტიპის სერვისებს სთავაზობ კლიენტებს' : 'Select what type of services you offer to clients'}
+                      {locale === 'ka' ? 'აირჩიე რა ტიპის სერვისებს სთავაზობ კლიენტებს (მაქს. 4 კატეგორია)' : 'Select what type of services you offer to clients (max 4 categories)'}
                     </p>
                   </div>
                 </div>
 
                 <div className="mt-4">
                   <CategorySubcategorySelector
-                    selectedCategory={selectedCategory}
+                    selectedCategories={selectedCategories}
                     selectedSubcategories={selectedSubcategories}
-                    onCategoryChange={setSelectedCategory}
+                    onCategoriesChange={setSelectedCategories}
                     onSubcategoriesChange={setSelectedSubcategories}
-                    singleCategoryMode={true}
+                    singleCategoryMode={false}
+                    maxCategories={4}
                     maxSubcategories={10}
                   />
                 </div>
               </section>
 
-              {/* Section: Design Styles (for interior-design) */}
-              {selectedCategory === 'interior-design' && (
-                <section className={`pro-setup-section ${validation.designStyles ? 'completed' : ''}`}>
-                  <div className="pro-setup-section-header">
-                    <div className={`pro-setup-step-number ${validation.designStyles ? 'completed' : validation.bio && validation.experience ? 'active' : ''}`}>
-                      {validation.designStyles ? (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                        </svg>
-                      ) : <span>{getStepNumber('styles')}</span>}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="pro-setup-section-title">
-                          {locale === 'ka' ? 'დიზაინის სტილები' : 'Design Styles'}
-                        </h2>
-                        {!validation.designStyles && (
-                          <span className="pro-setup-required-badge">
-                            {locale === 'ka' ? 'სავალდებულო' : 'Required'}
-                          </span>
-                        )}
-                      </div>
-                      <p className="pro-setup-section-subtitle">
-                        {locale === 'ka' ? 'აირჩიე სტილები რომლებშიც მუშაობ' : 'Select styles you work with'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="pro-setup-pill-container">
-                    {designStyles.map((style) => (
-                      <button
-                        key={style.key}
-                        type="button"
-                        onClick={() => toggleDesignStyle(style.key)}
-                        className={`pro-setup-pill ${formData.designStyles.includes(style.key) ? 'selected' : ''}`}
-                      >
-                        <span>
-                          {formData.designStyles.includes(style.key) && (
-                            <svg className="pro-setup-pill-check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                            </svg>
-                          )}
-                          {locale === 'ka' ? style.nameKa : style.name}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </section>
-              )}
-
               {/* Section: Availability (for home-care) */}
-              {selectedCategory === 'home-care' && (
+              {selectedCategories.includes('home-care') && (
                 <section className="pro-setup-section">
                   <div className="pro-setup-section-header">
                     <div className="pro-setup-step-number active">
@@ -819,7 +746,7 @@ export default function ProProfileSetupPage() {
               )}
 
               {/* Section: Credentials (for architecture) */}
-              {selectedCategory === 'architecture' && (
+              {selectedCategories.includes('architecture') && (
                 <section className="pro-setup-section">
                   <div className="pro-setup-section-header">
                     <div className="pro-setup-step-number">
@@ -868,7 +795,7 @@ export default function ProProfileSetupPage() {
               {/* Section: Pricing */}
               <section className={`pro-setup-section ${validation.pricing ? 'completed' : ''}`}>
                 <div className="pro-setup-section-header">
-                  <div className={`pro-setup-step-number ${validation.pricing ? 'completed' : validation.designStyles && validation.bio && validation.experience ? 'active' : ''}`}>
+                  <div className={`pro-setup-step-number ${validation.pricing ? 'completed' : validation.bio && validation.experience ? 'active' : ''}`}>
                     {validation.pricing ? (
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
@@ -880,7 +807,7 @@ export default function ProProfileSetupPage() {
                       <h2 className="pro-setup-section-title">
                         {locale === 'ka' ? 'ფასები' : 'Pricing'}
                       </h2>
-                      {validation.bio && validation.experience && validation.designStyles && !validation.pricing && (
+                      {validation.bio && validation.experience && !validation.pricing && (
                         <span className="pro-setup-required-badge">
                           {locale === 'ka' ? 'სავალდებულო' : 'Required'}
                         </span>
@@ -972,8 +899,8 @@ export default function ProProfileSetupPage() {
                 </div>
               </section>
 
-              {/* Section: Portfolio - Role-appropriate */}
-              {(selectedCategory === 'interior-design' || selectedCategory === 'architecture') && (
+              {/* Section: Portfolio - For architects only */}
+              {selectedCategories.includes('architecture') && (
                 <section className="pro-setup-section">
                   <div className="pro-setup-section-header">
                     <div className="pro-setup-step-number">
@@ -1045,7 +972,7 @@ export default function ProProfileSetupPage() {
               )}
 
               {/* Section: Portfolio Projects - For craftsmen and home-care */}
-              {(selectedCategory === 'craftsmen' || selectedCategory === 'home-care') && (
+              {(selectedCategories.includes('craftsmen') || selectedCategories.includes('home-care')) && (
                 <section className="pro-setup-section">
                   <PortfolioProjectsInput
                     projects={portfolioProjects}

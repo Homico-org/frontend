@@ -37,6 +37,38 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
   };
 
   const isTopRated = profile.avgRating >= 4.8 && profile.totalReviews >= 5;
+  const isPremium = profile.isPremium || false;
+  const premiumTier = profile.premiumTier || 'none';
+
+  // Premium badge component
+  const PremiumBadge = ({ size = 'default' }: { size?: 'sm' | 'default' }) => {
+    if (!isPremium) return null;
+
+    const tierConfig = {
+      basic: { label: 'Premium', gradient: 'from-amber-500 to-orange-500', icon: '⭐' },
+      pro: { label: 'Pro', gradient: 'from-purple-500 to-indigo-500', icon: '💎' },
+      elite: { label: 'Elite', gradient: 'from-amber-400 via-yellow-300 to-amber-500', icon: '👑' },
+      none: { label: 'Premium', gradient: 'from-amber-500 to-orange-500', icon: '⭐' },
+    };
+
+    const config = tierConfig[premiumTier as keyof typeof tierConfig] || tierConfig.basic;
+
+    return (
+      <div
+        className={`
+          inline-flex items-center gap-1
+          ${size === 'sm' ? 'px-1.5 py-0.5 text-[9px]' : 'px-2 py-0.5 text-[10px]'}
+          rounded-full font-bold uppercase tracking-wide
+          bg-gradient-to-r ${config.gradient}
+          text-white shadow-lg shadow-amber-500/30
+          animate-pulse-subtle
+        `}
+      >
+        <span>{config.icon}</span>
+        <span>{config.label}</span>
+      </div>
+    );
+  };
 
   // Avatar priority: prefer user's avatar (more up-to-date), then profile avatar
   // Skip profile.avatar if it's a broken /uploads/ URL (ephemeral storage)
@@ -79,8 +111,9 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
             }}
           />
 
-          {/* Status badge - top right */}
-          <div className="absolute top-3 right-3 z-20">
+          {/* Status badge and Premium badge - top right */}
+          <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
+            <PremiumBadge />
             <StatusBadge status={status} variant="minimal" />
           </div>
 
@@ -184,8 +217,9 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
             <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#D2691E]/20 to-[#CD853F]/30" />
           )}
 
-          {/* Status badge */}
-          <div className="absolute top-2.5 right-2.5 z-20">
+          {/* Status badge and Premium badge */}
+          <div className="absolute top-2.5 right-2.5 z-20 flex items-center gap-1.5">
+            <PremiumBadge size="sm" />
             <StatusBadge status={status} variant="minimal" size="sm" />
           </div>
 
@@ -274,14 +308,17 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
               <h3 className="font-semibold text-base truncate group-hover:text-[#D2691E] transition-colors text-[var(--color-text-primary)]">
                 {displayName}
               </h3>
-              {isTopRated && (
-                <div className="flex items-center gap-1 px-2 py-0.5 bg-amber-100 dark:bg-amber-400/20 rounded-full flex-shrink-0">
-                  <svg className="w-3 h-3 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                  <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400">TOP</span>
-                </div>
-              )}
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <PremiumBadge size="sm" />
+                {isTopRated && (
+                  <div className="flex items-center gap-1 px-2 py-0.5 bg-amber-100 dark:bg-amber-400/20 rounded-full">
+                    <svg className="w-3 h-3 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400">TOP</span>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Category - Larger */}

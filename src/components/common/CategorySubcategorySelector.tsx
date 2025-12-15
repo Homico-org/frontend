@@ -5,15 +5,18 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useState } from 'react';
 
 interface CategorySubcategorySelectorProps {
-  selectedCategory: string;
+  selectedCategory?: string; // Deprecated: use selectedCategories instead
+  selectedCategories?: string[]; // New: support multiple categories
   selectedSubcategories: string[];
-  onCategoryChange: (category: string) => void;
+  onCategoryChange?: (category: string) => void; // Deprecated: use onCategoriesChange instead
+  onCategoriesChange?: (categories: string[]) => void; // New: support multiple categories
   onSubcategoriesChange: (subcategories: string[]) => void;
   customSpecialties?: string[];
   onCustomSpecialtiesChange?: (specialties: string[]) => void;
   showCustomSpecialties?: boolean;
   singleCategoryMode?: boolean; // If true, only one category can be selected at a time
   maxSubcategories?: number;
+  maxCategories?: number; // Maximum number of categories that can be selected
 }
 
 // Custom SVG icons for each category
@@ -75,18 +78,25 @@ const CategoryIcon = ({ type, className = '' }: { type: string; className?: stri
 
 export default function CategorySubcategorySelector({
   selectedCategory,
+  selectedCategories: selectedCategoriesProp,
   selectedSubcategories,
   onCategoryChange,
+  onCategoriesChange,
   onSubcategoriesChange,
   customSpecialties = [],
   onCustomSpecialtiesChange,
   showCustomSpecialties = true,
-  singleCategoryMode = true,
+  singleCategoryMode = false, // Changed default to false for multi-select
   maxSubcategories = 10,
+  maxCategories = 4, // Default max 4 categories
 }: CategorySubcategorySelectorProps) {
   const { locale } = useLanguage();
+
+  // Support both old single category and new multiple categories API
+  const selectedCategories: string[] = selectedCategoriesProp || (selectedCategory ? [selectedCategory] : []);
+
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(selectedCategory ? [selectedCategory] : [])
+    new Set(selectedCategories.length > 0 ? selectedCategories : [])
   );
   const [customSpecialtyInput, setCustomSpecialtyInput] = useState('');
   const [showCustomInput, setShowCustomInput] = useState(false);
@@ -137,31 +147,87 @@ export default function CategorySubcategorySelector({
   };
 
   const handleCategorySelect = (categoryKey: string) => {
+    const isSelected = selectedCategories.includes(categoryKey);
+
     if (singleCategoryMode) {
-      if (selectedCategory === categoryKey) {
-        // Deselect category and clear subcategories
-        onCategoryChange('');
-        onSubcategoriesChange([]);
+      // Single category mode - toggle selection
+      if (isSelected) {
+        // Deselect category and clear its subcategories
+        if (onCategoriesChange) {
+          onCategoriesChange([]);
+        } else if (onCategoryChange) {
+          onCategoryChange('');
+        }
+        // Remove subcategories belonging to this category
+        const category = CATEGORIES.find(c => c.key === categoryKey);
+        if (category) {
+          const categorySubKeys = category.subcategories.map(s => s.key);
+          onSubcategoriesChange(selectedSubcategories.filter(s => !categorySubKeys.includes(s)));
+        }
       } else {
         // Select new category and clear previous subcategories
-        onCategoryChange(categoryKey);
+        if (onCategoriesChange) {
+          onCategoriesChange([categoryKey]);
+        } else if (onCategoryChange) {
+          onCategoryChange(categoryKey);
+        }
         onSubcategoriesChange([]);
         // Auto-expand the selected category
         setExpandedCategories(new Set([categoryKey]));
       }
     } else {
-      onCategoryChange(categoryKey);
+      // Multiple category mode
+      let newCategories: string[];
+
+      if (isSelected) {
+        // Deselect category and remove its subcategories
+        newCategories = selectedCategories.filter(c => c !== categoryKey);
+        const category = CATEGORIES.find(c => c.key === categoryKey);
+        if (category) {
+          const categorySubKeys = category.subcategories.map(s => s.key);
+          onSubcategoriesChange(selectedSubcategories.filter(s => !categorySubKeys.includes(s)));
+        }
+      } else if (selectedCategories.length < maxCategories) {
+        // Add category if under limit
+        newCategories = [...selectedCategories, categoryKey];
+        // Auto-expand the newly selected category
+        setExpandedCategories(prev => new Set([...prev, categoryKey]));
+      } else {
+        // At max categories
+        return;
+      }
+
+      if (onCategoriesChange) {
+        onCategoriesChange(newCategories);
+      } else if (onCategoryChange) {
+        onCategoryChange(newCategories[0] || '');
+      }
     }
   };
 
   const handleSubcategoryToggle = (categoryKey: string, subKey: string) => {
-    // In single category mode, must have the right category selected
-    if (singleCategoryMode && selectedCategory !== categoryKey) {
-      handleCategorySelect(categoryKey);
-      onSubcategoriesChange([subKey]);
+    const isCategorySelected = selectedCategories.includes(categoryKey);
+
+    // If category not selected, select it first
+    if (!isCategorySelected) {
+      if (singleCategoryMode) {
+        handleCategorySelect(categoryKey);
+        onSubcategoriesChange([subKey]);
+      } else if (selectedCategories.length < maxCategories) {
+        // Auto-select the category when clicking subcategory
+        const newCategories = [...selectedCategories, categoryKey];
+        if (onCategoriesChange) {
+          onCategoriesChange(newCategories);
+        } else if (onCategoryChange) {
+          onCategoryChange(categoryKey);
+        }
+        setExpandedCategories(prev => new Set([...prev, categoryKey]));
+        onSubcategoriesChange([...selectedSubcategories, subKey]);
+      }
       return;
     }
 
+    // Toggle subcategory
     if (selectedSubcategories.includes(subKey)) {
       onSubcategoriesChange(selectedSubcategories.filter(k => k !== subKey));
     } else if (selectedSubcategories.length < maxSubcategories) {
@@ -261,13 +327,30 @@ export default function CategorySubcategorySelector({
         </div>
       )}
 
+      {/* Max categories hint */}
+      {!singleCategoryMode && selectedCategories.length >= maxCategories && (
+        <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-sm text-amber-700 dark:text-amber-300">
+              {locale === 'ka'
+                ? `მაქსიმუმ ${maxCategories} კატეგორია შეგიძლიათ აირჩიოთ`
+                : `You can select up to ${maxCategories} categories`}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Category cards with integrated subcategories */}
       {filteredCategories.map((category, categoryIndex) => {
-        const isSelected = selectedCategory === category.key;
+        const isSelected = selectedCategories.includes(category.key);
         const isExpanded = expandedCategories.has(category.key) || isSelected;
         const categorySubcategoryCount = selectedSubcategories.filter(sub =>
           category.subcategories.some(s => s.key === sub)
         ).length;
+        const canSelect = singleCategoryMode || selectedCategories.length < maxCategories || isSelected;
 
         return (
           <div
@@ -275,26 +358,30 @@ export default function CategorySubcategorySelector({
             className={`relative rounded-2xl border-2 overflow-hidden transition-all duration-300 animate-fade-in ${
               isSelected
                 ? 'border-terracotta-500 bg-terracotta-50 dark:bg-terracotta-500/10'
-                : 'border-[var(--color-border-subtle)] bg-[var(--color-bg-secondary)] hover:border-terracotta-300 dark:hover:border-terracotta-700'
+                : canSelect
+                  ? 'border-[var(--color-border-subtle)] bg-[var(--color-bg-secondary)] hover:border-terracotta-300 dark:hover:border-terracotta-700'
+                  : 'border-[var(--color-border-subtle)] bg-[var(--color-bg-secondary)] opacity-50'
             }`}
             style={{ animationDelay: `${categoryIndex * 80}ms`, animationFillMode: 'forwards' }}
           >
             {/* Category Header */}
             <div
               role="button"
-              tabIndex={0}
+              tabIndex={canSelect ? 0 : -1}
               onClick={() => {
+                if (!canSelect) return;
                 handleCategorySelect(category.key);
                 if (!isExpanded) toggleCategoryExpand(category.key);
               }}
               onKeyDown={(e) => {
+                if (!canSelect) return;
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   handleCategorySelect(category.key);
                   if (!isExpanded) toggleCategoryExpand(category.key);
                 }
               }}
-              className="w-full flex items-center gap-4 p-4 text-left cursor-pointer"
+              className={`w-full flex items-center gap-4 p-4 text-left ${canSelect ? 'cursor-pointer' : 'cursor-not-allowed'}`}
             >
               {/* Icon */}
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
@@ -424,7 +511,7 @@ export default function CategorySubcategorySelector({
       })}
 
       {/* Custom Specialty Section */}
-      {showCustomSpecialties && selectedCategory && (
+      {showCustomSpecialties && selectedCategories.length > 0 && (
         <div className="mt-6 animate-fade-in">
           {/* Custom specialties tags */}
           {customSpecialties.length > 0 && (

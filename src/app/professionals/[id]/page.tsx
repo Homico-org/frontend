@@ -5,6 +5,7 @@ import BackButton from '@/components/common/BackButton';
 import Button, { ButtonIcons } from '@/components/common/Button';
 import Header from '@/components/common/Header';
 import SimilarProfessionals from '@/components/professionals/SimilarProfessionals';
+import { CATEGORIES } from '@/constants/categories';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -76,6 +77,8 @@ interface ProProfile {
   responseTime?: string;
   createdAt?: string;
   avatar?: string;
+  isPremium?: boolean;
+  premiumTier?: 'none' | 'basic' | 'pro' | 'elite';
 }
 
 interface Review {
@@ -276,6 +279,25 @@ export default function ProfessionalDetailPage() {
       return category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     }
     return translated;
+  };
+
+  // Get subcategory label from CATEGORIES constant
+  const getSubcategoryLabel = (subcategoryKey: string) => {
+    // Handle custom subcategories (prefixed with 'custom:')
+    if (subcategoryKey.startsWith('custom:')) {
+      return subcategoryKey.replace('custom:', '');
+    }
+
+    // Search through all categories to find the subcategory
+    for (const category of CATEGORIES) {
+      const subcategory = category.subcategories.find(sub => sub.key === subcategoryKey);
+      if (subcategory) {
+        return locale === 'ka' ? subcategory.nameKa : subcategory.name;
+      }
+    }
+
+    // Fallback: format the key nicely
+    return subcategoryKey.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   };
 
   // Open gallery viewer with all project images
@@ -556,19 +578,14 @@ export default function ProfessionalDetailPage() {
                           {locale === 'ka' ? 'სერვისები' : 'Services'}
                         </p>
                         <div className="flex flex-wrap justify-center gap-1.5">
-                          {profile.subcategories.map((sub, i) => {
-                            // Handle custom subcategories (prefixed with 'custom:')
-                            const isCustom = sub.startsWith('custom:');
-                            const displayName = isCustom ? sub.replace('custom:', '') : t(`subcategories.${sub}`) || sub.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-                            return (
-                              <span
-                                key={i}
-                                className="px-2 py-0.5 text-[9px] font-medium rounded-md bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)]"
-                              >
-                                {displayName}
-                              </span>
-                            );
-                          })}
+                          {profile.subcategories.map((sub, i) => (
+                            <span
+                              key={i}
+                              className="px-2 py-0.5 text-[9px] font-medium rounded-md bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)]"
+                            >
+                              {getSubcategoryLabel(sub)}
+                            </span>
+                          ))}
                         </div>
                       </div>
                     )}
@@ -946,14 +963,16 @@ export default function ProfessionalDetailPage() {
                 </section>
               )}
 
-              {/* Similar Professionals */}
-              <div className="px-4 sm:px-5 lg:px-6">
-                <SimilarProfessionals
-                  currentProId={profile._id}
-                  categories={profile.categories}
-                  subcategories={profile.subcategories}
-                />
-              </div>
+              {/* Similar Professionals - Hidden for premium accounts */}
+              {!profile.isPremium && (
+                <div className="px-4 sm:px-5 lg:px-6">
+                  <SimilarProfessionals
+                    currentProId={profile._id}
+                    categories={profile.categories}
+                    subcategories={profile.subcategories}
+                  />
+                </div>
+              )}
               </div>
             </div>
           </div>

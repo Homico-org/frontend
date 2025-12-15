@@ -85,6 +85,9 @@ export interface ProProfile {
   }[];
   likeCount?: number;
   isLiked?: boolean;
+  isPremium?: boolean;
+  premiumTier?: 'none' | 'basic' | 'pro' | 'elite';
+  premiumExpiresAt?: string;
 }
 
 export interface PortfolioItem {
