@@ -4,6 +4,7 @@ import { CATEGORIES, getCategoryByKey } from '@/constants/categories';
 import Header from '@/components/common/Header';
 import AppBackground from '@/components/common/AppBackground';
 import PortfolioProjectsInput, { PortfolioProject } from '@/components/common/PortfolioProjectsInput';
+import CategorySubcategorySelector from '@/components/common/CategorySubcategorySelector';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Link from 'next/link';
@@ -490,23 +491,25 @@ export default function ProProfileSetupPage() {
   const categoryInfo = getCategoryInfo();
 
   // Helper to get step number based on category
-  const getStepNumber = (section: 'about' | 'styles' | 'pricing' | 'portfolio' | 'areas') => {
+  // Section order: 1. About, 2. Categories, 3. Styles/Availability/Credentials (conditional), 4. Pricing, 5. Portfolio, 6. Areas
+  const getStepNumber = (section: 'about' | 'categories' | 'styles' | 'pricing' | 'portfolio' | 'areas') => {
     const hasStylesSection = selectedCategory === 'interior-design';
     const hasAvailabilitySection = selectedCategory === 'home-care';
     const hasCredentialsSection = selectedCategory === 'architecture';
 
     switch (section) {
       case 'about': return 1;
-      case 'styles': return 2;
+      case 'categories': return 2;
+      case 'styles': return 3; // Only shows for interior-design
       case 'pricing':
-        if (hasStylesSection || hasAvailabilitySection || hasCredentialsSection) return 3;
-        return 2;
-      case 'portfolio':
         if (hasStylesSection || hasAvailabilitySection || hasCredentialsSection) return 4;
         return 3;
-      case 'areas':
+      case 'portfolio':
         if (hasStylesSection || hasAvailabilitySection || hasCredentialsSection) return 5;
         return 4;
+      case 'areas':
+        if (hasStylesSection || hasAvailabilitySection || hasCredentialsSection) return 6;
+        return 5;
       default: return 1;
     }
   };
@@ -679,7 +682,46 @@ export default function ProProfileSetupPage() {
                 </div>
               </section>
 
-              {/* Section 2: Design Styles (for interior-design) */}
+              {/* Section: Categories & Services */}
+              <section className={`pro-setup-section ${selectedCategory && selectedSubcategories.length > 0 ? 'completed' : ''}`}>
+                <div className="pro-setup-section-header">
+                  <div className={`pro-setup-step-number ${selectedCategory && selectedSubcategories.length > 0 ? 'completed' : validation.bio && validation.experience ? 'active' : ''}`}>
+                    {selectedCategory && selectedSubcategories.length > 0 ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : <span>2</span>}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h2 className="pro-setup-section-title">
+                        {locale === 'ka' ? 'კატეგორიები და სერვისები' : 'Categories & Services'}
+                      </h2>
+                      {(!selectedCategory || selectedSubcategories.length === 0) && (
+                        <span className="pro-setup-required-badge">
+                          {locale === 'ka' ? 'სავალდებულო' : 'Required'}
+                        </span>
+                      )}
+                    </div>
+                    <p className="pro-setup-section-subtitle">
+                      {locale === 'ka' ? 'აირჩიე რა ტიპის სერვისებს სთავაზობ კლიენტებს' : 'Select what type of services you offer to clients'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <CategorySubcategorySelector
+                    selectedCategory={selectedCategory}
+                    selectedSubcategories={selectedSubcategories}
+                    onCategoryChange={setSelectedCategory}
+                    onSubcategoriesChange={setSelectedSubcategories}
+                    singleCategoryMode={true}
+                    maxSubcategories={10}
+                  />
+                </div>
+              </section>
+
+              {/* Section: Design Styles (for interior-design) */}
               {selectedCategory === 'interior-design' && (
                 <section className={`pro-setup-section ${validation.designStyles ? 'completed' : ''}`}>
                   <div className="pro-setup-section-header">
@@ -688,7 +730,7 @@ export default function ProProfileSetupPage() {
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                         </svg>
-                      ) : <span>2</span>}
+                      ) : <span>{getStepNumber('styles')}</span>}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -734,7 +776,7 @@ export default function ProProfileSetupPage() {
                 <section className="pro-setup-section">
                   <div className="pro-setup-section-header">
                     <div className="pro-setup-step-number active">
-                      <span>2</span>
+                      <span>{getStepNumber('styles')}</span>
                     </div>
                     <div className="flex-1">
                       <h2 className="pro-setup-section-title">
@@ -773,7 +815,7 @@ export default function ProProfileSetupPage() {
                 <section className="pro-setup-section">
                   <div className="pro-setup-section-header">
                     <div className="pro-setup-step-number">
-                      <span>2</span>
+                      <span>{getStepNumber('styles')}</span>
                     </div>
                     <div className="flex-1">
                       <h2 className="pro-setup-section-title">
