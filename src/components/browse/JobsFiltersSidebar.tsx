@@ -1,11 +1,9 @@
 'use client';
 
-import { CATEGORIES } from '@/constants/categories';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Bookmark,
   Building2,
-  ChevronRight,
   Home,
   MapPin,
   RotateCcw,
@@ -15,7 +13,7 @@ import {
   Calendar,
   Briefcase
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // Budget filter options
 export const JOB_BUDGET_FILTERS = [
@@ -74,11 +72,6 @@ interface JobsFiltersSidebarProps {
 
 export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCount = 0 }: JobsFiltersSidebarProps) {
   const { locale } = useLanguage();
-  const [expandedCategories, setExpandedCategories] = useState<string[]>(
-    filters.category ? [filters.category] : []
-  );
-  const [categorySearchInput, setCategorySearchInput] = useState('');
-  const [isCategorySearchFocused, setIsCategorySearchFocused] = useState(false);
   const [searchInput, setSearchInput] = useState(filters.searchQuery);
 
   // Sync search input with filters
@@ -102,12 +95,9 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
       showFavoritesOnly: false,
     });
     setSearchInput('');
-    setCategorySearchInput('');
   };
 
   const hasActiveFilters =
-    filters.category !== null ||
-    filters.subcategory !== null ||
     filters.budget !== 'all' ||
     filters.propertyType !== 'all' ||
     filters.location !== 'all' ||
@@ -116,71 +106,12 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
     filters.showFavoritesOnly;
 
   const activeFilterCount = [
-    filters.category,
-    filters.subcategory,
     filters.budget !== 'all' ? filters.budget : null,
     filters.propertyType !== 'all' ? filters.propertyType : null,
     filters.location !== 'all' ? filters.location : null,
     filters.deadline !== 'all' ? filters.deadline : null,
     filters.showFavoritesOnly ? 'favorites' : null,
   ].filter(Boolean).length;
-
-  // Filter categories based on search
-  const filteredCategories = useMemo(() => {
-    if (!categorySearchInput.trim()) return CATEGORIES;
-
-    const searchLower = categorySearchInput.toLowerCase().trim();
-
-    return CATEGORIES.map(category => {
-      const categoryNameMatches =
-        category.name.toLowerCase().includes(searchLower) ||
-        category.nameKa.toLowerCase().includes(searchLower);
-
-      const matchingSubcategories = category.subcategories.filter(sub =>
-        sub.name.toLowerCase().includes(searchLower) ||
-        sub.nameKa.toLowerCase().includes(searchLower)
-      );
-
-      if (categoryNameMatches) return category;
-      if (matchingSubcategories.length > 0) {
-        return { ...category, subcategories: matchingSubcategories };
-      }
-      return null;
-    }).filter(Boolean) as typeof CATEGORIES;
-  }, [categorySearchInput]);
-
-  // Auto-expand when searching
-  useEffect(() => {
-    if (categorySearchInput.trim()) {
-      setExpandedCategories(filteredCategories.map(c => c.key));
-    }
-  }, [categorySearchInput, filteredCategories]);
-
-  const toggleCategoryExpand = (key: string) => {
-    setExpandedCategories(prev =>
-      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
-    );
-  };
-
-  const handleCategorySelect = (key: string) => {
-    if (filters.category === key) {
-      updateFilter('category', null);
-      updateFilter('subcategory', null);
-    } else {
-      updateFilter('category', key);
-      updateFilter('subcategory', null);
-      if (!expandedCategories.includes(key)) {
-        setExpandedCategories(prev => [...prev, key]);
-      }
-    }
-  };
-
-  const handleSubcategorySelect = (subKey: string, categoryKey: string) => {
-    if (filters.category !== categoryKey) {
-      updateFilter('category', categoryKey);
-    }
-    updateFilter('subcategory', filters.subcategory === subKey ? null : subKey);
-  };
 
   const handleSearchChange = (value: string) => {
     setSearchInput(value);
@@ -356,99 +287,6 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
           </div>
         </div>
 
-        {/* Categories */}
-        <div className="space-y-2.5">
-          <span className="filter-section-label">
-            {locale === 'ka' ? 'კატეგორია' : 'Category'}
-          </span>
-
-          {/* Category Search */}
-          <div className="relative">
-            <div className={`
-              relative flex items-center transition-all duration-200 ease-out
-              rounded-lg border bg-[var(--color-bg-secondary)]
-              ${isCategorySearchFocused
-                ? 'border-[#E07B4F]/40 ring-2 ring-[#E07B4F]/10'
-                : 'border-[var(--color-border-subtle)] hover:border-[var(--color-border)]'
-              }
-            `}>
-              <Search className="absolute left-2.5 w-3.5 h-3.5 text-[var(--color-text-tertiary)]" />
-              <input
-                type="text"
-                value={categorySearchInput}
-                onChange={(e) => setCategorySearchInput(e.target.value)}
-                onFocus={() => setIsCategorySearchFocused(true)}
-                onBlur={() => setIsCategorySearchFocused(false)}
-                placeholder={locale === 'ka' ? 'კატეგორიის ძიება...' : 'Search categories...'}
-                className="w-full bg-transparent pl-8 pr-7 py-2 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none"
-              />
-              {categorySearchInput && (
-                <button
-                  onClick={() => setCategorySearchInput('')}
-                  className="absolute right-2 p-0.5 rounded-full hover:bg-[#E07B4F]/10 text-[var(--color-text-tertiary)] hover:text-[#E07B4F]"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Category List */}
-          <div className="space-y-1.5 max-h-[300px] overflow-y-auto">
-            {filteredCategories.length === 0 ? (
-              <div className="py-4 text-center">
-                <p className="text-xs text-[var(--color-text-tertiary)]">
-                  {locale === 'ka' ? 'კატეგორია არ მოიძებნა' : 'No categories found'}
-                </p>
-              </div>
-            ) : (
-              filteredCategories.map(category => {
-                const isSelected = filters.category === category.key;
-                const isExpanded = expandedCategories.includes(category.key);
-
-                return (
-                  <div key={category.key} className="filter-category-wrapper">
-                    <button
-                      onClick={() => handleCategorySelect(category.key)}
-                      className={`filter-category-btn ${isSelected ? 'filter-category-active' : ''}`}
-                    >
-                      <span className="font-medium text-xs">
-                        {locale === 'ka' ? category.nameKa : category.name}
-                      </span>
-                      <ChevronRight
-                        className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleCategoryExpand(category.key);
-                        }}
-                      />
-                    </button>
-
-                    {/* Subcategories */}
-                    <div className={`filter-subcategories ${isExpanded ? 'filter-subcategories-open' : ''}`}>
-                      <div className="pt-1.5 pb-1 space-y-0.5">
-                        {category.subcategories.map(sub => {
-                          const isSubSelected = filters.subcategory === sub.key;
-                          return (
-                            <button
-                              key={sub.key}
-                              onClick={() => handleSubcategorySelect(sub.key, category.key)}
-                              className={`filter-subcategory-btn ${isSubSelected ? 'filter-subcategory-active' : ''}`}
-                            >
-                              <span className={`filter-subcategory-dot ${isSubSelected ? 'filter-subcategory-dot-active' : ''}`} />
-                              <span className="text-[11px]">{locale === 'ka' ? sub.nameKa : sub.name}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-
         {/* Active Filters Tags */}
         {hasActiveFilters && (
           <div className="filter-active-section">
@@ -456,32 +294,6 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
               {locale === 'ka' ? 'არჩეული' : 'Selected'}
             </span>
             <div className="flex flex-wrap gap-1.5 mt-2">
-              {filters.category && (
-                <span className="filter-tag filter-tag-category">
-                  {locale === 'ka'
-                    ? CATEGORIES.find(c => c.key === filters.category)?.nameKa
-                    : CATEGORIES.find(c => c.key === filters.category)?.name
-                  }
-                  <button
-                    onClick={() => { updateFilter('category', null); updateFilter('subcategory', null); }}
-                    className="filter-tag-remove"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              )}
-              {filters.subcategory && (
-                <span className="filter-tag filter-tag-sub">
-                  {(() => {
-                    const cat = CATEGORIES.find(c => c.key === filters.category);
-                    const sub = cat?.subcategories.find(s => s.key === filters.subcategory);
-                    return locale === 'ka' ? sub?.nameKa : sub?.name;
-                  })()}
-                  <button onClick={() => updateFilter('subcategory', null)} className="filter-tag-remove">
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              )}
               {filters.budget !== 'all' && (
                 <span className="filter-tag filter-tag-category">
                   {locale === 'ka'
@@ -511,6 +323,25 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
                     : LOCATIONS.find(l => l.key === filters.location)?.label
                   }
                   <button onClick={() => updateFilter('location', 'all')} className="filter-tag-remove">
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+              {filters.deadline !== 'all' && (
+                <span className="filter-tag filter-tag-sub">
+                  {locale === 'ka'
+                    ? DEADLINE_FILTERS.find(d => d.key === filters.deadline)?.labelKa
+                    : DEADLINE_FILTERS.find(d => d.key === filters.deadline)?.label
+                  }
+                  <button onClick={() => updateFilter('deadline', 'all')} className="filter-tag-remove">
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+              {filters.showFavoritesOnly && (
+                <span className="filter-tag filter-tag-category">
+                  {locale === 'ka' ? 'შენახულები' : 'Saved'}
+                  <button onClick={() => updateFilter('showFavoritesOnly', false)} className="filter-tag-remove">
                     <X className="w-3 h-3" />
                   </button>
                 </span>
