@@ -1676,7 +1676,7 @@ function RegisterContent() {
                 />
                 {showCityDropdown && filteredCities.length > 0 && (
                   <div
-                    className="absolute z-[100] left-0 right-0 mt-1 rounded-xl border shadow-2xl max-h-48 overflow-y-auto"
+                    className="absolute z-[100] left-0 right-0 bottom-full mb-1 rounded-xl border shadow-2xl max-h-48 overflow-y-auto"
                     style={{
                       backgroundColor: "var(--color-bg-primary)",
                       borderColor: "var(--color-border)",
