@@ -49,6 +49,7 @@ interface JobCardProps {
   variant?: "default" | "compact" | "list";
   onSave?: (jobId: string) => void;
   isSaved?: boolean;
+  hasApplied?: boolean;
 }
 
 const getPropertyTypeLabel = (type?: string, locale: string = 'ka'): string => {
@@ -94,6 +95,7 @@ export default function JobCard({
   job,
   onSave,
   isSaved = false,
+  hasApplied = false,
 }: JobCardProps) {
   const { locale } = useLanguage();
   const [isHovered, setIsHovered] = useState(false);
@@ -284,7 +286,17 @@ export default function JobCard({
 
               {/* Status badges */}
               <div className="flex items-center gap-1.5">
-                {isNew && (
+                {hasApplied && (
+                  <div className="px-2 py-0.5 rounded-full bg-blue-500 shadow-lg flex items-center gap-1">
+                    <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-white">
+                      {locale === 'ka' ? 'გაგზავნილი' : 'Applied'}
+                    </span>
+                  </div>
+                )}
+                {isNew && !hasApplied && (
                   <div className="px-2 py-0.5 rounded-full bg-emerald-500 shadow-lg flex items-center gap-1">
                     <span className="w-1 h-1 rounded-full bg-white animate-pulse" />
                     <span className="text-[9px] font-bold uppercase tracking-wider text-white">
@@ -452,6 +464,17 @@ export default function JobCard({
                 {truncateLocation(job.location)}
               </p>
             </div>
+
+            {/* Views counter */}
+            {job.viewCount > 0 && (
+              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[var(--color-bg-tertiary)]">
+                <svg className="w-2.5 h-2.5 text-[var(--color-text-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span className="text-[var(--color-text-tertiary)] text-[10px] font-medium">{job.viewCount}</span>
+              </div>
+            )}
 
             {/* Proposals badge */}
             {job.proposalCount > 0 && (

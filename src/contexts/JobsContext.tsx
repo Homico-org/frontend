@@ -31,6 +31,8 @@ interface JobsContextType {
   setFilters: (filters: JobFilters) => void;
   savedJobIds: Set<string>;
   handleSaveJob: (jobId: string) => void;
+  appliedJobIds: Set<string>;
+  isLoadingApplied: boolean;
 }
 
 const JobsContext = createContext<JobsContextType | null>(null);
@@ -38,6 +40,8 @@ const JobsContext = createContext<JobsContextType | null>(null);
 export function JobsProvider({ children }: { children: ReactNode }) {
   const [filters, setFilters] = useState<JobFilters>(DEFAULT_FILTERS);
   const [savedJobIds, setSavedJobIds] = useState<Set<string>>(new Set());
+  const [appliedJobIds, setAppliedJobIds] = useState<Set<string>>(new Set());
+  const [isLoadingApplied, setIsLoadingApplied] = useState(true);
 
   // Load saved jobs from localStorage
   useEffect(() => {
@@ -50,6 +54,50 @@ export function JobsProvider({ children }: { children: ReactNode }) {
         console.error("Error parsing saved jobs:", e);
       }
     }
+  }, []);
+
+  // Fetch user's proposals to know which jobs they've applied to
+  useEffect(() => {
+    const fetchAppliedJobs = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setIsLoadingApplied(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/proposals/my`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          const proposals = data.data || data.proposals || data || [];
+          // Extract job IDs from proposals
+          const jobIds = new Set<string>(
+            proposals
+              .map((p: { jobId?: string | { _id: string } }) => {
+                if (typeof p.jobId === 'string') return p.jobId;
+                if (p.jobId && typeof p.jobId === 'object' && '_id' in p.jobId) return p.jobId._id;
+                return null;
+              })
+              .filter(Boolean)
+          );
+          setAppliedJobIds(jobIds);
+        }
+      } catch (error) {
+        console.error("Error fetching applied jobs:", error);
+      } finally {
+        setIsLoadingApplied(false);
+      }
+    };
+
+    fetchAppliedJobs();
   }, []);
 
   // Handle save/unsave job
@@ -67,7 +115,14 @@ export function JobsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <JobsContext.Provider value={{ filters, setFilters, savedJobIds, handleSaveJob }}>
+    <JobsContext.Provider value={{
+      filters,
+      setFilters,
+      savedJobIds,
+      handleSaveJob,
+      appliedJobIds,
+      isLoadingApplied
+    }}>
       {children}
     </JobsContext.Provider>
   );

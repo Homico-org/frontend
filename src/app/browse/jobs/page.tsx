@@ -51,7 +51,7 @@ export default function JobsPage() {
   const { locale } = useLanguage();
   const { user, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
-  const { filters, savedJobIds, handleSaveJob } = useJobsContext();
+  const { filters, savedJobIds, handleSaveJob, appliedJobIds } = useJobsContext();
 
   const isPro = user?.role === "pro";
 
@@ -295,6 +295,7 @@ export default function JobsPage() {
                 job={job}
                 onSave={handleSaveJob}
                 isSaved={savedJobIds.has(job._id)}
+                hasApplied={appliedJobIds.has(job._id)}
               />
             </div>
           ))}
