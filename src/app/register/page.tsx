@@ -1235,7 +1235,7 @@ function RegisterContent() {
           )}
 
           {/* Personal Info */}
-          <section>
+          <section className="overflow-visible">
             <div className="flex items-center gap-3 mb-4">
               <div
                 className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm transition-all duration-300 ${
@@ -1644,7 +1644,7 @@ function RegisterContent() {
               </div>
 
               {/* City - Optional field */}
-              <div ref={cityDropdownRef} className="relative">
+              <div ref={cityDropdownRef} className="relative z-20">
                 <label
                   className="block text-sm font-medium mb-2"
                   style={{ color: "var(--color-text-secondary)" }}
@@ -1676,11 +1676,10 @@ function RegisterContent() {
                 />
                 {showCityDropdown && filteredCities.length > 0 && (
                   <div
-                    className="absolute z-50 left-0 right-0 mt-1 rounded-xl border shadow-xl max-h-48 overflow-y-auto"
+                    className="absolute z-[100] left-0 right-0 mt-1 rounded-xl border shadow-2xl max-h-48 overflow-y-auto"
                     style={{
-                      backgroundColor: "var(--color-bg-secondary)",
+                      backgroundColor: "var(--color-bg-primary)",
                       borderColor: "var(--color-border)",
-                      top: "100%",
                     }}
                   >
                     {filteredCities.map((city) => (
