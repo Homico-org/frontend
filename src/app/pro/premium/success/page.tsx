@@ -63,8 +63,8 @@ function SuccessContent() {
 
           <p className="text-lg text-[var(--color-text-secondary)] mb-2">
             {locale === 'ka'
-              ? `თქვენ წარმატებით გააქტიურეთ ${tier.name[locale === 'ka' ? 'ka' : 'en']} გეგმა`
-              : `You've successfully activated the ${tier.name[locale === 'ka' ? 'ka' : 'en']} plan`}
+              ? `თქვენ წარმატებით გააქტიურეთ ${tier.name.ka} გეგმა`
+              : `You've successfully activated the ${tier.name.en} plan`}
           </p>
 
           <div className="flex items-center justify-center gap-2 text-sm text-[var(--color-text-tertiary)] mb-8">
