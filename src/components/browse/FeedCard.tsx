@@ -182,6 +182,25 @@ export default function FeedCard({ item, onLike, isAuthenticated = false }: Feed
             </>
           )}
 
+          {/* Top left badges - Verified/External indicator */}
+          <div className="absolute top-4 left-4 z-20 flex flex-col gap-1.5">
+            {item.isVerified ? (
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500 shadow-lg">
+                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span className="text-[9px] font-bold uppercase tracking-wider text-white">Homico</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-black/50 backdrop-blur-sm border border-white/10">
+                <svg className="w-3 h-3 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                </svg>
+                <span className="text-[9px] font-medium text-white/70">Portfolio</span>
+              </div>
+            )}
+          </div>
+
           {/* Like button - floating top right */}
           {isAuthenticated && !isBeforeAfter && (
             <div className="absolute top-4 right-4 z-20" onClick={(e) => e.preventDefault()}>

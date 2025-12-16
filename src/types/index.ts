@@ -127,6 +127,8 @@ export interface FeedItem {
   likeCount: number;
   isLiked: boolean;
   createdAt: string;
+  isVerified?: boolean; // Work done through Homico platform
+  jobId?: string; // Reference to original job if done on Homico
 }
 
 export enum ProjectStatus {
