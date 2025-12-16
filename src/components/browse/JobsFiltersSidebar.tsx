@@ -1,6 +1,7 @@
 'use client';
 
 import { useLanguage } from '@/contexts/LanguageContext';
+import { JobFilters } from '@/contexts/JobsContext';
 import {
   Bookmark,
   Building2,
@@ -14,6 +15,9 @@ import {
   Briefcase
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+
+// Re-export JobFilters for convenience
+export type { JobFilters } from '@/contexts/JobsContext';
 
 // Budget filter options
 export const JOB_BUDGET_FILTERS = [
@@ -52,17 +56,6 @@ const DEADLINE_FILTERS = [
   { key: 'month', label: 'This Month', labelKa: 'ამ თვეში' },
   { key: 'flexible', label: 'Flexible', labelKa: 'მოქნილი' },
 ];
-
-export interface JobFilters {
-  category: string | null;
-  subcategory: string | null;
-  budget: string;
-  propertyType: string;
-  location: string;
-  deadline: string;
-  searchQuery: string;
-  showFavoritesOnly: boolean;
-}
 
 interface JobsFiltersSidebarProps {
   filters: JobFilters;

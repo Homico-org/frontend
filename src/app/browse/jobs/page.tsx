@@ -1,14 +1,12 @@
 "use client";
 
 import JobCard from "@/components/common/JobCard";
-import JobsFiltersSidebar, { JobFilters, JOB_BUDGET_FILTERS } from "@/components/browse/JobsFiltersSidebar";
+import { JOB_BUDGET_FILTERS } from "@/components/browse/JobsFiltersSidebar";
 import { useAuth } from "@/contexts/AuthContext";
+import { useJobsContext } from "@/contexts/JobsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Filter, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-const SAVED_JOBS_KEY = "homi_saved_jobs";
 
 interface MediaItem {
   type: "image" | "video";
@@ -49,27 +47,13 @@ interface Job {
   };
 }
 
-const DEFAULT_FILTERS: JobFilters = {
-  category: null,
-  subcategory: null,
-  budget: 'all',
-  propertyType: 'all',
-  location: 'all',
-  deadline: 'all',
-  searchQuery: '',
-  showFavoritesOnly: false,
-};
-
 export default function JobsPage() {
   const { locale } = useLanguage();
   const { user, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
+  const { filters, savedJobIds, handleSaveJob } = useJobsContext();
 
   const isPro = user?.role === "pro";
-
-  // Local filters state for jobs page
-  const [filters, setFilters] = useState<JobFilters>(DEFAULT_FILTERS);
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Redirect non-pro users to portfolio page
   useEffect(() => {
@@ -84,35 +68,7 @@ export default function JobsPage() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
-  const [savedJobIds, setSavedJobIds] = useState<Set<string>>(new Set());
   const loaderRef = useRef<HTMLDivElement>(null);
-
-  // Load saved jobs from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem(SAVED_JOBS_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setSavedJobIds(new Set(parsed));
-      } catch (e) {
-        console.error("Error parsing saved jobs:", e);
-      }
-    }
-  }, []);
-
-  // Handle save/unsave job
-  const handleSaveJob = useCallback((jobId: string) => {
-    setSavedJobIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(jobId)) {
-        newSet.delete(jobId);
-      } else {
-        newSet.add(jobId);
-      }
-      localStorage.setItem(SAVED_JOBS_KEY, JSON.stringify([...newSet]));
-      return newSet;
-    });
-  }, []);
 
   // Filter jobs by favorites if showFavoritesOnly is true
   const displayedJobs = useMemo(() => {
@@ -273,15 +229,6 @@ export default function JobsPage() {
     }
   }, [page, fetchJobs]);
 
-  // Active filter count for mobile badge
-  const activeFilterCount = [
-    filters.category,
-    filters.budget !== 'all' ? filters.budget : null,
-    filters.propertyType !== 'all' ? filters.propertyType : null,
-    filters.location !== 'all' ? filters.location : null,
-    filters.showFavoritesOnly ? 'favorites' : null,
-  ].filter(Boolean).length;
-
   // Show loading while auth is loading or redirecting non-pro users
   if (isAuthLoading || !isPro) {
     return (
@@ -292,157 +239,104 @@ export default function JobsPage() {
   }
 
   return (
-    <div className="flex gap-6 -ml-6 -mt-6">
-      {/* Desktop Sidebar - Matching other tabs layout (no card wrapper) */}
-      <aside className="hidden lg:block w-60 flex-shrink-0 border-r border-[var(--color-border-subtle)] bg-[var(--color-bg-base)]">
-        <JobsFiltersSidebar
-          filters={filters}
-          onFiltersChange={setFilters}
-          savedCount={savedJobIds.size}
-        />
-      </aside>
-
-      {/* Main Content */}
-      <div className="flex-1 min-w-0 p-6">
-        {/* Mobile Filter Button */}
-        <div className="lg:hidden mb-4">
-          <button
-            onClick={() => setShowMobileFilters(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] text-sm font-medium text-[var(--color-text-secondary)]"
-          >
-            <Filter className="w-4 h-4" />
-            {locale === 'ka' ? 'ფილტრები' : 'Filters'}
-            {activeFilterCount > 0 && (
-              <span className="ml-1 px-1.5 py-0.5 text-[10px] rounded-full bg-[#E07B4F] text-white">
-                {activeFilterCount}
-              </span>
-            )}
-          </button>
+    <div>
+      {/* Results count */}
+      {!isLoading && (
+        <div className="mb-4 text-sm text-[var(--color-text-secondary)]">
+          {filters.showFavoritesOnly ? (
+            displayedJobs.length > 0 ? (
+              <>
+                {locale === 'ka' ? 'შენახული' : 'Saved'}: <span className="font-semibold text-[var(--color-text-primary)]">{displayedJobs.length}</span> {locale === 'ka' ? 'სამუშაო' : 'jobs'}
+              </>
+            ) : null
+          ) : (
+            totalCount > 0 ? (
+              <>
+                {locale === 'ka' ? 'ნაპოვნია' : 'Found'} <span className="font-semibold text-[var(--color-text-primary)]">{totalCount}</span> {locale === 'ka' ? 'სამუშაო' : 'jobs'}
+              </>
+            ) : null
+          )}
         </div>
+      )}
 
-        {/* Results count */}
-        {!isLoading && (
-          <div className="mb-4 text-sm text-[var(--color-text-secondary)]">
-            {filters.showFavoritesOnly ? (
-              displayedJobs.length > 0 ? (
-                <>
-                  {locale === 'ka' ? 'შენახული' : 'Saved'}: <span className="font-semibold text-[var(--color-text-primary)]">{displayedJobs.length}</span> {locale === 'ka' ? 'სამუშაო' : 'jobs'}
-                </>
-              ) : null
-            ) : (
-              totalCount > 0 ? (
-                <>
-                  {locale === 'ka' ? 'ნაპოვნია' : 'Found'} <span className="font-semibold text-[var(--color-text-primary)]">{totalCount}</span> {locale === 'ka' ? 'სამუშაო' : 'jobs'}
-                </>
-              ) : null
-            )}
-          </div>
-        )}
-
-        {/* Jobs Grid */}
-        {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {[...Array(6)].map((_, i) => (
-              <div
-                key={i}
-                className="rounded-[20px] bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] overflow-hidden animate-pulse"
-              >
-                <div className="aspect-[4/3] bg-[var(--color-bg-tertiary)]" />
-                <div className="p-4 space-y-3">
-                  <div className="h-4 rounded-lg w-3/4 bg-[var(--color-bg-tertiary)]" />
-                  <div className="h-3 rounded w-full bg-[var(--color-bg-tertiary)]/50" />
-                  <div className="h-3 rounded w-2/3 bg-[var(--color-bg-tertiary)]/50" />
-                  <div className="flex items-center gap-3 pt-3 border-t border-[var(--color-border-subtle)]">
-                    <div className="w-9 h-9 rounded-full bg-[var(--color-bg-tertiary)]" />
-                    <div className="flex-1">
-                      <div className="h-3 rounded w-20 bg-[var(--color-bg-tertiary)] mb-1" />
-                      <div className="h-2.5 rounded w-16 bg-[var(--color-bg-tertiary)]/50" />
-                    </div>
+      {/* Jobs Grid */}
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={i}
+              className="rounded-[20px] bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] overflow-hidden animate-pulse"
+            >
+              <div className="aspect-[4/3] bg-[var(--color-bg-tertiary)]" />
+              <div className="p-4 space-y-3">
+                <div className="h-4 rounded-lg w-3/4 bg-[var(--color-bg-tertiary)]" />
+                <div className="h-3 rounded w-full bg-[var(--color-bg-tertiary)]/50" />
+                <div className="h-3 rounded w-2/3 bg-[var(--color-bg-tertiary)]/50" />
+                <div className="flex items-center gap-3 pt-3 border-t border-[var(--color-border-subtle)]">
+                  <div className="w-9 h-9 rounded-full bg-[var(--color-bg-tertiary)]" />
+                  <div className="flex-1">
+                    <div className="h-3 rounded w-20 bg-[var(--color-bg-tertiary)] mb-1" />
+                    <div className="h-2.5 rounded w-16 bg-[var(--color-bg-tertiary)]/50" />
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        ) : displayedJobs.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {displayedJobs.map((job, index) => (
-              <div
-                key={job._id}
-                className="animate-fade-in"
-                style={{ animationDelay: `${Math.min(index, 8) * 50}ms` }}
-              >
-                <JobCard
-                  job={job}
-                  onSave={handleSaveJob}
-                  isSaved={savedJobIds.has(job._id)}
-                />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-16">
+            </div>
+          ))}
+        </div>
+      ) : displayedJobs.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          {displayedJobs.map((job, index) => (
             <div
-              className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-[var(--color-bg-tertiary)]"
+              key={job._id}
+              className="animate-fade-in"
+              style={{ animationDelay: `${Math.min(index, 8) * 50}ms` }}
             >
-              <svg
-                className="w-8 h-8 text-[var(--color-text-tertiary)]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <rect x="2" y="7" width="20" height="14" rx="2" strokeWidth="1.5" />
-                <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
+              <JobCard
+                job={job}
+                onSave={handleSaveJob}
+                isSaved={savedJobIds.has(job._id)}
+              />
             </div>
-            <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
-              {filters.showFavoritesOnly
-                ? (locale === "ka" ? "შენახული სამუშაოები არ არის" : "No saved jobs")
-                : (locale === "ka" ? "სამუშაოები არ მოიძებნა" : "No jobs found")
-              }
-            </h3>
-            <p className="text-[var(--color-text-secondary)]">
-              {filters.showFavoritesOnly
-                ? (locale === "ka" ? "შეინახეთ სამუშაოები მონიშვნით" : "Save jobs by clicking the bookmark icon")
-                : (locale === "ka" ? "სცადეთ ფილტრების შეცვლა" : "Try adjusting your filters")
-              }
-            </p>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-16">
+          <div
+            className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-[var(--color-bg-tertiary)]"
+          >
+            <svg
+              className="w-8 h-8 text-[var(--color-text-tertiary)]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <rect x="2" y="7" width="20" height="14" rx="2" strokeWidth="1.5" />
+              <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
           </div>
-        )}
+          <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
+            {filters.showFavoritesOnly
+              ? (locale === "ka" ? "შენახული სამუშაოები არ არის" : "No saved jobs")
+              : (locale === "ka" ? "სამუშაოები არ მოიძებნა" : "No jobs found")
+            }
+          </h3>
+          <p className="text-[var(--color-text-secondary)]">
+            {filters.showFavoritesOnly
+              ? (locale === "ka" ? "შეინახეთ სამუშაოები მონიშვნით" : "Save jobs by clicking the bookmark icon")
+              : (locale === "ka" ? "სცადეთ ფილტრების შეცვლა" : "Try adjusting your filters")
+            }
+          </p>
+        </div>
+      )}
 
-        {/* Infinite scroll loader */}
-        {!filters.showFavoritesOnly && (
-          <div ref={loaderRef} className="py-10">
-            {isLoadingMore && (
-              <div className="flex justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#E07B4F] border-t-transparent" />
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Mobile Filters Drawer */}
-      {showMobileFilters && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowMobileFilters(false)} />
-          <div className="absolute left-0 top-0 bottom-0 w-80 bg-[var(--color-bg-base)] shadow-xl animate-slide-in-left">
-            <div className="flex items-center justify-between p-4 border-b border-[var(--color-border-subtle)]">
-              <h3 className="font-semibold text-[var(--color-text-primary)]">
-                {locale === 'ka' ? 'ფილტრები' : 'Filters'}
-              </h3>
-              <button
-                onClick={() => setShowMobileFilters(false)}
-                className="p-1.5 rounded-lg hover:bg-[var(--color-bg-tertiary)]"
-              >
-                <X className="w-5 h-5 text-[var(--color-text-secondary)]" />
-              </button>
+      {/* Infinite scroll loader */}
+      {!filters.showFavoritesOnly && (
+        <div ref={loaderRef} className="py-10">
+          {isLoadingMore && (
+            <div className="flex justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#E07B4F] border-t-transparent" />
             </div>
-            <JobsFiltersSidebar
-              filters={filters}
-              onFiltersChange={setFilters}
-              savedCount={savedJobIds.size}
-            />
-          </div>
+          )}
         </div>
       )}
     </div>

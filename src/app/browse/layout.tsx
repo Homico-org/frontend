@@ -1,15 +1,28 @@
 "use client";
 
 import BrowseFiltersSidebar from "@/components/browse/BrowseFiltersSidebar";
+import JobsFiltersSidebar from "@/components/browse/JobsFiltersSidebar";
 import ContentTypeSwitcher from "@/components/browse/ContentTypeSwitcher";
 import Header from "@/components/common/Header";
 import { useAuth } from "@/contexts/AuthContext";
 import { BrowseProvider } from "@/contexts/BrowseContext";
+import { JobsProvider, useJobsContext } from "@/contexts/JobsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Briefcase, Filter, Send, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ReactNode, Suspense, useEffect, useState } from "react";
+
+function JobsSidebar() {
+  const { filters, setFilters, savedJobIds } = useJobsContext();
+  return (
+    <JobsFiltersSidebar
+      filters={filters}
+      onFiltersChange={setFilters}
+      savedCount={savedJobIds.size}
+    />
+  );
+}
 
 function BrowseLayoutContent({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -46,18 +59,15 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
       <div className="flex-shrink-0 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-base)]">
         <div className="px-4 sm:px-6 py-2.5">
           <div className={`flex items-center justify-between gap-4 ${mounted ? 'animate-fade-in' : 'opacity-0'}`}>
-            {/* Left Section - Filter Toggle (mobile only, not for jobs page) */}
+            {/* Left Section - Filter Toggle (mobile only) */}
             <div className="flex items-center gap-3 min-w-[100px]">
-              {/* Mobile Filter Toggle - Hidden for jobs page which has its own */}
-              {!isJobsPage && (
-                <button
-                  onClick={() => setShowMobileFilters(true)}
-                  className="lg:hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-[var(--color-bg-tertiary)] border border-[var(--color-border-subtle)] text-[var(--color-text-secondary)]"
-                >
-                  <Filter className="w-3.5 h-3.5" />
-                  <span>{locale === 'ka' ? 'ფილტრი' : 'Filter'}</span>
-                </button>
-              )}
+              <button
+                onClick={() => setShowMobileFilters(true)}
+                className="lg:hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-[var(--color-bg-tertiary)] border border-[var(--color-border-subtle)] text-[var(--color-text-secondary)]"
+              >
+                <Filter className="w-3.5 h-3.5" />
+                <span>{locale === 'ka' ? 'ფილტრი' : 'Filter'}</span>
+              </button>
             </div>
 
             {/* Centered Tabs */}
@@ -93,16 +103,18 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
 
       {/* Main Content Area */}
       <div className="flex-1 flex min-h-0 overflow-hidden">
-        {/* Left Sidebar - Fixed Filters (Desktop) - Hidden for jobs page which has its own sidebar */}
-        {!isJobsPage && (
-          <aside className="hidden lg:block w-60 flex-shrink-0 border-r border-[var(--color-border-subtle)] bg-[var(--color-bg-base)] overflow-hidden">
+        {/* Left Sidebar - Fixed Filters (Desktop) */}
+        <aside className="hidden lg:block w-60 flex-shrink-0 border-r border-[var(--color-border-subtle)] bg-[var(--color-bg-base)] overflow-hidden">
+          {isJobsPage ? (
+            <JobsSidebar />
+          ) : (
             <BrowseFiltersSidebar
               showSearch={isProfessionalsPage}
               showRatingFilter={isProfessionalsPage}
               showBudgetFilter={false}
             />
-          </aside>
-        )}
+          )}
+        </aside>
 
         {/* Scrollable Content */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 browse-scroll-container">
@@ -114,8 +126,8 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
         </main>
       </div>
 
-      {/* Mobile Filters Drawer - Hidden for jobs page which has its own */}
-      {showMobileFilters && !isJobsPage && (
+      {/* Mobile Filters Drawer */}
+      {showMobileFilters && (
         <div className="fixed inset-0 z-50 lg:hidden">
           {/* Backdrop */}
           <div
@@ -135,11 +147,15 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                 <X className="w-5 h-5 text-[var(--color-text-secondary)]" />
               </button>
             </div>
-            <BrowseFiltersSidebar
-              showSearch={isProfessionalsPage}
-              showRatingFilter={isProfessionalsPage}
-              showBudgetFilter={false}
-            />
+            {isJobsPage ? (
+              <JobsSidebar />
+            ) : (
+              <BrowseFiltersSidebar
+                showSearch={isProfessionalsPage}
+                showRatingFilter={isProfessionalsPage}
+                showBudgetFilter={false}
+              />
+            )}
           </div>
         </div>
       )}
@@ -149,8 +165,10 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
 
 function BrowseLayoutWithParams({ children }: { children: ReactNode }) {
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const isJobsPage = pathname.includes("/browse/jobs");
 
-  return (
+  const content = (
     <BrowseProvider
       initialCategory={searchParams.get("category")}
       initialSubcategory={searchParams.get("subcategory")}
@@ -158,6 +176,13 @@ function BrowseLayoutWithParams({ children }: { children: ReactNode }) {
       <BrowseLayoutContent>{children}</BrowseLayoutContent>
     </BrowseProvider>
   );
+
+  // Wrap with JobsProvider if on jobs page
+  if (isJobsPage) {
+    return <JobsProvider>{content}</JobsProvider>;
+  }
+
+  return content;
 }
 
 export default function BrowseLayout({ children }: { children: ReactNode }) {
