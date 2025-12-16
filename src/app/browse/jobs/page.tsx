@@ -63,8 +63,8 @@ export default function JobsPage() {
     }
   }, [isAuthLoading, isPro, router]);
 
-  // Get user's categories from their profile
-  const userCategories = user?.selectedCategories || [];
+  // Get user's categories from their profile - memoize to prevent unnecessary re-renders
+  const userCategories = useMemo(() => user?.selectedCategories || [], [user?.selectedCategories]);
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -246,11 +246,25 @@ export default function JobsPage() {
     [isPro, userCategories, getBudgetParams]
   );
 
+  // Track if initial fetch has been done to prevent double fetching
+  const hasFetchedRef = useRef(false);
+
   // Reset and fetch when filters change
   useEffect(() => {
+    if (!isPro) return; // Don't fetch if not a pro
+
+    // Skip if this is the initial mount and we haven't fetched yet
+    if (!hasFetchedRef.current) {
+      hasFetchedRef.current = true;
+      setPage(1);
+      fetchJobs(1, true);
+      return;
+    }
+
+    // For subsequent filter changes, reset and fetch
     setPage(1);
     fetchJobs(1, true);
-  }, [selectedBudget, isPro, userCategories]);
+  }, [selectedBudget, isPro, userCategories, fetchJobs]);
 
   // Infinite scroll
   useEffect(() => {
@@ -275,7 +289,7 @@ export default function JobsPage() {
     if (page > 1) {
       fetchJobs(page);
     }
-  }, [page]);
+  }, [page, fetchJobs]);
 
   // Show loading while auth is loading or redirecting non-pro users
   if (isAuthLoading || !isPro) {
@@ -294,44 +308,44 @@ export default function JobsPage() {
           {[...Array(6)].map((_, i) => (
             <div
               key={i}
-              className="rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-[#D2691E]/10 dark:border-[#CD853F]/15 overflow-hidden animate-pulse"
+              className="rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-[#E07B4F]/10 dark:border-[#E8956A]/15 overflow-hidden animate-pulse"
             >
               {/* Image skeleton */}
-              <div className="aspect-[16/10] bg-[#D2691E]/5 relative">
+              <div className="aspect-[16/10] bg-[#E07B4F]/5 relative">
                 {/* Price badge skeleton */}
                 <div className="absolute top-3 right-3 w-16 h-6 rounded-lg bg-white/70 dark:bg-gray-800/70" />
                 {/* Category badge skeleton */}
-                <div className="absolute top-3 left-3 w-20 h-5 rounded-md bg-[#D2691E]/20" />
+                <div className="absolute top-3 left-3 w-20 h-5 rounded-md bg-[#E07B4F]/20" />
               </div>
               {/* Content skeleton */}
               <div className="p-4">
                 {/* Top row */}
                 <div className="flex items-center justify-between mb-2">
-                  <div className="w-12 h-3 rounded bg-[#D2691E]/10" />
-                  <div className="w-10 h-3 rounded bg-[#D2691E]/5" />
+                  <div className="w-12 h-3 rounded bg-[#E07B4F]/10" />
+                  <div className="w-10 h-3 rounded bg-[#E07B4F]/5" />
                 </div>
                 {/* Title */}
-                <div className="h-5 rounded-lg w-4/5 mb-2 bg-[#D2691E]/10" />
+                <div className="h-5 rounded-lg w-4/5 mb-2 bg-[#E07B4F]/10" />
                 {/* Description */}
-                <div className="h-4 rounded w-full mb-1 bg-[#D2691E]/5" />
-                <div className="h-4 rounded w-2/3 mb-3 bg-[#D2691E]/5" />
+                <div className="h-4 rounded w-full mb-1 bg-[#E07B4F]/5" />
+                <div className="h-4 rounded w-2/3 mb-3 bg-[#E07B4F]/5" />
                 {/* Meta */}
                 <div className="flex gap-2 mb-3">
-                  <div className="w-14 h-3 rounded bg-[#D2691E]/5" />
-                  <div className="w-10 h-3 rounded bg-[#D2691E]/5" />
+                  <div className="w-14 h-3 rounded bg-[#E07B4F]/5" />
+                  <div className="w-10 h-3 rounded bg-[#E07B4F]/5" />
                 </div>
                 {/* Bottom section */}
-                <div className="flex items-center justify-between pt-3 border-t border-[#D2691E]/10">
+                <div className="flex items-center justify-between pt-3 border-t border-[#E07B4F]/10">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-[#D2691E]/10" />
+                    <div className="w-8 h-8 rounded-full bg-[#E07B4F]/10" />
                     <div>
-                      <div className="w-20 h-3 rounded bg-[#D2691E]/10 mb-1" />
-                      <div className="w-14 h-2 rounded bg-[#D2691E]/5" />
+                      <div className="w-20 h-3 rounded bg-[#E07B4F]/10 mb-1" />
+                      <div className="w-14 h-2 rounded bg-[#E07B4F]/5" />
                     </div>
                   </div>
                   <div className="flex gap-1.5">
-                    <div className="w-16 h-7 rounded-lg bg-[#D2691E]/10" />
-                    <div className="w-7 h-7 rounded-lg bg-[#D2691E]/10" />
+                    <div className="w-16 h-7 rounded-lg bg-[#E07B4F]/10" />
+                    <div className="w-7 h-7 rounded-lg bg-[#E07B4F]/10" />
                   </div>
                 </div>
               </div>
@@ -384,7 +398,7 @@ export default function JobsPage() {
       <div ref={loaderRef} className="py-10">
         {isLoadingMore && (
           <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#D2691E] border-t-transparent" />
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#E07B4F] border-t-transparent" />
           </div>
         )}
       </div>

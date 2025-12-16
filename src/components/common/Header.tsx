@@ -79,7 +79,7 @@ export default function Header() {
             >
               {locale === "ka" ? "ჰომიკო" : "Homico"}
             </span>
-            <span className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-[#D2691E] group-hover:scale-125 transition-transform duration-200"></span>
+            <span className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-[#E07B4F] group-hover:scale-125 transition-transform duration-200"></span>
           </Link>
 
           <nav className="flex gap-4 items-center">
@@ -120,7 +120,7 @@ export default function Header() {
                     className="hidden sm:flex group items-center gap-2.5 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ease-out hover:scale-[1.03] active:scale-[0.97] relative overflow-hidden"
                     style={{
                       transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
-                      backgroundColor: "#D2691E",
+                      backgroundColor: "#E07B4F",
                       color: "#ffffff",
                       boxShadow: "0 2px 8px rgba(210, 105, 30, 0.3)",
                     }}
@@ -755,7 +755,7 @@ export default function Header() {
                 </button>
                 <Link
                   href="/register"
-                  className="bg-[#D2691E]/[0.06] border border-[#D2691E]/30 text-[#D2691E] dark:text-[#CD853F] font-medium px-3 sm:px-4 py-2 rounded-full hover:bg-[#D2691E]/10 hover:border-[#D2691E]/50 transition-colors"
+                  className="bg-[#E07B4F]/[0.06] border border-[#E07B4F]/30 text-[#E07B4F] dark:text-[#E8956A] font-medium px-3 sm:px-4 py-2 rounded-full hover:bg-[#E07B4F]/10 hover:border-[#E07B4F]/50 transition-colors"
                 >
                   <span className="relative z-10 tracking-wide">
                     {t("nav.signUp")}

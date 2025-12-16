@@ -172,7 +172,7 @@ export default function AddressPicker({
       animation: google.maps.Animation.DROP,
       icon: {
         path: 'M12 0C7.58 0 4 3.58 4 8c0 5.25 8 13 8 13s8-7.75 8-13c0-4.42-3.58-8-8-8zm0 11c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z',
-        fillColor: '#D2691E',
+        fillColor: '#E07B4F',
         fillOpacity: 1,
         strokeColor: '#ffffff',
         strokeWeight: 2.5,
@@ -460,7 +460,7 @@ export default function AddressPicker({
                             animationDelay: `${index * 30}ms`,
                           }}
                         >
-                          <MapPin className="w-4 h-4 text-[#D2691E] mt-0.5 flex-shrink-0" />
+                          <MapPin className="w-4 h-4 text-[#E07B4F] mt-0.5 flex-shrink-0" />
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                               {result.structured_formatting?.main_text || result.description}
@@ -521,7 +521,7 @@ export default function AddressPicker({
                       boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
                     }}
                   >
-                    <div className="w-8 h-8 rounded-full bg-[#D2691E] flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-[#E07B4F] flex items-center justify-center flex-shrink-0">
                       <MapPin className="w-4 h-4 text-white" />
                     </div>
                     <p className="text-sm font-medium text-neutral-900 dark:text-white truncate flex-1">
@@ -541,7 +541,7 @@ export default function AddressPicker({
                   }}
                 >
                   <span className="flex items-center gap-2">
-                    <MapPin className="w-3.5 h-3.5 text-[#D2691E]" />
+                    <MapPin className="w-3.5 h-3.5 text-[#E07B4F]" />
                     {locale === 'ka' ? 'დააკლიკეთ ან გადაათრიეთ მარკერი' : 'Click or drag marker'}
                   </span>
                 </div>
@@ -550,8 +550,8 @@ export default function AddressPicker({
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center gap-3">
               <div className="relative">
-                <div className="w-12 h-12 rounded-full border-2 border-[#D2691E]/20 animate-ping absolute inset-0" />
-                <Loader2 className="w-8 h-8 text-[#D2691E] animate-spin relative" />
+                <div className="w-12 h-12 rounded-full border-2 border-[#E07B4F]/20 animate-ping absolute inset-0" />
+                <Loader2 className="w-8 h-8 text-[#E07B4F] animate-spin relative" />
               </div>
               <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                 {locale === 'ka' ? 'რუკა იტვირთება...' : 'Loading map...'}
@@ -629,8 +629,8 @@ export default function AddressPicker({
                         animationDelay: `${index * 30}ms`,
                       }}
                     >
-                      <div className="w-10 h-10 rounded-full bg-[#D2691E]/10 flex items-center justify-center flex-shrink-0">
-                        <MapPin className="w-5 h-5 text-[#D2691E]" />
+                      <div className="w-10 h-10 rounded-full bg-[#E07B4F]/10 flex items-center justify-center flex-shrink-0">
+                        <MapPin className="w-5 h-5 text-[#E07B4F]" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-base font-medium text-neutral-900 dark:text-white">
@@ -691,11 +691,11 @@ export default function AddressPicker({
                   boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
                 }}
               >
-                <div className="w-12 h-12 rounded-full bg-[#D2691E] flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-[#E07B4F] flex items-center justify-center flex-shrink-0">
                   <MapPin className="w-6 h-6 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-[#D2691E] dark:text-[#CD853F] uppercase tracking-wide mb-1">
+                  <p className="text-xs font-medium text-[#E07B4F] dark:text-[#CD853F] uppercase tracking-wide mb-1">
                     {locale === 'ka' ? 'არჩეული მისამართი' : 'Selected Address'}
                   </p>
                   <p className="text-base font-medium text-neutral-900 dark:text-white truncate">
@@ -716,7 +716,7 @@ export default function AddressPicker({
               }}
             >
               <span className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-[#D2691E]" />
+                <MapPin className="w-4 h-4 text-[#E07B4F]" />
                 {locale === 'ka' ? 'დააკლიკეთ რუკაზე ან მოძებნეთ მისამართი' : 'Click on map or search for address'}
               </span>
             </div>

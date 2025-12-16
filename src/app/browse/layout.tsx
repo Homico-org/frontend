@@ -160,7 +160,7 @@ export default function BrowseLayout({ children }: { children: ReactNode }) {
   return (
     <Suspense fallback={
       <div className="h-screen flex items-center justify-center bg-[var(--color-bg-base)]">
-        <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#D2691E] border-t-transparent"></div>
+        <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#E07B4F] border-t-transparent"></div>
       </div>
     }>
       <BrowseLayoutWithParams>{children}</BrowseLayoutWithParams>

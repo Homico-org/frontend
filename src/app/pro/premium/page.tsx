@@ -172,14 +172,14 @@ export default function PremiumPlansPage() {
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Subtle terracotta orbs */}
           <div className="absolute inset-0 opacity-30 dark:opacity-20">
-            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-[#D2691E]/10 blur-[120px]" />
-            <div className="absolute top-1/4 right-0 w-[500px] h-[500px] rounded-full bg-[#D2691E]/8 blur-[100px]" />
-            <div className="absolute bottom-0 left-1/3 w-[400px] h-[400px] rounded-full bg-[#D2691E]/10 blur-[80px]" />
+            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-[#E07B4F]/10 blur-[120px]" />
+            <div className="absolute top-1/4 right-0 w-[500px] h-[500px] rounded-full bg-[#E07B4F]/8 blur-[100px]" />
+            <div className="absolute bottom-0 left-1/3 w-[400px] h-[400px] rounded-full bg-[#E07B4F]/10 blur-[80px]" />
           </div>
 
           {/* Floating decorative elements */}
-          <div className="absolute top-20 right-20 w-32 h-32 border border-[#D2691E]/10 rounded-full animate-float-slow" />
-          <div className="absolute bottom-32 left-16 w-20 h-20 border border-[#D2691E]/8 rounded-2xl rotate-45 animate-float-slower" />
+          <div className="absolute top-20 right-20 w-32 h-32 border border-[#E07B4F]/10 rounded-full animate-float-slow" />
+          <div className="absolute bottom-32 left-16 w-20 h-20 border border-[#E07B4F]/8 rounded-2xl rotate-45 animate-float-slower" />
         </div>
 
         <div className="relative container-custom py-12 sm:py-16 lg:py-24">
@@ -188,12 +188,12 @@ export default function PremiumPlansPage() {
             {/* Refined Badge */}
             <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full mb-8 premium-badge-glow">
               <div className="relative">
-                <Sparkles className="w-4 h-4 text-[#D2691E]" />
+                <Sparkles className="w-4 h-4 text-[#E07B4F]" />
                 <div className="absolute inset-0 animate-ping-slow">
-                  <Sparkles className="w-4 h-4 text-[#D2691E]/50" />
+                  <Sparkles className="w-4 h-4 text-[#E07B4F]/50" />
                 </div>
               </div>
-              <span className="text-sm font-semibold text-[#D2691E] dark:text-[#CD853F]">
+              <span className="text-sm font-semibold text-[#E07B4F] dark:text-[#E8956A]">
                 {locale === 'ka' ? 'გაზარდე შენი შესაძლებლობები' : 'Unlock Your Full Potential'}
               </span>
             </div>
@@ -209,8 +209,8 @@ export default function PremiumPlansPage() {
                       <defs>
                         <linearGradient id="underline-gradient" x1="0" y1="0" x2="200" y2="0">
                           <stop stopColor="#8B4513"/>
-                          <stop offset="0.5" stopColor="#D2691E"/>
-                          <stop offset="1" stopColor="#CD853F"/>
+                          <stop offset="0.5" stopColor="#E07B4F"/>
+                          <stop offset="1" stopColor="#E8956A"/>
                         </linearGradient>
                       </defs>
                     </svg>
@@ -227,8 +227,8 @@ export default function PremiumPlansPage() {
                       <defs>
                         <linearGradient id="underline-gradient2" x1="0" y1="0" x2="200" y2="0">
                           <stop stopColor="#8B4513"/>
-                          <stop offset="0.5" stopColor="#D2691E"/>
-                          <stop offset="1" stopColor="#CD853F"/>
+                          <stop offset="0.5" stopColor="#E07B4F"/>
+                          <stop offset="1" stopColor="#E8956A"/>
                         </linearGradient>
                       </defs>
                     </svg>
@@ -257,7 +257,7 @@ export default function PremiumPlansPage() {
                 }`}
               >
                 {billingPeriod === 'monthly' && (
-                  <div className="absolute inset-0 rounded-full bg-[#D2691E] shadow-lg shadow-[#D2691E]/25" />
+                  <div className="absolute inset-0 rounded-full bg-[#E07B4F] shadow-lg shadow-[#E07B4F]/25" />
                 )}
                 <span className="relative z-10">{locale === 'ka' ? 'თვიური' : 'Monthly'}</span>
               </button>
@@ -271,7 +271,7 @@ export default function PremiumPlansPage() {
                 }`}
               >
                 {billingPeriod === 'yearly' && (
-                  <div className="absolute inset-0 rounded-full bg-[#D2691E] shadow-lg shadow-[#D2691E]/25" />
+                  <div className="absolute inset-0 rounded-full bg-[#E07B4F] shadow-lg shadow-[#E07B4F]/25" />
                 )}
                 <span className="relative z-10 flex items-center gap-2">
                   {locale === 'ka' ? 'წლიური' : 'Yearly'}
@@ -304,8 +304,8 @@ export default function PremiumPlansPage() {
                   {tier.popular && (
                     <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20">
                       <div className="relative">
-                        <div className="absolute inset-0 bg-[#D2691E] blur-md opacity-40 rounded-full" />
-                        <div className="relative px-4 py-1.5 rounded-full bg-[#D2691E] text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-[#D2691E]/25 whitespace-nowrap">
+                        <div className="absolute inset-0 bg-[#E07B4F] blur-md opacity-40 rounded-full" />
+                        <div className="relative px-4 py-1.5 rounded-full bg-[#E07B4F] text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-[#E07B4F]/25 whitespace-nowrap">
                           {locale === 'ka' ? '⚡ პოპულარული' : '⚡ Most Popular'}
                         </div>
                       </div>
@@ -318,10 +318,10 @@ export default function PremiumPlansPage() {
                       {/* Icon with glow - solid terracotta */}
                       <div className="relative inline-flex mb-5">
                         <div
-                          className="absolute inset-0 rounded-2xl blur-xl opacity-40 transition-opacity duration-300 group-hover:opacity-60 bg-[#D2691E]"
+                          className="absolute inset-0 rounded-2xl blur-xl opacity-40 transition-opacity duration-300 group-hover:opacity-60 bg-[#E07B4F]"
                         />
                         <div
-                          className="relative w-16 h-16 rounded-2xl flex items-center justify-center bg-[#D2691E] shadow-xl shadow-[#D2691E]/25"
+                          className="relative w-16 h-16 rounded-2xl flex items-center justify-center bg-[#E07B4F] shadow-xl shadow-[#E07B4F]/25"
                         >
                           <TierIcon className="w-8 h-8 text-white drop-shadow-sm" />
                         </div>
@@ -367,7 +367,7 @@ export default function PremiumPlansPage() {
                             <div className={`flex-shrink-0 w-6 h-6 rounded-lg flex items-center justify-center ${
                               feature.included
                                 ? 'bg-[var(--color-bg-tertiary)]'
-                                : 'bg-[#D2691E] shadow-sm shadow-[#D2691E]/20'
+                                : 'bg-[#E07B4F] shadow-sm shadow-[#E07B4F]/20'
                             }`}>
                               {feature.included ? (
                                 <Check className="w-3.5 h-3.5 text-[var(--color-text-tertiary)]" />
@@ -396,7 +396,7 @@ export default function PremiumPlansPage() {
                         ${isCurrentPlan
                           ? 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] cursor-not-allowed'
                           : tier.popular
-                            ? 'bg-[#D2691E] text-white shadow-lg shadow-[#D2691E]/25 hover:shadow-xl hover:shadow-[#D2691E]/35 hover:-translate-y-0.5'
+                            ? 'bg-[#E07B4F] text-white shadow-lg shadow-[#E07B4F]/25 hover:shadow-xl hover:shadow-[#E07B4F]/35 hover:-translate-y-0.5'
                             : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)] border border-[var(--color-border)]'
                         }
                       `}

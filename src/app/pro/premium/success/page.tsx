@@ -38,7 +38,7 @@ function SuccessContent() {
                   style={{
                     left: `${20 + Math.random() * 60}%`,
                     top: `${20 + Math.random() * 40}%`,
-                    background: i % 3 === 0 ? '#D2691E' : i % 3 === 1 ? '#CD853F' : '#DEB887',
+                    background: i % 3 === 0 ? '#E07B4F' : i % 3 === 1 ? '#E8956A' : '#DEB887',
                     animationDelay: `${i * 0.1}s`,
                   }}
                 />
@@ -46,7 +46,7 @@ function SuccessContent() {
             </div>
 
             {/* Success Icon - solid terracotta */}
-            <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-[#D2691E] shadow-2xl shadow-[#D2691E]/25 mb-6 animate-scale-in">
+            <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-[#E07B4F] shadow-2xl shadow-[#E07B4F]/25 mb-6 animate-scale-in">
               <TierIcon className="w-12 h-12 text-white" />
             </div>
 
@@ -68,7 +68,7 @@ function SuccessContent() {
           </p>
 
           <div className="flex items-center justify-center gap-2 text-sm text-[var(--color-text-tertiary)] mb-8">
-            <Sparkles className="w-4 h-4 text-[#D2691E]" />
+            <Sparkles className="w-4 h-4 text-[#E07B4F]" />
             <span>
               {locale === 'ka'
                 ? 'თქვენი პრემიუმ ფუნქციები უკვე აქტიურია'
@@ -80,7 +80,7 @@ function SuccessContent() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/pro/profile-setup"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white bg-[#D2691E] shadow-lg shadow-[#D2691E]/25 hover:shadow-xl hover:shadow-[#D2691E]/35 hover:-translate-y-0.5 transition-all"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white bg-[#E07B4F] shadow-lg shadow-[#E07B4F]/25 hover:shadow-xl hover:shadow-[#E07B4F]/35 hover:-translate-y-0.5 transition-all"
             >
               {locale === 'ka' ? 'პროფილის განახლება' : 'Update Profile'}
               <ArrowRight className="w-4 h-4" />
@@ -110,7 +110,7 @@ export default function SuccessPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-base)]">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#D2691E] border-t-transparent" />
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#E07B4F] border-t-transparent" />
       </div>
     }>
       <SuccessContent />

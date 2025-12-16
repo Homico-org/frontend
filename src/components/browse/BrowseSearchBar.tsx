@@ -115,7 +115,7 @@ export default function BrowseSearchBar({ placeholder }: BrowseSearchBarProps) {
             }
           }}
           placeholder={placeholder || defaultPlaceholder}
-          className="w-full pl-9 pr-8 py-2 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] rounded-lg focus:outline-none focus:border-[#D2691E] focus:ring-1 focus:ring-[#D2691E]/20 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)]"
+          className="w-full pl-9 pr-8 py-2 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] rounded-lg focus:outline-none focus:border-[#E07B4F] focus:ring-1 focus:ring-[#E07B4F]/20 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)]"
         />
         {inputValue && (
           <button
@@ -140,11 +140,11 @@ export default function BrowseSearchBar({ placeholder }: BrowseSearchBarProps) {
                 {recentSearches.map((search, idx) => (
                   <div
                     key={idx}
-                    className="group flex items-center gap-1 px-2 py-1 rounded-md bg-[var(--color-bg-tertiary)] hover:bg-[#D2691E]/10 cursor-pointer"
+                    className="group flex items-center gap-1 px-2 py-1 rounded-md bg-[var(--color-bg-tertiary)] hover:bg-[#E07B4F]/10 cursor-pointer"
                   >
                     <button
                       onClick={() => handleSearch(search)}
-                      className="text-xs text-[var(--color-text-secondary)] group-hover:text-[#D2691E]"
+                      className="text-xs text-[var(--color-text-secondary)] group-hover:text-[#E07B4F]"
                     >
                       {search}
                     </button>
@@ -173,10 +173,10 @@ export default function BrowseSearchBar({ placeholder }: BrowseSearchBarProps) {
                 <button
                   key={suggestion.key}
                   onClick={() => handleSearch(locale === 'ka' ? suggestion.ka : suggestion.en)}
-                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-[#D2691E]/10 text-left"
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-[#E07B4F]/10 text-left"
                 >
                   <Search className="w-3.5 h-3.5 text-[var(--color-text-tertiary)]" />
-                  <span className="text-xs text-[var(--color-text-secondary)] hover:text-[#D2691E]">
+                  <span className="text-xs text-[var(--color-text-secondary)] hover:text-[#E07B4F]">
                     {locale === 'ka' ? suggestion.ka : suggestion.en}
                   </span>
                 </button>

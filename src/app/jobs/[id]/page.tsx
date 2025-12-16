@@ -1012,7 +1012,7 @@ export default function JobDetailPage() {
                         {job.clientId.avatar ? (
                           <img src={job.clientId.avatar} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-lg font-bold bg-gradient-to-br from-[#D2691E] to-[#B8560E] text-white">
+                          <div className="w-full h-full flex items-center justify-center text-lg font-bold bg-gradient-to-br from-[#E07B4F] to-[#B8560E] text-white">
                             {job.clientId.name?.[0]?.toUpperCase() || '?'}
                           </div>
                         )}

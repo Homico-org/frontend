@@ -14,21 +14,21 @@ const cardVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-[#D2691E]/10 dark:border-[#CD853F]/15",
+          "bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-[#E07B4F]/10 dark:border-[#E8956A]/15",
         elevated:
-          "bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-[#D2691E]/10 dark:border-[#CD853F]/15 shadow-[0_2px_12px_rgba(210,105,30,0.06)] hover:shadow-[0_4px_20px_rgba(210,105,30,0.10)]",
+          "bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-[#E07B4F]/10 dark:border-[#E8956A]/15 shadow-[0_2px_12px_rgba(210,105,30,0.06)] hover:shadow-[0_4px_20px_rgba(210,105,30,0.10)]",
         glass:
           "bg-white/70 dark:bg-[#323236]/70 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-lg",
         outlined:
-          "bg-transparent border border-[#D2691E]/15 dark:border-[#CD853F]/20 hover:border-[#D2691E]/25 dark:hover:border-[#CD853F]/30",
+          "bg-transparent border border-[#E07B4F]/15 dark:border-[#E8956A]/20 hover:border-[#E07B4F]/25 dark:hover:border-[#E8956A]/30",
         accent:
-          "bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-[#D2691E]/15 dark:border-[#CD853F]/20",
+          "bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-[#E07B4F]/15 dark:border-[#E8956A]/20",
         premium:
-          "bg-gradient-to-br from-white/80 to-[#D2691E]/5 dark:from-[#323236]/80 dark:to-[#D2691E]/10 backdrop-blur-xl border border-[#D2691E]/15 shadow-lg shadow-[#D2691E]/5 hover:shadow-xl hover:shadow-[#D2691E]/10 hover:border-[#D2691E]/25",
+          "bg-gradient-to-br from-white/80 to-[#E07B4F]/5 dark:from-[#323236]/80 dark:to-[#E07B4F]/10 backdrop-blur-xl border border-[#E07B4F]/15 shadow-lg shadow-[#E07B4F]/5 hover:shadow-xl hover:shadow-[#E07B4F]/10 hover:border-[#E07B4F]/25",
         interactive:
-          "bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-[#D2691E]/10 dark:border-[#CD853F]/15 cursor-pointer hover:border-[#D2691E]/25 hover:shadow-lg hover:shadow-[#D2691E]/5 hover:-translate-y-1 active:translate-y-0",
+          "bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-[#E07B4F]/10 dark:border-[#E8956A]/15 cursor-pointer hover:border-[#E07B4F]/25 hover:shadow-lg hover:shadow-[#E07B4F]/5 hover:-translate-y-1 active:translate-y-0",
         feature:
-          "bg-gradient-to-br from-[#D2691E]/5 to-[#CD853F]/10 border border-[#D2691E]/15 hover:border-[#D2691E]/25 hover:from-[#D2691E]/10 hover:to-[#CD853F]/15",
+          "bg-gradient-to-br from-[#E07B4F]/5 to-[#E8956A]/10 border border-[#E07B4F]/15 hover:border-[#E07B4F]/25 hover:from-[#E07B4F]/10 hover:to-[#E8956A]/15",
       },
       size: {
         sm: "p-3 sm:p-4",
@@ -73,7 +73,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
         <div
           className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-[2px] rounded-b-full opacity-60"
           style={{
-            background: 'linear-gradient(90deg, #D2691E, #CD853F)',
+            background: 'linear-gradient(90deg, #E07B4F, #E8956A)',
           }}
         />
       )}
@@ -83,7 +83,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
         <div
           className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-10 rounded-r-full opacity-60"
           style={{
-            background: 'linear-gradient(180deg, #D2691E, #CD853F)',
+            background: 'linear-gradient(180deg, #E07B4F, #E8956A)',
           }}
         />
       )}
@@ -110,9 +110,9 @@ const CardHeader = React.forwardRef<
     <div className="flex items-center gap-2.5">
       <div
         className="h-[2px] w-6 rounded-full opacity-50"
-        style={{ background: 'linear-gradient(90deg, #D2691E, #CD853F)' }}
+        style={{ background: 'linear-gradient(90deg, #E07B4F, #E8956A)' }}
       />
-      <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#D2691E]/50 dark:text-[#CD853F]/50">
+      <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#E07B4F]/50 dark:text-[#E8956A]/50">
         {children}
       </h3>
     </div>
@@ -166,7 +166,7 @@ const CardFooter = React.forwardRef<
     ref={ref}
     className={cn(
       "mt-4 pt-4",
-      bordered && "border-t border-[#D2691E]/[0.06] dark:border-[#CD853F]/[0.08]",
+      bordered && "border-t border-[#E07B4F]/[0.06] dark:border-[#E8956A]/[0.08]",
       className
     )}
     {...props}
@@ -199,7 +199,7 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(({
   ...props
 }, ref) => {
   const trendColors = {
-    up: 'text-[#D2691E]',
+    up: 'text-[#E07B4F]',
     down: 'text-red-500',
     neutral: 'text-gray-500',
   };
@@ -207,8 +207,8 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(({
   return (
     <Card ref={ref} variant={variant} hover className={cn("group text-center", className)} {...props}>
       {icon && (
-        <div className="w-10 h-10 md:w-12 md:h-12 mx-auto rounded-xl bg-gradient-to-br from-[#D2691E]/10 to-[#CD853F]/15 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 border border-[#D2691E]/10">
-          <div className="text-[#D2691E]">
+        <div className="w-10 h-10 md:w-12 md:h-12 mx-auto rounded-xl bg-gradient-to-br from-[#E07B4F]/10 to-[#E8956A]/15 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 border border-[#E07B4F]/10">
+          <div className="text-[#E07B4F]">
             {icon}
           </div>
         </div>
@@ -254,11 +254,11 @@ const FeatureCard = React.forwardRef<HTMLDivElement, FeatureCardProps>(({
 }, ref) => (
   <Card ref={ref} variant={variant} hover className={cn("group", className)} onClick={onClick} {...props}>
     {icon && (
-      <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#D2691E] to-[#B8560E] flex items-center justify-center text-white mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-[#D2691E]/25">
+      <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#E07B4F] to-[#D26B3F] flex items-center justify-center text-white mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-[#E07B4F]/25">
         {icon}
       </div>
     )}
-    <h4 className="font-semibold text-[var(--color-text-primary)] mb-1.5 group-hover:text-[#D2691E] transition-colors">
+    <h4 className="font-semibold text-[var(--color-text-primary)] mb-1.5 group-hover:text-[#E07B4F] transition-colors">
       {title}
     </h4>
     <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
@@ -303,10 +303,10 @@ const ProfileCard = React.forwardRef<HTMLDivElement, ProfileCardProps>(({
           <img
             src={avatar}
             alt={name}
-            className="w-11 h-11 rounded-full object-cover ring-2 ring-[#D2691E]/10 ring-offset-2 ring-offset-white dark:ring-offset-gray-900"
+            className="w-11 h-11 rounded-full object-cover ring-2 ring-[#E07B4F]/10 ring-offset-2 ring-offset-white dark:ring-offset-gray-900"
           />
         ) : (
-          <div className="w-11 h-11 rounded-full flex items-center justify-center bg-gradient-to-br from-[#D2691E] to-[#B8560E] text-white font-semibold ring-2 ring-[#D2691E]/10 ring-offset-2 ring-offset-white dark:ring-offset-gray-900">
+          <div className="w-11 h-11 rounded-full flex items-center justify-center bg-gradient-to-br from-[#E07B4F] to-[#D26B3F] text-white font-semibold ring-2 ring-[#E07B4F]/10 ring-offset-2 ring-offset-white dark:ring-offset-gray-900">
             {name.charAt(0)}
           </div>
         )}
@@ -352,7 +352,7 @@ const ProfileCard = React.forwardRef<HTMLDivElement, ProfileCardProps>(({
       {/* Price */}
       {price && (
         <div className="text-right">
-          <p className="text-sm font-bold text-[#D2691E]">
+          <p className="text-sm font-bold text-[#E07B4F]">
             {price}
           </p>
         </div>

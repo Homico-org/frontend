@@ -122,7 +122,7 @@ export default function ServiceCard({ service }: ServiceCardProps) {
                 {proUser?.name || 'Pro'}
               </span>
               {pro.isAvailable && (
-                <span className="w-2 h-2 bg-[#D2691E] rounded-full flex-shrink-0" title="Available" />
+                <span className="w-2 h-2 bg-[#E07B4F] rounded-full flex-shrink-0" title="Available" />
               )}
             </div>
             {pro.avgRating >= 4.8 && (

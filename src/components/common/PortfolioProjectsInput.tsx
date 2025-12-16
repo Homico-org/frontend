@@ -135,7 +135,7 @@ function BeforeAfterPreview({ beforeImage, afterImage, compact = false }: { befo
           <div className="absolute top-2.5 left-2.5 px-2.5 py-1 bg-gradient-to-r from-gray-900/80 to-gray-800/70 backdrop-blur-md rounded-md text-[10px] font-semibold text-white uppercase tracking-wider shadow-lg">
             Before
           </div>
-          <div className="absolute top-2.5 right-2.5 px-2.5 py-1 bg-gradient-to-r from-[#D2691E]/90 to-[#CD853F]/80 backdrop-blur-md rounded-md text-[10px] font-semibold text-white uppercase tracking-wider shadow-lg">
+          <div className="absolute top-2.5 right-2.5 px-2.5 py-1 bg-gradient-to-r from-[#E07B4F]/90 to-[#E8956A]/80 backdrop-blur-md rounded-md text-[10px] font-semibold text-white uppercase tracking-wider shadow-lg">
             After
           </div>
         </>
@@ -325,8 +325,8 @@ export default function PortfolioProjectsInput({
       {/* Section Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#D2691E]/20 to-[#CD853F]/10 flex items-center justify-center border border-[#D2691E]/20">
-            <svg className="w-4.5 h-4.5 text-[#D2691E] dark:text-[#CD853F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#E07B4F]/20 to-[#E8956A]/10 flex items-center justify-center border border-[#E07B4F]/20">
+            <svg className="w-4.5 h-4.5 text-[#E07B4F] dark:text-[#E8956A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
@@ -344,7 +344,7 @@ export default function PortfolioProjectsInput({
           <button
             type="button"
             onClick={handleAddProject}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 bg-[#D2691E] text-white hover:bg-[#D2691E] shadow-md shadow-[#D2691E]/20 hover:shadow-lg hover:shadow-[#D2691E]/25 active:scale-[0.98]"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 bg-[#E07B4F] text-white hover:bg-[#E07B4F] shadow-md shadow-[#E07B4F]/20 hover:shadow-lg hover:shadow-[#E07B4F]/25 active:scale-[0.98]"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -360,7 +360,7 @@ export default function PortfolioProjectsInput({
           {projects.map((project, index) => (
             <div
               key={project.id}
-              className="group relative rounded-2xl overflow-hidden border border-[var(--color-border)] bg-[var(--color-bg-secondary)] hover:border-[#D2691E]/30 hover:shadow-xl hover:shadow-[#D2691E]/5 transition-all duration-300"
+              className="group relative rounded-2xl overflow-hidden border border-[var(--color-border)] bg-[var(--color-bg-secondary)] hover:border-[#E07B4F]/30 hover:shadow-xl hover:shadow-[#E07B4F]/5 transition-all duration-300"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <div className="p-4">
@@ -383,7 +383,7 @@ export default function PortfolioProjectsInput({
                     <button
                       type="button"
                       onClick={() => handleEditProject(project)}
-                      className="p-2 rounded-lg text-[var(--color-text-tertiary)] hover:text-[#D2691E] dark:hover:text-[#CD853F] hover:bg-[#D2691E]/10 transition-colors"
+                      className="p-2 rounded-lg text-[var(--color-text-tertiary)] hover:text-[#E07B4F] dark:hover:text-[#E8956A] hover:bg-[#E07B4F]/10 transition-colors"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -442,16 +442,16 @@ export default function PortfolioProjectsInput({
         <button
           type="button"
           onClick={handleAddProject}
-          className="w-full py-8 rounded-2xl border-2 border-dashed border-[var(--color-border)] hover:border-[#D2691E]/40 bg-gradient-to-br from-[var(--color-bg-secondary)]/80 to-[var(--color-bg-tertiary)]/30 transition-all duration-300 group"
+          className="w-full py-8 rounded-2xl border-2 border-dashed border-[var(--color-border)] hover:border-[#E07B4F]/40 bg-gradient-to-br from-[var(--color-bg-secondary)]/80 to-[var(--color-bg-tertiary)]/30 transition-all duration-300 group"
         >
           <div className="flex flex-col items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#D2691E]/15 to-[#CD853F]/10 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-[#D2691E]/20 border border-[#D2691E]/20">
-              <svg className="w-7 h-7 text-[#D2691E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#E07B4F]/15 to-[#E8956A]/10 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-[#E07B4F]/20 border border-[#E07B4F]/20">
+              <svg className="w-7 h-7 text-[#E07B4F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
               </svg>
             </div>
             <div className="text-center">
-              <p className="font-semibold text-[var(--color-text-secondary)] group-hover:text-[#D2691E] dark:group-hover:text-[#CD853F] transition-colors">
+              <p className="font-semibold text-[var(--color-text-secondary)] group-hover:text-[#E07B4F] dark:group-hover:text-[#E8956A] transition-colors">
                 {locale === 'ka' ? 'დაამატე პროექტი' : 'Add a project'}
               </p>
               <p className="text-xs text-[var(--color-text-muted)] mt-1 max-w-[220px]">
@@ -466,9 +466,9 @@ export default function PortfolioProjectsInput({
       {isAddingProject && (
         <div className="rounded-2xl border border-[var(--color-border)] overflow-hidden bg-[var(--color-bg-secondary)] shadow-xl">
           {/* Form Header */}
-          <div className="px-5 py-4 border-b border-[var(--color-border-subtle)] bg-gradient-to-r from-[#D2691E]/5 to-transparent flex items-center justify-between">
+          <div className="px-5 py-4 border-b border-[var(--color-border-subtle)] bg-gradient-to-r from-[#E07B4F]/5 to-transparent flex items-center justify-between">
             <h4 className="font-semibold text-[var(--color-text-primary)] flex items-center gap-2.5">
-              <span className="w-2 h-2 rounded-full bg-[#D2691E] animate-pulse"></span>
+              <span className="w-2 h-2 rounded-full bg-[#E07B4F] animate-pulse"></span>
               {editingProjectId
                 ? (locale === 'ka' ? 'პროექტის რედაქტირება' : 'Edit Project')
                 : (locale === 'ka' ? 'ახალი პროექტი' : 'New Project')
@@ -496,7 +496,7 @@ export default function PortfolioProjectsInput({
                 value={currentProject.title}
                 onChange={(e) => setCurrentProject(prev => ({ ...prev, title: e.target.value }))}
                 placeholder={locale === 'ka' ? 'მაგ: აპარტამენტის რემონტი ვაკეში' : 'e.g., Apartment Renovation'}
-                className="w-full px-4 py-3 rounded-xl border-2 bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[#D2691E]/50 transition-all"
+                className="w-full px-4 py-3 rounded-xl border-2 bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[#E07B4F]/50 transition-all"
                 style={{ borderColor: 'var(--color-border)' }}
               />
             </div>
@@ -522,7 +522,7 @@ export default function PortfolioProjectsInput({
                 onChange={(e) => setCurrentProject(prev => ({ ...prev, description: e.target.value }))}
                 placeholder={locale === 'ka' ? 'მოკლედ აღწერე რა გააკეთე...' : 'Briefly describe what you did...'}
                 rows={2}
-                className="w-full px-4 py-3 rounded-xl border-2 bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[#D2691E]/50 transition-all resize-none"
+                className="w-full px-4 py-3 rounded-xl border-2 bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[#E07B4F]/50 transition-all resize-none"
                 style={{ borderColor: 'var(--color-border)' }}
               />
             </div>
@@ -579,7 +579,7 @@ export default function PortfolioProjectsInput({
                         </svg>
                       </button>
                       {idx === 0 && currentProject.beforeAfterPairs.length === 0 && (
-                        <div className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-[#D2691E] rounded text-[8px] font-bold text-white">
+                        <div className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-[#E07B4F] rounded text-[8px] font-bold text-white">
                           Cover
                         </div>
                       )}
@@ -604,11 +604,11 @@ export default function PortfolioProjectsInput({
                     type="button"
                     onClick={() => galleryInputRef.current?.click()}
                     disabled={uploadingType === 'gallery'}
-                    className="w-full p-4 rounded-xl border-2 border-dashed border-[var(--color-border)] hover:border-[#D2691E]/40 bg-[var(--color-bg-tertiary)]/30 transition-all duration-200 flex flex-col items-center gap-2 text-[var(--color-text-secondary)] hover:text-[#D2691E] dark:hover:text-[#CD853F] group"
+                    className="w-full p-4 rounded-xl border-2 border-dashed border-[var(--color-border)] hover:border-[#E07B4F]/40 bg-[var(--color-bg-tertiary)]/30 transition-all duration-200 flex flex-col items-center gap-2 text-[var(--color-text-secondary)] hover:text-[#E07B4F] dark:hover:text-[#E8956A] group"
                   >
                     {uploadingType === 'gallery' ? (
                       <>
-                        <svg className="animate-spin w-6 h-6 text-[#D2691E]" fill="none" viewBox="0 0 24 24">
+                        <svg className="animate-spin w-6 h-6 text-[#E07B4F]" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                         </svg>
@@ -616,8 +616,8 @@ export default function PortfolioProjectsInput({
                       </>
                     ) : (
                       <>
-                        <div className="w-10 h-10 rounded-xl bg-[#D2691E]/10 group-hover:bg-[#D2691E]/20 flex items-center justify-center transition-colors">
-                          <svg className="w-5 h-5 text-[#D2691E] dark:text-[#CD853F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-10 h-10 rounded-xl bg-[#E07B4F]/10 group-hover:bg-[#E07B4F]/20 flex items-center justify-center transition-colors">
+                          <svg className="w-5 h-5 text-[#E07B4F] dark:text-[#E8956A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
                         </div>
@@ -683,7 +683,7 @@ export default function PortfolioProjectsInput({
                 disabled={!canSave()}
                 className={`flex-1 py-3 px-4 rounded-xl font-semibold text-sm transition-all ${
                   canSave()
-                    ? 'bg-[#D2691E] text-white hover:bg-[#D2691E] shadow-lg shadow-[#D2691E]/25'
+                    ? 'bg-[#E07B4F] text-white hover:bg-[#E07B4F] shadow-lg shadow-[#E07B4F]/25'
                     : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] cursor-not-allowed'
                 }`}
               >

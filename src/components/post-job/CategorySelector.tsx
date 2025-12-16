@@ -62,10 +62,10 @@ const CATEGORY_CONFIG: Record<string, {
     tagline: { en: 'Skilled hands, lasting quality', ka: 'ოსტატობა და ხარისხი' },
   },
   'home-care': {
-    gradient: 'from-[#D2691E] via-[#CD853F] to-[#DEB887]',
-    bgColor: 'bg-gradient-to-br from-[#D2691E]/5 via-[#CD853F]/5 to-[#DEB887]/5 dark:from-[#D2691E]/20 dark:via-[#CD853F]/20 dark:to-[#DEB887]/20',
-    accentColor: 'text-[#D2691E] dark:text-[#CD853F]',
-    borderColor: 'border-[#D2691E]/20 dark:border-[#CD853F]/30',
+    gradient: 'from-[#E07B4F] via-[#E8956A] to-[#DEB887]',
+    bgColor: 'bg-gradient-to-br from-[#E07B4F]/5 via-[#E8956A]/5 to-[#DEB887]/5 dark:from-[#E07B4F]/20 dark:via-[#E8956A]/20 dark:to-[#DEB887]/20',
+    accentColor: 'text-[#E07B4F] dark:text-[#E8956A]',
+    borderColor: 'border-[#E07B4F]/20 dark:border-[#E8956A]/30',
     tagline: { en: 'Care for your sanctuary', ka: 'შენი თავშესაფრის მოვლა' },
   },
 };

@@ -149,9 +149,9 @@ function ImageSlider({ images }: { images: string[] }) {
   // Placeholder when no images
   if (!images || images.length === 0) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-[#D2691E]/5">
+      <div className="w-full h-full flex items-center justify-center bg-[#E07B4F]/5">
         <svg
-          className="w-10 h-10 text-[#D2691E]/20"
+          className="w-10 h-10 text-[#E07B4F]/20"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -177,7 +177,7 @@ function ImageSlider({ images }: { images: string[] }) {
 
   return (
     <div
-      className="relative w-full h-full overflow-hidden bg-[#D2691E]/5"
+      className="relative w-full h-full overflow-hidden bg-[#E07B4F]/5"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
       onTouchStart={handleTouchStart}
@@ -205,9 +205,9 @@ function ImageSlider({ images }: { images: string[] }) {
                 }
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-[#D2691E]/5">
+              <div className="w-full h-full flex items-center justify-center bg-[#E07B4F]/5">
                 <svg
-                  className="w-8 h-8 text-[#D2691E]/20"
+                  className="w-8 h-8 text-[#E07B4F]/20"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -450,14 +450,14 @@ export default function JobCard({
             rounded="full"
           />
           <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-sm text-[var(--color-text-primary)] group-hover:text-[#D2691E] transition-colors truncate">
+            <h3 className="font-medium text-sm text-[var(--color-text-primary)] group-hover:text-[#E07B4F] transition-colors truncate">
               {job.title}
             </h3>
             <p className="text-xs text-[var(--color-text-muted)]">
               {truncateLocation(job.location)} · {getTimeAgo(job.createdAt)}
             </p>
           </div>
-          <span className="font-bold text-sm text-[#D2691E]">
+          <span className="font-bold text-sm text-[#E07B4F]">
             {formatBudget()}
           </span>
         </div>
@@ -473,7 +473,7 @@ export default function JobCard({
       hover="lift"
       className={`group h-full job-card-premium ${
         isUrgent
-          ? "urgent ring-2 ring-[#D2691E] ring-offset-2 ring-offset-[#FFFDF9] dark:ring-offset-[#1c1917]"
+          ? "urgent ring-2 ring-[#E07B4F] ring-offset-2 ring-offset-[#FFFDF9] dark:ring-offset-[#1c1917]"
           : isExpired
             ? "opacity-75"
             : ""
@@ -501,7 +501,7 @@ export default function JobCard({
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             {isNew && (
-              <span className="flex items-center gap-1 text-[10px] font-medium text-[#D2691E]">
+              <span className="flex items-center gap-1 text-[10px] font-medium text-[#E07B4F]">
                 <span className="w-1 h-1 rounded-full bg-current animate-pulse" />
                 ახალი
               </span>
@@ -526,13 +526,13 @@ export default function JobCard({
         <CardMeta className="mb-3">
           {metaItems.map((item, i) => (
             <CardMetaItem key={i}>
-              {i > 0 && <span className="text-[#D2691E]/30 mr-1.5">·</span>}
+              {i > 0 && <span className="text-[#E07B4F]/30 mr-1.5">·</span>}
               {item}
             </CardMetaItem>
           ))}
           {job.proposalCount > 0 && (
             <CardMetaItem highlight>
-              {metaItems.length > 0 && <span className="text-[#D2691E]/30 mr-1.5">·</span>}
+              {metaItems.length > 0 && <span className="text-[#E07B4F]/30 mr-1.5">·</span>}
               {job.proposalCount} შეთავაზება
             </CardMetaItem>
           )}
@@ -571,8 +571,8 @@ export default function JobCard({
             }}
             className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors ${
               isSaved
-                ? "bg-[#D2691E] text-white"
-                : "bg-[#D2691E]/10 text-[#D2691E] hover:bg-[#D2691E]/20"
+                ? "bg-[#E07B4F] text-white"
+                : "bg-[#E07B4F]/10 text-[#E07B4F] hover:bg-[#E07B4F]/20"
             }`}
           >
             <svg
@@ -598,7 +598,7 @@ export default function JobCard({
               e.stopPropagation();
               window.location.href = `/users/${job.clientId?._id}`;
             }}
-            className="p-1.5 rounded-lg bg-[#D2691E]/10 text-[#D2691E] hover:bg-[#D2691E]/20 transition-colors"
+            className="p-1.5 rounded-lg bg-[#E07B4F]/10 text-[#E07B4F] hover:bg-[#E07B4F]/20 transition-colors"
           >
             <svg
               className="w-3.5 h-3.5"
@@ -624,7 +624,7 @@ export default function JobCard({
             isExpired
               ? "border-red-300/40 dark:border-red-500/30 bg-red-50/50 dark:bg-red-900/10"
               : isUrgent
-                ? "border-[#D2691E]/30 dark:border-[#CD853F]/40 bg-[#D2691E]/5"
+                ? "border-[#E07B4F]/30 dark:border-[#E8956A]/40 bg-[#E07B4F]/5"
                 : "border-[#E8D5C4]/40 dark:border-[#3d2f24]/40"
           }`}
         >
@@ -633,8 +633,8 @@ export default function JobCard({
               isExpired
                 ? "text-red-500"
                 : isUrgent
-                  ? "text-[#CD853F]"
-                  : "text-[#D2691E]"
+                  ? "text-[#E8956A]"
+                  : "text-[#E07B4F]"
             }`}
             fill="none"
             stroke="currentColor"
@@ -652,14 +652,14 @@ export default function JobCard({
               isExpired
                 ? "text-red-500"
                 : isUrgent
-                  ? "text-[#CD853F]"
-                  : "text-[#D2691E]"
+                  ? "text-[#E8956A]"
+                  : "text-[#E07B4F]"
             }`}
           >
             {isExpired ? "ვადა ამოიწურა" : `დარჩა: ${timeLeft}`}
           </span>
           {isUrgent && !isExpired && (
-            <span className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide rounded text-[#CD853F] bg-[#D2691E]/10">
+            <span className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide rounded text-[#E8956A] bg-[#E07B4F]/10">
               სასწრაფო
             </span>
           )}

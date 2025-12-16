@@ -69,12 +69,12 @@ const icons = {
 
 const colors = {
   success: {
-    bg: 'bg-[#D2691E]/5 dark:bg-[#D2691E]/10',
-    border: 'border-[#D2691E]/20 dark:border-[#D2691E]/30',
-    icon: 'text-[#D2691E] dark:text-[#CD853F]',
+    bg: 'bg-[#E07B4F]/5 dark:bg-[#E07B4F]/10',
+    border: 'border-[#E07B4F]/20 dark:border-[#E07B4F]/30',
+    icon: 'text-[#E07B4F] dark:text-[#CD853F]',
     title: 'text-[#B8560E] dark:text-[#CD853F]',
-    desc: 'text-[#D2691E] dark:text-[#CD853F]',
-    progress: 'bg-[#D2691E]',
+    desc: 'text-[#E07B4F] dark:text-[#CD853F]',
+    progress: 'bg-[#E07B4F]',
   },
   error: {
     bg: 'bg-rose-50 dark:bg-rose-950/50',

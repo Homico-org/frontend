@@ -4,7 +4,7 @@ import { CATEGORIES } from '@/constants/categories';
 import { useBrowseContext } from '@/contexts/BrowseContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ChevronRight, RotateCcw, Search, Sparkles, Star, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 const RATING_OPTIONS = [
   { value: 0, label: 'All', labelKa: 'ყველა' },
@@ -83,11 +83,69 @@ export default function BrowseFiltersSidebar({
   );
   const [searchInput, setSearchInput] = useState(searchQuery);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [categorySearchInput, setCategorySearchInput] = useState('');
+  const [isCategorySearchFocused, setIsCategorySearchFocused] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     setSearchInput(searchQuery);
   }, [searchQuery]);
+
+  // Helper function to check if a string matches the search term
+  const matchesSearch = (text: string, searchTerm: string): boolean => {
+    return text.toLowerCase().includes(searchTerm);
+  };
+
+  // Helper function to check if any keyword matches
+  const keywordsMatch = (keywords: string[] | undefined, searchTerm: string): boolean => {
+    if (!keywords) return false;
+    return keywords.some(keyword => keyword.toLowerCase().includes(searchTerm));
+  };
+
+  // Filter categories and subcategories based on search (including keywords)
+  const filteredCategories = useMemo(() => {
+    if (!categorySearchInput.trim()) return CATEGORIES;
+
+    const searchLower = categorySearchInput.toLowerCase().trim();
+
+    return CATEGORIES.map(category => {
+      // Check if category name or keywords match
+      const categoryNameMatches =
+        matchesSearch(category.name, searchLower) ||
+        matchesSearch(category.nameKa, searchLower) ||
+        keywordsMatch(category.keywords, searchLower);
+
+      // Check each subcategory for name or keyword match
+      const matchingSubcategories = category.subcategories.filter(sub =>
+        matchesSearch(sub.name, searchLower) ||
+        matchesSearch(sub.nameKa, searchLower) ||
+        keywordsMatch(sub.keywords, searchLower)
+      );
+
+      // If category name/keywords match, show all subcategories
+      if (categoryNameMatches) {
+        return category;
+      }
+
+      // If some subcategories match, show category with only matching subcategories
+      if (matchingSubcategories.length > 0) {
+        return {
+          ...category,
+          subcategories: matchingSubcategories,
+        };
+      }
+
+      return null;
+    }).filter(Boolean) as typeof CATEGORIES;
+  }, [categorySearchInput]);
+
+  // Auto-expand categories when searching
+  useEffect(() => {
+    if (categorySearchInput.trim()) {
+      // Expand all filtered categories when searching
+      setExpandedCategories(filteredCategories.map(c => c.key));
+    }
+  }, [categorySearchInput, filteredCategories]);
 
   const handleSearchChange = (value: string) => {
     setSearchInput(value);
@@ -149,7 +207,7 @@ export default function BrowseFiltersSidebar({
             `}>
               <Search className={`
                 absolute left-3.5 w-[18px] h-[18px] transition-colors duration-200
-                ${isSearchFocused ? 'text-[#D2691E]' : 'text-[var(--color-text-tertiary)]'}
+                ${isSearchFocused ? 'text-[#E07B4F]' : 'text-[var(--color-text-tertiary)]'}
               `} />
               <input
                 type="text"
@@ -163,7 +221,7 @@ export default function BrowseFiltersSidebar({
               {searchInput && (
                 <button
                   onClick={clearSearch}
-                  className="absolute right-3 p-1 rounded-full hover:bg-[#D2691E]/10 text-[var(--color-text-tertiary)] hover:text-[#D2691E] transition-all duration-200"
+                  className="absolute right-3 p-1 rounded-full hover:bg-[#E07B4F]/10 text-[var(--color-text-tertiary)] hover:text-[#E07B4F] transition-all duration-200"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -223,56 +281,99 @@ export default function BrowseFiltersSidebar({
           <span className="filter-section-label">
             {locale === 'ka' ? 'კატეგორია' : 'Category'}
           </span>
+
+          {/* Category Search Input */}
+          <div className="relative">
+            <div className={`
+              relative flex items-center transition-all duration-200 ease-out
+              rounded-lg border bg-[var(--color-bg-secondary)]
+              ${isCategorySearchFocused
+                ? 'border-[#E07B4F]/40 ring-2 ring-[#E07B4F]/10'
+                : 'border-[var(--color-border-subtle)] hover:border-[var(--color-border)]'
+              }
+            `}>
+              <Search className={`
+                absolute left-2.5 w-3.5 h-3.5 transition-colors duration-200
+                ${isCategorySearchFocused ? 'text-[#E07B4F]' : 'text-[var(--color-text-tertiary)]'}
+              `} />
+              <input
+                type="text"
+                value={categorySearchInput}
+                onChange={(e) => setCategorySearchInput(e.target.value)}
+                onFocus={() => setIsCategorySearchFocused(true)}
+                onBlur={() => setIsCategorySearchFocused(false)}
+                placeholder={locale === 'ka' ? 'კატეგორიის ძიება...' : 'Search categories...'}
+                className="w-full bg-transparent pl-8 pr-7 py-2 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none"
+              />
+              {categorySearchInput && (
+                <button
+                  onClick={() => setCategorySearchInput('')}
+                  className="absolute right-2 p-0.5 rounded-full hover:bg-[#E07B4F]/10 text-[var(--color-text-tertiary)] hover:text-[#E07B4F] transition-all duration-200"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+
           <div className="space-y-1.5">
-            {CATEGORIES.map(category => {
-              const isSelected = selectedCategory === category.key;
-              const isExpanded = expandedCategories.includes(category.key);
-              const IconComponent = CategoryIcons[category.key];
+            {filteredCategories.length === 0 ? (
+              <div className="py-4 text-center">
+                <p className="text-xs text-[var(--color-text-tertiary)]">
+                  {locale === 'ka' ? 'კატეგორია არ მოიძებნა' : 'No categories found'}
+                </p>
+              </div>
+            ) : (
+              filteredCategories.map(category => {
+                const isSelected = selectedCategory === category.key;
+                const isExpanded = expandedCategories.includes(category.key);
+                const IconComponent = CategoryIcons[category.key];
 
-              return (
-                <div key={category.key} className="filter-category-wrapper">
-                  <button
-                    onClick={() => handleCategorySelect(category.key)}
-                    className={`filter-category-btn ${isSelected ? 'filter-category-active' : ''}`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className={`filter-category-icon ${isSelected ? 'filter-category-icon-active' : ''}`}>
-                        {IconComponent && <IconComponent className="w-4 h-4" />}
+                return (
+                  <div key={category.key} className="filter-category-wrapper">
+                    <button
+                      onClick={() => handleCategorySelect(category.key)}
+                      className={`filter-category-btn ${isSelected ? 'filter-category-active' : ''}`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className={`filter-category-icon ${isSelected ? 'filter-category-icon-active' : ''}`}>
+                          {IconComponent && <IconComponent className="w-4 h-4" />}
+                        </div>
+                        <span className="font-medium">
+                          {locale === 'ka' ? category.nameKa : category.name}
+                        </span>
                       </div>
-                      <span className="font-medium">
-                        {locale === 'ka' ? category.nameKa : category.name}
-                      </span>
-                    </div>
-                    <ChevronRight
-                      className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleCategoryExpand(category.key);
-                      }}
-                    />
-                  </button>
+                      <ChevronRight
+                        className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleCategoryExpand(category.key);
+                        }}
+                      />
+                    </button>
 
-                  {/* Subcategories with smooth animation */}
-                  <div className={`filter-subcategories ${isExpanded ? 'filter-subcategories-open' : ''}`}>
-                    <div className="pt-1.5 pb-1 space-y-0.5">
-                      {category.subcategories.map(sub => {
-                        const isSubSelected = selectedSubcategory === sub.key;
-                        return (
-                          <button
-                            key={sub.key}
-                            onClick={() => handleSubcategorySelect(sub.key, category.key)}
-                            className={`filter-subcategory-btn ${isSubSelected ? 'filter-subcategory-active' : ''}`}
-                          >
-                            <span className={`filter-subcategory-dot ${isSubSelected ? 'filter-subcategory-dot-active' : ''}`} />
-                            <span>{locale === 'ka' ? sub.nameKa : sub.name}</span>
-                          </button>
-                        );
-                      })}
+                    {/* Subcategories with smooth animation */}
+                    <div className={`filter-subcategories ${isExpanded ? 'filter-subcategories-open' : ''}`}>
+                      <div className="pt-1.5 pb-1 space-y-0.5">
+                        {category.subcategories.map(sub => {
+                          const isSubSelected = selectedSubcategory === sub.key;
+                          return (
+                            <button
+                              key={sub.key}
+                              onClick={() => handleSubcategorySelect(sub.key, category.key)}
+                              className={`filter-subcategory-btn ${isSubSelected ? 'filter-subcategory-active' : ''}`}
+                            >
+                              <span className={`filter-subcategory-dot ${isSubSelected ? 'filter-subcategory-dot-active' : ''}`} />
+                              <span>{locale === 'ka' ? sub.nameKa : sub.name}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
 
@@ -280,7 +381,7 @@ export default function BrowseFiltersSidebar({
         {showRatingFilter && (
           <div className="space-y-2.5">
             <span className="filter-section-label flex items-center gap-1.5">
-              <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+              <Star className="w-3.5 h-3.5 text-[#E07B4F] fill-[#E07B4F]" />
               {locale === 'ka' ? 'რეიტინგი' : 'Rating'}
             </span>
             <div className="flex flex-wrap gap-1.5">

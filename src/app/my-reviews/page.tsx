@@ -397,8 +397,8 @@ export default function MyReviewsPage() {
           <>
             {pendingReviews.length === 0 ? (
               <div className="rounded-2xl p-12 text-center" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
-                <div className="w-16 h-16 rounded-2xl bg-[#D2691E]/5 dark:bg-[#D2691E]/10 flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="h-8 w-8 text-[#D2691E]" />
+                <div className="w-16 h-16 rounded-2xl bg-[#E07B4F]/5 dark:bg-[#E07B4F]/10 flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="h-8 w-8 text-[#E07B4F]" />
                 </div>
                 <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-50 mb-2">
                   {language === 'ka' ? 'ყველაფერი შესრულებულია!' : 'All caught up!'}

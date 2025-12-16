@@ -35,18 +35,18 @@ module.exports = {
           800: '#004B3B', // Deep forest - primary dark
           900: '#022c22',
         },
-        // Terracotta for active/accent states
+        // Terracotta for active/accent states (lighter palette)
         terracotta: {
-          50: '#fdf6f3',
-          100: '#fceae3',
-          200: '#f9d5c7',
-          300: '#f4b8a0',
-          400: '#ec9070',
-          500: '#C96D4D', // Main terracotta
-          600: '#b85a3d',
-          700: '#9a4832',
-          800: '#7d3d2d',
-          900: '#673529',
+          50: '#fef8f6',
+          100: '#fdf0eb',
+          200: '#fbe0d6',
+          300: '#f5c8b5',
+          400: '#E8956A', // Light terracotta
+          500: '#E07B4F', // Main terracotta
+          600: '#D26B3F', // Dark terracotta
+          700: '#b85a3d',
+          800: '#9a4832',
+          900: '#7d3d2d',
         },
         // Warm neutrals with slight green undertone
         neutral: {
@@ -128,7 +128,7 @@ module.exports = {
         'gradient-luxury': 'linear-gradient(135deg, #004B3B 0%, #0B3D2E 50%, #022c22 100%)',
         'gradient-cream': 'linear-gradient(180deg, #fefef9 0%, #faf8ed 100%)',
         'gradient-emerald': 'linear-gradient(135deg, #50c878 0%, #22c55e 100%)',
-        'gradient-terracotta': 'linear-gradient(135deg, #C96D4D 0%, #b85a3d 100%)',
+        'gradient-terracotta': 'linear-gradient(135deg, #E07B4F 0%, #D26B3F 100%)',
       },
       animation: {
         'fade-in': 'fadeIn 0.6s ease-out forwards',

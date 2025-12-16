@@ -39,7 +39,7 @@ const variantStyles = {
   elevated: `
     bg-gradient-to-br from-[#FFFDF9]/95 via-[#FFF9F0]/90 to-[#FDF5E6]/85
     dark:from-[#1f1b18]/95 dark:via-[#1c1815]/90 dark:to-[#171311]/85
-    border-2 border-[#D2691E]/25 dark:border-[#CD853F]/25
+    border-2 border-[#E07B4F]/25 dark:border-[#E8956A]/25
     shadow-[0_4px_12px_-2px_rgba(210,105,30,0.12),0_8px_24px_-6px_rgba(139,69,19,0.1)]
     dark:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),0_8px_24px_-6px_rgba(0,0,0,0.3)]
     backdrop-blur-sm
@@ -53,8 +53,8 @@ const variantStyles = {
   `,
   outlined: `
     bg-transparent
-    border-2 border-[#D2691E]/15 dark:border-[#CD853F]/20
-    hover:border-[#D2691E]/30 dark:hover:border-[#CD853F]/35
+    border-2 border-[#E07B4F]/15 dark:border-[#E8956A]/20
+    hover:border-[#E07B4F]/30 dark:hover:border-[#E8956A]/35
   `,
 };
 
@@ -64,12 +64,12 @@ const hoverStyles = {
   lift: `
     hover:-translate-y-1 hover:shadow-[0_8px_20px_-4px_rgba(210,105,30,0.2),0_12px_32px_-8px_rgba(139,69,19,0.15)]
     dark:hover:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.5),0_12px_32px_-8px_rgba(0,0,0,0.4)]
-    hover:border-[#D2691E]/50 dark:hover:border-[#CD853F]/50
+    hover:border-[#E07B4F]/50 dark:hover:border-[#E8956A]/50
   `,
   glow: `
     hover:shadow-[0_0_0_1px_rgba(210,105,30,0.1),0_4px_16px_-2px_rgba(210,105,30,0.2),0_8px_24px_-4px_rgba(139,69,19,0.15)]
     dark:hover:shadow-[0_0_0_1px_rgba(205,133,63,0.15),0_4px_16px_-2px_rgba(205,133,63,0.2),0_8px_24px_-4px_rgba(139,69,19,0.25)]
-    hover:border-[#D2691E]/30 dark:hover:border-[#CD853F]/40
+    hover:border-[#E07B4F]/30 dark:hover:border-[#E8956A]/40
   `,
   scale: `
     hover:scale-[1.02] hover:shadow-[0_6px_16px_-3px_rgba(210,105,30,0.12),0_10px_28px_-6px_rgba(139,69,19,0.1)]
@@ -78,7 +78,7 @@ const hoverStyles = {
   true: `
     hover:-translate-y-0.5 hover:shadow-[0_6px_16px_-3px_rgba(210,105,30,0.12),0_10px_28px_-6px_rgba(139,69,19,0.1)]
     dark:hover:shadow-[0_6px_16px_-3px_rgba(0,0,0,0.4),0_10px_28px_-6px_rgba(0,0,0,0.3)]
-    hover:border-[#D2691E]/20 dark:hover:border-[#CD853F]/30
+    hover:border-[#E07B4F]/20 dark:hover:border-[#E8956A]/30
   `,
 };
 
@@ -261,21 +261,21 @@ export function CardBadge({
 
   const variantColorStyles = {
     solid: {
-      primary: 'bg-[#D2691E] text-white',
+      primary: 'bg-[#E07B4F] text-white',
       success: 'bg-emerald-500 text-white',
       warning: 'bg-amber-500 text-white',
       danger: 'bg-red-500 text-white',
       neutral: 'bg-neutral-700 dark:bg-neutral-600 text-white',
     },
     glass: {
-      primary: 'bg-white/90 dark:bg-gray-900/90 text-[#D2691E] border border-[#D2691E]/10',
+      primary: 'bg-white/90 dark:bg-gray-900/90 text-[#E07B4F] border border-[#E07B4F]/10',
       success: 'bg-white/90 dark:bg-gray-900/90 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10',
       warning: 'bg-white/90 dark:bg-gray-900/90 text-amber-600 dark:text-amber-400 border border-amber-500/10',
       danger: 'bg-white/90 dark:bg-gray-900/90 text-red-600 dark:text-red-400 border border-red-500/10',
       neutral: 'bg-white/90 dark:bg-gray-900/90 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700',
     },
     outline: {
-      primary: 'bg-transparent border-2 border-[#D2691E] text-[#D2691E]',
+      primary: 'bg-transparent border-2 border-[#E07B4F] text-[#E07B4F]',
       success: 'bg-transparent border-2 border-emerald-500 text-emerald-600 dark:text-emerald-400',
       warning: 'bg-transparent border-2 border-amber-500 text-amber-600 dark:text-amber-400',
       danger: 'bg-transparent border-2 border-red-500 text-red-600 dark:text-red-400',
@@ -332,7 +332,7 @@ export function CardMetaItem({
   return (
     <span className={`
       inline-flex items-center gap-1.5
-      ${highlight ? 'text-[#D2691E] font-medium' : ''}
+      ${highlight ? 'text-[#E07B4F] font-medium' : ''}
     `}>
       {icon && <span className="opacity-60">{icon}</span>}
       {children}
@@ -396,7 +396,7 @@ export function CardTitle({
     <h3 className={`
       leading-snug
       text-[var(--color-text-primary)]
-      group-hover:text-[#D2691E] transition-colors
+      group-hover:text-[#E07B4F] transition-colors
       ${sizeStyles[size]}
       ${truncateClass}
       ${className}
@@ -450,7 +450,7 @@ export function CardTags({
       {visibleTags.map((tag, i) => (
         <span
           key={i}
-          className="px-2.5 py-1 text-xs font-medium rounded-lg bg-[#D2691E]/10 text-[#D2691E]"
+          className="px-2.5 py-1 text-xs font-medium rounded-lg bg-[#E07B4F]/10 text-[#E07B4F]"
         >
           {tag}
         </span>

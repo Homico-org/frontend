@@ -33,8 +33,8 @@ const notificationConfig: Record<NotificationType, { icon: any; colorClass: stri
   },
   proposal_accepted: {
     icon: CheckCheck,
-    colorClass: 'text-[#D2691E] dark:text-[#CD853F]',
-    bgClass: 'bg-[#D2691E]/10 dark:bg-[#D2691E]/15',
+    colorClass: 'text-[#E07B4F] dark:text-[#E8956A]',
+    bgClass: 'bg-[#E07B4F]/10 dark:bg-[#E07B4F]/15',
   },
   proposal_rejected: {
     icon: Briefcase,
@@ -43,8 +43,8 @@ const notificationConfig: Record<NotificationType, { icon: any; colorClass: stri
   },
   job_completed: {
     icon: CheckCheck,
-    colorClass: 'text-[#D2691E] dark:text-[#CD853F]',
-    bgClass: 'bg-[#D2691E]/10 dark:bg-[#D2691E]/15',
+    colorClass: 'text-[#E07B4F] dark:text-[#E8956A]',
+    bgClass: 'bg-[#E07B4F]/10 dark:bg-[#E07B4F]/15',
   },
   job_cancelled: {
     icon: Briefcase,
@@ -63,8 +63,8 @@ const notificationConfig: Record<NotificationType, { icon: any; colorClass: stri
   },
   account_verified: {
     icon: Shield,
-    colorClass: 'text-[#D2691E] dark:text-[#CD853F]',
-    bgClass: 'bg-[#D2691E]/10 dark:bg-[#D2691E]/15',
+    colorClass: 'text-[#E07B4F] dark:text-[#E8956A]',
+    bgClass: 'bg-[#E07B4F]/10 dark:bg-[#E07B4F]/15',
   },
   profile_update: {
     icon: Sparkles,
@@ -173,9 +173,9 @@ export default function NotificationsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
         <div className="relative">
-          <div className="w-16 h-16 rounded-full border-2 border-[#D2691E]/20 dark:border-[#D2691E]/20 border-t-[#D2691E] dark:border-t-[#D2691E] animate-spin" />
+          <div className="w-16 h-16 rounded-full border-2 border-[#E07B4F]/20 dark:border-[#E07B4F]/20 border-t-[#E07B4F] dark:border-t-[#E07B4F] animate-spin" />
           <div className="absolute inset-0 flex items-center justify-center">
-            <Bell className="w-6 h-6 text-[#D2691E] dark:text-[#CD853F] animate-pulse" />
+            <Bell className="w-6 h-6 text-[#E07B4F] dark:text-[#E8956A] animate-pulse" />
           </div>
         </div>
       </div>
@@ -212,9 +212,9 @@ export default function NotificationsPage() {
                 border: '1px solid rgba(210, 105, 30, 0.12)',
               }}
             >
-              <ArrowLeft className="h-4 w-4 text-[#D2691E] dark:text-[#CD853F] group-hover:-translate-x-0.5 transition-transform duration-300" />
+              <ArrowLeft className="h-4 w-4 text-[#E07B4F] dark:text-[#E8956A] group-hover:-translate-x-0.5 transition-transform duration-300" />
             </div>
-            <span className="group-hover:text-[#D2691E] dark:group-hover:text-[#CD853F] transition-colors">
+            <span className="group-hover:text-[#E07B4F] dark:group-hover:text-[#E8956A] transition-colors">
               {locale === 'ka' ? 'უკან' : 'Back'}
             </span>
           </button>
@@ -224,9 +224,9 @@ export default function NotificationsPage() {
               {/* Animated Bell Icon */}
               <div className="relative">
                 <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center bg-[#D2691E]/10 dark:bg-[#D2691E]/15"
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center bg-[#E07B4F]/10 dark:bg-[#E07B4F]/15"
                 >
-                  <Bell className="w-6 h-6 text-[#D2691E] dark:text-[#CD853F]" />
+                  <Bell className="w-6 h-6 text-[#E07B4F] dark:text-[#E8956A]" />
                 </div>
                 {unreadCount > 0 && (
                   <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[22px] h-[22px] px-1.5 text-xs font-bold text-white bg-gradient-to-r from-red-500 to-rose-500 rounded-full shadow-lg shadow-red-500/30">
@@ -255,7 +255,7 @@ export default function NotificationsPage() {
               <button
                 onClick={handleMarkAllRead}
                 disabled={unreadCount === 0}
-                className="group inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed bg-[#D2691E]/5 dark:bg-[#D2691E]/10 border border-[#D2691E]/20 dark:border-[#D2691E]/20 text-[#D2691E] dark:text-[#CD853F] hover:bg-[#D2691E]/10 dark:hover:bg-[#D2691E]/20"
+                className="group inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed bg-[#E07B4F]/5 dark:bg-[#E07B4F]/10 border border-[#E07B4F]/20 dark:border-[#E07B4F]/20 text-[#E07B4F] dark:text-[#E8956A] hover:bg-[#E07B4F]/10 dark:hover:bg-[#E07B4F]/20"
               >
                 <Check className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
                 <span className="hidden sm:inline">{locale === 'ka' ? 'ყველას წაკითხვა' : 'Mark all read'}</span>
@@ -279,13 +279,13 @@ export default function NotificationsPage() {
                 onClick={() => setActiveFilter(filter.key)}
                 className={`relative px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap transition-all duration-300 border ${
                   activeFilter === filter.key
-                    ? 'bg-[#D2691E] text-white border-[#D2691E]'
+                    ? 'bg-[#E07B4F] text-white border-[#E07B4F]'
                     : 'bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-600 dark:text-neutral-400 hover:bg-gray-200 dark:hover:bg-white/10'
                 }`}
               >
                 {locale === 'ka' ? filter.labelKa : filter.label}
                 {filter.key === 'unread' && unreadCount > 0 && (
-                  <span className={`ml-1.5 px-1.5 py-0.5 text-xs rounded-full ${activeFilter === filter.key ? 'bg-white/20' : 'bg-[#D2691E]/10 dark:bg-[#D2691E]/20 text-[#D2691E] dark:text-[#CD853F]'}`}>
+                  <span className={`ml-1.5 px-1.5 py-0.5 text-xs rounded-full ${activeFilter === filter.key ? 'bg-white/20' : 'bg-[#E07B4F]/10 dark:bg-[#E07B4F]/20 text-[#E07B4F] dark:text-[#E8956A]'}`}>
                     {unreadCount}
                   </span>
                 )}
@@ -310,10 +310,10 @@ export default function NotificationsPage() {
                 }}
               >
                 <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#D2691E]/8" />
+                  <div className="w-12 h-12 rounded-xl bg-[#E07B4F]/8" />
                   <div className="flex-1 space-y-3">
-                    <div className="h-4 w-3/4 rounded bg-[#D2691E]/8" />
-                    <div className="h-3 w-1/2 rounded bg-[#D2691E]/5" />
+                    <div className="h-4 w-3/4 rounded bg-[#E07B4F]/8" />
+                    <div className="h-3 w-1/2 rounded bg-[#E07B4F]/5" />
                   </div>
                 </div>
               </div>
@@ -336,7 +336,7 @@ export default function NotificationsPage() {
                 border: '1px solid rgba(210, 105, 30, 0.1)',
               }}
             >
-              <Bell className="h-10 w-10 text-[#D2691E]/50" />
+              <Bell className="h-10 w-10 text-[#E07B4F]/50" />
             </div>
             <h3 className="text-xl font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
               {activeFilter === 'unread'
@@ -427,7 +427,7 @@ export default function NotificationsPage() {
 
                       {/* Link indicator */}
                       {notification.link && (
-                        <div className="mt-3 flex items-center gap-1.5 text-xs text-[#D2691E] dark:text-[#CD853F] group-hover:text-[#B8560E] dark:group-hover:text-[#CD853F] transition-colors duration-300">
+                        <div className="mt-3 flex items-center gap-1.5 text-xs text-[#E07B4F] dark:text-[#E8956A] group-hover:text-[#D26B3F] dark:group-hover:text-[#E8956A] transition-colors duration-300">
                           <span>{locale === 'ka' ? 'დეტალების ნახვა' : 'View details'}</span>
                           <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform duration-300" />
                         </div>
@@ -436,7 +436,7 @@ export default function NotificationsPage() {
 
                     {/* Unread dot */}
                     {!notification.isRead && (
-                      <div className="absolute top-5 right-5 w-2.5 h-2.5 rounded-full bg-[#D2691E] dark:bg-[#CD853F] shadow-lg shadow-[#D2691E]/50 dark:shadow-[#CD853F]/50" />
+                      <div className="absolute top-5 right-5 w-2.5 h-2.5 rounded-full bg-[#E07B4F] dark:bg-[#E8956A] shadow-lg shadow-[#E07B4F]/50 dark:shadow-[#E8956A]/50" />
                     )}
                   </div>
                 </div>

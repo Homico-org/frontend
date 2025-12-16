@@ -11,8 +11,8 @@ const progressVariants = cva(
     variants: {
       variant: {
         default: "bg-[var(--color-bg-tertiary)]",
-        terracotta: "bg-[#D2691E]/10",
-        gradient: "bg-gradient-to-r from-[#D2691E]/5 to-[#CD853F]/10",
+        terracotta: "bg-[#E07B4F]/10",
+        gradient: "bg-gradient-to-r from-[#E07B4F]/5 to-[#E8956A]/10",
       },
       size: {
         sm: "h-1.5",
@@ -33,12 +33,12 @@ const indicatorVariants = cva(
   {
     variants: {
       indicatorVariant: {
-        default: "bg-[#D2691E]",
-        gradient: "bg-gradient-to-r from-[#D2691E] to-[#CD853F]",
+        default: "bg-[#E07B4F]",
+        gradient: "bg-gradient-to-r from-[#E07B4F] to-[#E8956A]",
         success: "bg-emerald-500",
         warning: "bg-amber-500",
         danger: "bg-red-500",
-        animated: "bg-gradient-to-r from-[#D2691E] via-[#CD853F] to-[#D2691E] bg-[length:200%_100%] animate-gradient-shimmer",
+        animated: "bg-gradient-to-r from-[#E07B4F] via-[#E8956A] to-[#E07B4F] bg-[length:200%_100%] animate-gradient-shimmer",
       },
     },
     defaultVariants: {
@@ -69,7 +69,7 @@ const Progress = React.forwardRef<
           </span>
         )}
         {(showValue || showPercentage) && (
-          <span className="text-sm font-bold text-[#D2691E]">
+          <span className="text-sm font-bold text-[#E07B4F]">
             {showPercentage ? `${Math.round(value || 0)}%` : value}
           </span>
         )}
@@ -147,8 +147,8 @@ const CircleProgress = React.forwardRef<HTMLDivElement, CircleProgressProps>(
           />
           <defs>
             <linearGradient id="progress-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#D2691E" />
-              <stop offset="100%" stopColor="#CD853F" />
+              <stop offset="0%" stopColor="#E07B4F" />
+              <stop offset="100%" stopColor="#E8956A" />
             </linearGradient>
           </defs>
         </svg>
@@ -206,8 +206,8 @@ const StepProgress = React.forwardRef<HTMLDivElement, StepProgressProps>(
                   <div
                     className={cn(
                       "w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm transition-all duration-300",
-                      isCompleted && "bg-gradient-to-br from-[#D2691E] to-[#B8560E] text-white shadow-lg shadow-[#D2691E]/25",
-                      isCurrent && "bg-[#D2691E]/10 text-[#D2691E] border-2 border-[#D2691E]",
+                      isCompleted && "bg-gradient-to-br from-[#E07B4F] to-[#D26B3F] text-white shadow-lg shadow-[#E07B4F]/25",
+                      isCurrent && "bg-[#E07B4F]/10 text-[#E07B4F] border-2 border-[#E07B4F]",
                       !isCompleted && !isCurrent && "bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] border border-[var(--color-border)]"
                     )}
                   >
@@ -240,7 +240,7 @@ const StepProgress = React.forwardRef<HTMLDivElement, StepProgressProps>(
                     <div
                       className={cn(
                         "h-full rounded-full transition-all duration-500",
-                        isCompleted ? "bg-gradient-to-r from-[#D2691E] to-[#CD853F]" : "bg-[var(--color-border)]"
+                        isCompleted ? "bg-gradient-to-r from-[#E07B4F] to-[#E8956A]" : "bg-[var(--color-border)]"
                       )}
                     />
                   </div>

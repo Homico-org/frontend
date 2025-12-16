@@ -570,9 +570,9 @@ function MyJobsPageContent() {
           <div className="flex flex-col items-center gap-4">
             <div className="relative">
               <div className="myjobs-stat-icon w-16 h-16">
-                <Briefcase className="w-8 h-8 text-[#D2691E] animate-pulse" />
+                <Briefcase className="w-8 h-8 text-[#E07B4F] animate-pulse" />
               </div>
-              <div className="absolute inset-0 w-16 h-16 rounded-2xl border-2 border-[#D2691E]/20 border-t-[#D2691E] animate-spin" />
+              <div className="absolute inset-0 w-16 h-16 rounded-2xl border-2 border-[#E07B4F]/20 border-t-[#E07B4F] animate-spin" />
             </div>
             <p className="text-sm font-medium text-[var(--color-text-secondary)]">
               {language === 'ka' ? 'იტვირთება...' : 'Loading your projects...'}
@@ -619,7 +619,7 @@ function MyJobsPageContent() {
             <div className="flex items-start gap-4">
               <button
                 onClick={() => router.push('/browse')}
-                className="mt-1 p-2 rounded-xl hover:bg-[#D2691E]/10 transition-all text-[var(--color-text-tertiary)] hover:text-[#D2691E]"
+                className="mt-1 p-2 rounded-xl hover:bg-[#E07B4F]/10 transition-all text-[var(--color-text-tertiary)] hover:text-[#E07B4F]"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
@@ -654,7 +654,7 @@ function MyJobsPageContent() {
                     className={`myjobs-stat-card text-left ${statusFilter === stat.key ? 'active' : ''} ${stat.key === 'expired' && stat.value > 0 ? 'expired' : ''}`}
                   >
                     <div className="myjobs-stat-icon">
-                      <Icon className={`w-4 h-4 ${stat.key === 'expired' && stat.value > 0 ? 'text-orange-500' : 'text-[#D2691E]'}`} />
+                      <Icon className={`w-4 h-4 ${stat.key === 'expired' && stat.value > 0 ? 'text-orange-500' : 'text-[#E07B4F]'}`} />
                     </div>
                     <div className={`myjobs-stat-value text-xl sm:text-2xl ${stat.key === 'expired' && stat.value > 0 ? 'text-orange-500' : ''}`}>{stat.value}</div>
                     <div className="myjobs-stat-label text-[10px] sm:text-xs truncate">{stat.label}</div>
@@ -806,7 +806,7 @@ function MyJobsPageContent() {
                           <div className="relative flex-shrink-0">
                             <button
                               onClick={() => setActionMenuJobId(actionMenuJobId === job._id ? null : job._id)}
-                              className="p-1.5 rounded-lg hover:bg-[#D2691E]/10 transition-all text-[var(--color-text-tertiary)]"
+                              className="p-1.5 rounded-lg hover:bg-[#E07B4F]/10 transition-all text-[var(--color-text-tertiary)]"
                             >
                               <MoreVertical className="w-4 h-4" />
                             </button>
@@ -861,7 +861,7 @@ function MyJobsPageContent() {
 
                           <Link
                             href={`/jobs/${job._id}`}
-                            className="ml-auto flex items-center gap-1 text-xs font-medium text-[#D2691E] hover:underline"
+                            className="ml-auto flex items-center gap-1 text-xs font-medium text-[#E07B4F] hover:underline"
                           >
                             {language === 'ka' ? 'ვრცლად' : 'Details'}
                             <ExternalLink className="w-3 h-3" />
@@ -911,8 +911,8 @@ function MyJobsPageContent() {
                                 onClick={() => setProposalFilter(filter.key)}
                                 className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-medium whitespace-nowrap transition-all ${
                                   proposalFilter === filter.key
-                                    ? 'bg-[#D2691E] text-white'
-                                    : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[#D2691E]/10'
+                                    ? 'bg-[#E07B4F] text-white'
+                                    : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[#E07B4F]/10'
                                 }`}
                               >
                                 {filter.label}
@@ -1037,7 +1037,7 @@ function MyJobsPageContent() {
 
                                     <Link
                                       href={`/professionals/${proposal.proProfileId?._id}`}
-                                      className="ml-auto text-xs font-medium text-[#D2691E] hover:underline flex items-center gap-1"
+                                      className="ml-auto text-xs font-medium text-[#E07B4F] hover:underline flex items-center gap-1"
                                     >
                                       {language === 'ka' ? 'პროფილი' : 'Profile'}
                                       <ExternalLink className="w-2.5 h-2.5" />
@@ -1056,7 +1056,7 @@ function MyJobsPageContent() {
                                     </Link>
                                     <Link
                                       href={`/professionals/${proposal.proProfileId?._id}`}
-                                      className="ml-auto text-xs font-medium text-[#D2691E] hover:underline flex items-center gap-1"
+                                      className="ml-auto text-xs font-medium text-[#E07B4F] hover:underline flex items-center gap-1"
                                     >
                                       {language === 'ka' ? 'პროფილი' : 'Profile'}
                                       <ExternalLink className="w-2.5 h-2.5" />
@@ -1212,7 +1212,7 @@ function MyJobsPageContent() {
                     <p className="text-xs text-[var(--color-text-tertiary)]">{chatModalProposal.proProfileId?.title}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-[#D2691E]">₾{chatModalProposal.proposedPrice?.toLocaleString()}</p>
+                    <p className="font-bold text-[#E07B4F]">₾{chatModalProposal.proposedPrice?.toLocaleString()}</p>
                   </div>
                 </div>
               </div>
@@ -1379,7 +1379,7 @@ export default function MyJobsPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#D2691E]"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#E07B4F]"></div>
       </div>
     }>
       <MyJobsPageContent />

@@ -87,20 +87,28 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
     [selectedCategory, initializeLikeStates]
   );
 
-  // Initial fetch
+  // Previous category ref to detect actual changes
+  const prevCategoryRef = useRef<string | null | undefined>(undefined);
+
+  // Fetch when category changes (including initial mount)
   useEffect(() => {
-    if (initialFetchDone.current) return;
+    // Skip if this is a re-render with the same category
+    if (prevCategoryRef.current === selectedCategory && initialFetchDone.current) {
+      return;
+    }
+
+    prevCategoryRef.current = selectedCategory;
+
+    // If already fetched and category didn't change, skip
+    if (initialFetchDone.current) {
+      // Category changed - reset and fetch
+      setPage(1);
+      setFeedItems([]);
+    }
+
     initialFetchDone.current = true;
     fetchFeed(1);
-  }, [fetchFeed]);
-
-  // Refetch when category changes
-  useEffect(() => {
-    setPage(1);
-    setFeedItems([]);
-    initialFetchDone.current = false;
-    fetchFeed(1);
-  }, [selectedCategory]);
+  }, [selectedCategory, fetchFeed]);
 
   // Infinite scroll observer
   useEffect(() => {
@@ -147,18 +155,18 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
           style={{ animationDelay: `${i * 100}ms` }}
         >
           {/* Image skeleton */}
-          <div className="aspect-[4/3] bg-gradient-to-br from-[#D2691E]/5 to-[#CD853F]/10 relative">
+          <div className="aspect-[4/3] bg-gradient-to-br from-[#E07B4F]/5 to-[#E8956A]/10 relative">
             <div className="absolute inset-0 shimmer-premium" />
             {/* Corner accent */}
-            <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-[#D2691E]/10" />
+            <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-[#E07B4F]/10" />
           </div>
           {/* Footer skeleton */}
           <div className="p-3 sm:p-4 flex items-center gap-3">
             {/* Avatar skeleton */}
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-[#D2691E]/10 to-[#CD853F]/15" />
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-[#E07B4F]/10 to-[#E8956A]/15" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 bg-[#D2691E]/10 rounded-lg w-3/4" />
-              <div className="h-3 bg-[#D2691E]/5 rounded-lg w-1/2" />
+              <div className="h-4 bg-[#E07B4F]/10 rounded-lg w-3/4" />
+              <div className="h-3 bg-[#E07B4F]/5 rounded-lg w-1/2" />
             </div>
           </div>
         </div>
@@ -171,9 +179,9 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
     <div className="flex flex-col items-center justify-center py-20 px-4">
       {/* Decorative icon */}
       <div className="relative mb-6">
-        <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#D2691E]/10 to-[#CD853F]/5 flex items-center justify-center rotate-3">
+        <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#E07B4F]/10 to-[#E8956A]/5 flex items-center justify-center rotate-3">
           <svg
-            className="w-12 h-12 text-[#D2691E]/40"
+            className="w-12 h-12 text-[#E07B4F]/40"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -187,8 +195,8 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
           </svg>
         </div>
         {/* Floating decorative elements */}
-        <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#D2691E]/20 animate-float-slow" />
-        <div className="absolute -bottom-1 -left-3 w-4 h-4 rounded-full bg-[#CD853F]/15 animate-float-slower" />
+        <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#E07B4F]/20 animate-float-slow" />
+        <div className="absolute -bottom-1 -left-3 w-4 h-4 rounded-full bg-[#E8956A]/15 animate-float-slower" />
       </div>
 
       <h3 className="browse-title text-xl sm:text-2xl text-gradient-terracotta mb-2">
@@ -208,7 +216,7 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
       {!isLoading && feedItems.length > 0 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-[var(--color-text-tertiary)]">
-            <span className="font-semibold text-[#D2691E]">{totalCount}</span>
+            <span className="font-semibold text-[#E07B4F]">{totalCount}</span>
             {' '}
             {locale === 'ka' ? 'ნამუშევარი' : 'works'}
           </p>
@@ -247,8 +255,8 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
             {isLoadingMore && (
               <div className="flex items-center gap-4 px-6 py-3 rounded-2xl glass-card">
                 <div className="relative w-5 h-5">
-                  <div className="absolute inset-0 rounded-full border-2 border-[#D2691E]/20" />
-                  <div className="absolute inset-0 rounded-full border-2 border-[#D2691E] border-t-transparent animate-spin" />
+                  <div className="absolute inset-0 rounded-full border-2 border-[#E07B4F]/20" />
+                  <div className="absolute inset-0 rounded-full border-2 border-[#E07B4F] border-t-transparent animate-spin" />
                 </div>
                 <span className="text-sm font-medium text-[var(--color-text-secondary)]">
                   {locale === 'ka' ? 'იტვირთება...' : 'Loading more...'}
@@ -257,11 +265,11 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
             )}
             {!hasMore && feedItems.length > 0 && (
               <div className="flex items-center gap-2 text-sm text-[var(--color-text-tertiary)]">
-                <div className="w-8 h-px bg-gradient-to-r from-transparent via-[#D2691E]/20 to-transparent" />
+                <div className="w-8 h-px bg-gradient-to-r from-transparent via-[#E07B4F]/20 to-transparent" />
                 <span className="font-serif-italic">
                   {locale === 'ka' ? 'ყველა ნამუშევარი ნაჩვენებია' : 'All works displayed'}
                 </span>
-                <div className="w-8 h-px bg-gradient-to-r from-transparent via-[#D2691E]/20 to-transparent" />
+                <div className="w-8 h-px bg-gradient-to-r from-transparent via-[#E07B4F]/20 to-transparent" />
               </div>
             )}
           </div>

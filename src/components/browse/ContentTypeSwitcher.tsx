@@ -119,7 +119,7 @@ export default function ContentTypeSwitcher({
     >
       {/* Animated indicator */}
       <div
-        className={`absolute top-1 bottom-1 rounded-md bg-[#D2691E] ${mounted ? 'transition-all duration-300' : ''}`}
+        className={`absolute top-1 bottom-1 rounded-md bg-[#E07B4F] ${mounted ? 'transition-all duration-300' : ''}`}
         style={{
           left: `${indicatorStyle.left}px`,
           width: `${indicatorStyle.width}px`,

@@ -393,10 +393,10 @@ function PostJobPageContent() {
         <div className="relative z-20 flex items-center justify-center min-h-[80vh]">
           <div className="flex flex-col items-center gap-4">
             <div className="relative">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#D2691E]/10 to-[#CD853F]/10 flex items-center justify-center">
-                <FileText className="w-8 h-8 text-[#D2691E] animate-pulse" />
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#E07B4F]/10 to-[#E8956A]/10 flex items-center justify-center">
+                <FileText className="w-8 h-8 text-[#E07B4F] animate-pulse" />
               </div>
-              <div className="absolute inset-0 w-16 h-16 rounded-2xl border-2 border-[#D2691E]/20 border-t-[#D2691E] animate-spin" />
+              <div className="absolute inset-0 w-16 h-16 rounded-2xl border-2 border-[#E07B4F]/20 border-t-[#E07B4F] animate-spin" />
             </div>
             <p className="text-sm font-medium text-[var(--color-text-secondary)]">
               {locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
@@ -654,7 +654,7 @@ function PostJobPageContent() {
                 {/* Deadline */}
                 <div>
                   <label className="postjob-label">
-                    <Calendar className="w-4 h-4 text-[#D2691E]" />
+                    <Calendar className="w-4 h-4 text-[#E07B4F]" />
                     <span>{locale === 'ka' ? 'სასურველი დასრულების თარიღი' : 'Preferred Deadline'}</span>
                   </label>
                   <DatePicker
@@ -725,7 +725,7 @@ function PostJobPageContent() {
                 {formData.budgetType === 'fixed' && (
                   <div>
                     <label className="postjob-label">
-                      <DollarSign className="w-4 h-4 text-[#D2691E]" />
+                      <DollarSign className="w-4 h-4 text-[#E07B4F]" />
                       <span>{locale === 'ka' ? 'ბიუჯეტის თანხა (₾)' : 'Budget Amount (₾)'}</span>
                     </label>
                     <input
@@ -782,7 +782,7 @@ function PostJobPageContent() {
                     {formData.areaSize && formData.pricePerUnit && (
                       <p className="mt-3 text-sm text-[var(--color-text-secondary)] flex items-center gap-2">
                         <span>{locale === 'ka' ? 'სავარაუდო ჯამი:' : 'Estimated total:'}</span>
-                        <span className="font-bold text-[#D2691E] text-lg">
+                        <span className="font-bold text-[#E07B4F] text-lg">
                           ₾{(Number(formData.areaSize) * Number(formData.pricePerUnit)).toLocaleString()}
                         </span>
                       </p>
@@ -826,7 +826,7 @@ function PostJobPageContent() {
                 {isEditMode && existingMedia.length > 0 && (
                   <div>
                     <label className="postjob-label">
-                      <Image className="w-4 h-4 text-[#D2691E]" />
+                      <Image className="w-4 h-4 text-[#E07B4F]" />
                       <span>{locale === 'ka' ? 'არსებული ფოტოები' : 'Current Photos'} ({existingMedia.length})</span>
                     </label>
                     <div className="postjob-media-grid">
@@ -842,7 +842,7 @@ function PostJobPageContent() {
                 {/* Upload Area */}
                 <div>
                   <label className="postjob-label">
-                    <Upload className="w-4 h-4 text-[#D2691E]" />
+                    <Upload className="w-4 h-4 text-[#E07B4F]" />
                     <span>{locale === 'ka' ? 'ატვირთე ფოტოები' : 'Upload Photos'}</span>
                   </label>
                   <div onClick={() => fileInputRef.current?.click()} className="postjob-upload">
@@ -889,7 +889,7 @@ function PostJobPageContent() {
                 {/* References/Inspiration Links */}
                 <div>
                   <label className="postjob-label">
-                    <Link2 className="w-4 h-4 text-[#D2691E]" />
+                    <Link2 className="w-4 h-4 text-[#E07B4F]" />
                     <span>{locale === 'ka' ? 'ინსპირაციის ბმულები' : 'Inspiration Links'}</span>
                   </label>
                   <div className="postjob-ref-input">
@@ -1025,7 +1025,7 @@ export default function PostJobPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#D2691E]"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#E07B4F]"></div>
       </div>
     }>
       <PostJobPageContent />

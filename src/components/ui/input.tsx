@@ -10,13 +10,13 @@ const inputVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] focus:outline-none focus:border-[#D2691E] focus:ring-2 focus:ring-[#D2691E]/15",
+          "bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] focus:outline-none focus:border-[#E07B4F] focus:ring-2 focus:ring-[#E07B4F]/15",
         filled:
-          "bg-[var(--color-bg-tertiary)] border border-transparent focus:outline-none focus:border-[#D2691E] focus:ring-2 focus:ring-[#D2691E]/15",
+          "bg-[var(--color-bg-tertiary)] border border-transparent focus:outline-none focus:border-[#E07B4F] focus:ring-2 focus:ring-[#E07B4F]/15",
         ghost:
-          "bg-transparent border-b border-[var(--color-border-subtle)] rounded-none focus:outline-none focus:border-[#D2691E]",
+          "bg-transparent border-b border-[var(--color-border-subtle)] rounded-none focus:outline-none focus:border-[#E07B4F]",
         premium:
-          "bg-gradient-to-r from-[var(--color-bg-primary)] to-[#D2691E]/5 border border-[#D2691E]/20 focus:outline-none focus:border-[#D2691E] focus:ring-2 focus:ring-[#D2691E]/20 focus:shadow-lg focus:shadow-[#D2691E]/10",
+          "bg-gradient-to-r from-[var(--color-bg-primary)] to-[#E07B4F]/5 border border-[#E07B4F]/20 focus:outline-none focus:border-[#E07B4F] focus:ring-2 focus:ring-[#E07B4F]/20 focus:shadow-lg focus:shadow-[#E07B4F]/10",
       },
       inputSize: {
         sm: "h-9 px-3 py-2 text-xs",
@@ -84,13 +84,13 @@ const textareaVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] focus:outline-none focus:border-[#D2691E] focus:ring-2 focus:ring-[#D2691E]/15",
+          "bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] focus:outline-none focus:border-[#E07B4F] focus:ring-2 focus:ring-[#E07B4F]/15",
         filled:
-          "bg-[var(--color-bg-tertiary)] border border-transparent focus:outline-none focus:border-[#D2691E] focus:ring-2 focus:ring-[#D2691E]/15",
+          "bg-[var(--color-bg-tertiary)] border border-transparent focus:outline-none focus:border-[#E07B4F] focus:ring-2 focus:ring-[#E07B4F]/15",
         ghost:
-          "bg-transparent border-b border-[var(--color-border-subtle)] rounded-none focus:outline-none focus:border-[#D2691E]",
+          "bg-transparent border-b border-[var(--color-border-subtle)] rounded-none focus:outline-none focus:border-[#E07B4F]",
         premium:
-          "bg-gradient-to-r from-[var(--color-bg-primary)] to-[#D2691E]/5 border border-[#D2691E]/20 focus:outline-none focus:border-[#D2691E] focus:ring-2 focus:ring-[#D2691E]/20 focus:shadow-lg focus:shadow-[#D2691E]/10",
+          "bg-gradient-to-r from-[var(--color-bg-primary)] to-[#E07B4F]/5 border border-[#E07B4F]/20 focus:outline-none focus:border-[#E07B4F] focus:ring-2 focus:ring-[#E07B4F]/20 focus:shadow-lg focus:shadow-[#E07B4F]/10",
       },
       textareaSize: {
         sm: "min-h-[80px] px-3 py-2 text-xs",

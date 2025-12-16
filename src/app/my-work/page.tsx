@@ -254,14 +254,14 @@ export default function MyWorkPage() {
               onClick={() => setTabFilter('active')}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                 tabFilter === 'active'
-                  ? 'bg-[#D2691E] text-white'
-                  : 'bg-[#D2691E]/5 text-[var(--color-text-secondary)] hover:bg-[#D2691E]/10'
+                  ? 'bg-[#E07B4F] text-white'
+                  : 'bg-[#E07B4F]/5 text-[var(--color-text-secondary)] hover:bg-[#E07B4F]/10'
               }`}
             >
               <Hammer className="w-4 h-4" />
               {language === 'ka' ? 'მიმდინარე' : 'Active'}
               <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${
-                tabFilter === 'active' ? 'bg-white/20' : 'bg-[#D2691E]/10 text-[#D2691E]'
+                tabFilter === 'active' ? 'bg-white/20' : 'bg-[#E07B4F]/10 text-[#E07B4F]'
               }`}>
                 {stats.active}
               </span>
@@ -270,14 +270,14 @@ export default function MyWorkPage() {
               onClick={() => setTabFilter('completed')}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                 tabFilter === 'completed'
-                  ? 'bg-[#D2691E] text-white'
-                  : 'bg-[#D2691E]/5 text-[var(--color-text-secondary)] hover:bg-[#D2691E]/10'
+                  ? 'bg-[#E07B4F] text-white'
+                  : 'bg-[#E07B4F]/5 text-[var(--color-text-secondary)] hover:bg-[#E07B4F]/10'
               }`}
             >
               <Trophy className="w-4 h-4" />
               {language === 'ka' ? 'დასრულებული' : 'Completed'}
               <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${
-                tabFilter === 'completed' ? 'bg-white/20' : 'bg-[#D2691E]/10 text-[#D2691E]'
+                tabFilter === 'completed' ? 'bg-white/20' : 'bg-[#E07B4F]/10 text-[#E07B4F]'
               }`}>
                 {stats.completed}
               </span>
@@ -373,7 +373,7 @@ export default function MyWorkPage() {
                               <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${
                                 activeJob.status === 'accepted' 
                                   ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                                  : 'bg-[#D2691E]/15 text-[#D2691E]'
+                                  : 'bg-[#E07B4F]/15 text-[#E07B4F]'
                               }`}>
                                 {activeJob.status === 'accepted' ? (
                                   <Clock className="w-3 h-3" />
@@ -389,7 +389,7 @@ export default function MyWorkPage() {
 
                           {/* Job Title */}
                           <Link href={`/jobs/${job._id}`} className="block group/title">
-                            <h3 className="text-lg font-semibold leading-snug line-clamp-2 transition-colors text-[var(--color-text-primary)] group-hover/title:text-[#D2691E]">
+                            <h3 className="text-lg font-semibold leading-snug line-clamp-2 transition-colors text-[var(--color-text-primary)] group-hover/title:text-[#E07B4F]">
                               {job.title}
                             </h3>
                           </Link>
@@ -405,7 +405,7 @@ export default function MyWorkPage() {
                               {job.clientId?.name}
                             </span>
                             {isOrg && job.clientId?.companyName && (
-                              <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-[#D2691E]/10 text-[#D2691E]">
+                              <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-[#E07B4F]/10 text-[#E07B4F]">
                                 <Building2 className="w-3 h-3" />
                                 {job.clientId.companyName}
                               </span>
@@ -415,10 +415,10 @@ export default function MyWorkPage() {
                           {/* Job Meta */}
                           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2.5 text-sm text-[var(--color-text-secondary)]">
                             <span className="flex items-center gap-1.5">
-                              <MapPin className="w-3.5 h-3.5 text-[#D2691E]/60" />
+                              <MapPin className="w-3.5 h-3.5 text-[#E07B4F]/60" />
                               {job.location}
                             </span>
-                            <span className="flex items-center gap-1.5 font-semibold text-[#D2691E]">
+                            <span className="flex items-center gap-1.5 font-semibold text-[#E07B4F]">
                               <DollarSign className="w-3.5 h-3.5" />
                               ₾{activeJob.proposedPrice?.toLocaleString()}
                             </span>
@@ -432,19 +432,19 @@ export default function MyWorkPage() {
 
                           {/* Client Contact */}
                           {job.clientId && (
-                            <div className="mt-3 p-3 rounded-lg bg-[#D2691E]/5 border border-[#E8D5C4]/40 dark:border-[#3d2f24]/40">
-                              <p className="text-xs font-semibold text-[#D2691E] mb-2">
+                            <div className="mt-3 p-3 rounded-lg bg-[#E07B4F]/5 border border-[#E8D5C4]/40 dark:border-[#3d2f24]/40">
+                              <p className="text-xs font-semibold text-[#E07B4F] mb-2">
                                 {language === 'ka' ? 'კლიენტის კონტაქტი' : 'Client Contact'}
                               </p>
                               <div className="flex flex-wrap items-center gap-3 text-sm">
                                 {job.clientId.phone && (
-                                  <a href={`tel:${job.clientId.phone}`} className="flex items-center gap-1.5 text-[#D2691E] hover:underline">
+                                  <a href={`tel:${job.clientId.phone}`} className="flex items-center gap-1.5 text-[#E07B4F] hover:underline">
                                     <Phone className="w-3.5 h-3.5" />
                                     {job.clientId.phone}
                                   </a>
                                 )}
                                 {job.clientId.email && (
-                                  <a href={`mailto:${job.clientId.email}`} className="flex items-center gap-1.5 text-[#D2691E] hover:underline">
+                                  <a href={`mailto:${job.clientId.email}`} className="flex items-center gap-1.5 text-[#E07B4F] hover:underline">
                                     <Mail className="w-3.5 h-3.5" />
                                     {job.clientId.email}
                                   </a>
@@ -486,7 +486,7 @@ export default function MyWorkPage() {
 
                     <Link
                       href={`/jobs/${job._id}`}
-                      className="ml-auto flex items-center gap-1.5 text-sm font-medium text-[#D2691E] hover:underline"
+                      className="ml-auto flex items-center gap-1.5 text-sm font-medium text-[#E07B4F] hover:underline"
                     >
                       {language === 'ka' ? 'დეტალები' : 'View Details'}
                       <ExternalLink className="w-3.5 h-3.5" />

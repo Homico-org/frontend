@@ -38,8 +38,8 @@ export default function JobsFilterSection({
             className={`
               px-2 py-1.5 rounded text-[11px] font-medium transition-all duration-150 flex-shrink-0
               ${selectedBudget === budget.key
-                ? 'bg-[#D2691E]/15 text-[#D2691E]'
-                : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[#D2691E]/5'
+                ? 'bg-[#E07B4F]/15 text-[#E07B4F]'
+                : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[#E07B4F]/5'
               }
             `}
           >

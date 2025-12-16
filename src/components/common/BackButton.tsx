@@ -44,26 +44,26 @@ export default function BackButton({
   const variantStyles = {
     default: `
       text-sm font-medium
-      text-[var(--color-text-secondary)] hover:text-[#D2691E]
+      text-[var(--color-text-secondary)] hover:text-[#E07B4F]
     `,
     minimal: `
       text-sm
-      text-[var(--color-text-tertiary)] hover:text-[#D2691E]
+      text-[var(--color-text-tertiary)] hover:text-[#E07B4F]
     `,
     filled: `
       text-sm font-medium
       px-3 py-1.5 rounded-lg
-      bg-[#D2691E]/5 hover:bg-[#D2691E]/10
-      text-[#D2691E]
-      border border-[#D2691E]/10 hover:border-[#D2691E]/20
+      bg-[#E07B4F]/5 hover:bg-[#E07B4F]/10
+      text-[#E07B4F]
+      border border-[#E07B4F]/10 hover:border-[#E07B4F]/20
     `,
   };
 
   const iconWrapperStyles = {
     default: `
       w-8 h-8 rounded-xl flex items-center justify-center
-      bg-[#D2691E]/8 border border-[#D2691E]/12
-      group-hover:bg-[#D2691E]/12 group-hover:border-[#D2691E]/20
+      bg-[#E07B4F]/8 border border-[#E07B4F]/12
+      group-hover:bg-[#E07B4F]/12 group-hover:border-[#E07B4F]/20
       group-hover:scale-105
       transition-all duration-300
     `,
@@ -82,12 +82,12 @@ export default function BackButton({
     >
       {variant === "default" ? (
         <div className={iconWrapperStyles[variant]}>
-          <ArrowLeft className="h-4 w-4 text-[#D2691E] group-hover:-translate-x-0.5 transition-transform duration-300" />
+          <ArrowLeft className="h-4 w-4 text-[#E07B4F] group-hover:-translate-x-0.5 transition-transform duration-300" />
         </div>
       ) : (
         <ArrowLeft
           className={`h-4 w-4 group-hover:-translate-x-0.5 transition-transform duration-300 ${
-            variant === "filled" ? "text-[#D2691E]" : ""
+            variant === "filled" ? "text-[#E07B4F]" : ""
           }`}
         />
       )}

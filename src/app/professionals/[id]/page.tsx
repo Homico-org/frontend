@@ -517,7 +517,7 @@ export default function ProfessionalDetailPage() {
 
                         {/* Availability badge */}
                         {profile.isAvailable && (
-                          <div className="absolute -bottom-0.5 -right-0.5 px-2 py-0.5 bg-gradient-to-r from-[#D2691E] to-[#CD853F] rounded-full text-[9px] font-bold text-white uppercase tracking-wider shadow-lg shadow-[#D2691E]/30">
+                          <div className="absolute -bottom-0.5 -right-0.5 px-2 py-0.5 bg-gradient-to-r from-[#E07B4F] to-[#E8956A] rounded-full text-[9px] font-bold text-white uppercase tracking-wider shadow-lg shadow-[#E07B4F]/30">
                             {locale === 'ka' ? 'აქტ' : 'Avail'}
                           </div>
                         )}
@@ -564,7 +564,7 @@ export default function ProfessionalDetailPage() {
                       {profile.categories.slice(0, 3).map((cat, i) => (
                         <span
                           key={i}
-                          className="px-2.5 py-1 text-[10px] font-semibold rounded-lg bg-[#D2691E]/10 text-[#D2691E] dark:text-[#CD853F] border border-[#D2691E]/20"
+                          className="px-2.5 py-1 text-[10px] font-semibold rounded-lg bg-[#E07B4F]/10 text-[#E07B4F] dark:text-[#E8956A] border border-[#E07B4F]/20"
                         >
                           {getCategoryLabel(cat)}
                         </span>
@@ -752,8 +752,8 @@ export default function ProfessionalDetailPage() {
               {/* About Section - Glassmorphic Transparent Card */}
               <section className="px-4 sm:px-5 lg:px-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="h-[3px] w-8 rounded-full bg-[#D2691E]" />
-                  <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#D2691E]/50 dark:text-[#CD853F]/50">
+                  <div className="h-[3px] w-8 rounded-full bg-[#E07B4F]" />
+                  <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#E07B4F]/50 dark:text-[#E8956A]/50">
                     {locale === 'ka' ? 'შესახებ' : 'About'}
                   </h2>
                 </div>
@@ -1178,14 +1178,14 @@ export default function ProfessionalDetailPage() {
           <div className="absolute inset-0 bg-black/70 backdrop-blur-md" />
 
           <div
-            className="relative w-full sm:max-w-[520px] max-h-[95vh] sm:max-h-[92vh] overflow-hidden flex flex-col project-modal-enter bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t sm:border border-[#D2691E]/20 dark:border-[#CD853F]/20 sm:rounded-2xl rounded-t-2xl"
+            className="relative w-full sm:max-w-[520px] max-h-[95vh] sm:max-h-[92vh] overflow-hidden flex flex-col project-modal-enter bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t sm:border border-[#E07B4F]/20 dark:border-[#E8956A]/20 sm:rounded-2xl rounded-t-2xl"
             style={{
               boxShadow: '0 -10px 60px -15px rgba(210, 105, 30, 0.15), 0 25px 50px -12px rgba(0, 0, 0, 0.25)',
             }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Mobile drag indicator */}
-            <div className="sm:hidden absolute top-3 left-1/2 -translate-x-1/2 z-20 w-10 h-1 bg-[#D2691E]/30 rounded-full" />
+            <div className="sm:hidden absolute top-3 left-1/2 -translate-x-1/2 z-20 w-10 h-1 bg-[#E07B4F]/30 rounded-full" />
 
             {/* Hero Image Section - Taller and more cinematic */}
             <div className="relative aspect-[4/3] sm:aspect-[16/9] flex-shrink-0 overflow-hidden">
@@ -1273,8 +1273,8 @@ export default function ProfessionalDetailPage() {
                         <div
                           className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
                             selectedProject.status === 'completed'
-                              ? 'bg-[#D2691E] text-white'
-                              : 'bg-[#CD853F]/80 text-white'
+                              ? 'bg-[#E07B4F] text-white'
+                              : 'bg-[#E8956A]/80 text-white'
                           }`}
                         >
                           {selectedProject.status === 'completed'
@@ -1344,21 +1344,21 @@ export default function ProfessionalDetailPage() {
                 {(selectedProject.location || selectedProject.completedDate || selectedProject.duration || selectedProject.category) && (
                   <div className="flex flex-wrap gap-2">
                     {selectedProject.category && (
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D2691E]/10 dark:bg-[#CD853F]/15 border border-[#D2691E]/15 dark:border-[#CD853F]/20">
-                        <span className="text-xs font-semibold text-[#D2691E] dark:text-[#CD853F]">{getCategoryLabel(selectedProject.category)}</span>
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#E07B4F]/10 dark:bg-[#E8956A]/15 border border-[#E07B4F]/15 dark:border-[#E8956A]/20">
+                        <span className="text-xs font-semibold text-[#E07B4F] dark:text-[#E8956A]">{getCategoryLabel(selectedProject.category)}</span>
                       </div>
                     )}
                     {selectedProject.location && (
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/60 dark:bg-gray-800/40 border border-[#D2691E]/10 dark:border-[#CD853F]/15">
-                        <svg className="w-3.5 h-3.5 text-[#D2691E]/60 dark:text-[#CD853F]/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/60 dark:bg-gray-800/40 border border-[#E07B4F]/10 dark:border-[#E8956A]/15">
+                        <svg className="w-3.5 h-3.5 text-[#E07B4F]/60 dark:text-[#E8956A]/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         </svg>
                         <span className="text-xs text-[var(--color-text-secondary)]">{selectedProject.location}</span>
                       </div>
                     )}
                     {selectedProject.completedDate && (
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/60 dark:bg-gray-800/40 border border-[#D2691E]/10 dark:border-[#CD853F]/15">
-                        <svg className="w-3.5 h-3.5 text-[#D2691E]/60 dark:text-[#CD853F]/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/60 dark:bg-gray-800/40 border border-[#E07B4F]/10 dark:border-[#E8956A]/15">
+                        <svg className="w-3.5 h-3.5 text-[#E07B4F]/60 dark:text-[#E8956A]/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         <span className="text-xs text-[var(--color-text-secondary)]">
@@ -1367,8 +1367,8 @@ export default function ProfessionalDetailPage() {
                       </div>
                     )}
                     {selectedProject.duration && (
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/60 dark:bg-gray-800/40 border border-[#D2691E]/10 dark:border-[#CD853F]/15">
-                        <svg className="w-3.5 h-3.5 text-[#D2691E]/60 dark:text-[#CD853F]/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/60 dark:bg-gray-800/40 border border-[#E07B4F]/10 dark:border-[#E8956A]/15">
+                        <svg className="w-3.5 h-3.5 text-[#E07B4F]/60 dark:text-[#E8956A]/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span className="text-xs text-[var(--color-text-secondary)]">{selectedProject.duration}</span>
@@ -1405,9 +1405,9 @@ export default function ProfessionalDetailPage() {
 
                 {/* Client Review - Editorial quote style */}
                 {selectedProject.review && (
-                  <div className="relative p-5 rounded-2xl overflow-hidden bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-[#D2691E]/10 dark:border-[#CD853F]/15">
+                  <div className="relative p-5 rounded-2xl overflow-hidden bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-[#E07B4F]/10 dark:border-[#E8956A]/15">
                     {/* Decorative accent line */}
-                    <div className="absolute top-0 left-0 w-1 h-full rounded-l-2xl bg-[#D2691E]" />
+                    <div className="absolute top-0 left-0 w-1 h-full rounded-l-2xl bg-[#E07B4F]" />
 
                     <p
                       className="text-sm leading-relaxed mb-4 pl-2"
@@ -1424,10 +1424,10 @@ export default function ProfessionalDetailPage() {
                         <img
                           src={selectedProject.clientAvatar}
                           alt={selectedProject.clientName || ''}
-                          className="w-9 h-9 rounded-full object-cover ring-2 ring-[#D2691E]/20"
+                          className="w-9 h-9 rounded-full object-cover ring-2 ring-[#E07B4F]/20"
                         />
                       ) : selectedProject.clientName && (
-                        <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold text-white bg-[#D2691E]">
+                        <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold text-white bg-[#E07B4F]">
                           {selectedProject.clientName.charAt(0)}
                         </div>
                       )}
@@ -1444,11 +1444,11 @@ export default function ProfessionalDetailPage() {
                         )}
                       </div>
                       {selectedProject.rating && (
-                        <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#D2691E]/10 border border-[#D2691E]/10">
-                          <svg className="w-3.5 h-3.5 text-[#D2691E]" fill="currentColor" viewBox="0 0 20 20">
+                        <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#E07B4F]/10 border border-[#E07B4F]/10">
+                          <svg className="w-3.5 h-3.5 text-[#E07B4F]" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                           </svg>
-                          <span className="text-xs font-bold text-[#D2691E]">{selectedProject.rating}</span>
+                          <span className="text-xs font-bold text-[#E07B4F]">{selectedProject.rating}</span>
                         </div>
                       )}
                     </div>
@@ -1459,11 +1459,11 @@ export default function ProfessionalDetailPage() {
                 {selectedProject.images && selectedProject.images.length > 0 && (
                   <div>
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="h-px flex-1 bg-[#D2691E]/20 dark:bg-[#CD853F]/20" />
-                      <span className="text-[10px] uppercase tracking-[0.15em] text-[#D2691E]/50 dark:text-[#CD853F]/50 font-medium">
+                      <div className="h-px flex-1 bg-[#E07B4F]/20 dark:bg-[#E8956A]/20" />
+                      <span className="text-[10px] uppercase tracking-[0.15em] text-[#E07B4F]/50 dark:text-[#E8956A]/50 font-medium">
                         {locale === 'ka' ? 'გალერეა' : 'Gallery'}
                       </span>
-                      <div className="h-px flex-1 bg-[#D2691E]/20 dark:bg-[#CD853F]/20" />
+                      <div className="h-px flex-1 bg-[#E07B4F]/20 dark:bg-[#E8956A]/20" />
                     </div>
 
                     <div className={`grid gap-2 ${

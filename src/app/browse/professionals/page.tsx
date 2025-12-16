@@ -6,7 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useLikes } from "@/hooks/useLikes";
 import { useBrowseContext } from "@/contexts/BrowseContext";
 import { LikeTargetType, ProProfile } from "@/types";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 
 export default function ProfessionalsPage() {
   const { locale } = useLanguage();
@@ -95,11 +95,23 @@ export default function ProfessionalsPage() {
     [selectedCategory, selectedSubcategory, minRating, searchQuery, sortBy, initializeLikeStates]
   );
 
+  // Track if initial fetch has been done to prevent double fetching
+  const hasFetchedRef = useRef(false);
+
   // Reset and fetch when filters change
   useEffect(() => {
+    // Skip if this is the initial mount and we haven't fetched yet
+    if (!hasFetchedRef.current) {
+      hasFetchedRef.current = true;
+      setPage(1);
+      fetchProfessionals(1, true);
+      return;
+    }
+
+    // For subsequent filter changes, reset and fetch
     setPage(1);
     fetchProfessionals(1, true);
-  }, [selectedCategory, selectedSubcategory, minRating, searchQuery, sortBy]);
+  }, [selectedCategory, selectedSubcategory, minRating, searchQuery, sortBy, fetchProfessionals]);
 
   // Infinite scroll
   useEffect(() => {
@@ -124,7 +136,7 @@ export default function ProfessionalsPage() {
     if (page > 1) {
       fetchProfessionals(page);
     }
-  }, [page]);
+  }, [page, fetchProfessionals]);
 
   const handleProLike = async (proId: string) => {
     if (!user) return;
@@ -174,9 +186,9 @@ export default function ProfessionalsPage() {
   const EmptyState = () => (
     <div className="flex flex-col items-center justify-center py-20 px-4">
       <div className="relative mb-6">
-        <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#D2691E]/10 to-[#CD853F]/5 flex items-center justify-center -rotate-3">
+        <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#E07B4F]/10 to-[#E8956A]/5 flex items-center justify-center -rotate-3">
           <svg
-            className="w-12 h-12 text-[#D2691E]/40"
+            className="w-12 h-12 text-[#E07B4F]/40"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -189,8 +201,8 @@ export default function ProfessionalsPage() {
             />
           </svg>
         </div>
-        <div className="absolute -top-2 -left-2 w-6 h-6 rounded-full bg-[#D2691E]/20 animate-float-slow" />
-        <div className="absolute -bottom-1 -right-3 w-4 h-4 rounded-full bg-[#CD853F]/15 animate-float-slower" />
+        <div className="absolute -top-2 -left-2 w-6 h-6 rounded-full bg-[#E07B4F]/20 animate-float-slow" />
+        <div className="absolute -bottom-1 -right-3 w-4 h-4 rounded-full bg-[#E8956A]/15 animate-float-slower" />
       </div>
 
       <h3 className="browse-title text-xl sm:text-2xl text-gradient-terracotta mb-2">
@@ -210,7 +222,7 @@ export default function ProfessionalsPage() {
       {!isLoading && results.length > 0 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-[var(--color-text-tertiary)]">
-            <span className="font-semibold text-[#D2691E]">{totalCount}</span>
+            <span className="font-semibold text-[#E07B4F]">{totalCount}</span>
             {' '}
             {locale === 'ka' ? 'სპეციალისტი' : 'professionals'}
           </p>
@@ -250,8 +262,8 @@ export default function ProfessionalsPage() {
         {isLoadingMore && (
           <div className="flex items-center gap-4 px-6 py-3 rounded-2xl glass-card">
             <div className="relative w-5 h-5">
-              <div className="absolute inset-0 rounded-full border-2 border-[#D2691E]/20" />
-              <div className="absolute inset-0 rounded-full border-2 border-[#D2691E] border-t-transparent animate-spin" />
+              <div className="absolute inset-0 rounded-full border-2 border-[#E07B4F]/20" />
+              <div className="absolute inset-0 rounded-full border-2 border-[#E07B4F] border-t-transparent animate-spin" />
             </div>
             <span className="text-sm font-medium text-[var(--color-text-secondary)]">
               {locale === 'ka' ? 'იტვირთება...' : 'Loading more...'}
@@ -260,11 +272,11 @@ export default function ProfessionalsPage() {
         )}
         {!hasMore && results.length > 0 && (
           <div className="flex items-center gap-2 text-sm text-[var(--color-text-tertiary)]">
-            <div className="w-8 h-px bg-gradient-to-r from-transparent via-[#D2691E]/20 to-transparent" />
+            <div className="w-8 h-px bg-gradient-to-r from-transparent via-[#E07B4F]/20 to-transparent" />
             <span className="font-serif-italic">
               {locale === 'ka' ? 'ყველა სპეციალისტი ნაჩვენებია' : 'All professionals displayed'}
             </span>
-            <div className="w-8 h-px bg-gradient-to-r from-transparent via-[#D2691E]/20 to-transparent" />
+            <div className="w-8 h-px bg-gradient-to-r from-transparent via-[#E07B4F]/20 to-transparent" />
           </div>
         )}
       </div>

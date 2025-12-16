@@ -689,7 +689,7 @@ export default function SettingsPage() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ease-out whitespace-nowrap touch-manipulation ${
                     activeTab === tab.id
-                      ? 'bg-[#D2691E] text-white'
+                      ? 'bg-[#E07B4F] text-white'
                       : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                   }`}
                 >
@@ -767,7 +767,7 @@ export default function SettingsPage() {
                     </p>
                     <button
                       onClick={handleAvatarClick}
-                      className="mt-2 text-sm font-medium text-[#D2691E] hover:text-[#B8560E] transition-all duration-200 ease-out touch-manipulation"
+                      className="mt-2 text-sm font-medium text-[#E07B4F] hover:text-[#D26B3F] transition-all duration-200 ease-out touch-manipulation"
                     >
                       {t('settings.profile.uploadPhoto')}
                     </button>
@@ -871,7 +871,7 @@ export default function SettingsPage() {
                   <button
                     onClick={handleSaveProfile}
                     disabled={isSaving}
-                    className="w-full sm:w-auto px-6 py-3 sm:py-2.5 bg-[#D2691E] hover:bg-[#B8560E] text-white rounded-xl transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 touch-manipulation"
+                    className="w-full sm:w-auto px-6 py-3 sm:py-2.5 bg-[#E07B4F] hover:bg-[#D26B3F] text-white rounded-xl transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 touch-manipulation"
                   >
                     {isSaving ? (
                       <>
@@ -929,7 +929,7 @@ export default function SettingsPage() {
                       <div className="p-4 flex items-center justify-between" style={{ backgroundColor: 'var(--color-bg-elevated)' }}>
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(210, 105, 30, 0.1)' }}>
-                            <Mail className="w-5 h-5 text-[#D2691E]" />
+                            <Mail className="w-5 h-5 text-[#E07B4F]" />
                           </div>
                           <div>
                             <h3 className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
@@ -965,12 +965,12 @@ export default function SettingsPage() {
                               checked={notificationData.preferences.email.enabled}
                               onChange={(e) => updateNotificationPreference('email', 'enabled', e.target.checked)}
                             />
-                            <div className="w-11 h-6 bg-neutral-300 dark:bg-neutral-600 rounded-full peer peer-checked:bg-[#D2691E] peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all duration-200" />
+                            <div className="w-11 h-6 bg-neutral-300 dark:bg-neutral-600 rounded-full peer peer-checked:bg-[#E07B4F] peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all duration-200" />
                           </label>
                         ) : (
                           <button
                             onClick={() => setShowAddEmailModal(true)}
-                            className="px-3 py-1.5 text-sm font-medium text-[#D2691E] bg-[#D2691E]/10 hover:bg-[#D2691E]/20 rounded-lg transition-colors flex items-center gap-1.5"
+                            className="px-3 py-1.5 text-sm font-medium text-[#E07B4F] bg-[#E07B4F]/10 hover:bg-[#E07B4F]/20 rounded-lg transition-colors flex items-center gap-1.5"
                           >
                             <Mail className="w-4 h-4" />
                             {locale === 'ka' ? 'დამატება' : 'Add Email'}
@@ -1002,7 +1002,7 @@ export default function SettingsPage() {
                                   checked={notificationData.preferences.email[item.key as keyof typeof notificationData.preferences.email]}
                                   onChange={(e) => updateNotificationPreference('email', item.key, e.target.checked)}
                                 />
-                                <div className="w-9 h-5 bg-neutral-300 dark:bg-neutral-600 rounded-full peer peer-checked:bg-[#D2691E] peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all duration-200" />
+                                <div className="w-9 h-5 bg-neutral-300 dark:bg-neutral-600 rounded-full peer peer-checked:bg-[#E07B4F] peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all duration-200" />
                               </label>
                             </div>
                           ))}
@@ -1158,7 +1158,7 @@ export default function SettingsPage() {
                     </p>
                     <button
                       onClick={fetchNotificationPreferences}
-                      className="mt-3 text-sm font-medium text-[#D2691E] hover:text-[#B8560E]"
+                      className="mt-3 text-sm font-medium text-[#E07B4F] hover:text-[#D26B3F]"
                     >
                       {locale === 'ka' ? 'თავიდან ცდა' : 'Try again'}
                     </button>
@@ -1363,7 +1363,7 @@ export default function SettingsPage() {
                     <button
                       onClick={handleChangePassword}
                       disabled={isChangingPassword || !passwordData.currentPassword || !passwordData.newPassword || passwordData.newPassword !== passwordData.confirmPassword}
-                      className="w-full sm:w-auto px-6 py-3 sm:py-2.5 bg-[#D2691E] hover:bg-[#B8560E] text-white rounded-xl transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 touch-manipulation"
+                      className="w-full sm:w-auto px-6 py-3 sm:py-2.5 bg-[#E07B4F] hover:bg-[#D26B3F] text-white rounded-xl transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 touch-manipulation"
                     >
                       {isChangingPassword ? (
                         <>
@@ -1398,7 +1398,7 @@ export default function SettingsPage() {
                   </div>
                   <button
                     onClick={() => setShowAddCardModal(true)}
-                    className="px-4 py-2 bg-[#D2691E] hover:bg-[#B8560E] text-white text-sm font-medium rounded-xl transition-all flex items-center gap-2"
+                    className="px-4 py-2 bg-[#E07B4F] hover:bg-[#D26B3F] text-white text-sm font-medium rounded-xl transition-all flex items-center gap-2"
                   >
                     <CreditCard className="w-4 h-4" />
                     {locale === 'ka' ? 'ბარათის დამატება' : 'Add Card'}
@@ -1448,7 +1448,7 @@ export default function SettingsPage() {
                     </p>
                     <button
                       onClick={() => setShowAddCardModal(true)}
-                      className="mt-4 px-6 py-3 bg-[#D2691E] hover:bg-[#B8560E] text-white rounded-xl transition-all flex items-center gap-2 mx-auto"
+                      className="mt-4 px-6 py-3 bg-[#E07B4F] hover:bg-[#D26B3F] text-white rounded-xl transition-all flex items-center gap-2 mx-auto"
                     >
                       <CreditCard className="w-4 h-4" />
                       {locale === 'ka' ? 'ბარათის დამატება' : 'Add Card'}
@@ -1462,7 +1462,7 @@ export default function SettingsPage() {
                         className="p-4 rounded-2xl flex items-center justify-between group hover:shadow-md transition-all"
                         style={{
                           backgroundColor: 'var(--color-bg-elevated)',
-                          border: method.isDefault ? '2px solid #D2691E' : '1px solid var(--color-border)',
+                          border: method.isDefault ? '2px solid #E07B4F' : '1px solid var(--color-border)',
                         }}
                       >
                         <div className="flex items-center gap-4">
@@ -1486,7 +1486,7 @@ export default function SettingsPage() {
                                 •••• {method.cardLast4}
                               </span>
                               {method.isDefault && (
-                                <span className="text-[10px] font-medium text-[#D2691E] bg-[#D2691E]/10 px-2 py-0.5 rounded-full">
+                                <span className="text-[10px] font-medium text-[#E07B4F] bg-[#E07B4F]/10 px-2 py-0.5 rounded-full">
                                   {locale === 'ka' ? 'მთავარი' : 'Default'}
                                 </span>
                               )}
@@ -1572,8 +1572,8 @@ export default function SettingsPage() {
             <div className="p-5 border-b" style={{ borderColor: 'var(--color-border)' }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#D2691E]/10">
-                    <Mail className="w-5 h-5 text-[#D2691E]" />
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#E07B4F]/10">
+                    <Mail className="w-5 h-5 text-[#E07B4F]" />
                   </div>
                   <div>
                     <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
@@ -1663,7 +1663,7 @@ export default function SettingsPage() {
                             const paste = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
                             setOtpCode(paste);
                           }}
-                          className="w-full h-12 text-center text-xl font-bold rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#D2691E]"
+                          className="w-full h-12 text-center text-xl font-bold rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F]"
                           style={{
                             backgroundColor: 'var(--color-bg-elevated)',
                             border: '1px solid var(--color-border)',
@@ -1678,7 +1678,7 @@ export default function SettingsPage() {
                     <button
                       onClick={resendOtp}
                       disabled={isSendingOtp}
-                      className="text-sm font-medium text-[#D2691E] hover:text-[#B8560E] disabled:opacity-50 flex items-center gap-1"
+                      className="text-sm font-medium text-[#E07B4F] hover:text-[#D26B3F] disabled:opacity-50 flex items-center gap-1"
                     >
                       {isSendingOtp ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                       {locale === 'ka' ? 'ხელახლა გაგზავნა' : 'Resend code'}
@@ -1697,7 +1697,7 @@ export default function SettingsPage() {
                   <button
                     onClick={handleVerifyOtp}
                     disabled={isVerifyingOtp || otpCode.length !== 6}
-                    className="w-full py-3 bg-[#D2691E] hover:bg-[#B8560E] text-white rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-[#E07B4F] hover:bg-[#D26B3F] text-white rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {isVerifyingOtp ? (
                       <>
@@ -1736,7 +1736,7 @@ export default function SettingsPage() {
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
                       placeholder={locale === 'ka' ? 'შეიყვანე ელ-ფოსტა' : 'Enter your email'}
-                      className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#D2691E]"
+                      className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F]"
                       style={{
                         backgroundColor: 'var(--color-bg-elevated)',
                         border: '1px solid var(--color-border)',
@@ -1749,7 +1749,7 @@ export default function SettingsPage() {
                   <button
                     onClick={handleAddEmail}
                     disabled={isAddingEmail || !newEmail}
-                    className="w-full py-3 bg-[#D2691E] hover:bg-[#B8560E] text-white rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-[#E07B4F] hover:bg-[#D26B3F] text-white rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {isAddingEmail ? (
                       <>
@@ -1791,8 +1791,8 @@ export default function SettingsPage() {
             <div className="p-5 border-b" style={{ borderColor: 'var(--color-border)' }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#D2691E]/10">
-                    <CreditCard className="w-5 h-5 text-[#D2691E]" />
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#E07B4F]/10">
+                    <CreditCard className="w-5 h-5 text-[#E07B4F]" />
                   </div>
                   <div>
                     <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
@@ -1832,7 +1832,7 @@ export default function SettingsPage() {
                   }))}
                   placeholder="0000 0000 0000 0000"
                   maxLength={19}
-                  className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#D2691E]"
+                  className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F]"
                   style={{
                     backgroundColor: 'var(--color-bg-elevated)',
                     border: '1px solid var(--color-border)',
@@ -1857,7 +1857,7 @@ export default function SettingsPage() {
                     }))}
                     placeholder="MM/YY"
                     maxLength={5}
-                    className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#D2691E]"
+                    className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F]"
                     style={{
                       backgroundColor: 'var(--color-bg-elevated)',
                       border: '1px solid var(--color-border)',
@@ -1874,7 +1874,7 @@ export default function SettingsPage() {
                     inputMode="numeric"
                     placeholder="***"
                     maxLength={4}
-                    className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#D2691E]"
+                    className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F]"
                     style={{
                       backgroundColor: 'var(--color-bg-elevated)',
                       border: '1px solid var(--color-border)',
@@ -1897,7 +1897,7 @@ export default function SettingsPage() {
                     cardholderName: e.target.value.toUpperCase()
                   }))}
                   placeholder="JOHN DOE"
-                  className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#D2691E] uppercase"
+                  className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F] uppercase"
                   style={{
                     backgroundColor: 'var(--color-bg-elevated)',
                     border: '1px solid var(--color-border)',
@@ -1912,7 +1912,7 @@ export default function SettingsPage() {
                   type="checkbox"
                   checked={cardFormData.setAsDefault}
                   onChange={(e) => setCardFormData(prev => ({ ...prev, setAsDefault: e.target.checked }))}
-                  className="w-5 h-5 rounded border-neutral-300 text-[#D2691E] focus:ring-[#D2691E]"
+                  className="w-5 h-5 rounded border-neutral-300 text-[#E07B4F] focus:ring-[#E07B4F]"
                 />
                 <span className="text-sm" style={{ color: 'var(--color-text-primary)' }}>
                   {locale === 'ka' ? 'მთავარ ბარათად დაყენება' : 'Set as default card'}
@@ -1923,7 +1923,7 @@ export default function SettingsPage() {
               <button
                 onClick={handleAddCard}
                 disabled={isAddingCard || !cardFormData.cardNumber || !cardFormData.cardExpiry || !cardFormData.cardholderName}
-                className="w-full py-3 bg-[#D2691E] hover:bg-[#B8560E] text-white rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3 bg-[#E07B4F] hover:bg-[#D26B3F] text-white rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isAddingCard ? (
                   <>

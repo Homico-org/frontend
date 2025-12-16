@@ -467,7 +467,7 @@ export default function ProProfileSetupPage() {
     return (
       <div className="pro-setup-page-premium flex items-center justify-center">
         <div className="relative">
-          <div className="w-12 h-12 rounded-full border-2 border-[rgba(210,105,30,0.2)] border-t-[#D2691E] animate-spin" />
+          <div className="w-12 h-12 rounded-full border-2 border-[rgba(210,105,30,0.2)] border-t-[#E07B4F] animate-spin" />
         </div>
       </div>
     );
@@ -837,7 +837,7 @@ export default function ProProfileSetupPage() {
                         onClick={() => setFormData(prev => ({ ...prev, pricingModel: option.key as any }))}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                           formData.pricingModel === option.key
-                            ? 'bg-[#D2691E] text-white'
+                            ? 'bg-[#E07B4F] text-white'
                             : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)]'
                         }`}
                       >
@@ -1099,8 +1099,8 @@ export default function ProProfileSetupPage() {
               <svg width="44" height="44" viewBox="0 0 44 44">
                 <defs>
                   <linearGradient id="pro-setup-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#D2691E" />
-                    <stop offset="100%" stopColor="#CD853F" />
+                    <stop offset="0%" stopColor="#E07B4F" />
+                    <stop offset="100%" stopColor="#E8956A" />
                   </linearGradient>
                 </defs>
                 <circle

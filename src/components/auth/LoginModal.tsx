@@ -126,7 +126,7 @@ export default function LoginModal() {
           <div className="relative px-8 sm:px-10 pt-16 pb-8 sm:pb-10 z-10">
             <div className="text-center mb-8">
               <div className="auth-icon-premium mx-auto mb-5">
-                <svg className="w-8 h-8 text-[#D2691E]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <svg className="w-8 h-8 text-[#E07B4F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75" />
                 </svg>
               </div>
@@ -164,11 +164,11 @@ export default function LoginModal() {
                     className={`auth-input-premium ${focusedField === 'identifier' ? 'focused' : ''}`}
                     placeholder="555 555 55 55"
                     style={{
-                      borderColor: focusedField === 'identifier' ? '#D2691E' : undefined,
+                      borderColor: focusedField === 'identifier' ? '#E07B4F' : undefined,
                       boxShadow: focusedField === 'identifier' ? '0 0 0 4px rgba(210, 105, 30, 0.12), 0 4px 12px -4px rgba(210, 105, 30, 0.15)' : undefined,
                     }}
                   />
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors duration-200" style={{ color: focusedField === 'identifier' ? '#D2691E' : 'var(--color-text-muted)' }}>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors duration-200" style={{ color: focusedField === 'identifier' ? '#E07B4F' : 'var(--color-text-muted)' }}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
@@ -192,7 +192,7 @@ export default function LoginModal() {
                     className={`auth-input-premium ${focusedField === 'password' ? 'focused' : ''}`}
                     placeholder="••••••••"
                     style={{
-                      borderColor: focusedField === 'password' ? '#D2691E' : undefined,
+                      borderColor: focusedField === 'password' ? '#E07B4F' : undefined,
                       boxShadow: focusedField === 'password' ? '0 0 0 4px rgba(210, 105, 30, 0.12), 0 4px 12px -4px rgba(210, 105, 30, 0.15)' : undefined,
                     }}
                   />
@@ -200,7 +200,7 @@ export default function LoginModal() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors hover:opacity-70"
-                    style={{ color: focusedField === 'password' ? '#D2691E' : 'var(--color-text-muted)' }}
+                    style={{ color: focusedField === 'password' ? '#E07B4F' : 'var(--color-text-muted)' }}
                   >
                     {showPassword ? (
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -280,7 +280,7 @@ export default function LoginModal() {
                   className="auth-demo-btn group"
                 >
                   <span>{locale === 'ka' ? 'კლიენტი 1' : 'Client 1'}</span>
-                  <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#D2691E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E07B4F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
                 </button>
@@ -290,7 +290,7 @@ export default function LoginModal() {
                   className="auth-demo-btn group"
                 >
                   <span>{locale === 'ka' ? 'კლიენტი 2' : 'Client 2'}</span>
-                  <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#D2691E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E07B4F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
                 </button>
@@ -300,7 +300,7 @@ export default function LoginModal() {
                   className="auth-demo-btn group"
                 >
                   <span>{locale === 'ka' ? 'პრო 1' : 'Pro 1'}</span>
-                  <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#D2691E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E07B4F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
                 </button>
@@ -310,7 +310,7 @@ export default function LoginModal() {
                   className="auth-demo-btn group"
                 >
                   <span>{locale === 'ka' ? 'პრო 2' : 'Pro 2'}</span>
-                  <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#D2691E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E07B4F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
                 </button>

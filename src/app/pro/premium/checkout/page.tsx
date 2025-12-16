@@ -212,8 +212,8 @@ function CheckoutContent() {
       <main className="relative overflow-hidden">
         {/* Background Elements - solid terracotta */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 right-1/4 w-[500px] h-[500px] rounded-full bg-[#D2691E]/8 blur-[100px]" />
-          <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] rounded-full bg-[#D2691E]/8 blur-[80px]" />
+          <div className="absolute top-0 right-1/4 w-[500px] h-[500px] rounded-full bg-[#E07B4F]/8 blur-[100px]" />
+          <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] rounded-full bg-[#E07B4F]/8 blur-[80px]" />
         </div>
 
         <div className="relative container-custom py-8 sm:py-12">
@@ -237,7 +237,7 @@ function CheckoutContent() {
 
                   {/* Plan Card */}
                   <div className="flex items-center gap-4 p-4 rounded-2xl checkout-plan-badge mb-6">
-                    <div className="w-14 h-14 rounded-xl flex items-center justify-center bg-[#D2691E] shadow-lg shadow-[#D2691E]/25">
+                    <div className="w-14 h-14 rounded-xl flex items-center justify-center bg-[#E07B4F] shadow-lg shadow-[#E07B4F]/25">
                       <TierIcon className="w-7 h-7 text-white" />
                     </div>
                     <div className="flex-1">
@@ -291,9 +291,9 @@ function CheckoutContent() {
                         {locale === 'ka' ? '7 დღიანი თანხის დაბრუნების გარანტია' : '7-day money-back guarantee'}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-[#D2691E]/5 border border-[#D2691E]/10">
-                      <div className="w-8 h-8 rounded-lg bg-[#D2691E]/10 flex items-center justify-center">
-                        <Lock className="w-4 h-4 text-[#D2691E]" />
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-[#E07B4F]/5 border border-[#E07B4F]/10">
+                      <div className="w-8 h-8 rounded-lg bg-[#E07B4F]/10 flex items-center justify-center">
+                        <Lock className="w-4 h-4 text-[#E07B4F]" />
                       </div>
                       <span className="text-sm text-[var(--color-text-secondary)]">
                         {locale === 'ka' ? '256-bit SSL დაშიფრული გადახდა' : '256-bit SSL encrypted payment'}
@@ -309,7 +309,7 @@ function CheckoutContent() {
               <div className="checkout-form-card">
                 <div className="p-6 sm:p-8">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-xl bg-[#D2691E] flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-[#E07B4F] flex items-center justify-center">
                       <Lock className="w-5 h-5 text-white" />
                     </div>
                     <div>
@@ -335,7 +335,7 @@ function CheckoutContent() {
                       >
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
                           paymentMethod === 'card'
-                            ? 'bg-[#D2691E]'
+                            ? 'bg-[#E07B4F]'
                             : 'bg-[var(--color-bg-tertiary)]'
                         }`}>
                           <CreditCard className={`w-5 h-5 ${paymentMethod === 'card' ? 'text-white' : 'text-[var(--color-text-tertiary)]'}`} />
@@ -347,7 +347,7 @@ function CheckoutContent() {
                           <span className="text-xs text-[var(--color-text-tertiary)]">Visa, Mastercard</span>
                         </div>
                         {paymentMethod === 'card' && (
-                          <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#D2691E] flex items-center justify-center">
+                          <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#E07B4F] flex items-center justify-center">
                             <Check className="w-3 h-3 text-white" />
                           </div>
                         )}
@@ -360,7 +360,7 @@ function CheckoutContent() {
                       >
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
                           paymentMethod === 'bank'
-                            ? 'bg-[#D2691E]'
+                            ? 'bg-[#E07B4F]'
                             : 'bg-[var(--color-bg-tertiary)]'
                         }`}>
                           <Building2 className={`w-5 h-5 ${paymentMethod === 'bank' ? 'text-white' : 'text-[var(--color-text-tertiary)]'}`} />
@@ -372,7 +372,7 @@ function CheckoutContent() {
                           <span className="text-xs text-[var(--color-text-tertiary)]">TBC, BOG, Liberty</span>
                         </div>
                         {paymentMethod === 'bank' && (
-                          <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#D2691E] flex items-center justify-center">
+                          <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#E07B4F] flex items-center justify-center">
                             <Check className="w-3 h-3 text-white" />
                           </div>
                         )}
@@ -385,7 +385,7 @@ function CheckoutContent() {
                       {/* Saved Cards Section */}
                       {isAuthenticated && isLoadingSavedCards ? (
                         <div className="flex items-center justify-center py-6">
-                          <Loader2 className="w-6 h-6 animate-spin text-[#D2691E]" />
+                          <Loader2 className="w-6 h-6 animate-spin text-[#E07B4F]" />
                         </div>
                       ) : isAuthenticated && savedCards.length > 0 && !useNewCard ? (
                         <div className="space-y-4">
@@ -398,7 +398,7 @@ function CheckoutContent() {
                             <button
                               type="button"
                               onClick={() => setShowCardDropdown(!showCardDropdown)}
-                              className="w-full p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] flex items-center justify-between hover:border-[#D2691E]/50 transition-colors"
+                              className="w-full p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] flex items-center justify-between hover:border-[#E07B4F]/50 transition-colors"
                             >
                               {selectedSavedCard ? (
                                 <div className="flex items-center gap-3">
@@ -441,7 +441,7 @@ function CheckoutContent() {
                                       setSelectedSavedCard(card.id);
                                       setShowCardDropdown(false);
                                     }}
-                                    className={`w-full p-4 flex items-center gap-3 hover:bg-[var(--color-bg-secondary)] transition-colors ${selectedSavedCard === card.id ? 'bg-[#D2691E]/5' : ''}`}
+                                    className={`w-full p-4 flex items-center gap-3 hover:bg-[var(--color-bg-secondary)] transition-colors ${selectedSavedCard === card.id ? 'bg-[#E07B4F]/5' : ''}`}
                                   >
                                     <div
                                       className="w-10 h-6 rounded flex items-center justify-center text-[10px] font-bold text-white"
@@ -461,12 +461,12 @@ function CheckoutContent() {
                                       </span>
                                     </div>
                                     {card.isDefault && (
-                                      <span className="text-[10px] font-medium text-[#D2691E] bg-[#D2691E]/10 px-2 py-0.5 rounded-full">
+                                      <span className="text-[10px] font-medium text-[#E07B4F] bg-[#E07B4F]/10 px-2 py-0.5 rounded-full">
                                         {locale === 'ka' ? 'მთავარი' : 'Default'}
                                       </span>
                                     )}
                                     {selectedSavedCard === card.id && (
-                                      <Check className="w-4 h-4 text-[#D2691E]" />
+                                      <Check className="w-4 h-4 text-[#E07B4F]" />
                                     )}
                                   </button>
                                 ))}
@@ -499,7 +499,7 @@ function CheckoutContent() {
                           <button
                             type="button"
                             onClick={() => setUseNewCard(true)}
-                            className="text-sm font-medium text-[#D2691E] hover:text-[#B8560E] transition-colors flex items-center gap-2"
+                            className="text-sm font-medium text-[#E07B4F] hover:text-[#D26B3F] transition-colors flex items-center gap-2"
                           >
                             <CreditCard className="w-4 h-4" />
                             {locale === 'ka' ? 'ახალი ბარათით გადახდა' : 'Use a different card'}
@@ -512,7 +512,7 @@ function CheckoutContent() {
                             <button
                               type="button"
                               onClick={() => setUseNewCard(false)}
-                              className="text-sm font-medium text-[#D2691E] hover:text-[#B8560E] transition-colors flex items-center gap-2 mb-4"
+                              className="text-sm font-medium text-[#E07B4F] hover:text-[#D26B3F] transition-colors flex items-center gap-2 mb-4"
                             >
                               <ArrowLeft className="w-4 h-4" />
                               {locale === 'ka' ? 'შენახულ ბარათებზე დაბრუნება' : 'Back to saved cards'}
@@ -526,8 +526,8 @@ function CheckoutContent() {
                             </label>
                             <div className="relative">
                               <div className="absolute left-0 top-0 bottom-0 w-14 flex items-center justify-center pointer-events-none">
-                                <div className="w-8 h-6 rounded bg-[#D2691E]/10 flex items-center justify-center">
-                                  <CreditCard className="w-4 h-4 text-[#D2691E]" />
+                                <div className="w-8 h-6 rounded bg-[#E07B4F]/10 flex items-center justify-center">
+                                  <CreditCard className="w-4 h-4 text-[#E07B4F]" />
                                 </div>
                               </div>
                               <input
@@ -601,10 +601,10 @@ function CheckoutContent() {
                                 type="checkbox"
                                 checked={saveNewCard}
                                 onChange={(e) => setSaveNewCard(e.target.checked)}
-                                className="w-5 h-5 rounded border-neutral-300 text-[#D2691E] focus:ring-[#D2691E]"
+                                className="w-5 h-5 rounded border-neutral-300 text-[#E07B4F] focus:ring-[#E07B4F]"
                               />
                               <div className="flex items-center gap-2">
-                                <Shield className="w-4 h-4 text-[#D2691E]" />
+                                <Shield className="w-4 h-4 text-[#E07B4F]" />
                                 <span className="text-sm text-[var(--color-text-primary)]">
                                   {locale === 'ka' ? 'ბარათის შენახვა მომავალი გადახდებისთვის' : 'Save card for future purchases'}
                                 </span>
@@ -670,7 +670,7 @@ function CheckoutContent() {
                           ].map((item, i) => (
                             <div key={i} className="flex justify-between items-center py-2 border-b border-[var(--color-border)]/50 last:border-0">
                               <span className="text-sm text-[var(--color-text-tertiary)]">{item.label}</span>
-                              <span className={`text-sm ${item.highlight ? 'font-bold text-[#D2691E]' : 'font-medium text-[var(--color-text-primary)]'} ${item.mono ? 'font-mono text-xs' : ''}`}>
+                              <span className={`text-sm ${item.highlight ? 'font-bold text-[#E07B4F]' : 'font-medium text-[var(--color-text-primary)]'} ${item.mono ? 'font-mono text-xs' : ''}`}>
                                 {item.value}
                               </span>
                             </div>
@@ -707,10 +707,10 @@ export default function CheckoutPage() {
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-base)]">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-[#D2691E] flex items-center justify-center animate-pulse">
+          <div className="w-12 h-12 rounded-2xl bg-[#E07B4F] flex items-center justify-center animate-pulse">
             <Lock className="w-6 h-6 text-white" />
           </div>
-          <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#D2691E] border-t-transparent" />
+          <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#E07B4F] border-t-transparent" />
         </div>
       </div>
     }>

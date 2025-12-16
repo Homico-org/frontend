@@ -64,7 +64,7 @@ export default function Avatar({
   const getColorFromName = (name: string) => {
     const colors = [
       'bg-blue-500',
-      'bg-[#D2691E]',
+      'bg-[#E07B4F]',
       'bg-violet-500',
       'bg-amber-500',
       'bg-rose-500',

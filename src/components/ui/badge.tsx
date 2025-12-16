@@ -10,7 +10,7 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-[#D2691E]/10 text-[#D2691E] border border-[#D2691E]/20",
+          "bg-[#E07B4F]/10 text-[#E07B4F] border border-[#E07B4F]/20",
         secondary:
           "bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border)]",
         success:
@@ -22,13 +22,13 @@ const badgeVariants = cva(
         info:
           "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20",
         outline:
-          "bg-transparent text-[#D2691E] border border-[#D2691E]/30",
+          "bg-transparent text-[#E07B4F] border border-[#E07B4F]/30",
         premium:
-          "bg-gradient-to-r from-[#D2691E]/15 to-[#CD853F]/20 text-[#D2691E] border border-[#D2691E]/25 shadow-sm",
+          "bg-gradient-to-r from-[#E07B4F]/15 to-[#E8956A]/20 text-[#E07B4F] border border-[#E07B4F]/25 shadow-sm",
         ghost:
           "bg-transparent text-[var(--color-text-secondary)]",
         pulse:
-          "bg-[#D2691E]/10 text-[#D2691E] border border-[#D2691E]/20 animate-pulse",
+          "bg-[#E07B4F]/10 text-[#E07B4F] border border-[#E07B4F]/20 animate-pulse",
       },
       size: {
         xs: "text-[9px] px-1.5 py-0.5 rounded-md uppercase tracking-wider",
@@ -58,7 +58,7 @@ export interface BadgeProps
 const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
   ({ className, variant, size, icon, dot, dotColor = 'default', removable, onRemove, children, ...props }, ref) => {
     const dotColors = {
-      default: 'bg-[#D2691E]',
+      default: 'bg-[#E07B4F]',
       success: 'bg-emerald-500',
       warning: 'bg-amber-500',
       danger: 'bg-red-500',

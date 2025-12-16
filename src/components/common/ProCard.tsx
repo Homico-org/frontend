@@ -77,7 +77,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
         <div className="flex gap-3 p-3">
           {/* Avatar */}
           <div className="relative flex-shrink-0">
-            <div className="w-14 h-14 rounded-xl overflow-hidden ring-2 ring-[var(--color-border-subtle)] group-hover:ring-[#D2691E]/30 transition-all duration-300">
+            <div className="w-14 h-14 rounded-xl overflow-hidden ring-2 ring-[var(--color-border-subtle)] group-hover:ring-[#E07B4F]/30 transition-all duration-300">
               {avatarUrl ? (
                 <img
                   src={avatarUrl}
@@ -85,8 +85,8 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-[#D2691E]/20 to-[#CD853F]/30 flex items-center justify-center">
-                  <span className="text-lg font-bold text-[#D2691E]">{displayName.charAt(0)}</span>
+                <div className="w-full h-full bg-gradient-to-br from-[#E07B4F]/20 to-[#E8956A]/30 flex items-center justify-center">
+                  <span className="text-lg font-bold text-[#E07B4F]">{displayName.charAt(0)}</span>
                 </div>
               )}
             </div>
@@ -98,7 +98,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
           <div className="flex-1 min-w-0">
             {/* Name row */}
             <div className="flex items-center gap-2 mb-0.5">
-              <h3 className="font-semibold text-[15px] text-[var(--color-text-primary)] truncate group-hover:text-[#D2691E] transition-colors">
+              <h3 className="font-semibold text-[15px] text-[var(--color-text-primary)] truncate group-hover:text-[#E07B4F] transition-colors">
                 {displayName}
               </h3>
               {isPremium && (
@@ -182,7 +182,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
             {profile.categories.slice(0, 2).map((cat, i) => (
               <span
                 key={i}
-                className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-[#D2691E]/8 text-[#D2691E] dark:bg-[#D2691E]/15"
+                className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-[#E07B4F]/8 text-[#E07B4F] dark:bg-[#E07B4F]/15"
               >
                 {getCategoryLabel(cat)}
               </span>
@@ -197,7 +197,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
         </div>
 
         {/* Hover accent line */}
-        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#D2691E] to-[#CD853F] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#E07B4F] to-[#E8956A] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
       </Link>
     );
   }
@@ -211,7 +211,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
       >
         {/* Avatar */}
         <div className="relative flex-shrink-0">
-          <div className="w-16 h-16 rounded-xl overflow-hidden ring-2 ring-[var(--color-border-subtle)] group-hover:ring-[#D2691E]/30 transition-all">
+          <div className="w-16 h-16 rounded-xl overflow-hidden ring-2 ring-[var(--color-border-subtle)] group-hover:ring-[#E07B4F]/30 transition-all">
             {avatarUrl ? (
               <img
                 src={avatarUrl}
@@ -219,8 +219,8 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-[#D2691E]/20 to-[#CD853F]/30 flex items-center justify-center">
-                <span className="text-xl font-bold text-[#D2691E]">{displayName.charAt(0)}</span>
+              <div className="w-full h-full bg-gradient-to-br from-[#E07B4F]/20 to-[#E8956A]/30 flex items-center justify-center">
+                <span className="text-xl font-bold text-[#E07B4F]">{displayName.charAt(0)}</span>
               </div>
             )}
           </div>
@@ -230,7 +230,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-base text-[var(--color-text-primary)] truncate group-hover:text-[#D2691E] transition-colors">
+            <h3 className="font-semibold text-base text-[var(--color-text-primary)] truncate group-hover:text-[#E07B4F] transition-colors">
               {displayName}
             </h3>
             {isPremium && (
@@ -294,7 +294,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
 
           {/* Arrow */}
           <svg
-            className="w-5 h-5 text-[var(--color-text-tertiary)] group-hover:text-[#D2691E] group-hover:translate-x-1 transition-all"
+            className="w-5 h-5 text-[var(--color-text-tertiary)] group-hover:text-[#E07B4F] group-hover:translate-x-1 transition-all"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -304,7 +304,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
         </div>
 
         {/* Hover accent */}
-        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#D2691E] to-[#CD853F] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#E07B4F] to-[#E8956A] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
       </Link>
     );
   }

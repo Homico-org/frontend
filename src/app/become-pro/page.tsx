@@ -178,7 +178,7 @@ export default function BecomeProPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-primary)]">
         <div className="relative">
-          <div className="w-12 h-12 rounded-full border-2 border-[var(--color-border)] border-t-[#D2691E] animate-spin" />
+          <div className="w-12 h-12 rounded-full border-2 border-[var(--color-border)] border-t-[#E07B4F] animate-spin" />
         </div>
       </div>
     );
@@ -216,7 +216,7 @@ export default function BecomeProPage() {
                 style={{
                   left: `${Math.random() * 100}%`,
                   top: '-20px',
-                  backgroundColor: ['#D2691E', '#CD853F', '#B8560E', '#E89454', '#C45D3E'][Math.floor(Math.random() * 5)],
+                  backgroundColor: ['#E07B4F', '#E8956A', '#D26B3F', '#E89454', '#C45D3E'][Math.floor(Math.random() * 5)],
                   transform: `rotate(${Math.random() * 360}deg)`,
                   animation: `confetti-fall ${2 + Math.random() * 2}s ease-out forwards`,
                   animationDelay: `${Math.random() * 0.8}s`,
@@ -337,7 +337,7 @@ export default function BecomeProPage() {
             <section className="mb-12 text-center">
               {/* Badge */}
               <div className="become-pro-hero-badge">
-                <span className="text-xs font-semibold text-[#D2691E] uppercase tracking-wider">
+                <span className="text-xs font-semibold text-[#E07B4F] uppercase tracking-wider">
                   {locale === 'ka' ? 'უფასო რეგისტრაცია' : 'Free to join'}
                 </span>
               </div>
