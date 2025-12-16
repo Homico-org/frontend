@@ -3,6 +3,7 @@
 import { CATEGORIES } from '@/constants/categories';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
+  Bookmark,
   Building2,
   ChevronRight,
   Home,
@@ -62,14 +63,16 @@ export interface JobFilters {
   location: string;
   deadline: string;
   searchQuery: string;
+  showFavoritesOnly: boolean;
 }
 
 interface JobsFiltersSidebarProps {
   filters: JobFilters;
   onFiltersChange: (filters: JobFilters) => void;
+  savedCount?: number;
 }
 
-export default function JobsFiltersSidebar({ filters, onFiltersChange }: JobsFiltersSidebarProps) {
+export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCount = 0 }: JobsFiltersSidebarProps) {
   const { locale } = useLanguage();
   const [expandedCategories, setExpandedCategories] = useState<string[]>(
     filters.category ? [filters.category] : []
@@ -96,6 +99,7 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange }: JobsFil
       location: 'all',
       deadline: 'all',
       searchQuery: '',
+      showFavoritesOnly: false,
     });
     setSearchInput('');
     setCategorySearchInput('');
@@ -108,7 +112,8 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange }: JobsFil
     filters.propertyType !== 'all' ||
     filters.location !== 'all' ||
     filters.deadline !== 'all' ||
-    filters.searchQuery !== '';
+    filters.searchQuery !== '' ||
+    filters.showFavoritesOnly;
 
   const activeFilterCount = [
     filters.category,
@@ -117,6 +122,7 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange }: JobsFil
     filters.propertyType !== 'all' ? filters.propertyType : null,
     filters.location !== 'all' ? filters.location : null,
     filters.deadline !== 'all' ? filters.deadline : null,
+    filters.showFavoritesOnly ? 'favorites' : null,
   ].filter(Boolean).length;
 
   // Filter categories based on search
@@ -229,6 +235,30 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange }: JobsFil
             </button>
           )}
         </div>
+
+        {/* Favorites Toggle */}
+        <button
+          onClick={() => updateFilter('showFavoritesOnly', !filters.showFavoritesOnly)}
+          className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+            filters.showFavoritesOnly
+              ? 'bg-[#E07B4F] text-white'
+              : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[#E07B4F]/10 hover:text-[#E07B4F] border border-[var(--color-border-subtle)]'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <Bookmark className={`w-4 h-4 ${filters.showFavoritesOnly ? 'fill-current' : ''}`} />
+            <span>{locale === 'ka' ? 'შენახულები' : 'Saved Jobs'}</span>
+          </div>
+          {savedCount > 0 && (
+            <span className={`px-1.5 py-0.5 text-[10px] rounded-full font-semibold ${
+              filters.showFavoritesOnly
+                ? 'bg-white/20 text-white'
+                : 'bg-[#E07B4F]/10 text-[#E07B4F]'
+            }`}>
+              {savedCount}
+            </span>
+          )}
+        </button>
 
         {/* Budget Filter */}
         <div className="space-y-2.5">

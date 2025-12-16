@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Filter, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const SAVED_JOBS_KEY = "homi_saved_jobs";
 
@@ -57,6 +57,7 @@ const DEFAULT_FILTERS: JobFilters = {
   location: 'all',
   deadline: 'all',
   searchQuery: '',
+  showFavoritesOnly: false,
 };
 
 export default function JobsPage() {
@@ -113,8 +114,13 @@ export default function JobsPage() {
     });
   }, []);
 
-  // Sort jobs with saved ones at the top
-  const sortedJobs = jobs; // No longer sorting by saved status for now
+  // Filter jobs by favorites if showFavoritesOnly is true
+  const displayedJobs = useMemo(() => {
+    if (filters.showFavoritesOnly) {
+      return jobs.filter(job => savedJobIds.has(job._id));
+    }
+    return jobs;
+  }, [jobs, filters.showFavoritesOnly, savedJobIds]);
 
   // Mock images for demo
   const mockImageSets = [
@@ -220,13 +226,13 @@ export default function JobsPage() {
         setIsLoadingMore(false);
       }
     },
-    [isPro, filters]
+    [isPro, filters.category, filters.budget, filters.propertyType, filters.location, filters.searchQuery]
   );
 
   // Track if initial fetch has been done
   const hasFetchedRef = useRef(false);
 
-  // Reset and fetch when filters change
+  // Reset and fetch when filters change (except showFavoritesOnly which filters client-side)
   useEffect(() => {
     if (!isPro) return;
 
@@ -240,13 +246,13 @@ export default function JobsPage() {
     // For filter changes, reset and fetch
     setPage(1);
     fetchJobs(1, true);
-  }, [isPro, filters, fetchJobs]);
+  }, [isPro, filters.category, filters.budget, filters.propertyType, filters.location, filters.searchQuery, fetchJobs]);
 
   // Infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading && !isLoadingMore) {
+        if (entries[0].isIntersecting && hasMore && !isLoading && !isLoadingMore && !filters.showFavoritesOnly) {
           setPage((prev) => prev + 1);
         }
       },
@@ -258,7 +264,7 @@ export default function JobsPage() {
     }
 
     return () => observer.disconnect();
-  }, [hasMore, isLoading, isLoadingMore]);
+  }, [hasMore, isLoading, isLoadingMore, filters.showFavoritesOnly]);
 
   // Fetch more when page changes
   useEffect(() => {
@@ -266,6 +272,15 @@ export default function JobsPage() {
       fetchJobs(page);
     }
   }, [page, fetchJobs]);
+
+  // Active filter count for mobile badge
+  const activeFilterCount = [
+    filters.category,
+    filters.budget !== 'all' ? filters.budget : null,
+    filters.propertyType !== 'all' ? filters.propertyType : null,
+    filters.location !== 'all' ? filters.location : null,
+    filters.showFavoritesOnly ? 'favorites' : null,
+  ].filter(Boolean).length;
 
   // Show loading while auth is loading or redirecting non-pro users
   if (isAuthLoading || !isPro) {
@@ -277,18 +292,18 @@ export default function JobsPage() {
   }
 
   return (
-    <div className="flex gap-6">
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:block w-64 flex-shrink-0">
-        <div className="sticky top-4">
-          <div className="bg-[var(--color-bg-secondary)] rounded-2xl border border-[var(--color-border-subtle)] overflow-hidden">
-            <JobsFiltersSidebar filters={filters} onFiltersChange={setFilters} />
-          </div>
-        </div>
-      </div>
+    <div className="flex gap-6 -ml-6 -mt-6">
+      {/* Desktop Sidebar - Matching other tabs layout (no card wrapper) */}
+      <aside className="hidden lg:block w-60 flex-shrink-0 border-r border-[var(--color-border-subtle)] bg-[var(--color-bg-base)]">
+        <JobsFiltersSidebar
+          filters={filters}
+          onFiltersChange={setFilters}
+          savedCount={savedJobIds.size}
+        />
+      </aside>
 
       {/* Main Content */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 p-6">
         {/* Mobile Filter Button */}
         <div className="lg:hidden mb-4">
           <button
@@ -297,9 +312,9 @@ export default function JobsPage() {
           >
             <Filter className="w-4 h-4" />
             {locale === 'ka' ? 'ფილტრები' : 'Filters'}
-            {(filters.category || filters.budget !== 'all' || filters.propertyType !== 'all') && (
+            {activeFilterCount > 0 && (
               <span className="ml-1 px-1.5 py-0.5 text-[10px] rounded-full bg-[#E07B4F] text-white">
-                {[filters.category, filters.budget !== 'all', filters.propertyType !== 'all'].filter(Boolean).length}
+                {activeFilterCount}
               </span>
             )}
           </button>
@@ -308,11 +323,19 @@ export default function JobsPage() {
         {/* Results count */}
         {!isLoading && (
           <div className="mb-4 text-sm text-[var(--color-text-secondary)]">
-            {totalCount > 0 ? (
-              <>
-                {locale === 'ka' ? 'ნაპოვნია' : 'Found'} <span className="font-semibold text-[var(--color-text-primary)]">{totalCount}</span> {locale === 'ka' ? 'სამუშაო' : 'jobs'}
-              </>
-            ) : null}
+            {filters.showFavoritesOnly ? (
+              displayedJobs.length > 0 ? (
+                <>
+                  {locale === 'ka' ? 'შენახული' : 'Saved'}: <span className="font-semibold text-[var(--color-text-primary)]">{displayedJobs.length}</span> {locale === 'ka' ? 'სამუშაო' : 'jobs'}
+                </>
+              ) : null
+            ) : (
+              totalCount > 0 ? (
+                <>
+                  {locale === 'ka' ? 'ნაპოვნია' : 'Found'} <span className="font-semibold text-[var(--color-text-primary)]">{totalCount}</span> {locale === 'ka' ? 'სამუშაო' : 'jobs'}
+                </>
+              ) : null
+            )}
           </div>
         )}
 
@@ -322,27 +345,27 @@ export default function JobsPage() {
             {[...Array(6)].map((_, i) => (
               <div
                 key={i}
-                className="rounded-[20px] bg-[#0a0a0a] overflow-hidden animate-pulse"
+                className="rounded-[20px] bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] overflow-hidden animate-pulse"
               >
-                <div className="aspect-[16/10] bg-neutral-800" />
-                <div className="p-5 space-y-3">
-                  <div className="h-5 rounded-lg w-3/4 bg-neutral-800" />
-                  <div className="h-4 rounded w-full bg-neutral-800/50" />
-                  <div className="h-4 rounded w-2/3 bg-neutral-800/50" />
-                  <div className="flex items-center gap-3 pt-3 border-t border-neutral-800">
-                    <div className="w-10 h-10 rounded-lg bg-neutral-800" />
+                <div className="aspect-[4/3] bg-[var(--color-bg-tertiary)]" />
+                <div className="p-4 space-y-3">
+                  <div className="h-4 rounded-lg w-3/4 bg-[var(--color-bg-tertiary)]" />
+                  <div className="h-3 rounded w-full bg-[var(--color-bg-tertiary)]/50" />
+                  <div className="h-3 rounded w-2/3 bg-[var(--color-bg-tertiary)]/50" />
+                  <div className="flex items-center gap-3 pt-3 border-t border-[var(--color-border-subtle)]">
+                    <div className="w-9 h-9 rounded-full bg-[var(--color-bg-tertiary)]" />
                     <div className="flex-1">
-                      <div className="h-4 rounded w-20 bg-neutral-800 mb-1" />
-                      <div className="h-3 rounded w-16 bg-neutral-800/50" />
+                      <div className="h-3 rounded w-20 bg-[var(--color-bg-tertiary)] mb-1" />
+                      <div className="h-2.5 rounded w-16 bg-[var(--color-bg-tertiary)]/50" />
                     </div>
                   </div>
                 </div>
               </div>
             ))}
           </div>
-        ) : sortedJobs.length > 0 ? (
+        ) : displayedJobs.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {sortedJobs.map((job, index) => (
+            {displayedJobs.map((job, index) => (
               <div
                 key={job._id}
                 className="animate-fade-in"
@@ -372,22 +395,30 @@ export default function JobsPage() {
               </svg>
             </div>
             <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
-              {locale === "ka" ? "სამუშაოები არ მოიძებნა" : "No jobs found"}
+              {filters.showFavoritesOnly
+                ? (locale === "ka" ? "შენახული სამუშაოები არ არის" : "No saved jobs")
+                : (locale === "ka" ? "სამუშაოები არ მოიძებნა" : "No jobs found")
+              }
             </h3>
             <p className="text-[var(--color-text-secondary)]">
-              {locale === "ka" ? "სცადეთ ფილტრების შეცვლა" : "Try adjusting your filters"}
+              {filters.showFavoritesOnly
+                ? (locale === "ka" ? "შეინახეთ სამუშაოები მონიშვნით" : "Save jobs by clicking the bookmark icon")
+                : (locale === "ka" ? "სცადეთ ფილტრების შეცვლა" : "Try adjusting your filters")
+              }
             </p>
           </div>
         )}
 
         {/* Infinite scroll loader */}
-        <div ref={loaderRef} className="py-10">
-          {isLoadingMore && (
-            <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#E07B4F] border-t-transparent" />
-            </div>
-          )}
-        </div>
+        {!filters.showFavoritesOnly && (
+          <div ref={loaderRef} className="py-10">
+            {isLoadingMore && (
+              <div className="flex justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#E07B4F] border-t-transparent" />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Mobile Filters Drawer */}
@@ -406,7 +437,11 @@ export default function JobsPage() {
                 <X className="w-5 h-5 text-[var(--color-text-secondary)]" />
               </button>
             </div>
-            <JobsFiltersSidebar filters={filters} onFiltersChange={setFilters} />
+            <JobsFiltersSidebar
+              filters={filters}
+              onFiltersChange={setFilters}
+              savedCount={savedJobIds.size}
+            />
           </div>
         </div>
       )}
