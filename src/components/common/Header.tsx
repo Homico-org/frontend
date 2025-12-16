@@ -496,33 +496,80 @@ export default function Header() {
 
                           {/* Pro Menu Items */}
                           {user.role === "pro" && (
-                            <Link
-                              href="/pro/profile-setup"
-                              className="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm transition-all duration-200"
-                              style={{ color: 'var(--color-text-secondary)' }}
-                              onClick={() => setShowDropdown(false)}
-                            >
-                              <div
-                                className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0 group-hover:scale-105"
+                            <>
+                              {/* Premium Plans Link - Special styling */}
+                              <Link
+                                href="/pro/premium"
+                                className="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm transition-all duration-200 mx-2 rounded-xl"
                                 style={{
-                                  background: 'rgba(200, 114, 89, 0.08)',
-                                  border: '1px solid rgba(200, 114, 89, 0.1)',
+                                  background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(168, 85, 247, 0.05) 100%)',
+                                  border: '1px solid rgba(139, 92, 246, 0.15)',
                                 }}
+                                onClick={() => setShowDropdown(false)}
                               >
+                                <div
+                                  className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0 group-hover:scale-105"
+                                  style={{
+                                    background: 'linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%)',
+                                    boxShadow: '0 2px 8px rgba(139, 92, 246, 0.3)',
+                                  }}
+                                >
+                                  <svg
+                                    className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-white"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                  >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3l7 4 7-4v11l-7 4-7-4V3z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 7v10" />
+                                  </svg>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <span className="font-semibold text-purple-700 dark:text-purple-400 truncate block">
+                                    {locale === 'ka' ? 'პრემიუმ გეგმები' : 'Premium Plans'}
+                                  </span>
+                                  <span className="text-[10px] text-purple-600/70 dark:text-purple-400/70">
+                                    {locale === 'ka' ? 'გაზარდე ხილვადობა' : 'Boost visibility'}
+                                  </span>
+                                </div>
                                 <svg
-                                  className="w-4 h-4 sm:w-[18px] sm:h-[18px]"
-                                  style={{ color: '#C87259' }}
-                                  viewBox="0 0 24 24"
+                                  className="w-4 h-4 text-purple-500 group-hover:translate-x-0.5 transition-transform"
                                   fill="none"
                                   stroke="currentColor"
+                                  viewBox="0 0 24 24"
                                 >
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                 </svg>
-                              </div>
-                              <span className="group-hover:text-[#C87259] transition-colors truncate">
-                                {locale === 'ka' ? 'პროფილის რედაქტირება' : 'Profile Setup'}
-                              </span>
-                            </Link>
+                              </Link>
+
+                              <Link
+                                href="/pro/profile-setup"
+                                className="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm transition-all duration-200"
+                                style={{ color: 'var(--color-text-secondary)' }}
+                                onClick={() => setShowDropdown(false)}
+                              >
+                                <div
+                                  className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0 group-hover:scale-105"
+                                  style={{
+                                    background: 'rgba(200, 114, 89, 0.08)',
+                                    border: '1px solid rgba(200, 114, 89, 0.1)',
+                                  }}
+                                >
+                                  <svg
+                                    className="w-4 h-4 sm:w-[18px] sm:h-[18px]"
+                                    style={{ color: '#C87259' }}
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                  >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                  </svg>
+                                </div>
+                                <span className="group-hover:text-[#C87259] transition-colors truncate">
+                                  {locale === 'ka' ? 'პროფილის რედაქტირება' : 'Profile Setup'}
+                                </span>
+                              </Link>
+                            </>
                           )}
 
                           {/* Common Settings Items - Divider only for non-admin or after admin panel */}

@@ -10,6 +10,20 @@ import { AlertCircle, Bell, BriefcaseBusiness, Camera, Check, CheckCircle2, Chev
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+// Types for payment methods
+interface PaymentMethod {
+  id: string;
+  type: 'card' | 'bank';
+  cardLast4?: string;
+  cardBrand?: string;
+  cardExpiry?: string;
+  cardholderName?: string;
+  bankName?: string;
+  maskedIban?: string;
+  isDefault: boolean;
+  createdAt: string;
+}
+
 // Types for notification preferences
 interface NotificationPreferences {
   email: {
@@ -86,6 +100,20 @@ export default function SettingsPage() {
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
 
+  // Payment methods state
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [isLoadingPayments, setIsLoadingPayments] = useState(false);
+  const [showAddCardModal, setShowAddCardModal] = useState(false);
+  const [isAddingCard, setIsAddingCard] = useState(false);
+  const [cardFormData, setCardFormData] = useState({
+    cardNumber: '',
+    cardExpiry: '',
+    cardholderName: '',
+    setAsDefault: false,
+  });
+  const [paymentMessage, setPaymentMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       openLoginModal('/settings');
@@ -161,6 +189,151 @@ export default function SettingsPage() {
       setMessage({ type: 'error', text: t('settings.profile.errorMessage') });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Payment methods functions
+  const fetchPaymentMethods = useCallback(async () => {
+    setIsLoadingPayments(true);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const token = localStorage.getItem('access_token');
+
+      const res = await fetch(`${API_URL}/users/payment-methods`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setPaymentMethods(data);
+      }
+    } catch (error) {
+      console.error('Error fetching payment methods:', error);
+    } finally {
+      setIsLoadingPayments(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'payments' && isAuthenticated) {
+      fetchPaymentMethods();
+    }
+  }, [activeTab, isAuthenticated, fetchPaymentMethods]);
+
+  const formatCardNumber = (value: string) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    const matches = v.match(/\d{4,16}/g);
+    const match = (matches && matches[0]) || '';
+    const parts = [];
+    for (let i = 0, len = match.length; i < len; i += 4) {
+      parts.push(match.substring(i, i + 4));
+    }
+    return parts.length ? parts.join(' ') : value;
+  };
+
+  const formatCardExpiry = (value: string) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    if (v.length >= 2) {
+      return v.substring(0, 2) + '/' + v.substring(2, 4);
+    }
+    return v;
+  };
+
+  const handleAddCard = async () => {
+    setIsAddingCard(true);
+    setPaymentMessage(null);
+
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const token = localStorage.getItem('access_token');
+
+      const res = await fetch(`${API_URL}/users/payment-methods/card`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          type: 'card',
+          cardNumber: cardFormData.cardNumber.replace(/\s/g, ''),
+          cardExpiry: cardFormData.cardExpiry,
+          cardholderName: cardFormData.cardholderName,
+          setAsDefault: cardFormData.setAsDefault,
+        }),
+      });
+
+      if (res.ok) {
+        const newCard = await res.json();
+        setPaymentMethods(prev => [...prev, newCard]);
+        setShowAddCardModal(false);
+        setCardFormData({ cardNumber: '', cardExpiry: '', cardholderName: '', setAsDefault: false });
+        setPaymentMessage({
+          type: 'success',
+          text: locale === 'ka' ? 'ბარათი წარმატებით დაემატა' : 'Card added successfully'
+        });
+      } else {
+        throw new Error('Failed to add card');
+      }
+    } catch (error) {
+      setPaymentMessage({
+        type: 'error',
+        text: locale === 'ka' ? 'ბარათის დამატება ვერ მოხერხდა' : 'Failed to add card'
+      });
+    } finally {
+      setIsAddingCard(false);
+    }
+  };
+
+  const handleDeleteCard = async (cardId: string) => {
+    setDeletingCardId(cardId);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const token = localStorage.getItem('access_token');
+
+      const res = await fetch(`${API_URL}/users/payment-methods/${cardId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        setPaymentMethods(prev => prev.filter(pm => pm.id !== cardId));
+        setPaymentMessage({
+          type: 'success',
+          text: locale === 'ka' ? 'ბარათი წაიშალა' : 'Card deleted'
+        });
+      }
+    } catch (error) {
+      setPaymentMessage({
+        type: 'error',
+        text: locale === 'ka' ? 'წაშლა ვერ მოხერხდა' : 'Failed to delete'
+      });
+    } finally {
+      setDeletingCardId(null);
+    }
+  };
+
+  const handleSetDefaultCard = async (cardId: string) => {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const token = localStorage.getItem('access_token');
+
+      const res = await fetch(`${API_URL}/users/payment-methods/default`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ paymentMethodId: cardId }),
+      });
+
+      if (res.ok) {
+        setPaymentMethods(prev => prev.map(pm => ({
+          ...pm,
+          isDefault: pm.id === cardId,
+        })));
+      }
+    } catch (error) {
+      console.error('Error setting default card:', error);
     }
   };
 
@@ -1211,28 +1384,163 @@ export default function SettingsPage() {
 
             {activeTab === 'payments' && (
               <div className="space-y-6">
-                <h2
-                  className="text-base sm:text-lg font-semibold"
-                  style={{ color: 'var(--color-text-primary)' }}
-                >
-                  {t('settings.payments.title')}
-                </h2>
-                <div className="text-center py-6 sm:py-8">
-                  <CreditCard
-                    className="h-10 sm:h-12 w-10 sm:w-12 mx-auto mb-3"
-                    style={{ color: 'var(--color-text-tertiary)' }}
-                  />
-                  <p
-                    className="text-sm sm:text-base"
-                    style={{ color: 'var(--color-text-secondary)' }}
-                  >
-                    {t('settings.payments.noMethods')}
-                  </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2
+                      className="text-base sm:text-lg font-semibold"
+                      style={{ color: 'var(--color-text-primary)' }}
+                    >
+                      {locale === 'ka' ? 'გადახდის მეთოდები' : 'Payment Methods'}
+                    </h2>
+                    <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
+                      {locale === 'ka' ? 'მართეთ თქვენი შენახული ბარათები' : 'Manage your saved cards'}
+                    </p>
+                  </div>
                   <button
-                    className="mt-4 w-full sm:w-auto px-6 py-3 sm:py-2.5 bg-[#D2691E] hover:bg-[#B8560E] text-white rounded-xl transition-all duration-200 ease-out touch-manipulation"
+                    onClick={() => setShowAddCardModal(true)}
+                    className="px-4 py-2 bg-[#D2691E] hover:bg-[#B8560E] text-white text-sm font-medium rounded-xl transition-all flex items-center gap-2"
                   >
-                    {t('settings.payments.addMethod')}
+                    <CreditCard className="w-4 h-4" />
+                    {locale === 'ka' ? 'ბარათის დამატება' : 'Add Card'}
                   </button>
+                </div>
+
+                {paymentMessage && (
+                  <div
+                    className="p-3 rounded-xl text-sm flex items-center gap-2 animate-fade-in"
+                    style={{
+                      backgroundColor: paymentMessage.type === 'success' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                      color: paymentMessage.type === 'success' ? '#22c55e' : '#ef4444',
+                      border: `1px solid ${paymentMessage.type === 'success' ? '#22c55e' : '#ef4444'}`,
+                    }}
+                  >
+                    {paymentMessage.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                    {paymentMessage.text}
+                  </div>
+                )}
+
+                {isLoadingPayments ? (
+                  <div className="py-12 flex flex-col items-center gap-3">
+                    <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--color-text-tertiary)' }} />
+                    <span className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+                      {locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
+                    </span>
+                  </div>
+                ) : paymentMethods.length === 0 ? (
+                  <div className="text-center py-10 sm:py-12">
+                    <div className="w-16 h-16 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4">
+                      <CreditCard
+                        className="h-8 w-8"
+                        style={{ color: 'var(--color-text-tertiary)' }}
+                      />
+                    </div>
+                    <p
+                      className="text-sm sm:text-base font-medium"
+                      style={{ color: 'var(--color-text-primary)' }}
+                    >
+                      {locale === 'ka' ? 'ბარათები არ არის დამატებული' : 'No cards added yet'}
+                    </p>
+                    <p
+                      className="text-sm mt-1"
+                      style={{ color: 'var(--color-text-secondary)' }}
+                    >
+                      {locale === 'ka' ? 'დაამატეთ ბარათი სწრაფი გადახდისთვის' : 'Add a card for faster checkout'}
+                    </p>
+                    <button
+                      onClick={() => setShowAddCardModal(true)}
+                      className="mt-4 px-6 py-3 bg-[#D2691E] hover:bg-[#B8560E] text-white rounded-xl transition-all flex items-center gap-2 mx-auto"
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      {locale === 'ka' ? 'ბარათის დამატება' : 'Add Card'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {paymentMethods.map((method) => (
+                      <div
+                        key={method.id}
+                        className="p-4 rounded-2xl flex items-center justify-between group hover:shadow-md transition-all"
+                        style={{
+                          backgroundColor: 'var(--color-bg-elevated)',
+                          border: method.isDefault ? '2px solid #D2691E' : '1px solid var(--color-border)',
+                        }}
+                      >
+                        <div className="flex items-center gap-4">
+                          {/* Card Brand Icon */}
+                          <div
+                            className="w-12 h-8 rounded-lg flex items-center justify-center text-xs font-bold"
+                            style={{
+                              backgroundColor: method.cardBrand === 'Visa' ? '#1A1F71' :
+                                method.cardBrand === 'Mastercard' ? '#EB001B' :
+                                method.cardBrand === 'Amex' ? '#006FCF' : '#6B7280',
+                              color: 'white',
+                            }}
+                          >
+                            {method.cardBrand === 'Visa' ? 'VISA' :
+                              method.cardBrand === 'Mastercard' ? 'MC' :
+                              method.cardBrand === 'Amex' ? 'AMEX' : 'CARD'}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                                •••• {method.cardLast4}
+                              </span>
+                              {method.isDefault && (
+                                <span className="text-[10px] font-medium text-[#D2691E] bg-[#D2691E]/10 px-2 py-0.5 rounded-full">
+                                  {locale === 'ka' ? 'მთავარი' : 'Default'}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3 mt-0.5">
+                              <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                                {method.cardholderName}
+                              </span>
+                              <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                                {locale === 'ka' ? 'ვადა' : 'Exp'}: {method.cardExpiry}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {!method.isDefault && (
+                            <button
+                              onClick={() => handleSetDefaultCard(method.id)}
+                              className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                              style={{ color: 'var(--color-text-secondary)' }}
+                            >
+                              {locale === 'ka' ? 'მთავარად დაყენება' : 'Set Default'}
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDeleteCard(method.id)}
+                            disabled={deletingCardId === method.id}
+                            className="p-2 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all disabled:opacity-50"
+                          >
+                            {deletingCardId === method.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <X className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Info box */}
+                <div className="p-4 rounded-xl flex items-start gap-3 mt-6" style={{ backgroundColor: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+                  <Shield className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
+                      {locale === 'ka' ? 'უსაფრთხო გადახდა' : 'Secure Payments'}
+                    </p>
+                    <p className="text-xs mt-1 text-blue-600/70 dark:text-blue-400/70">
+                      {locale === 'ka'
+                        ? 'თქვენი ბარათის ინფორმაცია დაშიფრულია და უსაფრთხოდ ინახება'
+                        : 'Your card information is encrypted and securely stored'}
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
@@ -1457,6 +1765,186 @@ export default function SettingsPage() {
                   </button>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Card Modal */}
+      {showAddCardModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => {
+              setShowAddCardModal(false);
+              setCardFormData({ cardNumber: '', cardExpiry: '', cardholderName: '', setAsDefault: false });
+            }}
+          />
+
+          {/* Modal */}
+          <div
+            className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-fade-in"
+            style={{ backgroundColor: 'var(--color-bg-primary)' }}
+          >
+            {/* Header */}
+            <div className="p-5 border-b" style={{ borderColor: 'var(--color-border)' }}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#D2691E]/10">
+                    <CreditCard className="w-5 h-5 text-[#D2691E]" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                      {locale === 'ka' ? 'ბარათის დამატება' : 'Add Card'}
+                    </h3>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
+                      {locale === 'ka' ? 'შეიყვანეთ ბარათის მონაცემები' : 'Enter your card details'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowAddCardModal(false);
+                    setCardFormData({ cardNumber: '', cardExpiry: '', cardholderName: '', setAsDefault: false });
+                  }}
+                  className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                >
+                  <X className="w-5 h-5" style={{ color: 'var(--color-text-tertiary)' }} />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-5 space-y-4">
+              {/* Card Number */}
+              <div>
+                <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+                  {locale === 'ka' ? 'ბარათის ნომერი' : 'Card Number'}
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={cardFormData.cardNumber}
+                  onChange={(e) => setCardFormData(prev => ({
+                    ...prev,
+                    cardNumber: formatCardNumber(e.target.value)
+                  }))}
+                  placeholder="0000 0000 0000 0000"
+                  maxLength={19}
+                  className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#D2691E]"
+                  style={{
+                    backgroundColor: 'var(--color-bg-elevated)',
+                    border: '1px solid var(--color-border)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                />
+              </div>
+
+              {/* Expiry and Cardholder in row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+                    {locale === 'ka' ? 'ვადა' : 'Expiry'}
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={cardFormData.cardExpiry}
+                    onChange={(e) => setCardFormData(prev => ({
+                      ...prev,
+                      cardExpiry: formatCardExpiry(e.target.value)
+                    }))}
+                    placeholder="MM/YY"
+                    maxLength={5}
+                    className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#D2691E]"
+                    style={{
+                      backgroundColor: 'var(--color-bg-elevated)',
+                      border: '1px solid var(--color-border)',
+                      color: 'var(--color-text-primary)',
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+                    {locale === 'ka' ? 'CVV' : 'CVV'}
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="***"
+                    maxLength={4}
+                    className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#D2691E]"
+                    style={{
+                      backgroundColor: 'var(--color-bg-elevated)',
+                      border: '1px solid var(--color-border)',
+                      color: 'var(--color-text-primary)',
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Cardholder Name */}
+              <div>
+                <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+                  {locale === 'ka' ? 'ბარათის მფლობელი' : 'Cardholder Name'}
+                </label>
+                <input
+                  type="text"
+                  value={cardFormData.cardholderName}
+                  onChange={(e) => setCardFormData(prev => ({
+                    ...prev,
+                    cardholderName: e.target.value.toUpperCase()
+                  }))}
+                  placeholder="JOHN DOE"
+                  className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#D2691E] uppercase"
+                  style={{
+                    backgroundColor: 'var(--color-bg-elevated)',
+                    border: '1px solid var(--color-border)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                />
+              </div>
+
+              {/* Set as default checkbox */}
+              <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={cardFormData.setAsDefault}
+                  onChange={(e) => setCardFormData(prev => ({ ...prev, setAsDefault: e.target.checked }))}
+                  className="w-5 h-5 rounded border-neutral-300 text-[#D2691E] focus:ring-[#D2691E]"
+                />
+                <span className="text-sm" style={{ color: 'var(--color-text-primary)' }}>
+                  {locale === 'ka' ? 'მთავარ ბარათად დაყენება' : 'Set as default card'}
+                </span>
+              </label>
+
+              {/* Submit Button */}
+              <button
+                onClick={handleAddCard}
+                disabled={isAddingCard || !cardFormData.cardNumber || !cardFormData.cardExpiry || !cardFormData.cardholderName}
+                className="w-full py-3 bg-[#D2691E] hover:bg-[#B8560E] text-white rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isAddingCard ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    {locale === 'ka' ? 'ემატება...' : 'Adding...'}
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="w-4 h-4" />
+                    {locale === 'ka' ? 'ბარათის დამატება' : 'Add Card'}
+                  </>
+                )}
+              </button>
+
+              {/* Security Note */}
+              <div className="flex items-center gap-2 justify-center pt-2">
+                <Lock className="w-3.5 h-3.5" style={{ color: 'var(--color-text-tertiary)' }} />
+                <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                  {locale === 'ka' ? 'თქვენი მონაცემები დაცულია' : 'Your data is secure'}
+                </span>
+              </div>
             </div>
           </div>
         </div>

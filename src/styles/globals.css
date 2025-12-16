@@ -9409,3 +9409,535 @@ img:not(.loading) {
   left: -10%;
   animation: float 15s ease-in-out infinite reverse;
 }
+
+/* =====================================================
+   PREMIUM PLANS & SUBSCRIPTION PAGES V2
+   Refined Luxury Design System with Geometric Elements
+   ===================================================== */
+
+/* ---- Premium Text Gradient ---- */
+.premium-text-gradient {
+  background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 40%, #D946EF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ---- Premium Badge Glow ---- */
+.premium-badge-glow {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.08) 0%, rgba(245, 158, 11, 0.04) 100%);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  backdrop-filter: blur(8px);
+}
+
+/* ---- Premium Toggle Container ---- */
+.premium-toggle-container {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  box-shadow:
+    0 4px 24px -8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* ---- Premium Plan Cards V2 ---- */
+.premium-card-v2 {
+  @apply rounded-3xl;
+  overflow: visible;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  box-shadow:
+    0 4px 24px -8px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.premium-card-v2:hover {
+  transform: translateY(-8px);
+  box-shadow:
+    0 24px 48px -12px rgba(0, 0, 0, 0.12),
+    0 0 0 1px var(--border-color) inset;
+}
+
+.premium-card-v2.premium-card-popular {
+  border-color: rgba(139, 92, 246, 0.3);
+  box-shadow:
+    0 8px 32px -8px rgba(139, 92, 246, 0.2),
+    0 0 0 1px rgba(139, 92, 246, 0.1) inset;
+}
+
+.premium-card-v2.premium-card-popular:hover {
+  box-shadow:
+    0 32px 64px -16px rgba(139, 92, 246, 0.3),
+    0 0 0 1px rgba(139, 92, 246, 0.2) inset;
+}
+
+/* ---- Premium CTA Button ---- */
+.premium-cta-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.premium-cta-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.premium-cta-btn:hover::before {
+  opacity: 1;
+}
+
+/* ---- Premium FAQ V2 ---- */
+.premium-faq-container {
+  @apply space-y-3;
+}
+
+.premium-faq-item-v2 {
+  @apply rounded-2xl overflow-hidden;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  transition: all 0.3s ease;
+}
+
+.premium-faq-item-v2:hover {
+  border-color: rgba(139, 92, 246, 0.2);
+  box-shadow: 0 4px 24px -8px rgba(139, 92, 246, 0.08);
+}
+
+/* ---- Checkout Summary Card ---- */
+.checkout-summary-card {
+  @apply rounded-3xl overflow-hidden;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  box-shadow:
+    0 8px 32px -8px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+}
+
+.checkout-plan-badge {
+  background: linear-gradient(135deg, var(--color-bg-tertiary) 0%, var(--color-bg-secondary) 100%);
+  border: 1px solid var(--color-border);
+}
+
+/* ---- Checkout Form Card ---- */
+.checkout-form-card {
+  @apply rounded-3xl overflow-hidden;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  box-shadow:
+    0 8px 32px -8px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+}
+
+/* ---- Checkout Method Button ---- */
+.checkout-method-btn {
+  @apply relative flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all duration-300;
+  background: var(--color-bg-tertiary);
+  border: 2px solid transparent;
+}
+
+.checkout-method-btn:hover {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border);
+}
+
+.checkout-method-btn.active {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.06) 0%, rgba(168, 85, 247, 0.03) 100%);
+  border-color: rgba(139, 92, 246, 0.4);
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.08);
+}
+
+/* ---- Checkout Input V2 ---- */
+.checkout-input-v2 {
+  @apply w-full px-4 py-4 rounded-xl text-sm font-medium transition-all duration-200;
+  background: var(--color-bg-tertiary);
+  border: 2px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.checkout-input-v2:hover {
+  border-color: rgba(139, 92, 246, 0.2);
+}
+
+.checkout-input-v2:focus {
+  outline: none;
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.08);
+  background: var(--color-bg-secondary);
+}
+
+.checkout-input-v2::placeholder {
+  color: var(--color-text-quaternary);
+  font-weight: 400;
+}
+
+/* ---- Checkout Submit Button ---- */
+.checkout-submit-btn {
+  @apply w-full py-4 rounded-2xl font-semibold text-white transition-all duration-300;
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 50%, #6D28D9 100%);
+  box-shadow:
+    0 8px 24px -4px rgba(139, 92, 246, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+.checkout-submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 16px 32px -4px rgba(139, 92, 246, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+}
+
+.checkout-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.checkout-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ---- Checkout Bank Details ---- */
+.checkout-bank-details {
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+}
+
+/* ---- Premium Animations ---- */
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes ping-slow {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  75%, 100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes confetti {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100px) rotate(720deg) scale(0);
+  }
+}
+
+@keyframes scale-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0) translateY(20px);
+  }
+  50% {
+    transform: scale(1.2) translateY(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+.animate-ping-slow {
+  animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.animate-confetti {
+  animation: confetti 2s ease-out infinite;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  opacity: 0;
+}
+
+/* ---- Dark Mode Adjustments for Premium V2 ---- */
+.dark .premium-badge-glow {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.12) 0%, rgba(245, 158, 11, 0.06) 100%);
+  border-color: rgba(251, 191, 36, 0.25);
+}
+
+.dark .premium-toggle-container {
+  background: rgba(28, 25, 23, 0.8);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark .premium-card-v2 {
+  background: rgba(28, 25, 23, 0.9);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.dark .premium-card-v2:hover {
+  box-shadow:
+    0 24px 48px -12px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+}
+
+.dark .premium-card-v2.premium-card-popular {
+  background: linear-gradient(135deg, rgba(28, 25, 23, 0.95) 0%, rgba(35, 30, 28, 0.9) 100%);
+  border-color: rgba(139, 92, 246, 0.35);
+}
+
+.dark .premium-faq-item-v2 {
+  background: rgba(28, 25, 23, 0.6);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.dark .premium-faq-item-v2:hover {
+  border-color: rgba(139, 92, 246, 0.25);
+}
+
+.dark .checkout-summary-card,
+.dark .checkout-form-card {
+  background: rgba(28, 25, 23, 0.9);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.dark .checkout-plan-badge {
+  background: linear-gradient(135deg, rgba(28, 25, 23, 0.8) 0%, rgba(35, 30, 28, 0.6) 100%);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark .checkout-method-btn {
+  background: rgba(28, 25, 23, 0.6);
+}
+
+.dark .checkout-method-btn:hover {
+  background: rgba(28, 25, 23, 0.8);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .checkout-method-btn.active {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(168, 85, 247, 0.06) 100%);
+  border-color: rgba(139, 92, 246, 0.45);
+}
+
+.dark .checkout-input-v2 {
+  background: rgba(28, 25, 23, 0.6);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark .checkout-input-v2:hover {
+  border-color: rgba(139, 92, 246, 0.25);
+}
+
+.dark .checkout-input-v2:focus {
+  background: rgba(28, 25, 23, 0.8);
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.12);
+}
+
+.dark .checkout-bank-details {
+  background: rgba(28, 25, 23, 0.6);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ============================================
+   TERRACOTTA THEME STYLES (Premium & Checkout)
+   ============================================ */
+
+/* ---- Premium Text Gradient Terracotta ---- */
+.premium-text-gradient-terracotta {
+  background: linear-gradient(135deg, #D2691E 0%, #CD853F 40%, #DEB887 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ---- Premium Card Popular Terracotta ---- */
+.premium-card-popular-terracotta {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgba(210, 105, 30, 0.08) 0%,
+    rgba(205, 133, 63, 0.04) 50%,
+    rgba(222, 184, 135, 0.02) 100%
+  );
+  border: 2px solid rgba(210, 105, 30, 0.35);
+  box-shadow:
+    0 0 40px -8px rgba(210, 105, 30, 0.25),
+    0 0 0 1px rgba(210, 105, 30, 0.1) inset;
+}
+
+.premium-card-popular-terracotta::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(210, 105, 30, 0.4) 0%,
+    rgba(205, 133, 63, 0.2) 50%,
+    rgba(139, 69, 19, 0.4) 100%
+  );
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.premium-card-popular-terracotta:hover::before {
+  opacity: 1;
+}
+
+.dark .premium-card-popular-terracotta {
+  background: linear-gradient(
+    135deg,
+    rgba(210, 105, 30, 0.12) 0%,
+    rgba(205, 133, 63, 0.06) 50%,
+    rgba(222, 184, 135, 0.03) 100%
+  );
+  border-color: rgba(210, 105, 30, 0.4);
+  box-shadow:
+    0 0 50px -10px rgba(210, 105, 30, 0.3),
+    0 0 0 1px rgba(210, 105, 30, 0.15) inset;
+}
+
+/* ---- Checkout Method Button Terracotta ---- */
+.checkout-method-btn-terracotta {
+  @apply relative flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all duration-300;
+  background: var(--color-bg-tertiary);
+  border: 2px solid transparent;
+}
+
+.checkout-method-btn-terracotta:hover {
+  background: var(--color-bg-secondary);
+  border-color: rgba(210, 105, 30, 0.2);
+}
+
+.checkout-method-btn-terracotta.active {
+  background: linear-gradient(135deg, rgba(210, 105, 30, 0.08) 0%, rgba(205, 133, 63, 0.04) 100%);
+  border-color: rgba(210, 105, 30, 0.45);
+  box-shadow: 0 0 0 4px rgba(210, 105, 30, 0.1);
+}
+
+.dark .checkout-method-btn-terracotta {
+  background: rgba(28, 25, 23, 0.6);
+}
+
+.dark .checkout-method-btn-terracotta:hover {
+  background: rgba(28, 25, 23, 0.8);
+  border-color: rgba(210, 105, 30, 0.25);
+}
+
+.dark .checkout-method-btn-terracotta.active {
+  background: linear-gradient(135deg, rgba(210, 105, 30, 0.14) 0%, rgba(205, 133, 63, 0.08) 100%);
+  border-color: rgba(210, 105, 30, 0.5);
+  box-shadow: 0 0 0 4px rgba(210, 105, 30, 0.15);
+}
+
+/* ---- Checkout Input V2 Terracotta ---- */
+.checkout-input-v2-terracotta {
+  @apply w-full px-4 py-4 rounded-xl text-sm font-medium transition-all duration-200;
+  background: var(--color-bg-tertiary);
+  border: 2px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.checkout-input-v2-terracotta:hover {
+  border-color: rgba(210, 105, 30, 0.25);
+}
+
+.checkout-input-v2-terracotta:focus {
+  outline: none;
+  border-color: rgba(210, 105, 30, 0.5);
+  box-shadow: 0 0 0 4px rgba(210, 105, 30, 0.1);
+  background: var(--color-bg-secondary);
+}
+
+.checkout-input-v2-terracotta::placeholder {
+  color: var(--color-text-quaternary);
+  font-weight: 400;
+}
+
+.dark .checkout-input-v2-terracotta {
+  background: rgba(28, 25, 23, 0.6);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark .checkout-input-v2-terracotta:hover {
+  border-color: rgba(210, 105, 30, 0.3);
+}
+
+.dark .checkout-input-v2-terracotta:focus {
+  background: rgba(28, 25, 23, 0.8);
+  border-color: rgba(210, 105, 30, 0.55);
+  box-shadow: 0 0 0 4px rgba(210, 105, 30, 0.15);
+}
+
+/* ---- Checkout Submit Button Terracotta ---- */
+.checkout-submit-btn-terracotta {
+  @apply w-full py-4 rounded-2xl font-semibold text-white transition-all duration-300;
+  background: linear-gradient(135deg, #D2691E 0%, #B8560E 50%, #8B4513 100%);
+  box-shadow:
+    0 8px 24px -4px rgba(210, 105, 30, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+.checkout-submit-btn-terracotta:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 16px 32px -4px rgba(210, 105, 30, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+}
+
+.checkout-submit-btn-terracotta:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.checkout-submit-btn-terracotta:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
