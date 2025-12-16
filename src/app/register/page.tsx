@@ -1,10 +1,10 @@
 "use client";
 
 import BackButton from "@/components/common/BackButton";
+import CategorySubcategorySelector from "@/components/common/CategorySubcategorySelector";
 import PortfolioProjectsInput, {
   PortfolioProject,
 } from "@/components/common/PortfolioProjectsInput";
-import CategorySubcategorySelector from "@/components/common/CategorySubcategorySelector";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import {
@@ -12,7 +12,6 @@ import {
   CountryCode,
   useLanguage,
 } from "@/contexts/LanguageContext";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 
@@ -828,7 +827,7 @@ function RegisterContent() {
             style={{ color: "var(--color-text-secondary)" }}
           >
             {locale === "ka"
-              ? "შეუერთდი Homico-ს საზოგადოებას"
+              ? "შეუერთდი Homico-ს კომუნას"
               : "Join the Homico community"}
           </p>
         </div>
@@ -1276,7 +1275,7 @@ function RegisterContent() {
                 {locale === "ka" ? "პირადი ინფორმაცია" : "Personal Information"}
               </h2>
             </div>
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-2 gap-4 overflow-visible">
               {/* First Name */}
               <div>
                 <label
@@ -1677,10 +1676,11 @@ function RegisterContent() {
                 />
                 {showCityDropdown && filteredCities.length > 0 && (
                   <div
-                    className="absolute z-10 w-full mt-1 rounded-xl border shadow-lg max-h-48 overflow-y-auto"
+                    className="absolute z-50 left-0 right-0 mt-1 rounded-xl border shadow-xl max-h-48 overflow-y-auto"
                     style={{
                       backgroundColor: "var(--color-bg-secondary)",
                       borderColor: "var(--color-border)",
+                      top: "100%",
                     }}
                   >
                     {filteredCities.map((city) => (
@@ -1692,7 +1692,7 @@ function RegisterContent() {
                           setCitySearch("");
                           setShowCityDropdown(false);
                         }}
-                        className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors first:rounded-t-xl last:rounded-b-xl"
                         style={{ color: "var(--color-text-primary)" }}
                       >
                         {city}
