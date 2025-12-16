@@ -1,7 +1,6 @@
 "use client";
 
 import BackButton from "@/components/common/BackButton";
-import Header from "@/components/common/Header";
 import PortfolioProjectsInput, {
   PortfolioProject,
 } from "@/components/common/PortfolioProjectsInput";
@@ -805,29 +804,27 @@ function RegisterContent() {
   }
 
   return (
-    <div className="register-page-premium">
-      <Header />
-
+    <div className="register-page-premium min-h-screen">
       {/* Main Content */}
-      <main className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-24">
-        <div className="mb-6">
+      <main className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-24">
+        <div className="mb-4">
           <BackButton />
         </div>
         {/* Title */}
-        <div className="text-center mb-10">
-          <div className="auth-icon-premium mx-auto mb-5">
-            <svg className="w-8 h-8 text-[#E07B4F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <div className="text-center mb-6">
+          <div className="auth-icon-premium mx-auto mb-3">
+            <svg className="w-7 h-7 text-[#E07B4F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
             </svg>
           </div>
           <h1
-            className="text-3xl sm:text-4xl font-bold tracking-tight mb-3"
+            className="text-2xl sm:text-3xl font-bold tracking-tight mb-2"
             style={{ color: "var(--color-text-primary)" }}
           >
             {locale === "ka" ? "შექმენი ანგარიში" : "Create your account"}
           </h1>
           <p
-            className="text-lg"
+            className="text-base"
             style={{ color: "var(--color-text-secondary)" }}
           >
             {locale === "ka"
@@ -876,7 +873,7 @@ function RegisterContent() {
           </div>
         )}
 
-        <form ref={formRef} onSubmit={handleSubmit} className="space-y-8">
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
           {/* Account Type - Refined Toggle Design */}
           <section>
             <h2
