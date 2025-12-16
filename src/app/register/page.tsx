@@ -5,7 +5,7 @@ import Header from "@/components/common/Header";
 import PortfolioProjectsInput, {
   PortfolioProject,
 } from "@/components/common/PortfolioProjectsInput";
-import { CATEGORIES } from "@/constants/categories";
+import CategorySubcategorySelector from "@/components/common/CategorySubcategorySelector";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import {
@@ -37,176 +37,6 @@ function useAuthRedirectFromRegister() {
   return { authLoading, isAuthenticated, user };
 }
 
-// Category icons
-const CategoryIcon = ({
-  type,
-  className = "",
-}: {
-  type: string;
-  className?: string;
-}) => {
-  switch (type) {
-    case "designer":
-      return (
-        <svg
-          className={className}
-          viewBox="0 0 48 48"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M6 32V28C6 26.8954 6.89543 26 8 26H40C41.1046 26 42 26.8954 42 28V32"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-          <path
-            d="M10 26V22C10 20.8954 10.8954 20 12 20H36C37.1046 20 38 20.8954 38 22V26"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-          <rect
-            x="6"
-            y="32"
-            width="36"
-            height="6"
-            rx="2"
-            stroke="currentColor"
-            strokeWidth="2.5"
-          />
-          <path
-            d="M10 38V42"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-          <path
-            d="M38 38V42"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-          <path
-            d="M24 12L28 16L24 20L20 16L24 12Z"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinejoin="round"
-          />
-          <circle cx="24" cy="8" r="2" fill="currentColor" />
-        </svg>
-      );
-    case "architect":
-      return (
-        <svg
-          className={className}
-          viewBox="0 0 48 48"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M8 40V16L24 6L40 16V40"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M8 40H40"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-          <rect
-            x="14"
-            y="22"
-            width="6"
-            height="8"
-            rx="1"
-            stroke="currentColor"
-            strokeWidth="2"
-          />
-          <rect
-            x="28"
-            y="22"
-            width="6"
-            height="8"
-            rx="1"
-            stroke="currentColor"
-            strokeWidth="2"
-          />
-          <path
-            d="M20 40V34C20 32.8954 20.8954 32 22 32H26C27.1046 32 28 32.8954 28 34V40"
-            stroke="currentColor"
-            strokeWidth="2"
-          />
-        </svg>
-      );
-    case "craftsmen":
-      return (
-        <svg
-          className={className}
-          viewBox="0 0 48 48"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M12 36L20 28"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-          <path d="M8 40L12 36L16 40L12 44L8 40Z" fill="currentColor" />
-          <path
-            d="M32 8C28.6863 8 26 10.6863 26 14C26 15.1256 26.3086 16.1832 26.8438 17.0938L18 26L22 30L30.9062 21.1562C31.8168 21.6914 32.8744 22 34 22C37.3137 22 40 19.3137 40 16C40 15.5 39.9 15 39.8 14.5L36 18L32 14L35.5 10.2C35 10.1 34.5 10 34 10C33.3 10 32.6 10.1 32 10.2"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M38 30L34 36H38L34 42"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      );
-    case "homecare":
-      return (
-        <svg
-          className={className}
-          viewBox="0 0 48 48"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M6 22L24 8L42 22"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M10 20V38C10 39.1046 10.8954 40 12 40H36C37.1046 40 38 39.1046 38 38V20"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-          <path
-            d="M24 24C26.5 24 28.5 26 28.5 28.5C28.5 32 24 35 24 35C24 35 19.5 32 19.5 28.5C19.5 26 21.5 24 24 24Z"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinejoin="round"
-          />
-        </svg>
-      );
-    default:
-      return null;
-  }
-};
-
 function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -228,7 +58,7 @@ function RegisterContent() {
     phone: "",
     city: "",
     idNumber: "",
-    selectedCategory: "",
+    selectedCategories: [] as string[],
     selectedSubcategories: [] as string[],
     avatar: "", // Profile picture URL for pro users
     whatsapp: "", // Optional WhatsApp number
@@ -279,8 +109,6 @@ function RegisterContent() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
-  const [customSubcategory, setCustomSubcategory] = useState<string>("");
-  const [showCustomInput, setShowCustomInput] = useState<boolean>(false);
 
   // Validation state for progress tracking
   const getValidationState = () => {
@@ -292,7 +120,7 @@ function RegisterContent() {
     const hasPasswordMatch =
       formData.password === formData.confirmPassword && hasPassword;
     const hasCategory =
-      formData.role === "client" || !!formData.selectedCategory;
+      formData.role === "client" || formData.selectedCategories.length > 0;
     const hasAvatar = formData.role === "client" || !!avatarPreview;
 
     return {
@@ -448,57 +276,21 @@ function RegisterContent() {
     validateField(field, value);
   };
 
-  const handleCategorySelect = (categoryKey: string) => {
-    if (formData.selectedCategory === categoryKey) {
-      setFormData({
-        ...formData,
-        selectedCategory: "",
-        selectedSubcategories: [],
-      });
-      setExpandedCategory(null);
-    } else {
-      setFormData({
-        ...formData,
-        selectedCategory: categoryKey,
-        selectedSubcategories: [],
-      });
-      setExpandedCategory(categoryKey);
-    }
-  };
-
-  const handleSubcategoryToggle = (subKey: string) => {
-    if (formData.selectedSubcategories.includes(subKey)) {
-      setFormData({
-        ...formData,
-        selectedSubcategories: formData.selectedSubcategories.filter(
-          (k) => k !== subKey
-        ),
-      });
-    } else {
-      setFormData({
-        ...formData,
-        selectedSubcategories: [...formData.selectedSubcategories, subKey],
-      });
-    }
-  };
-
-  const handleAddCustomSubcategory = () => {
-    if (customSubcategory.trim() && !formData.selectedSubcategories.includes(customSubcategory.trim())) {
-      setFormData({
-        ...formData,
-        selectedSubcategories: [...formData.selectedSubcategories, `custom:${customSubcategory.trim()}`],
-      });
-      setCustomSubcategory("");
-      setShowCustomInput(false);
-    }
-  };
-
-  const handleRemoveCustomSubcategory = (subKey: string) => {
+  const handleCategoriesChange = (categories: string[]) => {
     setFormData({
       ...formData,
-      selectedSubcategories: formData.selectedSubcategories.filter(
-        (k) => k !== subKey
-      ),
+      selectedCategories: categories,
+    });
+    // Auto-expand the first selected category
+    if (categories.length > 0) {
+      setExpandedCategory(categories[categories.length - 1]);
+    }
+  };
+
+  const handleSubcategoriesChange = (subcategories: string[]) => {
+    setFormData({
+      ...formData,
+      selectedSubcategories: subcategories,
     });
   };
 
@@ -711,7 +503,7 @@ function RegisterContent() {
       );
       return false;
     }
-    if (formData.role === "pro" && !formData.selectedCategory) {
+    if (formData.role === "pro" && formData.selectedCategories.length === 0) {
       setError(
         locale === "ka" ? "აირჩიეთ სპეციალობა" : "Please select your specialty"
       );
@@ -808,7 +600,7 @@ function RegisterContent() {
             whatsapp: formData.whatsapp || undefined,
             telegram: formData.telegram || undefined,
             selectedCategories:
-              formData.role === "pro" ? [formData.selectedCategory] : undefined,
+              formData.role === "pro" ? formData.selectedCategories : undefined,
             selectedSubcategories:
               formData.role === "pro"
                 ? formData.selectedSubcategories
@@ -827,7 +619,7 @@ function RegisterContent() {
         sessionStorage.setItem(
           "proRegistrationData",
           JSON.stringify({
-            category: formData.selectedCategory,
+            categories: formData.selectedCategories,
             subcategories: formData.selectedSubcategories,
             portfolioProjects:
               portfolioProjects.length > 0 ? portfolioProjects : undefined,
@@ -1131,7 +923,7 @@ function RegisterContent() {
                       setFormData({
                         ...formData,
                         role: type.key,
-                        selectedCategory: "",
+                        selectedCategories: [],
                         selectedSubcategories: [],
                         avatar: type.key !== "pro" ? "" : formData.avatar,
                       });
@@ -2044,238 +1836,25 @@ function RegisterContent() {
                 style={{ color: "var(--color-text-secondary)" }}
               >
                 {locale === "ka"
-                  ? "აირჩიე კატეგორია და შენი სპეციალიზაცია"
-                  : "Select a category and your specializations"}
+                  ? "აირჩიე კატეგორია და შენი სპეციალიზაცია (მაქს. 4 კატეგორია)"
+                  : "Select categories and your specializations (max 4 categories)"}
               </p>
 
-              <div className="space-y-3">
-                {CATEGORIES.map((category) => {
-                  const isSelected = formData.selectedCategory === category.key;
-                  const isExpanded =
-                    expandedCategory === category.key || isSelected;
-                  const selectedSubCount =
-                    formData.selectedSubcategories.filter((sub) =>
-                      category.subcategories.some((s) => s.key === sub)
-                    ).length;
-
-                  return (
-                    <div
-                      key={category.key}
-                      className={`rounded-xl border-2 overflow-hidden transition-all duration-200 ${
-                        isSelected
-                          ? "border-[#E07B4F] bg-[#E07B4F]/5 dark:bg-[#E07B4F]/10"
-                          : "border-transparent"
-                      }`}
-                      style={{
-                        backgroundColor: isSelected
-                          ? undefined
-                          : "var(--color-bg-secondary)",
-                      }}
-                    >
-                      {/* Category Header */}
-                      <button
-                        type="button"
-                        onClick={() => handleCategorySelect(category.key)}
-                        className="w-full flex items-center gap-4 p-4 text-left"
-                      >
-                        <div
-                          className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${
-                            isSelected
-                              ? "bg-[#E07B4F] text-white shadow-lg shadow-[#E07B4F]/25"
-                              : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
-                          }`}
-                        >
-                          <CategoryIcon
-                            type={category.icon}
-                            className="w-7 h-7"
-                          />
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h3
-                              className="font-semibold"
-                              style={{
-                                color: isSelected
-                                  ? "#E07B4F"
-                                  : "var(--color-text-primary)",
-                              }}
-                            >
-                              {locale === "ka"
-                                ? category.nameKa
-                                : category.name}
-                            </h3>
-                            {selectedSubCount > 0 && (
-                              <span className="px-2 py-0.5 rounded-full bg-[#E07B4F] text-white text-xs font-medium">
-                                {selectedSubCount}
-                              </span>
-                            )}
-                          </div>
-                          <p
-                            className="text-sm"
-                            style={{ color: "var(--color-text-tertiary)" }}
-                          >
-                            {locale === "ka"
-                              ? category.descriptionKa
-                              : category.description}
-                          </p>
-                        </div>
-
-                        <div
-                          className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${
-                            isSelected
-                              ? "bg-[#E07B4F]"
-                              : "bg-gray-200 dark:bg-gray-700"
-                          }`}
-                        >
-                          <svg
-                            className="w-4 h-4 text-white"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2.5}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                        </div>
-                      </button>
-
-                      {/* Subcategories */}
-                      {isExpanded && (
-                        <div className="px-4 pb-4">
-                          <div className="h-px bg-gray-200 dark:bg-gray-700 mb-3" />
-                          <p
-                            className="text-xs font-medium uppercase tracking-wider mb-3"
-                            style={{ color: "var(--color-text-muted)" }}
-                          >
-                            {locale === "ka"
-                              ? "სპეციალობები"
-                              : "Specializations"}
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            {category.subcategories.map((sub) => {
-                              const isSubSelected =
-                                formData.selectedSubcategories.includes(
-                                  sub.key
-                                );
-                              return (
-                                <button
-                                  key={sub.key}
-                                  type="button"
-                                  onClick={() =>
-                                    handleSubcategoryToggle(sub.key)
-                                  }
-                                  disabled={!isSelected}
-                                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                                    isSubSelected
-                                      ? "bg-[#E07B4F] text-white shadow-md shadow-[#E07B4F]/20"
-                                      : isSelected
-                                        ? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                                        : "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 opacity-50"
-                                  }`}
-                                >
-                                  {isSubSelected && (
-                                    <svg
-                                      className="w-3.5 h-3.5 inline mr-1.5"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2.5}
-                                        d="M5 13l4 4L19 7"
-                                      />
-                                    </svg>
-                                  )}
-                                  {locale === "ka" ? sub.nameKa : sub.name}
-                                </button>
-                              );
-                            })}
-
-                            {/* "სხვა" button for custom subcategory */}
-                            {isSelected && !showCustomInput && (
-                              <button
-                                type="button"
-                                onClick={() => setShowCustomInput(true)}
-                                className="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-[#E07B4F]/50 hover:text-[#E07B4F] dark:hover:text-[#E8956A]"
-                              >
-                                <svg className="w-3.5 h-3.5 inline mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                </svg>
-                                {locale === "ka" ? "სხვა" : "Other"}
-                              </button>
-                            )}
-
-                            {/* Custom subcategory input */}
-                            {isSelected && showCustomInput && (
-                              <div className="flex items-center gap-2 w-full mt-2">
-                                <input
-                                  type="text"
-                                  value={customSubcategory}
-                                  onChange={(e) => setCustomSubcategory(e.target.value)}
-                                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCustomSubcategory())}
-                                  placeholder={locale === "ka" ? "ჩაწერე სპეციალობა..." : "Enter specialty..."}
-                                  className="flex-1 px-3 py-2 rounded-lg text-sm border-2 bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[#E07B4F] transition-all"
-                                  style={{ borderColor: 'var(--color-border)' }}
-                                  autoFocus
-                                />
-                                <button
-                                  type="button"
-                                  onClick={handleAddCustomSubcategory}
-                                  disabled={!customSubcategory.trim()}
-                                  className="px-3 py-2 rounded-lg text-sm font-medium bg-[#E07B4F] text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#D26B3F] transition-colors"
-                                >
-                                  {locale === "ka" ? "დამატება" : "Add"}
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => { setShowCustomInput(false); setCustomSubcategory(""); }}
-                                  className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                </button>
-                              </div>
-                            )}
-
-                            {/* Custom subcategories display */}
-                            {formData.selectedSubcategories
-                              .filter(sub => sub.startsWith('custom:'))
-                              .map((customSub) => (
-                                <button
-                                  key={customSub}
-                                  type="button"
-                                  onClick={() => handleRemoveCustomSubcategory(customSub)}
-                                  className="px-3 py-2 rounded-lg text-sm font-medium bg-[#E07B4F] text-white shadow-md shadow-[#E07B4F]/20 flex items-center gap-1.5"
-                                >
-                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                                  </svg>
-                                  {customSub.replace('custom:', '')}
-                                  <svg className="w-3 h-3 ml-1 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                </button>
-                              ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+              <CategorySubcategorySelector
+                selectedCategories={formData.selectedCategories}
+                selectedSubcategories={formData.selectedSubcategories}
+                onCategoriesChange={handleCategoriesChange}
+                onSubcategoriesChange={handleSubcategoriesChange}
+                singleCategoryMode={false}
+                maxCategories={4}
+                maxSubcategories={10}
+                showCustomSpecialties={true}
+              />
             </section>
           )}
 
           {/* Portfolio Projects - Optional for Pro */}
-          {formData.role === "pro" && formData.selectedCategory && (
+          {formData.role === "pro" && formData.selectedCategories.length > 0 && (
             <section>
               <PortfolioProjectsInput
                 projects={portfolioProjects}
