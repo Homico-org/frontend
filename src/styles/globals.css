@@ -11,13 +11,19 @@
 
 :root {
   /* Warm Stone Background Palette - grounded and sophisticated */
-  --color-bg-primary: #eae7e2;
-  --color-bg-primary-transparent: rgba(234, 231, 226, 0.8);
-  --color-bg-secondary: #f5f3f0;
-  --color-bg-tertiary: #dfdcd6;
-  --color-bg-elevated: #faf9f7;
-  --color-bg-muted: #d8d5cf;
-  --color-bg-canvas: linear-gradient(175deg, #eae7e2 0%, #e2dfd9 50%, #dbd8d2 100%);
+  --color-bg-primary: #f2f0ec;
+  --color-bg-primary-transparent: rgba(242, 240, 236, 0.8);
+  --color-bg-secondary: #faf9f7;
+  --color-bg-tertiary: #e8e5df;
+  --color-bg-elevated: #ffffff;
+  --color-bg-muted: #e2dfd9;
+  --color-bg-canvas: linear-gradient(175deg, #f2f0ec 0%, #ece9e4 50%, #e8e5df 100%);
+
+  /* Specific area backgrounds */
+  --color-bg-app: #f5f3ef;
+  --color-bg-header: #fdfcfb;
+  --color-bg-sidebar: #faf9f7;
+  --color-bg-tabs: #f8f6f3;
 
   /* Rich Ink Text - warm undertones with strong contrast */
   --color-text-primary: #1c1a17;
@@ -76,6 +82,12 @@
   --color-bg-elevated: #2a2a30;
   --color-bg-muted: #222226;
   --color-bg-canvas: linear-gradient(175deg, #1e1e22 0%, #1a1a1e 50%, #18181c 100%);
+
+  /* Specific area backgrounds for dark mode */
+  --color-bg-app: #1a1a1e;
+  --color-bg-header: #222226;
+  --color-bg-sidebar: #1e1e22;
+  --color-bg-tabs: #202024;
 
   /* Warm, readable text colors */
   --color-text-primary: #f5f4f2;
@@ -1760,7 +1772,9 @@ img:not(.loading) {
 
 /* Section Labels */
 .filter-section-label {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;

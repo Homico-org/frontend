@@ -42,7 +42,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body>
+      <body style={{ backgroundColor: 'var(--color-bg-app)' }}>
         <Providers>
           <ClientLayout>{children}</ClientLayout>
           <ToastContainer />

@@ -40,14 +40,14 @@ export default function ContentTypeSwitcher({
       key: 'portfolio' as ContentType,
       route: '/browse/portfolio',
       label: 'Portfolio',
-      labelKa: 'ნამუშევრები',
+      labelKa: 'შესრულებული პროექტები',
       showFor: 'all' as const,
     },
     {
       key: 'professionals' as ContentType,
       route: '/browse/professionals',
       label: 'Pros',
-      labelKa: 'პროები',
+      labelKa: 'სპეციალისტები',
       showFor: 'all' as const,
     },
   ], []);

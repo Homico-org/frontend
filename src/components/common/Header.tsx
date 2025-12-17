@@ -62,7 +62,7 @@ export default function Header() {
     <header
       className="sticky top-0 z-50 backdrop-blur-xl border-b transition-colors duration-300"
       style={{
-        backgroundColor: "var(--color-bg-primary-transparent)",
+        backgroundColor: "var(--color-bg-header)",
         borderColor: "var(--color-border-subtle)",
       }}
     >

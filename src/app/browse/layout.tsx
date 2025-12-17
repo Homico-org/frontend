@@ -1,8 +1,8 @@
 "use client";
 
 import BrowseFiltersSidebar from "@/components/browse/BrowseFiltersSidebar";
-import JobsFiltersSidebar from "@/components/browse/JobsFiltersSidebar";
 import ContentTypeSwitcher from "@/components/browse/ContentTypeSwitcher";
+import JobsFiltersSidebar from "@/components/browse/JobsFiltersSidebar";
 import Header from "@/components/common/Header";
 import { useAuth } from "@/contexts/AuthContext";
 import { BrowseProvider } from "@/contexts/BrowseContext";
@@ -52,11 +52,11 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
   }, [pathname, router, isPro, isAuthLoading]);
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-[var(--color-bg-base)] max-w-full">
+    <div className="h-screen flex flex-col overflow-hidden bg-[var(--color-bg-app)] max-w-full">
       <Header />
 
       {/* Fixed Top Bar - Search + Tabs + Actions */}
-      <div className="flex-shrink-0 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-base)]">
+      <div className="flex-shrink-0 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-tabs)]">
         <div className="px-4 sm:px-6 py-2.5">
           <div className={`flex items-center justify-between gap-4 ${mounted ? 'animate-fade-in' : 'opacity-0'}`}>
             {/* Left Section - Filter Toggle (mobile only) */}
@@ -83,7 +83,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                   className="browse-btn-compact browse-btn-primary"
                 >
                   <Send className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{locale === "ka" ? "შეთავაზებები" : "Proposals"}</span>
+                  <span className="hidden sm:inline">{locale === "ka" ? "ჩემი შეთავაზებები" : "My Proposals"}</span>
                 </Link>
               )}
               {user && (user.role === "client" || user.role === "pro") && (
@@ -92,7 +92,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                   className="browse-btn-compact browse-btn-secondary"
                 >
                   <Briefcase className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{locale === "ka" ? "პროექტები" : "Jobs"}</span>
+                  <span className="hidden sm:inline">{locale === "ka" ? "ჩემი განცხადებები" : "My Listings"}</span>
                 </Link>
               )}
             </div>
@@ -104,7 +104,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
       {/* Main Content Area */}
       <div className="flex-1 flex min-h-0 overflow-hidden">
         {/* Left Sidebar - Fixed Filters (Desktop) */}
-        <aside className="hidden lg:block w-60 flex-shrink-0 border-r border-[var(--color-border-subtle)] bg-[var(--color-bg-base)] overflow-hidden">
+        <aside className="hidden lg:block w-60 flex-shrink-0 border-r border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] overflow-hidden">
           {isJobsPage ? (
             <JobsSidebar />
           ) : (
@@ -135,7 +135,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
             onClick={() => setShowMobileFilters(false)}
           />
           {/* Drawer */}
-          <div className="absolute left-0 top-0 bottom-0 w-72 bg-[var(--color-bg-base)] shadow-xl animate-slide-in-left">
+          <div className="absolute left-0 top-0 bottom-0 w-72 bg-[var(--color-bg-sidebar)] shadow-xl animate-slide-in-left">
             <div className="flex items-center justify-between p-4 border-b border-[var(--color-border-subtle)]">
               <h3 className="font-semibold text-[var(--color-text-primary)]">
                 {locale === 'ka' ? 'ფილტრები' : 'Filters'}
@@ -188,7 +188,7 @@ function BrowseLayoutWithParams({ children }: { children: ReactNode }) {
 export default function BrowseLayout({ children }: { children: ReactNode }) {
   return (
     <Suspense fallback={
-      <div className="h-screen flex items-center justify-center bg-[var(--color-bg-base)]">
+      <div className="h-screen flex items-center justify-center bg-[var(--color-bg-app)]">
         <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#E07B4F] border-t-transparent"></div>
       </div>
     }>
