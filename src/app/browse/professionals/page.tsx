@@ -145,7 +145,7 @@ export default function ProfessionalsPage() {
 
   // Compact Loading skeleton - matches new card design
   const ProfessionalsSkeleton = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {[...Array(8)].map((_, i) => (
         <div
           key={i}
@@ -233,7 +233,7 @@ export default function ProfessionalsPage() {
       {isLoading ? (
         <ProfessionalsSkeleton />
       ) : results.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {results.map((profile, index) => (
             <div
               key={profile._id}

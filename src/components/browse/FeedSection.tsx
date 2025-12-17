@@ -7,6 +7,9 @@ import { FeedItem, LikeTargetType } from '@/types';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import FeedCard from './FeedCard';
 
+// Terracotta accent
+const ACCENT_COLOR = '#C4735B';
+
 interface FeedSectionProps {
   selectedCategory: string | null;
 }
@@ -21,7 +24,6 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [totalCount, setTotalCount] = useState(0);
 
   const loaderRef = useRef<HTMLDivElement>(null);
   const initialFetchDone = useRef(false);
@@ -61,12 +63,13 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
         }
 
         setHasMore(pagination.hasMore);
-        setTotalCount(pagination.total);
 
         if (data.length > 0) {
           const likeStatesFromServer: Record<string, { isLiked: boolean; likeCount: number }> = {};
           data.forEach((item: FeedItem) => {
-            likeStatesFromServer[item._id] = {
+            // Use the actual like target ID for state tracking
+            const targetId = item.likeTargetId || item._id;
+            likeStatesFromServer[targetId] = {
               isLiked: item.isLiked || false,
               likeCount: item.likeCount || 0,
             };
@@ -130,12 +133,19 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
     return () => observer.disconnect();
   }, [hasMore, isLoading, isLoadingMore, page, fetchFeed]);
 
-  const handleLike = async (itemId: string) => {
+  const handleLike = async (itemId: string, likeTargetType?: string, likeTargetId?: string) => {
     if (!isAuthenticated) return;
 
-    const currentState = likeStates[itemId] || { isLiked: false, likeCount: 0 };
-    const newState = await toggleLike(LikeTargetType.PORTFOLIO_ITEM, itemId, currentState);
+    // Use the actual like target (for embedded projects, this might be the pro profile)
+    const actualTargetId = likeTargetId || itemId;
+    const actualTargetType = likeTargetType === 'pro_profile'
+      ? LikeTargetType.PRO_PROFILE
+      : LikeTargetType.PORTFOLIO_ITEM;
 
+    const currentState = likeStates[actualTargetId] || { isLiked: false, likeCount: 0 };
+    const newState = await toggleLike(actualTargetType, actualTargetId, currentState);
+
+    // Update both the actual target ID and the item ID states
     setFeedItems((prev) =>
       prev.map((item) =>
         item._id === itemId
@@ -143,30 +153,30 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
           : item
       )
     );
+
+    // Also update likeStates for the actual target if different from itemId
+    if (actualTargetId !== itemId) {
+      initializeLikeStates({ [actualTargetId]: newState });
+    }
   };
 
-  // Premium Loading skeleton
+  // Skeleton loading - Grid style
   const FeedSkeleton = () => (
-    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 md:gap-6">
-      {[...Array(6)].map((_, i) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {[...Array(8)].map((_, i) => (
         <div
           key={i}
-          className="pro-card-premium overflow-hidden animate-pulse"
-          style={{ animationDelay: `${i * 100}ms` }}
+          className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-100 dark:border-neutral-800 overflow-hidden animate-pulse"
         >
-          {/* Image skeleton */}
-          <div className="aspect-[4/3] bg-gradient-to-br from-[#E07B4F]/5 to-[#E8956A]/10 relative">
-            <div className="absolute inset-0 shimmer-premium" />
-            {/* Corner accent */}
-            <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-[#E07B4F]/10" />
-          </div>
-          {/* Footer skeleton */}
-          <div className="p-3 sm:p-4 flex items-center gap-3">
-            {/* Avatar skeleton */}
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-[#E07B4F]/10 to-[#E8956A]/15" />
-            <div className="flex-1 space-y-2">
-              <div className="h-4 bg-[#E07B4F]/10 rounded-lg w-3/4" />
-              <div className="h-3 bg-[#E07B4F]/5 rounded-lg w-1/2" />
+          <div className="aspect-[4/3] bg-neutral-200 dark:bg-neutral-800" />
+          <div className="p-4 space-y-3">
+            <div className="h-4 rounded w-16 bg-neutral-200 dark:bg-neutral-800" />
+            <div className="h-5 rounded w-3/4 bg-neutral-200 dark:bg-neutral-800" />
+            <div className="h-4 rounded w-full bg-neutral-200 dark:bg-neutral-800" />
+            <div className="h-px bg-neutral-100 dark:bg-neutral-800" />
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-800" />
+              <div className="h-4 rounded w-24 bg-neutral-200 dark:bg-neutral-800" />
             </div>
           </div>
         </div>
@@ -174,14 +184,21 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
     </div>
   );
 
-  // Premium Empty state
+  // Illustrated Empty state
   const EmptyState = () => (
-    <div className="flex flex-col items-center justify-center py-20 px-4">
-      {/* Decorative icon */}
-      <div className="relative mb-6">
-        <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#E07B4F]/10 to-[#E8956A]/5 flex items-center justify-center rotate-3">
+    <div className="flex flex-col items-center justify-center py-24 px-4">
+      {/* Illustration */}
+      <div className="relative mb-8">
+        {/* Main illustration container */}
+        <div className="w-32 h-32 rounded-3xl bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center relative overflow-hidden">
+          {/* Abstract shapes */}
+          <div className="absolute top-4 left-4 w-8 h-8 rounded-lg bg-neutral-200 dark:bg-neutral-800 rotate-12" />
+          <div className="absolute bottom-6 right-4 w-6 h-6 rounded-full bg-neutral-200 dark:bg-neutral-800" />
+          <div className="absolute top-8 right-8 w-4 h-4 rounded bg-neutral-300 dark:bg-neutral-700" />
+
+          {/* Main icon */}
           <svg
-            className="w-12 h-12 text-[#E07B4F]/40"
+            className="w-12 h-12 text-neutral-400 dark:text-neutral-600 relative z-10"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -194,82 +211,70 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
             />
           </svg>
         </div>
+
         {/* Floating decorative elements */}
-        <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#E07B4F]/20 animate-float-slow" />
-        <div className="absolute -bottom-1 -left-3 w-4 h-4 rounded-full bg-[#E8956A]/15 animate-float-slower" />
+        <div
+          className="absolute -top-2 -right-2 w-6 h-6 rounded-full"
+          style={{ backgroundColor: `${ACCENT_COLOR}20` }}
+        />
+        <div
+          className="absolute -bottom-1 -left-3 w-4 h-4 rounded-full"
+          style={{ backgroundColor: `${ACCENT_COLOR}15` }}
+        />
       </div>
 
-      <h3 className="browse-title text-xl sm:text-2xl text-gradient-terracotta mb-2">
+      <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
         {locale === 'ka' ? 'ნამუშევრები არ მოიძებნა' : 'No work found'}
       </h3>
-      <p className="text-sm sm:text-base text-[var(--color-text-secondary)] text-center max-w-md font-serif-italic">
+      <p className="text-neutral-500 dark:text-neutral-400 text-center max-w-sm">
         {locale === 'ka'
-          ? 'ამჟამად არ არის შესაბამისი ნამუშევარი. სცადეთ სხვა კატეგორია ან დაბრუნდით მოგვიანებით.'
-          : 'No matching work found in this category. Try exploring other categories or check back later.'}
+          ? 'ამჟამად არ არის შესაბამისი ნამუშევარი. სცადეთ სხვა კატეგორია.'
+          : 'No matching work found in this category. Try exploring other categories.'}
       </p>
     </div>
   );
 
   return (
-    <div className="space-y-6">
-      {/* Results count */}
-      {!isLoading && feedItems.length > 0 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-[var(--color-text-tertiary)]">
-            <span className="font-semibold text-[#E07B4F]">{totalCount}</span>
-            {' '}
-            {locale === 'ka' ? 'ნამუშევარი' : 'works'}
-          </p>
-        </div>
-      )}
-
+    <div>
       {isLoading ? (
         <FeedSkeleton />
       ) : feedItems.length === 0 ? (
         <EmptyState />
       ) : (
         <>
-          {/* Feed Grid with staggered animation */}
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 md:gap-6">
+          {/* Grid Layout */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {feedItems.map((item, index) => (
               <div
                 key={item._id}
-                className="animate-stagger"
-                style={{ animationDelay: `${(index % 12) * 60}ms` }}
+                className="animate-fade-in"
+                style={{ animationDelay: `${(index % 12) * 40}ms` }}
               >
                 <FeedCard
                   item={{
                     ...item,
-                    isLiked: likeStates[item._id]?.isLiked ?? item.isLiked,
-                    likeCount: likeStates[item._id]?.likeCount ?? item.likeCount,
+                    // Use actual like target for state lookup
+                    isLiked: likeStates[item.likeTargetId || item._id]?.isLiked ?? item.isLiked,
+                    likeCount: likeStates[item.likeTargetId || item._id]?.likeCount ?? item.likeCount,
                   }}
-                  onLike={() => handleLike(item._id)}
+                  onLike={(likeTargetType, likeTargetId) => handleLike(item._id, likeTargetType, likeTargetId)}
                   isAuthenticated={isAuthenticated}
                 />
               </div>
             ))}
           </div>
 
-          {/* Load More / Loader with premium styling */}
-          <div ref={loaderRef} className="flex justify-center py-10">
+          {/* Load More / Loader */}
+          <div ref={loaderRef} className="flex justify-center py-12">
             {isLoadingMore && (
-              <div className="flex items-center gap-4 px-6 py-3 rounded-2xl glass-card">
-                <div className="relative w-5 h-5">
-                  <div className="absolute inset-0 rounded-full border-2 border-[#E07B4F]/20" />
-                  <div className="absolute inset-0 rounded-full border-2 border-[#E07B4F] border-t-transparent animate-spin" />
-                </div>
-                <span className="text-sm font-medium text-[var(--color-text-secondary)]">
-                  {locale === 'ka' ? 'იტვირთება...' : 'Loading more...'}
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin"
+                  style={{ borderColor: ACCENT_COLOR, borderTopColor: 'transparent' }}
+                />
+                <span className="text-sm text-neutral-500">
+                  {locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
                 </span>
-              </div>
-            )}
-            {!hasMore && feedItems.length > 0 && (
-              <div className="flex items-center gap-2 text-sm text-[var(--color-text-tertiary)]">
-                <div className="w-8 h-px bg-gradient-to-r from-transparent via-[#E07B4F]/20 to-transparent" />
-                <span className="font-serif-italic">
-                  {locale === 'ka' ? 'ყველა ნამუშევარი ნაჩვენებია' : 'All works displayed'}
-                </span>
-                <div className="w-8 h-px bg-gradient-to-r from-transparent via-[#E07B4F]/20 to-transparent" />
               </div>
             )}
           </div>

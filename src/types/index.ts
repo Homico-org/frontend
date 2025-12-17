@@ -110,6 +110,7 @@ export interface FeedItem {
   beforeImage?: string;
   afterImage?: string;
   category: string;
+  tags?: string[];
   pro: {
     _id: string;
     name: string;
@@ -129,6 +130,9 @@ export interface FeedItem {
   createdAt: string;
   isVerified?: boolean; // Work done through Homico platform
   jobId?: string; // Reference to original job if done on Homico
+  // For embedded projects that don't have their own ObjectId
+  likeTargetType?: 'portfolio_item' | 'pro_profile';
+  likeTargetId?: string;
 }
 
 export enum ProjectStatus {

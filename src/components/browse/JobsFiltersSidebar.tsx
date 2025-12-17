@@ -22,12 +22,12 @@ const ACCENT_BG = 'rgba(196, 115, 91, 0.08)';
 
 // Budget filter options - simplified to 5-6 options
 export const JOB_BUDGET_FILTERS = [
-  { key: 'all', label: 'Any budget', labelKa: 'ნებისმიერი', icon: null },
-  { key: 'under-1k', label: 'Under ₾1,000', labelKa: '₾1,000-მდე', icon: null },
-  { key: '1k-5k', label: '₾1,000 - ₾5,000', labelKa: '₾1K - ₾5K', icon: null },
-  { key: '5k-15k', label: '₾5,000 - ₾15,000', labelKa: '₾5K - ₾15K', icon: null },
-  { key: '15k-50k', label: '₾15,000 - ₾50,000', labelKa: '₾15K - ₾50K', icon: null },
-  { key: 'over-50k', label: 'Over ₾50,000', labelKa: '₾50,000+', icon: null },
+  { key: 'all', label: 'Any budget', labelKa: 'ნებისმიერი', icon: null, min: undefined as number | undefined, max: undefined as number | undefined },
+  { key: 'under-1k', label: 'Under ₾1,000', labelKa: '₾1,000-მდე', icon: null, min: undefined as number | undefined, max: 1000 },
+  { key: '1k-5k', label: '₾1,000 - ₾5,000', labelKa: '₾1K - ₾5K', icon: null, min: 1000, max: 5000 },
+  { key: '5k-15k', label: '₾5,000 - ₾15,000', labelKa: '₾5K - ₾15K', icon: null, min: 5000, max: 15000 },
+  { key: '15k-50k', label: '₾15,000 - ₾50,000', labelKa: '₾15K - ₾50K', icon: null, min: 15000, max: 50000 },
+  { key: 'over-50k', label: 'Over ₾50,000', labelKa: '₾50,000+', icon: null, min: 50000, max: undefined as number | undefined },
 ];
 
 // Property type options with icons

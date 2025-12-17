@@ -8,6 +8,9 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+// Terracotta accent
+const ACCENT_COLOR = '#C4735B';
+
 interface MediaItem {
   type: "image" | "video";
   url: string;
@@ -67,7 +70,6 @@ export default function JobsPage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [totalCount, setTotalCount] = useState(0);
   const loaderRef = useRef<HTMLDivElement>(null);
 
   // Filter jobs by favorites if showFavoritesOnly is true
@@ -173,7 +175,6 @@ export default function JobsPage() {
           setJobs((prev) => [...prev, ...jobsList]);
         }
 
-        setTotalCount(data.pagination?.total || data.total || 0);
         setHasMore(data.pagination?.hasMore ?? jobsList.length === 12);
       } catch (error) {
         console.error("Error fetching jobs:", error);
@@ -229,116 +230,137 @@ export default function JobsPage() {
     }
   }, [page, fetchJobs]);
 
+  // Skeleton loading - Grid style
+  const JobsSkeleton = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {[...Array(6)].map((_, i) => (
+        <div
+          key={i}
+          className="break-inside-avoid rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden animate-pulse"
+        >
+          <div className="aspect-[4/3] bg-neutral-100 dark:bg-neutral-800" />
+          <div className="p-4 space-y-3">
+            <div className="h-5 rounded-lg w-3/4 bg-neutral-100 dark:bg-neutral-800" />
+            <div className="h-3 rounded w-full bg-neutral-100 dark:bg-neutral-800" />
+            <div className="h-3 rounded w-2/3 bg-neutral-100 dark:bg-neutral-800" />
+            <div className="flex items-center gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800" />
+              <div className="flex-1">
+                <div className="h-3 rounded w-20 bg-neutral-100 dark:bg-neutral-800" />
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  // Illustrated Empty state
+  const EmptyState = () => (
+    <div className="flex flex-col items-center justify-center py-24 px-4">
+      {/* Illustration */}
+      <div className="relative mb-8">
+        {/* Main illustration container */}
+        <div className="w-32 h-32 rounded-3xl bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center relative overflow-hidden">
+          {/* Abstract shapes */}
+          <div className="absolute top-4 left-4 w-8 h-8 rounded-lg bg-neutral-200 dark:bg-neutral-800 rotate-12" />
+          <div className="absolute bottom-6 right-4 w-6 h-6 rounded-full bg-neutral-200 dark:bg-neutral-800" />
+          <div className="absolute top-8 right-8 w-4 h-4 rounded bg-neutral-300 dark:bg-neutral-700" />
+
+          {/* Main icon - Briefcase */}
+          <svg
+            className="w-12 h-12 text-neutral-400 dark:text-neutral-600 relative z-10"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <rect x="2" y="7" width="20" height="14" rx="2" />
+            <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" strokeLinecap="round" />
+          </svg>
+        </div>
+
+        {/* Floating decorative elements */}
+        <div
+          className="absolute -top-2 -right-2 w-6 h-6 rounded-full"
+          style={{ backgroundColor: `${ACCENT_COLOR}20` }}
+        />
+        <div
+          className="absolute -bottom-1 -left-3 w-4 h-4 rounded-full"
+          style={{ backgroundColor: `${ACCENT_COLOR}15` }}
+        />
+      </div>
+
+      <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
+        {filters.showFavoritesOnly
+          ? (locale === "ka" ? "შენახული სამუშაოები არ არის" : "No saved jobs")
+          : (locale === "ka" ? "სამუშაოები არ მოიძებნა" : "No jobs found")
+        }
+      </h3>
+      <p className="text-neutral-500 dark:text-neutral-400 text-center max-w-sm">
+        {filters.showFavoritesOnly
+          ? (locale === "ka" ? "შეინახეთ სამუშაოები მონიშვნით" : "Save jobs by clicking the bookmark icon")
+          : (locale === "ka" ? "სცადეთ ფილტრების შეცვლა" : "Try adjusting your filters to find more jobs")
+        }
+      </p>
+    </div>
+  );
+
   // Show loading while auth is loading or redirecting non-pro users
   if (isAuthLoading || !isPro) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--color-accent)] border-t-transparent" />
+        <div
+          className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin"
+          style={{ borderColor: ACCENT_COLOR, borderTopColor: 'transparent' }}
+        />
       </div>
     );
   }
 
   return (
     <div>
-      {/* Results count */}
-      {!isLoading && (
-        <div className="mb-4 text-sm text-[var(--color-text-secondary)]">
-          {filters.showFavoritesOnly ? (
-            displayedJobs.length > 0 ? (
-              <>
-                {locale === 'ka' ? 'შენახული' : 'Saved'}: <span className="font-semibold text-[var(--color-text-primary)]">{displayedJobs.length}</span> {locale === 'ka' ? 'სამუშაო' : 'jobs'}
-              </>
-            ) : null
-          ) : (
-            totalCount > 0 ? (
-              <>
-                {locale === 'ka' ? 'ნაპოვნია' : 'Found'} <span className="font-semibold text-[var(--color-text-primary)]">{totalCount}</span> {locale === 'ka' ? 'სამუშაო' : 'jobs'}
-              </>
-            ) : null
-          )}
-        </div>
-      )}
-
-      {/* Jobs Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className="rounded-[20px] bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] overflow-hidden animate-pulse"
-            >
-              <div className="aspect-[4/3] bg-[var(--color-bg-tertiary)]" />
-              <div className="p-4 space-y-3">
-                <div className="h-4 rounded-lg w-3/4 bg-[var(--color-bg-tertiary)]" />
-                <div className="h-3 rounded w-full bg-[var(--color-bg-tertiary)]/50" />
-                <div className="h-3 rounded w-2/3 bg-[var(--color-bg-tertiary)]/50" />
-                <div className="flex items-center gap-3 pt-3 border-t border-[var(--color-border-subtle)]">
-                  <div className="w-9 h-9 rounded-full bg-[var(--color-bg-tertiary)]" />
-                  <div className="flex-1">
-                    <div className="h-3 rounded w-20 bg-[var(--color-bg-tertiary)] mb-1" />
-                    <div className="h-2.5 rounded w-16 bg-[var(--color-bg-tertiary)]/50" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : displayedJobs.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          {displayedJobs.map((job, index) => (
-            <div
-              key={job._id}
-              className="animate-fade-in"
-              style={{ animationDelay: `${Math.min(index, 8) * 50}ms` }}
-            >
-              <JobCard
-                job={job}
-                onSave={handleSaveJob}
-                isSaved={savedJobIds.has(job._id)}
-                hasApplied={appliedJobIds.has(job._id)}
-              />
-            </div>
-          ))}
-        </div>
+        <JobsSkeleton />
+      ) : displayedJobs.length === 0 ? (
+        <EmptyState />
       ) : (
-        <div className="text-center py-16">
-          <div
-            className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-[var(--color-bg-tertiary)]"
-          >
-            <svg
-              className="w-8 h-8 text-[var(--color-text-tertiary)]"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <rect x="2" y="7" width="20" height="14" rx="2" strokeWidth="1.5" />
-              <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+        <>
+          {/* Jobs Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {displayedJobs.map((job, index) => (
+              <div
+                key={job._id}
+                className="animate-fade-in"
+                style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}
+              >
+                <JobCard
+                  job={job}
+                  onSave={handleSaveJob}
+                  isSaved={savedJobIds.has(job._id)}
+                  hasApplied={appliedJobIds.has(job._id)}
+                />
+              </div>
+            ))}
           </div>
-          <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
-            {filters.showFavoritesOnly
-              ? (locale === "ka" ? "შენახული სამუშაოები არ არის" : "No saved jobs")
-              : (locale === "ka" ? "სამუშაოები არ მოიძებნა" : "No jobs found")
-            }
-          </h3>
-          <p className="text-[var(--color-text-secondary)]">
-            {filters.showFavoritesOnly
-              ? (locale === "ka" ? "შეინახეთ სამუშაოები მონიშვნით" : "Save jobs by clicking the bookmark icon")
-              : (locale === "ka" ? "სცადეთ ფილტრების შეცვლა" : "Try adjusting your filters")
-            }
-          </p>
-        </div>
-      )}
 
-      {/* Infinite scroll loader */}
-      {!filters.showFavoritesOnly && (
-        <div ref={loaderRef} className="py-10">
-          {isLoadingMore && (
-            <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#E07B4F] border-t-transparent" />
+          {/* Infinite scroll loader */}
+          {!filters.showFavoritesOnly && (
+            <div ref={loaderRef} className="flex justify-center py-12">
+              {isLoadingMore && (
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin"
+                    style={{ borderColor: ACCENT_COLOR, borderTopColor: 'transparent' }}
+                  />
+                  <span className="text-sm text-neutral-500">
+                    {locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
+                  </span>
+                </div>
+              )}
             </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );
