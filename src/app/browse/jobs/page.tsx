@@ -146,6 +146,11 @@ export default function JobsPage() {
           params.append("search", filters.searchQuery);
         }
 
+        // Apply deadline filter
+        if (filters.deadline !== 'all') {
+          params.append("deadline", filters.deadline);
+        }
+
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/jobs?${params.toString()}`,
           {
@@ -183,7 +188,7 @@ export default function JobsPage() {
         setIsLoadingMore(false);
       }
     },
-    [isPro, filters.category, filters.budget, filters.propertyType, filters.location, filters.searchQuery]
+    [isPro, filters.category, filters.budget, filters.propertyType, filters.location, filters.searchQuery, filters.deadline]
   );
 
   // Track if initial fetch has been done
@@ -203,7 +208,7 @@ export default function JobsPage() {
     // For filter changes, reset and fetch
     setPage(1);
     fetchJobs(1, true);
-  }, [isPro, filters.category, filters.budget, filters.propertyType, filters.location, filters.searchQuery, fetchJobs]);
+  }, [isPro, filters.category, filters.budget, filters.propertyType, filters.location, filters.searchQuery, filters.deadline, fetchJobs]);
 
   // Infinite scroll
   useEffect(() => {

@@ -67,7 +67,7 @@ export function JobsProvider({ children }: { children: ReactNode }) {
 
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/proposals/my`,
+          `${process.env.NEXT_PUBLIC_API_URL}/jobs/my-proposals/list`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

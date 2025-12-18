@@ -91,8 +91,10 @@ export default function MyProposalsPage() {
   const toast = useToast();
   const router = useRouter();
 
-  const [proposals, setProposals] = useState<Proposal[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [allProposals, setAllProposals] = useState<Proposal[]>([]); // All proposals for stats
+  const [proposals, setProposals] = useState<Proposal[]>([]); // Filtered proposals for display
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isContentLoading, setIsContentLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<ProposalStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -100,6 +102,17 @@ export default function MyProposalsPage() {
   const [isWithdrawing, setIsWithdrawing] = useState(false);
 
   const hasFetched = useRef(false);
+  const debounceRef = useRef<NodeJS.Timeout>();
+
+  // Calculate stats from all proposals
+  const stats = {
+    total: allProposals.length,
+    pending: allProposals.filter(p => p.status === 'pending').length,
+    inDiscussion: allProposals.filter(p => p.status === 'in_discussion').length,
+    accepted: allProposals.filter(p => p.status === 'accepted' || p.status === 'completed').length,
+    rejected: allProposals.filter(p => p.status === 'rejected').length,
+    withdrawn: allProposals.filter(p => p.status === 'withdrawn').length,
+  };
 
   useEffect(() => {
     if (!authLoading && (!isAuthenticated || user?.role !== 'pro')) {
@@ -107,26 +120,78 @@ export default function MyProposalsPage() {
     }
   }, [authLoading, isAuthenticated, user, router]);
 
-  const fetchMyProposals = useCallback(async () => {
+  const fetchAllProposals = useCallback(async () => {
     try {
-      setIsLoading(true);
+      setIsInitialLoading(true);
       const response = await api.get('/jobs/my-proposals/list');
-      setProposals(Array.isArray(response.data) ? response.data : []);
+      const data = Array.isArray(response.data) ? response.data : [];
+      setAllProposals(data);
+      setProposals(data);
       setError(null);
     } catch (err: any) {
       console.error('Failed to fetch proposals:', err);
       setError(err.response?.data?.message || 'Failed to load proposals');
     } finally {
-      setIsLoading(false);
+      setIsInitialLoading(false);
     }
   }, []);
+
+  // Filter proposals client-side
+  const filterProposals = useCallback((status: ProposalStatus, search: string) => {
+    setIsContentLoading(true);
+
+    let filtered = [...allProposals];
+
+    // Filter by status
+    if (status !== 'all') {
+      filtered = filtered.filter(p => p.status === status);
+    }
+
+    // Filter by search
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filtered = filtered.filter(p => {
+        const job = p.jobId;
+        return job?.title?.toLowerCase().includes(searchLower) ||
+          job?.category?.toLowerCase().includes(searchLower) ||
+          job?.location?.toLowerCase().includes(searchLower);
+      });
+    }
+
+    setProposals(filtered);
+    setIsContentLoading(false);
+  }, [allProposals]);
 
   useEffect(() => {
     if (isAuthenticated && user?.role === 'pro' && !hasFetched.current) {
       hasFetched.current = true;
-      fetchMyProposals();
+      fetchAllProposals();
     }
-  }, [isAuthenticated, user, fetchMyProposals]);
+  }, [isAuthenticated, user, fetchAllProposals]);
+
+  // Filter when status or search changes
+  useEffect(() => {
+    if (!hasFetched.current || allProposals.length === 0 && isInitialLoading) return;
+
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    // Debounce only for search, immediate for status
+    if (searchQuery) {
+      debounceRef.current = setTimeout(() => {
+        filterProposals(statusFilter, searchQuery);
+      }, 300);
+    } else {
+      filterProposals(statusFilter, searchQuery);
+    }
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [statusFilter, searchQuery, filterProposals, allProposals, isInitialLoading]);
 
   const handleWithdraw = async () => {
     if (!withdrawModalId) return;
@@ -134,9 +199,11 @@ export default function MyProposalsPage() {
     setIsWithdrawing(true);
     try {
       await api.post(`/jobs/proposals/${withdrawModalId}/withdraw`);
-      setProposals(prev => prev.map(p =>
-        p._id === withdrawModalId ? { ...p, status: 'withdrawn' } : p
-      ));
+      // Update both allProposals and proposals
+      const updateProposal = (p: Proposal) =>
+        p._id === withdrawModalId ? { ...p, status: 'withdrawn' as const } : p;
+      setAllProposals(prev => prev.map(updateProposal));
+      setProposals(prev => prev.map(updateProposal));
       setWithdrawModalId(null);
       toast.success(
         language === 'ka' ? 'შეთავაზება გაუქმდა' : 'Proposal withdrawn',
@@ -152,25 +219,6 @@ export default function MyProposalsPage() {
     }
   };
 
-  // Filter proposals
-  const filteredProposals = proposals.filter(proposal => {
-    const matchesStatus = statusFilter === 'all' || proposal.status === statusFilter;
-    const job = proposal.jobId;
-    const matchesSearch = searchQuery === '' ||
-      job?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job?.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job?.location?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesSearch;
-  });
-
-  // Calculate stats
-  const stats = {
-    total: proposals.length,
-    pending: proposals.filter(p => p.status === 'pending').length,
-    inDiscussion: proposals.filter(p => p.status === 'in_discussion').length,
-    accepted: proposals.filter(p => p.status === 'accepted' || p.status === 'completed').length,
-    rejected: proposals.filter(p => p.status === 'rejected').length,
-  };
 
   const formatBudget = (job: Job) => {
     if (job.budgetType === 'fixed' && job.budgetAmount) {
@@ -228,8 +276,8 @@ export default function MyProposalsPage() {
     }
   };
 
-  // Loading State
-  if (authLoading || isLoading) {
+  // Loading State - only for initial load
+  if (authLoading || isInitialLoading) {
     return (
       <div className="myproposals-container">
         <div className="myproposals-background" />
@@ -281,6 +329,7 @@ export default function MyProposalsPage() {
     { key: 'in_discussion', label: language === 'ka' ? 'მიმოწერა' : 'Discussion', count: stats.inDiscussion, icon: MessageSquare },
     { key: 'accepted', label: language === 'ka' ? 'მიღებული' : 'Accepted', count: stats.accepted, icon: CheckCircle },
     { key: 'rejected', label: language === 'ka' ? 'უარყოფილი' : 'Rejected', count: stats.rejected, icon: XCircle },
+    { key: 'withdrawn', label: language === 'ka' ? 'გაუქმებული' : 'Withdrawn', count: stats.withdrawn, icon: Ban },
   ];
 
   return (
@@ -343,18 +392,28 @@ export default function MyProposalsPage() {
         </div>
 
         {/* Proposals List */}
-        {filteredProposals.length === 0 ? (
+        {isContentLoading ? (
+          <div className="myproposals-empty">
+            <div className="myproposals-loading-icon">
+              <Send />
+              <div className="myproposals-loading-spinner" />
+            </div>
+            <p className="myproposals-loading-text">
+              {language === 'ka' ? 'იტვირთება...' : 'Loading...'}
+            </p>
+          </div>
+        ) : proposals.length === 0 ? (
           <div className="myproposals-empty">
             <div className="myproposals-empty-icon">
               <Send />
             </div>
             <h3 className="myproposals-empty-title">
-              {proposals.length === 0
+              {stats.total === 0
                 ? (language === 'ka' ? 'ჯერ არ გაქვს შეთავაზება' : 'No proposals yet')
                 : (language === 'ka' ? 'შედეგი ვერ მოიძებნა' : 'No matching proposals')}
             </h3>
             <p className="myproposals-empty-text">
-              {proposals.length === 0
+              {stats.total === 0
                 ? (language === 'ka'
                     ? 'მოძებნე შენთვის შესაფერისი სამუშაო და გაგზავნე შეთავაზება'
                     : 'Find jobs that match your skills and submit proposals')
@@ -362,7 +421,7 @@ export default function MyProposalsPage() {
                     ? 'სცადე ფილტრების შეცვლა'
                     : 'Try adjusting your filters')}
             </p>
-            {proposals.length === 0 && (
+            {stats.total === 0 && (
               <Link href="/browse/jobs" className="myproposals-empty-btn">
                 <Briefcase className="w-5 h-5" />
                 {language === 'ka' ? 'სამუშაოების ნახვა' : 'Browse Jobs'}
@@ -371,7 +430,7 @@ export default function MyProposalsPage() {
           </div>
         ) : (
           <div className="myproposals-list">
-            {filteredProposals.map((proposal) => {
+            {proposals.map((proposal) => {
               const job = proposal.jobId;
               if (!job) return null;
 

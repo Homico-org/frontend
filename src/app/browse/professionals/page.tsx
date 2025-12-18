@@ -11,7 +11,7 @@ import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 export default function ProfessionalsPage() {
   const { locale } = useLanguage();
   const { user } = useAuth();
-  const { selectedCategory, selectedSubcategory, minRating, searchQuery, sortBy } = useBrowseContext();
+  const { selectedCategory, selectedSubcategory, minRating, searchQuery, sortBy, selectedCity } = useBrowseContext();
   const { toggleLike, initializeLikeStates, likeStates } = useLikes();
 
   const [results, setResults] = useState<ProProfile[]>([]);
@@ -41,6 +41,7 @@ export default function ProfessionalsPage() {
         if (minRating > 0) params.append("minRating", minRating.toString());
         if (searchQuery) params.append("search", searchQuery);
         if (sortBy && sortBy !== 'recommended') params.append("sort", sortBy);
+        if (selectedCity && selectedCity !== 'tbilisi') params.append("serviceArea", selectedCity);
 
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/pro-profiles?${params.toString()}`,
@@ -92,7 +93,7 @@ export default function ProfessionalsPage() {
         setIsLoadingMore(false);
       }
     },
-    [selectedCategory, selectedSubcategory, minRating, searchQuery, sortBy, initializeLikeStates]
+    [selectedCategory, selectedSubcategory, minRating, searchQuery, sortBy, selectedCity, initializeLikeStates]
   );
 
   // Track if initial fetch has been done to prevent double fetching
@@ -111,7 +112,7 @@ export default function ProfessionalsPage() {
     // For subsequent filter changes, reset and fetch
     setPage(1);
     fetchProfessionals(1, true);
-  }, [selectedCategory, selectedSubcategory, minRating, searchQuery, sortBy, fetchProfessionals]);
+  }, [selectedCategory, selectedSubcategory, minRating, searchQuery, sortBy, selectedCity, fetchProfessionals]);
 
   // Infinite scroll
   useEffect(() => {

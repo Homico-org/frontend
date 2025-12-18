@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { useBrowseContext } from '@/contexts/BrowseContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useLikes } from '@/hooks/useLikes';
 import { FeedItem, LikeTargetType } from '@/types';
@@ -12,11 +13,13 @@ const ACCENT_COLOR = '#C4735B';
 
 interface FeedSectionProps {
   selectedCategory: string | null;
+  topRatedActive?: boolean;
 }
 
-export default function FeedSection({ selectedCategory }: FeedSectionProps) {
+export default function FeedSection({ selectedCategory, topRatedActive }: FeedSectionProps) {
   const { locale } = useLanguage();
   const { isAuthenticated } = useAuth();
+  const { searchQuery, sortBy, selectedCity } = useBrowseContext();
   const { toggleLike, initializeLikeStates, likeStates } = useLikes();
 
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
@@ -42,6 +45,18 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
         params.append('limit', '12');
         if (selectedCategory) {
           params.append('category', selectedCategory);
+        }
+        if (selectedCity && selectedCity !== 'all') {
+          params.append('location', selectedCity);
+        }
+        if (topRatedActive) {
+          params.append('minRating', '4');
+          params.append('sort', 'rating');
+        } else if (sortBy && sortBy !== 'recommended') {
+          params.append('sort', sortBy);
+        }
+        if (searchQuery) {
+          params.append('search', searchQuery);
         }
 
         const response = await fetch(
@@ -87,31 +102,34 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
         setIsLoadingMore(false);
       }
     },
-    [selectedCategory, initializeLikeStates]
+    [selectedCategory, selectedCity, topRatedActive, searchQuery, sortBy, initializeLikeStates]
   );
 
-  // Previous category ref to detect actual changes
-  const prevCategoryRef = useRef<string | null | undefined>(undefined);
+  // Previous filters ref to detect actual changes
+  const prevFiltersRef = useRef<string | undefined>(undefined);
 
-  // Fetch when category changes (including initial mount)
+  // Create a stable filter key for comparison
+  const filterKey = `${selectedCategory}-${selectedCity}-${topRatedActive}-${searchQuery}-${sortBy}`;
+
+  // Fetch when any filter changes (including initial mount)
   useEffect(() => {
-    // Skip if this is a re-render with the same category
-    if (prevCategoryRef.current === selectedCategory && initialFetchDone.current) {
+    // Skip if this is a re-render with the same filters
+    if (prevFiltersRef.current === filterKey && initialFetchDone.current) {
       return;
     }
 
-    prevCategoryRef.current = selectedCategory;
+    prevFiltersRef.current = filterKey;
 
-    // If already fetched and category didn't change, skip
+    // If already fetched and filters didn't change, skip
     if (initialFetchDone.current) {
-      // Category changed - reset and fetch
+      // Filters changed - reset and fetch
       setPage(1);
       setFeedItems([]);
     }
 
     initialFetchDone.current = true;
     fetchFeed(1);
-  }, [selectedCategory, fetchFeed]);
+  }, [filterKey, fetchFeed]);
 
   // Infinite scroll observer
   useEffect(() => {
@@ -259,6 +277,7 @@ export default function FeedSection({ selectedCategory }: FeedSectionProps) {
                   }}
                   onLike={(likeTargetType, likeTargetId) => handleLike(item._id, likeTargetType, likeTargetId)}
                   isAuthenticated={isAuthenticated}
+                  locale={locale}
                 />
               </div>
             ))}

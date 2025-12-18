@@ -2,59 +2,48 @@
 
 import { useLanguage } from '@/contexts/LanguageContext';
 import { JobFilters } from '@/contexts/JobsContext';
-import {
-  Building2,
-  Home,
-  ChevronDown,
-  RotateCcw,
-  Wallet,
-  Briefcase,
-  Store
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { RotateCcw, Bookmark } from 'lucide-react';
 
 // Re-export JobFilters for convenience
 export type { JobFilters } from '@/contexts/JobsContext';
 
-// Muted terracotta color (matching job page redesign)
-const ACCENT_COLOR = '#C4735B';
-const ACCENT_BG = 'rgba(196, 115, 91, 0.08)';
+// Warm terracotta accent
+const ACCENT = '#C4735B';
 
-// Budget filter options - simplified to 5-6 options
+// Budget filter options
 export const JOB_BUDGET_FILTERS = [
-  { key: 'all', label: 'Any budget', labelKa: 'ნებისმიერი', icon: null, min: undefined as number | undefined, max: undefined as number | undefined },
-  { key: 'under-1k', label: 'Under ₾1,000', labelKa: '₾1,000-მდე', icon: null, min: undefined as number | undefined, max: 1000 },
-  { key: '1k-5k', label: '₾1,000 - ₾5,000', labelKa: '₾1K - ₾5K', icon: null, min: 1000, max: 5000 },
-  { key: '5k-15k', label: '₾5,000 - ₾15,000', labelKa: '₾5K - ₾15K', icon: null, min: 5000, max: 15000 },
-  { key: '15k-50k', label: '₾15,000 - ₾50,000', labelKa: '₾15K - ₾50K', icon: null, min: 15000, max: 50000 },
-  { key: 'over-50k', label: 'Over ₾50,000', labelKa: '₾50,000+', icon: null, min: 50000, max: undefined as number | undefined },
+  { key: 'all', label: 'Any', labelKa: 'ყველა', min: undefined as number | undefined, max: undefined as number | undefined },
+  { key: 'under-1k', label: 'Under ₾1K', labelKa: '₾1K-მდე', min: undefined as number | undefined, max: 1000 },
+  { key: '1k-5k', label: '₾1K - 5K', labelKa: '₾1K-5K', min: 1000, max: 5000 },
+  { key: '5k-15k', label: '₾5K - 15K', labelKa: '₾5K-15K', min: 5000, max: 15000 },
+  { key: '15k-50k', label: '₾15K - 50K', labelKa: '₾15K-50K', min: 15000, max: 50000 },
+  { key: 'over-50k', label: '₾50K+', labelKa: '₾50K+', min: 50000, max: undefined as number | undefined },
 ];
 
-// Property type options with icons
+// Property type options
 const PROPERTY_TYPES = [
-  { key: 'all', label: 'Any type', labelKa: 'ნებისმიერი', icon: Building2 },
-  { key: 'apartment', label: 'Apartment', labelKa: 'ბინა', icon: Building2 },
-  { key: 'house', label: 'House', labelKa: 'სახლი', icon: Home },
-  { key: 'office', label: 'Office', labelKa: 'ოფისი', icon: Briefcase },
-  { key: 'commercial', label: 'Commercial', labelKa: 'კომერციული', icon: Store },
+  { key: 'all', label: 'Any', labelKa: 'ყველა' },
+  { key: 'apartment', label: 'Apartment', labelKa: 'ბინა' },
+  { key: 'house', label: 'House', labelKa: 'სახლი' },
+  { key: 'office', label: 'Office', labelKa: 'ოფისი' },
+  { key: 'building', label: 'Building', labelKa: 'შენობა' },
 ];
 
-// Location options - hidden by default (rarely used)
+// Location options
 const LOCATIONS = [
-  { key: 'all', label: 'All Locations', labelKa: 'ყველა' },
+  { key: 'all', label: 'Any', labelKa: 'ყველა' },
   { key: 'tbilisi', label: 'Tbilisi', labelKa: 'თბილისი' },
   { key: 'batumi', label: 'Batumi', labelKa: 'ბათუმი' },
   { key: 'kutaisi', label: 'Kutaisi', labelKa: 'ქუთაისი' },
   { key: 'rustavi', label: 'Rustavi', labelKa: 'რუსთავი' },
-  { key: 'gori', label: 'Gori', labelKa: 'გორი' },
 ];
 
-// Deadline filter options - hidden by default (rarely used)
+// Deadline filter options
 const DEADLINE_FILTERS = [
-  { key: 'all', label: 'Any Deadline', labelKa: 'ნებისმიერი' },
-  { key: 'urgent', label: 'Urgent (< 7 days)', labelKa: 'სასწრაფო' },
-  { key: 'week', label: 'This Week', labelKa: 'ამ კვირაში' },
-  { key: 'month', label: 'This Month', labelKa: 'ამ თვეში' },
+  { key: 'all', label: 'Any', labelKa: 'ყველა' },
+  { key: 'urgent', label: 'Urgent', labelKa: 'სასწრაფო' },
+  { key: 'week', label: 'This week', labelKa: 'ეს კვირა' },
+  { key: 'month', label: 'This month', labelKa: 'ეს თვე' },
   { key: 'flexible', label: 'Flexible', labelKa: 'მოქნილი' },
 ];
 
@@ -64,22 +53,89 @@ interface JobsFiltersSidebarProps {
   savedCount?: number;
 }
 
+// Custom checkbox component
+function Checkbox({
+  checked,
+  onChange,
+  label,
+  count
+}: {
+  checked: boolean;
+  onChange: () => void;
+  label: string;
+  count?: number;
+}) {
+  return (
+    <label className="flex items-center gap-2.5 py-1.5 cursor-pointer group">
+      <div className="relative flex-shrink-0">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={onChange}
+          className="sr-only peer"
+        />
+        <div
+          className={`w-4 h-4 rounded border-[1.5px] transition-all duration-200 flex items-center justify-center ${
+            checked
+              ? 'border-transparent'
+              : 'border-neutral-300 dark:border-neutral-600 group-hover:border-neutral-400 dark:group-hover:border-neutral-500'
+          }`}
+          style={checked ? { backgroundColor: ACCENT } : {}}
+        >
+          {checked && (
+            <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 12 12" fill="none">
+              <path
+                d="M2.5 6L5 8.5L9.5 3.5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
+        </div>
+      </div>
+      <span className={`text-[13px] transition-colors ${
+        checked
+          ? 'text-neutral-900 dark:text-white font-medium'
+          : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-800 dark:group-hover:text-neutral-300'
+      }`}>
+        {label}
+      </span>
+      {count !== undefined && count > 0 && (
+        <span
+          className="ml-auto text-[11px] font-medium px-1.5 py-0.5 rounded-md"
+          style={{ backgroundColor: `${ACCENT}15`, color: ACCENT }}
+        >
+          {count}
+        </span>
+      )}
+    </label>
+  );
+}
+
+// Filter section component
+function FilterSection({
+  title,
+  children
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="py-3">
+      <h4 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2.5 px-1">
+        {title}
+      </h4>
+      <div className="space-y-0.5">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCount = 0 }: JobsFiltersSidebarProps) {
   const { locale } = useLanguage();
-
-  // Collapsible sections - all collapsed by default
-  const [expandedSections, setExpandedSections] = useState<string[]>([]);
-  const [showAdvanced, setShowAdvanced] = useState(false);
-
-  // Auto-expand sections with active filters
-  useEffect(() => {
-    const sectionsToExpand: string[] = [];
-    if (filters.budget !== 'all') sectionsToExpand.push('budget');
-    if (filters.propertyType !== 'all') sectionsToExpand.push('property');
-    if (sectionsToExpand.length > 0) {
-      setExpandedSections(prev => [...new Set([...prev, ...sectionsToExpand])]);
-    }
-  }, []);
 
   const updateFilter = <K extends keyof JobFilters>(key: K, value: JobFilters[K]) => {
     onFiltersChange({ ...filters, [key]: value });
@@ -113,26 +169,28 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
     filters.showFavoritesOnly ? 1 : 0,
   ].reduce((a, b) => a + b, 0);
 
-  const toggleSection = (section: string) => {
-    setExpandedSections(prev =>
-      prev.includes(section)
-        ? prev.filter(s => s !== section)
-        : [...prev, section]
-    );
-  };
-
   return (
     <aside className="w-full h-full overflow-y-auto overflow-x-hidden">
-      <div className="p-4 space-y-3">
+      <div className="px-4 py-3">
         {/* Header */}
-        <div className="flex items-center justify-between pb-2">
-          <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
-            {locale === 'ka' ? 'ფილტრები' : 'Filters'}
-          </h3>
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+              {locale === 'ka' ? 'ფილტრები' : 'Filters'}
+            </h3>
+            {activeFilterCount > 0 && (
+              <span
+                className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
+                style={{ backgroundColor: ACCENT }}
+              >
+                {activeFilterCount}
+              </span>
+            )}
+          </div>
           {hasActiveFilters && (
             <button
               onClick={clearAllFilters}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
+              className="flex items-center gap-1 text-[11px] font-medium text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
             >
               <RotateCcw className="w-3 h-3" />
               {locale === 'ka' ? 'გასუფთავება' : 'Clear'}
@@ -140,275 +198,97 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
           )}
         </div>
 
-        {/* Budget Section - Collapsible */}
-        <div className="border border-[var(--color-border-subtle)] rounded-xl overflow-hidden">
-          <button
-            onClick={() => toggleSection('budget')}
-            className="w-full flex items-center justify-between p-3 bg-[var(--color-bg-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
-          >
-            <span className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-primary)]">
-              <Wallet className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
-              {locale === 'ka' ? 'ბიუჯეტი' : 'Budget'}
-            </span>
-            <div className="flex items-center gap-2">
-              {filters.budget !== 'all' && (
-                <span
-                  className="text-xs font-medium px-2 py-0.5 rounded-full"
-                  style={{ backgroundColor: ACCENT_BG, color: ACCENT_COLOR }}
-                >
-                  1
-                </span>
-              )}
-              <ChevronDown
-                className={`w-4 h-4 text-[var(--color-text-tertiary)] transition-transform duration-200 ${
-                  expandedSections.includes('budget') ? 'rotate-180' : ''
-                }`}
-              />
-            </div>
-          </button>
+        {/* Divider */}
+        <div className="h-px bg-neutral-100 dark:bg-neutral-800 my-3" />
 
-          {/* Budget Options - Visual Tiles */}
-          {expandedSections.includes('budget') && (
-            <div className="p-3 pt-2">
-              <div className="grid grid-cols-2 gap-2">
-                {JOB_BUDGET_FILTERS.map(option => {
-                  const isSelected = filters.budget === option.key;
-                  return (
-                    <button
-                      key={option.key}
-                      onClick={() => updateFilter('budget', option.key)}
-                      className={`flex items-center justify-center p-3 rounded-xl border-2 text-xs font-medium transition-all duration-200 ${
-                        isSelected
-                          ? 'text-white border-transparent'
-                          : 'border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] hover:border-[var(--color-border)] hover:bg-[var(--color-bg-tertiary)]'
-                      }`}
-                      style={isSelected ? { backgroundColor: ACCENT_COLOR } : {}}
-                    >
-                      {locale === 'ka' ? option.labelKa : option.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Property Type Section - Collapsible */}
-        <div className="border border-[var(--color-border-subtle)] rounded-xl overflow-hidden">
-          <button
-            onClick={() => toggleSection('property')}
-            className="w-full flex items-center justify-between p-3 bg-[var(--color-bg-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
-          >
-            <span className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-primary)]">
-              <Building2 className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
-              {locale === 'ka' ? 'ობიექტის ტიპი' : 'Property Type'}
-            </span>
-            <div className="flex items-center gap-2">
-              {filters.propertyType !== 'all' && (
-                <span
-                  className="text-xs font-medium px-2 py-0.5 rounded-full"
-                  style={{ backgroundColor: ACCENT_BG, color: ACCENT_COLOR }}
-                >
-                  1
-                </span>
-              )}
-              <ChevronDown
-                className={`w-4 h-4 text-[var(--color-text-tertiary)] transition-transform duration-200 ${
-                  expandedSections.includes('property') ? 'rotate-180' : ''
-                }`}
-              />
-            </div>
-          </button>
-
-          {/* Property Type Options - Visual Tiles with Icons */}
-          {expandedSections.includes('property') && (
-            <div className="p-3 pt-2">
-              <div className="grid grid-cols-2 gap-2">
-                {PROPERTY_TYPES.map(option => {
-                  const isSelected = filters.propertyType === option.key;
-                  const Icon = option.icon;
-                  return (
-                    <button
-                      key={option.key}
-                      onClick={() => updateFilter('propertyType', option.key)}
-                      className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 ${
-                        isSelected
-                          ? 'border-transparent'
-                          : 'border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] hover:border-[var(--color-border)] hover:bg-[var(--color-bg-tertiary)]'
-                      }`}
-                      style={isSelected ? { backgroundColor: ACCENT_BG, borderColor: ACCENT_COLOR } : {}}
-                    >
-                      <div
-                        className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
-                          isSelected ? '' : 'bg-[var(--color-bg-tertiary)]'
-                        }`}
-                        style={isSelected ? { backgroundColor: `${ACCENT_COLOR}20` } : {}}
-                      >
-                        <Icon
-                          className="w-4 h-4"
-                          style={isSelected ? { color: ACCENT_COLOR } : {}}
-                        />
-                      </div>
-                      <span
-                        className={`text-xs font-medium ${isSelected ? '' : 'text-[var(--color-text-secondary)]'}`}
-                        style={isSelected ? { color: ACCENT_COLOR } : {}}
-                      >
-                        {locale === 'ka' ? option.labelKa : option.label}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Advanced Filters - Hidden by default (rarely used: Location, Deadline, Saved) */}
-        <button
-          onClick={() => setShowAdvanced(!showAdvanced)}
-          className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-medium text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] transition-colors"
+        {/* Saved Jobs Toggle */}
+        <label
+          className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer transition-all mb-3 ${
+            filters.showFavoritesOnly
+              ? 'text-white'
+              : 'bg-neutral-50 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+          }`}
+          style={filters.showFavoritesOnly ? { backgroundColor: ACCENT } : {}}
         >
-          <span>{locale === 'ka' ? 'დამატებითი ფილტრები' : 'More filters'}</span>
-          <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showAdvanced ? 'rotate-180' : ''}`} />
-        </button>
-
-        {showAdvanced && (
-          <div className="space-y-3 pt-1">
-            {/* Location Section - Collapsible (rarely used) */}
-            <div className="border border-[var(--color-border-subtle)] rounded-xl overflow-hidden">
-              <button
-                onClick={() => toggleSection('location')}
-                className="w-full flex items-center justify-between p-3 bg-[var(--color-bg-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
-              >
-                <span className="text-sm font-medium text-[var(--color-text-primary)]">
-                  {locale === 'ka' ? 'ლოკაცია' : 'Location'}
-                </span>
-                <div className="flex items-center gap-2">
-                  {filters.location !== 'all' && (
-                    <span
-                      className="text-xs font-medium px-2 py-0.5 rounded-full"
-                      style={{ backgroundColor: ACCENT_BG, color: ACCENT_COLOR }}
-                    >
-                      1
-                    </span>
-                  )}
-                  <ChevronDown
-                    className={`w-4 h-4 text-[var(--color-text-tertiary)] transition-transform duration-200 ${
-                      expandedSections.includes('location') ? 'rotate-180' : ''
-                    }`}
-                  />
-                </div>
-              </button>
-
-              {expandedSections.includes('location') && (
-                <div className="p-3 pt-2">
-                  <div className="flex flex-wrap gap-1.5">
-                    {LOCATIONS.map(option => {
-                      const isSelected = filters.location === option.key;
-                      return (
-                        <button
-                          key={option.key}
-                          onClick={() => updateFilter('location', option.key)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
-                            isSelected
-                              ? 'text-white'
-                              : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)]'
-                          }`}
-                          style={isSelected ? { backgroundColor: ACCENT_COLOR } : {}}
-                        >
-                          {locale === 'ka' ? option.labelKa : option.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Deadline Section - Collapsible (rarely used) */}
-            <div className="border border-[var(--color-border-subtle)] rounded-xl overflow-hidden">
-              <button
-                onClick={() => toggleSection('deadline')}
-                className="w-full flex items-center justify-between p-3 bg-[var(--color-bg-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
-              >
-                <span className="text-sm font-medium text-[var(--color-text-primary)]">
-                  {locale === 'ka' ? 'ვადა' : 'Deadline'}
-                </span>
-                <div className="flex items-center gap-2">
-                  {filters.deadline !== 'all' && (
-                    <span
-                      className="text-xs font-medium px-2 py-0.5 rounded-full"
-                      style={{ backgroundColor: ACCENT_BG, color: ACCENT_COLOR }}
-                    >
-                      1
-                    </span>
-                  )}
-                  <ChevronDown
-                    className={`w-4 h-4 text-[var(--color-text-tertiary)] transition-transform duration-200 ${
-                      expandedSections.includes('deadline') ? 'rotate-180' : ''
-                    }`}
-                  />
-                </div>
-              </button>
-
-              {expandedSections.includes('deadline') && (
-                <div className="p-3 pt-2">
-                  <div className="flex flex-wrap gap-1.5">
-                    {DEADLINE_FILTERS.map(option => {
-                      const isSelected = filters.deadline === option.key;
-                      return (
-                        <button
-                          key={option.key}
-                          onClick={() => updateFilter('deadline', option.key)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
-                            isSelected
-                              ? 'text-white'
-                              : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)]'
-                          }`}
-                          style={isSelected ? { backgroundColor: ACCENT_COLOR } : {}}
-                        >
-                          {locale === 'ka' ? option.labelKa : option.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Saved Jobs Toggle (rarely used) */}
-            <button
-              onClick={() => updateFilter('showFavoritesOnly', !filters.showFavoritesOnly)}
-              className={`w-full flex items-center justify-between px-3 py-3 rounded-xl text-sm font-medium transition-all border-2 ${
-                filters.showFavoritesOnly
-                  ? 'text-white border-transparent'
-                  : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border-[var(--color-border-subtle)] hover:border-[var(--color-border)]'
-              }`}
-              style={filters.showFavoritesOnly ? { backgroundColor: ACCENT_COLOR } : {}}
+          <Bookmark className={`w-4 h-4 ${filters.showFavoritesOnly ? 'fill-white' : ''}`} />
+          <span className="text-[13px] font-medium flex-1">
+            {locale === 'ka' ? 'შენახულები' : 'Saved'}
+          </span>
+          <input
+            type="checkbox"
+            checked={filters.showFavoritesOnly}
+            onChange={() => updateFilter('showFavoritesOnly', !filters.showFavoritesOnly)}
+            className="sr-only"
+          />
+          {savedCount > 0 && (
+            <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded ${
+              filters.showFavoritesOnly
+                ? 'bg-white/20'
+                : ''
+            }`}
+            style={!filters.showFavoritesOnly ? { backgroundColor: `${ACCENT}15`, color: ACCENT } : {}}
             >
-              <span>{locale === 'ka' ? 'შენახულები' : 'Saved Jobs'}</span>
-              {savedCount > 0 && (
-                <span className={`px-2 py-0.5 text-[10px] rounded-full font-semibold ${
-                  filters.showFavoritesOnly
-                    ? 'bg-white/20 text-white'
-                    : ''
-                }`}
-                style={!filters.showFavoritesOnly ? { backgroundColor: ACCENT_BG, color: ACCENT_COLOR } : {}}
-                >
-                  {savedCount}
-                </span>
-              )}
-            </button>
-          </div>
-        )}
+              {savedCount}
+            </span>
+          )}
+        </label>
 
-        {/* Help Text */}
-        <p className="text-[11px] text-[var(--color-text-tertiary)] text-center pt-2">
-          {locale === 'ka'
-            ? 'აირჩიეთ ბიუჯეტი ან ტიპი შედეგების სანახავად'
-            : 'Select budget or type to filter results'
-          }
-        </p>
+        {/* Budget Section */}
+        <FilterSection title={locale === 'ka' ? 'ბიუჯეტი' : 'Budget'}>
+          {JOB_BUDGET_FILTERS.map(option => (
+            <Checkbox
+              key={option.key}
+              checked={filters.budget === option.key}
+              onChange={() => updateFilter('budget', option.key)}
+              label={locale === 'ka' ? option.labelKa : option.label}
+            />
+          ))}
+        </FilterSection>
+
+        {/* Divider */}
+        <div className="h-px bg-neutral-100 dark:bg-neutral-800" />
+
+        {/* Property Type Section */}
+        <FilterSection title={locale === 'ka' ? 'ტიპი' : 'Property'}>
+          {PROPERTY_TYPES.map(option => (
+            <Checkbox
+              key={option.key}
+              checked={filters.propertyType === option.key}
+              onChange={() => updateFilter('propertyType', option.key)}
+              label={locale === 'ka' ? option.labelKa : option.label}
+            />
+          ))}
+        </FilterSection>
+
+        {/* Divider */}
+        <div className="h-px bg-neutral-100 dark:bg-neutral-800" />
+
+        {/* Location Section */}
+        <FilterSection title={locale === 'ka' ? 'ლოკაცია' : 'Location'}>
+          {LOCATIONS.map(option => (
+            <Checkbox
+              key={option.key}
+              checked={filters.location === option.key}
+              onChange={() => updateFilter('location', option.key)}
+              label={locale === 'ka' ? option.labelKa : option.label}
+            />
+          ))}
+        </FilterSection>
+
+        {/* Divider */}
+        <div className="h-px bg-neutral-100 dark:bg-neutral-800" />
+
+        {/* Deadline Section */}
+        <FilterSection title={locale === 'ka' ? 'ვადა' : 'Deadline'}>
+          {DEADLINE_FILTERS.map(option => (
+            <Checkbox
+              key={option.key}
+              checked={filters.deadline === option.key}
+              onChange={() => updateFilter('deadline', option.key)}
+              label={locale === 'ka' ? option.labelKa : option.label}
+            />
+          ))}
+        </FilterSection>
       </div>
     </aside>
   );
