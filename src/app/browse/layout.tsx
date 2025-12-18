@@ -9,7 +9,7 @@ import { BrowseProvider, useBrowseContext } from "@/contexts/BrowseContext";
 import { JobsProvider, useJobsContext } from "@/contexts/JobsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNotifications } from "@/contexts/NotificationContext";
-import { Briefcase, Filter, Images, Plus, Search, Users, X } from "lucide-react";
+import { Briefcase, FileText, Filter, Hammer, Images, Plus, Search, Users, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ReactNode, Suspense, useCallback, useEffect, useRef, useState } from "react";
@@ -231,6 +231,26 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
 
           {/* Right side - Actions + Profile */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Pro Quick Actions - My Proposals & My Jobs */}
+            {isPro && (
+              <>
+                <Link
+                  href="/my-proposals"
+                  className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>{locale === 'ka' ? 'შეთავაზებები' : 'My Proposals'}</span>
+                </Link>
+                <Link
+                  href="/my-jobs"
+                  className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                >
+                  <Hammer className="w-4 h-4" />
+                  <span>{locale === 'ka' ? 'სამუშაოები' : 'My Jobs'}</span>
+                </Link>
+              </>
+            )}
+
             {/* Post a Job Button */}
             <Link
               href="/post-job"
@@ -619,6 +639,27 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                 <X className="w-5 h-5 text-neutral-500" />
               </button>
             </div>
+            {/* Mobile Pro Quick Actions */}
+            {isPro && (
+              <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex gap-2">
+                <Link
+                  href="/my-proposals"
+                  onClick={() => setShowMobileFilters(false)}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>{locale === 'ka' ? 'შეთავაზებები' : 'Proposals'}</span>
+                </Link>
+                <Link
+                  href="/my-jobs"
+                  onClick={() => setShowMobileFilters(false)}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
+                >
+                  <Hammer className="w-4 h-4" />
+                  <span>{locale === 'ka' ? 'სამუშაოები' : 'Jobs'}</span>
+                </Link>
+              </div>
+            )}
             {/* Mobile Search Input */}
             <div className="p-4 border-b border-neutral-200 dark:border-neutral-800">
               {isJobsPage ? (
