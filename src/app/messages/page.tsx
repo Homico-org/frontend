@@ -656,11 +656,11 @@ function MessagesPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="h-screen bg-white flex flex-col overflow-hidden">
       <Header />
       <HeaderSpacer />
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-h-0">
         {/* Left Sidebar - Conversation List */}
         <aside
           className={`
@@ -724,7 +724,7 @@ function MessagesPageContent() {
         {/* Right Side - Chat Area */}
         <main
           className={`
-            flex-1 flex flex-col bg-[#FAFAFA]
+            flex-1 flex flex-col bg-[#FAFAFA] min-h-0
             ${!isMobileListOpen ? 'flex' : 'hidden md:flex'}
           `}
         >
