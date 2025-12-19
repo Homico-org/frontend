@@ -1,7 +1,6 @@
 'use client';
 
 import AddressPicker from '@/components/common/AddressPicker';
-import AppBackground from '@/components/common/AppBackground';
 import CategorySubcategorySelector from '@/components/common/CategorySubcategorySelector';
 import DatePicker from '@/components/common/DatePicker';
 import Header from '@/components/common/Header';
@@ -387,10 +386,9 @@ function PostJobPageContent() {
   // Loading State
   if (authLoading || isLoadingJob) {
     return (
-      <div className="postjob-container">
-        <div className="postjob-background" />
+      <div className="min-h-screen bg-white dark:bg-neutral-950 flex flex-col">
         <Header />
-        <div className="relative z-20 flex items-center justify-center min-h-[80vh]">
+        <div className="flex-1 flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
             <div className="relative">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#E07B4F]/10 to-[#E8956A]/10 flex items-center justify-center">
@@ -418,12 +416,10 @@ function PostJobPageContent() {
   ];
 
   return (
-    <div className="postjob-container">
-      <div className="postjob-background" />
-      <AppBackground />
+    <div className="min-h-screen bg-white dark:bg-neutral-950 flex flex-col">
       <Header />
 
-      <main className={`relative z-20 pt-20 sm:pt-24 pb-28 transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+      <main className={`flex-1 pt-6 sm:pt-8 pb-28 transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
         <div className="max-w-2xl mx-auto px-4 sm:px-6">
           {/* Header Section */}
           <div className="postjob-header animate-postjob-fade-in" style={{ animationDelay: '0ms' }}>
