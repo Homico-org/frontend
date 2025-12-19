@@ -279,10 +279,13 @@ function MessagesPageContent() {
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const initialLoadDoneRef = useRef(false);
 
-  // Get conversation ID from URL if present
+  // Get conversation ID from URL if present - only read on initial load
   const urlConversationId = searchParams.get('conversation');
   const urlRecipientId = searchParams.get('recipient');
+  const initialConversationIdRef = useRef(urlConversationId);
+  const initialRecipientIdRef = useRef(urlRecipientId);
 
   // WebSocket connection
   useEffect(() => {
@@ -309,8 +312,24 @@ function MessagesPageContent() {
     socketRef.current.on('newMessage', (message: Message) => {
       // Add new message to the list if it's for the current conversation
       setMessages(prev => {
-        // Avoid duplicates (from optimistic updates)
+        // Check if this message already exists (exact match)
         if (prev.some(m => m._id === message._id)) return prev;
+
+        // Check if there's a temp message with same content from same sender
+        // that was just sent (optimistic update) - replace it
+        const tempMsgIndex = prev.findIndex(m =>
+          m._id.startsWith('temp-') &&
+          m.content === message.content &&
+          getSenderId(m.senderId) === getSenderId(message.senderId)
+        );
+
+        if (tempMsgIndex !== -1) {
+          // Replace temp message with real one
+          const newMessages = [...prev];
+          newMessages[tempMsgIndex] = message;
+          return newMessages;
+        }
+
         return [...prev, message];
       });
     });
@@ -390,29 +409,34 @@ function MessagesPageContent() {
       const response = await api.get('/conversations');
       setConversations(response.data);
 
-      // If URL has conversation ID, select it
-      if (urlConversationId) {
-        const conv = response.data.find((c: Conversation) => c._id === urlConversationId);
+      // If URL has conversation ID and this is the initial load, select it
+      if (!initialLoadDoneRef.current && initialConversationIdRef.current) {
+        const conv = response.data.find((c: Conversation) => c._id === initialConversationIdRef.current);
         if (conv) {
           setSelectedConversation(conv);
           setIsMobileListOpen(false);
         }
+        initialLoadDoneRef.current = true;
       }
     } catch (error) {
       console.error('Failed to fetch conversations:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [isAuthenticated, urlConversationId]);
+  }, [isAuthenticated]);
 
-  // Start new conversation if recipient ID is in URL
+  // Start new conversation if recipient ID is in URL (only on initial load)
   useEffect(() => {
     const startNewConversation = async () => {
-      if (!urlRecipientId || !isAuthenticated || isLoading) return;
+      if (!initialRecipientIdRef.current || !isAuthenticated || isLoading) return;
+
+      // Only run once
+      const recipientId = initialRecipientIdRef.current;
+      initialRecipientIdRef.current = null;
 
       try {
         const response = await api.post('/conversations/start', {
-          recipientId: urlRecipientId,
+          recipientId,
         });
 
         const { conversation } = response.data;
@@ -426,7 +450,7 @@ function MessagesPageContent() {
         if (conv) {
           setSelectedConversation(conv);
           setIsMobileListOpen(false);
-          // Update URL
+          // Update URL without triggering re-render
           window.history.replaceState({}, '', `/messages?conversation=${conversation._id}`);
         }
       } catch (error) {
@@ -435,7 +459,7 @@ function MessagesPageContent() {
     };
 
     startNewConversation();
-  }, [urlRecipientId, isAuthenticated, isLoading]);
+  }, [isAuthenticated, isLoading]);
 
   useEffect(() => {
     fetchConversations();
@@ -491,12 +515,13 @@ function MessagesPageContent() {
     if (!newMessage.trim() || !selectedConversation || isSending) return;
 
     const messageContent = newMessage.trim();
+    const tempId = `temp-${Date.now()}`;
     setNewMessage('');
     setIsSending(true);
 
     // Optimistically add message
     const tempMessage: Message = {
-      _id: `temp-${Date.now()}`,
+      _id: tempId,
       content: messageContent,
       senderId: user?.id || '',
       createdAt: new Date().toISOString(),
@@ -509,10 +534,17 @@ function MessagesPageContent() {
         content: messageContent,
       });
 
-      // Replace temp message with real one
-      setMessages(prev =>
-        prev.map(m => (m._id === tempMessage._id ? response.data : m))
-      );
+      // Replace temp message with real one (if WebSocket hasn't already done it)
+      setMessages(prev => {
+        // Check if WebSocket already replaced the temp message
+        const hasRealMessage = prev.some(m => m._id === response.data._id);
+        if (hasRealMessage) {
+          // WebSocket already added the real message - just remove temp
+          return prev.filter(m => m._id !== tempId);
+        }
+        // Replace temp with real message
+        return prev.map(m => (m._id === tempId ? response.data : m));
+      });
 
       // Update conversation's last message
       setConversations(prev =>
@@ -532,7 +564,7 @@ function MessagesPageContent() {
     } catch (error) {
       console.error('Failed to send message:', error);
       // Remove optimistic message on error
-      setMessages(prev => prev.filter(m => m._id !== tempMessage._id));
+      setMessages(prev => prev.filter(m => m._id !== tempId));
       setNewMessage(messageContent); // Restore message
     } finally {
       setIsSending(false);
