@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode, useRef } from 'react';
 import { useAuth } from './AuthContext';
+import api from '@/lib/api';
 
 export interface JobFilters {
   category: string | null;
@@ -25,10 +26,6 @@ const DEFAULT_FILTERS: JobFilters = {
   showFavoritesOnly: false,
 };
 
-// Use user-specific key for saved jobs
-const getSavedJobsKey = (userId: string | undefined) =>
-  userId ? `homi_saved_jobs_${userId}` : null;
-
 interface JobsContextType {
   filters: JobFilters;
   setFilters: (filters: JobFilters) => void;
@@ -36,48 +33,62 @@ interface JobsContextType {
   handleSaveJob: (jobId: string) => void;
   appliedJobIds: Set<string>;
   isLoadingApplied: boolean;
+  isLoadingSaved: boolean;
+  refreshSavedJobs: () => Promise<void>;
 }
 
 const JobsContext = createContext<JobsContextType | null>(null);
 
 export function JobsProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [filters, setFilters] = useState<JobFilters>(DEFAULT_FILTERS);
   const [savedJobIds, setSavedJobIds] = useState<Set<string>>(new Set());
   const [appliedJobIds, setAppliedJobIds] = useState<Set<string>>(new Set());
   const [isLoadingApplied, setIsLoadingApplied] = useState(true);
+  const [isLoadingSaved, setIsLoadingSaved] = useState(true);
   const previousUserIdRef = useRef<string | undefined>(undefined);
 
-  // Load saved jobs from localStorage when user changes
+  // Fetch saved jobs from backend when user changes
+  const fetchSavedJobs = useCallback(async () => {
+    const token = localStorage.getItem("access_token");
+    if (!token || !isAuthenticated) {
+      setSavedJobIds(new Set());
+      setIsLoadingSaved(false);
+      return;
+    }
+
+    try {
+      setIsLoadingSaved(true);
+      const response = await api.get('/jobs/saved/list');
+      const savedIds = response.data || [];
+      setSavedJobIds(new Set(savedIds));
+    } catch (error) {
+      console.error("Error fetching saved jobs:", error);
+      setSavedJobIds(new Set());
+    } finally {
+      setIsLoadingSaved(false);
+    }
+  }, [isAuthenticated]);
+
+  // Fetch saved jobs when user changes
   useEffect(() => {
     // Only reload if user actually changed
     if (previousUserIdRef.current === user?.id) return;
     previousUserIdRef.current = user?.id;
 
-    const storageKey = getSavedJobsKey(user?.id);
-    if (!storageKey) {
+    if (!user?.id) {
       setSavedJobIds(new Set());
+      setIsLoadingSaved(false);
       return;
     }
 
-    const saved = localStorage.getItem(storageKey);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setSavedJobIds(new Set(parsed));
-      } catch (e) {
-        console.error("Error parsing saved jobs:", e);
-        setSavedJobIds(new Set());
-      }
-    } else {
-      setSavedJobIds(new Set());
-    }
-  }, [user?.id]);
+    fetchSavedJobs();
+  }, [user?.id, fetchSavedJobs]);
 
   // Fetch user's proposals to know which jobs they've applied to
   useEffect(() => {
     const fetchAppliedJobs = async () => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("access_token");
       if (!token) {
         setIsLoadingApplied(false);
         return;
@@ -118,22 +129,48 @@ export function JobsProvider({ children }: { children: ReactNode }) {
     fetchAppliedJobs();
   }, []);
 
-  // Handle save/unsave job
+  // Handle save/unsave job via backend API
   const handleSaveJob = useCallback((jobId: string) => {
-    const storageKey = getSavedJobsKey(user?.id);
-    if (!storageKey) return; // Don't save if not logged in
+    const token = localStorage.getItem("access_token");
+    if (!token || !isAuthenticated) return;
 
+    // Use functional update to get the current saved state and update optimistically
+    let wasSaved = false;
     setSavedJobIds((prev) => {
+      wasSaved = prev.has(jobId);
       const newSet = new Set(prev);
-      if (newSet.has(jobId)) {
+      if (wasSaved) {
         newSet.delete(jobId);
       } else {
         newSet.add(jobId);
       }
-      localStorage.setItem(storageKey, JSON.stringify([...newSet]));
       return newSet;
     });
-  }, [user?.id]);
+
+    // Make API call (fire and forget with error handling)
+    const makeApiCall = async () => {
+      try {
+        if (wasSaved) {
+          await api.delete(`/jobs/${jobId}/save`);
+        } else {
+          await api.post(`/jobs/${jobId}/save`);
+        }
+      } catch (error) {
+        console.error("Error saving/unsaving job:", error);
+        // Revert optimistic update on error
+        setSavedJobIds((prev) => {
+          const newSet = new Set(prev);
+          if (wasSaved) {
+            newSet.add(jobId);
+          } else {
+            newSet.delete(jobId);
+          }
+          return newSet;
+        });
+      }
+    };
+    makeApiCall();
+  }, [isAuthenticated]);
 
   return (
     <JobsContext.Provider value={{
@@ -142,7 +179,9 @@ export function JobsProvider({ children }: { children: ReactNode }) {
       savedJobIds,
       handleSaveJob,
       appliedJobIds,
-      isLoadingApplied
+      isLoadingApplied,
+      isLoadingSaved,
+      refreshSavedJobs: fetchSavedJobs
     }}>
       {children}
     </JobsContext.Provider>

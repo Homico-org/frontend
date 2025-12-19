@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useJobsContext } from "@/contexts/JobsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 // Terracotta accent
 const ACCENT_COLOR = '#C4735B';
@@ -72,13 +72,8 @@ export default function JobsPage() {
   const [hasMore, setHasMore] = useState(true);
   const loaderRef = useRef<HTMLDivElement>(null);
 
-  // Filter jobs by favorites if showFavoritesOnly is true
-  const displayedJobs = useMemo(() => {
-    if (filters.showFavoritesOnly) {
-      return jobs.filter(job => savedJobIds.has(job._id));
-    }
-    return jobs;
-  }, [jobs, filters.showFavoritesOnly, savedJobIds]);
+  // Jobs are filtered on the backend when showFavoritesOnly is true
+  const displayedJobs = jobs;
 
   // Mock images for demo
   const mockImageSets = [
@@ -151,6 +146,11 @@ export default function JobsPage() {
           params.append("deadline", filters.deadline);
         }
 
+        // Apply favorites filter - backend will filter to saved jobs only
+        if (filters.showFavoritesOnly) {
+          params.append("savedOnly", "true");
+        }
+
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/jobs?${params.toString()}`,
           {
@@ -188,7 +188,7 @@ export default function JobsPage() {
         setIsLoadingMore(false);
       }
     },
-    [isPro, filters.category, filters.budget, filters.propertyType, filters.location, filters.searchQuery, filters.deadline]
+    [isPro, filters.category, filters.budget, filters.propertyType, filters.location, filters.searchQuery, filters.deadline, filters.showFavoritesOnly]
   );
 
   // Track if initial fetch has been done
@@ -208,13 +208,13 @@ export default function JobsPage() {
     // For filter changes, reset and fetch
     setPage(1);
     fetchJobs(1, true);
-  }, [isPro, filters.category, filters.budget, filters.propertyType, filters.location, filters.searchQuery, filters.deadline, fetchJobs]);
+  }, [isPro, filters.category, filters.budget, filters.propertyType, filters.location, filters.searchQuery, filters.deadline, filters.showFavoritesOnly, fetchJobs]);
 
   // Infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading && !isLoadingMore && !filters.showFavoritesOnly) {
+        if (entries[0].isIntersecting && hasMore && !isLoading && !isLoadingMore) {
           setPage((prev) => prev + 1);
         }
       },
@@ -226,7 +226,7 @@ export default function JobsPage() {
     }
 
     return () => observer.disconnect();
-  }, [hasMore, isLoading, isLoadingMore, filters.showFavoritesOnly]);
+  }, [hasMore, isLoading, isLoadingMore]);
 
   // Fetch more when page changes
   useEffect(() => {
@@ -350,21 +350,19 @@ export default function JobsPage() {
           </div>
 
           {/* Infinite scroll loader */}
-          {!filters.showFavoritesOnly && (
-            <div ref={loaderRef} className="flex justify-center py-12">
-              {isLoadingMore && (
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin"
-                    style={{ borderColor: ACCENT_COLOR, borderTopColor: 'transparent' }}
-                  />
-                  <span className="text-sm text-neutral-500">
-                    {locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
+          <div ref={loaderRef} className="flex justify-center py-12">
+            {isLoadingMore && (
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin"
+                  style={{ borderColor: ACCENT_COLOR, borderTopColor: 'transparent' }}
+                />
+                <span className="text-sm text-neutral-500">
+                  {locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
+                </span>
+              </div>
+            )}
+          </div>
         </>
       )}
     </div>
