@@ -283,6 +283,8 @@ const ChatContent = memo(function ChatContent({
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Track temp message IDs that have been confirmed (replaced by real message)
+  const confirmedTempIdsRef = useRef<Set<string>>(new Set());
 
   // Fetch messages for this conversation
   useEffect(() => {
@@ -317,8 +319,10 @@ const ChatContent = memo(function ChatContent({
 
     const handleNewMessage = (message: Message) => {
       setMessages(prev => {
+        // Skip if this exact message already exists
         if (prev.some(m => m._id === message._id)) return prev;
 
+        // Find matching temp message
         const tempMsgIndex = prev.findIndex(m =>
           m._id.startsWith('temp-') &&
           m.content === message.content &&
@@ -326,6 +330,8 @@ const ChatContent = memo(function ChatContent({
         );
 
         if (tempMsgIndex !== -1) {
+          // Mark this temp ID as confirmed so API response knows to skip
+          confirmedTempIdsRef.current.add(prev[tempMsgIndex]._id);
           const newMessages = [...prev];
           newMessages[tempMsgIndex] = message;
           return newMessages;
@@ -335,8 +341,8 @@ const ChatContent = memo(function ChatContent({
       });
     };
 
-    const handleTyping = ({ odliserId, isTyping: typing }: { odliserId: string; isTyping: boolean }) => {
-      if (odliserId !== userId) {
+    const handleTyping = ({ odliserId: typingUserId, isTyping: typing }: { odliserId: string; isTyping: boolean }) => {
+      if (typingUserId !== userId) {
         setOtherUserTyping(typing);
       }
     };
@@ -403,10 +409,20 @@ const ChatContent = memo(function ChatContent({
       });
 
       setMessages(prev => {
+        // If temp message was already confirmed by WebSocket, just ensure we don't have duplicates
+        if (confirmedTempIdsRef.current.has(tempId)) {
+          confirmedTempIdsRef.current.delete(tempId);
+          // Real message was already added by WebSocket, just remove any lingering temp
+          return prev.filter(m => m._id !== tempId);
+        }
+
+        // Check if real message already exists (from WebSocket)
         const hasRealMessage = prev.some(m => m._id === response.data._id);
         if (hasRealMessage) {
           return prev.filter(m => m._id !== tempId);
         }
+
+        // Replace temp with real message
         return prev.map(m => (m._id === tempId ? response.data : m));
       });
 
@@ -839,9 +855,10 @@ function MessagesPageContent() {
   return (
     <div className="h-screen bg-white flex flex-col overflow-hidden">
       <Header />
-      <HeaderSpacer />
+      {/* Use fixed height for header space instead of HeaderSpacer to maintain h-screen layout */}
+      <div className="h-14 flex-shrink-0" />
 
-      <div className="flex-1 flex overflow-hidden min-h-0">
+      <div className="flex-1 flex overflow-hidden" style={{ height: 'calc(100vh - 56px)' }}>
         {/* Left Sidebar - Conversation List */}
         <aside
           className={`
