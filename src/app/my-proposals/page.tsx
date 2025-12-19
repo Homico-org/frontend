@@ -316,7 +316,7 @@ export default function MyProposalsPage() {
               {language === 'ka' ? 'შეცდომა' : 'Error'}
             </h3>
             <p className="myproposals-loading-text">{error}</p>
-            <button onClick={fetchMyProposals} className="myproposals-empty-btn">
+            <button onClick={fetchAllProposals} className="myproposals-empty-btn">
               {language === 'ka' ? 'ხელახლა ცდა' : 'Try Again'}
             </button>
           </div>
