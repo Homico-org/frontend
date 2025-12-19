@@ -2,7 +2,7 @@
 
 import Avatar from '@/components/common/Avatar';
 import BackButton from '@/components/common/BackButton';
-import Header from '@/components/common/Header';
+import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -659,6 +659,7 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen relative">
       <Header />
+      <HeaderSpacer />
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-8">
         <div className="mb-4">

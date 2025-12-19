@@ -1,7 +1,7 @@
 'use client';
 
 import BackButton from '@/components/common/BackButton';
-import Header from '@/components/common/Header';
+import Header, { HeaderSpacer } from '@/components/common/Header';
 import Avatar from '@/components/common/Avatar';
 import JobCard from '@/components/common/JobCard';
 import ArchitecturalBackground from '@/components/browse/ArchitecturalBackground';
@@ -205,6 +205,7 @@ export default function UserProfilePage() {
       <div className="min-h-screen bg-[var(--color-bg-primary)]">
         <ArchitecturalBackground />
         <Header />
+      <HeaderSpacer />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="flex flex-col items-center gap-4">
             <div className="relative w-12 h-12">
@@ -222,6 +223,7 @@ export default function UserProfilePage() {
       <div className="min-h-screen bg-[var(--color-bg-primary)]">
         <ArchitecturalBackground />
         <Header />
+      <HeaderSpacer />
         <div className="py-16 text-center">
           <div className="max-w-md mx-auto">
             <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-[var(--color-bg-secondary)] flex items-center justify-center">
@@ -318,6 +320,7 @@ export default function UserProfilePage() {
       `}</style>
 
       <Header />
+      <HeaderSpacer />
 
       {/* Main Content */}
       <main className="user-page">

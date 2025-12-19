@@ -1,6 +1,6 @@
 'use client';
 
-import Header from '@/components/common/Header';
+import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -186,6 +186,7 @@ export default function TicketDetailPage() {
     return (
       <div className="min-h-screen bg-cream-50 dark:bg-dark-bg">
         <Header />
+      <HeaderSpacer />
         <div className="flex items-center justify-center py-32">
           <div className="w-10 h-10 border-2 border-neutral-200 dark:border-dark-border border-t-forest-800 dark:border-t-primary-400 rounded-full animate-spin" />
         </div>
@@ -197,6 +198,7 @@ export default function TicketDetailPage() {
     return (
       <div className="min-h-screen bg-cream-50 dark:bg-dark-bg">
         <Header />
+      <HeaderSpacer />
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
             <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-terracotta-50 dark:bg-terracotta-500/10 flex items-center justify-center">
@@ -229,6 +231,7 @@ export default function TicketDetailPage() {
   return (
     <div className="min-h-screen bg-cream-50 dark:bg-dark-bg flex flex-col">
       <Header />
+      <HeaderSpacer />
 
       <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
         {/* Back Link & Header */}

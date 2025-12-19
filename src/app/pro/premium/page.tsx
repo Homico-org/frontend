@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import Header from '@/components/common/Header';
+import Header, { HeaderSpacer } from '@/components/common/Header';
 import { Check, Crown, Sparkles, Star, Zap, Shield, TrendingUp, Award, Clock, MessageCircle, Eye, BadgeCheck, ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -166,6 +166,7 @@ export default function PremiumPlansPage() {
   return (
     <div className="min-h-screen bg-[var(--color-bg-base)]">
       <Header />
+      <HeaderSpacer />
 
       <main className="relative overflow-hidden">
         {/* Background with subtle terracotta accents */}

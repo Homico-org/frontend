@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNotifications, Notification, NotificationType } from '@/contexts/NotificationContext';
-import Header from '@/components/common/Header';
+import Header, { HeaderSpacer } from '@/components/common/Header';
 import AppBackground from '@/components/common/AppBackground';
 import {
   ArrowLeft,
@@ -189,6 +189,7 @@ export default function NotificationsPage() {
 
       {/* Main Header */}
       <Header />
+      <HeaderSpacer />
 
       {/* Page Header Section */}
       <div

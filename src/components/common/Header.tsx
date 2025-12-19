@@ -56,7 +56,7 @@ export default function Header() {
   }, [showDropdown, handleEscKey]);
 
   return (
-    <header className="sticky top-0 z-50 flex-shrink-0 h-14 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a]">
+    <header className="fixed top-0 left-0 right-0 z-50 h-14 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a]">
       <div className="h-full max-w-[1800px] mx-auto px-4 sm:px-6 flex items-center justify-between">
         {/* Logo */}
         <Link href="/browse" className="flex items-center gap-2">
@@ -361,4 +361,9 @@ export default function Header() {
       </div>
     </header>
   );
+}
+
+// Spacer component to prevent content from going under fixed header
+export function HeaderSpacer() {
+  return <div className="h-14 flex-shrink-0" />;
 }

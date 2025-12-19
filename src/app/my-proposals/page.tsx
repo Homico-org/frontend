@@ -2,7 +2,7 @@
 
 import AppBackground from '@/components/common/AppBackground';
 import Avatar from '@/components/common/Avatar';
-import Header from '@/components/common/Header';
+import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -283,6 +283,7 @@ export default function MyProposalsPage() {
         <div className="myproposals-background" />
         <AppBackground />
         <Header />
+      <HeaderSpacer />
         <div className="relative z-20 myproposals-loading">
           <div className="myproposals-loading-inner">
             <div className="myproposals-loading-icon">
@@ -305,6 +306,7 @@ export default function MyProposalsPage() {
         <div className="myproposals-background" />
         <AppBackground />
         <Header />
+      <HeaderSpacer />
         <div className="relative z-20 myproposals-loading">
           <div className="myproposals-loading-inner">
             <div className="myproposals-loading-icon" style={{ background: 'rgba(239, 68, 68, 0.1)' }}>
@@ -337,6 +339,7 @@ export default function MyProposalsPage() {
       <div className="myproposals-background" />
       <AppBackground />
       <Header />
+      <HeaderSpacer />
 
       <main className="myproposals-main">
         {/* Header */}

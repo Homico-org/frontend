@@ -1,6 +1,6 @@
 'use client';
 
-import Header from '@/components/common/Header';
+import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -208,6 +208,7 @@ export default function HelpPage() {
   return (
     <div className="min-h-screen bg-cream-50 dark:bg-dark-bg">
       <Header />
+      <HeaderSpacer />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">

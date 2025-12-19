@@ -2,7 +2,7 @@
 
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
-import Header from '@/components/common/Header';
+import Header, { HeaderSpacer } from '@/components/common/Header';
 import { ArrowLeft, Check, CreditCard, Shield, Lock, Sparkles, Star, Zap, Crown, Building2, Loader2, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -208,6 +208,7 @@ function CheckoutContent() {
   return (
     <div className="min-h-screen bg-[var(--color-bg-base)]">
       <Header />
+      <HeaderSpacer />
 
       <main className="relative overflow-hidden">
         {/* Background Elements - solid terracotta */}

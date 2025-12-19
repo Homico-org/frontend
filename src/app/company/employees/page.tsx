@@ -1,6 +1,6 @@
 'use client';
 
-import Header from '@/components/common/Header';
+import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useRouter } from 'next/navigation';
@@ -103,6 +103,7 @@ export default function CompanyEmployeesPage() {
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-dark-bg">
       <Header />
+      <HeaderSpacer />
 
       <main className="container-custom py-8">
         {/* Header */}

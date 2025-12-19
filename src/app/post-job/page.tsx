@@ -3,7 +3,7 @@
 import AddressPicker from '@/components/common/AddressPicker';
 import CategorySubcategorySelector from '@/components/common/CategorySubcategorySelector';
 import DatePicker from '@/components/common/DatePicker';
-import Header from '@/components/common/Header';
+import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -388,6 +388,7 @@ function PostJobPageContent() {
     return (
       <div className="min-h-screen bg-white dark:bg-neutral-950 flex flex-col">
         <Header />
+      <HeaderSpacer />
         <div className="flex-1 flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
             <div className="relative">
@@ -418,6 +419,7 @@ function PostJobPageContent() {
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950 flex flex-col">
       <Header />
+      <HeaderSpacer />
 
       <main className={`flex-1 pt-6 sm:pt-8 pb-28 transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
         <div className="max-w-2xl mx-auto px-4 sm:px-6">

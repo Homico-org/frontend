@@ -1,7 +1,7 @@
 'use client';
 
 import Avatar from '@/components/common/Avatar';
-import Header from '@/components/common/Header';
+import Header, { HeaderSpacer } from '@/components/common/Header';
 import { CATEGORIES } from '@/constants/categories';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
@@ -331,6 +331,7 @@ export default function ProfessionalDetailPage() {
     return (
       <div className="min-h-screen bg-white">
         <Header />
+      <HeaderSpacer />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="flex flex-col items-center gap-4">
             <div className="relative w-10 h-10">
@@ -348,6 +349,7 @@ export default function ProfessionalDetailPage() {
     return (
       <div className="min-h-screen bg-white">
         <Header />
+      <HeaderSpacer />
         <div className="py-16 text-center">
           <div className="max-w-md mx-auto px-4">
             <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-neutral-100 flex items-center justify-center">
@@ -381,6 +383,7 @@ export default function ProfessionalDetailPage() {
   return (
     <div className="min-h-screen bg-white">
       <Header />
+      <HeaderSpacer />
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">

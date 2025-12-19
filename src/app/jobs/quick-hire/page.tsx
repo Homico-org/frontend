@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Header from '@/components/common/Header';
+import Header, { HeaderSpacer } from '@/components/common/Header';
 import LocationPicker from '@/components/common/LocationPicker';
 import MediaUpload from '@/components/common/MediaUpload';
 import { useAuth } from '@/contexts/AuthContext';
@@ -178,6 +178,7 @@ export default function QuickHirePage() {
     return (
       <div className="min-h-screen bg-neutral-50 dark:bg-dark-300">
         <Header />
+      <HeaderSpacer />
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-2 border-neutral-900 dark:border-primary-400 border-t-transparent"></div>
         </div>
@@ -189,6 +190,7 @@ export default function QuickHirePage() {
     return (
       <div className="min-h-screen bg-neutral-50 dark:bg-dark-300">
         <Header />
+      <HeaderSpacer />
         <div className="container-custom py-16">
           <div className="max-w-md mx-auto text-center">
             <div className="w-16 h-16 bg-[#E07B4F]/10 dark:bg-[#E07B4F]/20 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -218,6 +220,7 @@ export default function QuickHirePage() {
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-dark-300">
       <Header />
+      <HeaderSpacer />
 
       <div className="container-custom py-8">
         <div className="max-w-2xl mx-auto">

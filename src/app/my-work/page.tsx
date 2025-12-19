@@ -9,7 +9,7 @@ import { api } from '@/lib/api';
 import { storage } from '@/services/storage';
 import Avatar from '@/components/common/Avatar';
 import Button from '@/components/common/Button';
-import Header from '@/components/common/Header';
+import Header, { HeaderSpacer } from '@/components/common/Header';
 import AppBackground from '@/components/common/AppBackground';
 import Card, { CardImage, CardContent, CardBadge, CardFooter } from '@/components/common/Card';
 import Link from 'next/link';
@@ -172,6 +172,7 @@ export default function MyWorkPage() {
       <div className="min-h-screen relative">
         <AppBackground />
         <Header />
+      <HeaderSpacer />
         <div className="relative z-20 flex items-center justify-center min-h-[60vh]">
           <div className="flex flex-col items-center gap-4">
             <div className="relative">
@@ -195,6 +196,7 @@ export default function MyWorkPage() {
       <div className="min-h-screen relative">
         <AppBackground />
         <Header />
+      <HeaderSpacer />
         <div className="relative z-20 flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="w-16 h-16 rounded-2xl bg-red-500/10 mx-auto mb-4 flex items-center justify-center">
@@ -217,6 +219,7 @@ export default function MyWorkPage() {
     <div className="min-h-screen relative">
       <AppBackground />
       <Header />
+      <HeaderSpacer />
 
       <main className="relative z-20 max-w-5xl mx-auto px-4 pt-6 pb-20">
         {/* Header */}

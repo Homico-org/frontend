@@ -2,7 +2,7 @@
 
 import BackButton from '@/components/common/BackButton';
 import CategorySubcategorySelector from '@/components/common/CategorySubcategorySelector';
-import Header from '@/components/common/Header';
+import Header, { HeaderSpacer } from '@/components/common/Header';
 import PortfolioProjectsInput, { PortfolioProject } from '@/components/common/PortfolioProjectsInput';
 import { Button } from '@/components/ui/button';
 import { Card, StatCard } from '@/components/ui/Card';
@@ -319,6 +319,7 @@ export default function BecomeProPage() {
   return (
     <div className="become-pro-container overflow-x-hidden">
       <Header />
+      <HeaderSpacer />
 
       {/* Ambient background orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">

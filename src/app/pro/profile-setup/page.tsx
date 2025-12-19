@@ -1,7 +1,7 @@
 'use client';
 
 import { CATEGORIES, getCategoryByKey } from '@/constants/categories';
-import Header from '@/components/common/Header';
+import Header, { HeaderSpacer } from '@/components/common/Header';
 import AppBackground from '@/components/common/AppBackground';
 import PortfolioProjectsInput, { PortfolioProject } from '@/components/common/PortfolioProjectsInput';
 import CategorySubcategorySelector from '@/components/common/CategorySubcategorySelector';
@@ -505,6 +505,7 @@ export default function ProProfileSetupPage() {
 
       {/* Header - same as browse page */}
       <Header />
+      <HeaderSpacer />
 
       <main className={`relative z-10 pt-20 pb-28 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
         <div className="container-custom pt-4 md:pt-8">

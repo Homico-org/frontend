@@ -1,7 +1,7 @@
 'use client';
 
 import Avatar from '@/components/common/Avatar';
-import Header from '@/components/common/Header';
+import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -191,6 +191,7 @@ function MyJobsPageContent() {
     return (
       <div className="min-h-screen bg-white dark:bg-neutral-950">
         <Header />
+      <HeaderSpacer />
         <div className="max-w-6xl mx-auto px-6 py-8">
           <div className="w-32 h-8 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse mb-2" />
           <div className="w-64 h-5 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse mb-8" />
@@ -213,6 +214,7 @@ function MyJobsPageContent() {
     <div className="min-h-screen bg-white dark:bg-neutral-950 flex flex-col">
       {/* ==================== HEADER ==================== */}
       <Header />
+      <HeaderSpacer />
 
       {/* ==================== MAIN CONTENT ==================== */}
       <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-8">

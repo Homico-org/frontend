@@ -1,6 +1,6 @@
 'use client';
 
-import Header from '@/components/common/Header';
+import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useRouter } from 'next/navigation';
@@ -100,6 +100,7 @@ export default function InviteEmployeePage() {
     return (
       <div className="min-h-screen bg-neutral-50 dark:bg-dark-bg">
         <Header />
+      <HeaderSpacer />
         <main className="container-custom py-8">
           <div className="max-w-md mx-auto bg-white dark:bg-dark-card rounded-2xl border border-neutral-200 dark:border-dark-border p-8 text-center">
             <div className="w-16 h-16 bg-[#D2691E]/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -126,6 +127,7 @@ export default function InviteEmployeePage() {
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-dark-bg">
       <Header />
+      <HeaderSpacer />
 
       <main className="container-custom py-8">
         <div className="max-w-2xl mx-auto">

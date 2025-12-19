@@ -1,7 +1,7 @@
 'use client';
 
 import Avatar from '@/components/common/Avatar';
-import Header from '@/components/common/Header';
+import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { storage } from '@/services/storage';
@@ -336,6 +336,7 @@ export default function JobDetailPage() {
     return (
       <div className="min-h-screen bg-white dark:bg-neutral-950">
         <Header />
+      <HeaderSpacer />
         <div className="max-w-3xl mx-auto px-6 py-8">
           <div className="animate-pulse space-y-6">
             <div className="h-6 w-20 bg-neutral-100 dark:bg-neutral-800 rounded" />
@@ -363,6 +364,7 @@ export default function JobDetailPage() {
     <div className="min-h-screen bg-white dark:bg-neutral-950 flex flex-col">
       {/* ==================== HEADER ==================== */}
       <Header />
+      <HeaderSpacer />
 
       {/* ==================== MAIN CONTENT ==================== */}
       <main className="flex-1">

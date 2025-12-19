@@ -2,7 +2,7 @@
 
 import BrowseFiltersSidebar from "@/components/browse/BrowseFiltersSidebar";
 import JobsFiltersSidebar from "@/components/browse/JobsFiltersSidebar";
-import Header from "@/components/common/Header";
+import Header, { HeaderSpacer } from "@/components/common/Header";
 import { useAuth } from "@/contexts/AuthContext";
 import { BrowseProvider, useBrowseContext } from "@/contexts/BrowseContext";
 import { JobsProvider, useJobsContext } from "@/contexts/JobsContext";
@@ -196,6 +196,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
     <div className="h-screen flex flex-col overflow-hidden bg-[#fafafa] dark:bg-[#0a0a0a] max-w-full">
       {/* Header */}
       <Header />
+      <HeaderSpacer />
 
       {/* Main Content Area */}
       <div className="flex-1 flex min-h-0 overflow-hidden">

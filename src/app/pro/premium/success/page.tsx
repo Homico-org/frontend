@@ -1,7 +1,7 @@
 'use client';
 
 import { useLanguage } from '@/contexts/LanguageContext';
-import Header from '@/components/common/Header';
+import Header, { HeaderSpacer } from '@/components/common/Header';
 import { CheckCircle2, ArrowRight, Sparkles, Crown, Star, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -24,6 +24,7 @@ function SuccessContent() {
   return (
     <div className="min-h-screen bg-[var(--color-bg-base)]">
       <Header />
+      <HeaderSpacer />
 
       <main className="container-custom py-16 sm:py-24">
         <div className="max-w-lg mx-auto text-center">
