@@ -1,6 +1,7 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode, useRef } from 'react';
+import { useAuth } from './AuthContext';
 
 export interface JobFilters {
   category: string | null;
@@ -24,7 +25,9 @@ const DEFAULT_FILTERS: JobFilters = {
   showFavoritesOnly: false,
 };
 
-const SAVED_JOBS_KEY = "homi_saved_jobs";
+// Use user-specific key for saved jobs
+const getSavedJobsKey = (userId: string | undefined) =>
+  userId ? `homi_saved_jobs_${userId}` : null;
 
 interface JobsContextType {
   filters: JobFilters;
@@ -38,23 +41,38 @@ interface JobsContextType {
 const JobsContext = createContext<JobsContextType | null>(null);
 
 export function JobsProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [filters, setFilters] = useState<JobFilters>(DEFAULT_FILTERS);
   const [savedJobIds, setSavedJobIds] = useState<Set<string>>(new Set());
   const [appliedJobIds, setAppliedJobIds] = useState<Set<string>>(new Set());
   const [isLoadingApplied, setIsLoadingApplied] = useState(true);
+  const previousUserIdRef = useRef<string | undefined>(undefined);
 
-  // Load saved jobs from localStorage
+  // Load saved jobs from localStorage when user changes
   useEffect(() => {
-    const saved = localStorage.getItem(SAVED_JOBS_KEY);
+    // Only reload if user actually changed
+    if (previousUserIdRef.current === user?.id) return;
+    previousUserIdRef.current = user?.id;
+
+    const storageKey = getSavedJobsKey(user?.id);
+    if (!storageKey) {
+      setSavedJobIds(new Set());
+      return;
+    }
+
+    const saved = localStorage.getItem(storageKey);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         setSavedJobIds(new Set(parsed));
       } catch (e) {
         console.error("Error parsing saved jobs:", e);
+        setSavedJobIds(new Set());
       }
+    } else {
+      setSavedJobIds(new Set());
     }
-  }, []);
+  }, [user?.id]);
 
   // Fetch user's proposals to know which jobs they've applied to
   useEffect(() => {
@@ -102,6 +120,9 @@ export function JobsProvider({ children }: { children: ReactNode }) {
 
   // Handle save/unsave job
   const handleSaveJob = useCallback((jobId: string) => {
+    const storageKey = getSavedJobsKey(user?.id);
+    if (!storageKey) return; // Don't save if not logged in
+
     setSavedJobIds((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(jobId)) {
@@ -109,10 +130,10 @@ export function JobsProvider({ children }: { children: ReactNode }) {
       } else {
         newSet.add(jobId);
       }
-      localStorage.setItem(SAVED_JOBS_KEY, JSON.stringify([...newSet]));
+      localStorage.setItem(storageKey, JSON.stringify([...newSet]));
       return newSet;
     });
-  }, []);
+  }, [user?.id]);
 
   return (
     <JobsContext.Provider value={{
