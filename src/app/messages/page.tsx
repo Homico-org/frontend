@@ -284,8 +284,6 @@ const ChatContent = memo(function ChatContent({
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  // Track temp message IDs that have been confirmed (replaced by real message)
-  const confirmedTempIdsRef = useRef<Set<string>>(new Set());
 
   // Fetch messages for this conversation
   useEffect(() => {
@@ -319,25 +317,16 @@ const ChatContent = memo(function ChatContent({
     socketRef.current.emit('joinConversation', conversation._id);
 
     const handleNewMessage = (message: Message) => {
+      const messageSenderId = getSenderId(message.senderId);
+
+      // If this is my own message, skip - the API response will handle it
+      if (messageSenderId === userId) {
+        return;
+      }
+
       setMessages(prev => {
         // Skip if this exact message already exists
         if (prev.some(m => m._id === message._id)) return prev;
-
-        // Find matching temp message
-        const tempMsgIndex = prev.findIndex(m =>
-          m._id.startsWith('temp-') &&
-          m.content === message.content &&
-          getSenderId(m.senderId) === getSenderId(message.senderId)
-        );
-
-        if (tempMsgIndex !== -1) {
-          // Mark this temp ID as confirmed so API response knows to skip
-          confirmedTempIdsRef.current.add(prev[tempMsgIndex]._id);
-          const newMessages = [...prev];
-          newMessages[tempMsgIndex] = message;
-          return newMessages;
-        }
-
         return [...prev, message];
       });
     };
@@ -409,23 +398,8 @@ const ChatContent = memo(function ChatContent({
         content: messageContent,
       });
 
-      setMessages(prev => {
-        // If temp message was already confirmed by WebSocket, just ensure we don't have duplicates
-        if (confirmedTempIdsRef.current.has(tempId)) {
-          confirmedTempIdsRef.current.delete(tempId);
-          // Real message was already added by WebSocket, just remove any lingering temp
-          return prev.filter(m => m._id !== tempId);
-        }
-
-        // Check if real message already exists (from WebSocket)
-        const hasRealMessage = prev.some(m => m._id === response.data._id);
-        if (hasRealMessage) {
-          return prev.filter(m => m._id !== tempId);
-        }
-
-        // Replace temp with real message
-        return prev.map(m => (m._id === tempId ? response.data : m));
-      });
+      // Replace temp message with real message from API response
+      setMessages(prev => prev.map(m => (m._id === tempId ? response.data : m)));
 
       onConversationUpdate(conversation._id, messageContent);
     } catch (error) {
