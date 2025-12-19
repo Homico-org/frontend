@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNotifications } from "@/contexts/NotificationContext";
-import { Plus } from "lucide-react";
+import { FileText, Hammer, Plus } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Avatar from "./Avatar";
@@ -73,6 +73,29 @@ export default function Header() {
 
         {/* Right side - Actions + Profile */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Pro-specific buttons: My Proposals & My Jobs */}
+          {user?.role === "pro" && (
+            <div className="hidden sm:flex items-center gap-1 p-1 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700/50">
+              <Link
+                href="/my-proposals"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all hover:bg-white dark:hover:bg-neutral-700"
+                style={{ color: ACCENT_COLOR }}
+              >
+                <FileText className="w-4 h-4" />
+                <span>{locale === 'ka' ? 'შეთავაზებები' : 'Proposals'}</span>
+              </Link>
+              <div className="w-px h-4 bg-neutral-300 dark:bg-neutral-600" />
+              <Link
+                href="/my-jobs"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all hover:bg-white dark:hover:bg-neutral-700"
+                style={{ color: ACCENT_COLOR }}
+              >
+                <Hammer className="w-4 h-4" />
+                <span>{locale === 'ka' ? 'სამუშაოები' : 'Jobs'}</span>
+              </Link>
+            </div>
+          )}
+
           {/* Post a Job Button */}
           <Link
             href="/post-job"
