@@ -3,6 +3,7 @@
 import { AuthProvider } from '@/contexts/AuthContext';
 import { AuthModalProvider } from '@/contexts/AuthModalContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
+import { MessagesProvider } from '@/contexts/MessagesContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { ViewModeProvider } from '@/contexts/ViewModeContext';
@@ -16,9 +17,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <AuthModalProvider>
             <ViewModeProvider>
               <NotificationProvider>
-                <ToastProvider>
-                  {children}
-                </ToastProvider>
+                <MessagesProvider>
+                  <ToastProvider>
+                    {children}
+                  </ToastProvider>
+                </MessagesProvider>
               </NotificationProvider>
             </ViewModeProvider>
           </AuthModalProvider>

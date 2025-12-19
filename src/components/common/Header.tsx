@@ -3,6 +3,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useMessages } from "@/contexts/MessagesContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { FileText, Hammer, MessageCircle, Plus } from "lucide-react";
 import Link from "next/link";
@@ -17,6 +18,7 @@ export default function Header() {
   const { openLoginModal } = useAuthModal();
   const { t, locale } = useLanguage();
   const { unreadCount } = useNotifications();
+  const { unreadCount: unreadMessagesCount } = useMessages();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -118,6 +120,11 @@ export default function Header() {
                 className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
               >
                 <MessageCircle className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
+                {unreadMessagesCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-white bg-red-500 rounded-full">
+                    {unreadMessagesCount > 99 ? "99+" : unreadMessagesCount}
+                  </span>
+                )}
               </Link>
 
               {/* Notification Bell */}
