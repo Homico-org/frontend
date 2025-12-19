@@ -483,7 +483,7 @@ function MessagesPageContent() {
 
   // Filter conversations by search
   const filteredConversations = conversations.filter((conv) =>
-    conv.participant.name.toLowerCase().includes(searchQuery.toLowerCase())
+    conv.participant?.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Handle sending a message

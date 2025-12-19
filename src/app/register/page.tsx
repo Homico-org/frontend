@@ -424,6 +424,9 @@ function RegisterContent() {
       await submitRegistration();
     } catch (err: any) {
       setError(err.message || "Verification failed");
+      // Clear OTP inputs on error
+      setPhoneOtp(["", "", "", ""]);
+      otpInputRefs.current[0]?.focus();
     } finally {
       setIsLoading(false);
     }
@@ -434,8 +437,20 @@ function RegisterContent() {
     const otp = [...phoneOtp];
     otp[index] = value.slice(-1);
     setPhoneOtp(otp);
+
+    // Move to next input if value entered
     if (value && index < 3) {
       otpInputRefs.current[index + 1]?.focus();
+    }
+
+    // Auto-submit when all 4 digits are filled
+    const newOtp = [...otp];
+    newOtp[index] = value.slice(-1);
+    if (newOtp.every((digit) => digit !== "") && newOtp.length === 4) {
+      // Small delay to let state update and show the digit
+      setTimeout(() => {
+        verifyOtp();
+      }, 100);
     }
   };
 
@@ -454,6 +469,13 @@ function RegisterContent() {
     const otp = pastedData.split("");
     while (otp.length < 4) otp.push("");
     setPhoneOtp(otp);
+
+    // Auto-submit if all 4 digits pasted
+    if (otp.every((digit) => digit !== "") && otp.length === 4) {
+      setTimeout(() => {
+        verifyOtp();
+      }, 100);
+    }
   };
 
   const validateForm = () => {
@@ -603,6 +625,7 @@ function RegisterContent() {
               formData.role === "pro"
                 ? formData.selectedSubcategories
                 : undefined,
+            isPhoneVerified: true, // Phone was verified via OTP before registration
           }),
         }
       );
@@ -744,42 +767,34 @@ function RegisterContent() {
             ))}
           </div>
 
-          <button
-            onClick={verifyOtp}
-            disabled={isLoading || phoneOtp.join("").length !== 4}
-            className="w-full py-4 rounded-xl text-white font-semibold transition-all duration-300 disabled:opacity-60"
-            style={{
-              background: "linear-gradient(135deg, #D26B3F 0%, #E07B4F 100%)",
-            }}
-          >
-            {isLoading ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg
-                  className="animate-spin h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
+          {/* Loading indicator when verifying */}
+          {isLoading && (
+            <div className="flex items-center justify-center gap-2 py-4">
+              <svg
+                className="animate-spin h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                style={{ color: "#E07B4F" }}
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              <span style={{ color: "var(--color-text-secondary)" }}>
+                {locale === "ka" ? "მოწმდება..." : "Verifying..."}
               </span>
-            ) : locale === "ka" ? (
-              "დადასტურება"
-            ) : (
-              "Verify"
-            )}
-          </button>
+            </div>
+          )}
 
           <div className="mt-4 text-center">
             <button
