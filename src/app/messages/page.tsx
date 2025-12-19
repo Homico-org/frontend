@@ -8,15 +8,16 @@ import { api } from '@/lib/api';
 import { storage } from '@/services/storage';
 import {
   Edit3,
+  MessageCircle,
   MoreVertical,
   Paperclip,
   Search,
   Send,
-  MessageCircle,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { io, Socket } from 'socket.io-client';
 
 // Terracotta accent color matching the app
 const ACCENT_COLOR = '#C4735B';
@@ -259,7 +260,6 @@ function MessageBubble({
 function MessagesPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { locale } = useLanguage();
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -275,10 +275,111 @@ function MessagesPageContent() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const socketRef = useRef<Socket | null>(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const [otherUserTyping, setOtherUserTyping] = useState(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Get conversation ID from URL if present
   const urlConversationId = searchParams.get('conversation');
   const urlRecipientId = searchParams.get('recipient');
+
+  // WebSocket connection
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:3001';
+
+    socketRef.current = io(`${backendUrl}/chat`, {
+      auth: { token },
+      transports: ['websocket', 'polling'],
+    });
+
+    socketRef.current.on('connect', () => {
+      console.log('Connected to chat WebSocket');
+    });
+
+    socketRef.current.on('disconnect', () => {
+      console.log('Disconnected from chat WebSocket');
+    });
+
+    socketRef.current.on('newMessage', (message: Message) => {
+      // Add new message to the list if it's for the current conversation
+      setMessages(prev => {
+        // Avoid duplicates (from optimistic updates)
+        if (prev.some(m => m._id === message._id)) return prev;
+        return [...prev, message];
+      });
+    });
+
+    socketRef.current.on('conversationUpdate', (update: { conversationId: string; lastMessage: string; lastMessageAt: string }) => {
+      // Update conversation list with new message
+      setConversations(prev =>
+        prev.map(c =>
+          c._id === update.conversationId
+            ? {
+                ...c,
+                lastMessage: {
+                  content: update.lastMessage,
+                  createdAt: update.lastMessageAt,
+                  senderId: '',
+                },
+                unreadCount: selectedConversation?._id === update.conversationId ? 0 : c.unreadCount + 1,
+              }
+            : c
+        )
+      );
+    });
+
+    socketRef.current.on('userTyping', ({ userId, isTyping: typing }: { userId: string; isTyping: boolean }) => {
+      if (userId !== user?.id) {
+        setOtherUserTyping(typing);
+      }
+    });
+
+    return () => {
+      socketRef.current?.disconnect();
+    };
+  }, [isAuthenticated, user]);
+
+  // Join/leave conversation room when selected conversation changes
+  useEffect(() => {
+    if (!socketRef.current || !selectedConversation) return;
+
+    socketRef.current.emit('joinConversation', selectedConversation._id);
+
+    return () => {
+      if (socketRef.current && selectedConversation) {
+        socketRef.current.emit('leaveConversation', selectedConversation._id);
+      }
+    };
+  }, [selectedConversation]);
+
+  // Handle typing indicator
+  const handleTyping = useCallback(() => {
+    if (!socketRef.current || !selectedConversation) return;
+
+    if (!isTyping) {
+      setIsTyping(true);
+      socketRef.current.emit('typing', { conversationId: selectedConversation._id, isTyping: true });
+    }
+
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Set new timeout to stop typing indicator
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+      if (socketRef.current && selectedConversation) {
+        socketRef.current.emit('typing', { conversationId: selectedConversation._id, isTyping: false });
+      }
+    }, 2000);
+  }, [selectedConversation, isTyping]);
 
   // Fetch conversations
   const fetchConversations = useCallback(async () => {
@@ -397,7 +498,7 @@ function MessagesPageContent() {
     const tempMessage: Message = {
       _id: `temp-${Date.now()}`,
       content: messageContent,
-      senderId: user?._id || '',
+      senderId: user?.id || '',
       createdAt: new Date().toISOString(),
     };
     setMessages(prev => [...prev, tempMessage]);
@@ -422,7 +523,7 @@ function MessagesPageContent() {
                 lastMessage: {
                   content: messageContent,
                   createdAt: new Date().toISOString(),
-                  senderId: user?._id || '',
+                  senderId: user?.id || '',
                 },
               }
             : c
@@ -688,10 +789,10 @@ function MessagesPageContent() {
                         <div className="space-y-3">
                           {msgs.map((message, idx) => {
                             const senderId = getSenderId(message.senderId);
-                            const isMine = senderId === user?._id;
+                            const isMine = senderId === user?.id;
                             const showAvatar =
                               !isMine &&
-                              (idx === 0 || getSenderId(msgs[idx - 1].senderId) === user?._id);
+                              (idx === 0 || getSenderId(msgs[idx - 1].senderId) === user?.id);
 
                             return (
                               <MessageBubble
@@ -708,6 +809,17 @@ function MessagesPageContent() {
                     ))}
 
                     <div ref={messagesEndRef} />
+
+                    {/* Typing indicator */}
+                    {otherUserTyping && (
+                      <div className="flex items-center gap-2 pl-10">
+                        <div className="flex gap-1 px-4 py-2 bg-white border border-neutral-200 rounded-2xl rounded-bl-md">
+                          <span className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -734,8 +846,11 @@ function MessagesPageContent() {
                       ref={inputRef}
                       type="text"
                       value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={handleKeyPress}
+                      onChange={(e) => {
+                        setNewMessage(e.target.value);
+                        handleTyping();
+                      }}
+                      onKeyDown={handleKeyPress}
                       placeholder={locale === 'ka' ? 'დაწერე შეტყობინება...' : 'Type your message...'}
                       className="flex-1 bg-transparent text-[15px] placeholder-neutral-400 focus:outline-none"
                       disabled={isSending}
