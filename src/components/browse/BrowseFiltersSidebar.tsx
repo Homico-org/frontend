@@ -60,7 +60,8 @@ export default function BrowseFiltersSidebar({
   };
 
   const selectedCityData = CITIES.find(c => c.value === selectedCity);
-  const displayCategories = showAllCategories ? CATEGORIES : CATEGORY_OPTIONS;
+  const displayCategories: Array<{ key: string; label?: string; labelKa?: string; name?: string; nameKa?: string }> =
+    showAllCategories ? CATEGORIES : CATEGORY_OPTIONS;
 
   return (
     <aside className="w-full h-full overflow-y-auto overflow-x-hidden">
@@ -116,10 +117,10 @@ export default function BrowseFiltersSidebar({
 
           <div className="space-y-2.5">
             {displayCategories.map(category => {
-              const key = 'key' in category ? category.key : category.key;
+              const key = category.key;
               const label = locale === 'ka'
-                ? ('labelKa' in category ? category.labelKa : ('nameKa' in category ? category.nameKa : ''))
-                : ('label' in category ? category.label : ('name' in category ? category.name : key));
+                ? (category.labelKa || category.nameKa || '')
+                : (category.label || category.name || key);
               const isSelected = selectedCategory === key;
 
               return (

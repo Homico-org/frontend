@@ -75,7 +75,7 @@ export default function FeedCard({ item, locale = 'en' }: FeedCardProps) {
 
   // Get category label for the tag
   const getCategoryLabel = () => {
-    const category = item.category || item.pro?.primaryCategory || 'design';
+    const category = item.category || 'design';
     const label = CATEGORY_LABELS[category];
     return label ? label[locale as 'en' | 'ka'] : (locale === 'ka' ? 'დიზაინი' : 'Design');
   };
