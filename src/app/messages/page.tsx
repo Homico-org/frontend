@@ -9,10 +9,11 @@ import { storage } from '@/services/storage';
 import {
   Edit3,
   MessageCircle,
-  MoreVertical,
   Paperclip,
   Search,
   Send,
+  X,
+  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -495,50 +496,43 @@ const ChatContent = memo(function ChatContent({
             </svg>
           </button>
 
-          <Avatar
-            src={conversation.participant.avatar}
-            name={conversation.participant.name}
-            size="md"
-            className="w-11 h-11"
-          />
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-neutral-900">
-                {conversation.participant.name}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              {conversation.participant.role === 'pro' && (
-                <span
-                  className="px-1.5 py-0.5 rounded text-xs font-semibold"
-                  style={{ backgroundColor: '#E8956A', color: 'white' }}
-                >
-                  PRO
-                </span>
-              )}
-              {conversation.participant.title && (
-                <span className="text-neutral-500">
-                  {conversation.participant.title}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
           <Link
             href={
               conversation.participant.role === 'pro'
                 ? `/professionals/${conversation.participant.proProfileId || conversation.participant._id}`
                 : `/users/${conversation.participant._id}`
             }
-            className="px-4 py-2 rounded-lg border border-neutral-200 text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors"
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
           >
-            {locale === 'ka' ? 'პროფილის ნახვა' : 'View Profile'}
+            <Avatar
+              src={conversation.participant.avatar}
+              name={conversation.participant.name}
+              size="md"
+              className="w-11 h-11"
+            />
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-neutral-900">
+                  {conversation.participant.name}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                {conversation.participant.role === 'pro' && (
+                  <span
+                    className="px-1.5 py-0.5 rounded text-xs font-semibold"
+                    style={{ backgroundColor: '#E8956A', color: 'white' }}
+                  >
+                    PRO
+                  </span>
+                )}
+                {conversation.participant.title && (
+                  <span className="text-neutral-500">
+                    {conversation.participant.title}
+                  </span>
+                )}
+              </div>
+            </div>
           </Link>
-          <button className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-neutral-100 text-neutral-500">
-            <MoreVertical className="w-5 h-5" />
-          </button>
         </div>
       </div>
 
@@ -666,6 +660,13 @@ function MessagesPageContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isMobileListOpen, setIsMobileListOpen] = useState(true);
+
+  // New conversation modal state
+  const [showNewConversationModal, setShowNewConversationModal] = useState(false);
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const socketRef = useRef<Socket | null>(null);
   const initialLoadDoneRef = useRef(false);
@@ -824,6 +825,66 @@ function MessagesPageContent() {
     setIsMobileListOpen(true);
   }, []);
 
+  // Search for users to start new conversation
+  const handleUserSearch = useCallback(async (query: string) => {
+    setUserSearchQuery(query);
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (!query.trim()) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        // Search for pro profiles using existing endpoint
+        const response = await api.get(`/pro-profiles?search=${encodeURIComponent(query)}&limit=10`);
+        setSearchResults(response.data.profiles || response.data || []);
+      } catch (error) {
+        console.error('Failed to search users:', error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+  }, []);
+
+  // Start conversation with selected user
+  const handleStartConversation = useCallback(async (proProfile: any) => {
+    try {
+      const response = await api.post('/conversations/start', {
+        recipientId: proProfile._id,
+      });
+
+      const { conversation } = response.data;
+
+      // Refresh conversations list
+      const convResponse = await api.get('/conversations');
+      setConversations(convResponse.data);
+
+      // Find and select the new conversation
+      const conv = convResponse.data.find((c: Conversation) => c._id === conversation._id);
+      if (conv) {
+        setSelectedConversation(conv);
+        setIsMobileListOpen(false);
+        window.history.replaceState({}, '', `/messages?conversation=${conversation._id}`);
+      }
+
+      // Close modal
+      setShowNewConversationModal(false);
+      setUserSearchQuery('');
+      setSearchResults([]);
+    } catch (error) {
+      console.error('Failed to start conversation:', error);
+    }
+  }, []);
+
   if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-white flex flex-col">
@@ -874,8 +935,10 @@ function MessagesPageContent() {
                 {locale === 'ka' ? 'შეტყობინებები' : 'Messages'}
               </h1>
               <button
+                onClick={() => setShowNewConversationModal(true)}
                 className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors hover:bg-neutral-100"
                 style={{ color: ACCENT_COLOR }}
+                title={locale === 'ka' ? 'ახალი მიმოწერა' : 'New conversation'}
               >
                 <Edit3 className="w-5 h-5" />
               </button>
@@ -955,6 +1018,109 @@ function MessagesPageContent() {
           )}
         </main>
       </div>
+
+      {/* New Conversation Modal */}
+      {showNewConversationModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => {
+              setShowNewConversationModal(false);
+              setUserSearchQuery('');
+              setSearchResults([]);
+            }}
+          />
+
+          {/* Modal */}
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 max-h-[80vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-neutral-200">
+              <h2 className="text-lg font-semibold text-neutral-900">
+                {locale === 'ka' ? 'ახალი მიმოწერა' : 'New Conversation'}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowNewConversationModal(false);
+                  setUserSearchQuery('');
+                  setSearchResults([]);
+                }}
+                className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-neutral-100 text-neutral-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Search Input */}
+            <div className="p-4 border-b border-neutral-100">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                <input
+                  type="text"
+                  value={userSearchQuery}
+                  onChange={(e) => handleUserSearch(e.target.value)}
+                  placeholder={locale === 'ka' ? 'მოძებნე პროფესიონალი...' : 'Search for a professional...'}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-neutral-200 bg-neutral-50 text-sm placeholder-neutral-400 focus:outline-none focus:border-[#C4735B]/50 focus:bg-white transition-all"
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            {/* Results */}
+            <div className="flex-1 overflow-y-auto p-2">
+              {isSearching ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin" style={{ color: ACCENT_COLOR }} />
+                </div>
+              ) : searchResults.length > 0 ? (
+                <div className="space-y-1">
+                  {searchResults.map((profile) => (
+                    <button
+                      key={profile._id}
+                      onClick={() => handleStartConversation(profile)}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-neutral-50 transition-colors text-left"
+                    >
+                      <Avatar
+                        src={profile.avatar || profile.userId?.avatar}
+                        name={profile.displayName || profile.userId?.name || 'Pro'}
+                        size="md"
+                        className="w-11 h-11"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-neutral-900 truncate">
+                            {profile.displayName || profile.userId?.name || 'Professional'}
+                          </span>
+                          <span
+                            className="px-1.5 py-0.5 rounded text-xs font-semibold flex-shrink-0"
+                            style={{ backgroundColor: '#E8956A', color: 'white' }}
+                          >
+                            PRO
+                          </span>
+                        </div>
+                        {(profile.title || profile.primaryCategory) && (
+                          <p className="text-sm text-neutral-500 truncate">
+                            {profile.title || profile.primaryCategory}
+                          </p>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : userSearchQuery.trim() ? (
+                <div className="text-center py-8 text-neutral-500">
+                  <p>{locale === 'ka' ? 'პროფესიონალი ვერ მოიძებნა' : 'No professionals found'}</p>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-neutral-400">
+                  <Search className="w-10 h-10 mx-auto mb-3 text-neutral-300" />
+                  <p>{locale === 'ka' ? 'მოძებნე პროფესიონალი' : 'Search for a professional to start a conversation'}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
