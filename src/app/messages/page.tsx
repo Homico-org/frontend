@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState, memo } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 // Terracotta accent color matching the app
@@ -256,6 +256,389 @@ function MessageBubble({
   );
 }
 
+// Chat Content Component - handles messages for a specific conversation
+const ChatContent = memo(function ChatContent({
+  conversation,
+  userId,
+  locale,
+  socketRef,
+  onBack,
+  onConversationUpdate,
+}: {
+  conversation: Conversation;
+  userId: string;
+  locale: string;
+  socketRef: React.MutableRefObject<Socket | null>;
+  onBack: () => void;
+  onConversationUpdate: (conversationId: string, lastMessage: string) => void;
+}) {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [isLoadingMessages, setIsLoadingMessages] = useState(true);
+  const [isSending, setIsSending] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [otherUserTyping, setOtherUserTyping] = useState(false);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Fetch messages for this conversation
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        setIsLoadingMessages(true);
+        const response = await api.get(`/messages/conversation/${conversation._id}`);
+        setMessages(response.data);
+
+        // Mark messages as read
+        try {
+          await api.patch(`/messages/conversation/${conversation._id}/read-all`);
+          await api.patch(`/conversations/${conversation._id}/read`);
+        } catch (e) {
+          // Ignore read errors
+        }
+      } catch (error) {
+        console.error('Failed to fetch messages:', error);
+      } finally {
+        setIsLoadingMessages(false);
+      }
+    };
+
+    fetchMessages();
+  }, [conversation._id]);
+
+  // Join/leave conversation room
+  useEffect(() => {
+    if (!socketRef.current) return;
+
+    socketRef.current.emit('joinConversation', conversation._id);
+
+    const handleNewMessage = (message: Message) => {
+      setMessages(prev => {
+        if (prev.some(m => m._id === message._id)) return prev;
+
+        const tempMsgIndex = prev.findIndex(m =>
+          m._id.startsWith('temp-') &&
+          m.content === message.content &&
+          getSenderId(m.senderId) === getSenderId(message.senderId)
+        );
+
+        if (tempMsgIndex !== -1) {
+          const newMessages = [...prev];
+          newMessages[tempMsgIndex] = message;
+          return newMessages;
+        }
+
+        return [...prev, message];
+      });
+    };
+
+    const handleTyping = ({ odliserId, isTyping: typing }: { odliserId: string; isTyping: boolean }) => {
+      if (odliserId !== userId) {
+        setOtherUserTyping(typing);
+      }
+    };
+
+    socketRef.current.on('newMessage', handleNewMessage);
+    socketRef.current.on('userTyping', handleTyping);
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.emit('leaveConversation', conversation._id);
+        socketRef.current.off('newMessage', handleNewMessage);
+        socketRef.current.off('userTyping', handleTyping);
+      }
+    };
+  }, [conversation._id, socketRef, userId]);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Handle typing indicator
+  const handleTyping = useCallback(() => {
+    if (!socketRef.current) return;
+
+    if (!isTyping) {
+      setIsTyping(true);
+      socketRef.current.emit('typing', { conversationId: conversation._id, isTyping: true });
+    }
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+      if (socketRef.current) {
+        socketRef.current.emit('typing', { conversationId: conversation._id, isTyping: false });
+      }
+    }, 2000);
+  }, [conversation._id, isTyping, socketRef]);
+
+  // Handle sending a message
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || isSending) return;
+
+    const messageContent = newMessage.trim();
+    const tempId = `temp-${Date.now()}`;
+    setNewMessage('');
+    setIsSending(true);
+
+    const tempMessage: Message = {
+      _id: tempId,
+      content: messageContent,
+      senderId: userId,
+      createdAt: new Date().toISOString(),
+    };
+    setMessages(prev => [...prev, tempMessage]);
+
+    try {
+      const response = await api.post('/messages', {
+        conversationId: conversation._id,
+        content: messageContent,
+      });
+
+      setMessages(prev => {
+        const hasRealMessage = prev.some(m => m._id === response.data._id);
+        if (hasRealMessage) {
+          return prev.filter(m => m._id !== tempId);
+        }
+        return prev.map(m => (m._id === tempId ? response.data : m));
+      });
+
+      onConversationUpdate(conversation._id, messageContent);
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      setMessages(prev => prev.filter(m => m._id !== tempId));
+      setNewMessage(messageContent);
+    } finally {
+      setIsSending(false);
+      inputRef.current?.focus();
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const uploadResponse = await api.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      const response = await api.post('/messages', {
+        conversationId: conversation._id,
+        content: '',
+        attachments: [uploadResponse.data.url || uploadResponse.data.filename],
+      });
+
+      setMessages(prev => [...prev, response.data]);
+    } catch (error) {
+      console.error('Failed to upload file:', error);
+    }
+
+    e.target.value = '';
+  };
+
+  // Group messages by date
+  const groupedMessages = useMemo(() => {
+    return messages.reduce((groups, message) => {
+      const date = new Date(message.createdAt).toDateString();
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+      groups[date].push(message);
+      return groups;
+    }, {} as Record<string, Message[]>);
+  }, [messages]);
+
+  return (
+    <>
+      {/* Chat Header */}
+      <div className="flex-shrink-0 h-[72px] px-5 flex items-center justify-between border-b border-neutral-200 bg-white">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onBack}
+            className="md:hidden w-9 h-9 rounded-lg flex items-center justify-center hover:bg-neutral-100 mr-1"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <Avatar
+            src={conversation.participant.avatar}
+            name={conversation.participant.name}
+            size="md"
+            className="w-11 h-11"
+          />
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-neutral-900">
+                {conversation.participant.name}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              {conversation.participant.role === 'pro' && (
+                <span
+                  className="px-1.5 py-0.5 rounded text-xs font-semibold"
+                  style={{ backgroundColor: '#E8956A', color: 'white' }}
+                >
+                  PRO
+                </span>
+              )}
+              {conversation.participant.title && (
+                <span className="text-neutral-500">
+                  {conversation.participant.title}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Link
+            href={
+              conversation.participant.role === 'pro'
+                ? `/professionals/${conversation.participant.proProfileId || conversation.participant._id}`
+                : `/users/${conversation.participant._id}`
+            }
+            className="px-4 py-2 rounded-lg border border-neutral-200 text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors"
+          >
+            {locale === 'ka' ? 'პროფილის ნახვა' : 'View Profile'}
+          </Link>
+          <button className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-neutral-100 text-neutral-500">
+            <MoreVertical className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-5 min-h-0">
+        {isLoadingMessages ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: ACCENT_COLOR, borderTopColor: 'transparent' }} />
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="flex items-center justify-center h-full text-neutral-500">
+            <div className="text-center">
+              <MessageCircle className="w-12 h-12 mx-auto text-neutral-300 mb-3" />
+              <p>{locale === 'ka' ? 'ჯერ არ არის შეტყობინება' : 'No messages yet'}</p>
+              <p className="text-sm mt-1">
+                {locale === 'ka' ? 'დაიწყეთ საუბარი' : 'Start the conversation'}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="max-w-3xl mx-auto space-y-6">
+            {Object.entries(groupedMessages).map(([date, msgs]) => (
+              <div key={date}>
+                <div className="flex items-center justify-center mb-6">
+                  <span className="px-3 py-1 bg-neutral-200/60 rounded-full text-xs font-medium text-neutral-500">
+                    {formatDateDivider(msgs[0].createdAt, locale)}
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  {msgs.map((message, idx) => {
+                    const senderId = getSenderId(message.senderId);
+                    const isMine = senderId === userId;
+                    const showAvatar =
+                      !isMine &&
+                      (idx === 0 || getSenderId(msgs[idx - 1].senderId) === userId);
+
+                    return (
+                      <MessageBubble
+                        key={message._id}
+                        message={message}
+                        isMine={isMine}
+                        showAvatar={showAvatar}
+                        participant={conversation.participant}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+
+            <div ref={messagesEndRef} />
+
+            {otherUserTyping && (
+              <div className="flex items-center gap-2 pl-10">
+                <div className="flex gap-1 px-4 py-2 bg-white border border-neutral-200 rounded-2xl rounded-bl-md">
+                  <span className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Message Input */}
+      <div className="flex-shrink-0 p-4 bg-white border-t border-neutral-200">
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-center gap-3 bg-neutral-50 rounded-2xl border border-neutral-200 px-4 py-2">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-9 h-9 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-600 hover:bg-neutral-200/50 transition-colors"
+            >
+              <Paperclip className="w-5 h-5" />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+
+            <input
+              ref={inputRef}
+              type="text"
+              value={newMessage}
+              onChange={(e) => {
+                setNewMessage(e.target.value);
+                handleTyping();
+              }}
+              onKeyDown={handleKeyPress}
+              placeholder={locale === 'ka' ? 'დაწერე შეტყობინება...' : 'Type your message...'}
+              className="flex-1 bg-transparent text-[15px] placeholder-neutral-400 focus:outline-none"
+              disabled={isSending}
+            />
+
+            <button
+              onClick={handleSendMessage}
+              disabled={!newMessage.trim() || isSending}
+              className="w-10 h-10 rounded-full flex items-center justify-center text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: ACCENT_COLOR }}
+            >
+              <Send className="w-5 h-5" />
+            </button>
+          </div>
+          <p className="text-xs text-neutral-400 text-right mt-2">
+            {locale === 'ka' ? 'დააჭირე Enter-ს გასაგზავნად' : 'Press Enter to send'}
+          </p>
+        </div>
+      </div>
+    </>
+  );
+});
+
 // Main Messages Page Content Component
 function MessagesPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -264,21 +647,11 @@ function MessagesPageContent() {
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
-  const [isSending, setIsSending] = useState(false);
   const [isMobileListOpen, setIsMobileListOpen] = useState(true);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const socketRef = useRef<Socket | null>(null);
-  const [isTyping, setIsTyping] = useState(false);
-  const [otherUserTyping, setOtherUserTyping] = useState(false);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const initialLoadDoneRef = useRef(false);
 
   // Get conversation ID from URL if present - only read on initial load
@@ -309,31 +682,6 @@ function MessagesPageContent() {
       console.log('Disconnected from chat WebSocket');
     });
 
-    socketRef.current.on('newMessage', (message: Message) => {
-      // Add new message to the list if it's for the current conversation
-      setMessages(prev => {
-        // Check if this message already exists (exact match)
-        if (prev.some(m => m._id === message._id)) return prev;
-
-        // Check if there's a temp message with same content from same sender
-        // that was just sent (optimistic update) - replace it
-        const tempMsgIndex = prev.findIndex(m =>
-          m._id.startsWith('temp-') &&
-          m.content === message.content &&
-          getSenderId(m.senderId) === getSenderId(message.senderId)
-        );
-
-        if (tempMsgIndex !== -1) {
-          // Replace temp message with real one
-          const newMessages = [...prev];
-          newMessages[tempMsgIndex] = message;
-          return newMessages;
-        }
-
-        return [...prev, message];
-      });
-    });
-
     socketRef.current.on('conversationUpdate', (update: { conversationId: string; lastMessage: string; lastMessageAt: string }) => {
       // Update conversation list with new message
       setConversations(prev =>
@@ -353,52 +701,10 @@ function MessagesPageContent() {
       );
     });
 
-    socketRef.current.on('userTyping', ({ userId, isTyping: typing }: { userId: string; isTyping: boolean }) => {
-      if (userId !== user?.id) {
-        setOtherUserTyping(typing);
-      }
-    });
-
     return () => {
       socketRef.current?.disconnect();
     };
-  }, [isAuthenticated, user]);
-
-  // Join/leave conversation room when selected conversation changes
-  useEffect(() => {
-    if (!socketRef.current || !selectedConversation) return;
-
-    socketRef.current.emit('joinConversation', selectedConversation._id);
-
-    return () => {
-      if (socketRef.current && selectedConversation) {
-        socketRef.current.emit('leaveConversation', selectedConversation._id);
-      }
-    };
-  }, [selectedConversation]);
-
-  // Handle typing indicator
-  const handleTyping = useCallback(() => {
-    if (!socketRef.current || !selectedConversation) return;
-
-    if (!isTyping) {
-      setIsTyping(true);
-      socketRef.current.emit('typing', { conversationId: selectedConversation._id, isTyping: true });
-    }
-
-    // Clear existing timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    // Set new timeout to stop typing indicator
-    typingTimeoutRef.current = setTimeout(() => {
-      setIsTyping(false);
-      if (socketRef.current && selectedConversation) {
-        socketRef.current.emit('typing', { conversationId: selectedConversation._id, isTyping: false });
-      }
-    }, 2000);
-  }, [selectedConversation, isTyping]);
+  }, [isAuthenticated, user, selectedConversation?._id]);
 
   // Fetch conversations
   const fetchConversations = useCallback(async () => {
@@ -465,166 +771,41 @@ function MessagesPageContent() {
     fetchConversations();
   }, [fetchConversations]);
 
-  // Fetch messages for selected conversation
-  const fetchMessages = useCallback(async (conversationId: string) => {
-    try {
-      setIsLoadingMessages(true);
-      const response = await api.get(`/messages/conversation/${conversationId}`);
-      setMessages(response.data);
-
-      // Mark messages as read
-      try {
-        await api.patch(`/messages/conversation/${conversationId}/read-all`);
-        await api.patch(`/conversations/${conversationId}/read`);
-      } catch (e) {
-        // Ignore read errors
-      }
-
-      // Update local conversation unread count
-      setConversations(prev =>
-        prev.map(c =>
-          c._id === conversationId ? { ...c, unreadCount: 0 } : c
-        )
-      );
-    } catch (error) {
-      console.error('Failed to fetch messages:', error);
-    } finally {
-      setIsLoadingMessages(false);
-    }
-  }, []);
-
-  // Fetch messages when conversation changes
-  useEffect(() => {
-    if (selectedConversation) {
-      fetchMessages(selectedConversation._id);
-    }
-  }, [selectedConversation, fetchMessages]);
-
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
   // Filter conversations by search
   const filteredConversations = conversations.filter((conv) =>
     conv.participant?.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Handle sending a message
-  const handleSendMessage = async () => {
-    if (!newMessage.trim() || !selectedConversation || isSending) return;
-
-    const messageContent = newMessage.trim();
-    const tempId = `temp-${Date.now()}`;
-    setNewMessage('');
-    setIsSending(true);
-
-    // Optimistically add message
-    const tempMessage: Message = {
-      _id: tempId,
-      content: messageContent,
-      senderId: user?.id || '',
-      createdAt: new Date().toISOString(),
-    };
-    setMessages(prev => [...prev, tempMessage]);
-
-    try {
-      const response = await api.post('/messages', {
-        conversationId: selectedConversation._id,
-        content: messageContent,
-      });
-
-      // Replace temp message with real one (if WebSocket hasn't already done it)
-      setMessages(prev => {
-        // Check if WebSocket already replaced the temp message
-        const hasRealMessage = prev.some(m => m._id === response.data._id);
-        if (hasRealMessage) {
-          // WebSocket already added the real message - just remove temp
-          return prev.filter(m => m._id !== tempId);
-        }
-        // Replace temp with real message
-        return prev.map(m => (m._id === tempId ? response.data : m));
-      });
-
-      // Update conversation's last message
-      setConversations(prev =>
-        prev.map(c =>
-          c._id === selectedConversation._id
-            ? {
-                ...c,
-                lastMessage: {
-                  content: messageContent,
-                  createdAt: new Date().toISOString(),
-                  senderId: user?.id || '',
-                },
-              }
-            : c
-        )
-      );
-    } catch (error) {
-      console.error('Failed to send message:', error);
-      // Remove optimistic message on error
-      setMessages(prev => prev.filter(m => m._id !== tempId));
-      setNewMessage(messageContent); // Restore message
-    } finally {
-      setIsSending(false);
-      inputRef.current?.focus();
-    }
-  };
-
-  // Handle key press
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  // Handle file selection
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !selectedConversation) return;
-
-    try {
-      // Upload file first
-      const formData = new FormData();
-      formData.append('file', file);
-      const uploadResponse = await api.post('/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-
-      // Send message with attachment
-      const response = await api.post('/messages', {
-        conversationId: selectedConversation._id,
-        content: '',
-        attachments: [uploadResponse.data.url || uploadResponse.data.filename],
-      });
-
-      setMessages(prev => [...prev, response.data]);
-    } catch (error) {
-      console.error('Failed to upload file:', error);
-    }
-
-    e.target.value = '';
-  };
-
-  // Select conversation
-  const handleSelectConversation = (conv: Conversation) => {
+  // Select conversation handler
+  const handleSelectConversation = useCallback((conv: Conversation) => {
     setSelectedConversation(conv);
     setIsMobileListOpen(false);
     // Update URL without navigation
     window.history.replaceState({}, '', `/messages?conversation=${conv._id}`);
-  };
+  }, []);
 
-  // Group messages by date
-  const groupedMessages = messages.reduce((groups, message) => {
-    const date = new Date(message.createdAt).toDateString();
-    if (!groups[date]) {
-      groups[date] = [];
-    }
-    groups[date].push(message);
-    return groups;
-  }, {} as Record<string, Message[]>);
+  // Handle conversation update from ChatContent
+  const handleConversationUpdate = useCallback((conversationId: string, lastMessage: string) => {
+    setConversations(prev =>
+      prev.map(c =>
+        c._id === conversationId
+          ? {
+              ...c,
+              lastMessage: {
+                content: lastMessage,
+                createdAt: new Date().toISOString(),
+                senderId: user?.id || '',
+              },
+            }
+          : c
+      )
+    );
+  }, [user?.id]);
+
+  // Handle back from chat
+  const handleBackToList = useCallback(() => {
+    setIsMobileListOpen(true);
+  }, []);
 
   if (authLoading || isLoading) {
     return (
@@ -729,180 +910,15 @@ function MessagesPageContent() {
           `}
         >
           {selectedConversation ? (
-            <>
-              {/* Chat Header */}
-              <div className="flex-shrink-0 h-[72px] px-5 flex items-center justify-between border-b border-neutral-200 bg-white">
-                <div className="flex items-center gap-3">
-                  {/* Mobile back button */}
-                  <button
-                    onClick={() => setIsMobileListOpen(true)}
-                    className="md:hidden w-9 h-9 rounded-lg flex items-center justify-center hover:bg-neutral-100 mr-1"
-                  >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-
-                  <Avatar
-                    src={selectedConversation.participant.avatar}
-                    name={selectedConversation.participant.name}
-                    size="md"
-                    className="w-11 h-11"
-                  />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-neutral-900">
-                        {selectedConversation.participant.name}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      {selectedConversation.participant.role === 'pro' && (
-                        <span
-                          className="px-1.5 py-0.5 rounded text-xs font-semibold"
-                          style={{ backgroundColor: '#E8956A', color: 'white' }}
-                        >
-                          PRO
-                        </span>
-                      )}
-                      {selectedConversation.participant.title && (
-                        <span className="text-neutral-500">
-                          {selectedConversation.participant.title}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Link
-                    href={
-                      selectedConversation.participant.role === 'pro'
-                        ? `/professionals/${selectedConversation.participant.proProfileId || selectedConversation.participant._id}`
-                        : `/users/${selectedConversation.participant._id}`
-                    }
-                    className="px-4 py-2 rounded-lg border border-neutral-200 text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors"
-                  >
-                    {locale === 'ka' ? 'პროფილის ნახვა' : 'View Profile'}
-                  </Link>
-                  <button className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-neutral-100 text-neutral-500">
-                    <MoreVertical className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto p-5">
-                {isLoadingMessages ? (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: ACCENT_COLOR, borderTopColor: 'transparent' }} />
-                  </div>
-                ) : messages.length === 0 ? (
-                  <div className="flex items-center justify-center h-full text-neutral-500">
-                    <div className="text-center">
-                      <MessageCircle className="w-12 h-12 mx-auto text-neutral-300 mb-3" />
-                      <p>{locale === 'ka' ? 'ჯერ არ არის შეტყობინება' : 'No messages yet'}</p>
-                      <p className="text-sm mt-1">
-                        {locale === 'ka' ? 'დაიწყეთ საუბარი' : 'Start the conversation'}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="max-w-3xl mx-auto space-y-6">
-                    {Object.entries(groupedMessages).map(([date, msgs]) => (
-                      <div key={date}>
-                        {/* Date Divider */}
-                        <div className="flex items-center justify-center mb-6">
-                          <span className="px-3 py-1 bg-neutral-200/60 rounded-full text-xs font-medium text-neutral-500">
-                            {formatDateDivider(msgs[0].createdAt, locale)}
-                          </span>
-                        </div>
-
-                        {/* Messages */}
-                        <div className="space-y-3">
-                          {msgs.map((message, idx) => {
-                            const senderId = getSenderId(message.senderId);
-                            const isMine = senderId === user?.id;
-                            const showAvatar =
-                              !isMine &&
-                              (idx === 0 || getSenderId(msgs[idx - 1].senderId) === user?.id);
-
-                            return (
-                              <MessageBubble
-                                key={message._id}
-                                message={message}
-                                isMine={isMine}
-                                showAvatar={showAvatar}
-                                participant={selectedConversation.participant}
-                              />
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ))}
-
-                    <div ref={messagesEndRef} />
-
-                    {/* Typing indicator */}
-                    {otherUserTyping && (
-                      <div className="flex items-center gap-2 pl-10">
-                        <div className="flex gap-1 px-4 py-2 bg-white border border-neutral-200 rounded-2xl rounded-bl-md">
-                          <span className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                          <span className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                          <span className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Message Input */}
-              <div className="flex-shrink-0 p-4 bg-white border-t border-neutral-200">
-                <div className="max-w-3xl mx-auto">
-                  <div className="flex items-center gap-3 bg-neutral-50 rounded-2xl border border-neutral-200 px-4 py-2">
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="w-9 h-9 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-600 hover:bg-neutral-200/50 transition-colors"
-                    >
-                      <Paperclip className="w-5 h-5" />
-                    </button>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileSelect}
-                      className="hidden"
-                    />
-
-                    <input
-                      ref={inputRef}
-                      type="text"
-                      value={newMessage}
-                      onChange={(e) => {
-                        setNewMessage(e.target.value);
-                        handleTyping();
-                      }}
-                      onKeyDown={handleKeyPress}
-                      placeholder={locale === 'ka' ? 'დაწერე შეტყობინება...' : 'Type your message...'}
-                      className="flex-1 bg-transparent text-[15px] placeholder-neutral-400 focus:outline-none"
-                      disabled={isSending}
-                    />
-
-                    <button
-                      onClick={handleSendMessage}
-                      disabled={!newMessage.trim() || isSending}
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                      style={{ backgroundColor: ACCENT_COLOR }}
-                    >
-                      <Send className="w-5 h-5" />
-                    </button>
-                  </div>
-                  <p className="text-xs text-neutral-400 text-right mt-2">
-                    {locale === 'ka' ? 'დააჭირე Enter-ს გასაგზავნად' : 'Press Enter to send'}
-                  </p>
-                </div>
-              </div>
-            </>
+            <ChatContent
+              key={selectedConversation._id}
+              conversation={selectedConversation}
+              userId={user?.id || ''}
+              locale={locale}
+              socketRef={socketRef}
+              onBack={handleBackToList}
+              onConversationUpdate={handleConversationUpdate}
+            />
           ) : (
             /* No Conversation Selected */
             <div className="flex-1 flex items-center justify-center text-neutral-500">
