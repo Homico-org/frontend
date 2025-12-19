@@ -130,7 +130,8 @@ export default function UserProfilePage() {
       openLoginModal();
       return;
     }
-    setShowContactModal(true);
+    // Navigate to messages with this user as recipient
+    router.push(`/messages?recipient=${profile?._id}`);
   };
 
   const handleSendMessage = async () => {

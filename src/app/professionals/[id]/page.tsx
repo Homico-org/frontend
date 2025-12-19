@@ -215,7 +215,8 @@ export default function ProfessionalDetailPage() {
       openLoginModal();
       return;
     }
-    setShowContactModal(true);
+    // Navigate to messages with this pro as recipient (using proProfileId)
+    router.push(`/messages?recipient=${profile?._id}`);
   };
 
   const handleSendMessage = async () => {

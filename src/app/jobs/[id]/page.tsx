@@ -757,11 +757,12 @@ export default function JobDetailPage() {
                     <p className="text-sm text-neutral-500">{job.clientId.city}</p>
                   )}
                 </div>
-                <button
+                <Link
+                  href={`/messages?recipient=${job.clientId._id}`}
                   className="px-4 py-2 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                 >
                   {locale === 'ka' ? 'მიწერა' : 'Message'}
-                </button>
+                </Link>
               </div>
             </div>
           )}
