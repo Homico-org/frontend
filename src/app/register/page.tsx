@@ -390,12 +390,12 @@ function RegisterContent() {
     }
   };
 
-  const verifyOtp = async () => {
+  const verifyOtp = async (otpCode?: string) => {
     setIsLoading(true);
     setError("");
     try {
       const identifier = `${countries[phoneCountry].phonePrefix}${formData.phone}`;
-      const code = phoneOtp.join("");
+      const code = otpCode || phoneOtp.join("");
 
       if (code.length !== 4) {
         throw new Error(
@@ -448,8 +448,9 @@ function RegisterContent() {
     newOtp[index] = value.slice(-1);
     if (newOtp.every((digit) => digit !== "") && newOtp.length === 4) {
       // Small delay to let state update and show the digit
+      const otpCode = newOtp.join("");
       setTimeout(() => {
-        verifyOtp();
+        verifyOtp(otpCode);
       }, 100);
     }
   };
@@ -472,8 +473,9 @@ function RegisterContent() {
 
     // Auto-submit if all 4 digits pasted
     if (otp.every((digit) => digit !== "") && otp.length === 4) {
+      const otpCode = otp.join("");
       setTimeout(() => {
-        verifyOtp();
+        verifyOtp(otpCode);
       }, 100);
     }
   };
