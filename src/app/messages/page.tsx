@@ -738,8 +738,9 @@ function MessagesPageContent() {
           setSelectedConversation(conv);
           setIsMobileListOpen(false);
         }
-        initialLoadDoneRef.current = true;
       }
+      // Always mark initial load as done
+      initialLoadDoneRef.current = true;
     } catch (error) {
       console.error('Failed to fetch conversations:', error);
     } finally {

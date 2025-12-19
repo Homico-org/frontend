@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNotifications } from "@/contexts/NotificationContext";
-import { FileText, Hammer, Plus } from "lucide-react";
+import { FileText, Hammer, MessageCircle, Plus } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Avatar from "./Avatar";
@@ -112,6 +112,14 @@ export default function Header() {
             <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
           ) : isAuthenticated && user ? (
             <>
+              {/* Messages */}
+              <Link
+                href="/messages"
+                className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+              >
+                <MessageCircle className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
+              </Link>
+
               {/* Notification Bell */}
               <Link
                 href="/notifications"
