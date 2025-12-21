@@ -519,15 +519,15 @@ function RegisterContent() {
       <div className="min-h-screen bg-[#FAFAF9]">
         {/* Header */}
         <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-neutral-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-12 flex items-center justify-between">
             <Logo />
-            <div className="flex items-center gap-4">
-              <Link href="/help" className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors">
-                {locale === "ka" ? "დახმარება" : "Help Center"}
+            <div className="flex items-center gap-3">
+              <Link href="/help" className="text-xs text-neutral-600 hover:text-neutral-900 transition-colors">
+                {locale === "ka" ? "დახმარება" : "Help"}
               </Link>
               <button
                 onClick={() => openLoginModal()}
-                className="text-sm font-medium text-[#C4735B] hover:text-[#A85D47] transition-colors"
+                className="text-xs font-medium text-[#C4735B] hover:text-[#A85D47] transition-colors"
               >
                 {locale === "ka" ? "შესვლა" : "Log In"}
               </button>
@@ -535,66 +535,66 @@ function RegisterContent() {
           </div>
         </header>
 
-        <main className="pt-16 min-h-screen flex">
+        <main className="pt-12 min-h-screen flex">
           {/* Left side - Marketing content */}
-          <div className="hidden lg:flex lg:w-1/2 xl:w-[45%] bg-gradient-to-br from-[#FDF8F6] to-[#FAF5F2] p-12 xl:p-16 flex-col justify-center relative overflow-hidden">
+          <div className="hidden lg:flex lg:w-1/2 xl:w-[45%] bg-gradient-to-br from-[#FDF8F6] to-[#FAF5F2] p-8 xl:p-10 flex-col justify-center relative overflow-hidden">
             {/* Decorative elements */}
-            <div className="absolute top-20 right-20 w-32 h-32 rounded-full bg-[#C4735B]/5 blur-2xl" />
-            <div className="absolute bottom-32 left-16 w-48 h-48 rounded-full bg-[#C4735B]/8 blur-3xl" />
+            <div className="absolute top-16 right-16 w-24 h-24 rounded-full bg-[#C4735B]/5 blur-2xl" />
+            <div className="absolute bottom-24 left-12 w-36 h-36 rounded-full bg-[#C4735B]/8 blur-3xl" />
 
-            <div className="relative z-10 max-w-lg">
+            <div className="relative z-10 max-w-md">
               {/* Icon */}
-              <div className="w-14 h-14 rounded-2xl bg-[#C4735B]/10 flex items-center justify-center mb-8">
-                <svg className="w-7 h-7 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-10 h-10 rounded-xl bg-[#C4735B]/10 flex items-center justify-center mb-4">
+                <svg className="w-5 h-5 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
 
-              <h1 className="text-4xl xl:text-5xl font-bold text-neutral-900 mb-6 leading-tight">
+              <h1 className="text-2xl xl:text-3xl font-bold text-neutral-900 mb-3 leading-tight">
                 {locale === "ka" ? (
-                  <>დაასრულე სამუშაოს <br />განთავსება ანგარიშის<br /> შექმნით.</>
+                  <>დაასრულე სამუშაოს განთავსება ანგარიშის შექმნით.</>
                 ) : (
-                  <>Finish posting your job <br />by creating an account.</>
+                  <>Finish posting your job by creating an account.</>
                 )}
               </h1>
 
-              <p className="text-lg text-neutral-600 mb-10">
+              <p className="text-sm text-neutral-600 mb-6">
                 {locale === "ka"
-                  ? "დაუკავშირდი საქართველოს საუკეთესო პროფესიონალებს. ერთ წუთზე ნაკლები დაგჭირდება დასაწყებად."
-                  : "Connect with the best professionals in Georgia. It takes less than a minute to get started."}
+                  ? "დაუკავშირდი საქართველოს საუკეთესო პროფესიონალებს."
+                  : "Connect with the best professionals in Georgia."}
               </p>
 
               {/* Benefits */}
-              <div className="space-y-4 mb-12">
+              <div className="space-y-2 mb-6">
                 {[
                   { icon: "✓", text: locale === "ka" ? "უფასოდ განათავსე სამუშაო" : "Free to post jobs" },
                   { icon: "✓", text: locale === "ka" ? "ვერიფიცირებული პროფესიონალები" : "Verified professionals" },
                   { icon: "✓", text: locale === "ka" ? "უსაფრთხო გადახდები" : "Secure payments" },
                 ].map((benefit, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-full bg-[#C4735B]/10 flex items-center justify-center text-[#C4735B] text-sm font-medium">
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-[#C4735B]/10 flex items-center justify-center text-[#C4735B] text-xs font-medium">
                       {benefit.icon}
                     </span>
-                    <span className="text-neutral-700">{benefit.text}</span>
+                    <span className="text-sm text-neutral-700">{benefit.text}</span>
                   </div>
                 ))}
               </div>
 
               {/* Testimonial */}
-              <div className="p-5 rounded-2xl bg-white shadow-sm border border-neutral-100">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#C4735B] to-[#A85D47] flex items-center justify-center text-white font-medium">
+              <div className="p-3 rounded-xl bg-white shadow-sm border border-neutral-100">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#C4735B] to-[#A85D47] flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
                     ნ
                   </div>
-                  <div className="flex-1">
-                    <p className="text-neutral-600 text-sm mb-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-neutral-600 text-xs mb-1">
                       "{locale === "ka" ? "10 წუთში ვიპოვე შესანიშნავი სანტექნიკი!" : "Found a great plumber in 10 mins!"}"
                     </p>
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-neutral-900 text-sm">Nino G.</span>
+                      <span className="font-medium text-neutral-900 text-xs">Nino G.</span>
                       <div className="flex gap-0.5">
                         {[1,2,3,4,5].map(i => (
-                          <svg key={i} className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                          <svg key={i} className="w-3 h-3 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                           </svg>
                         ))}
@@ -607,55 +607,55 @@ function RegisterContent() {
           </div>
 
           {/* Right side - Registration form */}
-          <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
-            <div className="w-full max-w-md">
-              <div className="bg-white rounded-3xl shadow-xl border border-neutral-100 p-8">
+          <div className="flex-1 flex items-center justify-center p-4 lg:p-6">
+            <div className="w-full max-w-sm">
+              <div className="bg-white rounded-2xl shadow-lg border border-neutral-100 p-5">
                 {/* Social login buttons */}
-                <div className="space-y-3 mb-6">
-                  <button className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 transition-colors">
-                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                <div className="space-y-2 mb-4">
+                  <button className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 transition-colors">
+                    <svg className="w-4 h-4" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                       <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                       <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                       <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                     </svg>
-                    <span className="text-sm font-medium text-neutral-700">
-                      {locale === "ka" ? "გაგრძელება Google-ით" : "Continue with Google"}
+                    <span className="text-xs font-medium text-neutral-700">
+                      {locale === "ka" ? "Google-ით" : "Continue with Google"}
                     </span>
                   </button>
 
-                  <button className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-[#1877F2] hover:bg-[#166FE5] transition-colors">
-                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <button className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#1877F2] hover:bg-[#166FE5] transition-colors">
+                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                     </svg>
-                    <span className="text-sm font-medium text-white">
-                      {locale === "ka" ? "გაგრძელება Facebook-ით" : "Continue with Facebook"}
+                    <span className="text-xs font-medium text-white">
+                      {locale === "ka" ? "Facebook-ით" : "Continue with Facebook"}
                     </span>
                   </button>
                 </div>
 
                 {/* Divider */}
-                <div className="relative my-6">
+                <div className="relative my-4">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-neutral-200" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white px-4 text-neutral-400 tracking-wider">
-                      {locale === "ka" ? "ან დარეგისტრირდი ელ-ფოსტით" : "OR REGISTER WITH EMAIL"}
+                    <span className="bg-white px-3 text-neutral-400 text-[10px] tracking-wider">
+                      {locale === "ka" ? "ან ელ-ფოსტით" : "OR WITH EMAIL"}
                     </span>
                   </div>
                 </div>
 
                 {error && (
-                  <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-100">
-                    <p className="text-sm text-red-600">{error}</p>
+                  <div className="mb-3 p-2 rounded-lg bg-red-50 border border-red-100">
+                    <p className="text-xs text-red-600">{error}</p>
                   </div>
                 )}
 
                 {/* Registration form */}
-                <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-4">
+                <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-3">
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
                       {locale === "ka" ? "სრული სახელი" : "Full Name"}
                     </label>
                     <input
@@ -663,46 +663,46 @@ function RegisterContent() {
                       value={formData.fullName}
                       onChange={(e) => handleInputChange("fullName", e.target.value)}
                       placeholder={locale === "ka" ? "გიორგი ბერიძე" : "Giorgi Beridze"}
-                      className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                      {locale === "ka" ? "ელ-ფოსტა" : "Email Address"}
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
+                      {locale === "ka" ? "ელ-ფოსტა" : "Email"}
                     </label>
                     <input
                       type="email"
                       value={formData.email}
                       onChange={(e) => handleInputChange("email", e.target.value)}
                       placeholder="name@example.com"
-                      className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
                       {locale === "ka" ? "ტელეფონი" : "Phone"}
                     </label>
                     <div className="flex gap-2">
-                      <div className="flex items-center gap-2 px-3 py-3 rounded-xl border border-neutral-200 bg-neutral-50 flex-shrink-0">
-                        <span>{countries[phoneCountry].flag}</span>
-                        <span className="text-sm text-neutral-600">{countries[phoneCountry].phonePrefix}</span>
+                      <div className="flex items-center gap-1.5 px-2 py-2 rounded-lg border border-neutral-200 bg-neutral-50 flex-shrink-0">
+                        <span className="text-sm">{countries[phoneCountry].flag}</span>
+                        <span className="text-xs text-neutral-600">{countries[phoneCountry].phonePrefix}</span>
                       </div>
                       <input
                         type="tel"
                         value={formData.phone}
                         onChange={(e) => handleInputChange("phone", e.target.value.replace(/\D/g, ""))}
                         placeholder="555 123 456"
-                        className="flex-1 px-4 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                        className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
                         required
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
                       {locale === "ka" ? "პაროლი" : "Password"}
                     </label>
                     <div className="relative">
@@ -710,17 +710,17 @@ function RegisterContent() {
                         type={showPassword ? "text" : "password"}
                         value={formData.password}
                         onChange={(e) => handleInputChange("password", e.target.value)}
-                        placeholder={locale === "ka" ? "შექმენი პაროლი" : "Create a password"}
-                        className="w-full px-4 py-3 pr-12 rounded-xl border border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                        placeholder={locale === "ka" ? "მინ. 6 სიმბოლო" : "Min. 6 characters"}
+                        className="w-full px-3 py-2 pr-10 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
                         required
                         minLength={6}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
                       >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           {showPassword ? (
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
                           ) : (
@@ -735,18 +735,18 @@ function RegisterContent() {
                   </div>
 
                   {/* Terms checkbox */}
-                  <label className="flex items-start gap-3 cursor-pointer">
+                  <label className="flex items-start gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={agreedToTerms}
                       onChange={(e) => setAgreedToTerms(e.target.checked)}
-                      className="mt-1 w-4 h-4 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
+                      className="mt-0.5 w-3.5 h-3.5 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
                     />
-                    <span className="text-sm text-neutral-600">
+                    <span className="text-xs text-neutral-600">
                       {locale === "ka" ? (
-                        <>ვეთანხმები Homico-ს <Link href="/terms" className="text-[#C4735B] hover:underline">მომსახურების პირობებს</Link> და <Link href="/privacy" className="text-[#C4735B] hover:underline">კონფიდენციალურობის პოლიტიკას</Link>.</>
+                        <>ვეთანხმები <Link href="/terms" className="text-[#C4735B] hover:underline">პირობებს</Link> და <Link href="/privacy" className="text-[#C4735B] hover:underline">კონფიდენციალურობას</Link>.</>
                       ) : (
-                        <>I agree to Homico's <Link href="/terms" className="text-[#C4735B] hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-[#C4735B] hover:underline">Privacy Policy</Link>.</>
+                        <>I agree to <Link href="/terms" className="text-[#C4735B] hover:underline">Terms</Link> and <Link href="/privacy" className="text-[#C4735B] hover:underline">Privacy Policy</Link>.</>
                       )}
                     </span>
                   </label>
@@ -755,11 +755,11 @@ function RegisterContent() {
                   <button
                     type="submit"
                     disabled={isLoading || !canProceedFromAccount()}
-                    className="w-full py-3.5 rounded-xl bg-[#C4735B] hover:bg-[#A85D47] disabled:bg-neutral-200 disabled:cursor-not-allowed text-white font-medium transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-2.5 rounded-lg bg-[#C4735B] hover:bg-[#A85D47] disabled:bg-neutral-200 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
                   >
                     {isLoading ? (
                       <>
-                        <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                         </svg>
@@ -768,7 +768,7 @@ function RegisterContent() {
                     ) : (
                       <>
                         <span>{locale === "ka" ? "ანგარიშის შექმნა" : "Create Account"}</span>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                         </svg>
                       </>
@@ -777,7 +777,7 @@ function RegisterContent() {
                 </form>
 
                 {/* Login link */}
-                <p className="mt-6 text-center text-sm text-neutral-600">
+                <p className="mt-4 text-center text-xs text-neutral-600">
                   {locale === "ka" ? "უკვე გაქვს ანგარიში?" : "Already have an account?"}{" "}
                   <button onClick={() => openLoginModal()} className="text-[#C4735B] font-medium hover:underline">
                     {locale === "ka" ? "შესვლა" : "Log in"}
@@ -785,10 +785,10 @@ function RegisterContent() {
                 </p>
 
                 {/* Pro registration link */}
-                <div className="mt-6 pt-6 border-t border-neutral-100">
+                <div className="mt-4 pt-4 border-t border-neutral-100">
                   <button
                     onClick={() => setUserType('pro')}
-                    className="w-full py-3 rounded-xl border-2 border-dashed border-neutral-200 hover:border-[#C4735B]/50 hover:bg-[#C4735B]/5 transition-all text-sm text-neutral-600 hover:text-[#C4735B]"
+                    className="w-full py-2 rounded-lg border border-dashed border-neutral-200 hover:border-[#C4735B]/50 hover:bg-[#C4735B]/5 transition-all text-xs text-neutral-600 hover:text-[#C4735B]"
                   >
                     {locale === "ka" ? "ხარ პროფესიონალი? დარეგისტრირდი აქ" : "Are you a professional? Register here"}
                   </button>
@@ -806,15 +806,15 @@ function RegisterContent() {
     <div className="min-h-screen bg-[#FAFAF9] flex flex-col">
       {/* Header with progress */}
       <header className="sticky top-0 z-50 bg-white border-b border-neutral-100">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="h-16 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="h-12 flex items-center justify-between">
             <Logo />
-            <div className="flex items-center gap-4">
-              <button className="px-4 py-2 rounded-lg border border-neutral-200 text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors">
-                {locale === "ka" ? "შენახვა და გასვლა" : "Save & Exit"}
+            <div className="flex items-center gap-3">
+              <button className="px-3 py-1.5 rounded-lg border border-neutral-200 text-xs font-medium text-neutral-700 hover:bg-neutral-50 transition-colors">
+                {locale === "ka" ? "შენახვა" : "Save"}
               </button>
-              <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center">
-                <svg className="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center">
+                <svg className="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
@@ -822,16 +822,16 @@ function RegisterContent() {
           </div>
 
           {/* Progress bar */}
-          <div className="pb-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                {locale === "ka" ? `ნაბიჯი ${getCurrentStepIndex() + 1} / ${PRO_STEPS.length}` : `STEP ${getCurrentStepIndex() + 1} OF ${PRO_STEPS.length}`}
+          <div className="pb-3">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] font-medium text-neutral-500 uppercase tracking-wider">
+                {locale === "ka" ? `${getCurrentStepIndex() + 1}/${PRO_STEPS.length}` : `STEP ${getCurrentStepIndex() + 1}/${PRO_STEPS.length}`}
               </span>
-              <span className="text-xs font-medium text-[#C4735B]">
+              <span className="text-[10px] font-medium text-[#C4735B]">
                 {PRO_STEPS[getCurrentStepIndex()].title[locale === "ka" ? "ka" : "en"]}
               </span>
             </div>
-            <div className="h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+            <div className="h-1 bg-neutral-100 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-[#C4735B] to-[#D4896B] rounded-full transition-all duration-500"
                 style={{ width: `${getProgressPercentage()}%` }}
@@ -842,30 +842,30 @@ function RegisterContent() {
       </header>
 
       {/* Main content */}
-      <main className="flex-1 py-8 lg:py-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="flex-1 py-4 lg:py-6">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           {error && (
-            <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100">
-              <p className="text-sm text-red-600">{error}</p>
+            <div className="mb-4 p-2 rounded-lg bg-red-50 border border-red-100">
+              <p className="text-xs text-red-600">{error}</p>
             </div>
           )}
 
           {/* STEP 1: Account Creation */}
           {currentStep === 'account' && (
-            <div className="space-y-8">
+            <div className="space-y-4">
               <div>
-                <h1 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-3">
-                  {locale === "ka" ? "შექმენი შენი პროფესიონალური ანგარიში" : "Create your professional account"}
+                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
+                  {locale === "ka" ? "პროფესიონალური ანგარიში" : "Professional Account"}
                 </h1>
-                <p className="text-lg text-neutral-500">
-                  {locale === "ka" ? "შეავსე ძირითადი ინფორმაცია დასაწყებად" : "Fill in your basic information to get started"}
+                <p className="text-sm text-neutral-500">
+                  {locale === "ka" ? "შეავსე ძირითადი ინფორმაცია" : "Fill in your basic information"}
                 </p>
               </div>
 
-              <div className="grid lg:grid-cols-2 gap-6">
-                <div className="space-y-5">
+              <div className="grid lg:grid-cols-2 gap-4">
+                <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
                       {locale === "ka" ? "სრული სახელი" : "Full Name"} *
                     </label>
                     <input
@@ -873,33 +873,33 @@ function RegisterContent() {
                       value={formData.fullName}
                       onChange={(e) => handleInputChange("fullName", e.target.value)}
                       placeholder={locale === "ka" ? "გიორგი ბერიძე" : "Giorgi Beridze"}
-                      className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
                       {locale === "ka" ? "ტელეფონი" : "Phone"} *
                     </label>
                     <div className="flex gap-2">
-                      <div className="flex items-center gap-2 px-3 py-3 rounded-xl border border-neutral-200 bg-neutral-50 flex-shrink-0">
-                        <span>{countries[phoneCountry].flag}</span>
-                        <span className="text-sm text-neutral-600">{countries[phoneCountry].phonePrefix}</span>
+                      <div className="flex items-center gap-1.5 px-2 py-2 rounded-lg border border-neutral-200 bg-neutral-50 flex-shrink-0">
+                        <span className="text-sm">{countries[phoneCountry].flag}</span>
+                        <span className="text-xs text-neutral-600">{countries[phoneCountry].phonePrefix}</span>
                       </div>
                       <input
                         type="tel"
                         value={formData.phone}
                         onChange={(e) => handleInputChange("phone", e.target.value.replace(/\D/g, ""))}
                         placeholder="555 123 456"
-                        className="flex-1 px-4 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                        className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
                         required
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
                       {locale === "ka" ? "პაროლი" : "Password"} *
                     </label>
                     <div className="relative">
@@ -908,16 +908,16 @@ function RegisterContent() {
                         value={formData.password}
                         onChange={(e) => handleInputChange("password", e.target.value)}
                         placeholder="••••••••"
-                        className="w-full px-4 py-3 pr-12 rounded-xl border border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                        className="w-full px-3 py-2 pr-10 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
                         required
                         minLength={6}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
                       >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           {showPassword ? (
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
                           ) : (
@@ -932,23 +932,23 @@ function RegisterContent() {
                   </div>
                 </div>
 
-                <div className="space-y-5">
+                <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                      {locale === "ka" ? "ელ-ფოსტა" : "Email"} <span className="text-neutral-400 font-normal">({locale === "ka" ? "არასავალდებულო" : "optional"})</span>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
+                      {locale === "ka" ? "ელ-ფოსტა" : "Email"} <span className="text-neutral-400 font-normal text-[10px]">({locale === "ka" ? "არასავალდებულო" : "optional"})</span>
                     </label>
                     <input
                       type="email"
                       value={formData.email}
                       onChange={(e) => handleInputChange("email", e.target.value)}
                       placeholder="name@example.com"
-                      className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                      {locale === "ka" ? "პირადი ნომერი" : "ID Number"} <span className="text-neutral-400 font-normal">({locale === "ka" ? "არასავალდებულო" : "optional"})</span>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
+                      {locale === "ka" ? "პირადი ნომერი" : "ID Number"} <span className="text-neutral-400 font-normal text-[10px]">({locale === "ka" ? "არასავალდებულო" : "optional"})</span>
                     </label>
                     <input
                       type="text"
@@ -956,47 +956,47 @@ function RegisterContent() {
                       onChange={(e) => handleInputChange("idNumber", e.target.value.replace(/\D/g, ""))}
                       maxLength={11}
                       placeholder="01234567890"
-                      className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                      {locale === "ka" ? "ქალაქი" : "City"} <span className="text-neutral-400 font-normal">({locale === "ka" ? "არასავალდებულო" : "optional"})</span>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
+                      {locale === "ka" ? "ქალაქი" : "City"} <span className="text-neutral-400 font-normal text-[10px]">({locale === "ka" ? "არასავალდებულო" : "optional"})</span>
                     </label>
                     <input
                       type="text"
                       value={formData.city}
                       onChange={(e) => handleInputChange("city", e.target.value)}
                       placeholder={locale === "ka" ? "თბილისი" : "Tbilisi"}
-                      className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Terms checkbox */}
-              <label className="flex items-start gap-3 cursor-pointer">
+              <label className="flex items-start gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={agreedToTerms}
                   onChange={(e) => setAgreedToTerms(e.target.checked)}
-                  className="mt-1 w-4 h-4 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
+                  className="mt-0.5 w-3.5 h-3.5 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
                 />
-                <span className="text-sm text-neutral-600">
+                <span className="text-xs text-neutral-600">
                   {locale === "ka" ? (
-                    <>ვეთანხმები Homico-ს <Link href="/terms" className="text-[#C4735B] hover:underline">მომსახურების პირობებს</Link> და <Link href="/privacy" className="text-[#C4735B] hover:underline">კონფიდენციალურობის პოლიტიკას</Link>.</>
+                    <>ვეთანხმები <Link href="/terms" className="text-[#C4735B] hover:underline">პირობებს</Link> და <Link href="/privacy" className="text-[#C4735B] hover:underline">კონფიდენციალურობას</Link>.</>
                   ) : (
-                    <>I agree to Homico's <Link href="/terms" className="text-[#C4735B] hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-[#C4735B] hover:underline">Privacy Policy</Link>.</>
+                    <>I agree to <Link href="/terms" className="text-[#C4735B] hover:underline">Terms</Link> and <Link href="/privacy" className="text-[#C4735B] hover:underline">Privacy Policy</Link>.</>
                   )}
                 </span>
               </label>
 
               {/* Switch to client */}
-              <div className="pt-4 border-t border-neutral-100">
+              <div className="pt-3 border-t border-neutral-100">
                 <button
                   onClick={() => setUserType('client')}
-                  className="text-sm text-neutral-500 hover:text-[#C4735B] transition-colors"
+                  className="text-xs text-neutral-500 hover:text-[#C4735B] transition-colors"
                 >
                   {locale === "ka" ? "← დაბრუნება კლიენტის რეგისტრაციაზე" : "← Back to client registration"}
                 </button>
@@ -1006,51 +1006,51 @@ function RegisterContent() {
 
           {/* STEP 2: Category Selection */}
           {currentStep === 'category' && (
-            <div className="space-y-8">
+            <div className="space-y-4">
               <div>
-                <h1 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-3">
+                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
                   {locale === "ka" ? "რა სერვისებს გთავაზობთ?" : "What services do you provide?"}
                 </h1>
-                <p className="text-lg text-neutral-500">
-                  {locale === "ka" ? "აირჩიეთ თქვენი ძირითადი პროფესია და კონკრეტული უნარები" : "Select your primary profession and the specific skills you offer to clients."}
+                <p className="text-sm text-neutral-500">
+                  {locale === "ka" ? "აირჩიეთ კატეგორია და უნარები" : "Select your profession and skills"}
                 </p>
               </div>
 
               {/* Main Categories */}
               <div>
-                <h2 className="text-lg font-semibold text-neutral-900 mb-4">
-                  1. {locale === "ka" ? "აირჩიეთ მთავარი კატეგორია" : "Choose Main Category"}
+                <h2 className="text-sm font-semibold text-neutral-900 mb-2">
+                  1. {locale === "ka" ? "კატეგორია" : "Category"}
                 </h2>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                   {categories.map((category) => {
                     const isSelected = formData.selectedCategories.includes(category.key);
                     return (
                       <button
                         key={category.key}
                         onClick={() => handleCategoryToggle(category.key)}
-                        className={`relative p-6 rounded-2xl border-2 text-left transition-all ${
+                        className={`relative p-3 rounded-xl border text-left transition-all ${
                           isSelected
                             ? 'border-[#C4735B] bg-[#C4735B]/5'
                             : 'border-neutral-200 bg-white hover:border-neutral-300'
                         }`}
                       >
                         {isSelected && (
-                          <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-[#C4735B] flex items-center justify-center">
-                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#C4735B] flex items-center justify-center">
+                            <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                           </div>
                         )}
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${
                           isSelected ? 'bg-[#C4735B] text-white' : 'bg-neutral-100 text-neutral-600'
                         }`}>
                           {categoryIcons[category.key] || (
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                             </svg>
                           )}
                         </div>
-                        <h3 className="font-semibold text-neutral-900">
+                        <h3 className="text-xs font-medium text-neutral-900 line-clamp-1">
                           {locale === "ka" ? category.nameKa : category.name}
                         </h3>
                       </button>
@@ -1061,31 +1061,19 @@ function RegisterContent() {
 
               {/* Subcategories / Skills */}
               {formData.selectedCategories.length > 0 && (
-                <div className="p-6 rounded-2xl bg-white border border-neutral-200">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-semibold text-neutral-900">
-                      2. {locale === "ka" ? "აირჩიეთ კონკრეტული უნარები" : "Select Specific Skills"}
+                <div className="p-4 rounded-xl bg-white border border-neutral-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-sm font-semibold text-neutral-900">
+                      2. {locale === "ka" ? "უნარები" : "Skills"}
                     </h2>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        placeholder={locale === "ka" ? "ძიება..." : "Search skills..."}
-                        className="pl-10 pr-4 py-2 rounded-xl border border-neutral-200 bg-neutral-50 text-sm focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none"
-                      />
-                      <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                    </div>
+                    {formData.selectedSubcategories.length > 0 && (
+                      <span className="text-xs text-[#C4735B] font-medium">
+                        {formData.selectedSubcategories.length} {locale === "ka" ? "არჩეული" : "selected"}
+                      </span>
+                    )}
                   </div>
 
-                  <p className="text-sm text-neutral-500 mb-4">
-                    {locale === "ka"
-                      ? `აირჩიეთ ყველა რაც შეესაბამება თქვენს გამოცდილებას ${formData.selectedCategories.map(c => categories.find(cat => cat.key === c)?.[locale === "ka" ? "nameKa" : "name"]).join(', ')}-ში.`
-                      : `Select all that apply to your expertise as a ${formData.selectedCategories.map(c => categories.find(cat => cat.key === c)?.name).join(', ')}.`
-                    }
-                  </p>
-
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {formData.selectedCategories.flatMap(catKey => {
                       const category = categories.find(c => c.key === catKey);
                       return category?.subcategories || [];
@@ -1095,14 +1083,14 @@ function RegisterContent() {
                         <button
                           key={subcategory.key}
                           onClick={() => handleSubcategoryToggle(subcategory.key)}
-                          className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
                             isSelected
                               ? 'bg-[#C4735B] text-white'
                               : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
                           }`}
                         >
                           {isSelected && (
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                           )}
@@ -1111,14 +1099,6 @@ function RegisterContent() {
                       );
                     })}
                   </div>
-
-                  {formData.selectedSubcategories.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-neutral-100 text-right">
-                      <span className="text-sm text-[#C4735B] font-medium">
-                        {formData.selectedSubcategories.length} {locale === "ka" ? "უნარი არჩეულია" : "skills selected"}
-                      </span>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
@@ -1126,51 +1106,39 @@ function RegisterContent() {
 
           {/* STEP 3: Services & Portfolio */}
           {currentStep === 'services' && (
-            <div className="space-y-8">
+            <div className="space-y-4">
               <div>
-                <h1 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-3">
-                  {locale === "ka" ? "აჩვენე შენი გამოცდილება" : "Showcase Your Expertise"}
+                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
+                  {locale === "ka" ? "პორტფოლიო" : "Portfolio"}
                 </h1>
-                <p className="text-lg text-neutral-500">
-                  {locale === "ka" ? "დაამატე სერვისები და ფოტოები მეტი კლიენტების მოსაზიდად" : "Add the services you offer and upload photos of your best work to attract more clients."}
+                <p className="text-sm text-neutral-500">
+                  {locale === "ka" ? "დაამატე სერვისები და ფოტოები" : "Add services and photos of your work"}
                 </p>
               </div>
 
-              <div className="grid lg:grid-cols-2 gap-8">
+              <div className="grid lg:grid-cols-2 gap-4">
                 {/* Services */}
-                <div className="p-6 rounded-2xl bg-white border border-neutral-200">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-[#C4735B]/10 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                    </div>
-                    <h2 className="text-lg font-semibold text-neutral-900">
-                      {locale === "ka" ? "სერვისების დეტალები" : "Service Details"}
-                    </h2>
-                  </div>
+                <div className="p-4 rounded-xl bg-white border border-neutral-200">
+                  <h2 className="text-sm font-semibold text-neutral-900 mb-3">
+                    {locale === "ka" ? "სერვისები" : "Services"}
+                  </h2>
 
                   {/* Popular Tags */}
-                  <div className="mb-6">
-                    <label className="block text-sm font-medium text-neutral-700 mb-2">
-                      {locale === "ka" ? "პოპულარული თეგები" : "Popular Tags"}
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {['Leak Repair', 'Installation', 'Maintenance', 'Add Custom'].map((tag) => {
+                  <div className="mb-3">
+                    <div className="flex flex-wrap gap-1.5">
+                      {['Leak Repair', 'Installation', 'Maintenance'].map((tag) => {
                         const isSelected = selectedTags.includes(tag);
                         return (
                           <button
                             key={tag}
                             onClick={() => handleTagToggle(tag)}
-                            className={`px-3 py-1.5 rounded-full text-sm transition-all ${
+                            className={`px-2.5 py-1 rounded-full text-xs transition-all ${
                               isSelected
                                 ? 'bg-[#C4735B] text-white'
                                 : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
                             }`}
                           >
-                            {tag === 'Add Custom' ? `+ ${tag}` : (isSelected ? '' : '+ ') + tag}
-                            {isSelected && tag !== 'Add Custom' && ' ×'}
+                            {isSelected ? '' : '+ '}{tag}
                           </button>
                         );
                       })}
@@ -1178,144 +1146,80 @@ function RegisterContent() {
                   </div>
 
                   {/* Add Service Form */}
-                  <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-100 mb-4">
-                    <h3 className="text-sm font-semibold text-neutral-700 uppercase tracking-wider mb-4">
-                      {locale === "ka" ? "დაამატე კონკრეტული სერვისი" : "ADD SPECIFIC SERVICE"}
-                    </h3>
-                    <div className="grid sm:grid-cols-2 gap-4 mb-4">
+                  <div className="p-3 rounded-lg bg-neutral-50 border border-neutral-100">
+                    <div className="grid grid-cols-2 gap-2 mb-2">
                       <div>
-                        <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">
-                          {locale === "ka" ? "სერვისის სახელი" : "SERVICE TITLE"}
-                        </label>
                         <input
                           type="text"
-                          placeholder={locale === "ka" ? "მაგ. ონკანის შეცვლა" : "e.g. Faucet Replacement"}
-                          className="w-full px-3 py-2.5 rounded-lg border border-neutral-200 bg-white text-sm focus:border-[#C4735B] outline-none"
+                          placeholder={locale === "ka" ? "სერვისი" : "Service name"}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-neutral-200 bg-white text-xs focus:border-[#C4735B] outline-none"
                         />
                       </div>
-                      <div>
-                        <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">
-                          {locale === "ka" ? "საწყისი ფასი (₾)" : "STARTING PRICE (GEL)"}
-                        </label>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">₾</span>
-                          <input
-                            type="text"
-                            placeholder="50"
-                            className="w-full pl-8 pr-3 py-2.5 rounded-lg border border-neutral-200 bg-white text-sm focus:border-[#C4735B] outline-none"
-                          />
-                        </div>
+                      <div className="relative">
+                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-400 text-xs">₾</span>
+                        <input
+                          type="text"
+                          placeholder="50"
+                          className="w-full pl-6 pr-2 py-1.5 rounded-lg border border-neutral-200 bg-white text-xs focus:border-[#C4735B] outline-none"
+                        />
                       </div>
-                    </div>
-                    <div className="mb-4">
-                      <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">
-                        {locale === "ka" ? "აღწერა" : "DESCRIPTION"}
-                      </label>
-                      <textarea
-                        rows={2}
-                        placeholder={locale === "ka" ? "მოკლედ აღწერე რას მოიცავს..." : "Briefly describe what's included..."}
-                        className="w-full px-3 py-2.5 rounded-lg border border-neutral-200 bg-white text-sm focus:border-[#C4735B] outline-none resize-none"
-                      />
                     </div>
                     <button
                       onClick={addService}
-                      className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-neutral-900 text-white text-sm font-medium hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2"
+                      className="w-full px-3 py-1.5 rounded-lg bg-neutral-900 text-white text-xs font-medium hover:bg-neutral-800 transition-colors"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                      {locale === "ka" ? "სერვისის დამატება" : "Add Service"}
+                      + {locale === "ka" ? "დამატება" : "Add"}
                     </button>
                   </div>
 
                   {/* Added Services */}
                   {services.length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-medium text-neutral-700 mb-3">
-                        {locale === "ka" ? `დამატებული სერვისები (${services.length})` : `Added Services (${services.length})`}
-                      </h3>
-                      <div className="space-y-3">
-                        {services.map((service, index) => (
-                          <div key={index} className="p-4 rounded-xl border border-neutral-200 bg-white">
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <div className="flex items-center gap-2 mb-1">
-                                  <h4 className="font-medium text-neutral-900">{service.title || 'New Service'}</h4>
-                                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">Active</span>
-                                </div>
-                                <p className="text-sm text-neutral-500">{service.description || 'No description'}</p>
-                                <p className="text-sm font-medium text-[#C4735B] mt-1">
-                                  {locale === "ka" ? `იწყება ₾${service.price || '0'}-დან` : `Starts at ₾${service.price || '0'}`}
-                                </p>
-                              </div>
-                              <button
-                                onClick={() => removeService(index)}
-                                className="text-neutral-400 hover:text-red-500 transition-colors"
-                              >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                              </button>
-                            </div>
+                    <div className="mt-3 space-y-2">
+                      {services.map((service, index) => (
+                        <div key={index} className="p-2 rounded-lg border border-neutral-200 bg-white flex items-center justify-between">
+                          <div>
+                            <span className="text-xs font-medium text-neutral-900">{service.title || 'Service'}</span>
+                            <span className="text-xs text-[#C4735B] ml-2">₾{service.price || '0'}</span>
                           </div>
-                        ))}
-                      </div>
+                          <button onClick={() => removeService(index)} className="text-neutral-400 hover:text-red-500">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
 
                 {/* Portfolio */}
-                <div className="p-6 rounded-2xl bg-white border border-neutral-200">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-[#C4735B]/10 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <h2 className="text-lg font-semibold text-neutral-900">
-                      {locale === "ka" ? "პორტფოლიო" : "Portfolio"}
-                    </h2>
-                  </div>
+                <div className="p-4 rounded-xl bg-white border border-neutral-200">
+                  <h2 className="text-sm font-semibold text-neutral-900 mb-3">
+                    {locale === "ka" ? "ფოტოები" : "Photos"}
+                  </h2>
 
                   {/* Upload area */}
-                  <div className="border-2 border-dashed border-neutral-200 rounded-2xl p-8 text-center hover:border-[#C4735B]/50 transition-colors cursor-pointer mb-6">
-                    <div className="w-12 h-12 rounded-xl bg-[#C4735B]/10 flex items-center justify-center mx-auto mb-4">
-                      <svg className="w-6 h-6 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="border-2 border-dashed border-neutral-200 rounded-xl p-4 text-center hover:border-[#C4735B]/50 transition-colors cursor-pointer mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center mx-auto mb-2">
+                      <svg className="w-4 h-4 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                       </svg>
                     </div>
-                    <p className="font-medium text-neutral-900 mb-1">
-                      {locale === "ka" ? "დააჭირე ან გადმოიტანე ფოტოები" : "Click or drag photos here"}
+                    <p className="text-xs font-medium text-neutral-900">
+                      {locale === "ka" ? "ატვირთე ფოტოები" : "Upload photos"}
                     </p>
-                    <p className="text-sm text-neutral-500">JPG, PNG {locale === "ka" ? "5MB-მდე" : "up to 5MB"}</p>
+                    <p className="text-[10px] text-neutral-500">JPG, PNG · 5MB</p>
                   </div>
 
-                  {/* Preview grid would go here */}
-                  <div className="grid grid-cols-2 gap-3">
+                  {/* Preview grid */}
+                  <div className="grid grid-cols-4 gap-2">
                     {[1, 2, 3, 4].map((i) => (
-                      <div key={i} className="aspect-square rounded-xl bg-neutral-100 flex items-center justify-center">
-                        <svg className="w-8 h-8 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div key={i} className="aspect-square rounded-lg bg-neutral-100 flex items-center justify-center">
+                        <svg className="w-4 h-4 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       </div>
                     ))}
-                  </div>
-
-                  {/* Pro tip */}
-                  <div className="mt-6 p-4 rounded-xl bg-blue-50 border border-blue-100">
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-                        <span className="text-white text-xs font-bold">i</span>
-                      </div>
-                      <div>
-                        <p className="font-medium text-blue-900 text-sm mb-1">Pro Tip</p>
-                        <p className="text-sm text-blue-700">
-                          {locale === "ka"
-                            ? "პროფილებს მინიმუმ 5 ფოტოთი 40%-ით მეტი მოთხოვნა აქვთ. აჩვენე 'მანამდე და შემდეგ' ფოტოები მაქსიმალური ეფექტისთვის!"
-                            : "Profiles with at least 5 photos get 40% more service requests. Show before & after shots for maximum impact!"}
-                        </p>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -1324,144 +1228,116 @@ function RegisterContent() {
 
           {/* STEP 4: Review */}
           {currentStep === 'review' && (
-            <div className="space-y-8">
+            <div className="space-y-4">
               <div>
-                <h1 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-3">
-                  {locale === "ka" ? "გადახედე და დაადასტურე" : "Review & Confirm"}
+                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
+                  {locale === "ka" ? "გადახედვა" : "Review"}
                 </h1>
-                <p className="text-lg text-neutral-500">
-                  {locale === "ka" ? "გადახედე შენს ინფორმაციას რეგისტრაციის დასრულებამდე" : "Review your information before completing registration"}
+                <p className="text-sm text-neutral-500">
+                  {locale === "ka" ? "დაადასტურე მონაცემები" : "Confirm your details"}
                 </p>
               </div>
 
-              {/* Account Info Review */}
-              <div className="p-6 rounded-2xl bg-white border border-neutral-200">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-neutral-900">
-                    {locale === "ka" ? "ანგარიშის ინფორმაცია" : "Account Information"}
-                  </h2>
-                  <button
-                    onClick={() => goToStep('account')}
-                    className="text-sm font-medium text-[#C4735B] hover:underline flex items-center gap-1"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    {locale === "ka" ? "რედაქტირება" : "Edit"}
-                  </button>
-                </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-neutral-500">{locale === "ka" ? "სრული სახელი" : "Full Name"}</p>
-                    <p className="font-medium text-neutral-900">{formData.fullName || '-'}</p>
+              <div className="grid lg:grid-cols-2 gap-4">
+                {/* Account Info Review */}
+                <div className="p-4 rounded-xl bg-white border border-neutral-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-sm font-semibold text-neutral-900">
+                      {locale === "ka" ? "ანგარიში" : "Account"}
+                    </h2>
+                    <button onClick={() => goToStep('account')} className="text-xs font-medium text-[#C4735B] hover:underline">
+                      {locale === "ka" ? "რედაქტირება" : "Edit"}
+                    </button>
                   </div>
-                  <div>
-                    <p className="text-sm text-neutral-500">{locale === "ka" ? "ტელეფონი" : "Phone"}</p>
-                    <p className="font-medium text-neutral-900">{countries[phoneCountry].phonePrefix}{formData.phone || '-'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-neutral-500">{locale === "ka" ? "ელ-ფოსტა" : "Email"}</p>
-                    <p className="font-medium text-neutral-900">{formData.email || '-'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-neutral-500">{locale === "ka" ? "ქალაქი" : "City"}</p>
-                    <p className="font-medium text-neutral-900">{formData.city || '-'}</p>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <p className="text-neutral-500">{locale === "ka" ? "სახელი" : "Name"}</p>
+                      <p className="font-medium text-neutral-900 truncate">{formData.fullName || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-neutral-500">{locale === "ka" ? "ტელ." : "Phone"}</p>
+                      <p className="font-medium text-neutral-900">{countries[phoneCountry].phonePrefix}{formData.phone || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-neutral-500">{locale === "ka" ? "ელ-ფოსტა" : "Email"}</p>
+                      <p className="font-medium text-neutral-900 truncate">{formData.email || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-neutral-500">{locale === "ka" ? "ქალაქი" : "City"}</p>
+                      <p className="font-medium text-neutral-900">{formData.city || '-'}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Services Review */}
-              <div className="p-6 rounded-2xl bg-white border border-neutral-200">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-neutral-900">
-                    {locale === "ka" ? "სერვისები" : "Services"}
-                  </h2>
-                  <button
-                    onClick={() => goToStep('category')}
-                    className="text-sm font-medium text-[#C4735B] hover:underline flex items-center gap-1"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    {locale === "ka" ? "რედაქტირება" : "Edit"}
-                  </button>
-                </div>
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm text-neutral-500 mb-2">{locale === "ka" ? "კატეგორიები" : "Categories"}</p>
-                    <div className="flex flex-wrap gap-2">
+                {/* Services Review */}
+                <div className="p-4 rounded-xl bg-white border border-neutral-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-sm font-semibold text-neutral-900">
+                      {locale === "ka" ? "სერვისები" : "Services"}
+                    </h2>
+                    <button onClick={() => goToStep('category')} className="text-xs font-medium text-[#C4735B] hover:underline">
+                      {locale === "ka" ? "რედაქტირება" : "Edit"}
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap gap-1">
                       {formData.selectedCategories.map(catKey => {
                         const category = categories.find(c => c.key === catKey);
                         return (
-                          <span key={catKey} className="px-3 py-1 rounded-full bg-[#C4735B]/10 text-[#C4735B] text-sm font-medium">
+                          <span key={catKey} className="px-2 py-0.5 rounded-full bg-[#C4735B]/10 text-[#C4735B] text-[10px] font-medium">
                             {locale === "ka" ? category?.nameKa : category?.name}
                           </span>
                         );
                       })}
-                      {formData.selectedCategories.length === 0 && <span className="text-neutral-400">-</span>}
+                      {formData.selectedCategories.length === 0 && <span className="text-neutral-400 text-xs">-</span>}
                     </div>
-                  </div>
-                  <div>
-                    <p className="text-sm text-neutral-500 mb-2">{locale === "ka" ? "უნარები" : "Skills"}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {formData.selectedSubcategories.map(subKey => {
+                    <div className="flex flex-wrap gap-1">
+                      {formData.selectedSubcategories.slice(0, 5).map(subKey => {
                         let subcategory;
                         for (const cat of categories) {
                           const found = cat.subcategories.find(s => s.key === subKey);
                           if (found) { subcategory = found; break; }
                         }
                         return (
-                          <span key={subKey} className="px-3 py-1 rounded-full bg-neutral-100 text-neutral-700 text-sm">
+                          <span key={subKey} className="px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-700 text-[10px]">
                             {locale === "ka" ? subcategory?.nameKa : subcategory?.name}
                           </span>
                         );
                       })}
-                      {formData.selectedSubcategories.length === 0 && <span className="text-neutral-400">-</span>}
+                      {formData.selectedSubcategories.length > 5 && (
+                        <span className="text-[10px] text-neutral-500">+{formData.selectedSubcategories.length - 5}</span>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Portfolio Review */}
-              <div className="p-6 rounded-2xl bg-white border border-neutral-200">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-neutral-900">
+              <div className="p-4 rounded-xl bg-white border border-neutral-200">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-semibold text-neutral-900">
                     {locale === "ka" ? "პორტფოლიო" : "Portfolio"}
                   </h2>
-                  <button
-                    onClick={() => goToStep('services')}
-                    className="text-sm font-medium text-[#C4735B] hover:underline flex items-center gap-1"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
+                  <button onClick={() => goToStep('services')} className="text-xs font-medium text-[#C4735B] hover:underline">
                     {locale === "ka" ? "რედაქტირება" : "Edit"}
                   </button>
                 </div>
-                <div className="grid grid-cols-4 gap-3">
-                  {portfolioImages.length > 0 ? (
-                    portfolioImages.map((img, i) => (
-                      <div key={i} className="aspect-square rounded-xl bg-neutral-100 overflow-hidden">
-                        <img src={img} alt="" className="w-full h-full object-cover" />
+                <div className="flex items-center gap-4">
+                  <div className="flex gap-1.5">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center">
+                        <svg className="w-4 h-4 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
                       </div>
-                    ))
-                  ) : (
-                    <p className="text-neutral-400 col-span-4">{locale === "ka" ? "ფოტოები არ არის დამატებული" : "No photos added"}</p>
+                    ))}
+                  </div>
+                  {services.length > 0 && (
+                    <div className="flex-1 text-xs">
+                      <span className="text-neutral-500">{services.length} {locale === "ka" ? "სერვისი" : "service(s)"}</span>
+                    </div>
                   )}
                 </div>
-                {services.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-neutral-100">
-                    <p className="text-sm text-neutral-500 mb-2">{locale === "ka" ? "სერვისები" : "Services"}</p>
-                    <div className="space-y-2">
-                      {services.map((service, i) => (
-                        <div key={i} className="flex items-center justify-between">
-                          <span className="text-neutral-900">{service.title}</span>
-                          <span className="text-[#C4735B] font-medium">₾{service.price}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           )}
@@ -1470,14 +1346,14 @@ function RegisterContent() {
 
       {/* Footer with navigation */}
       <footer className="sticky bottom-0 bg-white border-t border-neutral-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             {getCurrentStepIndex() > 0 ? (
               <button
                 onClick={handleBack}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-neutral-700 hover:bg-neutral-100 transition-colors"
+                className="flex items-center gap-1 px-3 py-2 rounded-lg text-xs text-neutral-700 hover:bg-neutral-100 transition-colors"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
                 {locale === "ka" ? "უკან" : "Back"}
@@ -1486,46 +1362,39 @@ function RegisterContent() {
               <div />
             )}
 
-            <div className="flex items-center gap-3">
-              {currentStep === 'services' && (
-                <button className="px-4 py-2.5 rounded-xl text-neutral-600 hover:bg-neutral-100 transition-colors">
-                  {locale === "ka" ? "დრაფტად შენახვა" : "Save as Draft"}
-                </button>
-              )}
-              <button
-                onClick={handleNext}
-                disabled={
-                  isLoading ||
-                  (currentStep === 'account' && !canProceedFromAccount()) ||
-                  (currentStep === 'category' && !canProceedFromCategory())
-                }
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#C4735B] hover:bg-[#A85D47] disabled:bg-neutral-200 disabled:cursor-not-allowed text-white font-medium transition-colors"
-              >
-                {isLoading ? (
-                  <>
-                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    <span>{locale === "ka" ? "მიმდინარეობს..." : "Processing..."}</span>
-                  </>
-                ) : currentStep === 'review' ? (
-                  <>
-                    <span>{locale === "ka" ? "რეგისტრაციის დასრულება" : "Complete Registration"}</span>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </>
-                ) : (
-                  <>
-                    <span>{locale === "ka" ? "გაგრძელება" : "Continue"}</span>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            <button
+              onClick={handleNext}
+              disabled={
+                isLoading ||
+                (currentStep === 'account' && !canProceedFromAccount()) ||
+                (currentStep === 'category' && !canProceedFromCategory())
+              }
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#C4735B] hover:bg-[#A85D47] disabled:bg-neutral-200 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+            >
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  <span>{locale === "ka" ? "..." : "..."}</span>
+                </>
+              ) : currentStep === 'review' ? (
+                <>
+                  <span>{locale === "ka" ? "დასრულება" : "Complete"}</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </>
+              ) : (
+                <>
+                  <span>{locale === "ka" ? "გაგრძელება" : "Continue"}</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
                   </>
                 )}
               </button>
-            </div>
           </div>
         </div>
       </footer>
