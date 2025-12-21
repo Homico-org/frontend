@@ -2,10 +2,11 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
+import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMessages } from "@/contexts/MessagesContext";
 import { useNotifications } from "@/contexts/NotificationContext";
-import { FileText, Hammer, MessageCircle, Plus, X, User, UserPlus, LogIn } from "lucide-react";
+import { FileText, Hammer, MessageCircle, Plus, X, UserPlus, LogIn } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -89,10 +90,10 @@ export default function Header() {
         </Link>
 
         {/* Right side - Actions + Profile */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Pro-specific buttons: My Proposals & My Jobs */}
+        <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3">
+          {/* Pro-specific buttons: My Proposals & My Jobs - only on large screens */}
           {user?.role === "pro" && (
-            <div className="hidden sm:flex items-center gap-1 p-1 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700/50">
+            <div className="hidden lg:flex items-center gap-1 p-1 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700/50">
               <Link
                 href="/my-proposals"
                 className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all hover:bg-white dark:hover:bg-neutral-700"
@@ -113,15 +114,38 @@ export default function Header() {
             </div>
           )}
 
+          {/* Pro-specific buttons: Icon only on tablet */}
+          {user?.role === "pro" && (
+            <div className="hidden sm:flex lg:hidden items-center gap-1">
+              <Link
+                href="/my-proposals"
+                className="flex items-center justify-center w-9 h-9 rounded-xl transition-all bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                title={locale === 'ka' ? 'შეთავაზებები' : 'Proposals'}
+              >
+                <FileText className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+              </Link>
+              <Link
+                href="/my-jobs"
+                className="flex items-center justify-center w-9 h-9 rounded-xl transition-all bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                title={locale === 'ka' ? 'სამუშაოები' : 'Jobs'}
+              >
+                <Hammer className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+              </Link>
+            </div>
+          )}
+
           {/* Post a Job Button */}
           <Link
             href="/post-job"
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 lg:px-4 py-2 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90"
             style={{ backgroundColor: ACCENT_COLOR }}
           >
             <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">
+            <span className="hidden lg:inline">
               {locale === 'ka' ? 'განცხადების დამატება' : 'Post a Job'}
+            </span>
+            <span className="hidden sm:inline lg:hidden">
+              {locale === 'ka' ? 'დამატება' : 'Post'}
             </span>
           </Link>
 
@@ -372,8 +396,8 @@ export default function Header() {
             </>
           ) : (
             <>
-              {/* Desktop: Login/Register buttons */}
-              <div className="hidden sm:flex items-center gap-2">
+              {/* Desktop: Login/Register buttons with text */}
+              <div className="hidden md:flex items-center gap-2">
                 <button
                   onClick={() => openLoginModal()}
                   className="text-sm font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors px-3 py-2"
@@ -386,6 +410,25 @@ export default function Header() {
                   style={{ borderColor: ACCENT_COLOR, color: ACCENT_COLOR }}
                 >
                   {t("nav.signUp")}
+                </Link>
+              </div>
+
+              {/* Tablet: Icon buttons */}
+              <div className="hidden sm:flex md:hidden items-center gap-1">
+                <button
+                  onClick={() => openLoginModal()}
+                  className="flex items-center justify-center w-9 h-9 rounded-xl transition-all bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                  title={t("nav.login")}
+                >
+                  <LogIn className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
+                </button>
+                <Link
+                  href="/register"
+                  className="flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:opacity-90"
+                  style={{ backgroundColor: ACCENT_COLOR }}
+                  title={t("nav.signUp")}
+                >
+                  <UserPlus className="w-4 h-4 text-white" />
                 </Link>
               </div>
 

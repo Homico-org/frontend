@@ -116,6 +116,13 @@ function RegisterContent() {
     telegram: "",
   });
 
+  // Avatar upload state (for pro registration)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [uploadedAvatarUrl, setUploadedAvatarUrl] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
   // Service/Portfolio data
   const [services, setServices] = useState<Array<{
     title: string;
@@ -383,6 +390,63 @@ function RegisterContent() {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData({ ...formData, [field]: value });
+  };
+
+  // Avatar upload handler
+  const handleAvatarSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError(locale === "ka" ? "მხოლოდ სურათები არის დაშვებული" : "Only image files are allowed");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError(locale === "ka" ? "ფაილი ძალიან დიდია (მაქს. 5MB)" : "File is too large (max 5MB)");
+      return;
+    }
+
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+    setError("");
+
+    // Upload immediately
+    setAvatarUploading(true);
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/avatar`, {
+        method: 'POST',
+        body: formDataUpload,
+      });
+
+      if (!response.ok) throw new Error('Upload failed');
+
+      const data = await response.json();
+      setUploadedAvatarUrl(data.url);
+    } catch {
+      setError(locale === "ka" ? "სურათის ატვირთვა ვერ მოხერხდა" : "Failed to upload image");
+      setAvatarFile(null);
+      setAvatarPreview(null);
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
+  const removeAvatar = () => {
+    if (avatarPreview) {
+      URL.revokeObjectURL(avatarPreview);
+    }
+    setAvatarFile(null);
+    setAvatarPreview(null);
+    setUploadedAvatarUrl(null);
+    if (avatarInputRef.current) {
+      avatarInputRef.current.value = '';
+    }
   };
 
   const getCurrentStepIndex = () => {
