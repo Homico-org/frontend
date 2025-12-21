@@ -1,13 +1,14 @@
 'use client';
 
-import Avatar from '@/components/common/Avatar';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
-import { CheckCircle, Clock, MapPin, MessageSquare, Shield, Star, Trophy, Briefcase } from 'lucide-react';
+import { Briefcase, CheckCircle, Clock, MapPin, MessageSquare, Shield, Star, Trophy } from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 // Helper function to get proper image URL
 const getImageUrl = (path: string | undefined): string => {
@@ -25,9 +26,6 @@ const getImageUrl = (path: string | undefined): string => {
   }
   return `${apiUrl}/uploads/${path}`;
 };
-import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
 
 // Warm terracotta color palette matching the design
 const COLORS = {
@@ -248,6 +246,7 @@ export default function ProfessionalDetailPage() {
   };
 
   const getCategoryLabel = (category: string) => {
+    if (!category) return '';
     const translated = t(`categories.${category}`);
     if (translated === `categories.${category}`) {
       return category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
@@ -256,6 +255,7 @@ export default function ProfessionalDetailPage() {
   };
 
   const getSubcategoryLabel = (subcategoryKey: string) => {
+    if (!subcategoryKey) return '';
     if (subcategoryKey.startsWith('custom:')) {
       return subcategoryKey.replace('custom:', '');
     }
