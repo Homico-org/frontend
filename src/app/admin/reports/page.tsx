@@ -1,32 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Flag, Search, AlertTriangle, Clock, CheckCircle, XCircle } from 'lucide-react';
+import AuthGuard from '@/components/common/AuthGuard';
+import { Flag, Search, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
 
-export default function AdminReportsPage() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+function AdminReportsPageContent() {
   const { t } = useLanguage();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
-
-  useEffect(() => {
-    if (!isLoading && (!isAuthenticated || user?.role !== 'admin')) {
-      router.push('/');
-    }
-  }, [isLoading, isAuthenticated, user, router]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-cream-50 dark:bg-dark-bg flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-forest-800 dark:border-primary-400"></div>
-      </div>
-    );
-  }
 
   const stats = [
     { label: t('admin.reportsPage.totalReports'), value: '0', icon: Flag, color: 'bg-blue-500' },
@@ -146,5 +131,13 @@ export default function AdminReportsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminReportsPage() {
+  return (
+    <AuthGuard allowedRoles={['admin']}>
+      <AdminReportsPageContent />
+    </AuthGuard>
   );
 }

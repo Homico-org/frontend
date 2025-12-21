@@ -1,27 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import AuthGuard from '@/components/common/AuthGuard';
 import { Package, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 
-export default function ProOrdersPage() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+function ProOrdersPageContent() {
   const router = useRouter();
-
-  useEffect(() => {
-    if (!isLoading && (!isAuthenticated || user?.role !== 'pro')) {
-      router.push('/');
-    }
-  }, [isLoading, isAuthenticated, user, router]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-cream-50 dark:bg-dark-bg flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-forest-800 dark:border-primary-400"></div>
-      </div>
-    );
-  }
 
   const stats = [
     { label: 'Active Orders', value: '0', icon: Package, color: 'bg-forest-800' },
@@ -69,5 +53,13 @@ export default function ProOrdersPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProOrdersPage() {
+  return (
+    <AuthGuard allowedRoles={['pro', 'admin']}>
+      <ProOrdersPageContent />
+    </AuthGuard>
   );
 }

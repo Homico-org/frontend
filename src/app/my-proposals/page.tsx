@@ -1,5 +1,6 @@
 'use client';
 
+import AuthGuard from '@/components/common/AuthGuard';
 import AppBackground from '@/components/common/AppBackground';
 import Avatar from '@/components/common/Avatar';
 import Header, { HeaderSpacer } from '@/components/common/Header';
@@ -85,7 +86,7 @@ interface Proposal {
   createdAt: string;
 }
 
-export default function MyProposalsPage() {
+function MyProposalsPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { locale: language } = useLanguage();
   const toast = useToast();
@@ -664,5 +665,13 @@ export default function MyProposalsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MyProposalsPage() {
+  return (
+    <AuthGuard allowedRoles={['pro', 'admin']}>
+      <MyProposalsPageContent />
+    </AuthGuard>
   );
 }

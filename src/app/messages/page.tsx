@@ -1,5 +1,6 @@
 'use client';
 
+import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
@@ -655,7 +656,7 @@ function MessagesPageContent() {
   useEffect(() => {
     if (!isAuthenticated || !user) return;
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     if (!token) return;
 
     const backendUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:3001';
@@ -818,7 +819,7 @@ function MessagesPageContent() {
     searchTimeoutRef.current = setTimeout(async () => {
       try {
         // Search for pro profiles using existing endpoint
-        const response = await api.get(`/pro-profiles?search=${encodeURIComponent(query)}&limit=10`);
+        const response = await api.get(`/users/pros?search=${encodeURIComponent(query)}&limit=10`);
         setSearchResults(response.data.profiles || response.data || []);
       } catch (error) {
         console.error('Failed to search users:', error);
@@ -1102,16 +1103,18 @@ function MessagesPageContent() {
 // Main export with Suspense
 export default function MessagesPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-white flex flex-col">
-        <Header />
-        <HeaderSpacer />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: ACCENT_COLOR, borderTopColor: 'transparent' }} />
+    <AuthGuard>
+      <Suspense fallback={
+        <div className="min-h-screen bg-white flex flex-col">
+          <Header />
+          <HeaderSpacer />
+          <div className="flex-1 flex items-center justify-center">
+            <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: ACCENT_COLOR, borderTopColor: 'transparent' }} />
+          </div>
         </div>
-      </div>
-    }>
-      <MessagesPageContent />
-    </Suspense>
+      }>
+        <MessagesPageContent />
+      </Suspense>
+    </AuthGuard>
   );
 }

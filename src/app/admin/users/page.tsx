@@ -1,31 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Users, Search, Filter, MoreVertical, UserCheck, UserX, Shield } from 'lucide-react';
+import AuthGuard from '@/components/common/AuthGuard';
+import { Users, Search, UserCheck, UserX, Shield } from 'lucide-react';
 
-export default function AdminUsersPage() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+function AdminUsersPageContent() {
   const { t } = useLanguage();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
-
-  useEffect(() => {
-    if (!isLoading && (!isAuthenticated || user?.role !== 'admin')) {
-      router.push('/');
-    }
-  }, [isLoading, isAuthenticated, user, router]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-cream-50 dark:bg-dark-bg flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-forest-800 dark:border-primary-400"></div>
-      </div>
-    );
-  }
 
   const stats = [
     { label: t('admin.totalUsers'), value: '0', icon: Users, color: 'bg-forest-800' },
@@ -127,5 +112,13 @@ export default function AdminUsersPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminUsersPage() {
+  return (
+    <AuthGuard allowedRoles={['admin']}>
+      <AdminUsersPageContent />
+    </AuthGuard>
   );
 }

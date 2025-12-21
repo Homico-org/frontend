@@ -52,7 +52,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   initAuth: () => {
     const user = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
 
     if (user && token) {
       set({

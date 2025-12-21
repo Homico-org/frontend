@@ -1,27 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import AuthGuard from '@/components/common/AuthGuard';
 import { Image, Plus, Eye } from 'lucide-react';
 
-export default function ProPortfolioPage() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+function ProPortfolioPageContent() {
   const router = useRouter();
-
-  useEffect(() => {
-    if (!isLoading && (!isAuthenticated || user?.role !== 'pro')) {
-      router.push('/');
-    }
-  }, [isLoading, isAuthenticated, user, router]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-cream-50 dark:bg-dark-bg flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-forest-800 dark:border-primary-400"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-cream-50 dark:bg-dark-bg py-6 sm:py-8">
@@ -86,5 +70,13 @@ export default function ProPortfolioPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProPortfolioPage() {
+  return (
+    <AuthGuard allowedRoles={['pro', 'admin']}>
+      <ProPortfolioPageContent />
+    </AuthGuard>
   );
 }

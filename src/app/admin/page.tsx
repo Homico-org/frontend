@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import AuthGuard from '@/components/common/AuthGuard';
 import { api } from '@/lib/api';
 import Link from 'next/link';
 import Avatar from '@/components/common/Avatar';
@@ -95,8 +96,8 @@ interface DailyData {
   count: number;
 }
 
-export default function AdminDashboardPage() {
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+function AdminDashboardPageContent() {
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
 
@@ -151,15 +152,10 @@ export default function AdminDashboardPage() {
   }, []);
 
   useEffect(() => {
-    if (!authLoading && (!isAuthenticated || user?.role !== 'admin')) {
-      router.push('/');
-      return;
-    }
-
-    if (isAuthenticated && user?.role === 'admin') {
+    if (isAuthenticated) {
       fetchDashboardData();
     }
-  }, [authLoading, isAuthenticated, user, router, fetchDashboardData]);
+  }, [isAuthenticated, fetchDashboardData]);
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
@@ -670,5 +666,13 @@ export default function AdminDashboardPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminDashboardPage() {
+  return (
+    <AuthGuard allowedRoles={['admin']}>
+      <AdminDashboardPageContent />
+    </AuthGuard>
   );
 }

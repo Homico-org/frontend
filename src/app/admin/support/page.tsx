@@ -3,6 +3,7 @@
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import AuthGuard from '@/components/common/AuthGuard';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
@@ -46,7 +47,7 @@ interface TicketStats {
 
 type StatusFilter = 'all' | 'open' | 'in_progress' | 'resolved' | 'closed';
 
-export default function AdminSupportPage() {
+function AdminSupportPageContent() {
   const { user, isAuthenticated, isLoading: authLoading, token } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
@@ -62,11 +63,6 @@ export default function AdminSupportPage() {
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-  useEffect(() => {
-    if (!authLoading && (!isAuthenticated || user?.role !== 'admin')) {
-      router.push('/');
-    }
-  }, [authLoading, isAuthenticated, user, router]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -540,5 +536,13 @@ export default function AdminSupportPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminSupportPage() {
+  return (
+    <AuthGuard allowedRoles={['admin']}>
+      <AdminSupportPageContent />
+    </AuthGuard>
   );
 }

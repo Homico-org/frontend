@@ -1,5 +1,6 @@
 'use client';
 
+import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
 import BackButton from '@/components/common/BackButton';
 import Header, { HeaderSpacer } from '@/components/common/Header';
@@ -54,7 +55,7 @@ interface NotificationSettingsData {
   preferences: NotificationPreferences;
 }
 
-export default function SettingsPage() {
+function SettingsPageContent() {
   const { user, isAuthenticated, isLoading, updateUser } = useAuth();
   const { openLoginModal } = useAuthModal();
   const { t, locale } = useLanguage();
@@ -1951,5 +1952,13 @@ export default function SettingsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <AuthGuard>
+      <SettingsPageContent />
+    </AuthGuard>
   );
 }

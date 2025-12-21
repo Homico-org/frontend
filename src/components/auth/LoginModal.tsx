@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
-
 export default function LoginModal() {
   const router = useRouter();
   const { login } = useAuth();
@@ -17,7 +16,6 @@ export default function LoginModal() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -40,13 +38,11 @@ export default function LoginModal() {
     return () => document.removeEventListener('keydown', handleEscKey);
   }, [isLoginModalOpen, handleEscKey]);
 
-
   useEffect(() => {
     if (!isLoginModalOpen) {
       setFormData({ identifier: '', password: '' });
       setError('');
       setShowPassword(false);
-      setFocusedField(null);
     }
   }, [isLoginModalOpen]);
 
@@ -81,8 +77,8 @@ export default function LoginModal() {
       } else if (data.user.role === 'admin') {
         router.push('/admin');
       }
-    } catch (err: any) {
-      const errorMessage = err.message || '';
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : '';
       if (errorMessage.toLowerCase().includes('invalid credentials')) {
         setError(t('auth.invalidCredentials'));
       } else {
@@ -97,87 +93,85 @@ export default function LoginModal() {
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+      {/* Backdrop - Dark overlay */}
       <div
-        className={`absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
         onClick={closeLoginModal}
       />
 
+      {/* Modal Container */}
       <div
-        className={`relative w-full max-w-[440px] transition-all duration-500 ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
+        className={`relative w-full max-w-[440px] transition-all duration-400 ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
         style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
       >
+        {/* Modal Card */}
         <div
-          className="auth-modal-premium relative"
+          className="relative bg-white rounded-[20px] shadow-xl overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
+          {/* Close Button - Top Right */}
           <button
             onClick={closeLoginModal}
-            className="auth-close-btn"
+            className="absolute top-5 right-5 w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-neutral-600 transition-colors z-10"
+            aria-label="Close"
           >
-            <svg className="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
 
-          <div className="auth-esc-badge hidden sm:block">
-            ESC
-          </div>
-
-          <div className="relative px-8 sm:px-10 pt-16 pb-8 sm:pb-10 z-10">
-            <div className="text-center mb-8">
-              <div className="auth-icon-premium mx-auto mb-5">
-                <svg className="w-8 h-8 text-[#E07B4F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75" />
+          {/* Content */}
+          <div className="px-10 pt-12 pb-10">
+            {/* Lock Icon in Circle */}
+            <div className="flex justify-center mb-6">
+              <div className="w-14 h-14 rounded-full bg-[#F9E4DE] flex items-center justify-center">
+                <svg className="w-6 h-6 text-[#C47B65]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
                 </svg>
               </div>
-              <h2 className="text-2xl sm:text-[28px] font-bold tracking-tight" style={{ color: 'var(--color-text-primary)' }}>
-                {locale === 'ka' ? 'კეთილი იყოს შენი დაბრუნება' : 'Welcome back'}
-              </h2>
-              <p className="mt-2 text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
-                {locale === 'ka' ? 'შედი შენს ანგარიშზე' : 'Sign in to your account'}
-              </p>
             </div>
 
+            {/* Title */}
+            <h2 className="text-[26px] font-bold text-center text-neutral-900 mb-2">
+              {locale === 'ka' ? 'კეთილი იყოს შენი დაბრუნება' : 'Welcome Back'}
+            </h2>
+
+            {/* Subtitle */}
+            <p className="text-center text-neutral-500 text-[15px] mb-8">
+              {locale === 'ka' ? 'გთხოვთ შეიყვანოთ თქვენი მონაცემები შესასვლელად.' : 'Please enter your details to sign in.'}
+            </p>
+
+            {/* Error Message */}
             {error && (
-              <div className="auth-error mb-6">
+              <div className="mb-6 p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
                 <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p className="text-sm text-red-600 dark:text-red-400 flex-1">{error}</p>
+                <p className="text-sm text-red-600">{error}</p>
               </div>
             )}
 
+            {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Email/Phone Input */}
               <div>
-                <label htmlFor="login-identifier" className="auth-label">
-                  {locale === 'ka' ? 'ტელეფონი ან ელ-ფოსტა' : 'Phone or Email'}
+                <label htmlFor="login-identifier" className="block text-sm font-medium text-neutral-700 mb-2">
+                  {locale === 'ka' ? 'ელ-ფოსტა ან ტელეფონი' : 'Email or Phone Number'}
                 </label>
-                <div className="relative">
-                  <input
-                    id="login-identifier"
-                    type="text"
-                    required
-                    value={formData.identifier}
-                    onChange={(e) => setFormData({ ...formData, identifier: e.target.value })}
-                    onFocus={() => setFocusedField('identifier')}
-                    onBlur={() => setFocusedField(null)}
-                    className={`auth-input-premium ${focusedField === 'identifier' ? 'focused' : ''}`}
-                    placeholder="555 555 55 55"
-                    style={{
-                      borderColor: focusedField === 'identifier' ? '#E07B4F' : undefined,
-                      boxShadow: focusedField === 'identifier' ? '0 0 0 4px rgba(210, 105, 30, 0.12), 0 4px 12px -4px rgba(210, 105, 30, 0.15)' : undefined,
-                    }}
-                  />
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors duration-200" style={{ color: focusedField === 'identifier' ? '#E07B4F' : 'var(--color-text-muted)' }}>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                  </div>
-                </div>
+                <input
+                  id="login-identifier"
+                  type="text"
+                  required
+                  value={formData.identifier}
+                  onChange={(e) => setFormData({ ...formData, identifier: e.target.value })}
+                  className="w-full h-[52px] px-4 bg-[#F5F5F5] border-0 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C47B65]/30 transition-all"
+                  placeholder="example@homico.com"
+                />
               </div>
 
+              {/* Password Input */}
               <div>
-                <label htmlFor="login-password" className="auth-label">
+                <label htmlFor="login-password" className="block text-sm font-medium text-neutral-700 mb-2">
                   {locale === 'ka' ? 'პაროლი' : 'Password'}
                 </label>
                 <div className="relative">
@@ -187,20 +181,13 @@ export default function LoginModal() {
                     required
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    onFocus={() => setFocusedField('password')}
-                    onBlur={() => setFocusedField(null)}
-                    className={`auth-input-premium ${focusedField === 'password' ? 'focused' : ''}`}
-                    placeholder="••••••••"
-                    style={{
-                      borderColor: focusedField === 'password' ? '#E07B4F' : undefined,
-                      boxShadow: focusedField === 'password' ? '0 0 0 4px rgba(210, 105, 30, 0.12), 0 4px 12px -4px rgba(210, 105, 30, 0.15)' : undefined,
-                    }}
+                    className="w-full h-[52px] px-4 pr-12 bg-[#F5F5F5] border-0 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C47B65]/30 transition-all"
+                    placeholder={locale === 'ka' ? 'შეიყვანეთ პაროლი' : 'Enter your password'}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors hover:opacity-70"
-                    style={{ color: focusedField === 'password' ? '#E07B4F' : 'var(--color-text-muted)' }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
                   >
                     {showPassword ? (
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -216,16 +203,22 @@ export default function LoginModal() {
                 </div>
               </div>
 
+              {/* Forgot Password Link */}
               <div className="flex justify-end">
-                <Link href="/forgot-password" onClick={closeLoginModal} className="auth-link text-sm">
-                  {locale === 'ka' ? 'დაგავიწყდა პაროლი?' : 'Forgot password?'}
+                <Link
+                  href="/forgot-password"
+                  onClick={closeLoginModal}
+                  className="text-sm font-medium text-[#C47B65] hover:text-[#B36A55] transition-colors"
+                >
+                  {locale === 'ka' ? 'დაგავიწყდა პაროლი?' : 'Forgot Password?'}
                 </Link>
               </div>
 
+              {/* Login Button */}
               <button
                 type="submit"
                 disabled={isLoading}
-                className="auth-btn-premium w-full"
+                className="w-full h-[52px] bg-[#C47B65] hover:bg-[#B36A55] text-white font-semibold rounded-xl transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -236,86 +229,29 @@ export default function LoginModal() {
                     {locale === 'ka' ? 'შესვლა...' : 'Signing in...'}
                   </span>
                 ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    {locale === 'ka' ? 'შესვლა' : 'Sign in'}
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
-                  </span>
+                  <span>{locale === 'ka' ? 'შესვლა' : 'Login'}</span>
                 )}
               </button>
             </form>
 
-            <div className="auth-divider">
-              <span className="auth-divider-text">
-                {locale === 'ka' ? 'ან' : 'or'}
-              </span>
+            {/* OR Divider */}
+            <div className="flex items-center my-6">
+              <div className="flex-1 h-px bg-neutral-200"></div>
+              <span className="px-4 text-sm text-neutral-400">OR</span>
+              <div className="flex-1 h-px bg-neutral-200"></div>
             </div>
 
-            <div className="text-center mb-6">
-              <p className="text-[15px]" style={{ color: 'var(--color-text-secondary)' }}>
-                {locale === 'ka' ? 'არ გაქვს ანგარიში?' : "Don't have an account?"}{' '}
-                <Link href="/register" onClick={closeLoginModal} className="auth-link">
-                  {locale === 'ka' ? 'დარეგისტრირდი' : 'Sign up'}
-                </Link>
-              </p>
-            </div>
-
-            {/* Static Demo Accounts - Always Visible */}
-            <div className="auth-demo-section">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center">
-                  <svg className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <p className="text-xs font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
-                  {locale === 'ka' ? 'დემო ანგარიშები' : 'Demo Accounts'}
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setFormData({ identifier: 'client@demo.com', password: 'demo123' })}
-                  className="auth-demo-btn group"
-                >
-                  <span>{locale === 'ka' ? 'კლიენტი 1' : 'Client 1'}</span>
-                  <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E07B4F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormData({ identifier: 'lasha.client@demo.com', password: 'demo123' })}
-                  className="auth-demo-btn group"
-                >
-                  <span>{locale === 'ka' ? 'კლიენტი 2' : 'Client 2'}</span>
-                  <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E07B4F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormData({ identifier: 'giorgi.pro@demo.com', password: 'demo123' })}
-                  className="auth-demo-btn group"
-                >
-                  <span>{locale === 'ka' ? 'პრო 1' : 'Pro 1'}</span>
-                  <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E07B4F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormData({ identifier: 'nino.pro@demo.com', password: 'demo123' })}
-                  className="auth-demo-btn group"
-                >
-                  <span>{locale === 'ka' ? 'პრო 2' : 'Pro 2'}</span>
-                  <svg className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E07B4F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </button>
-              </div>
-            </div>
+            {/* Sign Up Link */}
+            <p className="text-center text-[15px] text-neutral-600">
+              {locale === 'ka' ? 'არ გაქვს ანგარიში?' : "Don't have an account?"}{' '}
+              <Link
+                href="/register"
+                onClick={closeLoginModal}
+                className="font-semibold text-[#C47B65] hover:text-[#B36A55] transition-colors"
+              >
+                {locale === 'ka' ? 'დარეგისტრირდი' : 'Sign Up'}
+              </Link>
+            </p>
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import AuthGuard from '@/components/common/AuthGuard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -74,7 +75,7 @@ interface ActiveJob {
 
 type TabFilter = 'active' | 'completed';
 
-export default function MyWorkPage() {
+function MyWorkPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { locale: language } = useLanguage();
   const toast = useToast();
@@ -502,6 +503,14 @@ export default function MyWorkPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function MyWorkPage() {
+  return (
+    <AuthGuard allowedRoles={['pro', 'admin']}>
+      <MyWorkPageContent />
+    </AuthGuard>
   );
 }
 

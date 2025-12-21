@@ -1,27 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import AuthGuard from '@/components/common/AuthGuard';
 import { BarChart3, Eye, MousePointer, TrendingUp } from 'lucide-react';
 
-export default function ProAnalyticsPage() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+function ProAnalyticsPageContent() {
   const router = useRouter();
-
-  useEffect(() => {
-    if (!isLoading && (!isAuthenticated || user?.role !== 'pro')) {
-      router.push('/');
-    }
-  }, [isLoading, isAuthenticated, user, router]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-cream-50 dark:bg-dark-bg flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-forest-800 dark:border-primary-400"></div>
-      </div>
-    );
-  }
 
   const stats = [
     { label: 'Profile Views', value: '0', icon: Eye, color: 'bg-forest-800' },
@@ -80,5 +64,13 @@ export default function ProAnalyticsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProAnalyticsPage() {
+  return (
+    <AuthGuard allowedRoles={['pro', 'admin']}>
+      <ProAnalyticsPageContent />
+    </AuthGuard>
   );
 }

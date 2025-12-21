@@ -155,7 +155,7 @@ export default function JobsPage() {
           `${process.env.NEXT_PUBLIC_API_URL}/jobs?${params.toString()}`,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
             },
           }
         );

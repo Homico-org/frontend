@@ -1,6 +1,6 @@
 'use client';
 
-import { CATEGORIES, CategoryDefinition } from '@/constants/categories';
+import { useCategories, Category } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useState } from 'react';
 
@@ -91,6 +91,7 @@ export default function CategorySubcategorySelector({
   maxCategories = 4, // Default max 4 categories
 }: CategorySubcategorySelectorProps) {
   const { locale } = useLanguage();
+  const { categories: CATEGORIES, loading: categoriesLoading } = useCategories();
 
   // Support both old single category and new multiple categories API
   const selectedCategories: string[] = selectedCategoriesProp || (selectedCategory ? [selectedCategory] : []);
@@ -389,7 +390,7 @@ export default function CategorySubcategorySelector({
                   ? 'bg-terracotta-500 shadow-lg shadow-terracotta-500/20 text-white'
                   : 'bg-[var(--color-bg-muted)] text-[var(--color-text-secondary)]'
               }`}>
-                <CategoryIcon type={category.icon} className="w-7 h-7" />
+                <CategoryIcon type={category.icon || ''} className="w-7 h-7" />
               </div>
 
               {/* Content */}

@@ -1,5 +1,6 @@
 'use client';
 
+import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
@@ -536,12 +537,14 @@ function MyJobsPageContent() {
 
 export default function MyJobsPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2" style={{ borderColor: ACCENT_COLOR }} />
-      </div>
-    }>
-      <MyJobsPageContent />
-    </Suspense>
+    <AuthGuard allowedRoles={['client', 'company', 'admin']}>
+      <Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2" style={{ borderColor: ACCENT_COLOR }} />
+        </div>
+      }>
+        <MyJobsPageContent />
+      </Suspense>
+    </AuthGuard>
   );
 }

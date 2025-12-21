@@ -1,10 +1,8 @@
 'use client';
 
-import { CATEGORIES } from '@/constants/categories';
+import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useState } from 'react';
-
-const categories = CATEGORIES;
 
 // Refined architectural icons
 const CategoryIcon = ({ type, className = '' }: { type: string; className?: string }) => {
@@ -70,6 +68,7 @@ export default function CategorySection({
   showRatingFilter = false,
 }: CategorySectionProps) {
   const { locale } = useLanguage();
+  const { categories } = useCategories();
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
 
   const activeCategory = categories.find(c => c.key === selectedCategory);
@@ -113,7 +112,7 @@ export default function CategorySection({
                 w-4 h-4 transition-transform duration-200
                 ${isSelected ? '' : 'group-hover:scale-105'}
               `}>
-                <CategoryIcon type={category.icon} className="w-full h-full" />
+                <CategoryIcon type={category.icon || ''} className="w-full h-full" />
               </span>
 
               {/* Label */}

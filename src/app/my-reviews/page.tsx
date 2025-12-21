@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import AuthGuard from '@/components/common/AuthGuard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { api } from '@/lib/api';
@@ -60,7 +61,7 @@ interface PendingReview {
   completedAt: string;
 }
 
-export default function MyReviewsPage() {
+function MyReviewsPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { locale: language } = useLanguage();
   const router = useRouter();
@@ -458,5 +459,13 @@ export default function MyReviewsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function MyReviewsPage() {
+  return (
+    <AuthGuard>
+      <MyReviewsPageContent />
+    </AuthGuard>
   );
 }

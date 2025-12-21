@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import AuthGuard from '@/components/common/AuthGuard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -80,7 +81,7 @@ const notificationConfig: Record<NotificationType, { icon: any; colorClass: stri
 
 type FilterKey = 'all' | 'unread' | 'jobs' | 'messages' | 'reviews';
 
-export default function NotificationsPage() {
+function NotificationsPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { openLoginModal } = useAuthModal();
   const { locale } = useLanguage();
@@ -447,5 +448,13 @@ export default function NotificationsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function NotificationsPage() {
+  return (
+    <AuthGuard>
+      <NotificationsPageContent />
+    </AuthGuard>
   );
 }

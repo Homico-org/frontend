@@ -1,5 +1,6 @@
 'use client';
 
+import AuthGuard from '@/components/common/AuthGuard';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Header, { HeaderSpacer } from '@/components/common/Header';
@@ -705,17 +706,19 @@ function CheckoutContent() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-base)]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-[#E07B4F] flex items-center justify-center animate-pulse">
-            <Lock className="w-6 h-6 text-white" />
+    <AuthGuard allowedRoles={['pro', 'admin']}>
+      <Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-base)]">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#E07B4F] flex items-center justify-center animate-pulse">
+              <Lock className="w-6 h-6 text-white" />
+            </div>
+            <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#E07B4F] border-t-transparent" />
           </div>
-          <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#E07B4F] border-t-transparent" />
         </div>
-      </div>
-    }>
-      <CheckoutContent />
-    </Suspense>
+      }>
+        <CheckoutContent />
+      </Suspense>
+    </AuthGuard>
   );
 }

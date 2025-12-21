@@ -1,11 +1,12 @@
 'use client';
 
-import { CATEGORIES, getCategoryByKey } from '@/constants/categories';
+import AuthGuard from '@/components/common/AuthGuard';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import AppBackground from '@/components/common/AppBackground';
 import PortfolioProjectsInput, { PortfolioProject } from '@/components/common/PortfolioProjectsInput';
 import CategorySubcategorySelector from '@/components/common/CategorySubcategorySelector';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -19,10 +20,11 @@ const availabilityOptions = [
   { key: 'emergency', name: 'Emergency Calls', nameKa: 'გადაუდებელი გამოძახება' },
 ];
 
-export default function ProProfileSetupPage() {
+function ProProfileSetupPageContent() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
   const { locale } = useLanguage();
+  const { categories: allCategories, getCategoryByKey, getCategoryName, loading: categoriesLoading } = useCategories();
   const [isVisible, setIsVisible] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
@@ -151,7 +153,7 @@ export default function ProProfileSetupPage() {
       // Try to fetch existing profile
       try {
         const token = localStorage.getItem('access_token');
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pro-profiles/my-profile`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/pro-profile`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -311,7 +313,7 @@ export default function ProProfileSetupPage() {
           detectedCountry = 'Georgia';
         }
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/pro-profiles/locations?country=${encodeURIComponent(detectedCountry)}`
+          `${process.env.NEXT_PUBLIC_API_URL}/users/pros/locations?country=${encodeURIComponent(detectedCountry)}`
         );
         const data = await response.json();
         setLocationData(data);
@@ -333,7 +335,7 @@ export default function ProProfileSetupPage() {
   const primaryCategory = selectedCategories[0] || 'interior-design';
 
   const getCategoryInfo = () => {
-    return getCategoryByKey(primaryCategory) || CATEGORIES[0];
+    return getCategoryByKey(primaryCategory) || allCategories[0];
   };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -435,8 +437,8 @@ export default function ProProfileSetupPage() {
 
       // Use PATCH for update, POST for create
       const url = isEditMode && existingProfileId
-        ? `${process.env.NEXT_PUBLIC_API_URL}/pro-profiles/${existingProfileId}`
-        : `${process.env.NEXT_PUBLIC_API_URL}/pro-profiles`;
+        ? `${process.env.NEXT_PUBLIC_API_URL}/users/me/pro-profile`
+        : `${process.env.NEXT_PUBLIC_API_URL}/users/me/pro-profile`;
 
       const method = isEditMode && existingProfileId ? 'PATCH' : 'POST';
 
@@ -1168,5 +1170,13 @@ export default function ProProfileSetupPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProProfileSetupPage() {
+  return (
+    <AuthGuard>
+      <ProProfileSetupPageContent />
+    </AuthGuard>
   );
 }

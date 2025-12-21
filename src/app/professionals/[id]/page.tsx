@@ -2,9 +2,9 @@
 
 import Avatar from '@/components/common/Avatar';
 import Header, { HeaderSpacer } from '@/components/common/Header';
-import { CATEGORIES } from '@/constants/categories';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
+import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { CheckCircle, Clock, MapPin, MessageSquare, Shield, Star, Trophy, Briefcase } from 'lucide-react';
@@ -137,6 +137,7 @@ export default function ProfessionalDetailPage() {
   const { openLoginModal } = useAuthModal();
   const { t, locale } = useLanguage();
   const toast = useToast();
+  const { categories: CATEGORIES } = useCategories();
 
   const [profile, setProfile] = useState<ProProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -152,7 +153,7 @@ export default function ProfessionalDetailPage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pro-profiles/${params.id}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/pros/${params.id}`);
         if (!response.ok) throw new Error('Profile not found');
         const data = await response.json();
         setProfile(data);

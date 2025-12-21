@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { CATEGORIES } from '@/constants/categories';
+import { useCategories } from '@/contexts/CategoriesContext';
 import StatusBadge from '@/components/common/StatusBadge';
 import { ProStatus } from '@/types';
 
@@ -39,6 +39,7 @@ interface SimilarProfessionalsProps {
 
 export default function SimilarProfessionals({ currentProId, categories, subcategories }: SimilarProfessionalsProps) {
   const { locale } = useLanguage();
+  const { categories: allCategories, getCategoryName } = useCategories();
   const [similarPros, setSimilarPros] = useState<SimilarPro[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -59,7 +60,7 @@ export default function SimilarProfessionals({ currentProId, categories, subcate
         params.append('limit', '8');
         params.append('exclude', currentProId);
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pro-profiles?${params.toString()}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/pros?${params.toString()}`);
         if (response.ok) {
           const data = await response.json();
           // Filter out current pro and limit to 6
@@ -108,11 +109,7 @@ export default function SimilarProfessionals({ currentProId, categories, subcate
   };
 
   const getCategoryLabel = (categoryKey: string) => {
-    const category = CATEGORIES.find(c => c.key === categoryKey);
-    if (category) {
-      return locale === 'ka' ? category.nameKa : category.name;
-    }
-    return categoryKey.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    return getCategoryName(categoryKey, locale as 'en' | 'ka');
   };
 
   if (isLoading) {

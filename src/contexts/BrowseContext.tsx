@@ -11,6 +11,10 @@ interface BrowseContextType {
   setMinRating: (rating: number) => void;
   selectedBudget: string;
   setSelectedBudget: (budget: string) => void;
+  budgetMin: number | null;
+  setBudgetMin: (value: number | null) => void;
+  budgetMax: number | null;
+  setBudgetMax: (value: number | null) => void;
   selectedCity: string;
   setSelectedCity: (city: string) => void;
   searchQuery: string;
@@ -46,6 +50,8 @@ export function BrowseProvider({
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(initialSubcategory);
   const [minRating, setMinRating] = useState<number>(0);
   const [selectedBudget, setSelectedBudget] = useState<string>('all');
+  const [budgetMin, setBudgetMin] = useState<number | null>(null);
+  const [budgetMax, setBudgetMax] = useState<number | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>('tbilisi');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('recommended');
@@ -55,6 +61,8 @@ export function BrowseProvider({
     setSelectedSubcategory(null);
     setMinRating(0);
     setSelectedBudget('all');
+    setBudgetMin(null);
+    setBudgetMax(null);
     setSelectedCity('tbilisi');
     setSearchQuery('');
     setSortBy('recommended');
@@ -64,6 +72,8 @@ export function BrowseProvider({
     selectedSubcategory !== null ||
     minRating > 0 ||
     selectedBudget !== 'all' ||
+    budgetMin !== null ||
+    budgetMax !== null ||
     selectedCity !== 'tbilisi' ||
     searchQuery !== '';
 
@@ -78,6 +88,10 @@ export function BrowseProvider({
         setMinRating,
         selectedBudget,
         setSelectedBudget,
+        budgetMin,
+        setBudgetMin,
+        budgetMax,
+        setBudgetMax,
         selectedCity,
         setSelectedCity,
         searchQuery,

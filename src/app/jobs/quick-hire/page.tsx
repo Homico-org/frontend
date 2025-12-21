@@ -10,11 +10,8 @@ import Link from 'next/link';
 
 interface ProProfile {
   _id: string;
-  userId: {
-    _id: string;
-    name: string;
-    avatar?: string;
-  };
+  name: string;
+  avatar?: string;
   title: string;
   categories: string[];
   avgRating: number;
@@ -110,10 +107,11 @@ export default function QuickHirePage() {
         limit: '10',
       });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pro-profiles?${params}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/pros?${params}`);
       if (response.ok) {
-        const data = await response.json();
-        const availablePros = data.filter((pro: ProProfile) => pro.isAvailable && pro.avgRating >= 4);
+        const result = await response.json();
+        const profiles = result.data || result.profiles || result || [];
+        const availablePros = profiles.filter((pro: ProProfile) => pro.isAvailable !== false && (pro.avgRating || 0) >= 4);
         setSuggestedPros(availablePros);
         setSelectedPros(availablePros.slice(0, 3).map((p: ProProfile) => p._id));
       }
@@ -415,16 +413,16 @@ export default function QuickHirePage() {
                           )}
                         </div>
 
-                        {pro.userId?.avatar ? (
-                          <img src={pro.userId.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+                        {pro.avatar ? (
+                          <img src={pro.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
                         ) : (
                           <div className="w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-600 font-medium">
-                            {pro.userId?.name?.charAt(0) || 'P'}
+                            {pro.name?.charAt(0) || 'P'}
                           </div>
                         )}
 
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium text-neutral-900 dark:text-white truncate">{pro.userId?.name}</div>
+                          <div className="font-medium text-neutral-900 dark:text-white truncate">{pro.name}</div>
                           <div className="text-sm text-neutral-500 dark:text-neutral-400 truncate">{pro.title}</div>
                         </div>
 
