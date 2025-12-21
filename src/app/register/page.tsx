@@ -737,6 +737,7 @@ function RegisterContent() {
             telegram: formData.telegram || undefined,
             selectedCategories: userType === "pro" ? formData.selectedCategories : undefined,
             selectedSubcategories: userType === "pro" ? formData.selectedSubcategories : undefined,
+            avatar: uploadedAvatarUrl || undefined,
             isPhoneVerified: true,
           }),
         }
@@ -1418,6 +1419,79 @@ function RegisterContent() {
                 <p className="text-sm text-neutral-500">
                   {locale === "ka" ? "შეავსე ძირითადი ინფორმაცია" : "Fill in your basic information"}
                 </p>
+              </div>
+
+              {/* Avatar Upload */}
+              <div className="flex items-center gap-4 p-4 bg-white rounded-xl border border-neutral-200">
+                <div className="relative">
+                  <div
+                    onClick={() => avatarInputRef.current?.click()}
+                    className={`w-20 h-20 rounded-full overflow-hidden cursor-pointer border-2 border-dashed transition-all ${
+                      avatarPreview
+                        ? 'border-transparent'
+                        : 'border-neutral-300 hover:border-[#C4735B]'
+                    }`}
+                  >
+                    {avatarPreview ? (
+                      <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
+                        <svg className="w-8 h-8 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  {avatarUploading && (
+                    <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center">
+                      <svg className="animate-spin h-6 w-6 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                    </div>
+                  )}
+                  {avatarPreview && !avatarUploading && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); removeAvatar(); }}
+                      className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-sm transition-colors"
+                    >
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarSelect}
+                    className="hidden"
+                  />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-neutral-900">
+                    {locale === "ka" ? "პროფილის ფოტო" : "Profile Photo"}
+                  </h3>
+                  <p className="text-xs text-neutral-500 mt-0.5">
+                    {locale === "ka" ? "ატვირთე შენი ფოტო (არასავალდებულო)" : "Upload your photo (optional)"}
+                  </p>
+                  {!avatarPreview && (
+                    <button
+                      onClick={() => avatarInputRef.current?.click()}
+                      className="mt-2 text-xs font-medium text-[#C4735B] hover:text-[#A85D47] transition-colors"
+                    >
+                      {locale === "ka" ? "ფოტოს ატვირთვა" : "Upload photo"}
+                    </button>
+                  )}
+                  {uploadedAvatarUrl && (
+                    <p className="mt-1 text-xs text-green-600 flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      {locale === "ka" ? "ატვირთულია" : "Uploaded"}
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="grid lg:grid-cols-2 gap-4">

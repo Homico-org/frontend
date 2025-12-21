@@ -18,6 +18,7 @@ const ACCENT_COLOR = '#C4735B';
 export default function Header() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const { openLoginModal } = useAuthModal();
+  const { getCategoryName, getSubcategoryName } = useCategories();
   const { t, locale } = useLanguage();
   const { unreadCount } = useNotifications();
   const { unreadCount: unreadMessagesCount } = useMessages();
@@ -229,12 +230,27 @@ export default function Header() {
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-white truncate">{user.name}</p>
                           <p className="text-xs text-white/80 truncate">{user.email}</p>
-                          <span
-                            className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold capitalize mt-1"
-                            style={{ background: 'rgba(255, 255, 255, 0.95)', color: ACCENT_COLOR }}
-                          >
-                            {user.role === "pro" ? "პრო" : user.role === "client" ? "მაძიებელი" : user.role === "company" ? "კომპანია" : user.role === "admin" ? "ადმინი" : user.role}
-                          </span>
+                          {user.role === "pro" && user.selectedSubcategories && user.selectedSubcategories.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1.5">
+                              {user.selectedSubcategories.slice(0, 2).map((subKey) => (
+                                <span
+                                  key={subKey}
+                                  className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium"
+                                  style={{ background: 'rgba(255, 255, 255, 0.9)', color: ACCENT_COLOR }}
+                                >
+                                  {getSubcategoryName(subKey, locale as 'en' | 'ka')}
+                                </span>
+                              ))}
+                              {user.selectedSubcategories.length > 2 && (
+                                <span
+                                  className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium"
+                                  style={{ background: 'rgba(255, 255, 255, 0.7)', color: ACCENT_COLOR }}
+                                >
+                                  +{user.selectedSubcategories.length - 2}
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

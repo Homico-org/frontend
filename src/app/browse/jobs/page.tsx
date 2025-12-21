@@ -98,7 +98,7 @@ export default function JobsPage() {
     [],
   ];
 
-  // Fetch jobs with filters
+  // Fetch jobs with filters - filtered by pro's selected categories/subcategories
   const fetchJobs = useCallback(
     async (pageNum: number, reset = false) => {
       if (!isPro) return;
@@ -115,7 +115,21 @@ export default function JobsPage() {
         params.append("limit", "12");
         params.append("status", "open");
 
-        // Apply category filter
+        // Filter by pro's selected categories (most important filter for pros)
+        if (user?.selectedCategories && user.selectedCategories.length > 0) {
+          user.selectedCategories.forEach(cat => {
+            params.append("categories", cat);
+          });
+        }
+
+        // Filter by pro's selected subcategories
+        if (user?.selectedSubcategories && user.selectedSubcategories.length > 0) {
+          user.selectedSubcategories.forEach(sub => {
+            params.append("subcategories", sub);
+          });
+        }
+
+        // Apply additional category filter from UI (narrows down further)
         if (filters.category) {
           params.append("category", filters.category);
         }
@@ -190,7 +204,7 @@ export default function JobsPage() {
         setIsLoadingMore(false);
       }
     },
-    [isPro, filters.category, filters.budgetMin, filters.budgetMax, filters.propertyType, filters.location, filters.searchQuery, filters.deadline, filters.showFavoritesOnly]
+    [isPro, user?.selectedCategories, user?.selectedSubcategories, filters.category, filters.budgetMin, filters.budgetMax, filters.propertyType, filters.location, filters.searchQuery, filters.deadline, filters.showFavoritesOnly]
   );
 
   // Track if initial fetch has been done
