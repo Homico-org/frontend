@@ -481,6 +481,45 @@ function RegisterContent() {
     setPortfolioProjects(prev => prev.filter(p => p.id !== id));
   };
 
+  const handleProjectImageUpload = (projectId: string, files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+    Array.from(files).forEach(file => {
+      if (!allowedTypes.includes(file.type)) {
+        setError(locale === "ka" ? "მხოლოდ JPG, PNG ან WebP ფორმატი" : "Only JPG, PNG or WebP allowed");
+        return;
+      }
+      if (file.size > maxSize) {
+        setError(locale === "ka" ? "ფაილი ძალიან დიდია (მაქს. 5MB)" : "File too large (max 5MB)");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64 = e.target?.result as string;
+        setPortfolioProjects(prev => prev.map(p => {
+          if (p.id === projectId) {
+            return { ...p, images: [...p.images, base64] };
+          }
+          return p;
+        }));
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeProjectImage = (projectId: string, imageIndex: number) => {
+    setPortfolioProjects(prev => prev.map(p => {
+      if (p.id === projectId) {
+        return { ...p, images: p.images.filter((_, i) => i !== imageIndex) };
+      }
+      return p;
+    }));
+  };
+
   const handleNext = () => {
     if (userType === 'client') {
       handleSubmit();
@@ -1607,39 +1646,6 @@ function RegisterContent() {
                   </div>
                 )}
 
-                {/* Add Custom Service Form */}
-                <div className="p-3 rounded-lg bg-[#C4735B]/5 border border-[#C4735B]/10">
-                  <p className="text-xs text-neutral-600 mb-2">
-                    {locale === "ka" ? "ან დაამატე ხელით:" : "Or add custom:"}
-                  </p>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newService.title}
-                      onChange={(e) => setNewService(prev => ({ ...prev, title: e.target.value }))}
-                      placeholder={locale === "ka" ? "სერვისის სახელი" : "Service name"}
-                      className="flex-1 px-2.5 py-1.5 rounded-lg border border-[#C4735B]/20 bg-white text-xs focus:border-[#C4735B] outline-none"
-                    />
-                    <div className="relative w-20">
-                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-400 text-xs">₾</span>
-                      <input
-                        type="text"
-                        value={newService.price}
-                        onChange={(e) => setNewService(prev => ({ ...prev, price: e.target.value.replace(/\D/g, '') }))}
-                        placeholder="0"
-                        className="w-full pl-6 pr-2 py-1.5 rounded-lg border border-[#C4735B]/20 bg-white text-xs focus:border-[#C4735B] outline-none"
-                      />
-                    </div>
-                    <button
-                      onClick={addService}
-                      disabled={!newService.title.trim()}
-                      className="px-3 py-1.5 rounded-lg bg-[#C4735B] text-white text-xs font-medium hover:bg-[#A85D47] disabled:bg-neutral-200 disabled:cursor-not-allowed transition-colors"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-
                 {/* Added Services */}
                 {services.length > 0 && (
                   <div className="mt-3 space-y-1.5">
@@ -1733,14 +1739,49 @@ function RegisterContent() {
                           rows={2}
                           className="w-full px-2.5 py-1.5 rounded-lg border border-[#C4735B]/20 bg-white text-xs resize-none focus:border-[#C4735B] outline-none mb-2"
                         />
-                        <div className="border-2 border-dashed border-[#C4735B]/20 rounded-lg p-3 text-center hover:border-[#C4735B]/40 transition-colors cursor-pointer">
+
+                        {/* Uploaded images preview */}
+                        {project.images.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {project.images.map((img, imgIndex) => (
+                              <div key={imgIndex} className="relative group">
+                                <img
+                                  src={img}
+                                  alt={`Project ${index + 1} image ${imgIndex + 1}`}
+                                  className="w-16 h-16 object-cover rounded-lg border border-[#C4735B]/20"
+                                />
+                                <button
+                                  onClick={() => removeProjectImage(project.id, imgIndex)}
+                                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                                >
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Upload area */}
+                        <label className="block border-2 border-dashed border-[#C4735B]/20 rounded-lg p-3 text-center hover:border-[#C4735B]/40 hover:bg-[#C4735B]/5 transition-colors cursor-pointer">
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            multiple
+                            onChange={(e) => handleProjectImageUpload(project.id, e.target.files)}
+                            className="hidden"
+                          />
                           <svg className="w-5 h-5 text-[#C4735B]/50 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                           </svg>
                           <p className="text-[10px] text-neutral-500">
-                            {locale === "ka" ? "ატვირთე ფოტოები" : "Upload photos"}
+                            {project.images.length > 0
+                              ? (locale === "ka" ? "დაამატე მეტი ფოტო" : "Add more photos")
+                              : (locale === "ka" ? "ატვირთე ფოტოები" : "Upload photos")}
                           </p>
-                        </div>
+                          <p className="text-[9px] text-neutral-400 mt-0.5">JPG, PNG, WebP · 5MB</p>
+                        </label>
                       </div>
                     ))}
 
