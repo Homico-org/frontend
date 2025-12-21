@@ -1,12 +1,8 @@
 "use client";
 
-import BackButton from "@/components/common/BackButton";
-import CategorySubcategorySelector from "@/components/common/CategorySubcategorySelector";
-import PortfolioProjectsInput, {
-  PortfolioProject,
-} from "@/components/common/PortfolioProjectsInput";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
+import { useCategories } from "@/contexts/CategoriesContext";
 import {
   countries,
   CountryCode,
@@ -15,6 +11,24 @@ import {
 import { useAnalytics, AnalyticsEvent } from "@/hooks/useAnalytics";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+
+// Step configuration
+type RegistrationStep = 'account' | 'category' | 'services' | 'review';
+
+interface StepConfig {
+  id: RegistrationStep;
+  title: { en: string; ka: string };
+  subtitle: { en: string; ka: string };
+}
+
+const PRO_STEPS: StepConfig[] = [
+  { id: 'account', title: { en: 'Create Account', ka: 'ანგარიშის შექმნა' }, subtitle: { en: 'Your basic information', ka: 'ძირითადი ინფორმაცია' } },
+  { id: 'category', title: { en: 'Services', ka: 'სერვისები' }, subtitle: { en: 'What services do you provide?', ka: 'რა სერვისებს გთავაზობთ?' } },
+  { id: 'services', title: { en: 'Portfolio', ka: 'პორტფოლიო' }, subtitle: { en: 'Showcase your expertise', ka: 'აჩვენე შენი გამოცდილება' } },
+  { id: 'review', title: { en: 'Review', ka: 'გადახედვა' }, subtitle: { en: 'Confirm your details', ka: 'დაადასტურე შენი მონაცემები' } },
+];
 
 // Hook to redirect authenticated users
 function useAuthRedirectFromRegister() {
@@ -36,6 +50,16 @@ function useAuthRedirectFromRegister() {
   return { authLoading, isAuthenticated, user };
 }
 
+// Logo component using favicon
+function Logo({ className = "" }: { className?: string }) {
+  return (
+    <Link href="/" className={`flex items-center gap-2 ${className}`}>
+      <Image src="/favicon.svg" alt="Homico" width={32} height={32} className="h-8 w-auto" />
+      <span className="text-xl font-semibold text-[var(--color-text-primary)]">Homico</span>
+    </Link>
+  );
+}
+
 function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -43,187 +67,74 @@ function RegisterContent() {
   const { openLoginModal } = useAuthModal();
   const { t, country, locale } = useLanguage();
   const { trackEvent } = useAnalytics();
-  const formRef = useRef<HTMLFormElement>(null);
+  const { categories } = useCategories();
 
   const { authLoading, isAuthenticated, user } = useAuthRedirectFromRegister();
   const isProRegistration = searchParams.get("type") === "pro";
 
+  // Multi-step state
+  const [currentStep, setCurrentStep] = useState<RegistrationStep>('account');
+  const [userType, setUserType] = useState<'client' | 'pro'>(isProRegistration ? 'pro' : 'client');
+
+  // Form data
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    fullName: "",
     email: "",
     password: "",
-    confirmPassword: "",
-    role: isProRegistration ? "pro" : "client", // Default to client
     phone: "",
     city: "",
     idNumber: "",
     selectedCategories: [] as string[],
     selectedSubcategories: [] as string[],
-    avatar: "", // Profile picture URL for pro users
-    whatsapp: "", // Optional WhatsApp number
-    telegram: "", // Optional Telegram username
+    whatsapp: "",
+    telegram: "",
   });
 
-  // Social contact state
-  const [activeSocialInput, setActiveSocialInput] = useState<'whatsapp' | 'telegram' | null>(null);
+  // Service/Portfolio data
+  const [services, setServices] = useState<Array<{
+    title: string;
+    price: string;
+    description: string;
+  }>>([]);
+  const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  // Avatar upload state
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [avatarUploading, setAvatarUploading] = useState(false);
-  const avatarInputRef = useRef<HTMLInputElement>(null);
-
-  // Portfolio projects state (optional for pro registration)
-  const [portfolioProjects, setPortfolioProjects] = useState<
-    PortfolioProject[]
-  >([]);
-
-  const [phoneCountry, setPhoneCountry] = useState<CountryCode>(
-    country as CountryCode
-  );
-  const [showCityDropdown, setShowCityDropdown] = useState(false);
-  const [citySearch, setCitySearch] = useState("");
-  const cityDropdownRef = useRef<HTMLDivElement>(null);
+  // UI states
+  const [phoneCountry, setPhoneCountry] = useState<CountryCode>(country as CountryCode);
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   // Verification state
   const [phoneOtp, setPhoneOtp] = useState(["", "", "", ""]);
-  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const currentCountryData = countries[country as CountryCode] || countries.US;
-  const citiesList =
-    locale === "ka"
-      ? currentCountryData.citiesLocal
-      : currentCountryData.cities;
-  const filteredCities = citiesList.filter((city) =>
-    city.toLowerCase().includes(citySearch.toLowerCase())
-  );
-
-  const [error, setError] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
-
-  // Validation state for progress tracking
-  const getValidationState = () => {
-    const hasFirstName = !!formData.firstName.trim();
-    const hasLastName = !!formData.lastName.trim();
-    const hasIdNumber = formData.idNumber.length === 11;
-    const hasPhone = !!formData.phone.trim();
-    const hasPassword = formData.password.length >= 6;
-    const hasPasswordMatch =
-      formData.password === formData.confirmPassword && hasPassword;
-    const hasCategory =
-      formData.role === "client" || formData.selectedCategories.length > 0;
-    const hasAvatar = formData.role === "client" || !!avatarPreview;
-
-    return {
-      firstName: hasFirstName,
-      lastName: hasLastName,
-      idNumber: hasIdNumber,
-      phone: hasPhone,
-      password: hasPassword,
-      passwordMatch: hasPasswordMatch,
-      category: hasCategory,
-      avatar: hasAvatar,
-    };
-  };
-
-  const validation = getValidationState();
-  const requiredFieldsForRole =
-    formData.role === "pro"
-      ? ([
-          "firstName",
-          "lastName",
-          "idNumber",
-          "phone",
-          "password",
-          "passwordMatch",
-          "category",
-          "avatar",
-        ] as const)
-      : ([
-          "firstName",
-          "lastName",
-          "idNumber",
-          "phone",
-          "password",
-          "passwordMatch",
-        ] as const);
-
-  const completedFields = requiredFieldsForRole.filter(
-    (field) => validation[field]
-  ).length;
-  const totalFields = requiredFieldsForRole.length;
-
-  const canSubmitForm = () => {
-    return requiredFieldsForRole.every((field) => validation[field]);
-  };
-
-  const getFirstMissingField = () => {
-    if (!validation.firstName)
-      return {
-        key: "firstName",
-        label: locale === "ka" ? "სახელი" : "First name",
-      };
-    if (!validation.lastName)
-      return {
-        key: "lastName",
-        label: locale === "ka" ? "გვარი" : "Last name",
-      };
-    if (!validation.idNumber)
-      return {
-        key: "idNumber",
-        label: locale === "ka" ? "პირადი ნომერი" : "ID number",
-      };
-    if (!validation.phone)
-      return { key: "phone", label: locale === "ka" ? "ტელეფონი" : "Phone" };
-    if (!validation.password)
-      return {
-        key: "password",
-        label: locale === "ka" ? "პაროლი" : "Password",
-      };
-    if (!validation.passwordMatch)
-      return {
-        key: "passwordMatch",
-        label:
-          locale === "ka" ? "პაროლის დადასტურება" : "Password confirmation",
-      };
-    if (formData.role === "pro" && !validation.category)
-      return {
-        key: "category",
-        label: locale === "ka" ? "სპეციალობა" : "Specialty",
-      };
-    if (formData.role === "pro" && !validation.avatar)
-      return {
-        key: "avatar",
-        label: locale === "ka" ? "პროფილის ფოტო" : "Profile photo",
-      };
-    return null;
+  // Category icons mapping
+  const categoryIcons: Record<string, React.ReactNode> = {
+    architects: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+      </svg>
+    ),
+    designers: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+      </svg>
+    ),
+    'service-workers': (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    ),
   };
 
   useEffect(() => {
     setPhoneCountry(country as CountryCode);
   }, [country]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        cityDropdownRef.current &&
-        !cityDropdownRef.current.contains(event.target as Node)
-      ) {
-        setShowCityDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   useEffect(() => {
     if (resendTimer > 0) {
@@ -232,138 +143,109 @@ function RegisterContent() {
     }
   }, [resendTimer]);
 
-  const validateField = (name: string, value: string) => {
-    const errors: Record<string, string> = { ...fieldErrors };
-    switch (name) {
-      case "password":
-        if (value.length > 0 && value.length < 6) {
-          errors.password =
-            locale === "ka" ? "მინიმუმ 6 სიმბოლო" : "Min 6 characters";
-        } else {
-          delete errors.password;
-        }
-        if (formData.confirmPassword && value !== formData.confirmPassword) {
-          errors.confirmPassword =
-            locale === "ka" ? "პაროლები არ ემთხვევა" : "Passwords do not match";
-        } else if (formData.confirmPassword) {
-          delete errors.confirmPassword;
-        }
-        break;
-      case "confirmPassword":
-        if (value && value !== formData.password) {
-          errors.confirmPassword =
-            locale === "ka" ? "პაროლები არ ემთხვევა" : "Passwords do not match";
-        } else {
-          delete errors.confirmPassword;
-        }
-        break;
-      case "idNumber":
-        if (value.length > 0 && value.length !== 11) {
-          errors.idNumber =
-            locale === "ka"
-              ? "პირადი ნომერი უნდა იყოს 11 ციფრი"
-              : "ID must be 11 digits";
-        } else {
-          delete errors.idNumber;
-        }
-        break;
-    }
-    setFieldErrors(errors);
-  };
-
   const handleInputChange = (field: string, value: string) => {
     setFormData({ ...formData, [field]: value });
-    validateField(field, value);
   };
 
-  const handleCategoriesChange = (categories: string[]) => {
-    setFormData({
-      ...formData,
-      selectedCategories: categories,
+  const getCurrentStepIndex = () => {
+    if (userType === 'client') return 0;
+    return PRO_STEPS.findIndex(s => s.id === currentStep);
+  };
+
+  const getProgressPercentage = () => {
+    if (userType === 'client') return 100;
+    const index = getCurrentStepIndex();
+    return ((index + 1) / PRO_STEPS.length) * 100;
+  };
+
+  const canProceedFromAccount = () => {
+    return formData.fullName.trim() && formData.password.length >= 6 && formData.phone && agreedToTerms;
+  };
+
+  const canProceedFromCategory = () => {
+    return formData.selectedCategories.length > 0;
+  };
+
+  const handleCategoryToggle = (categoryKey: string) => {
+    setFormData(prev => {
+      const isSelected = prev.selectedCategories.includes(categoryKey);
+      if (isSelected) {
+        return {
+          ...prev,
+          selectedCategories: prev.selectedCategories.filter(c => c !== categoryKey),
+          selectedSubcategories: prev.selectedSubcategories.filter(s => {
+            const cat = categories.find(c => c.key === categoryKey);
+            return !cat?.subcategories.some(sub => sub.key === s);
+          })
+        };
+      } else if (prev.selectedCategories.length < 3) {
+        return {
+          ...prev,
+          selectedCategories: [...prev.selectedCategories, categoryKey]
+        };
+      }
+      return prev;
     });
-    // Auto-expand the first selected category
-    if (categories.length > 0) {
-      setExpandedCategory(categories[categories.length - 1]);
-    }
   };
 
-  const handleSubcategoriesChange = (subcategories: string[]) => {
-    setFormData({
-      ...formData,
-      selectedSubcategories: subcategories,
+  const handleSubcategoryToggle = (subcategoryKey: string) => {
+    setFormData(prev => {
+      const isSelected = prev.selectedSubcategories.includes(subcategoryKey);
+      if (isSelected) {
+        return {
+          ...prev,
+          selectedSubcategories: prev.selectedSubcategories.filter(s => s !== subcategoryKey)
+        };
+      } else {
+        return {
+          ...prev,
+          selectedSubcategories: [...prev.selectedSubcategories, subcategoryKey]
+        };
+      }
     });
   };
 
-  // Avatar upload handler
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleTagToggle = (tag: string) => {
+    setSelectedTags(prev =>
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
+  };
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      setError(
-        locale === "ka"
-          ? "გთხოვთ აირჩიოთ სურათი"
-          : "Please select an image file"
-      );
+  const addService = () => {
+    setServices(prev => [...prev, { title: '', price: '', description: '' }]);
+  };
+
+  const updateService = (index: number, field: string, value: string) => {
+    setServices(prev => prev.map((s, i) => i === index ? { ...s, [field]: value } : s));
+  };
+
+  const removeService = (index: number) => {
+    setServices(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleNext = () => {
+    if (userType === 'client') {
+      handleSubmit();
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError(
-        locale === "ka"
-          ? "სურათი უნდა იყოს 5MB-ზე ნაკლები"
-          : "Image must be less than 5MB"
-      );
-      return;
-    }
-
-    setAvatarFile(file);
-
-    // Create preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setAvatarPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const uploadAvatar = async (): Promise<string | null> => {
-    if (!avatarFile) return null;
-
-    setAvatarUploading(true);
-    try {
-      const formDataUpload = new FormData();
-      formDataUpload.append("file", avatarFile);
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/upload/avatar`,
-        {
-          method: "POST",
-          body: formDataUpload,
-        }
-      );
-
-      if (!response.ok) throw new Error("Upload failed");
-
-      const data = await response.json();
-      return data.url;
-    } catch (err) {
-      console.error("Avatar upload failed:", err);
-      return null;
-    } finally {
-      setAvatarUploading(false);
+    const currentIndex = getCurrentStepIndex();
+    if (currentIndex < PRO_STEPS.length - 1) {
+      setCurrentStep(PRO_STEPS[currentIndex + 1].id);
+    } else {
+      handleSubmit();
     }
   };
 
-  const removeAvatar = () => {
-    setAvatarFile(null);
-    setAvatarPreview(null);
-    setFormData({ ...formData, avatar: "" });
-    if (avatarInputRef.current) {
-      avatarInputRef.current.value = "";
+  const handleBack = () => {
+    const currentIndex = getCurrentStepIndex();
+    if (currentIndex > 0) {
+      setCurrentStep(PRO_STEPS[currentIndex - 1].id);
     }
+  };
+
+  const goToStep = (step: RegistrationStep) => {
+    setCurrentStep(step);
   };
 
   const sendOtp = async () => {
@@ -381,12 +263,11 @@ function RegisterContent() {
       );
 
       const data = await response.json();
-      if (!response.ok)
-        throw new Error(data.message || (locale === "ka" ? "ვერიფიკაციის კოდის გაგზავნა ვერ მოხერხდა" : "Failed to send verification code"));
+      if (!response.ok) throw new Error(data.message || "Failed to send verification code");
 
       setResendTimer(60);
     } catch (err: any) {
-      setError(err.message || (locale === "ka" ? "ვერიფიკაციის კოდის გაგზავნა ვერ მოხერხდა. სცადეთ თავიდან." : "Failed to send verification code. Please try again."));
+      setError(err.message || "Failed to send verification code");
     } finally {
       setIsLoading(false);
     }
@@ -400,11 +281,7 @@ function RegisterContent() {
       const code = otpCode || phoneOtp.join("");
 
       if (code.length !== 4) {
-        throw new Error(
-          locale === "ka"
-            ? "შეიყვანეთ 4-ნიშნა კოდი"
-            : "Please enter 4-digit code"
-        );
+        throw new Error(locale === "ka" ? "შეიყვანეთ 4-ნიშნა კოდი" : "Please enter 4-digit code");
       }
 
       const response = await fetch(
@@ -417,16 +294,12 @@ function RegisterContent() {
       );
 
       const data = await response.json();
-      if (!response.ok)
-        throw new Error(data.message || "Invalid verification code");
+      if (!response.ok) throw new Error(data.message || "Invalid verification code");
 
-      setIsPhoneVerified(true);
       setShowVerification(false);
-      // Now submit the registration
       await submitRegistration();
     } catch (err: any) {
       setError(err.message || "Verification failed");
-      // Clear OTP inputs on error
       setPhoneOtp(["", "", "", ""]);
       otpInputRefs.current[0]?.focus();
     } finally {
@@ -440,20 +313,14 @@ function RegisterContent() {
     otp[index] = value.slice(-1);
     setPhoneOtp(otp);
 
-    // Move to next input if value entered
     if (value && index < 3) {
       otpInputRefs.current[index + 1]?.focus();
     }
 
-    // Auto-submit when all 4 digits are filled
     const newOtp = [...otp];
     newOtp[index] = value.slice(-1);
     if (newOtp.every((digit) => digit !== "") && newOtp.length === 4) {
-      // Small delay to let state update and show the digit
-      const otpCode = newOtp.join("");
-      setTimeout(() => {
-        verifyOtp(otpCode);
-      }, 100);
+      setTimeout(() => verifyOtp(newOtp.join("")), 100);
     }
   };
 
@@ -463,133 +330,38 @@ function RegisterContent() {
     }
   };
 
-  const handleOtpPaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData
-      .getData("text")
-      .replace(/\D/g, "")
-      .slice(0, 4);
-    const otp = pastedData.split("");
-    while (otp.length < 4) otp.push("");
-    setPhoneOtp(otp);
-
-    // Auto-submit if all 4 digits pasted
-    if (otp.every((digit) => digit !== "") && otp.length === 4) {
-      const otpCode = otp.join("");
-      setTimeout(() => {
-        verifyOtp(otpCode);
-      }, 100);
-    }
-  };
-
-  const validateForm = () => {
-    if (!formData.role) {
-      setError(
-        locale === "ka"
-          ? "აირჩიეთ ანგარიშის ტიპი"
-          : "Please select account type"
-      );
-      return false;
-    }
-    if (!formData.firstName.trim() || !formData.lastName.trim()) {
-      setError(
-        locale === "ka" ? "შეავსეთ სახელი და გვარი" : "Please enter your name"
-      );
-      return false;
-    }
-    if (!formData.idNumber || formData.idNumber.length !== 11) {
-      setError(
-        locale === "ka"
-          ? "პირადი ნომერი უნდა იყოს 11 ციფრი"
-          : "ID number must be 11 digits"
-      );
-      return false;
-    }
-    if (!formData.phone) {
-      setError(
-        locale === "ka"
-          ? "ტელეფონის ნომერი სავალდებულოა"
-          : "Phone number is required"
-      );
-      return false;
-    }
-    if (formData.password.length < 6) {
-      setError(
-        locale === "ka"
-          ? "პაროლი უნდა იყოს მინიმუმ 6 სიმბოლო"
-          : "Password must be at least 6 characters"
-      );
-      return false;
-    }
-    if (formData.password !== formData.confirmPassword) {
-      setError(
-        locale === "ka" ? "პაროლები არ ემთხვევა" : "Passwords do not match"
-      );
-      return false;
-    }
-    if (formData.role === "pro" && formData.selectedCategories.length === 0) {
-      setError(
-        locale === "ka" ? "აირჩიეთ სპეციალობა" : "Please select your specialty"
-      );
-      return false;
-    }
-    if (formData.role === "pro" && !avatarFile && !avatarPreview) {
-      setError(
-        locale === "ka"
-          ? "პროფილის ფოტო სავალდებულოა"
-          : "Profile photo is required for professionals"
-      );
-      return false;
-    }
-    return true;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setError("");
-
-    if (!validateForm()) return;
-
-    // Check if phone exists
     setIsLoading(true);
+
     try {
+      // Check if phone exists
       const phoneCheck = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/check-exists?field=phone&value=${encodeURIComponent(countries[phoneCountry].phonePrefix + formData.phone)}`
       ).then((r) => r.json());
 
-      const idCheck = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/check-exists?field=idNumber&value=${encodeURIComponent(formData.idNumber)}`
-      ).then((r) => r.json());
-
       if (phoneCheck.exists) {
-        setError(
-          locale === "ka"
-            ? "ეს ტელეფონის ნომერი უკვე რეგისტრირებულია"
-            : "This phone number is already registered"
-        );
+        setError(locale === "ka" ? "ეს ტელეფონის ნომერი უკვე რეგისტრირებულია" : "This phone number is already registered");
         setIsLoading(false);
         return;
       }
 
-      if (idCheck.exists) {
-        setError(
-          locale === "ka"
-            ? "ეს პირადი ნომერი უკვე რეგისტრირებულია"
-            : "This ID number is already registered"
-        );
-        setIsLoading(false);
-        return;
+      if (formData.idNumber) {
+        const idCheck = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/check-exists?field=idNumber&value=${encodeURIComponent(formData.idNumber)}`
+        ).then((r) => r.json());
+
+        if (idCheck.exists) {
+          setError(locale === "ka" ? "ეს პირადი ნომერი უკვე რეგისტრირებულია" : "This ID number is already registered");
+          setIsLoading(false);
+          return;
+        }
       }
 
-      // Show phone verification
       setShowVerification(true);
       await sendOtp();
     } catch (err) {
-      setError(
-        locale === "ka"
-          ? "შეცდომა. სცადეთ თავიდან."
-          : "Error. Please try again."
-      );
+      setError(locale === "ka" ? "შეცდომა. სცადეთ თავიდან." : "Error. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -598,38 +370,24 @@ function RegisterContent() {
   const submitRegistration = async () => {
     setIsLoading(true);
     try {
-      // Upload avatar first if present (for pro users)
-      let avatarUrl = formData.avatar;
-      if (formData.role === "pro" && avatarFile) {
-        const uploadedUrl = await uploadAvatar();
-        if (uploadedUrl) {
-          avatarUrl = uploadedUrl;
-        }
-      }
-
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: `${formData.firstName} ${formData.lastName}`.trim(),
+            name: formData.fullName.trim(),
             email: formData.email || undefined,
             password: formData.password,
-            idNumber: formData.idNumber,
-            role: formData.role,
+            idNumber: formData.idNumber || undefined,
+            role: userType,
             phone: `${countries[phoneCountry].phonePrefix}${formData.phone}`,
             city: formData.city || undefined,
-            avatar: avatarUrl || undefined,
             whatsapp: formData.whatsapp || undefined,
             telegram: formData.telegram || undefined,
-            selectedCategories:
-              formData.role === "pro" ? formData.selectedCategories : undefined,
-            selectedSubcategories:
-              formData.role === "pro"
-                ? formData.selectedSubcategories
-                : undefined,
-            isPhoneVerified: true, // Phone was verified via OTP before registration
+            selectedCategories: userType === "pro" ? formData.selectedCategories : undefined,
+            selectedSubcategories: userType === "pro" ? formData.selectedSubcategories : undefined,
+            isPhoneVerified: true,
           }),
         }
       );
@@ -642,7 +400,6 @@ function RegisterContent() {
         data.user.role === 'pro' ? AnalyticsEvent.REGISTER_PRO : AnalyticsEvent.REGISTER_CLIENT,
         { userRole: data.user.role }
       );
-      await new Promise((resolve) => setTimeout(resolve, 100));
 
       if (data.user.role === "pro") {
         sessionStorage.setItem(
@@ -650,9 +407,8 @@ function RegisterContent() {
           JSON.stringify({
             categories: formData.selectedCategories,
             subcategories: formData.selectedSubcategories,
-            portfolioProjects:
-              portfolioProjects.length > 0 ? portfolioProjects : undefined,
-            avatar: avatarUrl || data.user.avatar || undefined,
+            services: services.length > 0 ? services : undefined,
+            tags: selectedTags.length > 0 ? selectedTags : undefined,
           })
         );
         router.push("/pro/profile-setup");
@@ -666,13 +422,11 @@ function RegisterContent() {
     }
   };
 
+  // Loading state
   if (authLoading || (isAuthenticated && user)) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: "var(--color-bg-primary)" }}
-      >
-        <div className="w-12 h-12 rounded-full border-2 border-[#E07B4F]/20 dark:border-[#E07B4F]/30 border-t-[#E07B4F] animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#FAFAF9]">
+        <div className="w-12 h-12 rounded-full border-2 border-[#C4735B]/20 border-t-[#C4735B] animate-spin" />
       </div>
     );
   }
@@ -680,72 +434,38 @@ function RegisterContent() {
   // Phone verification modal
   if (showVerification) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center p-4"
-        style={{ backgroundColor: "var(--color-bg-primary)" }}
-      >
-        <div
-          className="w-full max-w-md p-8 rounded-2xl border"
-          style={{
-            backgroundColor: "var(--color-bg-secondary)",
-            borderColor: "var(--color-border)",
-          }}
-        >
+      <div className="min-h-screen flex items-center justify-center p-4 bg-[#FAFAF9]">
+        <div className="w-full max-w-md p-8 rounded-3xl bg-white shadow-xl border border-neutral-100">
           <button
             onClick={() => setShowVerification(false)}
-            className="mb-6 flex items-center gap-2 text-sm transition-colors"
-            style={{ color: "var(--color-text-secondary)" }}
+            className="mb-6 flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700 transition-colors"
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             {locale === "ka" ? "უკან" : "Back"}
           </button>
 
           <div className="text-center mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-[#E07B4F]/10 dark:bg-[#E07B4F]/20 flex items-center justify-center mx-auto mb-4">
-              <svg
-                className="w-8 h-8 text-[#E07B4F] dark:text-[#E8956A]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
-                />
+            <div className="w-16 h-16 rounded-2xl bg-[#C4735B]/10 flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
             </div>
-            <h2
-              className="text-2xl font-semibold mb-2"
-              style={{ color: "var(--color-text-primary)" }}
-            >
+            <h2 className="text-2xl font-semibold text-neutral-900 mb-2">
               {locale === "ka" ? "დაადასტურე ნომერი" : "Verify your phone"}
             </h2>
-            <p style={{ color: "var(--color-text-secondary)" }}>
+            <p className="text-neutral-500">
               {locale === "ka" ? "კოდი გაიგზავნა ნომერზე:" : "Code sent to:"}{" "}
-              <span className="font-medium">
-                {countries[phoneCountry].phonePrefix}
-                {formData.phone}
+              <span className="font-medium text-neutral-700">
+                {countries[phoneCountry].phonePrefix}{formData.phone}
               </span>
             </p>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100">
+              <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
 
@@ -753,54 +473,27 @@ function RegisterContent() {
             {[0, 1, 2, 3].map((index) => (
               <input
                 key={index}
-                ref={(el) => {
-                  otpInputRefs.current[index] = el;
-                }}
+                ref={(el) => { otpInputRefs.current[index] = el; }}
                 type="text"
                 inputMode="numeric"
                 maxLength={1}
                 value={phoneOtp[index]}
                 onChange={(e) => handleOtpChange(index, e.target.value)}
                 onKeyDown={(e) => handleOtpKeyDown(e, index)}
-                onPaste={handleOtpPaste}
-                className="w-14 h-14 text-center text-2xl font-semibold rounded-xl border-2 transition-all duration-200 outline-none"
-                style={{
-                  backgroundColor: "var(--color-bg-tertiary)",
-                  borderColor: phoneOtp[index]
-                    ? "#E07B4F"
-                    : "var(--color-border)",
-                  color: "var(--color-text-primary)",
-                }}
+                className={`w-14 h-14 text-center text-2xl font-semibold rounded-xl border-2 transition-all outline-none ${
+                  phoneOtp[index] ? 'border-[#C4735B] bg-[#C4735B]/5' : 'border-neutral-200 bg-white'
+                } focus:border-[#C4735B] focus:bg-[#C4735B]/5`}
               />
             ))}
           </div>
 
-          {/* Loading indicator when verifying */}
           {isLoading && (
             <div className="flex items-center justify-center gap-2 py-4">
-              <svg
-                className="animate-spin h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                style={{ color: "#E07B4F" }}
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
+              <svg className="animate-spin h-5 w-5 text-[#C4735B]" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
-              <span style={{ color: "var(--color-text-secondary)" }}>
-                {locale === "ka" ? "მოწმდება..." : "Verifying..."}
-              </span>
+              <span className="text-neutral-500">{locale === "ka" ? "მოწმდება..." : "Verifying..."}</span>
             </div>
           )}
 
@@ -808,16 +501,11 @@ function RegisterContent() {
             <button
               onClick={sendOtp}
               disabled={resendTimer > 0 || isLoading}
-              className="text-sm font-medium transition-colors disabled:opacity-50"
-              style={{
-                color: resendTimer > 0 ? "var(--color-text-muted)" : "#E07B4F",
-              }}
+              className="text-sm font-medium text-[#C4735B] hover:text-[#A85D47] disabled:text-neutral-400 transition-colors"
             >
               {resendTimer > 0
                 ? `${locale === "ka" ? "თავიდან გაგზავნა" : "Resend"} (${resendTimer}s)`
-                : locale === "ka"
-                  ? "კოდის თავიდან გაგზავნა"
-                  : "Resend code"}
+                : locale === "ka" ? "კოდის თავიდან გაგზავნა" : "Resend code"}
             </button>
           </div>
         </div>
@@ -825,1176 +513,1022 @@ function RegisterContent() {
     );
   }
 
-  return (
-    <div className="register-page-premium min-h-screen">
-      {/* Main Content */}
-      <main className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-24">
-        <div className="mb-4">
-          <BackButton />
-        </div>
-        {/* Title */}
-        <div className="text-center mb-6">
-          <div className="auth-icon-premium mx-auto mb-3">
-            <svg className="w-7 h-7 text-[#E07B4F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
-            </svg>
-          </div>
-          <h1
-            className="text-2xl sm:text-3xl font-bold tracking-tight mb-2"
-            style={{ color: "var(--color-text-primary)" }}
-          >
-            {locale === "ka" ? "შექმენი ანგარიში" : "Create your account"}
-          </h1>
-          <p
-            className="text-base"
-            style={{ color: "var(--color-text-secondary)" }}
-          >
-            {locale === "ka"
-              ? "შეუერთდი Homico-ს კომუნას"
-              : "Join the Homico community"}
-          </p>
-        </div>
-
-        {/* Error */}
-        {error && (
-          <div className="auth-error mb-8">
-            <svg
-              className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <p className="text-sm text-red-600 dark:text-red-400 flex-1">
-              {error}
-            </p>
-            <button
-              onClick={() => setError("")}
-              className="text-red-400 hover:text-red-600"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+  // CLIENT REGISTRATION - Simple single-page form
+  if (userType === 'client' && currentStep === 'account') {
+    return (
+      <div className="min-h-screen bg-[#FAFAF9]">
+        {/* Header */}
+        <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-neutral-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <Logo />
+            <div className="flex items-center gap-4">
+              <Link href="/help" className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors">
+                {locale === "ka" ? "დახმარება" : "Help Center"}
+              </Link>
+              <button
+                onClick={() => openLoginModal()}
+                className="text-sm font-medium text-[#C4735B] hover:text-[#A85D47] transition-colors"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
-        )}
-
-        <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
-          {/* Account Type - Refined Toggle Design */}
-          <section>
-            <h2
-              className="text-lg font-semibold mb-4"
-              style={{ color: "var(--color-text-primary)" }}
-            >
-              {locale === "ka" ? "ანგარიშის ტიპი" : "Account Type"}
-            </h2>
-            <div className="inline-flex gap-2 w-full sm:w-auto">
-              {[
-                {
-                  key: "client",
-                  label: locale === "ka" ? "მომხმარებელი" : "Client",
-                  icon: (
-                    <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                  ),
-                },
-                {
-                  key: "pro",
-                  label: locale === "ka" ? "პროფესიონალი" : "Professional",
-                  icon: (
-                    <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                  ),
-                },
-              ].map((type) => {
-                const isSelected = formData.role === type.key;
-                return (
-                  <button
-                    key={type.key}
-                    type="button"
-                    onClick={() => {
-                      if (type.key !== "pro") {
-                        // Clear avatar when switching to client
-                        setAvatarFile(null);
-                        setAvatarPreview(null);
-                        if (avatarInputRef.current) {
-                          avatarInputRef.current.value = "";
-                        }
-                      }
-                      setFormData({
-                        ...formData,
-                        role: type.key,
-                        selectedCategories: [],
-                        selectedSubcategories: [],
-                        avatar: type.key !== "pro" ? "" : formData.avatar,
-                      });
-                    }}
-                    className={`auth-toggle-btn flex-1 sm:flex-none ${isSelected ? 'active' : ''}`}
-                  >
-                    <span className={isSelected ? 'text-white' : 'text-[#E07B4F]/60 dark:text-[#E8956A]/60'}>
-                      {type.icon}
-                    </span>
-                    <span>{type.label}</span>
-                    {isSelected && (
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
-                );
-              })}
+                {locale === "ka" ? "შესვლა" : "Log In"}
+              </button>
             </div>
+          </div>
+        </header>
 
-            {/* Account type description */}
-            {formData.role && (
-              <div
-                className={`mt-4 auth-section-premium flex items-start gap-3 ${formData.role === 'pro' ? 'border-emerald-500/20' : ''}`}
-                style={{
-                  backgroundColor:
-                    formData.role === "pro"
-                      ? "rgba(16, 185, 129, 0.05)"
-                      : undefined,
-                }}
-              >
-                <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                    formData.role === "pro"
-                      ? "bg-[#E07B4F] text-white"
-                      : "bg-gray-100 dark:bg-gray-800"
-                  }`}
-                >
-                  {formData.role === "pro" ? (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                      />
-                    </svg>
-                  ) : (
-                    <svg
-                      className="w-5 h-5"
-                      style={{ color: "var(--color-text-secondary)" }}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                      />
-                    </svg>
-                  )}
-                </div>
-                <div>
-                  <p
-                    className="font-medium"
-                    style={{ color: "var(--color-text-primary)" }}
-                  >
-                    {formData.role === "pro"
-                      ? locale === "ka"
-                        ? "პროფესიონალი"
-                        : "Professional Account"
-                      : locale === "ka"
-                        ? "მომხმარებელი"
-                        : "Client Account"}
-                  </p>
-                  <p
-                    className="text-sm"
-                    style={{ color: "var(--color-text-secondary)" }}
-                  >
-                    {formData.role === "pro"
-                      ? locale === "ka"
-                        ? "შექმენი პროფილი და შესთავაზე შენი მომსახურება მომხმარებლებს"
-                        : "Create your profile and offer services to clients"
-                      : locale === "ka"
-                        ? "მოძებნე და დაიქირავე საუკეთესო პროფესიონალები"
-                        : "Find and hire the best professionals"}
-                  </p>
-                </div>
-              </div>
-            )}
-          </section>
+        <main className="pt-16 min-h-screen flex">
+          {/* Left side - Marketing content */}
+          <div className="hidden lg:flex lg:w-1/2 xl:w-[45%] bg-gradient-to-br from-[#FDF8F6] to-[#FAF5F2] p-12 xl:p-16 flex-col justify-center relative overflow-hidden">
+            {/* Decorative elements */}
+            <div className="absolute top-20 right-20 w-32 h-32 rounded-full bg-[#C4735B]/5 blur-2xl" />
+            <div className="absolute bottom-32 left-16 w-48 h-48 rounded-full bg-[#C4735B]/8 blur-3xl" />
 
-          {/* Profile Picture Upload - Only for Pro */}
-          {formData.role === "pro" && (
-            <section>
-              <div className="flex items-center gap-3 mb-2">
-                <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm transition-all duration-300 ${
-                    validation.avatar
-                      ? "bg-[#E07B4F] text-white"
-                      : "bg-gray-100 dark:bg-gray-800 text-gray-500"
-                  }`}
-                >
-                  {validation.avatar ? (
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2.5}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  ) : (
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <h2
-                    className="text-lg font-semibold"
-                    style={{ color: "var(--color-text-primary)" }}
-                  >
-                    {locale === "ka" ? "პროფილის ფოტო" : "Profile Photo"}
-                  </h2>
-                  {!validation.avatar && (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                      {locale === "ka" ? "სავალდებულო" : "Required"}
-                    </span>
-                  )}
-                </div>
+            <div className="relative z-10 max-w-lg">
+              {/* Icon */}
+              <div className="w-14 h-14 rounded-2xl bg-[#C4735B]/10 flex items-center justify-center mb-8">
+                <svg className="w-7 h-7 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
               </div>
-              <p
-                className="text-sm mb-4 ml-11"
-                style={{ color: "var(--color-text-secondary)" }}
-              >
+
+              <h1 className="text-4xl xl:text-5xl font-bold text-neutral-900 mb-6 leading-tight">
+                {locale === "ka" ? (
+                  <>დაასრულე სამუშაოს <br />განთავსება ანგარიშის<br /> შექმნით.</>
+                ) : (
+                  <>Finish posting your job <br />by creating an account.</>
+                )}
+              </h1>
+
+              <p className="text-lg text-neutral-600 mb-10">
                 {locale === "ka"
-                  ? "ატვირთე პროფესიონალური ფოტო კლიენტებისთვის"
-                  : "Upload a professional photo for clients to see"}
+                  ? "დაუკავშირდი საქართველოს საუკეთესო პროფესიონალებს. ერთ წუთზე ნაკლები დაგჭირდება დასაწყებად."
+                  : "Connect with the best professionals in Georgia. It takes less than a minute to get started."}
               </p>
 
-              <div className="flex items-start gap-6">
-                {/* Avatar Preview */}
-                <div className="relative group">
-                  <div
-                    className={`w-28 h-28 rounded-2xl flex items-center justify-center overflow-hidden transition-all duration-300 ${
-                      avatarPreview
-                        ? "ring-4 ring-[#E07B4F]/20"
-                        : "border-2 border-dashed"
-                    }`}
-                    style={{
-                      backgroundColor: avatarPreview
-                        ? undefined
-                        : "var(--color-bg-secondary)",
-                      borderColor: avatarPreview
-                        ? undefined
-                        : "var(--color-border)",
-                    }}
-                  >
-                    {avatarPreview ? (
-                      <img
-                        src={avatarPreview}
-                        alt="Profile preview"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <svg
-                        className="w-10 h-10"
-                        style={{ color: "var(--color-text-muted)" }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1.5}
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
-                    )}
+              {/* Benefits */}
+              <div className="space-y-4 mb-12">
+                {[
+                  { icon: "✓", text: locale === "ka" ? "უფასოდ განათავსე სამუშაო" : "Free to post jobs" },
+                  { icon: "✓", text: locale === "ka" ? "ვერიფიცირებული პროფესიონალები" : "Verified professionals" },
+                  { icon: "✓", text: locale === "ka" ? "უსაფრთხო გადახდები" : "Secure payments" },
+                ].map((benefit, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-full bg-[#C4735B]/10 flex items-center justify-center text-[#C4735B] text-sm font-medium">
+                      {benefit.icon}
+                    </span>
+                    <span className="text-neutral-700">{benefit.text}</span>
                   </div>
+                ))}
+              </div>
 
-                  {/* Remove button */}
-                  {avatarPreview && (
-                    <button
-                      type="button"
-                      onClick={removeAvatar}
-                      className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600"
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    </button>
-                  )}
+              {/* Testimonial */}
+              <div className="p-5 rounded-2xl bg-white shadow-sm border border-neutral-100">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#C4735B] to-[#A85D47] flex items-center justify-center text-white font-medium">
+                    ნ
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-neutral-600 text-sm mb-2">
+                      "{locale === "ka" ? "10 წუთში ვიპოვე შესანიშნავი სანტექნიკი!" : "Found a great plumber in 10 mins!"}"
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-neutral-900 text-sm">Nino G.</span>
+                      <div className="flex gap-0.5">
+                        {[1,2,3,4,5].map(i => (
+                          <svg key={i} className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right side - Registration form */}
+          <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
+            <div className="w-full max-w-md">
+              <div className="bg-white rounded-3xl shadow-xl border border-neutral-100 p-8">
+                {/* Social login buttons */}
+                <div className="space-y-3 mb-6">
+                  <button className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 transition-colors">
+                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    <span className="text-sm font-medium text-neutral-700">
+                      {locale === "ka" ? "გაგრძელება Google-ით" : "Continue with Google"}
+                    </span>
+                  </button>
+
+                  <button className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-[#1877F2] hover:bg-[#166FE5] transition-colors">
+                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                    <span className="text-sm font-medium text-white">
+                      {locale === "ka" ? "გაგრძელება Facebook-ით" : "Continue with Facebook"}
+                    </span>
+                  </button>
                 </div>
 
-                {/* Upload Controls */}
-                <div className="flex-1">
-                  <input
-                    ref={avatarInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarChange}
-                    className="hidden"
-                    id="avatar-upload"
-                  />
-                  <label
-                    htmlFor="avatar-upload"
-                    className={`inline-flex items-center gap-2 px-5 py-3 rounded-xl font-medium text-sm cursor-pointer transition-all duration-200 ${
-                      avatarPreview
-                        ? "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
-                        : "bg-[#E07B4F] text-white hover:bg-[#D26B3F] shadow-lg shadow-[#E07B4F]/25"
-                    }`}
-                    style={{
-                      color: avatarPreview
-                        ? "var(--color-text-primary)"
-                        : undefined,
-                    }}
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                {/* Divider */}
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-neutral-200" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white px-4 text-neutral-400 tracking-wider">
+                      {locale === "ka" ? "ან დარეგისტრირდი ელ-ფოსტით" : "OR REGISTER WITH EMAIL"}
+                    </span>
+                  </div>
+                </div>
+
+                {error && (
+                  <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-100">
+                    <p className="text-sm text-red-600">{error}</p>
+                  </div>
+                )}
+
+                {/* Registration form */}
+                <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      {locale === "ka" ? "სრული სახელი" : "Full Name"}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.fullName}
+                      onChange={(e) => handleInputChange("fullName", e.target.value)}
+                      placeholder={locale === "ka" ? "გიორგი ბერიძე" : "Giorgi Beridze"}
+                      className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      {locale === "ka" ? "ელ-ფოსტა" : "Email Address"}
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      placeholder="name@example.com"
+                      className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      {locale === "ka" ? "ტელეფონი" : "Phone"}
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex items-center gap-2 px-3 py-3 rounded-xl border border-neutral-200 bg-neutral-50 flex-shrink-0">
+                        <span>{countries[phoneCountry].flag}</span>
+                        <span className="text-sm text-neutral-600">{countries[phoneCountry].phonePrefix}</span>
+                      </div>
+                      <input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => handleInputChange("phone", e.target.value.replace(/\D/g, ""))}
+                        placeholder="555 123 456"
+                        className="flex-1 px-4 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                        required
                       />
-                    </svg>
-                    {avatarPreview
-                      ? locale === "ka"
-                        ? "შეცვალე ფოტო"
-                        : "Change Photo"
-                      : locale === "ka"
-                        ? "ატვირთე ფოტო"
-                        : "Upload Photo"}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      {locale === "ka" ? "პაროლი" : "Password"}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={formData.password}
+                        onChange={(e) => handleInputChange("password", e.target.value)}
+                        placeholder={locale === "ka" ? "შექმენი პაროლი" : "Create a password"}
+                        className="w-full px-4 py-3 pr-12 rounded-xl border border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                        required
+                        minLength={6}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          {showPassword ? (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                          ) : (
+                            <>
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </>
+                          )}
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Terms checkbox */}
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={agreedToTerms}
+                      onChange={(e) => setAgreedToTerms(e.target.checked)}
+                      className="mt-1 w-4 h-4 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
+                    />
+                    <span className="text-sm text-neutral-600">
+                      {locale === "ka" ? (
+                        <>ვეთანხმები Homico-ს <Link href="/terms" className="text-[#C4735B] hover:underline">მომსახურების პირობებს</Link> და <Link href="/privacy" className="text-[#C4735B] hover:underline">კონფიდენციალურობის პოლიტიკას</Link>.</>
+                      ) : (
+                        <>I agree to Homico's <Link href="/terms" className="text-[#C4735B] hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-[#C4735B] hover:underline">Privacy Policy</Link>.</>
+                      )}
+                    </span>
                   </label>
 
-                  <p
-                    className="mt-3 text-xs"
-                    style={{ color: "var(--color-text-muted)" }}
+                  {/* Submit button */}
+                  <button
+                    type="submit"
+                    disabled={isLoading || !canProceedFromAccount()}
+                    className="w-full py-3.5 rounded-xl bg-[#C4735B] hover:bg-[#A85D47] disabled:bg-neutral-200 disabled:cursor-not-allowed text-white font-medium transition-colors flex items-center justify-center gap-2"
                   >
+                    {isLoading ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        <span>{locale === "ka" ? "მიმდინარეობს..." : "Processing..."}</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>{locale === "ka" ? "ანგარიშის შექმნა" : "Create Account"}</span>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                {/* Login link */}
+                <p className="mt-6 text-center text-sm text-neutral-600">
+                  {locale === "ka" ? "უკვე გაქვს ანგარიში?" : "Already have an account?"}{" "}
+                  <button onClick={() => openLoginModal()} className="text-[#C4735B] font-medium hover:underline">
+                    {locale === "ka" ? "შესვლა" : "Log in"}
+                  </button>
+                </p>
+
+                {/* Pro registration link */}
+                <div className="mt-6 pt-6 border-t border-neutral-100">
+                  <button
+                    onClick={() => setUserType('pro')}
+                    className="w-full py-3 rounded-xl border-2 border-dashed border-neutral-200 hover:border-[#C4735B]/50 hover:bg-[#C4735B]/5 transition-all text-sm text-neutral-600 hover:text-[#C4735B]"
+                  >
+                    {locale === "ka" ? "ხარ პროფესიონალი? დარეგისტრირდი აქ" : "Are you a professional? Register here"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // PRO REGISTRATION - Multi-step wizard
+  return (
+    <div className="min-h-screen bg-[#FAFAF9] flex flex-col">
+      {/* Header with progress */}
+      <header className="sticky top-0 z-50 bg-white border-b border-neutral-100">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="h-16 flex items-center justify-between">
+            <Logo />
+            <div className="flex items-center gap-4">
+              <button className="px-4 py-2 rounded-lg border border-neutral-200 text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors">
+                {locale === "ka" ? "შენახვა და გასვლა" : "Save & Exit"}
+              </button>
+              <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center">
+                <svg className="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          <div className="pb-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                {locale === "ka" ? `ნაბიჯი ${getCurrentStepIndex() + 1} / ${PRO_STEPS.length}` : `STEP ${getCurrentStepIndex() + 1} OF ${PRO_STEPS.length}`}
+              </span>
+              <span className="text-xs font-medium text-[#C4735B]">
+                {PRO_STEPS[getCurrentStepIndex()].title[locale === "ka" ? "ka" : "en"]}
+              </span>
+            </div>
+            <div className="h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-[#C4735B] to-[#D4896B] rounded-full transition-all duration-500"
+                style={{ width: `${getProgressPercentage()}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main content */}
+      <main className="flex-1 py-8 lg:py-12">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          {error && (
+            <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
+          {/* STEP 1: Account Creation */}
+          {currentStep === 'account' && (
+            <div className="space-y-8">
+              <div>
+                <h1 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-3">
+                  {locale === "ka" ? "შექმენი შენი პროფესიონალური ანგარიში" : "Create your professional account"}
+                </h1>
+                <p className="text-lg text-neutral-500">
+                  {locale === "ka" ? "შეავსე ძირითადი ინფორმაცია დასაწყებად" : "Fill in your basic information to get started"}
+                </p>
+              </div>
+
+              <div className="grid lg:grid-cols-2 gap-6">
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      {locale === "ka" ? "სრული სახელი" : "Full Name"} *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.fullName}
+                      onChange={(e) => handleInputChange("fullName", e.target.value)}
+                      placeholder={locale === "ka" ? "გიორგი ბერიძე" : "Giorgi Beridze"}
+                      className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      {locale === "ka" ? "ტელეფონი" : "Phone"} *
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex items-center gap-2 px-3 py-3 rounded-xl border border-neutral-200 bg-neutral-50 flex-shrink-0">
+                        <span>{countries[phoneCountry].flag}</span>
+                        <span className="text-sm text-neutral-600">{countries[phoneCountry].phonePrefix}</span>
+                      </div>
+                      <input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => handleInputChange("phone", e.target.value.replace(/\D/g, ""))}
+                        placeholder="555 123 456"
+                        className="flex-1 px-4 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      {locale === "ka" ? "პაროლი" : "Password"} *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={formData.password}
+                        onChange={(e) => handleInputChange("password", e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full px-4 py-3 pr-12 rounded-xl border border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                        required
+                        minLength={6}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          {showPassword ? (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                          ) : (
+                            <>
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </>
+                          )}
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      {locale === "ka" ? "ელ-ფოსტა" : "Email"} <span className="text-neutral-400 font-normal">({locale === "ka" ? "არასავალდებულო" : "optional"})</span>
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      placeholder="name@example.com"
+                      className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      {locale === "ka" ? "პირადი ნომერი" : "ID Number"} <span className="text-neutral-400 font-normal">({locale === "ka" ? "არასავალდებულო" : "optional"})</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.idNumber}
+                      onChange={(e) => handleInputChange("idNumber", e.target.value.replace(/\D/g, ""))}
+                      maxLength={11}
+                      placeholder="01234567890"
+                      className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      {locale === "ka" ? "ქალაქი" : "City"} <span className="text-neutral-400 font-normal">({locale === "ka" ? "არასავალდებულო" : "optional"})</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.city}
+                      onChange={(e) => handleInputChange("city", e.target.value)}
+                      placeholder={locale === "ka" ? "თბილისი" : "Tbilisi"}
+                      className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Terms checkbox */}
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  className="mt-1 w-4 h-4 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
+                />
+                <span className="text-sm text-neutral-600">
+                  {locale === "ka" ? (
+                    <>ვეთანხმები Homico-ს <Link href="/terms" className="text-[#C4735B] hover:underline">მომსახურების პირობებს</Link> და <Link href="/privacy" className="text-[#C4735B] hover:underline">კონფიდენციალურობის პოლიტიკას</Link>.</>
+                  ) : (
+                    <>I agree to Homico's <Link href="/terms" className="text-[#C4735B] hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-[#C4735B] hover:underline">Privacy Policy</Link>.</>
+                  )}
+                </span>
+              </label>
+
+              {/* Switch to client */}
+              <div className="pt-4 border-t border-neutral-100">
+                <button
+                  onClick={() => setUserType('client')}
+                  className="text-sm text-neutral-500 hover:text-[#C4735B] transition-colors"
+                >
+                  {locale === "ka" ? "← დაბრუნება კლიენტის რეგისტრაციაზე" : "← Back to client registration"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: Category Selection */}
+          {currentStep === 'category' && (
+            <div className="space-y-8">
+              <div>
+                <h1 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-3">
+                  {locale === "ka" ? "რა სერვისებს გთავაზობთ?" : "What services do you provide?"}
+                </h1>
+                <p className="text-lg text-neutral-500">
+                  {locale === "ka" ? "აირჩიეთ თქვენი ძირითადი პროფესია და კონკრეტული უნარები" : "Select your primary profession and the specific skills you offer to clients."}
+                </p>
+              </div>
+
+              {/* Main Categories */}
+              <div>
+                <h2 className="text-lg font-semibold text-neutral-900 mb-4">
+                  1. {locale === "ka" ? "აირჩიეთ მთავარი კატეგორია" : "Choose Main Category"}
+                </h2>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {categories.map((category) => {
+                    const isSelected = formData.selectedCategories.includes(category.key);
+                    return (
+                      <button
+                        key={category.key}
+                        onClick={() => handleCategoryToggle(category.key)}
+                        className={`relative p-6 rounded-2xl border-2 text-left transition-all ${
+                          isSelected
+                            ? 'border-[#C4735B] bg-[#C4735B]/5'
+                            : 'border-neutral-200 bg-white hover:border-neutral-300'
+                        }`}
+                      >
+                        {isSelected && (
+                          <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-[#C4735B] flex items-center justify-center">
+                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        )}
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
+                          isSelected ? 'bg-[#C4735B] text-white' : 'bg-neutral-100 text-neutral-600'
+                        }`}>
+                          {categoryIcons[category.key] || (
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                          )}
+                        </div>
+                        <h3 className="font-semibold text-neutral-900">
+                          {locale === "ka" ? category.nameKa : category.name}
+                        </h3>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Subcategories / Skills */}
+              {formData.selectedCategories.length > 0 && (
+                <div className="p-6 rounded-2xl bg-white border border-neutral-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold text-neutral-900">
+                      2. {locale === "ka" ? "აირჩიეთ კონკრეტული უნარები" : "Select Specific Skills"}
+                    </h2>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder={locale === "ka" ? "ძიება..." : "Search skills..."}
+                        className="pl-10 pr-4 py-2 rounded-xl border border-neutral-200 bg-neutral-50 text-sm focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none"
+                      />
+                      <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <p className="text-sm text-neutral-500 mb-4">
                     {locale === "ka"
-                      ? "JPG, PNG ან GIF. მაქს. 5MB"
-                      : "JPG, PNG or GIF. Max 5MB"}
+                      ? `აირჩიეთ ყველა რაც შეესაბამება თქვენს გამოცდილებას ${formData.selectedCategories.map(c => categories.find(cat => cat.key === c)?.[locale === "ka" ? "nameKa" : "name"]).join(', ')}-ში.`
+                      : `Select all that apply to your expertise as a ${formData.selectedCategories.map(c => categories.find(cat => cat.key === c)?.name).join(', ')}.`
+                    }
                   </p>
 
-                  {avatarUploading && (
-                    <div className="mt-3 flex items-center gap-2">
-                      <svg
-                        className="animate-spin h-4 w-4 text-[#E07B4F]"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      <span className="text-sm text-[#E07B4F] dark:text-[#E8956A]">
-                        {locale === "ka" ? "იტვირთება..." : "Uploading..."}
+                  <div className="flex flex-wrap gap-2">
+                    {formData.selectedCategories.flatMap(catKey => {
+                      const category = categories.find(c => c.key === catKey);
+                      return category?.subcategories || [];
+                    }).map((subcategory) => {
+                      const isSelected = formData.selectedSubcategories.includes(subcategory.key);
+                      return (
+                        <button
+                          key={subcategory.key}
+                          onClick={() => handleSubcategoryToggle(subcategory.key)}
+                          className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                            isSelected
+                              ? 'bg-[#C4735B] text-white'
+                              : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                          }`}
+                        >
+                          {isSelected && (
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                          {locale === "ka" ? subcategory.nameKa : subcategory.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {formData.selectedSubcategories.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-neutral-100 text-right">
+                      <span className="text-sm text-[#C4735B] font-medium">
+                        {formData.selectedSubcategories.length} {locale === "ka" ? "უნარი არჩეულია" : "skills selected"}
                       </span>
                     </div>
                   )}
                 </div>
-              </div>
-            </section>
+              )}
+            </div>
           )}
 
-          {/* Personal Info */}
-          <section className="overflow-visible">
-            <div className="flex items-center gap-3 mb-4">
-              <div
-                className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm transition-all duration-300 ${
-                  validation.firstName &&
-                  validation.lastName &&
-                  validation.idNumber &&
-                  validation.phone
-                    ? "bg-[#E07B4F] text-white"
-                    : "bg-gray-100 dark:bg-gray-800 text-gray-500"
-                }`}
-              >
-                {validation.firstName &&
-                validation.lastName &&
-                validation.idNumber &&
-                validation.phone ? (
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2.5}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                ) : (
-                  "1"
-                )}
-              </div>
-              <h2
-                className="text-lg font-semibold"
-                style={{ color: "var(--color-text-primary)" }}
-              >
-                {locale === "ka" ? "პირადი ინფორმაცია" : "Personal Information"}
-              </h2>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4 overflow-visible">
-              {/* First Name */}
+          {/* STEP 3: Services & Portfolio */}
+          {currentStep === 'services' && (
+            <div className="space-y-8">
               <div>
-                <label
-                  className="flex items-center gap-2 text-sm font-medium mb-2"
-                  style={{ color: "var(--color-text-secondary)" }}
-                >
-                  <span>{locale === "ka" ? "სახელი" : "First Name"}</span>
-                  {validation.firstName ? (
-                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#E07B4F]">
-                      <svg
-                        className="w-2.5 h-2.5 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={3}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/30">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                    </span>
-                  )}
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.firstName}
-                  onChange={(e) =>
-                    handleInputChange("firstName", e.target.value)
-                  }
-                  onFocus={() => setFocusedField("firstName")}
-                  onBlur={() => setFocusedField(null)}
-                  placeholder={locale === "ka" ? "გიორგი" : "John"}
-                  className="w-full px-4 py-3 rounded-xl text-base transition-all duration-200 outline-none"
-                  style={{
-                    backgroundColor: "var(--color-bg-secondary)",
-                    border: `2px solid ${focusedField === "firstName" ? "#E07B4F" : "var(--color-border)"}`,
-                    color: "var(--color-text-primary)",
-                  }}
-                />
+                <h1 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-3">
+                  {locale === "ka" ? "აჩვენე შენი გამოცდილება" : "Showcase Your Expertise"}
+                </h1>
+                <p className="text-lg text-neutral-500">
+                  {locale === "ka" ? "დაამატე სერვისები და ფოტოები მეტი კლიენტების მოსაზიდად" : "Add the services you offer and upload photos of your best work to attract more clients."}
+                </p>
               </div>
 
-              {/* Last Name */}
-              <div>
-                <label
-                  className="flex items-center gap-2 text-sm font-medium mb-2"
-                  style={{ color: "var(--color-text-secondary)" }}
-                >
-                  <span>{locale === "ka" ? "გვარი" : "Last Name"}</span>
-                  {validation.lastName ? (
-                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#E07B4F]">
-                      <svg
-                        className="w-2.5 h-2.5 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={3}
-                          d="M5 13l4 4L19 7"
-                        />
+              <div className="grid lg:grid-cols-2 gap-8">
+                {/* Services */}
+                <div className="p-6 rounded-2xl bg-white border border-neutral-200">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-xl bg-[#C4735B]/10 flex items-center justify-center">
+                      <svg className="w-5 h-5 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/30">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                    </span>
-                  )}
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.lastName}
-                  onChange={(e) =>
-                    handleInputChange("lastName", e.target.value)
-                  }
-                  onFocus={() => setFocusedField("lastName")}
-                  onBlur={() => setFocusedField(null)}
-                  placeholder={locale === "ka" ? "გელაშვილი" : "Doe"}
-                  className="w-full px-4 py-3 rounded-xl text-base transition-all duration-200 outline-none"
-                  style={{
-                    backgroundColor: "var(--color-bg-secondary)",
-                    border: `2px solid ${focusedField === "lastName" ? "#E07B4F" : "var(--color-border)"}`,
-                    color: "var(--color-text-primary)",
-                  }}
-                />
-              </div>
-
-              {/* ID Number */}
-              <div>
-                <label
-                  className="flex items-center gap-2 text-sm font-medium mb-2"
-                  style={{ color: "var(--color-text-secondary)" }}
-                >
-                  <span>{locale === "ka" ? "პირადი ნომერი" : "ID Number"}</span>
-                  {validation.idNumber ? (
-                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#E07B4F]">
-                      <svg
-                        className="w-2.5 h-2.5 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={3}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/30">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                    </span>
-                  )}
-                </label>
-                <input
-                  type="text"
-                  required
-                  maxLength={11}
-                  value={formData.idNumber}
-                  onChange={(e) =>
-                    handleInputChange(
-                      "idNumber",
-                      e.target.value.replace(/\D/g, "")
-                    )
-                  }
-                  onFocus={() => setFocusedField("idNumber")}
-                  onBlur={() => setFocusedField(null)}
-                  className="w-full px-4 py-3 rounded-xl text-base transition-all duration-200 outline-none"
-                  style={{
-                    backgroundColor: "var(--color-bg-secondary)",
-                    border: `2px solid ${focusedField === "idNumber" ? "#E07B4F" : fieldErrors.idNumber ? "#ef4444" : "var(--color-border)"}`,
-                    color: "var(--color-text-primary)",
-                  }}
-                  placeholder="01234567890"
-                />
-                {fieldErrors.idNumber && (
-                  <p className="mt-1 text-xs text-red-500">
-                    {fieldErrors.idNumber}
-                  </p>
-                )}
-              </div>
-
-              {/* Phone - Required field next to ID Number */}
-              <div>
-                <label
-                  className="flex items-center gap-2 text-sm font-medium mb-2"
-                  style={{ color: "var(--color-text-secondary)" }}
-                >
-                  <span>{locale === "ka" ? "ტელეფონი" : "Phone"}</span>
-                  {validation.phone ? (
-                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#E07B4F]">
-                      <svg
-                        className="w-2.5 h-2.5 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={3}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/30">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                    </span>
-                  )}
-                </label>
-                <div className="flex gap-2">
-                  <div
-                    className="flex items-center gap-2 px-3 py-3 rounded-xl border-2 flex-shrink-0"
-                    style={{
-                      backgroundColor: "var(--color-bg-secondary)",
-                      borderColor: "var(--color-border)",
-                    }}
-                  >
-                    <span>{countries[phoneCountry].flag}</span>
-                    <span
-                      className="text-sm font-medium"
-                      style={{ color: "var(--color-text-secondary)" }}
-                    >
-                      {countries[phoneCountry].phonePrefix}
-                    </span>
+                    </div>
+                    <h2 className="text-lg font-semibold text-neutral-900">
+                      {locale === "ka" ? "სერვისების დეტალები" : "Service Details"}
+                    </h2>
                   </div>
-                  <input
-                    type="tel"
-                    required
-                    value={formData.phone}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "phone",
-                        e.target.value.replace(/\D/g, "")
-                      )
-                    }
-                    onFocus={() => setFocusedField("phone")}
-                    onBlur={() => setFocusedField(null)}
-                    className="flex-1 px-4 py-3 rounded-xl text-base transition-all duration-200 outline-none"
-                    style={{
-                      backgroundColor: "var(--color-bg-secondary)",
-                      border: `2px solid ${focusedField === "phone" ? "#E07B4F" : "var(--color-border)"}`,
-                      color: "var(--color-text-primary)",
-                    }}
-                    placeholder="555 123 456"
-                  />
-                </div>
-              </div>
 
-              {/* Password - Required field */}
-              <div>
-                <label
-                  className="flex items-center gap-2 text-sm font-medium mb-2"
-                  style={{ color: "var(--color-text-secondary)" }}
-                >
-                  <span>{locale === "ka" ? "პაროლი" : "Password"}</span>
-                  {validation.password ? (
-                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#E07B4F]">
-                      <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  {/* Popular Tags */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-neutral-700 mb-2">
+                      {locale === "ka" ? "პოპულარული თეგები" : "Popular Tags"}
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {['Leak Repair', 'Installation', 'Maintenance', 'Add Custom'].map((tag) => {
+                        const isSelected = selectedTags.includes(tag);
+                        return (
+                          <button
+                            key={tag}
+                            onClick={() => handleTagToggle(tag)}
+                            className={`px-3 py-1.5 rounded-full text-sm transition-all ${
+                              isSelected
+                                ? 'bg-[#C4735B] text-white'
+                                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                            }`}
+                          >
+                            {tag === 'Add Custom' ? `+ ${tag}` : (isSelected ? '' : '+ ') + tag}
+                            {isSelected && tag !== 'Add Custom' && ' ×'}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Add Service Form */}
+                  <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-100 mb-4">
+                    <h3 className="text-sm font-semibold text-neutral-700 uppercase tracking-wider mb-4">
+                      {locale === "ka" ? "დაამატე კონკრეტული სერვისი" : "ADD SPECIFIC SERVICE"}
+                    </h3>
+                    <div className="grid sm:grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">
+                          {locale === "ka" ? "სერვისის სახელი" : "SERVICE TITLE"}
+                        </label>
+                        <input
+                          type="text"
+                          placeholder={locale === "ka" ? "მაგ. ონკანის შეცვლა" : "e.g. Faucet Replacement"}
+                          className="w-full px-3 py-2.5 rounded-lg border border-neutral-200 bg-white text-sm focus:border-[#C4735B] outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">
+                          {locale === "ka" ? "საწყისი ფასი (₾)" : "STARTING PRICE (GEL)"}
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">₾</span>
+                          <input
+                            type="text"
+                            placeholder="50"
+                            className="w-full pl-8 pr-3 py-2.5 rounded-lg border border-neutral-200 bg-white text-sm focus:border-[#C4735B] outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mb-4">
+                      <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">
+                        {locale === "ka" ? "აღწერა" : "DESCRIPTION"}
+                      </label>
+                      <textarea
+                        rows={2}
+                        placeholder={locale === "ka" ? "მოკლედ აღწერე რას მოიცავს..." : "Briefly describe what's included..."}
+                        className="w-full px-3 py-2.5 rounded-lg border border-neutral-200 bg-white text-sm focus:border-[#C4735B] outline-none resize-none"
+                      />
+                    </div>
+                    <button
+                      onClick={addService}
+                      className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-neutral-900 text-white text-sm font-medium hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/30">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                    </span>
-                  )}
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={formData.password}
-                    onChange={(e) => handleInputChange("password", e.target.value)}
-                    onFocus={() => setFocusedField("password")}
-                    onBlur={() => setFocusedField(null)}
-                    className="w-full px-4 py-3 pr-12 rounded-xl text-base transition-all duration-200 outline-none"
-                    style={{
-                      backgroundColor: "var(--color-bg-secondary)",
-                      border: `2px solid ${focusedField === "password" ? "#E07B4F" : fieldErrors.password ? "#ef4444" : "var(--color-border)"}`,
-                      color: "var(--color-text-primary)",
-                    }}
-                    placeholder="••••••••"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2"
-                    style={{ color: "var(--color-text-muted)" }}
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      {showPassword ? (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                      ) : (
-                        <>
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </>
-                      )}
-                    </svg>
-                  </button>
-                </div>
-                {fieldErrors.password && (
-                  <p className="mt-1 text-xs text-red-500">{fieldErrors.password}</p>
-                )}
-              </div>
+                      {locale === "ka" ? "სერვისის დამატება" : "Add Service"}
+                    </button>
+                  </div>
 
-              {/* Confirm Password - Required field */}
-              <div>
-                <label
-                  className="flex items-center gap-2 text-sm font-medium mb-2"
-                  style={{ color: "var(--color-text-secondary)" }}
-                >
-                  <span>{locale === "ka" ? "გაიმეორეთ პაროლი" : "Confirm Password"}</span>
-                  {validation.passwordMatch ? (
-                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#E07B4F]">
-                      <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  {/* Added Services */}
+                  {services.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-medium text-neutral-700 mb-3">
+                        {locale === "ka" ? `დამატებული სერვისები (${services.length})` : `Added Services (${services.length})`}
+                      </h3>
+                      <div className="space-y-3">
+                        {services.map((service, index) => (
+                          <div key={index} className="p-4 rounded-xl border border-neutral-200 bg-white">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h4 className="font-medium text-neutral-900">{service.title || 'New Service'}</h4>
+                                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">Active</span>
+                                </div>
+                                <p className="text-sm text-neutral-500">{service.description || 'No description'}</p>
+                                <p className="text-sm font-medium text-[#C4735B] mt-1">
+                                  {locale === "ka" ? `იწყება ₾${service.price || '0'}-დან` : `Starts at ₾${service.price || '0'}`}
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => removeService(index)}
+                                className="text-neutral-400 hover:text-red-500 transition-colors"
+                              >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Portfolio */}
+                <div className="p-6 rounded-2xl bg-white border border-neutral-200">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-xl bg-[#C4735B]/10 flex items-center justify-center">
+                      <svg className="w-5 h-5 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-500/30">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                    </span>
-                  )}
-                </label>
-                <div className="relative">
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    required
-                    value={formData.confirmPassword}
-                    onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                    onFocus={() => setFocusedField("confirmPassword")}
-                    onBlur={() => setFocusedField(null)}
-                    className="w-full px-4 py-3 pr-12 rounded-xl text-base transition-all duration-200 outline-none"
-                    style={{
-                      backgroundColor: "var(--color-bg-secondary)",
-                      border: `2px solid ${focusedField === "confirmPassword" ? "#E07B4F" : fieldErrors.confirmPassword ? "#ef4444" : "var(--color-border)"}`,
-                      color: "var(--color-text-primary)",
-                    }}
-                    placeholder="••••••••"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2"
-                    style={{ color: "var(--color-text-muted)" }}
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      {showConfirmPassword ? (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                      ) : (
-                        <>
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </>
-                      )}
-                    </svg>
-                  </button>
-                </div>
-                {fieldErrors.confirmPassword && (
-                  <p className="mt-1 text-xs text-red-500">{fieldErrors.confirmPassword}</p>
-                )}
-              </div>
+                    </div>
+                    <h2 className="text-lg font-semibold text-neutral-900">
+                      {locale === "ka" ? "პორტფოლიო" : "Portfolio"}
+                    </h2>
+                  </div>
 
-              {/* Email - Optional field */}
-              <div>
-                <label
-                  className="block text-sm font-medium mb-2"
-                  style={{ color: "var(--color-text-secondary)" }}
-                >
-                  {locale === "ka" ? "ელ-ფოსტა" : "Email"}{" "}
-                  <span
-                    className="text-xs font-normal"
-                    style={{ color: "var(--color-text-muted)" }}
-                  >
-                    ({locale === "ka" ? "არასავალდებულო" : "optional"})
-                  </span>
-                </label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  onFocus={() => setFocusedField("email")}
-                  onBlur={() => setFocusedField(null)}
-                  className="w-full px-4 py-3 rounded-xl text-base transition-all duration-200 outline-none"
-                  style={{
-                    backgroundColor: "var(--color-bg-secondary)",
-                    border: `2px solid ${focusedField === "email" ? "#E07B4F" : "var(--color-border)"}`,
-                    color: "var(--color-text-primary)",
-                  }}
-                  placeholder="example@email.com"
-                />
-              </div>
+                  {/* Upload area */}
+                  <div className="border-2 border-dashed border-neutral-200 rounded-2xl p-8 text-center hover:border-[#C4735B]/50 transition-colors cursor-pointer mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-[#C4735B]/10 flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-6 h-6 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                      </svg>
+                    </div>
+                    <p className="font-medium text-neutral-900 mb-1">
+                      {locale === "ka" ? "დააჭირე ან გადმოიტანე ფოტოები" : "Click or drag photos here"}
+                    </p>
+                    <p className="text-sm text-neutral-500">JPG, PNG {locale === "ka" ? "5MB-მდე" : "up to 5MB"}</p>
+                  </div>
 
-              {/* City - Optional field */}
-              <div ref={cityDropdownRef} className="relative z-20">
-                <label
-                  className="block text-sm font-medium mb-2"
-                  style={{ color: "var(--color-text-secondary)" }}
-                >
-                  {locale === "ka" ? "ქალაქი" : "City"}
-                </label>
-                <input
-                  type="text"
-                  value={formData.city || citySearch}
-                  onChange={(e) => {
-                    setCitySearch(e.target.value);
-                    setFormData({ ...formData, city: "" });
-                    setShowCityDropdown(true);
-                  }}
-                  onFocus={() => {
-                    setFocusedField("city");
-                    setShowCityDropdown(true);
-                  }}
-                  onBlur={() => setFocusedField(null)}
-                  className="w-full px-4 py-3 rounded-xl text-base transition-all duration-200 outline-none"
-                  style={{
-                    backgroundColor: "var(--color-bg-secondary)",
-                    border: `2px solid ${focusedField === "city" ? "#E07B4F" : "var(--color-border)"}`,
-                    color: "var(--color-text-primary)",
-                  }}
-                  placeholder={
-                    locale === "ka" ? "აირჩიეთ ქალაქი" : "Select city"
-                  }
-                />
-                {showCityDropdown && filteredCities.length > 0 && (
-                  <div
-                    className="absolute z-[100] left-0 right-0 bottom-full mb-1 rounded-xl border shadow-2xl max-h-48 overflow-y-auto"
-                    style={{
-                      backgroundColor: "var(--color-bg-primary)",
-                      borderColor: "var(--color-border)",
-                    }}
-                  >
-                    {filteredCities.map((city) => (
-                      <button
-                        key={city}
-                        type="button"
-                        onClick={() => {
-                          setFormData({ ...formData, city });
-                          setCitySearch("");
-                          setShowCityDropdown(false);
-                        }}
-                        className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors first:rounded-t-xl last:rounded-b-xl"
-                        style={{ color: "var(--color-text-primary)" }}
-                      >
-                        {city}
-                      </button>
+                  {/* Preview grid would go here */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="aspect-square rounded-xl bg-neutral-100 flex items-center justify-center">
+                        <svg className="w-8 h-8 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
                     ))}
                   </div>
-                )}
-              </div>
 
-              {/* WhatsApp & Telegram - Full width row for pro users */}
-              {formData.role === "pro" && (
-                <div className="sm:col-span-2">
-                  <label
-                    className="block text-sm font-medium mb-2"
-                    style={{ color: "var(--color-text-secondary)" }}
-                  >
-                    {locale === "ka" ? "დამატებითი კონტაქტი" : "Additional Contact"}{" "}
-                    <span className="text-xs font-normal" style={{ color: "var(--color-text-muted)" }}>
-                      ({locale === "ka" ? "არასავალდებულო" : "optional"})
-                    </span>
-                  </label>
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    {/* WhatsApp */}
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setActiveSocialInput(activeSocialInput === 'whatsapp' ? null : 'whatsapp')}
-                        className={`flex items-center justify-center w-12 h-12 rounded-xl border-2 transition-all duration-200 flex-shrink-0 ${
-                          formData.whatsapp
-                            ? 'bg-[#25D366]/10 border-[#25D366] text-[#25D366]'
-                            : 'border-[var(--color-border)] text-[var(--color-text-tertiary)] hover:border-[#25D366]/50 hover:text-[#25D366]'
-                        }`}
-                        style={{ backgroundColor: formData.whatsapp ? undefined : "var(--color-bg-secondary)" }}
-                      >
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                        </svg>
-                      </button>
-                      <input
-                        type="tel"
-                        value={formData.whatsapp}
-                        onChange={(e) => handleInputChange("whatsapp", e.target.value.replace(/\D/g, ""))}
-                        onFocus={() => setFocusedField("whatsapp")}
-                        onBlur={() => setFocusedField(null)}
-                        className="flex-1 px-4 py-3 rounded-xl text-base transition-all duration-200 outline-none"
-                        style={{
-                          backgroundColor: "var(--color-bg-secondary)",
-                          border: `2px solid ${focusedField === "whatsapp" ? "#25D366" : formData.whatsapp ? "#25D366" : "var(--color-border)"}`,
-                          color: "var(--color-text-primary)",
-                        }}
-                        placeholder={locale === "ka" ? "WhatsApp ნომერი" : "WhatsApp number"}
-                      />
-                    </div>
-                    {/* Telegram */}
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setActiveSocialInput(activeSocialInput === 'telegram' ? null : 'telegram')}
-                        className={`flex items-center justify-center w-12 h-12 rounded-xl border-2 transition-all duration-200 flex-shrink-0 ${
-                          formData.telegram
-                            ? 'bg-[#0088cc]/10 border-[#0088cc] text-[#0088cc]'
-                            : 'border-[var(--color-border)] text-[var(--color-text-tertiary)] hover:border-[#0088cc]/50 hover:text-[#0088cc]'
-                        }`}
-                        style={{ backgroundColor: formData.telegram ? undefined : "var(--color-bg-secondary)" }}
-                      >
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-                        </svg>
-                      </button>
-                      <input
-                        type="text"
-                        value={formData.telegram}
-                        onChange={(e) => handleInputChange("telegram", e.target.value.replace(/[^a-zA-Z0-9_]/g, ""))}
-                        onFocus={() => setFocusedField("telegram")}
-                        onBlur={() => setFocusedField(null)}
-                        className="flex-1 px-4 py-3 rounded-xl text-base transition-all duration-200 outline-none"
-                        style={{
-                          backgroundColor: "var(--color-bg-secondary)",
-                          border: `2px solid ${focusedField === "telegram" ? "#0088cc" : formData.telegram ? "#0088cc" : "var(--color-border)"}`,
-                          color: "var(--color-text-primary)",
-                        }}
-                        placeholder="@username"
-                      />
+                  {/* Pro tip */}
+                  <div className="mt-6 p-4 rounded-xl bg-blue-50 border border-blue-100">
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-xs font-bold">i</span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-blue-900 text-sm mb-1">Pro Tip</p>
+                        <p className="text-sm text-blue-700">
+                          {locale === "ka"
+                            ? "პროფილებს მინიმუმ 5 ფოტოთი 40%-ით მეტი მოთხოვნა აქვთ. აჩვენე 'მანამდე და შემდეგ' ფოტოები მაქსიმალური ეფექტისთვის!"
+                            : "Profiles with at least 5 photos get 40% more service requests. Show before & after shots for maximum impact!"}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
-          </section>
+          )}
 
-          {/* Category Selection - Only for Pro */}
-          {formData.role === "pro" && (
-            <section>
-              <div className="flex items-center gap-3 mb-2">
-                <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm transition-all duration-300 ${
-                    validation.category
-                      ? "bg-[#E07B4F] text-white"
-                      : "bg-gray-100 dark:bg-gray-800 text-gray-500"
-                  }`}
-                >
-                  {validation.category ? (
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2.5}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  ) : (
-                    "2"
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <h2
-                    className="text-lg font-semibold"
-                    style={{ color: "var(--color-text-primary)" }}
-                  >
-                    {locale === "ka"
-                      ? "აირჩიე სპეციალობა"
-                      : "Choose Your Specialty"}
+          {/* STEP 4: Review */}
+          {currentStep === 'review' && (
+            <div className="space-y-8">
+              <div>
+                <h1 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-3">
+                  {locale === "ka" ? "გადახედე და დაადასტურე" : "Review & Confirm"}
+                </h1>
+                <p className="text-lg text-neutral-500">
+                  {locale === "ka" ? "გადახედე შენს ინფორმაციას რეგისტრაციის დასრულებამდე" : "Review your information before completing registration"}
+                </p>
+              </div>
+
+              {/* Account Info Review */}
+              <div className="p-6 rounded-2xl bg-white border border-neutral-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-neutral-900">
+                    {locale === "ka" ? "ანგარიშის ინფორმაცია" : "Account Information"}
                   </h2>
-                  {!validation.category && (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                      {locale === "ka" ? "სავალდებულო" : "Required"}
-                    </span>
-                  )}
+                  <button
+                    onClick={() => goToStep('account')}
+                    className="text-sm font-medium text-[#C4735B] hover:underline flex items-center gap-1"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    {locale === "ka" ? "რედაქტირება" : "Edit"}
+                  </button>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-neutral-500">{locale === "ka" ? "სრული სახელი" : "Full Name"}</p>
+                    <p className="font-medium text-neutral-900">{formData.fullName || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-neutral-500">{locale === "ka" ? "ტელეფონი" : "Phone"}</p>
+                    <p className="font-medium text-neutral-900">{countries[phoneCountry].phonePrefix}{formData.phone || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-neutral-500">{locale === "ka" ? "ელ-ფოსტა" : "Email"}</p>
+                    <p className="font-medium text-neutral-900">{formData.email || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-neutral-500">{locale === "ka" ? "ქალაქი" : "City"}</p>
+                    <p className="font-medium text-neutral-900">{formData.city || '-'}</p>
+                  </div>
                 </div>
               </div>
-              <p
-                className="text-sm mb-4 ml-11"
-                style={{ color: "var(--color-text-secondary)" }}
-              >
-                {locale === "ka"
-                  ? "აირჩიე კატეგორია და შენი სპეციალიზაცია (მაქს. 4 კატეგორია)"
-                  : "Select categories and your specializations (max 4 categories)"}
-              </p>
 
-              <CategorySubcategorySelector
-                selectedCategories={formData.selectedCategories}
-                selectedSubcategories={formData.selectedSubcategories}
-                onCategoriesChange={handleCategoriesChange}
-                onSubcategoriesChange={handleSubcategoriesChange}
-                singleCategoryMode={false}
-                maxCategories={4}
-                maxSubcategories={10}
-                showCustomSpecialties={true}
-              />
-            </section>
-          )}
+              {/* Services Review */}
+              <div className="p-6 rounded-2xl bg-white border border-neutral-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-neutral-900">
+                    {locale === "ka" ? "სერვისები" : "Services"}
+                  </h2>
+                  <button
+                    onClick={() => goToStep('category')}
+                    className="text-sm font-medium text-[#C4735B] hover:underline flex items-center gap-1"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    {locale === "ka" ? "რედაქტირება" : "Edit"}
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm text-neutral-500 mb-2">{locale === "ka" ? "კატეგორიები" : "Categories"}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.selectedCategories.map(catKey => {
+                        const category = categories.find(c => c.key === catKey);
+                        return (
+                          <span key={catKey} className="px-3 py-1 rounded-full bg-[#C4735B]/10 text-[#C4735B] text-sm font-medium">
+                            {locale === "ka" ? category?.nameKa : category?.name}
+                          </span>
+                        );
+                      })}
+                      {formData.selectedCategories.length === 0 && <span className="text-neutral-400">-</span>}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-neutral-500 mb-2">{locale === "ka" ? "უნარები" : "Skills"}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.selectedSubcategories.map(subKey => {
+                        let subcategory;
+                        for (const cat of categories) {
+                          const found = cat.subcategories.find(s => s.key === subKey);
+                          if (found) { subcategory = found; break; }
+                        }
+                        return (
+                          <span key={subKey} className="px-3 py-1 rounded-full bg-neutral-100 text-neutral-700 text-sm">
+                            {locale === "ka" ? subcategory?.nameKa : subcategory?.name}
+                          </span>
+                        );
+                      })}
+                      {formData.selectedSubcategories.length === 0 && <span className="text-neutral-400">-</span>}
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-          {/* Portfolio Projects - Optional for Pro */}
-          {formData.role === "pro" && formData.selectedCategories.length > 0 && (
-            <section>
-              <PortfolioProjectsInput
-                projects={portfolioProjects}
-                onChange={setPortfolioProjects}
-                maxProjects={3}
-              />
-            </section>
+              {/* Portfolio Review */}
+              <div className="p-6 rounded-2xl bg-white border border-neutral-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-neutral-900">
+                    {locale === "ka" ? "პორტფოლიო" : "Portfolio"}
+                  </h2>
+                  <button
+                    onClick={() => goToStep('services')}
+                    className="text-sm font-medium text-[#C4735B] hover:underline flex items-center gap-1"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    {locale === "ka" ? "რედაქტირება" : "Edit"}
+                  </button>
+                </div>
+                <div className="grid grid-cols-4 gap-3">
+                  {portfolioImages.length > 0 ? (
+                    portfolioImages.map((img, i) => (
+                      <div key={i} className="aspect-square rounded-xl bg-neutral-100 overflow-hidden">
+                        <img src={img} alt="" className="w-full h-full object-cover" />
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-neutral-400 col-span-4">{locale === "ka" ? "ფოტოები არ არის დამატებული" : "No photos added"}</p>
+                  )}
+                </div>
+                {services.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-neutral-100">
+                    <p className="text-sm text-neutral-500 mb-2">{locale === "ka" ? "სერვისები" : "Services"}</p>
+                    <div className="space-y-2">
+                      {services.map((service, i) => (
+                        <div key={i} className="flex items-center justify-between">
+                          <span className="text-neutral-900">{service.title}</span>
+                          <span className="text-[#C4735B] font-medium">₾{service.price}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
-        </form>
+        </div>
       </main>
 
-      {/* Fixed Actions Footer - compact design matching post-job */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--color-bg-primary)]/95 backdrop-blur-xl border-t border-[var(--color-border-subtle)] shadow-[0_-2px_10px_rgba(0,0,0,0.06)]">
-        <div className="max-w-2xl mx-auto px-4 py-3">
-          <div className="flex items-center gap-3">
-            {/* Progress indicator - compact */}
-            {!canSubmitForm() && (
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <div className="w-8 h-8 rounded-full bg-[var(--color-bg-tertiary)] flex items-center justify-center relative">
-                  <svg className="w-8 h-8 -rotate-90">
-                    <circle
-                      cx="16"
-                      cy="16"
-                      r="12"
-                      fill="none"
-                      stroke="var(--color-border)"
-                      strokeWidth="3"
-                    />
-                    <circle
-                      cx="16"
-                      cy="16"
-                      r="12"
-                      fill="none"
-                      stroke="#E07B4F"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeDasharray={`${(completedFields / totalFields) * 75.4} 75.4`}
-                    />
-                  </svg>
-                  <span className="absolute text-[10px] font-bold text-[var(--color-text-secondary)]">
-                    {completedFields}/{totalFields}
-                  </span>
-                </div>
-                <span className="text-xs text-amber-600 dark:text-amber-400 font-medium hidden sm:block">
-                  {getFirstMissingField()?.label}
-                </span>
-              </div>
+      {/* Footer with navigation */}
+      <footer className="sticky bottom-0 bg-white border-t border-neutral-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            {getCurrentStepIndex() > 0 ? (
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-neutral-700 hover:bg-neutral-100 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                {locale === "ka" ? "უკან" : "Back"}
+              </button>
+            ) : (
+              <div />
             )}
 
-            {/* Submit button */}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                if (canSubmitForm() && formRef.current) {
-                  formRef.current.requestSubmit();
-                }
-              }}
-              disabled={isLoading || !canSubmitForm()}
-              className={`
-                flex-1 py-3 px-6 rounded-full font-medium text-sm transition-all duration-200 ease-out
-                flex items-center justify-center gap-2 border
-                ${canSubmitForm()
-                  ? 'bg-[#E07B4F]/[0.08] border-[#E07B4F]/40 text-[#E07B4F] dark:text-[#E8956A] hover:bg-[#E07B4F]/[0.12] hover:border-[#E07B4F]/50'
-                  : 'border-[var(--color-border)] text-[var(--color-text-muted)] cursor-not-allowed'
-                }
-              `}
-            >
-              {isLoading ? (
-                <>
-                  <svg
-                    className="animate-spin h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  <span>
-                    {locale === "ka" ? "მიმდინარეობს..." : "Processing..."}
-                  </span>
-                </>
-              ) : canSubmitForm() ? (
-                <>
-                  <span>
-                    {locale === "ka" ? "რეგისტრაცია" : "Create Account"}
-                  </span>
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 8l4 4m0 0l-4 4m4-4H3"
-                    />
-                  </svg>
-                </>
-              ) : (
-                <span>
-                  {locale === "ka" ? "შეავსე ველები" : "Fill required fields"}
-                </span>
+            <div className="flex items-center gap-3">
+              {currentStep === 'services' && (
+                <button className="px-4 py-2.5 rounded-xl text-neutral-600 hover:bg-neutral-100 transition-colors">
+                  {locale === "ka" ? "დრაფტად შენახვა" : "Save as Draft"}
+                </button>
               )}
-            </button>
+              <button
+                onClick={handleNext}
+                disabled={
+                  isLoading ||
+                  (currentStep === 'account' && !canProceedFromAccount()) ||
+                  (currentStep === 'category' && !canProceedFromCategory())
+                }
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#C4735B] hover:bg-[#A85D47] disabled:bg-neutral-200 disabled:cursor-not-allowed text-white font-medium transition-colors"
+              >
+                {isLoading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    <span>{locale === "ka" ? "მიმდინარეობს..." : "Processing..."}</span>
+                  </>
+                ) : currentStep === 'review' ? (
+                  <>
+                    <span>{locale === "ka" ? "რეგისტრაციის დასრულება" : "Complete Registration"}</span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </>
+                ) : (
+                  <>
+                    <span>{locale === "ka" ? "გაგრძელება" : "Continue"}</span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }
@@ -2003,11 +1537,8 @@ export default function RegisterPage() {
   return (
     <Suspense
       fallback={
-        <div
-          className="min-h-screen flex items-center justify-center"
-          style={{ backgroundColor: "var(--color-bg-primary)" }}
-        >
-          <div className="w-12 h-12 rounded-full border-2 border-[#E07B4F]/20 dark:border-[#E07B4F]/30 border-t-[#E07B4F] animate-spin" />
+        <div className="min-h-screen flex items-center justify-center bg-[#FAFAF9]">
+          <div className="w-12 h-12 rounded-full border-2 border-[#C4735B]/20 border-t-[#C4735B] animate-spin" />
         </div>
       }
     >
