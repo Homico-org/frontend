@@ -73,16 +73,13 @@ interface PortfolioItem {
 
 interface ProProfile {
   _id: string;
-  userId: {
-    _id: string;
-    uid?: number;
-    name: string;
-    email: string;
-    avatar?: string;
-    city?: string;
-    whatsapp?: string;
-    telegram?: string;
-  };
+  uid?: number;
+  name: string;
+  email: string;
+  avatar?: string;
+  city?: string;
+  whatsapp?: string;
+  telegram?: string;
   title: string;
   companyName?: string;
   description: string;
@@ -167,11 +164,11 @@ export default function ProfessionalDetailPage() {
   }, [params.id]);
 
   useEffect(() => {
-    if (profile?.userId?.name) {
+    if (profile?.name) {
       document.title = `${profile.name} | Homico`;
     }
     return () => { document.title = 'Homico'; };
-  }, [profile?.userId?.name]);
+  }, [profile?.name]);
 
   useEffect(() => {
     const fetchPortfolio = async () => {
@@ -232,7 +229,7 @@ export default function ProfessionalDetailPage() {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         },
         body: JSON.stringify({
-          proId: profile?.userId._id,
+          proId: profile?._id,
           message: message
         })
       });
