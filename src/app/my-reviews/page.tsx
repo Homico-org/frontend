@@ -28,10 +28,8 @@ interface Review {
   _id: string;
   proId: {
     _id: string;
-    userId: {
-      name: string;
-      avatar?: string;
-    };
+    name: string;
+    avatar?: string;
     title: string;
   };
   projectId?: {
@@ -52,10 +50,8 @@ interface PendingReview {
   };
   proId: {
     _id: string;
-    userId: {
-      name: string;
-      avatar?: string;
-    };
+    name: string;
+    avatar?: string;
     title: string;
   };
   completedAt: string;
