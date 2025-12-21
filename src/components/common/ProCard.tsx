@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
-import { ProProfile, ProStatus } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { ProProfile, ProStatus } from '@/types';
+import Link from 'next/link';
 import { useState } from 'react';
 
 const STATUS_CONFIG = {
@@ -36,6 +36,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
   const status = profile.status || (profile.isAvailable ? ProStatus.ACTIVE : ProStatus.AWAY);
 
   const getCategoryLabel = (category: string) => {
+    if (!category) return '';
     const translated = t(`categories.${category}`);
     if (translated === `categories.${category}`) {
       return category
