@@ -8,11 +8,39 @@ import {
   CountryCode,
   useLanguage,
 } from "@/contexts/LanguageContext";
-import { useAnalytics, AnalyticsEvent } from "@/hooks/useAnalytics";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import Image from "next/image";
 import Link from "next/link";
+import Script from "next/script";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+
+// Google OAuth types - using type assertion to avoid conflicts with google maps types
+interface GoogleAccountsId {
+  initialize: (config: {
+    client_id: string;
+    callback: (response: { credential: string }) => void;
+    auto_select?: boolean;
+  }) => void;
+  prompt: () => void;
+  renderButton: (
+    element: HTMLElement,
+    options: {
+      theme?: 'outline' | 'filled_blue' | 'filled_black';
+      size?: 'large' | 'medium' | 'small';
+      text?: 'signin_with' | 'signup_with' | 'continue_with' | 'signin';
+      shape?: 'rectangular' | 'pill' | 'circle' | 'square';
+      width?: number;
+    }
+  ) => void;
+}
+
+interface GoogleUserData {
+  email: string;
+  name: string;
+  picture?: string;
+  googleId: string;
+}
 
 // Step configuration
 type RegistrationStep = 'account' | 'category' | 'services' | 'review';
@@ -55,7 +83,6 @@ function Logo({ className = "" }: { className?: string }) {
   return (
     <Link href="/" className={`flex items-center gap-2 ${className}`}>
       <Image src="/favicon.svg" alt="Homico" width={32} height={32} className="h-8 w-auto" />
-      <span className="text-xl font-semibold text-[var(--color-text-primary)]">Homico</span>
     </Link>
   );
 }
@@ -112,6 +139,12 @@ function RegisterContent() {
   const [resendTimer, setResendTimer] = useState(0);
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  // Google OAuth state
+  const [googleUser, setGoogleUser] = useState<GoogleUserData | null>(null);
+  const [showGooglePhoneVerification, setShowGooglePhoneVerification] = useState(false);
+  const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
+  const googleButtonRef = useRef<HTMLDivElement>(null);
+
   // Category icons mapping
   const categoryIcons: Record<string, React.ReactNode> = {
     architects: (
@@ -142,6 +175,205 @@ function RegisterContent() {
       return () => clearTimeout(timer);
     }
   }, [resendTimer]);
+
+  // Decode JWT token to get user info
+  const decodeJwt = (token: string): { email: string; name: string; picture?: string; sub: string } | null => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch {
+      return null;
+    }
+  };
+
+  // Handle Google Sign In callback
+  const handleGoogleCallback = useCallback((response: { credential: string }) => {
+    const decoded = decodeJwt(response.credential);
+    if (decoded) {
+      setGoogleUser({
+        email: decoded.email,
+        name: decoded.name,
+        picture: decoded.picture,
+        googleId: decoded.sub,
+      });
+      setFormData(prev => ({
+        ...prev,
+        fullName: decoded.name,
+        email: decoded.email,
+      }));
+      setAgreedToTerms(true);
+      setShowGooglePhoneVerification(true);
+    } else {
+      setError(locale === "ka" ? "Google-ით შესვლა ვერ მოხერხდა" : "Failed to sign in with Google");
+    }
+  }, [locale]);
+
+  // Initialize Google Sign In
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const googleAccounts = (window as any)?.google?.accounts?.id as GoogleAccountsId | undefined;
+
+    if (googleScriptLoaded && googleAccounts && googleButtonRef.current) {
+      const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+      if (!clientId) {
+        console.warn('Google Client ID not configured');
+        return;
+      }
+
+      googleAccounts.initialize({
+        client_id: clientId,
+        callback: handleGoogleCallback,
+      });
+
+      googleAccounts.renderButton(googleButtonRef.current, {
+        theme: 'outline',
+        size: 'large',
+        text: 'signup_with',
+        shape: 'rectangular',
+        width: 300,
+      });
+    }
+  }, [googleScriptLoaded, handleGoogleCallback]);
+
+  // Handle Google OAuth registration completion
+  const submitGoogleRegistration = async () => {
+    if (!googleUser) return;
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/google-register`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            googleId: googleUser.googleId,
+            email: googleUser.email,
+            name: googleUser.name,
+            picture: googleUser.picture,
+            phone: `${countries[phoneCountry].phonePrefix}${formData.phone}`,
+            role: userType,
+            city: formData.city || undefined,
+            selectedCategories: userType === "pro" ? formData.selectedCategories : undefined,
+            selectedSubcategories: userType === "pro" ? formData.selectedSubcategories : undefined,
+            isPhoneVerified: true,
+          }),
+        }
+      );
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Registration failed");
+
+      login(data.access_token, data.user);
+      trackEvent(
+        data.user.role === 'pro' ? AnalyticsEvent.REGISTER_PRO : AnalyticsEvent.REGISTER_CLIENT,
+        { userRole: data.user.role, authMethod: 'google' }
+      );
+
+      if (data.user.role === "pro") {
+        sessionStorage.setItem(
+          "proRegistrationData",
+          JSON.stringify({
+            categories: formData.selectedCategories,
+            subcategories: formData.selectedSubcategories,
+            services: services.length > 0 ? services : undefined,
+            tags: selectedTags.length > 0 ? selectedTags : undefined,
+          })
+        );
+        router.push("/pro/profile-setup");
+      } else {
+        router.push("/browse");
+      }
+    } catch (err: any) {
+      setError(err.message || "Registration failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle Google phone verification and OTP
+  const handleGooglePhoneSubmit = async () => {
+    setError("");
+    setIsLoading(true);
+
+    try {
+      // Check if phone exists
+      const phoneCheck = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/check-exists?field=phone&value=${encodeURIComponent(countries[phoneCountry].phonePrefix + formData.phone)}`
+      ).then((r) => r.json());
+
+      if (phoneCheck.exists) {
+        setError(locale === "ka" ? "ეს ტელეფონის ნომერი უკვე რეგისტრირებულია" : "This phone number is already registered");
+        setIsLoading(false);
+        return;
+      }
+
+      // Send OTP
+      const identifier = `${countries[phoneCountry].phonePrefix}${formData.phone}`;
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/verification/send-otp`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ identifier, type: "phone" }),
+        }
+      );
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Failed to send verification code");
+
+      setResendTimer(60);
+      setShowVerification(true);
+    } catch (err: any) {
+      setError(err.message || "Failed to send verification code");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Verify OTP for Google registration
+  const verifyGoogleOtp = async (otpCode?: string) => {
+    setIsLoading(true);
+    setError("");
+    try {
+      const identifier = `${countries[phoneCountry].phonePrefix}${formData.phone}`;
+      const code = otpCode || phoneOtp.join("");
+
+      if (code.length !== 4) {
+        throw new Error(locale === "ka" ? "შეიყვანეთ 4-ნიშნა კოდი" : "Please enter 4-digit code");
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/verification/verify-otp`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ identifier, code, type: "phone" }),
+        }
+      );
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Invalid verification code");
+
+      setShowVerification(false);
+      await submitGoogleRegistration();
+    } catch (err: any) {
+      setError(err.message || "Verification failed");
+      setPhoneOtp(["", "", "", ""]);
+      otpInputRefs.current[0]?.focus();
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData({ ...formData, [field]: value });
@@ -320,7 +552,9 @@ function RegisterContent() {
     const newOtp = [...otp];
     newOtp[index] = value.slice(-1);
     if (newOtp.every((digit) => digit !== "") && newOtp.length === 4) {
-      setTimeout(() => verifyOtp(newOtp.join("")), 100);
+      // Use Google OTP verification if user signed in with Google
+      const verifyFn = googleUser ? verifyGoogleOtp : verifyOtp;
+      setTimeout(() => verifyFn(newOtp.join("")), 100);
     }
   };
 
@@ -499,7 +733,7 @@ function RegisterContent() {
 
           <div className="mt-4 text-center">
             <button
-              onClick={sendOtp}
+              onClick={googleUser ? handleGooglePhoneSubmit : sendOtp}
               disabled={resendTimer > 0 || isLoading}
               className="text-sm font-medium text-[#C4735B] hover:text-[#A85D47] disabled:text-neutral-400 transition-colors"
             >
@@ -513,9 +747,215 @@ function RegisterContent() {
     );
   }
 
+  // GOOGLE PHONE VERIFICATION - Shown after Google sign in
+  if (showGooglePhoneVerification && googleUser) {
+    return (
+      <>
+        <Script
+          src="https://accounts.google.com/gsi/client"
+          onLoad={() => setGoogleScriptLoaded(true)}
+        />
+        <div className="min-h-screen bg-[#FAFAF9] flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-neutral-100 p-6">
+            {/* Back button */}
+            <button
+              onClick={() => {
+                setShowGooglePhoneVerification(false);
+                setGoogleUser(null);
+                setShowVerification(false);
+                setPhoneOtp(["", "", "", ""]);
+                setError("");
+              }}
+              className="mb-4 flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              {locale === "ka" ? "უკან" : "Back"}
+            </button>
+
+            {/* Google user info */}
+            <div className="text-center mb-6">
+              {googleUser.picture && (
+                <img
+                  src={googleUser.picture}
+                  alt=""
+                  className="w-16 h-16 rounded-full mx-auto mb-3 border-2 border-[#C4735B]/20"
+                />
+              )}
+              <h2 className="text-lg font-semibold text-neutral-900 mb-1">
+                {locale === "ka" ? `გამარჯობა, ${googleUser.name}!` : `Hello, ${googleUser.name}!`}
+              </h2>
+              <p className="text-xs text-neutral-500">{googleUser.email}</p>
+            </div>
+
+            {!showVerification ? (
+              <>
+                <div className="mb-4">
+                  <h3 className="text-sm font-medium text-neutral-900 mb-2">
+                    {locale === "ka" ? "დაადასტურე ტელეფონის ნომერი" : "Verify your phone number"}
+                  </h3>
+                  <p className="text-xs text-neutral-500 mb-4">
+                    {locale === "ka"
+                      ? "რეგისტრაციის დასასრულებლად საჭიროა ტელეფონის ნომრის დადასტურება."
+                      : "Phone verification is required to complete registration."}
+                  </p>
+                </div>
+
+                {error && (
+                  <div className="mb-4 p-2 rounded-lg bg-red-50 border border-red-100">
+                    <p className="text-xs text-red-600">{error}</p>
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
+                      {locale === "ka" ? "ტელეფონი" : "Phone"} *
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex items-center gap-1.5 px-2 py-2 rounded-lg border border-neutral-200 bg-neutral-50 flex-shrink-0">
+                        <span className="text-sm">{countries[phoneCountry].flag}</span>
+                        <span className="text-xs text-neutral-600">{countries[phoneCountry].phonePrefix}</span>
+                      </div>
+                      <input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => handleInputChange("phone", e.target.value.replace(/\D/g, ""))}
+                        placeholder="555 123 456"
+                        className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* User type selection for pro */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setUserType('client')}
+                      className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium border transition-all ${
+                        userType === 'client'
+                          ? 'bg-[#C4735B] text-white border-[#C4735B]'
+                          : 'bg-white text-neutral-700 border-neutral-200 hover:border-neutral-300'
+                      }`}
+                    >
+                      {locale === "ka" ? "კლიენტი" : "Client"}
+                    </button>
+                    <button
+                      onClick={() => setUserType('pro')}
+                      className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium border transition-all ${
+                        userType === 'pro'
+                          ? 'bg-[#C4735B] text-white border-[#C4735B]'
+                          : 'bg-white text-neutral-700 border-neutral-200 hover:border-neutral-300'
+                      }`}
+                    >
+                      {locale === "ka" ? "პროფესიონალი" : "Professional"}
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={handleGooglePhoneSubmit}
+                    disabled={isLoading || !formData.phone}
+                    className="w-full py-2.5 rounded-lg bg-[#C4735B] hover:bg-[#A85D47] disabled:bg-neutral-200 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                  >
+                    {isLoading ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        <span>{locale === "ka" ? "..." : "..."}</span>
+                      </>
+                    ) : (
+                      <span>{locale === "ka" ? "კოდის გაგზავნა" : "Send verification code"}</span>
+                    )}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-center mb-4">
+                  <h3 className="text-sm font-medium text-neutral-900 mb-1">
+                    {locale === "ka" ? "შეიყვანე კოდი" : "Enter verification code"}
+                  </h3>
+                  <p className="text-xs text-neutral-500">
+                    {locale === "ka" ? "კოდი გაიგზავნა ნომერზე:" : "Code sent to:"}{" "}
+                    <span className="font-medium text-neutral-700">
+                      {countries[phoneCountry].phonePrefix}{formData.phone}
+                    </span>
+                  </p>
+                </div>
+
+                {error && (
+                  <div className="mb-4 p-2 rounded-lg bg-red-50 border border-red-100">
+                    <p className="text-xs text-red-600">{error}</p>
+                  </div>
+                )}
+
+                <div className="flex justify-center gap-2 mb-4">
+                  {[0, 1, 2, 3].map((index) => (
+                    <input
+                      key={index}
+                      ref={(el) => { otpInputRefs.current[index] = el; }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={phoneOtp[index]}
+                      onChange={(e) => handleOtpChange(index, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(e, index)}
+                      className={`w-12 h-12 text-center text-xl font-semibold rounded-lg border-2 transition-all outline-none ${
+                        phoneOtp[index] ? 'border-[#C4735B] bg-[#C4735B]/5' : 'border-neutral-200 bg-white'
+                      } focus:border-[#C4735B] focus:bg-[#C4735B]/5`}
+                    />
+                  ))}
+                </div>
+
+                {isLoading && (
+                  <div className="flex items-center justify-center gap-2 py-2">
+                    <svg className="animate-spin h-4 w-4 text-[#C4735B]" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    <span className="text-xs text-neutral-500">{locale === "ka" ? "მოწმდება..." : "Verifying..."}</span>
+                  </div>
+                )}
+
+                <div className="text-center">
+                  <button
+                    onClick={() => {
+                      setShowVerification(false);
+                      setPhoneOtp(["", "", "", ""]);
+                    }}
+                    className="text-xs text-neutral-500 hover:text-neutral-700 mr-4"
+                  >
+                    {locale === "ka" ? "ნომრის შეცვლა" : "Change number"}
+                  </button>
+                  <button
+                    onClick={handleGooglePhoneSubmit}
+                    disabled={resendTimer > 0 || isLoading}
+                    className="text-xs font-medium text-[#C4735B] hover:text-[#A85D47] disabled:text-neutral-400 transition-colors"
+                  >
+                    {resendTimer > 0
+                      ? `${locale === "ka" ? "თავიდან" : "Resend"} (${resendTimer}s)`
+                      : locale === "ka" ? "თავიდან გაგზავნა" : "Resend code"}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </>
+    );
+  }
+
   // CLIENT REGISTRATION - Simple single-page form
   if (userType === 'client' && currentStep === 'account') {
     return (
+      <>
+      <Script
+        src="https://accounts.google.com/gsi/client"
+        onLoad={() => setGoogleScriptLoaded(true)}
+      />
       <div className="min-h-screen bg-[#FAFAF9]">
         {/* Header */}
         <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-neutral-100">
@@ -612,26 +1052,27 @@ function RegisterContent() {
               <div className="bg-white rounded-2xl shadow-lg border border-neutral-100 p-5">
                 {/* Social login buttons */}
                 <div className="space-y-2 mb-4">
-                  <button className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 transition-colors">
-                    <svg className="w-4 h-4" viewBox="0 0 24 24">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    <span className="text-xs font-medium text-neutral-700">
-                      {locale === "ka" ? "Google-ით" : "Continue with Google"}
-                    </span>
-                  </button>
-
-                  <button className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#1877F2] hover:bg-[#166FE5] transition-colors">
-                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                    </svg>
-                    <span className="text-xs font-medium text-white">
-                      {locale === "ka" ? "Facebook-ით" : "Continue with Facebook"}
-                    </span>
-                  </button>
+                  {/* Google Sign In Button */}
+                  <div
+                    ref={googleButtonRef}
+                    className="flex justify-center [&>div]:!w-full"
+                  />
+                  {!googleScriptLoaded && (
+                    <button
+                      disabled
+                      className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-neutral-200 bg-white text-neutral-400"
+                    >
+                      <svg className="w-4 h-4" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                      </svg>
+                      <span className="text-xs font-medium">
+                        {locale === "ka" ? "იტვირთება..." : "Loading..."}
+                      </span>
+                    </button>
+                  )}
                 </div>
 
                 {/* Divider */}
@@ -798,6 +1239,7 @@ function RegisterContent() {
           </div>
         </main>
       </div>
+      </>
     );
   }
 
