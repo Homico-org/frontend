@@ -1,74 +1,76 @@
-'use client';
+"use client";
 
-import { useLanguage } from '@/contexts/LanguageContext';
-import { ProProfile, ProStatus } from '@/types';
-import Link from 'next/link';
-import { useState } from 'react';
+import { useLanguage } from "@/contexts/LanguageContext";
+import { ProProfile, ProStatus } from "@/types";
+import Link from "next/link";
+import { useState } from "react";
 
 const STATUS_CONFIG = {
   [ProStatus.ACTIVE]: {
-    label: { en: 'Available', ka: 'თავისუფალი' },
-    color: 'bg-emerald-500',
+    label: { en: "Available", ka: "თავისუფალი" },
+    color: "bg-emerald-500",
   },
   [ProStatus.BUSY]: {
-    label: { en: 'Busy', ka: 'დაკავებული' },
-    color: 'bg-amber-500',
+    label: { en: "Busy", ka: "დაკავებული" },
+    color: "bg-amber-500",
   },
   [ProStatus.AWAY]: {
-    label: { en: 'Away', ka: 'არ არის' },
-    color: 'bg-neutral-400',
+    label: { en: "Away", ka: "არ არის" },
+    color: "bg-neutral-400",
   },
 };
 
 interface ProCardProps {
   profile: ProProfile;
-  variant?: 'default' | 'compact' | 'horizontal';
+  variant?: "default" | "compact" | "horizontal";
   onLike?: () => void;
   showLikeButton?: boolean;
 }
 
-export default function ProCard({ profile, variant = 'default', onLike, showLikeButton = true }: ProCardProps) {
+export default function ProCard({
+  profile,
+  variant = "default",
+  onLike,
+  showLikeButton = true,
+}: ProCardProps) {
   const { t, locale } = useLanguage();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-
-  const proUser = typeof profile.userId === 'object' ? profile.userId : null;
-  const status = profile.status || (profile.isAvailable ? ProStatus.ACTIVE : ProStatus.AWAY);
-
   const getCategoryLabel = (category: string) => {
-    if (!category) return '';
+    if (!category) return "";
     const translated = t(`categories.${category}`);
     if (translated === `categories.${category}`) {
       return category
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
+        .split("-")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
     }
     return translated;
   };
 
-  const currentStatus = STATUS_CONFIG[status] || STATUS_CONFIG[ProStatus.AWAY];
-  const isTopRated = profile.avgRating >= 4.8 && profile.totalReviews >= 5;
+  const currentStatus =
+    STATUS_CONFIG[profile.status || ProStatus.AWAY] ||
+    STATUS_CONFIG[ProStatus.AWAY];
+  const isTopRated = profile.avgRating >= 4.8 && profile.completedProjects >= 5;
   const isPremium = profile.isPremium || false;
 
   // Avatar priority
-  const isProfileAvatarBroken = profile.avatar?.includes('/uploads/');
-  const rawAvatarUrl = (!isProfileAvatarBroken && profile.avatar) || proUser?.avatar;
+  const isProfileAvatarBroken = profile.avatar?.includes("/uploads/");
+  const rawAvatarUrl =
+    (!isProfileAvatarBroken && profile.avatar) || profile?.avatar;
   const avatarUrl = rawAvatarUrl
-    ? (rawAvatarUrl.startsWith('http') || rawAvatarUrl.startsWith('data:')
-        ? rawAvatarUrl
-        : `${process.env.NEXT_PUBLIC_API_URL}${rawAvatarUrl}`)
+    ? rawAvatarUrl.startsWith("http") || rawAvatarUrl.startsWith("data:")
+      ? rawAvatarUrl
+      : `${process.env.NEXT_PUBLIC_API_URL}${rawAvatarUrl}`
     : null;
 
-  const displayName = proUser?.name || profile.title || 'Professional';
-  const completedJobs = (profile.completedJobs || 0) + (profile.externalCompletedJobs || 0);
+  const completedJobs = profile.completedJobs || 0;
 
   // Default/Compact variant
-  if (variant === 'compact' || variant === 'default') {
+  if (variant === "compact" || variant === "default") {
     return (
       <Link href={`/professionals/${profile._id}`} className="group block">
         <div className="bg-white dark:bg-neutral-900 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 border border-neutral-100 dark:border-neutral-800 p-4">
-
           {/* Top Row - Badges & Like */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-1.5">
@@ -79,7 +81,11 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
               )}
               {isTopRated && (
                 <span className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400">
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <svg
+                    className="w-3 h-3"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
                   Top
@@ -87,7 +93,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
               )}
             </div>
 
-            {showLikeButton && (
+            {/* {showLikeButton && (
               <button
                 onClick={(e) => {
                   e.preventDefault();
@@ -97,16 +103,20 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
                 className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
               >
                 <svg
-                  className={`w-4 h-4 ${profile.isLiked ? 'text-amber-500' : 'text-neutral-400'}`}
-                  fill={profile.isLiked ? 'currentColor' : 'none'}
+                  className={`w-4 h-4 ${likeCount > 0 ? "text-amber-500" : "text-neutral-400"}`}
+                  fill={likeCount > 0 ? "currentColor" : "none"}
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                   strokeWidth="2"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"
+                  />
                 </svg>
               </button>
-            )}
+            )} */}
           </div>
 
           {/* Avatar - Centered */}
@@ -116,63 +126,88 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
                 {avatarUrl && !imageError ? (
                   <img
                     src={avatarUrl}
-                    alt={displayName}
-                    className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                    alt={profile.name}
+                    className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
                     onLoad={() => setImageLoaded(true)}
                     onError={() => setImageError(true)}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-2xl font-semibold text-neutral-400 dark:text-neutral-500">
-                    {displayName.charAt(0)}
+                    {profile.name.charAt(0)}
                   </div>
                 )}
               </div>
               {/* Status indicator */}
-              <span className={`absolute bottom-0 right-0 w-5 h-5 rounded-full ${currentStatus.color} border-2 border-white dark:border-neutral-900`} />
+              <span
+                className={`absolute bottom-0 right-0 w-5 h-5 rounded-full ${currentStatus.color} border-2 border-white dark:border-neutral-900`}
+              />
             </div>
           </div>
 
           {/* Name & Title - Centered */}
           <div className="text-center mb-3">
             <h3 className="font-semibold text-[15px] text-neutral-900 dark:text-white leading-snug line-clamp-1">
-              {displayName}
+              {profile.name}
             </h3>
             <p className="text-[12px] text-neutral-500 dark:text-neutral-400 line-clamp-1 mt-0.5">
-              {profile.title || getCategoryLabel(profile.categories[0])}
+              {getCategoryLabel(profile.selectedCategories[0])}
             </p>
           </div>
 
           {/* Rating */}
           <div className="flex justify-center mb-3">
             <div className="flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+              <svg
+                className="w-4 h-4 text-amber-400"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
               <span className="text-[14px] font-semibold text-neutral-900 dark:text-white">
-                {profile.avgRating > 0 ? profile.avgRating.toFixed(1) : '—'}
+                {profile.avgRating > 0 ? profile.avgRating.toFixed(1) : "—"}
               </span>
-              {profile.totalReviews > 0 && (
-                <span className="text-[12px] text-neutral-400">
-                  ({profile.totalReviews})
-                </span>
-              )}
             </div>
           </div>
 
           {/* Stats Row */}
           <div className="flex items-center justify-center gap-4 mb-3 text-[12px] text-neutral-500 dark:text-neutral-400">
             <div className="flex items-center gap-1">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-3.5 h-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
-              <span>{profile.yearsExperience || 0} {locale === 'ka' ? 'წ' : 'yr'}</span>
+              <span>
+                {profile.yearsExperience || 0} {locale === "ka" ? "წ" : "yr"}
+              </span>
             </div>
             <div className="w-px h-3 bg-neutral-200 dark:bg-neutral-700" />
             <div className="flex items-center gap-1">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-3.5 h-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
-              <span>{completedJobs} {locale === 'ka' ? 'პრ' : 'jobs'}</span>
+              <span>
+                {completedJobs} {locale === "ka" ? "პრ" : "jobs"}
+              </span>
             </div>
           </div>
 
@@ -201,7 +236,7 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
   }
 
   // Horizontal variant
-  if (variant === 'horizontal') {
+  if (variant === "horizontal") {
     return (
       <Link href={`/professionals/${profile._id}`} className="group block">
         <div className="bg-white dark:bg-neutral-900 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 border border-neutral-100 dark:border-neutral-800 p-3">
@@ -212,24 +247,26 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
                 {avatarUrl && !imageError ? (
                   <img
                     src={avatarUrl}
-                    alt={displayName}
+                    alt={profile.name}
                     className="w-full h-full object-cover"
                     onError={() => setImageError(true)}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-lg font-semibold text-neutral-400">
-                    {displayName.charAt(0)}
+                    {profile.name.charAt(0)}
                   </div>
                 )}
               </div>
-              <span className={`absolute bottom-0 right-0 w-4 h-4 rounded-full ${currentStatus.color} border-2 border-white dark:border-neutral-900`} />
+              <span
+                className={`absolute bottom-0 right-0 w-4 h-4 rounded-full ${currentStatus.color} border-2 border-white dark:border-neutral-900`}
+              />
             </div>
 
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <h3 className="font-semibold text-[13px] text-neutral-900 dark:text-white truncate">
-                  {displayName}
+                  {profile.name}
                 </h3>
                 {isPremium && (
                   <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">
@@ -238,24 +275,32 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
                 )}
               </div>
               <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate mb-1">
-                {profile.title || getCategoryLabel(profile.categories[0])}
+                {getCategoryLabel(profile.selectedCategories[0])}
               </p>
               <div className="flex items-center gap-2 text-[11px]">
                 <div className="flex items-center gap-1">
-                  <svg className="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                  <svg
+                    className="w-3.5 h-3.5 text-amber-400"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
                   <span className="font-semibold text-neutral-700 dark:text-neutral-300">
-                    {profile.avgRating > 0 ? profile.avgRating.toFixed(1) : '—'}
+                    {profile.avgRating > 0 ? profile.avgRating.toFixed(1) : "—"}
                   </span>
                 </div>
-                <span className="text-neutral-400">{profile.yearsExperience || 0} {locale === 'ka' ? 'წ' : 'yr'}</span>
-                <span className="text-neutral-400">{completedJobs} {locale === 'ka' ? 'პრ' : 'jobs'}</span>
+                <span className="text-neutral-400">
+                  {profile.yearsExperience || 0} {locale === "ka" ? "წ" : "yr"}
+                </span>
+                <span className="text-neutral-400">
+                  {completedJobs} {locale === "ka" ? "პრ" : "jobs"}
+                </span>
               </div>
             </div>
 
             {/* Save button */}
-            {showLikeButton && (
+            {/* {showLikeButton && (
               <button
                 onClick={(e) => {
                   e.preventDefault();
@@ -265,16 +310,20 @@ export default function ProCard({ profile, variant = 'default', onLike, showLike
                 className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors flex-shrink-0"
               >
                 <svg
-                  className={`w-4 h-4 ${profile.isLiked ? 'text-amber-500' : 'text-neutral-400'}`}
-                  fill={profile.isLiked ? 'currentColor' : 'none'}
+                  className={`w-4 h-4 ${likeCount > 0 ? "text-amber-500" : "text-neutral-400"}`}
+                  fill={likeCount > 0 ? "currentColor" : "none"}
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                   strokeWidth="2"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"
+                  />
                 </svg>
               </button>
-            )}
+            )} */}
           </div>
         </div>
       </Link>

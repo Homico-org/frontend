@@ -12,14 +12,15 @@ import {
   Clock,
   Edit3,
   MessageSquare,
-  Plus,
   Trash2,
   FileText,
   ChevronRight,
+  X,
+  AlertTriangle,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 
 // Terracotta accent - matching design
 const ACCENT_COLOR = '#C4735B';
@@ -105,11 +106,11 @@ function MyJobsPageContent() {
   const router = useRouter();
 
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isFilterLoading, setIsFilterLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [deletingJobId, setDeletingJobId] = useState<string | null>(null);
-
-  const hasFetched = useRef(false);
+  const [deleteModalJob, setDeleteModalJob] = useState<Job | null>(null);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -117,10 +118,15 @@ function MyJobsPageContent() {
     }
   }, [authLoading, isAuthenticated, router]);
 
-  const fetchMyJobs = useCallback(async () => {
+  const fetchMyJobs = useCallback(async (status: StatusFilter, isInitial: boolean = false) => {
     try {
-      setIsLoading(true);
-      const response = await api.get('/jobs/my-jobs');
+      if (isInitial) {
+        setIsInitialLoading(true);
+      } else {
+        setIsFilterLoading(true);
+      }
+      const params = status !== 'all' ? `?status=${status}` : '';
+      const response = await api.get(`/jobs/my-jobs${params}`);
       setJobs(response.data);
     } catch (err: any) {
       console.error('Failed to fetch jobs:', err);
@@ -129,22 +135,30 @@ function MyJobsPageContent() {
         locale === 'ka' ? 'პროექტების ჩატვირთვა ვერ მოხერხდა' : 'Failed to load projects'
       );
     } finally {
-      setIsLoading(false);
+      setIsInitialLoading(false);
+      setIsFilterLoading(false);
     }
   }, [locale, toast]);
 
+  // Initial load
   useEffect(() => {
-    if (isAuthenticated && !hasFetched.current) {
-      hasFetched.current = true;
-      fetchMyJobs();
+    if (isAuthenticated && isInitialLoading) {
+      fetchMyJobs(statusFilter, true);
     }
-  }, [isAuthenticated, fetchMyJobs]);
+  }, [isAuthenticated]);
+
+  // Filter change
+  useEffect(() => {
+    if (isAuthenticated && !isInitialLoading) {
+      fetchMyJobs(statusFilter, false);
+    }
+  }, [statusFilter]);
 
   // Delete job handler
-  const handleDeleteJob = async (jobId: string) => {
-    if (!confirm(locale === 'ka' ? 'ნამდვილად გსურთ წაშლა?' : 'Are you sure you want to delete this job?')) {
-      return;
-    }
+  const handleDeleteJob = async () => {
+    if (!deleteModalJob) return;
+
+    const jobId = deleteModalJob._id;
 
     try {
       setDeletingJobId(jobId);
@@ -154,6 +168,7 @@ function MyJobsPageContent() {
         locale === 'ka' ? 'წარმატება' : 'Success',
         locale === 'ka' ? 'პროექტი წაიშალა' : 'Job deleted successfully'
       );
+      setDeleteModalJob(null);
     } catch (err) {
       toast.error(
         locale === 'ka' ? 'შეცდომა' : 'Error',
@@ -164,22 +179,6 @@ function MyJobsPageContent() {
     }
   };
 
-  // Filter jobs - map in_progress to hired
-  const filteredJobs = jobs.filter(job => {
-    if (statusFilter === 'all') return true;
-    if (statusFilter === 'open') return job.status === 'open';
-    if (statusFilter === 'hired') return job.status === 'in_progress';
-    if (statusFilter === 'closed') return job.status === 'completed' || job.status === 'cancelled';
-    return true;
-  });
-
-  // Stats
-  const stats = {
-    all: jobs.length,
-    open: jobs.filter(j => j.status === 'open').length,
-    hired: jobs.filter(j => j.status === 'in_progress').length,
-    closed: jobs.filter(j => j.status === 'completed' || j.status === 'cancelled').length,
-  };
 
   // Get category label
   const getCategoryLabel = (category: string) => {
@@ -187,12 +186,12 @@ function MyJobsPageContent() {
     return label ? label[locale as 'en' | 'ka'] : category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  // Loading skeleton
-  if (authLoading || isLoading) {
+  // Initial loading skeleton
+  if (authLoading || isInitialLoading) {
     return (
       <div className="min-h-screen bg-white dark:bg-neutral-950">
         <Header />
-      <HeaderSpacer />
+        <HeaderSpacer />
         <div className="max-w-6xl mx-auto px-6 py-8">
           <div className="w-32 h-8 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse mb-2" />
           <div className="w-64 h-5 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse mb-8" />
@@ -220,40 +219,30 @@ function MyJobsPageContent() {
       {/* ==================== MAIN CONTENT ==================== */}
       <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-8">
         {/* ==================== PAGE TITLE ZONE ==================== */}
-        <div className="flex items-start justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-1">
-              {locale === 'ka' ? 'ჩემი პროექტები' : 'My Jobs'}
-            </h1>
-            <p className="text-neutral-500 dark:text-neutral-400 text-sm">
-              {locale === 'ka'
-                ? 'მართე შენი აქტიური მოთხოვნები და შეთავაზებები.'
-                : 'Manage your active listings and proposals.'}
-            </p>
-          </div>
-
-          <Link
-            href="/post-job"
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90 shadow-sm"
-            style={{ backgroundColor: ACCENT_COLOR }}
-          >
-            <Plus className="w-4 h-4" />
-            {locale === 'ka' ? 'ახალი პროექტი' : 'Post a New Job'}
-          </Link>
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-1">
+            {locale === 'ka' ? 'ჩემი პროექტები' : 'My Jobs'}
+          </h1>
+          <p className="text-neutral-500 dark:text-neutral-400 text-sm">
+            {locale === 'ka'
+              ? 'მართე შენი აქტიური მოთხოვნები და შეთავაზებები.'
+              : 'Manage your active listings and proposals.'}
+          </p>
         </div>
 
         {/* ==================== TABS FILTER ZONE ==================== */}
         <div className="flex items-center gap-2 mb-8">
           {[
-            { key: 'all' as StatusFilter, label: locale === 'ka' ? 'ყველა' : 'All Jobs', count: null },
-            { key: 'open' as StatusFilter, label: locale === 'ka' ? 'ღია' : 'Open', count: stats.open },
-            { key: 'hired' as StatusFilter, label: locale === 'ka' ? 'დაქირავებული' : 'Hired', count: stats.hired },
-            { key: 'closed' as StatusFilter, label: locale === 'ka' ? 'დახურული' : 'Closed', count: null },
+            { key: 'all' as StatusFilter, label: locale === 'ka' ? 'ყველა' : 'All Jobs' },
+            { key: 'open' as StatusFilter, label: locale === 'ka' ? 'ღია' : 'Open' },
+            { key: 'hired' as StatusFilter, label: locale === 'ka' ? 'დაქირავებული' : 'Hired' },
+            { key: 'closed' as StatusFilter, label: locale === 'ka' ? 'დახურული' : 'Closed' },
           ].map(tab => (
             <button
               key={tab.key}
               onClick={() => setStatusFilter(tab.key)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+              disabled={isFilterLoading}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all disabled:opacity-50 ${
                 statusFilter === tab.key
                   ? 'text-white shadow-sm'
                   : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700'
@@ -261,21 +250,18 @@ function MyJobsPageContent() {
               style={statusFilter === tab.key ? { backgroundColor: ACCENT_COLOR } : {}}
             >
               {tab.label}
-              {tab.count !== null && tab.count > 0 && (
-                <span className={`text-xs px-1.5 py-0.5 rounded ${
-                  statusFilter === tab.key
-                    ? 'bg-white/20'
-                    : 'bg-neutral-100 dark:bg-neutral-800'
-                }`}>
-                  {tab.count}
-                </span>
-              )}
             </button>
           ))}
         </div>
 
         {/* ==================== JOB CARDS ZONE ==================== */}
-        {filteredJobs.length === 0 ? (
+        {isFilterLoading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-44 bg-neutral-50 dark:bg-neutral-900 rounded-2xl animate-pulse border border-neutral-100 dark:border-neutral-800" />
+            ))}
+          </div>
+        ) : jobs.length === 0 ? (
           <div className="text-center py-20">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
               <FileText className="w-7 h-7 text-neutral-400" />
@@ -283,23 +269,15 @@ function MyJobsPageContent() {
             <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
               {locale === 'ka' ? 'პროექტები არ მოიძებნა' : 'No jobs found'}
             </h3>
-            <p className="text-neutral-500 dark:text-neutral-400 mb-6 text-sm">
-              {locale === 'ka'
-                ? 'შექმენი პირველი პროექტი და დაიწყე შეთავაზებების მიღება'
-                : 'Create your first project and start receiving proposals'}
+            <p className="text-neutral-500 dark:text-neutral-400 text-sm">
+              {statusFilter === 'all'
+                ? (locale === 'ka' ? 'შექმენი პირველი პროექტი და დაიწყე შეთავაზებების მიღება' : 'Create your first project and start receiving proposals')
+                : (locale === 'ka' ? 'ამ ფილტრით პროექტები ვერ მოიძებნა' : 'No jobs found with this filter')}
             </p>
-            <Link
-              href="/post-job"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90"
-              style={{ backgroundColor: ACCENT_COLOR }}
-            >
-              <Plus className="w-4 h-4" />
-              {locale === 'ka' ? 'ახალი პროექტი' : 'Post New Job'}
-            </Link>
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredJobs.map((job) => {
+            {jobs.map((job) => {
               const firstImage = job.media?.[0]?.url || job.images?.[0];
               const isHired = job.status === 'in_progress';
               const isOpen = job.status === 'open';
@@ -394,7 +372,7 @@ function MyJobsPageContent() {
                                 <Edit3 className="w-4 h-4" />
                               </Link>
                               <button
-                                onClick={() => handleDeleteJob(job._id)}
+                                onClick={() => setDeleteModalJob(job)}
                                 disabled={deletingJobId === job._id}
                                 className="p-2 rounded-lg text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
                               >
@@ -514,30 +492,92 @@ function MyJobsPageContent() {
         )}
       </main>
 
-      {/* ==================== FOOTER ZONE ==================== */}
-      <footer className="border-t border-neutral-200 dark:border-neutral-800 mt-auto py-6 bg-white dark:bg-neutral-900">
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between text-sm text-neutral-500 dark:text-neutral-400">
-          <span>© 2024 Homico. All rights reserved.</span>
-          <div className="flex items-center gap-6">
-            <Link href="/privacy" className="hover:text-neutral-900 dark:hover:text-white transition-colors">
-              Privacy
-            </Link>
-            <Link href="/terms" className="hover:text-neutral-900 dark:hover:text-white transition-colors">
-              Terms
-            </Link>
-            <Link href="/help" className="hover:text-neutral-900 dark:hover:text-white transition-colors">
-              Help
-            </Link>
+      {/* ==================== DELETE CONFIRMATION MODAL ==================== */}
+      {deleteModalJob && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => !deletingJobId && setDeleteModalJob(null)}
+          />
+
+          {/* Modal */}
+          <div className="relative bg-white dark:bg-neutral-900 rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 border-b border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                  {locale === 'ka' ? 'პროექტის წაშლა' : 'Delete Job'}
+                </h3>
+              </div>
+              <button
+                onClick={() => !deletingJobId && setDeleteModalJob(null)}
+                disabled={!!deletingJobId}
+                className="p-2 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-5">
+              <p className="text-neutral-600 dark:text-neutral-400 mb-4">
+                {locale === 'ka'
+                  ? 'ნამდვილად გსურთ ამ პროექტის წაშლა? ეს მოქმედება შეუქცევადია.'
+                  : 'Are you sure you want to delete this job? This action cannot be undone.'}
+              </p>
+
+              {/* Job preview */}
+              <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-xl p-4">
+                <p className="font-medium text-neutral-900 dark:text-white text-sm">
+                  {deleteModalJob.title}
+                </p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">
+                  {deleteModalJob.description}
+                </p>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-3 p-5 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/30">
+              <button
+                onClick={() => setDeleteModalJob(null)}
+                disabled={!!deletingJobId}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
+              >
+                {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+              </button>
+              <button
+                onClick={handleDeleteJob}
+                disabled={!!deletingJobId}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {deletingJobId ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    {locale === 'ka' ? 'იშლება...' : 'Deleting...'}
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    {locale === 'ka' ? 'წაშლა' : 'Delete'}
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
-      </footer>
+      )}
     </div>
   );
 }
 
 export default function MyJobsPage() {
   return (
-    <AuthGuard allowedRoles={['client', 'company', 'admin']}>
+    <AuthGuard allowedRoles={['client', 'pro', 'company', 'admin']}>
       <Suspense fallback={
         <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2" style={{ borderColor: ACCENT_COLOR }} />

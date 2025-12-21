@@ -378,7 +378,7 @@ export default function PremiumPlansPage() {
                             </div>
                             <span className={`text-sm leading-relaxed ${
                               feature.included
-                                ? 'text-[var(--color-text-tertiary)] italic'
+                                ? 'text-[var(--color-text-tertiary)]'
                                 : 'text-[var(--color-text-secondary)]'
                             }`}>
                               {feature.text[locale === 'ka' ? 'ka' : 'en']}

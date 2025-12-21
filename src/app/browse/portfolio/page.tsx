@@ -17,7 +17,7 @@ export default function PortfolioPage() {
     <div>
       {/* Page Header - Matching design exactly */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2 italic">
+        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">
           {locale === 'ka' ? 'ტრენდული პორტფოლიოები' : 'Trending Portfolios'}
         </h1>
         <p className="text-neutral-500 dark:text-neutral-400 text-base">

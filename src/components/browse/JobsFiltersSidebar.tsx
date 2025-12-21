@@ -29,15 +29,6 @@ const PROPERTY_TYPES = [
   { key: 'building', label: 'Building', labelKa: 'შენობა' },
 ];
 
-// Location options
-const LOCATIONS = [
-  { key: 'all', label: 'Any', labelKa: 'ყველა' },
-  { key: 'tbilisi', label: 'Tbilisi', labelKa: 'თბილისი' },
-  { key: 'batumi', label: 'Batumi', labelKa: 'ბათუმი' },
-  { key: 'kutaisi', label: 'Kutaisi', labelKa: 'ქუთაისი' },
-  { key: 'rustavi', label: 'Rustavi', labelKa: 'რუსთავი' },
-];
-
 // Deadline filter options
 const DEADLINE_FILTERS = [
   { key: 'all', label: 'Any', labelKa: 'ყველა' },
@@ -157,14 +148,12 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
   const hasActiveFilters =
     filters.budget !== 'all' ||
     filters.propertyType !== 'all' ||
-    filters.location !== 'all' ||
     filters.deadline !== 'all' ||
     filters.showFavoritesOnly;
 
   const activeFilterCount = [
     filters.budget !== 'all' ? 1 : 0,
     filters.propertyType !== 'all' ? 1 : 0,
-    filters.location !== 'all' ? 1 : 0,
     filters.deadline !== 'all' ? 1 : 0,
     filters.showFavoritesOnly ? 1 : 0,
   ].reduce((a, b) => a + b, 0);
@@ -255,21 +244,6 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
               key={option.key}
               checked={filters.propertyType === option.key}
               onChange={() => updateFilter('propertyType', option.key)}
-              label={locale === 'ka' ? option.labelKa : option.label}
-            />
-          ))}
-        </FilterSection>
-
-        {/* Divider */}
-        <div className="h-px bg-neutral-100 dark:bg-neutral-800" />
-
-        {/* Location Section */}
-        <FilterSection title={locale === 'ka' ? 'ლოკაცია' : 'Location'}>
-          {LOCATIONS.map(option => (
-            <Checkbox
-              key={option.key}
-              checked={filters.location === option.key}
-              onChange={() => updateFilter('location', option.key)}
               label={locale === 'ka' ? option.labelKa : option.label}
             />
           ))}

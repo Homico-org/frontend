@@ -1,7 +1,7 @@
 'use client';
 
-import AuthGuard from '@/components/common/AuthGuard';
 import AppBackground from '@/components/common/AppBackground';
+import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
@@ -137,32 +137,6 @@ function MyProposalsPageContent() {
     }
   }, []);
 
-  // Filter proposals client-side
-  const filterProposals = useCallback((status: ProposalStatus, search: string) => {
-    setIsContentLoading(true);
-
-    let filtered = [...allProposals];
-
-    // Filter by status
-    if (status !== 'all') {
-      filtered = filtered.filter(p => p.status === status);
-    }
-
-    // Filter by search
-    if (search) {
-      const searchLower = search.toLowerCase();
-      filtered = filtered.filter(p => {
-        const job = p.jobId;
-        return job?.title?.toLowerCase().includes(searchLower) ||
-          job?.category?.toLowerCase().includes(searchLower) ||
-          job?.location?.toLowerCase().includes(searchLower);
-      });
-    }
-
-    setProposals(filtered);
-    setIsContentLoading(false);
-  }, [allProposals]);
-
   useEffect(() => {
     if (isAuthenticated && user?.role === 'pro' && !hasFetched.current) {
       hasFetched.current = true;
@@ -170,21 +144,45 @@ function MyProposalsPageContent() {
     }
   }, [isAuthenticated, user, fetchAllProposals]);
 
-  // Filter when status or search changes
+  // Filter proposals whenever allProposals, statusFilter, or searchQuery changes
   useEffect(() => {
-    if (!hasFetched.current || allProposals.length === 0 && isInitialLoading) return;
+    // Skip if still loading
+    if (isInitialLoading) return;
 
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
 
-    // Debounce only for search, immediate for status
+    const applyFilters = () => {
+      setIsContentLoading(true);
+
+      let filtered = [...allProposals];
+
+      // Filter by status
+      if (statusFilter !== 'all') {
+        filtered = filtered.filter(p => p.status === statusFilter);
+      }
+
+      // Filter by search
+      if (searchQuery) {
+        const searchLower = searchQuery.toLowerCase();
+        filtered = filtered.filter(p => {
+          const job = p.jobId;
+          return job?.title?.toLowerCase().includes(searchLower) ||
+            job?.category?.toLowerCase().includes(searchLower) ||
+            job?.location?.toLowerCase().includes(searchLower);
+        });
+      }
+
+      setProposals(filtered);
+      setIsContentLoading(false);
+    };
+
+    // Debounce only for search, immediate for status changes
     if (searchQuery) {
-      debounceRef.current = setTimeout(() => {
-        filterProposals(statusFilter, searchQuery);
-      }, 300);
+      debounceRef.current = setTimeout(applyFilters, 300);
     } else {
-      filterProposals(statusFilter, searchQuery);
+      applyFilters();
     }
 
     return () => {
@@ -192,7 +190,7 @@ function MyProposalsPageContent() {
         clearTimeout(debounceRef.current);
       }
     };
-  }, [statusFilter, searchQuery, filterProposals, allProposals, isInitialLoading]);
+  }, [statusFilter, searchQuery, allProposals, isInitialLoading]);
 
   const handleWithdraw = async () => {
     if (!withdrawModalId) return;

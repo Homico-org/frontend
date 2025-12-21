@@ -5,7 +5,7 @@ import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMessages } from "@/contexts/MessagesContext";
 import { useNotifications } from "@/contexts/NotificationContext";
-import { FileText, Hammer, MessageCircle, Plus } from "lucide-react";
+import { FileText, Hammer, MessageCircle, Plus, X, User, UserPlus, LogIn } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Avatar from "./Avatar";
@@ -20,7 +20,21 @@ export default function Header() {
   const { unreadCount } = useNotifications();
   const { unreadCount: unreadMessagesCount } = useMessages();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (showMobileMenu) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showMobileMenu]);
 
   // Handle click outside to close dropdown
   useEffect(() => {
@@ -41,21 +55,22 @@ export default function Header() {
     };
   }, [showDropdown]);
 
-  // Handle ESC key to close dropdown
+  // Handle ESC key to close dropdown and mobile menu
   const handleEscKey = useCallback((e: KeyboardEvent) => {
     if (e.key === "Escape") {
       setShowDropdown(false);
+      setShowMobileMenu(false);
     }
   }, []);
 
   useEffect(() => {
-    if (showDropdown) {
+    if (showDropdown || showMobileMenu) {
       document.addEventListener("keydown", handleEscKey);
     }
     return () => {
       document.removeEventListener("keydown", handleEscKey);
     };
-  }, [showDropdown, handleEscKey]);
+  }, [showDropdown, showMobileMenu, handleEscKey]);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-14 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a]">
@@ -356,24 +371,223 @@ export default function Header() {
               </div>
             </>
           ) : (
-            <div className="flex items-center gap-2">
+            <>
+              {/* Desktop: Login/Register buttons */}
+              <div className="hidden sm:flex items-center gap-2">
+                <button
+                  onClick={() => openLoginModal()}
+                  className="text-sm font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors px-3 py-2"
+                >
+                  {t("nav.login")}
+                </button>
+                <Link
+                  href="/register"
+                  className="text-sm font-medium px-3 py-2 rounded-lg border transition-colors"
+                  style={{ borderColor: ACCENT_COLOR, color: ACCENT_COLOR }}
+                >
+                  {t("nav.signUp")}
+                </Link>
+              </div>
+
+              {/* Mobile: Burger menu button */}
               <button
-                onClick={() => openLoginModal()}
-                className="text-sm font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors px-3 py-2"
+                onClick={() => setShowMobileMenu(true)}
+                className="sm:hidden flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all active:scale-95"
+                aria-label="Open menu"
               >
-                {t("nav.login")}
+                <div className="flex flex-col gap-1.5 w-5">
+                  <span className="block h-0.5 w-full rounded-full bg-neutral-600 dark:bg-neutral-400" />
+                  <span className="block h-0.5 w-3/4 rounded-full bg-neutral-600 dark:bg-neutral-400" />
+                  <span className="block h-0.5 w-1/2 rounded-full bg-neutral-600 dark:bg-neutral-400" />
+                </div>
               </button>
-              <Link
-                href="/register"
-                className="text-sm font-medium px-3 py-2 rounded-lg border transition-colors"
-                style={{ borderColor: ACCENT_COLOR, color: ACCENT_COLOR }}
-              >
-                {t("nav.signUp")}
-              </Link>
-            </div>
+            </>
           )}
         </div>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      {showMobileMenu && !isAuthenticated && (
+        <div className="fixed inset-0 z-[100] sm:hidden">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
+            onClick={() => setShowMobileMenu(false)}
+          />
+
+          {/* Slide-in Panel */}
+          <div
+            ref={mobileMenuRef}
+            className="absolute right-0 top-0 bottom-0 w-[85%] max-w-[320px] bg-white dark:bg-neutral-900 shadow-2xl animate-slide-in-right"
+            style={{
+              animation: 'slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            }}
+          >
+            {/* Menu Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: ACCENT_COLOR }}
+                >
+                  <span className="text-white font-bold text-base">ჰ</span>
+                </div>
+                <span className="font-semibold text-neutral-900 dark:text-white text-lg">
+                  ჰომიკო
+                </span>
+              </div>
+              <button
+                onClick={() => setShowMobileMenu(false)}
+                className="w-10 h-10 rounded-xl flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all active:scale-95"
+                aria-label="Close menu"
+              >
+                <X className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+              </button>
+            </div>
+
+            {/* Menu Content */}
+            <div className="flex flex-col p-5 gap-3">
+              {/* Welcome text */}
+              <div className="mb-4">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                  {locale === 'ka' ? 'კეთილი იყოს შენი მობრძანება' : 'Welcome to Homico'}
+                </p>
+                <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
+                  {locale === 'ka' ? 'შედი ან შექმენი ანგარიში' : 'Sign in or create an account'}
+                </p>
+              </div>
+
+              {/* Login Button */}
+              <button
+                onClick={() => {
+                  setShowMobileMenu(false);
+                  openLoginModal();
+                }}
+                className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all active:scale-[0.98]"
+              >
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: `${ACCENT_COLOR}15` }}
+                >
+                  <LogIn className="w-5 h-5" style={{ color: ACCENT_COLOR }} />
+                </div>
+                <div className="flex-1 text-left">
+                  <span className="block font-medium text-neutral-900 dark:text-white">
+                    {t("nav.login")}
+                  </span>
+                  <span className="block text-xs text-neutral-500 dark:text-neutral-400">
+                    {locale === 'ka' ? 'უკვე გაქვს ანგარიში?' : 'Already have an account?'}
+                  </span>
+                </div>
+                <svg className="w-5 h-5 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
+              {/* Register Button */}
+              <Link
+                href="/register"
+                onClick={() => setShowMobileMenu(false)}
+                className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl transition-all active:scale-[0.98]"
+                style={{
+                  backgroundColor: ACCENT_COLOR,
+                  boxShadow: `0 4px 14px ${ACCENT_COLOR}40`
+                }}
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/20">
+                  <UserPlus className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1 text-left">
+                  <span className="block font-medium text-white">
+                    {t("nav.signUp")}
+                  </span>
+                  <span className="block text-xs text-white/70">
+                    {locale === 'ka' ? 'შექმენი უფასო ანგარიში' : 'Create a free account'}
+                  </span>
+                </div>
+                <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3 my-4">
+                <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
+                <span className="text-xs text-neutral-400 dark:text-neutral-500">
+                  {locale === 'ka' ? 'ან' : 'or'}
+                </span>
+                <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
+              </div>
+
+              {/* Post a Job as Guest */}
+              <Link
+                href="/post-job"
+                onClick={() => setShowMobileMenu(false)}
+                className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 transition-all active:scale-[0.98]"
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-neutral-100 dark:bg-neutral-800">
+                  <Plus className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+                </div>
+                <div className="flex-1 text-left">
+                  <span className="block font-medium text-neutral-700 dark:text-neutral-300">
+                    {locale === 'ka' ? 'განცხადების დამატება' : 'Post a Job'}
+                  </span>
+                  <span className="block text-xs text-neutral-500 dark:text-neutral-500">
+                    {locale === 'ka' ? 'იპოვე სპეციალისტი' : 'Find professionals'}
+                  </span>
+                </div>
+              </Link>
+
+              {/* Browse link */}
+              <Link
+                href="/browse"
+                onClick={() => setShowMobileMenu(false)}
+                className="flex items-center gap-3 w-full px-4 py-3 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-all"
+              >
+                <svg className="w-5 h-5 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <span className="text-sm text-neutral-600 dark:text-neutral-400">
+                  {locale === 'ka' ? 'სპეციალისტების დათვალიერება' : 'Browse Professionals'}
+                </span>
+              </Link>
+            </div>
+
+            {/* Footer */}
+            <div className="absolute bottom-0 left-0 right-0 px-5 py-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50">
+              <p className="text-xs text-neutral-400 dark:text-neutral-500 text-center">
+                {locale === 'ka'
+                  ? 'იპოვე საუკეთესო სპეციალისტები საქართველოში'
+                  : 'Find the best professionals in Georgia'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CSS for animations */}
+      <style jsx>{`
+        @keyframes slideInRight {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.2s ease-out forwards;
+        }
+        .animate-slide-in-right {
+          animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+      `}</style>
     </header>
   );
 }

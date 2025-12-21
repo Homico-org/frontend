@@ -662,7 +662,7 @@ export default function PostJobPage() {
                 )}
 
                 {formData.budgetType === 'negotiable' && (
-                  <p className="text-sm text-neutral-500 italic">
+                  <p className="text-sm text-neutral-500">
                     {t('postJob.negotiableDescription')}
                   </p>
                 )}

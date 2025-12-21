@@ -5,6 +5,7 @@ import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { storage } from '@/services/storage';
+import api from '@/lib/api';
 import {
   ArrowLeft,
   Calendar,
@@ -257,26 +258,20 @@ export default function JobDetailPage() {
     }
   };
 
+  const [deleteError, setDeleteError] = useState('');
+
   const handleDeleteJob = async () => {
     setIsDeleting(true);
+    setDeleteError('');
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${params.id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete job');
-      }
-
+      await api.delete(`/jobs/${params.id}`);
       router.push('/my-jobs');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to delete job:', err);
-      setError(locale === 'ka' ? 'წაშლა ვერ მოხერხდა' : 'Failed to delete');
+      const errorMessage = err.response?.data?.message || err.message || (locale === 'ka' ? 'წაშლა ვერ მოხერხდა' : 'Failed to delete');
+      setDeleteError(errorMessage);
     } finally {
       setIsDeleting(false);
-      setShowDeleteConfirm(false);
     }
   };
 
@@ -926,17 +921,22 @@ export default function JobDetailPage() {
       {/* ==================== DELETE CONFIRMATION MODAL ==================== */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(false)} />
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => { setShowDeleteConfirm(false); setDeleteError(''); }} />
           <div className="relative bg-white dark:bg-neutral-900 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
             <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
               {locale === 'ka' ? 'წაშლის დადასტურება' : 'Delete this job?'}
             </h3>
-            <p className="text-neutral-500 dark:text-neutral-400 mb-6 text-sm">
+            <p className="text-neutral-500 dark:text-neutral-400 mb-4 text-sm">
               {locale === 'ka' ? 'ეს მოქმედება ვერ გაუქმდება.' : 'This action cannot be undone.'}
             </p>
+            {deleteError && (
+              <div className="px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm mb-4">
+                {deleteError}
+              </div>
+            )}
             <div className="flex gap-3">
               <button
-                onClick={() => setShowDeleteConfirm(false)}
+                onClick={() => { setShowDeleteConfirm(false); setDeleteError(''); }}
                 className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
               >
                 {locale === 'ka' ? 'გაუქმება' : 'Cancel'}

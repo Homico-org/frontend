@@ -525,7 +525,7 @@ export default function CategorySelector({
                             {language === 'ka' ? category.nameKa : category.name}
                           </h3>
                           <p className={`
-                            mt-1 text-sm font-medium italic transition-colors duration-300
+                            mt-1 text-sm font-medium transition-colors duration-300
                             ${isSelected ? catConfig.accentColor + ' opacity-70' : 'text-neutral-400 dark:text-neutral-500'}
                           `}>
                             {language === 'ka' ? catConfig.tagline.ka : catConfig.tagline.en}

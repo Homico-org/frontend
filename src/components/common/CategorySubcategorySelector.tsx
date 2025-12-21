@@ -212,8 +212,14 @@ export default function CategorySubcategorySelector({
     // If category not selected, select it first
     if (!isCategorySelected) {
       if (singleCategoryMode) {
-        handleCategorySelect(categoryKey);
+        // In single category mode, select category and subcategory together
+        if (onCategoriesChange) {
+          onCategoriesChange([categoryKey]);
+        } else if (onCategoryChange) {
+          onCategoryChange(categoryKey);
+        }
         onSubcategoriesChange([subKey]);
+        setExpandedCategories(new Set([categoryKey]));
       } else if (selectedCategories.length < maxCategories) {
         // Auto-select the category when clicking subcategory
         const newCategories = [...selectedCategories, categoryKey];
@@ -230,7 +236,25 @@ export default function CategorySubcategorySelector({
 
     // Toggle subcategory
     if (selectedSubcategories.includes(subKey)) {
-      onSubcategoriesChange(selectedSubcategories.filter(k => k !== subKey));
+      const newSubcategories = selectedSubcategories.filter(k => k !== subKey);
+      onSubcategoriesChange(newSubcategories);
+
+      // In single category mode, if no subcategories left for this category, deselect the category too
+      if (singleCategoryMode) {
+        const category = CATEGORIES.find(c => c.key === categoryKey);
+        if (category) {
+          const remainingInCategory = newSubcategories.filter(s =>
+            category.subcategories.some(sub => sub.key === s)
+          );
+          if (remainingInCategory.length === 0) {
+            if (onCategoriesChange) {
+              onCategoriesChange([]);
+            } else if (onCategoryChange) {
+              onCategoryChange('');
+            }
+          }
+        }
+      }
     } else if (selectedSubcategories.length < maxSubcategories) {
       onSubcategoriesChange([...selectedSubcategories, subKey]);
     }
@@ -347,7 +371,7 @@ export default function CategorySubcategorySelector({
       {/* Category cards with integrated subcategories */}
       {filteredCategories.map((category, categoryIndex) => {
         const isSelected = selectedCategories.includes(category.key);
-        const isExpanded = expandedCategories.has(category.key) || isSelected;
+        const isExpanded = expandedCategories.has(category.key);
         const categorySubcategoryCount = selectedSubcategories.filter(sub =>
           category.subcategories.some(s => s.key === sub)
         ).length;
@@ -372,14 +396,19 @@ export default function CategorySubcategorySelector({
               onClick={() => {
                 if (!canSelect) return;
                 handleCategorySelect(category.key);
-                if (!isExpanded) toggleCategoryExpand(category.key);
+                // Always expand when selecting, toggle only through chevron button
+                if (!isExpanded && !isSelected) {
+                  setExpandedCategories(prev => new Set([...prev, category.key]));
+                }
               }}
               onKeyDown={(e) => {
                 if (!canSelect) return;
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   handleCategorySelect(category.key);
-                  if (!isExpanded) toggleCategoryExpand(category.key);
+                  if (!isExpanded && !isSelected) {
+                    setExpandedCategories(prev => new Set([...prev, category.key]));
+                  }
                 }
               }}
               className={`w-full flex items-center gap-4 p-4 text-left ${canSelect ? 'cursor-pointer' : 'cursor-not-allowed'}`}
@@ -464,7 +493,7 @@ export default function CategorySubcategorySelector({
                 </p>
 
                 {/* Subcategories Grid */}
-                <div className="flex flex-wrap gap-2">
+                <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
                   {category.subcategories.map((sub, subIndex) => {
                     const isSubSelected = selectedSubcategories.includes(sub.key);
                     const canSelect = isSelected || !singleCategoryMode;
@@ -475,7 +504,7 @@ export default function CategorySubcategorySelector({
                         type="button"
                         onClick={() => handleSubcategoryToggle(category.key, sub.key)}
                         disabled={!canSelect && !isSubSelected}
-                        className={`group relative px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 animate-fade-in ${
+                        className={`group relative px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 animate-fade-in text-left ${
                           isSubSelected
                             ? 'bg-terracotta-500 text-white shadow-md shadow-terracotta-500/20'
                             : canSelect
@@ -486,11 +515,11 @@ export default function CategorySubcategorySelector({
                       >
                         <span className="flex items-center gap-1.5">
                           {isSubSelected && (
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                             </svg>
                           )}
-                          {locale === 'ka' ? sub.nameKa : sub.name}
+                          <span className="line-clamp-1">{locale === 'ka' ? sub.nameKa : sub.name}</span>
                         </span>
                       </button>
                     );
@@ -499,7 +528,7 @@ export default function CategorySubcategorySelector({
 
                 {/* Hint when category not selected */}
                 {!isSelected && singleCategoryMode && (
-                  <p className="mt-3 text-xs text-[var(--color-text-muted)] italic">
+                  <p className="mt-3 text-xs text-[var(--color-text-muted)]">
                     {locale === 'ka'
                       ? 'აირჩიეთ ეს კატეგორია სპეციალობების ასარჩევად'
                       : 'Select this category to choose specializations'}

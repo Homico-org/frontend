@@ -87,7 +87,8 @@ export default function BrowseFiltersSidebar({
 
   const handleSubcategoryToggle = (categoryKey: string, subcategoryKey: string) => {
     if (selectedCategory === categoryKey && selectedSubcategory === subcategoryKey) {
-      // Deselect if already selected
+      // Deselect if already selected - clear both category and subcategory
+      setSelectedCategory(null);
       setSelectedSubcategory(null);
     } else {
       // Select the category and subcategory

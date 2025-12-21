@@ -1266,7 +1266,6 @@ img:not(.loading) {
 
 .font-serif-italic {
   font-family: 'Instrument Serif', Georgia, serif;
-  font-style: italic;
 }
 
 /* Blueprint grid background pattern */
@@ -1611,7 +1610,6 @@ img:not(.loading) {
 .browse-subtitle {
   @apply text-sm sm:text-base mt-1;
   font-family: 'Instrument Serif', Georgia, serif;
-  font-style: italic;
   color: var(--color-text-secondary);
 }
 
@@ -2841,7 +2839,6 @@ img:not(.loading) {
 .myjobs-subtitle {
   @apply text-sm mt-1;
   font-family: 'Instrument Serif', Georgia, serif;
-  font-style: italic;
   color: var(--color-text-tertiary);
 }
 
@@ -4734,7 +4731,7 @@ img:not(.loading) {
 }
 
 .myproposals-proposal-letter {
-  @apply mt-2 text-xs line-clamp-2 italic;
+  @apply mt-2 text-xs line-clamp-2;
   color: var(--color-text-tertiary);
 }
 
@@ -5265,7 +5262,7 @@ img:not(.loading) {
 }
 
 .pro-profile-price-note {
-  @apply text-[10px] mt-2 italic;
+  @apply text-[10px] mt-2;
   color: var(--color-text-tertiary);
 }
 
@@ -6007,7 +6004,7 @@ img:not(.loading) {
 }
 
 .pro-profile-project-review-text {
-  @apply text-sm leading-relaxed mb-4 pl-2 italic;
+  @apply text-sm leading-relaxed mb-4 pl-2;
   color: var(--color-text-secondary);
 }
 

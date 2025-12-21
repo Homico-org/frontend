@@ -51,43 +51,66 @@ export interface Company {
   logo?: string;
 }
 
-export interface ProProfile {
-  _id: string;
-  userId: User;
+export interface PaymentMethod {
+  id: string;
+  type: 'card' | 'bank';
+  cardLast4?: string;
+  cardBrand?: string;
+  cardExpiry?: string;
+}
+
+export interface PortfolioProject {
+  id: string;
   title: string;
-  companyName?: string;
   description: string;
-  categories: string[];
-  yearsExperience: number;
-  serviceAreas: string[];
-  pricingModel: 'hourly' | 'project_based' | 'from';
-  basePrice?: number;
-  currency?: string;
+  location?: string;
+  images: string[];
+  videos?: string[];
+  beforeAfterPairs?: { id?: string; beforeImage: string; afterImage: string }[];
+}
+export interface ProProfile {
+  accountType: AccountType;
+  availability: string[];
+  avatar: string;
   avgRating: number;
-  totalReviews: number;
+  cadastralVerified: boolean;
+  categories: string[];
+  certifications: string[];
+  city: string;
+  companies: Company[];
+  completedJobs: number;
+  completedProjects: number;
+  createdAt: Date;
+  designStyles: string[];
+  email: string;
+  idNumber: string;
+  isActive: boolean;
   isAvailable: boolean;
-  status?: ProStatus;
-  statusUpdatedAt?: string;
-  coverImage?: string;
-  tagline?: string;
-  completedJobs?: number;
-  externalCompletedJobs?: number;
-  responseTime?: string;
-  companies?: Company[];
-  avatar?: string;
-  bio?: string;
-  portfolioProjects?: {
-    title: string;
-    description: string;
-    location?: string;
-    images: string[];
-    videos?: string[];
-  }[];
-  likeCount?: number;
-  isLiked?: boolean;
-  isPremium?: boolean;
-  premiumTier?: 'none' | 'basic' | 'pro' | 'elite';
-  premiumExpiresAt?: string;
+  isEmailVerified: boolean;
+  isPhoneVerified: boolean;
+  isPremium: boolean;
+  languages: string[];
+  lastLoginAt: Date;
+  name: string;
+  paymentMethods: PaymentMethod[];
+  phone: string;
+  pinterestLinks: string[];
+  portfolioImages: string[];
+  portfolioProjects: PortfolioProject[];
+  premiumTier: string;
+  profileType: string;
+  role: UserRole;
+  selectedCategories: string[];
+  selectedSubcategories: string[];
+  serviceAreas: string[];
+  status: ProStatus;
+  statusAutoSuggested: boolean;
+  subcategories: string[];
+  telegram: string;
+  whatsapp: string;
+  yearsExperience: number;
+  __v: number;
+  _id: string;
 }
 
 export interface PortfolioItem {

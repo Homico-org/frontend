@@ -2,17 +2,17 @@
 
 import ProCard from "@/components/common/ProCard";
 import { useAuth } from "@/contexts/AuthContext";
+import { useBrowseContext } from "@/contexts/BrowseContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useLikes } from "@/hooks/useLikes";
-import { useBrowseContext } from "@/contexts/BrowseContext";
 import { LikeTargetType, ProProfile } from "@/types";
-import { useCallback, useEffect, useRef, useState, useMemo } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function ProfessionalsPage() {
   const { locale } = useLanguage();
   const { user } = useAuth();
   const { selectedCategory, selectedSubcategory, minRating, searchQuery, sortBy, selectedCity, budgetMin, budgetMax } = useBrowseContext();
-  const { toggleLike, initializeLikeStates, likeStates } = useLikes();
+  const { toggleLike } = useLikes();
 
   const [results, setResults] = useState<ProProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -62,27 +62,28 @@ export default function ProfessionalsPage() {
         }
 
         const result = await response.json();
-        const profiles = result.data || result.profiles || [];
+        const profiles = result.data as ProProfile[];
         const pagination = result.pagination || {};
 
+        console.log('profiles', profiles);
         if (reset) {
           setResults(profiles);
-          initializeLikeStates(
-            profiles.map((p: ProProfile) => ({
-              id: p._id,
-              isLiked: p.isLiked || false,
-              likeCount: p.likeCount || 0,
-            }))
-          );
+          // initializeLikeStates(
+          //   profiles.map((p: ProProfile) => ({
+          //     id: p._id,
+          //     isLiked: p.isLiked || false,
+          //     likeCount: p.likeCount || 0,
+          //   }))
+          // );
         } else {
           setResults((prev) => [...prev, ...profiles]);
-          initializeLikeStates(
-            profiles.map((p: ProProfile) => ({
-              id: p._id,
-              isLiked: p.isLiked || false,
-              likeCount: p.likeCount || 0,
-            }))
-          );
+          // initializeLikeStates(
+          //   profiles.map((p: ProProfile) => ({
+          //     id: p._id,
+          //     isLiked: p.isLiked || false,
+          //     likeCount: p.likeCount || 0,
+          //   }))
+          // );
         }
 
         setTotalCount(pagination.total || result.total || result.totalCount || 0);
@@ -95,7 +96,7 @@ export default function ProfessionalsPage() {
         setIsLoadingMore(false);
       }
     },
-    [selectedCategory, selectedSubcategory, minRating, searchQuery, sortBy, selectedCity, budgetMin, budgetMax, initializeLikeStates]
+    [selectedCategory, selectedSubcategory, minRating, searchQuery, sortBy, selectedCity, budgetMin, budgetMax]
   );
 
   // Track if initial fetch has been done to prevent double fetching
@@ -211,7 +212,7 @@ export default function ProfessionalsPage() {
       <h3 className="browse-title text-xl sm:text-2xl text-gradient-terracotta mb-2">
         {locale === "ka" ? "სპეციალისტები არ მოიძებნა" : "No professionals found"}
       </h3>
-      <p className="text-sm sm:text-base text-[var(--color-text-secondary)] text-center max-w-md font-serif-italic">
+      <p className="text-sm sm:text-base text-[var(--color-text-secondary)] text-center max-w-md">
         {locale === "ka"
           ? "სცადეთ სხვა ფილტრები ან კატეგორია სასურველი სპეციალისტის მოსაძებნად"
           : "Try adjusting your filters or explore different categories to find the right professional"}
@@ -244,11 +245,7 @@ export default function ProfessionalsPage() {
               style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}
             >
               <ProCard
-                profile={{
-                  ...profile,
-                  isLiked: likeStates[profile._id]?.isLiked ?? profile.isLiked,
-                  likeCount: likeStates[profile._id]?.likeCount ?? profile.likeCount,
-                }}
+                profile={profile}
                 onLike={() => handleProLike(profile._id)}
                 showLikeButton={true}
                 variant="compact"
@@ -276,7 +273,7 @@ export default function ProfessionalsPage() {
         {!hasMore && results.length > 0 && (
           <div className="flex items-center gap-2 text-sm text-[var(--color-text-tertiary)]">
             <div className="w-8 h-px bg-gradient-to-r from-transparent via-[#E07B4F]/20 to-transparent" />
-            <span className="font-serif-italic">
+            <span className="text-[var(--color-text-tertiary)]">
               {locale === 'ka' ? 'ყველა სპეციალისტი ნაჩვენებია' : 'All professionals displayed'}
             </span>
             <div className="w-8 h-px bg-gradient-to-r from-transparent via-[#E07B4F]/20 to-transparent" />
