@@ -426,9 +426,9 @@ function MyJobsPageContent() {
                                     key={i}
                                     className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-700 border-2 border-white dark:border-neutral-900 overflow-hidden"
                                   >
-                                    {job.recentProposals?.[i]?.proId?.userId?.avatar ? (
+                                    {job.recentProposals?.[i]?.proId?.avatar ? (
                                       <img
-                                        src={storage.getFileUrl(job.recentProposals[i].proId.userId.avatar!)}
+                                        src={storage.getFileUrl(job.recentProposals[i].proId.avatar!)}
                                         alt=""
                                         className="w-full h-full object-cover"
                                       />

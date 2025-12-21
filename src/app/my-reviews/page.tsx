@@ -294,8 +294,8 @@ function MyReviewsPageContent() {
                         {/* Pro Avatar */}
                         <Link href={`/professionals/${review.proId._id}`} className="flex-shrink-0">
                           <Avatar
-                            src={review.proId.userId.avatar}
-                            name={review.proId.userId.name}
+                            src={review.proId.avatar}
+                            name={review.proId.name}
                             size="lg"
                           />
                         </Link>
@@ -308,7 +308,7 @@ function MyReviewsPageContent() {
                                 href={`/professionals/${review.proId._id}`}
                                 className="font-medium text-neutral-900 dark:text-neutral-50 hover:text-forest-600 dark:hover:text-primary-400 transition-colors"
                               >
-                                {review.proId.userId.name}
+                                {review.proId.name}
                               </Link>
                               <p className="text-sm text-neutral-500 dark:text-neutral-400">
                                 {review.proId.title}
@@ -419,15 +419,15 @@ function MyReviewsPageContent() {
                     <div className="p-5 sm:p-6">
                       <div className="flex items-start gap-4">
                         <Avatar
-                          src={pending.proId.userId.avatar}
-                          name={pending.proId.userId.name}
+                          src={pending.proId.avatar}
+                          name={pending.proId.name}
                           size="lg"
                         />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-4">
                             <div>
                               <p className="font-medium text-neutral-900 dark:text-neutral-50">
-                                {pending.proId.userId.name}
+                                {pending.proId.name}
                               </p>
                               <p className="text-sm text-neutral-500 dark:text-neutral-400">
                                 {pending.proId.title}

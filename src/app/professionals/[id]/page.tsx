@@ -168,7 +168,7 @@ export default function ProfessionalDetailPage() {
 
   useEffect(() => {
     if (profile?.userId?.name) {
-      document.title = `${profile.userId.name} | Homico`;
+      document.title = `${profile.name} | Homico`;
     }
     return () => { document.title = 'Homico'; };
   }, [profile?.userId?.name]);
@@ -378,7 +378,7 @@ export default function ProfessionalDetailPage() {
     );
   }
 
-  const avatarUrl = profile.avatar || profile.userId.avatar;
+  const avatarUrl = profile.avatar;
   const portfolioImages = getAllPortfolioImages();
   const groupedServices = getGroupedServices();
 
@@ -417,7 +417,7 @@ export default function ProfessionalDetailPage() {
                   {avatarUrl ? (
                     <img
                       src={getImageUrl(avatarUrl)}
-                      alt={profile.userId.name}
+                      alt={profile.name}
                       className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white shadow-lg"
                     />
                   ) : (
@@ -425,14 +425,14 @@ export default function ProfessionalDetailPage() {
                       className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white shadow-lg flex items-center justify-center text-white text-2xl font-bold"
                       style={{ backgroundColor: COLORS.teal }}
                     >
-                      {profile.userId.name.charAt(0)}
+                      {profile.name.charAt(0)}
                     </div>
                   )}
                 </div>
 
                 {/* Name & Title */}
                 <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 mb-1">
-                  {profile.userId.name}
+                  {profile.name}
                 </h1>
                 <p className="text-base sm:text-lg mb-3" style={{ color: COLORS.primary }}>
                   {profile.title}
@@ -461,7 +461,7 @@ export default function ProfessionalDetailPage() {
             {profile.description && (
               <div className="bg-white rounded-2xl border border-neutral-200 p-5 sm:p-6 shadow-sm">
                 <h2 className="text-lg font-bold text-neutral-900 mb-4">
-                  {locale === 'ka' ? `${profile.userId.name.split(' ')[0]}-ს შესახებ` : `About ${profile.userId.name.split(' ')[0]}`}
+                  {locale === 'ka' ? `${profile.name.split(' ')[0]}-ს შესახებ` : `About ${profile.name.split(' ')[0]}`}
                 </h2>
                 <div className="text-neutral-600 leading-relaxed whitespace-pre-wrap text-sm sm:text-base">
                   {profile.description}
@@ -775,11 +775,11 @@ export default function ProfessionalDetailPage() {
                   <img src={getImageUrl(avatarUrl)} alt="" className="w-12 h-12 rounded-full object-cover" />
                 ) : (
                   <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold" style={{ backgroundColor: COLORS.teal }}>
-                    {profile.userId.name.charAt(0)}
+                    {profile.name.charAt(0)}
                   </div>
                 )}
                 <div>
-                  <p className="font-semibold text-neutral-900">{profile.userId.name}</p>
+                  <p className="font-semibold text-neutral-900">{profile.name}</p>
                   <p className="text-sm text-neutral-500">{profile.title}</p>
                 </div>
               </div>
