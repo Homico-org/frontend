@@ -52,7 +52,7 @@ interface Job {
   // New proposals with avatars
   recentProposals?: Array<{
     _id: string;
-    proId: { userId: { avatar?: string; name: string } };
+    proId: { avatar?: string; name: string };
   }>;
 }
 
