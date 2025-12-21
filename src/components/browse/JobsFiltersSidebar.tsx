@@ -2,23 +2,14 @@
 
 import { useLanguage } from '@/contexts/LanguageContext';
 import { JobFilters } from '@/contexts/JobsContext';
-import { RotateCcw, Bookmark } from 'lucide-react';
+import { RotateCcw, Bookmark, ChevronDown } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 
 // Re-export JobFilters for convenience
 export type { JobFilters } from '@/contexts/JobsContext';
 
 // Warm terracotta accent
 const ACCENT = '#C4735B';
-
-// Budget filter options
-export const JOB_BUDGET_FILTERS = [
-  { key: 'all', label: 'Any', labelKa: 'ყველა', min: undefined as number | undefined, max: undefined as number | undefined },
-  { key: 'under-1k', label: 'Under ₾1K', labelKa: '₾1K-მდე', min: undefined as number | undefined, max: 1000 },
-  { key: '1k-5k', label: '₾1K - 5K', labelKa: '₾1K-5K', min: 1000, max: 5000 },
-  { key: '5k-15k', label: '₾5K - 15K', labelKa: '₾5K-15K', min: 5000, max: 15000 },
-  { key: '15k-50k', label: '₾15K - 50K', labelKa: '₾15K-50K', min: 15000, max: 50000 },
-  { key: 'over-50k', label: '₾50K+', labelKa: '₾50K+', min: 50000, max: undefined as number | undefined },
-];
 
 // Property type options
 const PROPERTY_TYPES = [
@@ -105,21 +96,71 @@ function Checkbox({
   );
 }
 
-// Filter section component
-function FilterSection({
+// Collapsible filter section component with smooth animation
+function CollapsibleSection({
   title,
-  children
+  children,
+  defaultOpen = true,
+  activeCount = 0,
 }: {
   title: string;
   children: React.ReactNode;
+  defaultOpen?: boolean;
+  activeCount?: number;
 }) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      const resizeObserver = new ResizeObserver(() => {
+        if (contentRef.current) {
+          setHeight(contentRef.current.scrollHeight);
+        }
+      });
+      resizeObserver.observe(contentRef.current);
+      setHeight(contentRef.current.scrollHeight);
+      return () => resizeObserver.disconnect();
+    }
+  }, [children]);
+
   return (
-    <div className="py-3">
-      <h4 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2.5 px-1">
-        {title}
-      </h4>
-      <div className="space-y-0.5">
-        {children}
+    <div className="py-1">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between py-2.5 px-1 group transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50 rounded-lg -mx-1"
+      >
+        <div className="flex items-center gap-2">
+          <h4 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-700 dark:group-hover:text-neutral-300 transition-colors">
+            {title}
+          </h4>
+          {activeCount > 0 && (
+            <span
+              className="text-[9px] font-bold w-4 h-4 rounded-full text-white flex items-center justify-center"
+              style={{ backgroundColor: ACCENT }}
+            >
+              {activeCount}
+            </span>
+          )}
+        </div>
+        <ChevronDown
+          className={`w-4 h-4 text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+            isOpen ? 'rotate-180' : 'rotate-0'
+          }`}
+        />
+      </button>
+      <div
+        className="overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+        style={{
+          maxHeight: isOpen ? height : 0,
+          opacity: isOpen ? 1 : 0,
+          transform: isOpen ? 'translateY(0)' : 'translateY(-8px)',
+        }}
+      >
+        <div ref={contentRef} className="space-y-0.5 pb-2 pt-1">
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -128,15 +169,38 @@ function FilterSection({
 export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCount = 0 }: JobsFiltersSidebarProps) {
   const { locale } = useLanguage();
 
+  // Local state for budget inputs (to allow typing without immediate filtering)
+  const [minInput, setMinInput] = useState<string>(filters.budgetMin?.toString() || '');
+  const [maxInput, setMaxInput] = useState<string>(filters.budgetMax?.toString() || '');
+
+  // Sync local state when filters change externally
+  useEffect(() => {
+    setMinInput(filters.budgetMin?.toString() || '');
+    setMaxInput(filters.budgetMax?.toString() || '');
+  }, [filters.budgetMin, filters.budgetMax]);
+
   const updateFilter = <K extends keyof JobFilters>(key: K, value: JobFilters[K]) => {
     onFiltersChange({ ...filters, [key]: value });
   };
 
+  const handleBudgetChange = () => {
+    const min = minInput ? parseInt(minInput, 10) : null;
+    const max = maxInput ? parseInt(maxInput, 10) : null;
+    onFiltersChange({
+      ...filters,
+      budgetMin: min && !isNaN(min) ? min : null,
+      budgetMax: max && !isNaN(max) ? max : null,
+    });
+  };
+
   const clearAllFilters = () => {
+    setMinInput('');
+    setMaxInput('');
     onFiltersChange({
       category: null,
       subcategory: null,
-      budget: 'all',
+      budgetMin: null,
+      budgetMax: null,
       propertyType: 'all',
       location: 'all',
       deadline: 'all',
@@ -146,13 +210,14 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
   };
 
   const hasActiveFilters =
-    filters.budget !== 'all' ||
+    filters.budgetMin !== null ||
+    filters.budgetMax !== null ||
     filters.propertyType !== 'all' ||
     filters.deadline !== 'all' ||
     filters.showFavoritesOnly;
 
   const activeFilterCount = [
-    filters.budget !== 'all' ? 1 : 0,
+    (filters.budgetMin !== null || filters.budgetMax !== null) ? 1 : 0,
     filters.propertyType !== 'all' ? 1 : 0,
     filters.deadline !== 'all' ? 1 : 0,
     filters.showFavoritesOnly ? 1 : 0,
@@ -222,47 +287,80 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
           )}
         </label>
 
-        {/* Budget Section */}
-        <FilterSection title={locale === 'ka' ? 'ბიუჯეტი' : 'Budget'}>
-          {JOB_BUDGET_FILTERS.map(option => (
-            <Checkbox
-              key={option.key}
-              checked={filters.budget === option.key}
-              onChange={() => updateFilter('budget', option.key)}
-              label={locale === 'ka' ? option.labelKa : option.label}
-            />
-          ))}
-        </FilterSection>
+        {/* Budget Section - Range Inputs */}
+        <CollapsibleSection
+          title={locale === 'ka' ? 'ბიუჯეტი' : 'Budget'}
+          activeCount={(filters.budgetMin !== null || filters.budgetMax !== null) ? 1 : 0}
+        >
+          <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <input
+                type="number"
+                placeholder={locale === 'ka' ? 'მინ' : 'Min'}
+                value={minInput}
+                onChange={(e) => setMinInput(e.target.value)}
+                onBlur={handleBudgetChange}
+                onKeyDown={(e) => e.key === 'Enter' && handleBudgetChange()}
+                className="w-full px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
+                style={{ '--tw-ring-color': ACCENT, '--tw-ring-opacity': '0.5' } as React.CSSProperties}
+                min="0"
+              />
+            </div>
+            <span className="text-neutral-400 text-sm">-</span>
+            <div className="flex-1">
+              <input
+                type="number"
+                placeholder={locale === 'ka' ? 'მაქს' : 'Max'}
+                value={maxInput}
+                onChange={(e) => setMaxInput(e.target.value)}
+                onBlur={handleBudgetChange}
+                onKeyDown={(e) => e.key === 'Enter' && handleBudgetChange()}
+                className="w-full px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
+                style={{ '--tw-ring-color': ACCENT, '--tw-ring-opacity': '0.5' } as React.CSSProperties}
+                min="0"
+              />
+            </div>
+          </div>
+          <p className="text-[10px] text-neutral-400 mt-1.5 px-1">
+            {locale === 'ka' ? '₾ ლარში' : 'In ₾ GEL'}
+          </p>
+        </CollapsibleSection>
 
         {/* Divider */}
         <div className="h-px bg-neutral-100 dark:bg-neutral-800" />
 
         {/* Property Type Section */}
-        <FilterSection title={locale === 'ka' ? 'ტიპი' : 'Property'}>
-          {PROPERTY_TYPES.map(option => (
+        <CollapsibleSection
+          title={locale === 'ka' ? 'ტიპი' : 'Property'}
+          activeCount={filters.propertyType !== 'all' ? 1 : 0}
+        >
+          {PROPERTY_TYPES.filter(o => o.key !== 'all').map(option => (
             <Checkbox
               key={option.key}
               checked={filters.propertyType === option.key}
-              onChange={() => updateFilter('propertyType', option.key)}
+              onChange={() => updateFilter('propertyType', filters.propertyType === option.key ? 'all' : option.key)}
               label={locale === 'ka' ? option.labelKa : option.label}
             />
           ))}
-        </FilterSection>
+        </CollapsibleSection>
 
         {/* Divider */}
         <div className="h-px bg-neutral-100 dark:bg-neutral-800" />
 
         {/* Deadline Section */}
-        <FilterSection title={locale === 'ka' ? 'ვადა' : 'Deadline'}>
-          {DEADLINE_FILTERS.map(option => (
+        <CollapsibleSection
+          title={locale === 'ka' ? 'ვადა' : 'Deadline'}
+          activeCount={filters.deadline !== 'all' ? 1 : 0}
+        >
+          {DEADLINE_FILTERS.filter(o => o.key !== 'all').map(option => (
             <Checkbox
               key={option.key}
               checked={filters.deadline === option.key}
-              onChange={() => updateFilter('deadline', option.key)}
+              onChange={() => updateFilter('deadline', filters.deadline === option.key ? 'all' : option.key)}
               label={locale === 'ka' ? option.labelKa : option.label}
             />
           ))}
-        </FilterSection>
+        </CollapsibleSection>
       </div>
     </aside>
   );

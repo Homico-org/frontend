@@ -3,6 +3,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAnalytics, AnalyticsEvent } from '@/hooks/useAnalytics';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -12,6 +13,7 @@ export default function LoginModal() {
   const { login } = useAuth();
   const { isLoginModalOpen, closeLoginModal, redirectPath, clearRedirectPath } = useAuthModal();
   const { t, locale } = useLanguage();
+  const { trackEvent } = useAnalytics();
   const [formData, setFormData] = useState({ identifier: '', password: '' });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -67,6 +69,7 @@ export default function LoginModal() {
       if (!response.ok) throw new Error(data.message || 'Login failed');
 
       login(data.access_token, data.user);
+      trackEvent(AnalyticsEvent.LOGIN, { userRole: data.user.role });
       closeLoginModal();
 
       if (redirectPath) {

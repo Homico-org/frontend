@@ -2,10 +2,11 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAnalytics, AnalyticsEvent } from '@/hooks/useAnalytics';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import { Check, Crown, Sparkles, Star, Zap, Shield, TrendingUp, Award, Clock, MessageCircle, Eye, BadgeCheck, ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // Feature type
 interface PremiumFeature {
@@ -125,12 +126,18 @@ export default function PremiumPlansPage() {
   const { user, isAuthenticated } = useAuth();
   const { locale } = useLanguage();
   const router = useRouter();
+  const { trackEvent } = useAnalytics();
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>('monthly');
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
 
   const isPro = user?.role === 'pro';
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const currentTier = (user as any)?.proProfile?.premiumTier || 'none';
+
+  // Track premium page view
+  useEffect(() => {
+    trackEvent(AnalyticsEvent.PREMIUM_VIEW);
+  }, [trackEvent]);
 
   const handleSelectPlan = (tierId: string) => {
     if (!isAuthenticated) {
@@ -141,6 +148,12 @@ export default function PremiumPlansPage() {
       router.push('/become-pro?redirect=/pro/premium');
       return;
     }
+    const tier = PREMIUM_TIERS[tierId];
+    // Track checkout start
+    trackEvent(AnalyticsEvent.PREMIUM_CHECKOUT_START, {
+      planType: tierId,
+      planPrice: tier.price[billingPeriod],
+    });
     router.push(`/pro/premium/checkout?tier=${tierId}&period=${billingPeriod}`);
   };
 

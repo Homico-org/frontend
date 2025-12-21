@@ -3,6 +3,7 @@
 import AuthGuard from '@/components/common/AuthGuard';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAnalytics, AnalyticsEvent } from '@/hooks/useAnalytics';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import { ArrowLeft, Check, CreditCard, Shield, Lock, Sparkles, Star, Zap, Crown, Building2, Loader2, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
@@ -57,6 +58,7 @@ const PREMIUM_TIERS: Record<string, {
 function CheckoutContent() {
   const { locale } = useLanguage();
   const { isAuthenticated } = useAuth();
+  const { trackEvent } = useAnalytics();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -192,6 +194,12 @@ function CheckoutContent() {
     if (useNewCard && saveNewCard) {
       await saveCardToAccount();
     }
+
+    // Track premium purchase
+    trackEvent(AnalyticsEvent.PREMIUM_PURCHASE, {
+      planType: tierId,
+      planPrice: price,
+    });
 
     // TODO: Implement actual payment processing
     // For now, redirect to success page

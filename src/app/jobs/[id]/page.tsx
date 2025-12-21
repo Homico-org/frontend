@@ -4,6 +4,7 @@ import Avatar from '@/components/common/Avatar';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAnalytics, AnalyticsEvent } from '@/hooks/useAnalytics';
 import { storage } from '@/services/storage';
 import api from '@/lib/api';
 import {
@@ -147,6 +148,7 @@ export default function JobDetailPage() {
   const router = useRouter();
   const { user } = useAuth();
   const { locale } = useLanguage();
+  const { trackEvent } = useAnalytics();
 
   const [job, setJob] = useState<Job | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -182,6 +184,11 @@ export default function JobDetailPage() {
         if (!response.ok) throw new Error('Job not found');
         const data = await response.json();
         setJob(data);
+        trackEvent(AnalyticsEvent.JOB_VIEW, {
+          jobId: data._id,
+          jobTitle: data.title,
+          jobCategory: data.category,
+        });
       } catch (err) {
         console.error('Failed to fetch job:', err);
         router.push('/browse');
@@ -247,6 +254,10 @@ export default function JobDetailPage() {
       setSuccess(locale === 'ka' ? 'წინადადება წარმატებით გაიგზავნა' : 'Proposal submitted successfully');
       setShowProposalForm(false);
       setMyProposal(data);
+      trackEvent(AnalyticsEvent.PROPOSAL_SUBMIT, {
+        jobId: params.id as string,
+        proposalAmount: proposalData.proposedPrice ? parseFloat(proposalData.proposedPrice) : undefined,
+      });
       // Refresh job data
       const jobResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${params.id}`);
       const jobData = await jobResponse.json();
@@ -265,6 +276,10 @@ export default function JobDetailPage() {
     setDeleteError('');
     try {
       await api.delete(`/jobs/${params.id}`);
+      trackEvent(AnalyticsEvent.JOB_DELETE, {
+        jobId: params.id as string,
+        jobTitle: job?.title,
+      });
       router.push('/my-jobs');
     } catch (err: any) {
       console.error('Failed to delete job:', err);

@@ -2,12 +2,14 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode, useRef } from 'react';
 import { useAuth } from './AuthContext';
+import { trackAnalyticsEvent, AnalyticsEvent } from '@/hooks/useAnalytics';
 import api from '@/lib/api';
 
 export interface JobFilters {
   category: string | null;
   subcategory: string | null;
-  budget: string;
+  budgetMin: number | null;
+  budgetMax: number | null;
   propertyType: string;
   location: string;
   deadline: string;
@@ -18,7 +20,8 @@ export interface JobFilters {
 const DEFAULT_FILTERS: JobFilters = {
   category: null,
   subcategory: null,
-  budget: 'all',
+  budgetMin: null,
+  budgetMax: null,
   propertyType: 'all',
   location: 'all',
   deadline: 'all',
@@ -146,6 +149,9 @@ export function JobsProvider({ children }: { children: ReactNode }) {
       }
       return newSet;
     });
+
+    // Track save/unsave event
+    trackAnalyticsEvent(wasSaved ? AnalyticsEvent.JOB_UNSAVE : AnalyticsEvent.JOB_SAVE, { jobId });
 
     // Make API call (fire and forget with error handling)
     const makeApiCall = async () => {

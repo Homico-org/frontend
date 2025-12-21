@@ -4,6 +4,7 @@ import ProCard from "@/components/common/ProCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBrowseContext } from "@/contexts/BrowseContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAnalytics, AnalyticsEvent } from "@/hooks/useAnalytics";
 import { useLikes } from "@/hooks/useLikes";
 import { LikeTargetType, ProProfile } from "@/types";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -11,6 +12,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 export default function ProfessionalsPage() {
   const { locale } = useLanguage();
   const { user } = useAuth();
+  const { trackEvent } = useAnalytics();
   const { selectedCategory, selectedSubcategory, minRating, searchQuery, sortBy, selectedCity, budgetMin, budgetMax } = useBrowseContext();
   const { toggleLike } = useLikes();
 
@@ -112,10 +114,21 @@ export default function ProfessionalsPage() {
       return;
     }
 
+    // Track search/filter events
+    if (searchQuery) {
+      trackEvent(AnalyticsEvent.SEARCH, { searchQuery, category: selectedCategory || undefined });
+    }
+    if (selectedCategory) {
+      trackEvent(AnalyticsEvent.CATEGORY_SELECT, { category: selectedCategory });
+    }
+    if (selectedSubcategory) {
+      trackEvent(AnalyticsEvent.SUBCATEGORY_SELECT, { category: selectedCategory || undefined, subcategory: selectedSubcategory });
+    }
+
     // For subsequent filter changes, reset and fetch
     setPage(1);
     fetchProfessionals(1, true);
-  }, [selectedCategory, selectedSubcategory, minRating, searchQuery, sortBy, selectedCity, budgetMin, budgetMax, fetchProfessionals]);
+  }, [selectedCategory, selectedSubcategory, minRating, searchQuery, sortBy, selectedCity, budgetMin, budgetMax, fetchProfessionals, trackEvent]);
 
   // Infinite scroll
   useEffect(() => {

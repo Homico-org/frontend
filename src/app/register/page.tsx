@@ -12,6 +12,7 @@ import {
   CountryCode,
   useLanguage,
 } from "@/contexts/LanguageContext";
+import { useAnalytics, AnalyticsEvent } from "@/hooks/useAnalytics";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 
@@ -41,6 +42,7 @@ function RegisterContent() {
   const { login } = useAuth();
   const { openLoginModal } = useAuthModal();
   const { t, country, locale } = useLanguage();
+  const { trackEvent } = useAnalytics();
   const formRef = useRef<HTMLFormElement>(null);
 
   const { authLoading, isAuthenticated, user } = useAuthRedirectFromRegister();
@@ -636,6 +638,10 @@ function RegisterContent() {
       if (!response.ok) throw new Error(data.message || "Registration failed");
 
       login(data.access_token, data.user);
+      trackEvent(
+        data.user.role === 'pro' ? AnalyticsEvent.REGISTER_PRO : AnalyticsEvent.REGISTER_CLIENT,
+        { userRole: data.user.role }
+      );
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       if (data.user.role === "pro") {

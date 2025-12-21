@@ -6,6 +6,7 @@ import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useAnalytics, AnalyticsEvent } from '@/hooks/useAnalytics';
 import { Briefcase, CheckCircle, Clock, MapPin, MessageSquare, Shield, Star, Trophy } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -131,6 +132,7 @@ export default function ProfessionalDetailPage() {
   const { openLoginModal } = useAuthModal();
   const { t, locale } = useLanguage();
   const toast = useToast();
+  const { trackEvent } = useAnalytics();
   const { categories: CATEGORIES } = useCategories();
 
   const [profile, setProfile] = useState<ProProfile | null>(null);
@@ -151,6 +153,11 @@ export default function ProfessionalDetailPage() {
         if (!response.ok) throw new Error('Profile not found');
         const data = await response.json();
         setProfile(data);
+        trackEvent(AnalyticsEvent.PROFILE_VIEW, {
+          proId: data._id || data.id,
+          proName: data.name,
+          category: data.categories?.[0],
+        });
       } catch (err: any) {
         setError(err.message || 'Failed to load profile');
       } finally {
@@ -235,6 +242,10 @@ export default function ProfessionalDetailPage() {
         setShowContactModal(false);
         setMessage('');
         toast.success(locale === 'ka' ? 'შეტყობინება გაგზავნილია!' : 'Message sent!');
+        trackEvent(AnalyticsEvent.CONVERSATION_START, {
+          proId: profile?._id,
+          proName: profile?.name,
+        });
       } else {
         throw new Error('Failed to send message');
       }

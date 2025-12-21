@@ -1,20 +1,22 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { AnalyticsEvent, trackAnalyticsEvent } from '@/hooks/useAnalytics';
+import { AccountType, UserRole } from '@/types';
 import { useRouter } from 'next/navigation';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 interface User {
   id: string;
   uid?: number;
   name: string;
   email: string;
-  role: 'client' | 'pro' | 'company' | 'admin';
+  role: UserRole;
   avatar?: string;
   city?: string;
   phone?: string;
   selectedCategories?: string[];
   selectedSubcategories?: string[];
-  accountType?: 'individual' | 'organization';
+  accountType?: AccountType;
   companyName?: string;
 }
 
@@ -153,19 +155,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = useCallback(() => {
+    // Track logout event before clearing data
+    trackAnalyticsEvent(AnalyticsEvent.LOGOUT, { userRole: user?.role });
     // Clear all auth data
     clearAuthData();
     setUser(null);
     setToken(null);
-    // Redirect to landing page
-    const landingUrl = process.env.NEXT_PUBLIC_LANDING_URL;
-    if (landingUrl) {
-      window.location.href = landingUrl;
-    } else {
-      // Fallback to home if no landing URL configured
-      router.replace('/');
-    }
-  }, [router]);
+    // Redirect to home page
+    router.replace('/');
+  }, [router, user?.role]);
 
   const updateUser = (userData: Partial<User>) => {
     if (user) {

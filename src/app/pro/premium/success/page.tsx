@@ -1,12 +1,13 @@
 'use client';
 
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAnalytics, AnalyticsEvent } from '@/hooks/useAnalytics';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import AuthGuard from '@/components/common/AuthGuard';
 import { CheckCircle2, ArrowRight, Sparkles, Crown, Star, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 
 const TIER_CONFIG: Record<string, { icon: React.ElementType; name: { en: string; ka: string } }> = {
   basic: { icon: Star, name: { en: 'Premium', ka: 'პრემიუმ' } },
@@ -16,11 +17,19 @@ const TIER_CONFIG: Record<string, { icon: React.ElementType; name: { en: string;
 
 function SuccessContent() {
   const { locale } = useLanguage();
+  const { trackEvent } = useAnalytics();
   const searchParams = useSearchParams();
   const tierId = searchParams.get('tier') || 'basic';
 
   const tier = TIER_CONFIG[tierId] || TIER_CONFIG.basic;
   const TierIcon = tier.icon;
+
+  // Track success page view
+  useEffect(() => {
+    trackEvent(AnalyticsEvent.PREMIUM_SUCCESS, {
+      planType: tierId,
+    });
+  }, [trackEvent, tierId]);
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-base)]">

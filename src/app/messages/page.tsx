@@ -5,6 +5,7 @@ import Avatar from '@/components/common/Avatar';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAnalytics, AnalyticsEvent } from '@/hooks/useAnalytics';
 import { api } from '@/lib/api';
 import { storage } from '@/services/storage';
 import {
@@ -15,6 +16,9 @@ import {
   Send,
   X,
   Loader2,
+  Trash2,
+  AlertTriangle,
+  MoreVertical,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -110,68 +114,122 @@ function ConversationItem({
   conversation,
   isSelected,
   onClick,
+  onDelete,
   locale,
 }: {
   conversation: Conversation;
   isSelected: boolean;
   onClick: () => void;
+  onDelete: () => void;
   locale: string;
 }) {
   const { participant, lastMessage, unreadCount } = conversation;
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showMenu]);
 
   return (
-    <button
-      onClick={onClick}
-      className={`w-full flex items-start gap-3 p-4 text-left transition-all duration-200 border-l-2 ${
+    <div
+      className={`relative w-full flex items-start gap-3 p-4 text-left transition-all duration-200 border-l-2 group ${
         isSelected
           ? 'bg-[#FDF8F6] border-l-[#C4735B]'
           : 'border-l-transparent hover:bg-neutral-50'
       }`}
     >
-      {/* Avatar */}
-      <div className="relative flex-shrink-0">
-        <Avatar
-          src={participant.avatar}
-          name={participant.name}
-          size="md"
-          className="w-11 h-11"
-        />
-      </div>
+      {/* Main clickable area */}
+      <button onClick={onClick} className="flex items-start gap-3 flex-1 min-w-0 text-left">
+        {/* Avatar */}
+        <div className="relative flex-shrink-0">
+          <Avatar
+            src={participant.avatar}
+            name={participant.name}
+            size="md"
+            className="w-11 h-11"
+          />
+        </div>
 
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <span className="font-semibold text-neutral-900 truncate text-[15px]">
-            {participant.name}
-          </span>
-          {lastMessage && (
-            <span className="text-xs flex-shrink-0" style={{ color: isSelected ? ACCENT_COLOR : '#9ca3af' }}>
-              {formatMessageTime(lastMessage.createdAt, locale)}
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-semibold text-neutral-900 truncate text-[15px]">
+              {participant.name}
+            </span>
+            {lastMessage && (
+              <span className="text-xs flex-shrink-0" style={{ color: isSelected ? ACCENT_COLOR : '#9ca3af' }}>
+                {formatMessageTime(lastMessage.createdAt, locale)}
+              </span>
+            )}
+          </div>
+          {participant.title && (
+            <span className="text-xs font-medium uppercase tracking-wide" style={{ color: ACCENT_COLOR }}>
+              {participant.title}
             </span>
           )}
+          {lastMessage && (
+            <p className="text-sm text-neutral-500 truncate mt-0.5">
+              {lastMessage.content}
+            </p>
+          )}
         </div>
-        {participant.title && (
-          <span className="text-xs font-medium uppercase tracking-wide" style={{ color: ACCENT_COLOR }}>
-            {participant.title}
+      </button>
+
+      {/* Right side: unread badge or menu */}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        {/* Unread badge */}
+        {unreadCount > 0 && (
+          <span
+            className="min-w-[20px] h-5 px-1.5 rounded-full text-xs font-semibold text-white flex items-center justify-center"
+            style={{ backgroundColor: ACCENT_COLOR }}
+          >
+            {unreadCount}
           </span>
         )}
-        {lastMessage && (
-          <p className="text-sm text-neutral-500 truncate mt-0.5">
-            {lastMessage.content}
-          </p>
-        )}
-      </div>
 
-      {/* Unread badge */}
-      {unreadCount > 0 && (
-        <span
-          className="flex-shrink-0 min-w-[20px] h-5 px-1.5 rounded-full text-xs font-semibold text-white flex items-center justify-center"
-          style={{ backgroundColor: ACCENT_COLOR }}
-        >
-          {unreadCount}
-        </span>
-      )}
-    </button>
+        {/* Menu button */}
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowMenu(!showMenu);
+            }}
+            className={`w-7 h-7 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-all ${
+              showMenu ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+            }`}
+          >
+            <MoreVertical className="w-4 h-4" />
+          </button>
+
+          {/* Dropdown menu */}
+          {showMenu && (
+            <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-xl shadow-lg border border-neutral-200 py-1 z-20">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowMenu(false);
+                  onDelete();
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                {locale === 'ka' ? 'წაშლა' : 'Delete'}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -458,7 +516,7 @@ const ChatContent = memo(function ChatContent({
   }, [messages]);
 
   return (
-    <>
+    <div className="flex flex-col h-full overflow-hidden">
       {/* Chat Header */}
       <div className="flex-shrink-0 h-[72px] px-5 flex items-center justify-between border-b border-neutral-200 bg-white">
         <div className="flex items-center gap-3">
@@ -620,7 +678,7 @@ const ChatContent = memo(function ChatContent({
           </p>
         </div>
       </div>
-    </>
+    </div>
   );
 });
 
@@ -628,6 +686,7 @@ const ChatContent = memo(function ChatContent({
 function MessagesPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { locale } = useLanguage();
+  const { trackEvent } = useAnalytics();
   const searchParams = useSearchParams();
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -642,6 +701,10 @@ function MessagesPageContent() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Delete conversation state
+  const [deleteModalConversation, setDeleteModalConversation] = useState<Conversation | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const socketRef = useRef<Socket | null>(null);
   const initialLoadDoneRef = useRef(false);
@@ -851,6 +914,11 @@ function MessagesPageContent() {
         window.history.replaceState({}, '', `/messages?conversation=${conversation._id}`);
       }
 
+      trackEvent(AnalyticsEvent.CONVERSATION_START, {
+        proId: proProfile._id,
+        proName: proProfile.displayName || proProfile.userId?.name,
+      });
+
       // Close modal
       setShowNewConversationModal(false);
       setUserSearchQuery('');
@@ -858,7 +926,32 @@ function MessagesPageContent() {
     } catch (error) {
       console.error('Failed to start conversation:', error);
     }
-  }, []);
+  }, [trackEvent]);
+
+  // Delete conversation handler
+  const handleDeleteConversation = useCallback(async () => {
+    if (!deleteModalConversation) return;
+
+    try {
+      setIsDeleting(true);
+      await api.delete(`/conversations/${deleteModalConversation._id}`);
+
+      // Remove from list
+      setConversations(prev => prev.filter(c => c._id !== deleteModalConversation._id));
+
+      // If this was the selected conversation, deselect it
+      if (selectedConversation?._id === deleteModalConversation._id) {
+        setSelectedConversation(null);
+        window.history.replaceState({}, '', '/messages');
+      }
+
+      setDeleteModalConversation(null);
+    } catch (error) {
+      console.error('Failed to delete conversation:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [deleteModalConversation, selectedConversation]);
 
   if (authLoading || isLoading) {
     return (
@@ -951,6 +1044,7 @@ function MessagesPageContent() {
                   conversation={conv}
                   isSelected={selectedConversation?._id === conv._id}
                   onClick={() => handleSelectConversation(conv)}
+                  onDelete={() => setDeleteModalConversation(conv)}
                   locale={locale}
                 />
               ))
@@ -1092,6 +1186,96 @@ function MessagesPageContent() {
                   <p>{locale === 'ka' ? 'მოძებნე პროფესიონალი' : 'Search for a professional to start a conversation'}</p>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalConversation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => !isDeleting && setDeleteModalConversation(null)}
+          />
+
+          {/* Modal */}
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 border-b border-neutral-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-neutral-900">
+                  {locale === 'ka' ? 'მიმოწერის წაშლა' : 'Delete Conversation'}
+                </h3>
+              </div>
+              <button
+                onClick={() => !isDeleting && setDeleteModalConversation(null)}
+                disabled={isDeleting}
+                className="p-2 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors disabled:opacity-50"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-5">
+              <p className="text-neutral-600 mb-4">
+                {locale === 'ka'
+                  ? 'ნამდვილად გსურთ ამ მიმოწერის წაშლა? ეს მოქმედება შეუქცევადია და ყველა შეტყობინება წაიშლება.'
+                  : 'Are you sure you want to delete this conversation? This action cannot be undone and all messages will be permanently deleted.'}
+              </p>
+
+              {/* Conversation preview */}
+              <div className="bg-neutral-50 rounded-xl p-4 flex items-center gap-3">
+                <Avatar
+                  src={deleteModalConversation.participant.avatar}
+                  name={deleteModalConversation.participant.name}
+                  size="md"
+                  className="w-11 h-11"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-neutral-900 text-sm">
+                    {deleteModalConversation.participant.name}
+                  </p>
+                  {deleteModalConversation.lastMessage && (
+                    <p className="text-xs text-neutral-500 truncate mt-0.5">
+                      {deleteModalConversation.lastMessage.content}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-3 p-5 border-t border-neutral-100 bg-neutral-50">
+              <button
+                onClick={() => setDeleteModalConversation(null)}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border border-neutral-200 text-neutral-700 hover:bg-neutral-100 transition-colors disabled:opacity-50"
+              >
+                {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+              </button>
+              <button
+                onClick={handleDeleteConversation}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    {locale === 'ka' ? 'იშლება...' : 'Deleting...'}
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    {locale === 'ka' ? 'წაშლა' : 'Delete'}
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

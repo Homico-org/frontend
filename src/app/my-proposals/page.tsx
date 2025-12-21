@@ -434,7 +434,7 @@ function MyProposalsPageContent() {
           <div className="myproposals-list">
             {proposals.map((proposal) => {
               const job = proposal.jobId;
-              if (!job) return null;
+              if (!job || typeof job === 'string') return null;
 
               const StatusIcon = getStatusIcon(proposal.status);
               const allMedia = [

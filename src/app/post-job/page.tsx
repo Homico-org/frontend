@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/contexts/ToastContext";
+import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { api } from "@/lib/api";
 import { storage } from "@/services/storage";
 import {
@@ -168,6 +169,7 @@ function PostJobPageContent() {
   const { openLoginModal } = useAuthModal();
   const { locale } = useLanguage();
   const toast = useToast();
+  const { trackEvent } = useAnalytics();
   const router = useRouter();
   const searchParams = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -219,7 +221,7 @@ function PostJobPageContent() {
 
   // Auth check
   useEffect(() => {
-    const canPostJob = user?.role === "client" || user?.role === "pro";
+    const canPostJob = user?.role === "client" || user?.role === "pro" || user?.role === "company" || user?.role === "admin";
     if (!authLoading && (!isAuthenticated || !canPostJob)) {
       openLoginModal("/post-job");
     }
@@ -466,6 +468,11 @@ function PostJobPageContent() {
             ? "თქვენი პროექტი წარმატებით გამოქვეყნდა"
             : "Your project has been successfully posted"
       );
+
+      trackEvent(isEditMode ? AnalyticsEvent.JOB_EDIT : AnalyticsEvent.JOB_POST, {
+        jobCategory: selectedCategory,
+        jobBudget: formData.budgetType === 'fixed' ? parseFloat(formData.budgetAmount) : parseFloat(formData.budgetMax),
+      });
 
       router.push("/my-jobs");
     } catch (err: any) {

@@ -1,10 +1,10 @@
 "use client";
 
 import JobCard from "@/components/common/JobCard";
-import { JOB_BUDGET_FILTERS } from "@/components/browse/JobsFiltersSidebar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useJobsContext } from "@/contexts/JobsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAnalytics, AnalyticsEvent } from "@/hooks/useAnalytics";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -53,6 +53,7 @@ interface Job {
 export default function JobsPage() {
   const { locale } = useLanguage();
   const { user, isLoading: isAuthLoading } = useAuth();
+  const { trackEvent } = useAnalytics();
   const router = useRouter();
   const { filters, savedJobIds, handleSaveJob, appliedJobIds } = useJobsContext();
 
@@ -120,10 +121,11 @@ export default function JobsPage() {
         }
 
         // Apply budget filter
-        const budgetFilter = JOB_BUDGET_FILTERS.find(f => f.key === filters.budget);
-        if (budgetFilter && filters.budget !== 'all') {
-          if (budgetFilter.min !== undefined) params.append("budgetMin", budgetFilter.min.toString());
-          if (budgetFilter.max !== undefined) params.append("budgetMax", budgetFilter.max.toString());
+        if (filters.budgetMin !== null) {
+          params.append("budgetMin", filters.budgetMin.toString());
+        }
+        if (filters.budgetMax !== null) {
+          params.append("budgetMax", filters.budgetMax.toString());
         }
 
         // Apply property type filter
@@ -188,7 +190,7 @@ export default function JobsPage() {
         setIsLoadingMore(false);
       }
     },
-    [isPro, filters.category, filters.budget, filters.propertyType, filters.location, filters.searchQuery, filters.deadline, filters.showFavoritesOnly]
+    [isPro, filters.category, filters.budgetMin, filters.budgetMax, filters.propertyType, filters.location, filters.searchQuery, filters.deadline, filters.showFavoritesOnly]
   );
 
   // Track if initial fetch has been done
@@ -205,10 +207,18 @@ export default function JobsPage() {
       return;
     }
 
+    // Track search/filter events
+    if (filters.searchQuery) {
+      trackEvent(AnalyticsEvent.JOB_SEARCH, { searchQuery: filters.searchQuery, jobCategory: filters.category || undefined });
+    }
+    if (filters.category) {
+      trackEvent(AnalyticsEvent.JOB_FILTER, { jobCategory: filters.category });
+    }
+
     // For filter changes, reset and fetch
     setPage(1);
     fetchJobs(1, true);
-  }, [isPro, filters.category, filters.budget, filters.propertyType, filters.location, filters.searchQuery, filters.deadline, filters.showFavoritesOnly, fetchJobs]);
+  }, [isPro, filters.category, filters.budgetMin, filters.budgetMax, filters.propertyType, filters.location, filters.searchQuery, filters.deadline, filters.showFavoritesOnly, fetchJobs, trackEvent]);
 
   // Infinite scroll
   useEffect(() => {

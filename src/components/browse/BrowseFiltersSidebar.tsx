@@ -3,7 +3,8 @@
 import { useBrowseContext } from '@/contexts/BrowseContext';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useState } from 'react';
+import { ChevronDown } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 
 // Muted terracotta color matching design
 const ACCENT_COLOR = '#C47B65';
@@ -43,6 +44,181 @@ const DefaultCategoryIcon = () => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
   </svg>
 );
+
+// Category Accordion with smooth animation
+function CategoryAccordion({
+  categoryKey,
+  categoryLabel,
+  categoryIcon,
+  isExpanded,
+  onToggle,
+  subcategories,
+  selectedCategory,
+  selectedSubcategory,
+  onSubcategoryToggle,
+  locale,
+}: {
+  categoryKey: string;
+  categoryLabel: string;
+  categoryIcon: React.ReactNode;
+  isExpanded: boolean;
+  onToggle: () => void;
+  subcategories: { key: string; name: string; nameKa: string }[];
+  selectedCategory: string | null;
+  selectedSubcategory: string | null;
+  onSubcategoryToggle: (categoryKey: string, subcategoryKey: string) => void;
+  locale: string;
+}) {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState(0);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      setHeight(contentRef.current.scrollHeight);
+    }
+  }, [subcategories, isExpanded]);
+
+  return (
+    <div className="bg-white rounded-xl border border-neutral-100 shadow-sm overflow-hidden">
+      {/* Category Header */}
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-neutral-50 transition-colors group"
+      >
+        <div className="flex items-center gap-3">
+          <span style={{ color: ACCENT_COLOR }} className="transition-transform duration-200 group-hover:scale-110">
+            {categoryIcon}
+          </span>
+          <span className="text-sm font-medium text-neutral-800">
+            {categoryLabel}
+          </span>
+        </div>
+        <ChevronDown
+          className={`w-4 h-4 text-neutral-400 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+            isExpanded ? 'rotate-180 text-neutral-600' : 'rotate-0'
+          }`}
+        />
+      </button>
+
+      {/* Subcategories (animated content) */}
+      <div
+        className="overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+        style={{
+          maxHeight: isExpanded ? height : 0,
+          opacity: isExpanded ? 1 : 0,
+        }}
+      >
+        <div ref={contentRef} className="px-4 pb-3 space-y-2.5">
+          {subcategories.map((sub, index) => {
+            const isSelected = selectedCategory === categoryKey && selectedSubcategory === sub.key;
+            const subLabel = locale === 'ka' ? sub.nameKa : sub.name;
+
+            return (
+              <button
+                key={sub.key}
+                onClick={() => onSubcategoryToggle(categoryKey, sub.key)}
+                className="flex items-center gap-3 w-full text-left group pl-8 transition-all duration-200"
+                style={{
+                  transitionDelay: isExpanded ? `${index * 30}ms` : '0ms',
+                  opacity: isExpanded ? 1 : 0,
+                  transform: isExpanded ? 'translateX(0)' : 'translateX(-8px)',
+                }}
+              >
+                {/* Rounded Square Checkbox */}
+                <div
+                  className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
+                    isSelected
+                      ? 'scale-105'
+                      : 'border-neutral-300 group-hover:border-neutral-400 bg-white group-hover:scale-105'
+                  }`}
+                  style={isSelected ? { borderColor: ACCENT_COLOR, backgroundColor: ACCENT_COLOR } : {}}
+                >
+                  {isSelected && (
+                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+                <span className={`text-sm transition-colors duration-200 ${isSelected ? 'font-medium text-neutral-900' : 'text-neutral-600 group-hover:text-neutral-900'}`}>
+                  {subLabel}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Collapsible Section Component
+function CollapsibleCard({
+  title,
+  children,
+  defaultOpen = true,
+  activeCount = 0,
+}: {
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+  activeCount?: number;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState<number>(0);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      const resizeObserver = new ResizeObserver(() => {
+        if (contentRef.current) {
+          setHeight(contentRef.current.scrollHeight);
+        }
+      });
+      resizeObserver.observe(contentRef.current);
+      setHeight(contentRef.current.scrollHeight);
+      return () => resizeObserver.disconnect();
+    }
+  }, [children]);
+
+  return (
+    <div className="bg-white rounded-xl border border-neutral-100 shadow-sm overflow-hidden">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-neutral-50 transition-colors group"
+      >
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-neutral-900 group-hover:text-neutral-700 transition-colors">
+            {title}
+          </h3>
+          {activeCount > 0 && (
+            <span
+              className="text-[10px] font-bold w-5 h-5 rounded-full text-white flex items-center justify-center"
+              style={{ backgroundColor: ACCENT_COLOR }}
+            >
+              {activeCount}
+            </span>
+          )}
+        </div>
+        <ChevronDown
+          className={`w-4 h-4 text-neutral-400 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+            isOpen ? 'rotate-180 text-neutral-600' : 'rotate-0'
+          }`}
+        />
+      </button>
+      <div
+        className="overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+        style={{
+          maxHeight: isOpen ? height : 0,
+          opacity: isOpen ? 1 : 0,
+        }}
+      >
+        <div ref={contentRef} className="px-4 pb-4">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface BrowseFiltersSidebarProps {
   showRatingFilter?: boolean;
@@ -161,82 +337,29 @@ export default function BrowseFiltersSidebar({
             const CategoryIcon = CATEGORY_ICONS[categoryKey] || <DefaultCategoryIcon />;
 
             return (
-              <div
+              <CategoryAccordion
                 key={categoryKey}
-                className="bg-white rounded-xl border border-neutral-100 shadow-sm overflow-hidden"
-              >
-                {/* Category Header */}
-                <button
-                  onClick={() => toggleCategoryExpand(categoryKey)}
-                  className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-neutral-50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <span style={{ color: ACCENT_COLOR }}>
-                      {CategoryIcon}
-                    </span>
-                    <span className="text-sm font-medium text-neutral-800">
-                      {categoryLabel}
-                    </span>
-                  </div>
-                  <svg
-                    className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                {/* Subcategories (expanded content) */}
-                {isExpanded && subcategories.length > 0 && (
-                  <div className="px-4 pb-3 space-y-2.5">
-                    {subcategories.map((sub) => {
-                      const isSelected = selectedCategory === categoryKey && selectedSubcategory === sub.key;
-                      const subLabel = locale === 'ka' ? sub.nameKa : sub.name;
-
-                      return (
-                        <button
-                          key={sub.key}
-                          onClick={() => handleSubcategoryToggle(categoryKey, sub.key)}
-                          className="flex items-center gap-3 w-full text-left group pl-8"
-                        >
-                          {/* Rounded Square Checkbox */}
-                          <div
-                            className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0 ${
-                              isSelected
-                                ? ''
-                                : 'border-neutral-300 group-hover:border-neutral-400 bg-white'
-                            }`}
-                            style={isSelected ? { borderColor: ACCENT_COLOR, backgroundColor: ACCENT_COLOR } : {}}
-                          >
-                            {isSelected && (
-                              <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                              </svg>
-                            )}
-                          </div>
-                          <span className={`text-sm ${isSelected ? 'font-medium text-neutral-900' : 'text-neutral-600'}`}>
-                            {subLabel}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+                categoryKey={categoryKey}
+                categoryLabel={categoryLabel}
+                categoryIcon={CategoryIcon}
+                isExpanded={isExpanded}
+                onToggle={() => toggleCategoryExpand(categoryKey)}
+                subcategories={subcategories}
+                selectedCategory={selectedCategory}
+                selectedSubcategory={selectedSubcategory}
+                onSubcategoryToggle={handleSubcategoryToggle}
+                locale={locale}
+              />
             );
           })}
         </div>
 
         {/* Price Range Zone */}
         {showBudgetFilter && (
-          <div className="bg-white rounded-xl border border-neutral-100 shadow-sm p-4">
-            <h3 className="text-sm font-semibold text-neutral-900 mb-4">
-              {locale === 'ka' ? 'ფასის დიაპაზონი (₾)' : 'Price Range (₾)'}
-            </h3>
-
+          <CollapsibleCard
+            title={locale === 'ka' ? 'ფასის დიაპაზონი (₾)' : 'Price Range (₾)'}
+            activeCount={(budgetMin !== null || budgetMax !== null) ? 1 : 0}
+          >
             <div className="flex items-center gap-3">
               {/* Min Input */}
               <div className="flex-1">
@@ -267,16 +390,15 @@ export default function BrowseFiltersSidebar({
                 />
               </div>
             </div>
-          </div>
+          </CollapsibleCard>
         )}
 
         {/* Rating Zone */}
         {showRatingFilter && (
-          <div className="bg-white rounded-xl border border-neutral-100 shadow-sm p-4">
-            <h3 className="text-sm font-semibold text-neutral-900 mb-4">
-              {locale === 'ka' ? 'რეიტინგი' : 'Rating'}
-            </h3>
-
+          <CollapsibleCard
+            title={locale === 'ka' ? 'რეიტინგი' : 'Rating'}
+            activeCount={minRating > 0 ? 1 : 0}
+          >
             <div className="space-y-3">
               {/* 4 stars & up */}
               <button
@@ -284,10 +406,10 @@ export default function BrowseFiltersSidebar({
                 className="flex items-center gap-3 w-full text-left group"
               >
                 <div
-                  className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                  className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
                     minRating === 4
-                      ? ''
-                      : 'border-neutral-300 group-hover:border-neutral-400 bg-white'
+                      ? 'scale-105'
+                      : 'border-neutral-300 group-hover:border-neutral-400 bg-white group-hover:scale-105'
                   }`}
                   style={minRating === 4 ? { borderColor: ACCENT_COLOR, backgroundColor: ACCENT_COLOR } : {}}
                 >
@@ -299,7 +421,7 @@ export default function BrowseFiltersSidebar({
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="flex">{renderStars(5, 4)}</div>
-                  <span className="text-sm text-neutral-600">& up</span>
+                  <span className="text-sm text-neutral-600 group-hover:text-neutral-900 transition-colors">& up</span>
                 </div>
               </button>
 
@@ -309,10 +431,10 @@ export default function BrowseFiltersSidebar({
                 className="flex items-center gap-3 w-full text-left group"
               >
                 <div
-                  className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                  className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
                     minRating === 3
-                      ? ''
-                      : 'border-neutral-300 group-hover:border-neutral-400 bg-white'
+                      ? 'scale-105'
+                      : 'border-neutral-300 group-hover:border-neutral-400 bg-white group-hover:scale-105'
                   }`}
                   style={minRating === 3 ? { borderColor: ACCENT_COLOR, backgroundColor: ACCENT_COLOR } : {}}
                 >
@@ -324,11 +446,11 @@ export default function BrowseFiltersSidebar({
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="flex">{renderStars(5, 3)}</div>
-                  <span className="text-sm text-neutral-600">& up</span>
+                  <span className="text-sm text-neutral-600 group-hover:text-neutral-900 transition-colors">& up</span>
                 </div>
               </button>
             </div>
-          </div>
+          </CollapsibleCard>
         )}
       </div>
     </aside>
