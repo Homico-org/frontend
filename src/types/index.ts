@@ -83,7 +83,6 @@ export interface ProProfile {
   createdAt: Date;
   designStyles: string[];
   email: string;
-  idNumber: string;
   isActive: boolean;
   isAvailable: boolean;
   isEmailVerified: boolean;

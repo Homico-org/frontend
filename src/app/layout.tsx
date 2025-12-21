@@ -9,9 +9,9 @@ export const metadata: Metadata = {
   title: 'Homico - იპოვე შენი იდეალური სახლის პროფესიონალი',
   description: 'ხელოსნების, ინტერიერის დიზაინერების, არქიტექტორებისა და სარემონტო პროფესიონალების მარკეტპლეისი',
   icons: {
-    icon: '/favicon.svg',
-    shortcut: '/favicon.svg',
-    apple: '/favicon.svg',
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
   },
 };
 

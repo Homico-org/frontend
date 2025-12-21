@@ -6,6 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useMessages } from "@/contexts/MessagesContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { FileText, Hammer, MessageCircle, Plus, X, User, UserPlus, LogIn } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Avatar from "./Avatar";
@@ -76,16 +77,15 @@ export default function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 h-14 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a]">
       <div className="h-full max-w-[1800px] mx-auto px-4 sm:px-6 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/browse" className="flex items-center gap-2">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center"
-            style={{ backgroundColor: ACCENT_COLOR }}
-          >
-            <span className="text-white font-bold text-sm">ჰ</span>
-          </div>
-          <span className="font-semibold text-neutral-900 dark:text-white hidden sm:block">
-            ჰომიკო
-          </span>
+        <Link href="/browse" className="flex items-center">
+          <Image
+            src="/icon.svg"
+            alt="Homico"
+            width={120}
+            height={30}
+            className="h-7 w-auto dark:invert"
+            priority
+          />
         </Link>
 
         {/* Right side - Actions + Profile */}
@@ -425,17 +425,13 @@ export default function Header() {
           >
             {/* Menu Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center"
-                  style={{ backgroundColor: ACCENT_COLOR }}
-                >
-                  <span className="text-white font-bold text-base">ჰ</span>
-                </div>
-                <span className="font-semibold text-neutral-900 dark:text-white text-lg">
-                  ჰომიკო
-                </span>
-              </div>
+              <Image
+                src="/icon.svg"
+                alt="Homico"
+                width={100}
+                height={25}
+                className="h-6 w-auto dark:invert"
+              />
               <button
                 onClick={() => setShowMobileMenu(false)}
                 className="w-10 h-10 rounded-xl flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all active:scale-95"
