@@ -103,7 +103,6 @@ interface ProProfile {
   tagline?: string;
   responseTime?: string;
   createdAt?: string;
-  avatar?: string;
   isPremium?: boolean;
   premiumTier?: 'none' | 'basic' | 'pro' | 'elite';
   portfolioProjects?: PortfolioProject[];
