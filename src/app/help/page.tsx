@@ -189,7 +189,7 @@ export default function HelpPage() {
       case 'in_progress':
         return 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400';
       case 'resolved':
-        return 'bg-[#D2691E]/5 text-[#D2691E] dark:bg-[#D2691E]/10 dark:text-[#CD853F]';
+        return 'bg-[#C4735B]/5 text-[#C4735B] dark:bg-[#C4735B]/10 dark:text-[#E8956A]';
       case 'closed':
         return 'bg-neutral-100 text-neutral-600 dark:bg-neutral-500/10 dark:text-neutral-400';
       default:
@@ -212,15 +212,14 @@ export default function HelpPage() {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-forest-800 via-forest-700 to-forest-800" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(80,200,120,0.12),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(201,109,77,0.08),transparent_50%)]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#C4735B] via-[#B8654D] to-[#A85A45]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.1),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(0,0,0,0.1),transparent_60%)]" />
 
-        {/* Decorative Elements */}
-        <div className="absolute top-20 left-10 w-32 h-32 border border-white/5 rounded-full" />
-        <div className="absolute bottom-10 right-20 w-48 h-48 border border-white/5 rounded-full" />
-        <div className="absolute top-40 right-1/4 w-2 h-2 bg-primary-400/40 rounded-full" />
-        <div className="absolute bottom-20 left-1/3 w-1.5 h-1.5 bg-terracotta-400/40 rounded-full" />
+        {/* Decorative geometric elements */}
+        <div className="absolute top-1/4 left-8 w-px h-24 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
+        <div className="absolute top-1/3 right-12 w-px h-32 bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+        <div className="absolute bottom-8 left-1/4 w-16 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
           <div className="text-center">
@@ -269,7 +268,7 @@ export default function HelpPage() {
                     setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
                   }
                 }}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-forest-800 hover:bg-forest-700 text-white text-sm font-medium rounded-xl transition-all duration-200"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#C4735B] hover:bg-[#B8654D] text-white text-sm font-medium rounded-xl transition-all duration-200"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -294,7 +293,7 @@ export default function HelpPage() {
                       value={ticketForm.subject}
                       onChange={(e) => setTicketForm({ ...ticketForm, subject: e.target.value })}
                       required
-                      className="w-full px-4 py-3 bg-cream-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl text-neutral-900 dark:text-neutral-50 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-forest-800/20 dark:focus:ring-primary-400/20 focus:border-forest-800 dark:focus:border-primary-400 transition-all duration-200"
+                      className="w-full px-4 py-3 bg-cream-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl text-neutral-900 dark:text-neutral-50 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B]/20 dark:focus:ring-[#E8956A]/20 focus:border-[#C4735B] dark:focus:border-[#E8956A] transition-all duration-200"
                       placeholder={t('helpPage.myTickets.subjectPlaceholder')}
                     />
                   </div>
@@ -307,7 +306,7 @@ export default function HelpPage() {
                       <select
                         value={ticketForm.category}
                         onChange={(e) => setTicketForm({ ...ticketForm, category: e.target.value })}
-                        className="w-full px-4 py-3 bg-cream-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl text-neutral-900 dark:text-neutral-50 focus:outline-none focus:ring-2 focus:ring-forest-800/20 dark:focus:ring-primary-400/20 focus:border-forest-800 dark:focus:border-primary-400 transition-all duration-200"
+                        className="w-full px-4 py-3 bg-cream-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl text-neutral-900 dark:text-neutral-50 focus:outline-none focus:ring-2 focus:ring-[#C4735B]/20 dark:focus:ring-[#E8956A]/20 focus:border-[#C4735B] dark:focus:border-[#E8956A] transition-all duration-200"
                       >
                         <option value="account">{t('helpPage.ticketCategories.account')}</option>
                         <option value="job">{t('helpPage.ticketCategories.job')}</option>
@@ -323,7 +322,7 @@ export default function HelpPage() {
                       <select
                         value={ticketForm.priority}
                         onChange={(e) => setTicketForm({ ...ticketForm, priority: e.target.value as 'low' | 'medium' | 'high' })}
-                        className="w-full px-4 py-3 bg-cream-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl text-neutral-900 dark:text-neutral-50 focus:outline-none focus:ring-2 focus:ring-forest-800/20 dark:focus:ring-primary-400/20 focus:border-forest-800 dark:focus:border-primary-400 transition-all duration-200"
+                        className="w-full px-4 py-3 bg-cream-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl text-neutral-900 dark:text-neutral-50 focus:outline-none focus:ring-2 focus:ring-[#C4735B]/20 dark:focus:ring-[#E8956A]/20 focus:border-[#C4735B] dark:focus:border-[#E8956A] transition-all duration-200"
                       >
                         <option value="low">{t('helpPage.priorities.low')}</option>
                         <option value="medium">{t('helpPage.priorities.medium')}</option>
@@ -341,7 +340,7 @@ export default function HelpPage() {
                       onChange={(e) => setTicketForm({ ...ticketForm, message: e.target.value })}
                       required
                       rows={4}
-                      className="w-full px-4 py-3 bg-cream-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl text-neutral-900 dark:text-neutral-50 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-forest-800/20 dark:focus:ring-primary-400/20 focus:border-forest-800 dark:focus:border-primary-400 transition-all duration-200 resize-none"
+                      className="w-full px-4 py-3 bg-cream-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl text-neutral-900 dark:text-neutral-50 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B]/20 dark:focus:ring-[#E8956A]/20 focus:border-[#C4735B] dark:focus:border-[#E8956A] transition-all duration-200 resize-none"
                       placeholder={t('helpPage.myTickets.messagePlaceholder')}
                     />
                   </div>
@@ -361,7 +360,7 @@ export default function HelpPage() {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="px-5 py-2.5 bg-forest-800 hover:bg-forest-700 disabled:opacity-50 text-white text-sm font-medium rounded-xl transition-all duration-200 flex items-center gap-2"
+                      className="px-5 py-2.5 bg-[#C4735B] hover:bg-[#B8654D] disabled:opacity-50 text-white text-sm font-medium rounded-xl transition-all duration-200 flex items-center gap-2"
                     >
                       {isSubmitting ? (
                         <>
@@ -469,8 +468,8 @@ export default function HelpPage() {
                 onClick={() => setActiveCategory(cat.id)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                   activeCategory === cat.id
-                    ? 'bg-gradient-to-r from-[#D2691E] to-[#CD853F] text-white shadow-lg shadow-[#D2691E]/20'
-                    : 'bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm text-neutral-600 dark:text-neutral-400 hover:bg-[#D2691E]/5 dark:hover:bg-[#CD853F]/10 border border-[#D2691E]/10 dark:border-[#CD853F]/15'
+                    ? 'bg-gradient-to-r from-[#C4735B] to-[#B8654D] text-white shadow-lg shadow-[#C4735B]/20'
+                    : 'bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm text-neutral-600 dark:text-neutral-400 hover:bg-[#C4735B]/5 dark:hover:bg-[#E8956A]/10 border border-[#C4735B]/10 dark:border-[#E8956A]/15'
                 }`}
               >
                 {cat.label}
@@ -479,7 +478,7 @@ export default function HelpPage() {
           </div>
 
           {/* FAQ Items */}
-          <div className="bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm rounded-2xl border border-[#D2691E]/10 dark:border-[#CD853F]/15 shadow-[0_2px_12px_rgba(210,105,30,0.06)] overflow-hidden">
+          <div className="bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm rounded-2xl border border-[#C4735B]/10 dark:border-[#E8956A]/15 shadow-[0_2px_12px_rgba(196,115,91,0.06)] overflow-hidden">
             {filteredFaqs.map((faq, index) => (
               <div
                 key={index}
@@ -540,14 +539,14 @@ export default function HelpPage() {
                         onClick={() => setContactForm({ ...contactForm, type: type.value as 'general' | 'account_issue' | 'feedback' })}
                         className={`p-4 rounded-xl border-2 transition-all duration-200 text-center ${
                           contactForm.type === type.value
-                            ? 'border-forest-800 dark:border-primary-400 bg-forest-800/5 dark:bg-primary-400/10'
+                            ? 'border-[#C4735B] dark:border-[#E8956A] bg-[#C4735B]/5 dark:bg-[#E8956A]/10'
                             : 'border-neutral-200 dark:border-dark-border hover:border-neutral-300 dark:hover:border-neutral-600'
                         }`}
                       >
-                        <svg className={`w-5 h-5 mx-auto mb-2 ${contactForm.type === type.value ? 'text-forest-800 dark:text-primary-400' : 'text-neutral-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className={`w-5 h-5 mx-auto mb-2 ${contactForm.type === type.value ? 'text-[#C4735B] dark:text-[#E8956A]' : 'text-neutral-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={type.icon} />
                         </svg>
-                        <span className={`text-sm font-medium ${contactForm.type === type.value ? 'text-forest-800 dark:text-primary-400' : 'text-neutral-600 dark:text-neutral-400'}`}>
+                        <span className={`text-sm font-medium ${contactForm.type === type.value ? 'text-[#C4735B] dark:text-[#E8956A]' : 'text-neutral-600 dark:text-neutral-400'}`}>
                           {type.label}
                         </span>
                       </button>
@@ -563,7 +562,7 @@ export default function HelpPage() {
                     type="email"
                     value={contactForm.contactEmail}
                     onChange={(e) => setContactForm({ ...contactForm, contactEmail: e.target.value })}
-                    className="w-full px-4 py-3 bg-cream-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl text-neutral-900 dark:text-neutral-50 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-forest-800/20 dark:focus:ring-primary-400/20 focus:border-forest-800 dark:focus:border-primary-400 transition-all duration-200"
+                    className="w-full px-4 py-3 bg-cream-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl text-neutral-900 dark:text-neutral-50 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B]/20 dark:focus:ring-[#E8956A]/20 focus:border-[#C4735B] dark:focus:border-[#E8956A] transition-all duration-200"
                     placeholder={t('helpPage.contact.emailPlaceholder')}
                   />
                 </div>
@@ -577,7 +576,7 @@ export default function HelpPage() {
                     onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
                     required
                     rows={4}
-                    className="w-full px-4 py-3 bg-cream-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl text-neutral-900 dark:text-neutral-50 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-forest-800/20 dark:focus:ring-primary-400/20 focus:border-forest-800 dark:focus:border-primary-400 transition-all duration-200 resize-none"
+                    className="w-full px-4 py-3 bg-cream-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl text-neutral-900 dark:text-neutral-50 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B]/20 dark:focus:ring-[#E8956A]/20 focus:border-[#C4735B] dark:focus:border-[#E8956A] transition-all duration-200 resize-none"
                     placeholder={t('helpPage.contact.messagePlaceholder')}
                   />
                 </div>
@@ -589,7 +588,7 @@ export default function HelpPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting || !contactForm.message.trim()}
-                  className="w-full py-3.5 bg-forest-800 hover:bg-forest-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+                  className="w-full py-3.5 bg-[#C4735B] hover:bg-[#B8654D] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
@@ -618,7 +617,7 @@ export default function HelpPage() {
               </p>
               <button
                 onClick={() => openLoginModal()}
-                className="inline-flex items-center gap-2 text-forest-800 dark:text-primary-400 font-medium text-sm hover:underline"
+                className="inline-flex items-center gap-2 text-[#C4735B] dark:text-[#E8956A] font-medium text-sm hover:underline"
               >
                 {t('auth.signIn')}
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -633,11 +632,11 @@ export default function HelpPage() {
         <section>
           <div className="grid sm:grid-cols-2 gap-4">
             <a
-              href="mailto:support@homico.ge"
-              className="group p-6 bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border hover:border-forest-800/20 dark:hover:border-primary-400/20 hover:shadow-lg transition-all duration-300"
+              href="mailto:info@homico.ge"
+              className="group p-6 bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border hover:border-[#C4735B]/20 dark:hover:border-[#E8956A]/20 hover:shadow-lg transition-all duration-300"
             >
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-forest-800 to-forest-700 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#C4735B] to-[#B8654D] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
                   </svg>
@@ -649,8 +648,8 @@ export default function HelpPage() {
                   <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-2">
                     {t('helpPage.contactCards.email.description')}
                   </p>
-                  <span className="text-forest-800 dark:text-primary-400 font-medium text-sm">
-                    support@homico.ge
+                  <span className="text-[#C4735B] dark:text-[#E8956A] font-medium text-sm">
+                    info@homico.ge
                   </span>
                 </div>
               </div>
@@ -658,7 +657,7 @@ export default function HelpPage() {
 
             <div className="p-6 bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-terracotta-500 to-terracotta-600 flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#C4735B] to-[#B8654D] flex items-center justify-center flex-shrink-0">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -670,7 +669,7 @@ export default function HelpPage() {
                   <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-2">
                     {t('helpPage.contactCards.response.description')}
                   </p>
-                  <span className="text-terracotta-600 dark:text-terracotta-400 font-medium text-sm">
+                  <span className="text-[#C4735B] dark:text-[#E8956A] font-medium text-sm">
                     {t('helpPage.contactCards.response.time')}
                   </span>
                 </div>
