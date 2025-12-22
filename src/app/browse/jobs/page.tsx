@@ -76,27 +76,6 @@ export default function JobsPage() {
   // Jobs are filtered on the backend when showFavoritesOnly is true
   const displayedJobs = jobs;
 
-  // Mock images for demo
-  const mockImageSets = [
-    [
-      "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80",
-      "https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=800&q=80",
-    ],
-    [
-      "https://images.unsplash.com/photo-1585128792020-803d29415281?w=800&q=80",
-      "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800&q=80",
-    ],
-    [
-      "https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?w=800&q=80",
-    ],
-    [
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
-    ],
-    [
-      "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&q=80",
-    ],
-    [],
-  ];
 
   // Fetch jobs with filters - filtered by pro's selected categories/subcategories
   const fetchJobs = useCallback(
@@ -179,16 +158,7 @@ export default function JobsPage() {
         if (!response.ok) throw new Error("Failed to fetch jobs");
 
         const data = await response.json();
-        let jobsList = data.data || data.jobs || [];
-
-        // Add mock images to jobs for demo purposes
-        jobsList = jobsList.map((job: Job, index: number) => {
-          if ((!job.images || job.images.length === 0) && (!job.media || job.media.length === 0)) {
-            const mockImages = mockImageSets[index % mockImageSets.length];
-            return { ...job, images: mockImages };
-          }
-          return job;
-        });
+        const jobsList = data.data || data.jobs || [];
 
         if (reset) {
           setJobs(jobsList);

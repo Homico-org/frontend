@@ -18,7 +18,7 @@ const ACCENT_COLOR = '#C4735B';
 export default function Header() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const { openLoginModal } = useAuthModal();
-  const { getCategoryName, getSubcategoryName } = useCategories();
+  const { flatCategories } = useCategories();
   const { t, locale } = useLanguage();
   const { unreadCount } = useNotifications();
   const { unreadCount: unreadMessagesCount } = useMessages();
@@ -26,6 +26,13 @@ export default function Header() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Helper to get subcategory name from flat categories
+  const getSubcategoryDisplayName = useCallback((key: string): string => {
+    const item = flatCategories.find(c => c.key === key && (c.type === 'subcategory' || c.type === 'subsubcategory'));
+    if (!item) return key;
+    return locale === 'ka' ? item.nameKa : item.name;
+  }, [flatCategories, locale]);
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -238,7 +245,7 @@ export default function Header() {
                                   className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium"
                                   style={{ background: 'rgba(255, 255, 255, 0.9)', color: ACCENT_COLOR }}
                                 >
-                                  {getSubcategoryName(subKey, locale as 'en' | 'ka')}
+                                  {getSubcategoryDisplayName(subKey)}
                                 </span>
                               ))}
                               {user.selectedSubcategories.length > 2 && (
@@ -263,18 +270,18 @@ export default function Header() {
                           <Link
                             href="/pro/premium"
                             className="group flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-200 mx-2 rounded-xl"
-                            style={{ background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(168, 85, 247, 0.05) 100%)', border: '1px solid rgba(139, 92, 246, 0.15)' }}
+                            style={{ background: `linear-gradient(135deg, ${ACCENT_COLOR}12 0%, ${ACCENT_COLOR}08 100%)`, border: `1px solid ${ACCENT_COLOR}25` }}
                             onClick={() => setShowDropdown(false)}
                           >
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%)' }}>
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${ACCENT_COLOR} 0%, #B8654D 100%)` }}>
                               <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3l7 4 7-4v11l-7 4-7-4V3z" />
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 7v10" />
                               </svg>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <span className="font-semibold text-purple-700 block">{locale === 'ka' ? 'პრემიუმ გეგმები' : 'Premium Plans'}</span>
-                              <span className="text-[10px] text-purple-600/70">{locale === 'ka' ? 'გაზარდე ხილვადობა' : 'Boost visibility'}</span>
+                              <span className="font-semibold block" style={{ color: ACCENT_COLOR }}>{locale === 'ka' ? 'პრემიუმ გეგმები' : 'Premium Plans'}</span>
+                              <span className="text-[10px]" style={{ color: `${ACCENT_COLOR}99` }}>{locale === 'ka' ? 'გაზარდე ხილვადობა' : 'Boost visibility'}</span>
                             </div>
                           </Link>
                           <Link

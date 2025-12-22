@@ -2,12 +2,13 @@
 
 import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
+import AvatarCropper from '@/components/common/AvatarCropper';
 import BackButton from '@/components/common/BackButton';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { AlertCircle, Bell, BriefcaseBusiness, Camera, Check, CheckCircle2, ChevronRight, CreditCard, Eye, EyeOff, FileText, Loader2, Lock, Mail, Megaphone, MessageSquare, Send, Shield, Smartphone, User, X } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Bell, BriefcaseBusiness, Camera, Check, CheckCircle2, ChevronRight, CreditCard, Eye, EyeOff, FileText, Loader2, Lock, Mail, Megaphone, MessageSquare, Send, Shield, Smartphone, Trash2, User, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -115,6 +116,17 @@ function SettingsPageContent() {
   const [paymentMessage, setPaymentMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
 
+  // Delete account state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
+  // Avatar cropper state
+  const [showAvatarCropper, setShowAvatarCropper] = useState(false);
+  const [rawAvatarImage, setRawAvatarImage] = useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       openLoginModal('/settings');
@@ -137,24 +149,82 @@ function SettingsPageContent() {
     fileInputRef.current?.click();
   };
 
+  // Avatar select handler - opens cropper
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    console.log('File selected:', file.name, file.size, 'bytes');
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setMessage({ type: 'error', text: locale === 'ka' ? 'მხოლოდ სურათები არის დაშვებული' : 'Only image files are allowed' });
+      return;
+    }
 
-    // For demo purposes, we'll convert to base64 data URL
-    // In production, you'd upload to a CDN/cloud storage
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64 = reader.result as string;
-      console.log('Base64 generated, length:', base64.length);
-      setFormData(prev => ({ ...prev, avatar: base64 }));
-    };
-    reader.onerror = () => {
-      console.error('FileReader error:', reader.error);
-    };
-    reader.readAsDataURL(file);
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setMessage({ type: 'error', text: locale === 'ka' ? 'ფაილი ძალიან დიდია (მაქს. 10MB)' : 'File is too large (max 10MB)' });
+      return;
+    }
+
+    // Open cropper with the selected image
+    const imageUrl = URL.createObjectURL(file);
+    setRawAvatarImage(imageUrl);
+    setShowAvatarCropper(true);
+  };
+
+  // Handle cropped image from cropper
+  const handleCroppedAvatar = async (croppedBlob: Blob) => {
+    setShowAvatarCropper(false);
+
+    // Clean up raw image URL
+    if (rawAvatarImage) {
+      URL.revokeObjectURL(rawAvatarImage);
+      setRawAvatarImage(null);
+    }
+
+    // Create preview from cropped blob
+    const previewUrl = URL.createObjectURL(croppedBlob);
+    setFormData(prev => ({ ...prev, avatar: previewUrl }));
+
+    // Upload the cropped image
+    setIsUploadingAvatar(true);
+    setMessage(null);
+
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', croppedBlob, 'avatar.jpg');
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/avatar`, {
+        method: 'POST',
+        body: formDataUpload,
+      });
+
+      if (!response.ok) throw new Error('Upload failed');
+
+      const data = await response.json();
+      // Update with the actual URL from server
+      setFormData(prev => ({ ...prev, avatar: data.url }));
+      setMessage({ type: 'success', text: locale === 'ka' ? 'სურათი აიტვირთა' : 'Image uploaded successfully' });
+    } catch {
+      setMessage({ type: 'error', text: locale === 'ka' ? 'სურათის ატვირთვა ვერ მოხერხდა' : 'Failed to upload image' });
+      // Revert to previous avatar on error
+      setFormData(prev => ({ ...prev, avatar: user?.avatar || '' }));
+      URL.revokeObjectURL(previewUrl);
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  // Cancel cropping
+  const handleCropCancel = () => {
+    setShowAvatarCropper(false);
+    if (rawAvatarImage) {
+      URL.revokeObjectURL(rawAvatarImage);
+      setRawAvatarImage(null);
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleSaveProfile = async () => {
@@ -639,6 +709,44 @@ function SettingsPageContent() {
     }
   };
 
+  // Delete account handler
+  const handleDeleteAccount = async () => {
+    const confirmWord = locale === 'ka' ? 'წაშლა' : 'DELETE';
+    if (deleteConfirmText !== confirmWord) {
+      setDeleteError(locale === 'ka' ? `გთხოვთ ჩაწეროთ "${confirmWord}" დასადასტურებლად` : `Please type "${confirmWord}" to confirm`);
+      return;
+    }
+
+    setIsDeletingAccount(true);
+    setDeleteError('');
+
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const token = localStorage.getItem('access_token');
+
+      const res = await fetch(`${API_URL}/users/me`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        // Clear auth and redirect
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user');
+        router.replace('/');
+      } else {
+        const data = await res.json();
+        throw new Error(data.message || 'Failed to delete account');
+      }
+    } catch (error: any) {
+      setDeleteError(error.message || (locale === 'ka' ? 'ანგარიშის წაშლა ვერ მოხერხდა' : 'Failed to delete account'));
+    } finally {
+      setIsDeletingAccount(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -655,12 +763,24 @@ function SettingsPageContent() {
     { id: 'notifications', label: t('settings.tabs.notifications'), icon: Bell },
     { id: 'security', label: locale === 'ka' ? 'პაროლის შეცვლა' : 'Password', icon: Lock },
     { id: 'payments', label: t('settings.tabs.payments'), icon: CreditCard },
+    { id: 'account', label: locale === 'ka' ? 'ანგარიში' : 'Account', icon: Shield },
   ];
 
   return (
-    <div className="min-h-screen relative">
-      <Header />
-      <HeaderSpacer />
+    <>
+      {/* Avatar Cropper Modal */}
+      {showAvatarCropper && rawAvatarImage && (
+        <AvatarCropper
+          image={rawAvatarImage}
+          onCropComplete={handleCroppedAvatar}
+          onCancel={handleCropCancel}
+          locale={locale}
+        />
+      )}
+
+      <div className="min-h-screen relative">
+        <Header />
+        <HeaderSpacer />
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-8">
         <div className="mb-4">
@@ -740,18 +860,27 @@ function SettingsPageContent() {
                       size="2xl"
                       className="ring-4 ring-neutral-200 dark:ring-neutral-700"
                     />
-                    <button
-                      onClick={handleAvatarClick}
-                      className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 active:opacity-100 transition-all duration-200 ease-out cursor-pointer touch-manipulation"
-                    >
-                      <Camera className="w-6 sm:w-8 h-6 sm:h-8 text-white" />
-                    </button>
+                    {isUploadingAvatar && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full">
+                        <Loader2 className="w-8 h-8 text-white animate-spin" />
+                      </div>
+                    )}
+                    {!isUploadingAvatar && (
+                      <label
+                        htmlFor="avatar-upload"
+                        className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 active:opacity-100 transition-all duration-200 ease-out cursor-pointer touch-manipulation"
+                      >
+                        <Camera className="w-6 sm:w-8 h-6 sm:h-8 text-white" />
+                      </label>
+                    )}
                     <input
+                      id="avatar-upload"
                       ref={fileInputRef}
                       type="file"
                       accept="image/*"
                       onChange={handleFileChange}
                       className="hidden"
+                      disabled={isUploadingAvatar}
                     />
                   </div>
                   <div className="text-center sm:text-left">
@@ -767,12 +896,18 @@ function SettingsPageContent() {
                     >
                       {t('settings.profile.photoHint')}
                     </p>
-                    <button
-                      onClick={handleAvatarClick}
-                      className="mt-2 text-sm font-medium text-[#E07B4F] hover:text-[#D26B3F] transition-all duration-200 ease-out touch-manipulation"
+                    <label
+                      htmlFor="avatar-upload"
+                      className={`mt-2 text-sm font-medium transition-all duration-200 ease-out touch-manipulation cursor-pointer inline-block ${
+                        isUploadingAvatar
+                          ? 'text-neutral-400 cursor-not-allowed'
+                          : 'text-[#E07B4F] hover:text-[#D26B3F]'
+                      }`}
                     >
-                      {t('settings.profile.uploadPhoto')}
-                    </button>
+                      {isUploadingAvatar
+                        ? (locale === 'ka' ? 'იტვირთება...' : 'Uploading...')
+                        : t('settings.profile.uploadPhoto')}
+                    </label>
                   </div>
                 </div>
 
@@ -1546,9 +1681,225 @@ function SettingsPageContent() {
                 </div>
               </div>
             )}
+
+            {activeTab === 'account' && (
+              <div className="space-y-6">
+                <div>
+                  <h2
+                    className="text-base sm:text-lg font-semibold"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
+                    {locale === 'ka' ? 'ანგარიშის მართვა' : 'Account Management'}
+                  </h2>
+                  <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
+                    {locale === 'ka' ? 'მართეთ თქვენი ანგარიშის პარამეტრები' : 'Manage your account settings'}
+                  </p>
+                </div>
+
+                {/* Danger Zone */}
+                <div
+                  className="rounded-2xl overflow-hidden"
+                  style={{
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.03) 0%, rgba(239, 68, 68, 0.08) 100%)',
+                  }}
+                >
+                  <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(239, 68, 68, 0.15)' }}>
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="w-5 h-5 text-red-500" />
+                      <h3 className="font-semibold text-red-600 dark:text-red-400">
+                        {locale === 'ka' ? 'საშიში ზონა' : 'Danger Zone'}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="p-5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div>
+                        <h4 className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                          {locale === 'ka' ? 'ანგარიშის წაშლა' : 'Delete Account'}
+                        </h4>
+                        <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
+                          {locale === 'ka'
+                            ? 'სამუდამოდ წაშალეთ თქვენი ანგარიში და ყველა მონაცემი. ეს მოქმედება შეუქცევადია.'
+                            : 'Permanently delete your account and all data. This action cannot be undone.'}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setShowDeleteModal(true)}
+                        className="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-xl transition-all flex items-center gap-2 whitespace-nowrap shadow-lg shadow-red-500/20 hover:shadow-red-500/30"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        {locale === 'ka' ? 'ანგარიშის წაშლა' : 'Delete Account'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Account Info */}
+                <div
+                  className="p-4 rounded-xl flex items-start gap-3"
+                  style={{
+                    backgroundColor: 'var(--color-bg-elevated)',
+                    border: '1px solid var(--color-border)',
+                  }}
+                >
+                  <User className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'var(--color-text-tertiary)' }} />
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                      {user?.name}
+                    </p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
+                      {user?.email || user?.phone}
+                    </p>
+                    <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
+                      {locale === 'ka' ? 'ანგარიშის ID:' : 'Account ID:'} #{user?.uid || 'N/A'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Delete Account Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop with blur */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => {
+              if (!isDeletingAccount) {
+                setShowDeleteModal(false);
+                setDeleteConfirmText('');
+                setDeleteError('');
+              }
+            }}
+          />
+
+          {/* Modal */}
+          <div
+            className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-fade-in"
+            style={{ backgroundColor: 'var(--color-bg-primary)' }}
+          >
+            {/* Header with gradient */}
+            <div
+              className="p-6 text-center"
+              style={{
+                background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%)',
+                borderBottom: '1px solid rgba(239, 68, 68, 0.15)',
+              }}
+            >
+              <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="w-8 h-8 text-red-500" />
+              </div>
+              <h3 className="text-xl font-bold text-red-600 dark:text-red-400">
+                {locale === 'ka' ? 'ანგარიშის წაშლა' : 'Delete Account'}
+              </h3>
+              <p className="text-sm mt-2" style={{ color: 'var(--color-text-secondary)' }}>
+                {locale === 'ka'
+                  ? 'ეს მოქმედება შეუქცევადია და წაშლის თქვენს ყველა მონაცემს.'
+                  : 'This action is irreversible and will delete all your data.'}
+              </p>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-5">
+              {/* Warning list */}
+              <div className="space-y-2.5">
+                <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                  {locale === 'ka' ? 'ეს მოქმედება წაშლის:' : 'This will permanently delete:'}
+                </p>
+                <ul className="space-y-2 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                  <li className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    {locale === 'ka' ? 'თქვენი პროფილი და პირადი ინფორმაცია' : 'Your profile and personal information'}
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    {locale === 'ka' ? 'ყველა განთავსებული სამუშაო და წინადადება' : 'All posted jobs and proposals'}
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    {locale === 'ka' ? 'შეტყობინებები და შეფასებები' : 'Messages and reviews'}
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    {locale === 'ka' ? 'შენახული ბარათები და გადახდის ისტორია' : 'Saved cards and payment history'}
+                  </li>
+                </ul>
+              </div>
+
+              {/* Confirmation input */}
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                  {locale === 'ka'
+                    ? 'ჩაწერეთ "წაშლა" დასადასტურებლად'
+                    : 'Type "DELETE" to confirm'}
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder={locale === 'ka' ? 'წაშლა' : 'DELETE'}
+                  disabled={isDeletingAccount}
+                  className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-red-500/50 font-mono text-center tracking-widest"
+                  style={{
+                    backgroundColor: 'var(--color-bg-elevated)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                />
+              </div>
+
+              {/* Error message */}
+              {deleteError && (
+                <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                  <p className="text-sm text-red-600 dark:text-red-400">{deleteError}</p>
+                </div>
+              )}
+
+              {/* Action buttons */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setDeleteConfirmText('');
+                    setDeleteError('');
+                  }}
+                  disabled={isDeletingAccount}
+                  className="flex-1 py-3 rounded-xl font-medium transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50"
+                  style={{
+                    border: '1px solid var(--color-border)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                >
+                  {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={isDeletingAccount || deleteConfirmText !== (locale === 'ka' ? 'წაშლა' : 'DELETE')}
+                  className="flex-1 py-3 bg-red-500 hover:bg-red-600 disabled:bg-red-300 dark:disabled:bg-red-800 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2 disabled:cursor-not-allowed"
+                >
+                  {isDeletingAccount ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      {locale === 'ka' ? 'იშლება...' : 'Deleting...'}
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      {locale === 'ka' ? 'წაშლა' : 'Delete'}
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Email Modal */}
       {showAddEmailModal && (
@@ -1951,7 +2302,8 @@ function SettingsPageContent() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
 

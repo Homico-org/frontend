@@ -61,6 +61,17 @@ type StatusFilter = 'all' | 'open' | 'hired' | 'closed';
 
 // Category display names
 const CATEGORY_LABELS: Record<string, { en: string; ka: string }> = {
+  // Main categories
+  architecture: { en: 'Architecture', ka: 'არქიტექტურა' },
+  design: { en: 'Design', ka: 'დიზაინი' },
+  craftsmen: { en: 'Craftsmen', ka: 'ხელოსნები' },
+  homecare: { en: 'Home Care', ka: 'სახლის მოვლა' },
+  services: { en: 'Services', ka: 'სერვისები' },
+  // Subcategories
+  residential: { en: 'Residential', ka: 'საცხოვრებელი' },
+  commercial: { en: 'Commercial', ka: 'კომერციული' },
+  landscape: { en: 'Landscape', ka: 'ლანდშაფტი' },
+  interior: { en: 'Interior', ka: 'ინტერიერი' },
   renovation: { en: 'Renovation', ka: 'რემონტი' },
   'interior-design': { en: 'Interior Design', ka: 'ინტერიერის დიზაინი' },
   plumbing: { en: 'Plumbing', ka: 'სანტექნიკა' },
@@ -70,9 +81,17 @@ const CATEGORY_LABELS: Record<string, { en: string; ka: string }> = {
   painting: { en: 'Painting', ka: 'შეღებვა' },
   flooring: { en: 'Flooring', ka: 'იატაკი' },
   tiling: { en: 'Tiling', ka: 'მოპირკეთება' },
-  design: { en: 'Design', ka: 'დიზაინი' },
   designer: { en: 'Designer', ka: 'დიზაინერი' },
   'deep-clean': { en: 'Deep Clean', ka: 'ღრმა წმენდა' },
+  hvac: { en: 'HVAC', ka: 'კონდიცირება/გათბობა' },
+  carpentry: { en: 'Carpentry', ka: 'ხის სამუშაოები' },
+  roofing: { en: 'Roofing', ka: 'სახურავი' },
+  windows: { en: 'Windows & Doors', ka: 'ფანჯრები და კარები' },
+  insulation: { en: 'Insulation', ka: 'იზოლაცია' },
+  demolition: { en: 'Demolition', ka: 'დემონტაჟი' },
+  masonry: { en: 'Masonry', ka: 'ქვის სამუშაო' },
+  drywall: { en: 'Drywall', ka: 'თაბაშირმუყაო' },
+  lighting: { en: 'Lighting', ka: 'განათება' },
 };
 
 function getTimeAgo(dateStr: string, locale: string) {
@@ -342,7 +361,7 @@ function MyJobsPageContent() {
                               style={{ color: ACCENT_COLOR }}
                             >
                               {getCategoryLabel(job.category)}
-                              {job.subcategory && ` • ${getCategoryLabel(job.subcategory)}`}
+                              {(job.subcategory || job.skills?.[0]) && ` • ${getCategoryLabel(job.subcategory || job.skills[0])}`}
                             </span>
                             <span className="flex items-center gap-1 text-[11px] text-neutral-400">
                               <Clock className="w-3 h-3" />

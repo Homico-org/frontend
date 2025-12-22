@@ -26,6 +26,9 @@ import {
   Check,
   DoorOpen,
   Layers,
+  Map,
+  Mountain,
+  Zap,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -90,6 +93,10 @@ interface Job {
   viewCount: number;
   createdAt: string;
   updatedAt: string;
+  // New fields
+  cadastralId?: string;
+  landArea?: number;
+  pointsCount?: number;
   clientId: {
     _id: string;
     name: string;
@@ -519,7 +526,7 @@ export default function JobDetailPage() {
           )}
 
           {/* ==================== SPECS GRID ==================== */}
-          {(job.propertyType || job.areaSize || job.roomCount || job.floorCount || job.deadline) && (
+          {(job.propertyType || job.areaSize || job.roomCount || job.floorCount || job.deadline || job.cadastralId || job.landArea || job.pointsCount) && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
               {job.propertyType && (
                 <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
@@ -547,6 +554,19 @@ export default function JobDetailPage() {
                   </p>
                 </div>
               )}
+              {job.landArea && (
+                <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Mountain className="w-4 h-4 text-neutral-400" />
+                    <span className="text-[11px] font-medium uppercase tracking-wider text-neutral-400">
+                      {locale === 'ka' ? 'მიწის ფართი' : 'Land Area'}
+                    </span>
+                  </div>
+                  <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+                    {job.landArea} მ²
+                  </p>
+                </div>
+              )}
               {job.roomCount && (
                 <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
                   <div className="flex items-center gap-2 mb-1">
@@ -560,6 +580,19 @@ export default function JobDetailPage() {
                   </p>
                 </div>
               )}
+              {job.pointsCount && (
+                <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Zap className="w-4 h-4 text-neutral-400" />
+                    <span className="text-[11px] font-medium uppercase tracking-wider text-neutral-400">
+                      {locale === 'ka' ? 'წერტილები' : 'Points'}
+                    </span>
+                  </div>
+                  <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+                    {job.pointsCount}
+                  </p>
+                </div>
+              )}
               {job.floorCount && (
                 <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
                   <div className="flex items-center gap-2 mb-1">
@@ -570,6 +603,19 @@ export default function JobDetailPage() {
                   </div>
                   <p className="text-sm font-semibold text-neutral-900 dark:text-white">
                     {job.floorCount}
+                  </p>
+                </div>
+              )}
+              {job.cadastralId && (
+                <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Map className="w-4 h-4 text-neutral-400" />
+                    <span className="text-[11px] font-medium uppercase tracking-wider text-neutral-400">
+                      {locale === 'ka' ? 'საკადასტრო' : 'Cadastral'}
+                    </span>
+                  </div>
+                  <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+                    {job.cadastralId}
                   </p>
                 </div>
               )}

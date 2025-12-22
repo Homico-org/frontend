@@ -2,11 +2,10 @@
 
 import AddressPicker from "@/components/common/AddressPicker";
 import AuthGuard from "@/components/common/AuthGuard";
-import CategorySubcategorySelector from "@/components/common/CategorySubcategorySelector";
-import DatePicker from "@/components/common/DatePicker";
 import Header, { HeaderSpacer } from "@/components/common/Header";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
+import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/contexts/ToastContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
@@ -16,31 +15,20 @@ import {
   AlertCircle,
   ArrowLeft,
   ArrowRight,
-  Bell,
-  Briefcase,
-  Building2,
-  Calendar,
   Check,
-  DollarSign,
-  FileText,
-  Home,
-  Image,
-  Link2,
-  MessageSquare,
+  Clock,
+  MapPin,
+  Pencil,
   Plus,
-  Sparkles,
   Trash2,
   Upload,
   X,
+  Image as ImageIcon,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 
-interface Reference {
-  type: "link" | "image" | "pinterest" | "instagram";
-  url: string;
-  title?: string;
-}
+type Step = "category" | "location" | "details" | "review";
 
 interface MediaFile {
   file: File;
@@ -48,119 +36,74 @@ interface MediaFile {
   type: "image" | "video";
 }
 
-const PROPERTY_TYPES = [
-  {
-    value: "apartment",
-    label: "Apartment",
-    labelKa: "ბინა",
-    icon: "apartment",
-  },
-  { value: "house", label: "House", labelKa: "სახლი", icon: "house" },
-  { value: "office", label: "Office", labelKa: "ოფისი", icon: "office" },
-  { value: "building", label: "Building", labelKa: "შენობა", icon: "building" },
-  { value: "other", label: "Other", labelKa: "სხვა", icon: "other" },
+const STEPS: { id: Step; label: string; labelKa: string }[] = [
+  { id: "category", label: "Category", labelKa: "კატეგორია" },
+  { id: "location", label: "Location & Budget", labelKa: "ლოკაცია და ბიუჯეტი" },
+  { id: "details", label: "Details", labelKa: "დეტალები" },
+  { id: "review", label: "Review", labelKa: "გადახედვა" },
 ];
 
-const BUDGET_TYPES = [
-  {
-    value: "fixed",
-    label: "Fixed Budget",
-    labelKa: "ფიქსირებული",
-    icon: "fixed",
-  },
-  {
-    value: "range",
-    label: "Budget Range",
-    labelKa: "დიაპაზონი",
-    icon: "range",
-  },
-  { value: "per_sqm", label: "Per m²", labelKa: "კვ.მ-ზე", icon: "sqm" },
-  {
-    value: "negotiable",
-    label: "Negotiable",
-    labelKa: "შეთანხმებით",
-    icon: "negotiable",
-  },
-];
-
-// Property Type Icons Component
-const PropertyIcon = ({
-  type,
-  className = "",
-}: {
-  type: string;
-  className?: string;
-}) => {
+// Category icons - Custom illustrated style
+const CategoryIcon = ({ type, className = "" }: { type: string; className?: string }) => {
   switch (type) {
-    case "apartment":
-      return <Building2 className={className} />;
-    case "house":
-      return <Home className={className} />;
-    case "office":
-      return <Briefcase className={className} />;
-    case "building":
+    case "designer":
+      // Sofa/Interior design icon
       return (
-        <svg
-          className={className}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        >
-          <path d="M3 21h18M5 21V7l7-4 7 4v14" />
-          <path
-            d="M9 9h1M14 9h1M9 13h1M14 13h1M9 17h1M14 17h1"
-            strokeLinecap="round"
-          />
+        <svg className={className} viewBox="0 0 32 32" fill="none">
+          <path d="M4 22V20C4 18.3431 5.34315 17 7 17H25C26.6569 17 28 18.3431 28 20V22" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M6 17V14C6 12.8954 6.89543 12 8 12H24C25.1046 12 26 12.8954 26 14V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          <rect x="4" y="22" width="24" height="4" rx="1.5" stroke="currentColor" strokeWidth="2"/>
+          <path d="M8 26V28" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M24 26V28" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          <circle cx="16" cy="8" r="2" fill="currentColor"/>
+        </svg>
+      );
+    case "architect":
+      // Blueprint/Building icon
+      return (
+        <svg className={className} viewBox="0 0 32 32" fill="none">
+          <path d="M6 28V10L16 4L26 10V28" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M6 28H26" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          <rect x="10" y="14" width="4" height="5" rx="0.5" stroke="currentColor" strokeWidth="1.5"/>
+          <rect x="18" y="14" width="4" height="5" rx="0.5" stroke="currentColor" strokeWidth="1.5"/>
+          <path d="M13 28V23C13 22.4477 13.4477 22 14 22H18C18.5523 22 19 22.4477 19 23V28" stroke="currentColor" strokeWidth="1.5"/>
+          <circle cx="16" cy="9" r="1.5" fill="currentColor"/>
+        </svg>
+      );
+    case "craftsmen":
+      // Hammer & wrench icon
+      return (
+        <svg className={className} viewBox="0 0 32 32" fill="none">
+          <path d="M7 25L13 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M5 27L7 25L9 27L7 29L5 27Z" fill="currentColor"/>
+          <path d="M19 7C16.7909 7 15 8.79086 15 11C15 11.7403 15.1928 12.4373 15.5305 13.0427L9.5 19.5L12.5 22.5L18.9573 16.4695C19.5627 16.8072 20.2597 17 21 17C23.2091 17 25 15.2091 25 13C25 12.6712 24.9585 12.3522 24.88 12.047L22 15L19 12L21.953 9.12C21.6478 9.04154 21.3288 9 21 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M24 20L20 24L22 26L28 20L26 18L24 20Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+        </svg>
+      );
+    case "homecare":
+      // Home with sparkle icon
+      return (
+        <svg className={className} viewBox="0 0 32 32" fill="none">
+          <path d="M5 14L16 5L27 14V26C27 26.5523 26.5523 27 26 27H6C5.44772 27 5 26.5523 5 26V14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M12 27V19C12 18.4477 12.4477 18 13 18H19C19.5523 18 20 18.4477 20 19V27" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M23 8L24 10L26 11L24 12L23 14L22 12L20 11L22 10L23 8Z" fill="currentColor"/>
+          <circle cx="16" cy="12" r="1.5" fill="currentColor"/>
         </svg>
       );
     default:
-      return <Sparkles className={className} />;
-  }
-};
-
-// Budget Type Icons Component
-const BudgetIcon = ({
-  type,
-  className = "",
-}: {
-  type: string;
-  className?: string;
-}) => {
-  switch (type) {
-    case "fixed":
-      return <DollarSign className={className} />;
-    case "range":
+      // Grid/Services icon
       return (
-        <svg
-          className={className}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        >
-          <path
-            d="M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+        <svg className={className} viewBox="0 0 32 32" fill="none">
+          <rect x="5" y="5" width="9" height="9" rx="2" stroke="currentColor" strokeWidth="2"/>
+          <rect x="18" y="5" width="9" height="9" rx="2" stroke="currentColor" strokeWidth="2"/>
+          <rect x="5" y="18" width="9" height="9" rx="2" stroke="currentColor" strokeWidth="2"/>
+          <rect x="18" y="18" width="9" height="9" rx="2" stroke="currentColor" strokeWidth="2"/>
+          <circle cx="9.5" cy="9.5" r="1.5" fill="currentColor"/>
+          <circle cx="22.5" cy="9.5" r="1.5" fill="currentColor"/>
+          <circle cx="9.5" cy="22.5" r="1.5" fill="currentColor"/>
+          <circle cx="22.5" cy="22.5" r="1.5" fill="currentColor"/>
         </svg>
       );
-    case "sqm":
-      return (
-        <svg
-          className={className}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        >
-          <rect x="4" y="4" width="16" height="16" rx="1" />
-          <path d="M4 12h16M12 4v16" />
-        </svg>
-      );
-    default:
-      return <MessageSquare className={className} />;
   }
 };
 
@@ -168,6 +111,7 @@ function PostJobPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { openLoginModal } = useAuthModal();
   const { locale } = useLanguage();
+  const { categories } = useCategories();
   const toast = useToast();
   const { trackEvent } = useAnalytics();
   const router = useRouter();
@@ -177,43 +121,145 @@ function PostJobPageContent() {
   const editJobId = searchParams.get("edit");
   const isEditMode = !!editJobId;
 
+  // Step state
+  const [currentStep, setCurrentStep] = useState<Step>("category");
   const [isVisible, setIsVisible] = useState(false);
   const [isLoadingJob, setIsLoadingJob] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
-
-  // Category selection state
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>(
-    []
-  );
-  const [customSpecialties, setCustomSpecialties] = useState<string[]>([]);
 
   // Form state
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>("");
+  const [subcategorySearch, setSubcategorySearch] = useState("");
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     location: "",
-    propertyType: "",
-    propertyTypeOther: "",
-    areaSize: "",
-    roomCount: "",
-    deadline: "",
-    budgetType: "negotiable",
-    budgetAmount: "",
+    propertyType: "apartment" as "apartment" | "office" | "building" | "house" | "other",
+    budgetType: "fixed" as "fixed" | "range" | "negotiable",
     budgetMin: "",
     budgetMax: "",
-    pricePerUnit: "",
+    timing: "flexible" as "asap" | "this_week" | "this_month" | "flexible",
+    // Category-specific fields
+    cadastralId: "",
+    areaSize: "",
+    pointsCount: "",
+    roomCount: "",
+    landArea: "",
   });
 
+  // Category field mapping - extensible configuration
+  const categoryFieldsConfig: Record<string, {
+    fields: Array<{
+      key: string;
+      type: "text" | "number";
+      labelEn: string;
+      labelKa: string;
+      placeholderEn: string;
+      placeholderKa: string;
+      required?: boolean;
+      suffix?: string;
+    }>;
+    hintEn: string;
+    hintKa: string;
+  }> = {
+    // Architecture - needs cadastral and area
+    architecture: {
+      fields: [
+        { key: "areaSize", type: "number", labelEn: "Area", labelKa: "ფართი", placeholderEn: "100", placeholderKa: "100", suffix: "m²" },
+      ],
+      hintEn: "For architectural projects, the cadastral ID helps professionals understand the land registration and zoning requirements.",
+      hintKa: "არქიტექტურული პროექტებისთვის საკადასტრო კოდი ეხმარება პროფესიონალებს მიწის რეგისტრაციისა და ზონირების მოთხოვნების გაგებაში.",
+    },
+    // Interior Design - needs area and room count
+    design: {
+      fields: [
+        { key: "areaSize", type: "number", labelEn: "Area", labelKa: "ფართი", placeholderEn: "80", placeholderKa: "80", suffix: "m²" },
+        { key: "roomCount", type: "number", labelEn: "Rooms", labelKa: "ოთახები", placeholderEn: "3", placeholderKa: "3" },
+      ],
+      hintEn: "Specify the total area and number of rooms to help designers provide accurate estimates for your interior project.",
+      hintKa: "მიუთითე საერთო ფართი და ოთახების რაოდენობა, რომ დიზაინერებმა შეძლონ ზუსტი შეფასების მოწოდება.",
+    },
+    // Craftsmen/Construction - mixed based on subcategory
+    craftsmen: {
+      fields: [
+        { key: "areaSize", type: "number", labelEn: "Area", labelKa: "ფართი", placeholderEn: "50", placeholderKa: "50", suffix: "m²" },
+      ],
+      hintEn: "Provide the work area size for accurate pricing. For electrical or plumbing work, you can also specify points count.",
+      hintKa: "მიუთითე სამუშაო ფართი ზუსტი ფასისთვის. ელექტრო ან სანტექნიკის სამუშაოებისთვის შეგიძლია მიუთითო წერტილების რაოდენობა.",
+    },
+    // Home care - area based
+    homecare: {
+      fields: [
+        { key: "areaSize", type: "number", labelEn: "Area", labelKa: "ფართი", placeholderEn: "100", placeholderKa: "100", suffix: "m²" },
+      ],
+      hintEn: "Specify the area to be serviced for accurate cleaning or maintenance quotes.",
+      hintKa: "მიუთითე მოსასუფთავებელი ან მოსავლელი ფართი ზუსტი შეფასებისთვის.",
+    },
+  };
+
+  // Subcategory-specific field overrides (for electrical, plumbing, etc.)
+  const subcategoryFieldsOverride: Record<string, Array<{
+    key: string;
+    type: "text" | "number";
+    labelEn: string;
+    labelKa: string;
+    placeholderEn: string;
+    placeholderKa: string;
+    required?: boolean;
+    suffix?: string;
+  }>> = {
+    // Electrical work - points based
+    "electrical": [
+      { key: "pointsCount", type: "number", labelEn: "Electrical points", labelKa: "ელექტრო წერტილები", placeholderEn: "20", placeholderKa: "20", suffix: "წრტ" },
+      { key: "areaSize", type: "number", labelEn: "Area", labelKa: "ფართი", placeholderEn: "80", placeholderKa: "80", suffix: "m²" },
+    ],
+    // Plumbing - points based
+    "plumbing": [
+      { key: "pointsCount", type: "number", labelEn: "Plumbing points", labelKa: "სანტექნიკის წერტილები", placeholderEn: "10", placeholderKa: "10", suffix: "წრტ" },
+      { key: "areaSize", type: "number", labelEn: "Area", labelKa: "ფართი", placeholderEn: "80", placeholderKa: "80", suffix: "m²" },
+    ],
+    // HVAC - points and area
+    "hvac": [
+      { key: "pointsCount", type: "number", labelEn: "Units/Points", labelKa: "ერთეულები/წერტილები", placeholderEn: "5", placeholderKa: "5", suffix: "წრტ" },
+      { key: "areaSize", type: "number", labelEn: "Area", labelKa: "ფართი", placeholderEn: "100", placeholderKa: "100", suffix: "m²" },
+    ],
+    // Lighting
+    "lighting": [
+      { key: "pointsCount", type: "number", labelEn: "Light points", labelKa: "სანათი წერტილები", placeholderEn: "15", placeholderKa: "15", suffix: "წრტ" },
+      { key: "roomCount", type: "number", labelEn: "Rooms", labelKa: "ოთახები", placeholderEn: "4", placeholderKa: "4" },
+    ],
+  };
+
+  // Get active fields based on category and subcategory
+  const getActiveFields = () => {
+    // First check subcategory override
+    if (selectedSubcategory && subcategoryFieldsOverride[selectedSubcategory]) {
+      return subcategoryFieldsOverride[selectedSubcategory];
+    }
+    // Fall back to category config
+    if (selectedCategory && categoryFieldsConfig[selectedCategory]) {
+      return categoryFieldsConfig[selectedCategory].fields;
+    }
+    return [];
+  };
+
+  // Get hint for current selection
+  const getActiveHint = () => {
+    if (selectedCategory && categoryFieldsConfig[selectedCategory]) {
+      return locale === "ka"
+        ? categoryFieldsConfig[selectedCategory].hintKa
+        : categoryFieldsConfig[selectedCategory].hintEn;
+    }
+    return locale === "ka"
+      ? "დეტალურად აღწერე რა გინდა გაკეთდეს - რაც მეტი ინფორმაცია მიაწვდი, მით უფრო ზუსტ შეთავაზებებს მიიღებ."
+      : "Describe in detail what you need - the more information you provide, the more accurate quotes you'll receive.";
+  };
+
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
-  const [existingMedia, setExistingMedia] = useState<
-    { type: "image" | "video"; url: string }[]
-  >([]);
-  const [newReferenceUrl, setNewReferenceUrl] = useState("");
-  const [references, setReferences] = useState<Reference[]>([]);
-  const [notifyAllPros, setNotifyAllPros] = useState(false);
+  const [existingMedia, setExistingMedia] = useState<{ type: "image" | "video"; url: string }[]>([]);
 
   useEffect(() => {
     setIsVisible(true);
@@ -238,33 +284,30 @@ function PostJobPageContent() {
         const job = response.data;
 
         setSelectedCategory(job.category || "");
-        setSelectedSubcategories(job.skills || []);
+        setSelectedSubcategory(job.skills?.[0] || "");
 
         setFormData({
           title: job.title || "",
           description: job.description || "",
           location: job.location || "",
-          propertyType: job.propertyType || "",
-          propertyTypeOther: job.propertyTypeOther || "",
-          areaSize: job.areaSize?.toString() || "",
-          roomCount: job.roomCount?.toString() || "",
-          deadline: job.deadline ? job.deadline.split("T")[0] : "",
-          budgetType: job.budgetType || "negotiable",
-          budgetAmount: job.budgetAmount?.toString() || "",
-          budgetMin: job.budgetMin?.toString() || "",
+          propertyType: job.propertyType || "apartment",
+          budgetType: job.budgetType || "fixed",
+          budgetMin: job.budgetMin?.toString() || job.budgetAmount?.toString() || "",
           budgetMax: job.budgetMax?.toString() || "",
-          pricePerUnit: job.pricePerUnit?.toString() || "",
+          timing: job.timing || "flexible",
+          cadastralId: job.cadastralId || "",
+          areaSize: job.areaSize?.toString() || "",
+          pointsCount: job.pointsCount?.toString() || "",
+          roomCount: job.roomCount?.toString() || "",
+          landArea: job.landArea?.toString() || "",
         });
 
-        if (job.references) setReferences(job.references);
         if (job.media?.length > 0) {
           setExistingMedia(job.media);
         } else if (job.images?.length > 0) {
-          setExistingMedia(
-            job.images.map((url: string) => ({ type: "image" as const, url }))
-          );
+          setExistingMedia(job.images.map((url: string) => ({ type: "image" as const, url })));
         }
-      } catch (err: any) {
+      } catch (err) {
         console.error("Failed to fetch job:", err);
         setError("Failed to load job data");
       } finally {
@@ -275,10 +318,51 @@ function PostJobPageContent() {
     fetchJobData();
   }, [editJobId, isAuthenticated]);
 
-  const updateFormData = (field: string, value: any) => {
+  const updateFormData = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Step navigation
+  const getCurrentStepIndex = () => STEPS.findIndex((s) => s.id === currentStep);
+  const progressPercent = ((getCurrentStepIndex() + 1) / STEPS.length) * 100;
+
+  const canProceedFromCategory = () => {
+    if (!selectedCategory || !selectedSubcategory || !formData.propertyType) return false;
+    // Require cadastral code for architecture/design
+    if ((selectedCategory === "architecture" || selectedCategory === "design") && !formData.cadastralId.trim()) {
+      return false;
+    }
+    return true;
+  };
+  const canProceedFromLocation = () => formData.location && (formData.budgetType === "negotiable" || formData.budgetMin);
+  const canProceedFromDetails = () => formData.title.trim() && formData.description.trim();
+
+  const handleNext = () => {
+    const stepIndex = getCurrentStepIndex();
+    if (stepIndex < STEPS.length - 1) {
+      setCurrentStep(STEPS[stepIndex + 1].id);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (currentStep === "review") {
+      handleSubmit();
+    }
+  };
+
+  const handleBack = () => {
+    const stepIndex = getCurrentStepIndex();
+    if (stepIndex > 0) {
+      setCurrentStep(STEPS[stepIndex - 1].id);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      router.back();
+    }
+  };
+
+  const goToStep = (step: Step) => {
+    setCurrentStep(step);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // File handling
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     const newFiles: MediaFile[] = files.map((file) => ({
@@ -298,87 +382,13 @@ function PostJobPageContent() {
     });
   };
 
-  const addReference = () => {
-    if (!newReferenceUrl.trim()) return;
-    let type: Reference["type"] = "link";
-    if (newReferenceUrl.includes("pinterest")) type = "pinterest";
-    else if (newReferenceUrl.includes("instagram")) type = "instagram";
-    setReferences((prev) => [...prev, { type, url: newReferenceUrl.trim() }]);
-    setNewReferenceUrl("");
+  const removeExistingMedia = (index: number) => {
+    setExistingMedia((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const removeReference = (index: number) => {
-    setReferences((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  // Validation state
-  const getValidationState = () => {
-    const hasCategory = !!selectedCategory;
-    const hasSpecialty =
-      selectedSubcategories.length > 0 || customSpecialties.length > 0;
-    const hasTitle = !!formData.title.trim();
-    const hasDescription = !!formData.description.trim();
-    const hasPropertyType =
-      !!formData.propertyType &&
-      (formData.propertyType !== "other" ||
-        !!formData.propertyTypeOther.trim());
-
-    let budgetValid = true;
-    if (formData.budgetType === "fixed") budgetValid = !!formData.budgetAmount;
-    if (formData.budgetType === "range")
-      budgetValid = !!formData.budgetMin && !!formData.budgetMax;
-    if (formData.budgetType === "per_sqm")
-      budgetValid = !!formData.pricePerUnit;
-
-    return {
-      category: hasCategory,
-      specialty: hasSpecialty,
-      title: hasTitle,
-      description: hasDescription,
-      propertyType: hasPropertyType,
-      budget: budgetValid,
-    };
-  };
-
-  const validation = getValidationState();
-  const completedFields = Object.values(validation).filter(Boolean).length;
-  const totalFields = Object.keys(validation).length;
-  const progressPercent = (completedFields / totalFields) * 100;
-
-  const canSubmit = (): boolean => {
-    return Object.values(validation).every(Boolean);
-  };
-
-  const getFirstMissingField = () => {
-    if (!validation.category)
-      return {
-        key: "category",
-        label: locale === "ka" ? "კატეგორია" : "Category",
-      };
-    if (!validation.specialty)
-      return {
-        key: "specialty",
-        label: locale === "ka" ? "სპეციალობა" : "Specialty",
-      };
-    if (!validation.title)
-      return { key: "title", label: locale === "ka" ? "სათაური" : "Title" };
-    if (!validation.description)
-      return {
-        key: "description",
-        label: locale === "ka" ? "აღწერა" : "Description",
-      };
-    if (!validation.propertyType)
-      return {
-        key: "propertyType",
-        label: locale === "ka" ? "ობიექტის ტიპი" : "Property type",
-      };
-    if (!validation.budget)
-      return { key: "budget", label: locale === "ka" ? "ბიუჯეტი" : "Budget" };
-    return null;
-  };
-
+  // Submit
   const handleSubmit = async () => {
-    if (!canSubmit()) return;
+    if (!canProceedFromCategory() || !canProceedFromLocation() || !canProceedFromDetails()) return;
 
     setIsSubmitting(true);
     setError(null);
@@ -386,63 +396,39 @@ function PostJobPageContent() {
     try {
       const uploadedMedia: { type: "image" | "video"; url: string }[] = [];
 
-      for (let i = 0; i < mediaFiles.length; i++) {
-        const mediaFile = mediaFiles[i];
-        setUploadProgress(Math.round((i / mediaFiles.length) * 50));
+      for (const mediaFile of mediaFiles) {
         const formDataUpload = new FormData();
         formDataUpload.append("file", mediaFile.file);
-        const uploadRes = await api.post("/upload", formDataUpload, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        const uploadRes = await api.post("/upload", formDataUpload);
         uploadedMedia.push({
           type: mediaFile.type,
           url: uploadRes.data.url || uploadRes.data.filename,
         });
       }
 
-      setUploadProgress(75);
-
-      const jobData: any = {
+      const jobData: Record<string, unknown> = {
         title: formData.title,
         description: formData.description,
         category: selectedCategory,
-        skills: [...selectedSubcategories, ...customSpecialties],
+        skills: [selectedSubcategory],
+        location: formData.location,
         propertyType: formData.propertyType,
         budgetType: formData.budgetType,
+        budgetMin: formData.budgetType === "negotiable" ? 0 : Number(formData.budgetMin),
+        budgetMax: formData.budgetType === "negotiable" ? 0 : (formData.budgetMax ? Number(formData.budgetMax) : Number(formData.budgetMin)),
       };
 
-      if (formData.propertyType === "other" && formData.propertyTypeOther) {
-        jobData.propertyTypeOther = formData.propertyTypeOther;
-      }
-      if (formData.location) jobData.location = formData.location;
+      // Add category-specific fields if they have values
+      if (formData.cadastralId) jobData.cadastralId = formData.cadastralId;
       if (formData.areaSize) jobData.areaSize = Number(formData.areaSize);
+      if (formData.pointsCount) jobData.pointsCount = Number(formData.pointsCount);
       if (formData.roomCount) jobData.roomCount = Number(formData.roomCount);
-      if (formData.deadline) jobData.deadline = formData.deadline;
+      if (formData.landArea) jobData.landArea = Number(formData.landArea);
 
-      if (formData.budgetType === "fixed" && formData.budgetAmount) {
-        jobData.budgetAmount = Number(formData.budgetAmount);
+      const allMedia = [...existingMedia, ...uploadedMedia];
+      if (allMedia.length > 0) {
+        jobData.images = allMedia.filter((m) => m.type === "image").map((m) => m.url);
       }
-      if (formData.budgetType === "range") {
-        if (formData.budgetMin) jobData.budgetMin = Number(formData.budgetMin);
-        if (formData.budgetMax) jobData.budgetMax = Number(formData.budgetMax);
-      }
-      if (formData.budgetType === "per_sqm" && formData.pricePerUnit) {
-        jobData.pricePerUnit = Number(formData.pricePerUnit);
-      }
-
-      if (references.length > 0) jobData.references = references;
-
-      if (uploadedMedia.length) {
-        jobData.images = uploadedMedia
-          .filter((m) => m.type === "image")
-          .map((m) => m.url);
-      } else if (isEditMode && existingMedia.length > 0) {
-        jobData.images = existingMedia
-          .filter((m) => m.type === "image")
-          .map((m) => m.url);
-      }
-
-      setUploadProgress(90);
 
       if (isEditMode && editJobId) {
         await api.put(`/jobs/${editJobId}`, jobData);
@@ -450,909 +436,798 @@ function PostJobPageContent() {
         await api.post("/jobs", jobData);
       }
 
-      setUploadProgress(100);
-
       toast.success(
         isEditMode
-          ? locale === "ka"
-            ? "პროექტი განახლდა"
-            : "Project updated"
-          : locale === "ka"
-            ? "პროექტი შეიქმნა"
-            : "Project created",
+          ? locale === "ka" ? "პროექტი განახლდა" : "Project updated"
+          : locale === "ka" ? "პროექტი შეიქმნა" : "Project created",
         isEditMode
-          ? locale === "ka"
-            ? "თქვენი პროექტი წარმატებით განახლდა"
-            : "Your project has been successfully updated"
-          : locale === "ka"
-            ? "თქვენი პროექტი წარმატებით გამოქვეყნდა"
-            : "Your project has been successfully posted"
+          ? locale === "ka" ? "თქვენი პროექტი წარმატებით განახლდა" : "Your project has been successfully updated"
+          : locale === "ka" ? "თქვენი პროექტი წარმატებით გამოქვეყნდა" : "Your project has been successfully posted"
       );
 
       trackEvent(isEditMode ? AnalyticsEvent.JOB_EDIT : AnalyticsEvent.JOB_POST, {
         jobCategory: selectedCategory,
-        jobBudget: formData.budgetType === 'fixed' ? parseFloat(formData.budgetAmount) : parseFloat(formData.budgetMax),
+        jobBudget: Number(formData.budgetMax) || Number(formData.budgetMin),
       });
 
       router.push("/my-jobs");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to save job:", err);
-      setError(
-        err.response?.data?.message ||
-          `Failed to ${isEditMode ? "update" : "create"} project`
-      );
+      const errorMessage = err instanceof Error ? err.message : "Failed to save project";
+      setError(errorMessage);
       toast.error(
         locale === "ka" ? "შეცდომა" : "Error",
-        locale === "ka"
-          ? `პროექტის ${isEditMode ? "განახლება" : "შექმნა"} ვერ მოხერხდა`
-          : `Failed to ${isEditMode ? "update" : "create"} project`
+        locale === "ka" ? "პროექტის შენახვა ვერ მოხერხდა" : "Failed to save project"
       );
     } finally {
       setIsSubmitting(false);
-      setUploadProgress(0);
     }
   };
+
+  // Get subcategories for selected category
+  const selectedCategoryData = categories.find((c) => c.key === selectedCategory);
+  const filteredSubcategories = selectedCategoryData?.subcategories.filter((sub) => {
+    if (!subcategorySearch) return true;
+    const search = subcategorySearch.toLowerCase();
+    return sub.name.toLowerCase().includes(search) || sub.nameKa.toLowerCase().includes(search);
+  }) || [];
 
   // Loading State
   if (authLoading || isLoadingJob) {
     return (
-      <div className="min-h-screen bg-white dark:bg-neutral-950 flex flex-col">
+      <div className="min-h-screen bg-[#FAFAF9] flex flex-col">
         <Header />
         <HeaderSpacer />
         <div className="flex-1 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="relative">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#E07B4F]/10 to-[#E8956A]/10 flex items-center justify-center">
-                <FileText className="w-8 h-8 text-[#E07B4F] animate-pulse" />
-              </div>
-              <div className="absolute inset-0 w-16 h-16 rounded-2xl border-2 border-[#E07B4F]/20 border-t-[#E07B4F] animate-spin" />
-            </div>
-            <p className="text-sm font-medium text-[var(--color-text-secondary)]">
-              {locale === "ka" ? "იტვირთება..." : "Loading..."}
-            </p>
-          </div>
+          <div className="w-12 h-12 rounded-full border-2 border-[#C4735B]/20 border-t-[#C4735B] animate-spin" />
         </div>
       </div>
     );
   }
 
-  const totalSpecialties =
-    selectedSubcategories.length + customSpecialties.length;
-
-  // Progress steps configuration
-  const progressSteps = [
-    {
-      key: "category",
-      label: locale === "ka" ? "კატეგორია" : "Category",
-      completed: validation.category && validation.specialty,
-    },
-    {
-      key: "details",
-      label: locale === "ka" ? "დეტალები" : "Details",
-      completed:
-        validation.title && validation.description && validation.propertyType,
-    },
-    {
-      key: "budget",
-      label: locale === "ka" ? "ბიუჯეტი" : "Budget",
-      completed: validation.budget,
-    },
-    {
-      key: "media",
-      label: locale === "ka" ? "მედია" : "Media",
-      completed: true,
-    }, // Optional
-  ];
-
   return (
-    <div className="min-h-screen bg-white dark:bg-neutral-950 flex flex-col">
+    <div className="min-h-screen bg-[#FAFAF9] flex flex-col">
       <Header />
       <HeaderSpacer />
 
-      <main
-        className={`flex-1 pt-6 sm:pt-8 pb-28 transition-all duration-700 ${isVisible ? "opacity-100" : "opacity-0"}`}
-      >
-        <div className="max-w-2xl mx-auto px-4 sm:px-6">
-          {/* Header Section */}
-          <div
-            className="postjob-header animate-postjob-fade-in"
-            style={{ animationDelay: "0ms" }}
-          >
-            <div className="flex items-center justify-between">
-              {/* Back Button */}
-              <button
-                onClick={() => router.back()}
-                className="postjob-back group"
-              >
-                <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-                <span>{locale === "ka" ? "უკან" : "Back"}</span>
-              </button>
-
-              {/* Title */}
-              <h1 className="postjob-title">
-                {isEditMode ? (
-                  locale === "ka" ? (
-                    <>
-                      პროექტის <span>რედაქტირება</span>
-                    </>
-                  ) : (
-                    <>
-                      Edit Your <span>Project</span>
-                    </>
-                  )
-                ) : locale === "ka" ? (
-                  <>
-                    აღწერე შენი <span>პროექტი</span>
-                  </>
-                ) : (
-                  <>
-                    Describe Your <span>Project</span>
-                  </>
-                )}
-              </h1>
+      {/* Progress Header - Compact */}
+      <div className="bg-white border-b border-neutral-100 sticky top-[60px] z-40">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-2.5">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 text-xs text-neutral-500">
+              <span className="font-medium">{getCurrentStepIndex() + 1}/{STEPS.length}</span>
+              <span className="hidden sm:inline">•</span>
+              <span className="hidden sm:inline">{locale === "ka" ? STEPS[getCurrentStepIndex()].labelKa : STEPS[getCurrentStepIndex()].label}</span>
             </div>
-
-            <p className="postjob-subtitle">
-              {locale === "ka"
-                ? "შეავსე დეტალები და მიიღე შეთავაზებები საუკეთესო პროფესიონალებისგან."
-                : "Fill in the details and receive proposals from top professionals."}
-            </p>
-          </div>
-
-          {/* Progress Bar */}
-          <div
-            className="animate-postjob-fade-in"
-            style={{ animationDelay: "100ms" }}
-          >
-            <div className="postjob-progress-bar mb-6">
+            <div className="flex-1 h-1 bg-neutral-100 rounded-full overflow-hidden">
               <div
-                className="postjob-progress-fill"
+                className="h-full bg-[#C4735B] rounded-full transition-all duration-500"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
-            <div className="postjob-progress-steps">
-              {progressSteps.map((step, index) => {
-                const isActive =
-                  index === progressSteps.findIndex((s) => !s.completed);
-                return (
-                  <div key={step.key} className="postjob-progress-step">
-                    <div
-                      className={`postjob-progress-dot ${step.completed ? "completed" : isActive ? "active" : ""}`}
-                    >
-                      {step.completed ? (
-                        <Check className="w-4 h-4" />
-                      ) : (
-                        index + 1
-                      )}
-                    </div>
-                    <span className="postjob-progress-label">{step.label}</span>
-                  </div>
-                );
-              })}
-            </div>
+            <span className="text-xs font-medium text-[#C4735B]">
+              {Math.round(progressPercent)}%
+            </span>
           </div>
+        </div>
+      </div>
 
-          {/* Main Form */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSubmit();
-            }}
-            className="mt-8"
-          >
-            {/* Section 1: Category & Specializations */}
-            <section
-              className="postjob-section animate-postjob-slide-up"
-              style={{ animationDelay: "150ms" }}
-            >
-              <div className="postjob-section-header">
-                <div
-                  className={`postjob-section-number ${validation.category && validation.specialty ? "completed" : totalSpecialties > 0 || selectedCategory ? "active" : ""}`}
-                >
-                  {validation.category && validation.specialty ? (
-                    <Check className="w-6 h-6" />
-                  ) : (
-                    "1"
-                  )}
-                </div>
-                <div className="postjob-section-info">
-                  <div className="postjob-section-title">
-                    <h2>
-                      {locale === "ka" ? "რა გჭირდება?" : "What do you need?"}
-                    </h2>
-                    {!validation.category && (
-                      <span className="postjob-section-required">
-                        {locale === "ka" ? "სავალდებულო" : "Required"}
-                      </span>
-                    )}
-                  </div>
-                  <p className="postjob-section-desc">
+      <main className={`flex-1 py-4 lg:py-5 transition-opacity duration-500 ${isVisible ? "opacity-100" : "opacity-0"}`}>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          {error && (
+            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-100 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+
+          {/* STEP 1: Category Selection */}
+          {currentStep === "category" && (
+            <div className="grid lg:grid-cols-3 gap-4">
+              {/* Left: Main Content */}
+              <div className="lg:col-span-2 space-y-4">
+                <div>
+                  <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
+                    {locale === "ka" ? "პროექტის დეტალები" : "Project Details"}
+                  </h1>
+                  <p className="text-sm text-neutral-500">
                     {locale === "ka"
-                      ? "აირჩიე კატეგორია და სპეციალობა"
-                      : "Select category and specialty"}
+                      ? "აირჩიე ობიექტის ტიპი, კატეგორია და სერვისი"
+                      : "Select property type, category and service"}
                   </p>
                 </div>
-              </div>
 
-              <div className="postjob-card">
-                <CategorySubcategorySelector
-                  selectedCategory={selectedCategory}
-                  selectedSubcategories={selectedSubcategories}
-                  onCategoryChange={setSelectedCategory}
-                  onSubcategoriesChange={setSelectedSubcategories}
-                  customSpecialties={customSpecialties}
-                  onCustomSpecialtiesChange={setCustomSpecialties}
-                  showCustomSpecialties={false}
-                  singleCategoryMode={true}
-                />
-              </div>
-            </section>
-
-            {/* Section 2: Project Details */}
-            <section
-              className="postjob-section animate-postjob-slide-up"
-              style={{ animationDelay: "200ms" }}
-            >
-              <div className="postjob-section-header">
-                <div
-                  className={`postjob-section-number ${validation.title && validation.description && validation.propertyType ? "completed" : totalSpecialties > 0 ? "active" : ""}`}
-                >
-                  {validation.title &&
-                  validation.description &&
-                  validation.propertyType ? (
-                    <Check className="w-6 h-6" />
-                  ) : (
-                    "2"
-                  )}
-                </div>
-                <div className="postjob-section-info">
-                  <div className="postjob-section-title">
-                    <h2>
-                      {locale === "ka"
-                        ? "პროექტის დეტალები"
-                        : "Project Details"}
-                    </h2>
-                    {totalSpecialties > 0 &&
-                      (!validation.title ||
-                        !validation.description ||
-                        !validation.propertyType) && (
-                        <span className="postjob-section-required">
-                          {locale === "ka" ? "შეავსე" : "Fill in"}
+                {/* Property Type Selection with Icons */}
+                <div>
+                  <label className="block text-xs font-medium text-neutral-600 mb-2">
+                    {locale === "ka" ? "ობიექტის ტიპი" : "Property Type"} *
+                  </label>
+                  <div className="grid grid-cols-5 gap-2">
+                    {[
+                      { value: "apartment", labelEn: "Apartment", labelKa: "ბინა", icon: (
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <rect x="4" y="4" width="16" height="16" rx="2" />
+                          <path d="M9 4v16M15 4v16M4 9h16M4 15h16" />
+                        </svg>
+                      )},
+                      { value: "house", labelEn: "House", labelKa: "სახლი", icon: (
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <path d="M3 10.5L12 4l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V10.5z" />
+                          <path d="M9 21V14h6v7" />
+                        </svg>
+                      )},
+                      { value: "office", labelEn: "Office", labelKa: "ოფისი", icon: (
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <rect x="3" y="7" width="18" height="14" rx="1" />
+                          <path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2" />
+                          <path d="M12 12v4M8 12h8" />
+                        </svg>
+                      )},
+                      { value: "building", labelEn: "Building", labelKa: "შენობა", icon: (
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <rect x="5" y="3" width="14" height="18" rx="1" />
+                          <path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2" />
+                          <path d="M10 21v-3h4v3" />
+                        </svg>
+                      )},
+                      { value: "other", labelEn: "Other", labelKa: "სხვა", icon: (
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <circle cx="12" cy="12" r="9" />
+                          <path d="M12 8v4M12 16h.01" />
+                        </svg>
+                      )},
+                    ].map((type) => (
+                      <button
+                        key={type.value}
+                        onClick={() => updateFormData("propertyType", type.value)}
+                        className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 transition-all ${
+                          formData.propertyType === type.value
+                            ? "border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B]"
+                            : "border-neutral-200 text-neutral-500 hover:border-neutral-300"
+                        }`}
+                      >
+                        {type.icon}
+                        <span className="text-[10px] font-medium">
+                          {locale === "ka" ? type.labelKa : type.labelEn}
                         </span>
-                      )}
+                      </button>
+                    ))}
                   </div>
-                  <p className="postjob-section-desc">
-                    {locale === "ka"
-                      ? "აღწერე რა გინდა გაკეთდეს"
-                      : "Describe what needs to be done"}
-                  </p>
                 </div>
+
+                {/* Category Cards - Horizontal compact layout */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  {categories.map((category) => {
+                    const isSelected = selectedCategory === category.key;
+                    return (
+                      <button
+                        key={category.key}
+                        onClick={() => {
+                          setSelectedCategory(category.key);
+                          setSelectedSubcategory("");
+                          setSubcategorySearch("");
+                        }}
+                        className={`relative p-3 rounded-xl border-2 text-center transition-all duration-200 ${
+                          isSelected
+                            ? "border-[#C4735B] bg-[#C4735B]/5 shadow-sm"
+                            : "border-neutral-200 bg-white hover:border-neutral-300"
+                        }`}
+                      >
+                        <div className={`w-10 h-10 mx-auto rounded-lg flex items-center justify-center mb-2 transition-colors ${
+                          isSelected ? "bg-[#C4735B] text-white" : "bg-neutral-100 text-neutral-500"
+                        }`}>
+                          <CategoryIcon type={category.icon || ""} className="w-5 h-5" />
+                        </div>
+                        <h3 className={`text-xs font-medium transition-colors ${
+                          isSelected ? "text-[#C4735B]" : "text-neutral-700"
+                        }`}>
+                          {locale === "ka" ? category.nameKa : category.name}
+                        </h3>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Subcategories Panel - Compact */}
+                {selectedCategory && selectedCategoryData && (
+                  <div className="bg-white rounded-xl border border-neutral-200 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
+                          <CategoryIcon type={selectedCategoryData.icon || ""} className="w-3.5 h-3.5 text-[#C4735B]" />
+                        </div>
+                        <span className="font-medium text-sm text-neutral-900">
+                          {locale === "ka" ? selectedCategoryData.nameKa : selectedCategoryData.name}
+                        </span>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={subcategorySearch}
+                          onChange={(e) => setSubcategorySearch(e.target.value)}
+                          placeholder={locale === "ka" ? "ძებნა..." : "Search..."}
+                          className="pl-8 pr-3 py-1.5 w-36 rounded-lg border border-neutral-200 bg-neutral-50 text-xs placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]"
+                        />
+                        <svg className="w-3.5 h-3.5 text-neutral-400 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5">
+                      {filteredSubcategories.map((sub) => {
+                        const isSubSelected = selectedSubcategory === sub.key;
+                        return (
+                          <button
+                            key={sub.key}
+                            onClick={() => {
+                              setSelectedSubcategory(isSubSelected ? "" : sub.key);
+                            }}
+                            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                              isSubSelected
+                                ? "bg-[#C4735B] text-white"
+                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                            }`}
+                          >
+                            {locale === "ka" ? sub.nameKa : sub.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Category-specific fields */}
+                {selectedSubcategory && getActiveFields().length > 0 && (
+                  <div className="bg-white rounded-xl border border-neutral-200 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <h3 className="text-sm font-medium text-neutral-900 mb-3">
+                      {locale === "ka" ? "დამატებითი დეტალები" : "Additional Details"}
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      {getActiveFields().map((field) => (
+                        <div key={field.key}>
+                          <label className="block text-xs font-medium text-neutral-600 mb-1.5">
+                            {locale === "ka" ? field.labelKa : field.labelEn}
+                            {field.required && " *"}
+                          </label>
+                          <div className="relative">
+                            <input
+                              type={field.type}
+                              value={formData[field.key as keyof typeof formData] || ""}
+                              onChange={(e) => updateFormData(field.key, e.target.value)}
+                              placeholder={locale === "ka" ? field.placeholderKa : field.placeholderEn}
+                              className={`w-full px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B] ${
+                                field.suffix ? "pr-10" : ""
+                              }`}
+                            />
+                            {field.suffix && (
+                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-400">
+                                {field.suffix}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Cadastral Code Input - Only for architecture/design */}
+                {(selectedCategory === "architecture" || selectedCategory === "design") && (
+                  <div className="bg-white rounded-xl border border-neutral-200 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <label className="block text-sm font-medium text-neutral-900 mb-2">
+                      {locale === "ka" ? "საკადასტრო კოდი" : "Cadastral Code"} *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.cadastralId}
+                      onChange={(e) => updateFormData("cadastralId", e.target.value)}
+                      placeholder="XX.XX.XX.XXX.XXX"
+                      className="w-full px-3 py-2.5 rounded-lg border border-neutral-200 bg-white text-sm placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]"
+                    />
+                    <p className="mt-2 text-[11px] text-neutral-500 leading-relaxed">
+                      {locale === "ka"
+                        ? "საკადასტრო კოდი საჭიროა არქიტექტურული და დიზაინ პროექტებისთვის. ის გვეხმარება ობიექტის იდენტიფიცირებაში."
+                        : "Cadastral code is required for architecture and design projects. It helps identify the property."}
+                    </p>
+                  </div>
+                )}
+
+                {/* Land Area Input - Only for house/building with architecture/design */}
+                {(formData.propertyType === "house" || formData.propertyType === "building") && (selectedCategory === "architecture" || selectedCategory === "design") && (
+                  <div className="bg-white rounded-xl border border-neutral-200 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <label className="block text-sm font-medium text-neutral-900 mb-2">
+                      {locale === "ka" ? "მიწის ფართობი" : "Land Area"}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={formData.landArea}
+                        onChange={(e) => updateFormData("landArea", e.target.value)}
+                        placeholder={locale === "ka" ? "500" : "500"}
+                        className="w-full px-3 py-2.5 pr-12 rounded-lg border border-neutral-200 bg-white text-sm placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-400">
+                        m²
+                      </span>
+                    </div>
+                    <p className="mt-2 text-[11px] text-neutral-500 leading-relaxed">
+                      {locale === "ka"
+                        ? "მიუთითე მიწის ნაკვეთის ფართობი კვადრატულ მეტრებში."
+                        : "Specify the land plot area in square meters."}
+                    </p>
+                  </div>
+                )}
               </div>
 
-              <div className="postjob-card space-y-5">
+              {/* Right: Hints Panel */}
+              <div className="lg:col-span-1">
+                <div className="sticky top-[120px] space-y-4">
+                  {/* Hint Card */}
+                  <div className="bg-gradient-to-br from-[#C4735B]/5 to-[#C4735B]/10 rounded-xl border border-[#C4735B]/20 p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-lg bg-[#C4735B] flex items-center justify-center">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <h3 className="font-medium text-sm text-[#C4735B]">
+                        {locale === "ka" ? "რჩევა" : "Tip"}
+                      </h3>
+                    </div>
+                    <p className="text-xs text-neutral-600 leading-relaxed">
+                      {getActiveHint()}
+                    </p>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: Location & Budget */}
+          {currentStep === "location" && (
+            <div className="max-w-2xl mx-auto">
+              <div className="bg-white rounded-xl border border-neutral-200 p-4">
+                <h2 className="text-lg font-bold text-neutral-900 mb-3">
+                  {locale === "ka" ? "ლოკაცია და ბიუჯეტი" : "Location & Budget"}
+                </h2>
+
+                <div className="space-y-4">
+                  {/* Address */}
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-600 mb-1.5">
+                      {locale === "ka" ? "სამუშაო მისამართი" : "Job Address"}
+                    </label>
+                    <AddressPicker
+                      value={formData.location}
+                      onChange={(value) => updateFormData("location", value)}
+                      locale={locale}
+                      required
+                    />
+                  </div>
+
+                  {/* Budget Type Selection */}
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-600 mb-2">
+                      {locale === "ka" ? "ბიუჯეტის ტიპი" : "Budget Type"}
+                    </label>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          updateFormData("budgetType", "fixed");
+                          updateFormData("budgetMax", "");
+                        }}
+                        className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium border-2 transition-all ${
+                          formData.budgetType === "fixed"
+                            ? "border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B]"
+                            : "border-neutral-200 text-neutral-600 hover:border-neutral-300"
+                        }`}
+                      >
+                        {locale === "ka" ? "ფიქსირებული" : "Fixed"}
+                      </button>
+                      <button
+                        onClick={() => updateFormData("budgetType", "range")}
+                        className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium border-2 transition-all ${
+                          formData.budgetType === "range"
+                            ? "border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B]"
+                            : "border-neutral-200 text-neutral-600 hover:border-neutral-300"
+                        }`}
+                      >
+                        {locale === "ka" ? "დიაპაზონი" : "Range"}
+                      </button>
+                      <button
+                        onClick={() => {
+                          updateFormData("budgetType", "negotiable");
+                          updateFormData("budgetMin", "0");
+                          updateFormData("budgetMax", "");
+                        }}
+                        className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium border-2 transition-all ${
+                          formData.budgetType === "negotiable"
+                            ? "border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B]"
+                            : "border-neutral-200 text-neutral-600 hover:border-neutral-300"
+                        }`}
+                      >
+                        {locale === "ka" ? "შეთანხმებით" : "Negotiable"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Budget Inputs - Only show for fixed and range */}
+                  {formData.budgetType !== "negotiable" && (
+                    <div>
+                      <label className="block text-xs font-medium text-neutral-600 mb-1.5">
+                        {formData.budgetType === "fixed"
+                          ? (locale === "ka" ? "თანხა (GEL)" : "Amount (GEL)")
+                          : (locale === "ka" ? "დიაპაზონი (GEL)" : "Range (GEL)")}
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <div className="relative flex-1">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">₾</span>
+                          <input
+                            type="number"
+                            value={formData.budgetMin}
+                            onChange={(e) => updateFormData("budgetMin", e.target.value)}
+                            placeholder={formData.budgetType === "fixed" ? "100" : "50"}
+                            className="w-full pl-7 pr-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]"
+                          />
+                        </div>
+                        {formData.budgetType === "range" && (
+                          <>
+                            <span className="text-neutral-300">—</span>
+                            <div className="relative flex-1">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">₾</span>
+                              <input
+                                type="number"
+                                value={formData.budgetMax}
+                                onChange={(e) => updateFormData("budgetMax", e.target.value)}
+                                placeholder="150"
+                                className="w-full pl-7 pr-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]"
+                              />
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Timing Selection */}
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-600 mb-2">
+                      {locale === "ka" ? "როდის გჭირდება?" : "When do you need it?"}
+                    </label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[
+                        { value: "flexible", labelEn: "Flexible", labelKa: "მოქნილი" },
+                        { value: "asap", labelEn: "ASAP", labelKa: "სასწრაფოდ" },
+                        { value: "this_week", labelEn: "This week", labelKa: "ამ კვირაში" },
+                        { value: "this_month", labelEn: "This month", labelKa: "ამ თვეში" },
+                      ].map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => updateFormData("timing", option.value)}
+                          className={`px-2 py-2 rounded-lg text-xs font-medium border-2 transition-all ${
+                            formData.timing === option.value
+                              ? "border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B]"
+                              : "border-neutral-200 text-neutral-600 hover:border-neutral-300"
+                          }`}
+                        >
+                          {locale === "ka" ? option.labelKa : option.labelEn}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3: Details */}
+          {currentStep === "details" && (
+            <div className="max-w-2xl mx-auto space-y-4">
+              <div>
+                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
+                  {locale === "ka" ? "პროექტის დეტალები" : "Project Details"}
+                </h1>
+                <p className="text-sm text-neutral-500">
+                  {locale === "ka" ? "აღწერე რა გინდა გაკეთდეს" : "Describe what needs to be done"}
+                </p>
+              </div>
+
+              <div className="bg-white rounded-xl border border-neutral-200 p-4 space-y-4">
                 {/* Title */}
                 <div>
-                  <label className="postjob-label">
-                    <span>
-                      {locale === "ka" ? "პროექტის სათაური" : "Project Title"}
-                    </span>
-                    <span
-                      className={`postjob-label-check ${validation.title ? "filled" : "empty"}`}
-                    >
-                      {validation.title && (
-                        <Check className="w-3 h-3 text-white" />
-                      )}
-                    </span>
+                  <label className="block text-xs font-medium text-neutral-600 mb-1.5">
+                    {locale === "ka" ? "სათაური" : "Title"} *
                   </label>
                   <input
                     type="text"
                     value={formData.title}
                     onChange={(e) => updateFormData("title", e.target.value)}
-                    placeholder={
-                      locale === "ka"
-                        ? "მაგ: 2 ოთახიანი ბინის რემონტი"
-                        : "e.g. 2-bedroom apartment renovation"
-                    }
-                    className={`postjob-input ${validation.title ? "filled" : ""}`}
+                    placeholder={locale === "ka" ? "მაგ: მილების შეკეთება" : "e.g. Kitchen pipe repair"}
+                    className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]"
                   />
                 </div>
 
                 {/* Description */}
                 <div>
-                  <label className="postjob-label">
-                    <span>{locale === "ka" ? "აღწერა" : "Description"}</span>
-                    <span
-                      className={`postjob-label-check ${validation.description ? "filled" : "empty"}`}
-                    >
-                      {validation.description && (
-                        <Check className="w-3 h-3 text-white" />
-                      )}
-                    </span>
+                  <label className="block text-xs font-medium text-neutral-600 mb-1.5">
+                    {locale === "ka" ? "აღწერა" : "Description"} *
                   </label>
                   <textarea
                     value={formData.description}
-                    onChange={(e) =>
-                      updateFormData("description", e.target.value)
-                    }
-                    rows={4}
-                    placeholder={
-                      locale === "ka"
-                        ? "დეტალურად აღწერე რა გინდა გაკეთდეს..."
-                        : "Describe what you need in detail..."
-                    }
-                    className="postjob-textarea"
+                    onChange={(e) => updateFormData("description", e.target.value)}
+                    rows={3}
+                    placeholder={locale === "ka"
+                      ? "აღწერე პრობლემა ან რა გინდა გაკეთდეს..."
+                      : "Describe the problem or what needs to be done..."}
+                    className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B] resize-none"
                   />
                 </div>
 
-                {/* Property Type */}
+
+                {/* Photos - Compact */}
                 <div>
-                  <label className="postjob-label">
-                    <span>
-                      {locale === "ka" ? "ობიექტის ტიპი" : "Property Type"}
-                    </span>
-                    <span
-                      className={`postjob-label-check ${validation.propertyType ? "filled" : "empty"}`}
-                    >
-                      {validation.propertyType && (
-                        <Check className="w-3 h-3 text-white" />
-                      )}
-                    </span>
+                  <label className="block text-xs font-medium text-neutral-600 mb-1.5">
+                    {locale === "ka" ? "ფოტოები" : "Photos"} <span className="text-neutral-400 font-normal">({locale === "ka" ? "არასავალდებულო" : "optional"})</span>
                   </label>
-                  <div className="postjob-option-grid cols-5">
-                    {PROPERTY_TYPES.map((type) => (
-                      <button
-                        key={type.value}
-                        type="button"
-                        onClick={() => {
-                          updateFormData("propertyType", type.value);
-                          if (type.value !== "other")
-                            updateFormData("propertyTypeOther", "");
-                        }}
-                        className={`postjob-option ${formData.propertyType === type.value ? "selected" : ""}`}
-                      >
-                        <PropertyIcon
-                          type={type.icon}
-                          className="postjob-option-icon"
-                        />
-                        <span className="postjob-option-label">
-                          {locale === "ka" ? type.labelKa : type.label}
-                        </span>
-                        <span className="postjob-option-check">
-                          <Check className="w-3 h-3 text-white" />
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                  {formData.propertyType === "other" && (
-                    <input
-                      type="text"
-                      value={formData.propertyTypeOther}
-                      onChange={(e) =>
-                        updateFormData("propertyTypeOther", e.target.value)
-                      }
-                      placeholder={
-                        locale === "ka"
-                          ? "მიუთითე ობიექტის ტიპი..."
-                          : "Specify property type..."
-                      }
-                      className="postjob-input mt-3"
-                    />
-                  )}
-                </div>
 
-                {/* Size & Rooms */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="postjob-label">
-                      <span>
-                        {locale === "ka" ? "ფართობი (მ²)" : "Area (m²)"}
-                      </span>
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.areaSize}
-                      onChange={(e) =>
-                        updateFormData("areaSize", e.target.value)
-                      }
-                      placeholder="100"
-                      className="postjob-input"
-                    />
-                  </div>
-                  <div>
-                    <label className="postjob-label">
-                      <span>
-                        {locale === "ka"
-                          ? "ოთახების რაოდენობა"
-                          : "Number of Rooms"}
-                      </span>
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.roomCount}
-                      onChange={(e) =>
-                        updateFormData("roomCount", e.target.value)
-                      }
-                      placeholder="3"
-                      className="postjob-input"
-                    />
-                  </div>
-                </div>
-
-                {/* Deadline */}
-                <div>
-                  <label className="postjob-label">
-                    <Calendar className="w-4 h-4 text-[#E07B4F]" />
-                    <span>
-                      {locale === "ka"
-                        ? "სასურველი დასრულების თარიღი"
-                        : "Preferred Deadline"}
-                    </span>
-                  </label>
-                  <DatePicker
-                    value={formData.deadline}
-                    onChange={(value) => updateFormData("deadline", value)}
-                    min={new Date().toISOString().split("T")[0]}
-                    locale={locale}
-                    placeholder={
-                      locale === "ka" ? "აირჩიე თარიღი" : "Select date"
-                    }
-                  />
-                </div>
-
-                {/* Location */}
-                <div>
-                  <AddressPicker
-                    value={formData.location}
-                    onChange={(value) => updateFormData("location", value)}
-                    locale={locale}
-                    label={locale === "ka" ? "მდებარეობა" : "Location"}
-                    required={false}
-                  />
-                </div>
-              </div>
-            </section>
-
-            {/* Section 3: Budget */}
-            <section
-              className="postjob-section animate-postjob-slide-up"
-              style={{ animationDelay: "250ms" }}
-            >
-              <div className="postjob-section-header">
-                <div
-                  className={`postjob-section-number ${validation.budget ? "completed" : validation.title && validation.description && validation.propertyType ? "active" : ""}`}
-                >
-                  {validation.budget ? <Check className="w-6 h-6" /> : "3"}
-                </div>
-                <div className="postjob-section-info">
-                  <div className="postjob-section-title">
-                    <h2>{locale === "ka" ? "ბიუჯეტი" : "Budget"}</h2>
-                    {validation.title &&
-                      validation.description &&
-                      validation.propertyType &&
-                      !validation.budget && (
-                        <span className="postjob-section-required">
-                          {locale === "ka" ? "მიუთითე" : "Specify"}
-                        </span>
-                      )}
-                  </div>
-                  <p className="postjob-section-desc">
-                    {locale === "ka"
-                      ? "რამდენის დახარჯვა გეგმავ?"
-                      : "How much are you planning to spend?"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="postjob-card">
-                {/* Budget Type Selection */}
-                <div className="postjob-option-grid cols-4 mb-5">
-                  {BUDGET_TYPES.map((type) => (
+                  <div className="flex gap-2">
                     <button
-                      key={type.value}
-                      type="button"
-                      onClick={() => updateFormData("budgetType", type.value)}
-                      className={`postjob-option ${formData.budgetType === type.value ? "selected" : ""}`}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-16 h-16 rounded-lg border-2 border-dashed border-neutral-200 flex flex-col items-center justify-center hover:border-[#C4735B]/50 hover:bg-[#C4735B]/5 transition-colors flex-shrink-0"
                     >
-                      <BudgetIcon
-                        type={type.icon}
-                        className="postjob-option-icon"
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleFileSelect}
+                        className="hidden"
                       />
-                      <span className="postjob-option-label">
-                        {locale === "ka" ? type.labelKa : type.label}
-                      </span>
-                      <span className="postjob-option-check">
-                        <Check className="w-3 h-3 text-white" />
-                      </span>
+                      <Upload className="w-4 h-4 text-neutral-400" />
+                      <span className="text-[9px] text-neutral-400 mt-0.5">Add</span>
                     </button>
-                  ))}
-                </div>
 
-                {/* Budget Input Fields */}
-                {formData.budgetType === "fixed" && (
-                  <div>
-                    <label className="postjob-label">
-                      <DollarSign className="w-4 h-4 text-[#E07B4F]" />
-                      <span>
-                        {locale === "ka"
-                          ? "ბიუჯეტის თანხა (₾)"
-                          : "Budget Amount (₾)"}
-                      </span>
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.budgetAmount}
-                      onChange={(e) =>
-                        updateFormData("budgetAmount", e.target.value)
-                      }
-                      placeholder="5000"
-                      className="postjob-input text-lg font-semibold"
-                    />
-                  </div>
-                )}
-
-                {formData.budgetType === "range" && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="postjob-label">
-                        <span>
-                          {locale === "ka" ? "მინიმუმ (₾)" : "Minimum (₾)"}
-                        </span>
-                      </label>
-                      <input
-                        type="number"
-                        value={formData.budgetMin}
-                        onChange={(e) =>
-                          updateFormData("budgetMin", e.target.value)
-                        }
-                        placeholder="3000"
-                        className="postjob-input text-lg font-semibold"
-                      />
-                    </div>
-                    <div>
-                      <label className="postjob-label">
-                        <span>
-                          {locale === "ka" ? "მაქსიმუმ (₾)" : "Maximum (₾)"}
-                        </span>
-                      </label>
-                      <input
-                        type="number"
-                        value={formData.budgetMax}
-                        onChange={(e) =>
-                          updateFormData("budgetMax", e.target.value)
-                        }
-                        placeholder="8000"
-                        className="postjob-input text-lg font-semibold"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {formData.budgetType === "per_sqm" && (
-                  <div>
-                    <label className="postjob-label">
-                      <span>
-                        {locale === "ka"
-                          ? "ფასი კვ.მ-ზე (₾)"
-                          : "Price per m² (₾)"}
-                      </span>
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.pricePerUnit}
-                      onChange={(e) =>
-                        updateFormData("pricePerUnit", e.target.value)
-                      }
-                      placeholder="50"
-                      className="postjob-input text-lg font-semibold"
-                    />
-                    {formData.areaSize && formData.pricePerUnit && (
-                      <p className="mt-3 text-sm text-[var(--color-text-secondary)] flex items-center gap-2">
-                        <span>
-                          {locale === "ka"
-                            ? "სავარაუდო ჯამი:"
-                            : "Estimated total:"}
-                        </span>
-                        <span className="font-bold text-[#E07B4F] text-lg">
-                          ₾
-                          {(
-                            Number(formData.areaSize) *
-                            Number(formData.pricePerUnit)
-                          ).toLocaleString()}
-                        </span>
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {formData.budgetType === "negotiable" && (
-                  <div className="postjob-negotiable">
-                    <div className="postjob-negotiable-icon">
-                      <MessageSquare className="w-7 h-7 text-white" />
-                    </div>
-                    <p className="postjob-negotiable-text">
-                      {locale === "ka"
-                        ? "პროფესიონალები შემოგთავაზებენ საკუთარ ფასებს"
-                        : "Professionals will propose their own prices"}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </section>
-
-            {/* Section 4: Media & References */}
-            <section
-              className="postjob-section animate-postjob-slide-up"
-              style={{ animationDelay: "300ms" }}
-            >
-              <div className="postjob-section-header">
-                <div className="postjob-section-number">4</div>
-                <div className="postjob-section-info">
-                  <div className="postjob-section-title">
-                    <h2>
-                      {locale === "ka"
-                        ? "ფოტოები და ინსპირაცია"
-                        : "Photos & Inspiration"}
-                    </h2>
-                  </div>
-                  <p className="postjob-section-desc">
-                    {locale === "ka"
-                      ? "არასავალდებულო - დაეხმარე პროფესიონალს"
-                      : "Optional - help pros understand"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="postjob-card space-y-5">
-                {/* Existing Media (Edit Mode) */}
-                {isEditMode && existingMedia.length > 0 && (
-                  <div>
-                    <label className="postjob-label">
-                      <Image className="w-4 h-4 text-[#E07B4F]" />
-                      <span>
-                        {locale === "ka"
-                          ? "არსებული ფოტოები"
-                          : "Current Photos"}{" "}
-                        ({existingMedia.length})
-                      </span>
-                    </label>
-                    <div className="postjob-media-grid">
-                      {existingMedia.map((media, idx) => (
-                        <div key={idx} className="postjob-media-item">
-                          <img src={storage.getFileUrl(media.url)} alt="" />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Upload Area */}
-                <div>
-                  <label className="postjob-label">
-                    <Upload className="w-4 h-4 text-[#E07B4F]" />
-                    <span>
-                      {locale === "ka" ? "ატვირთე ფოტოები" : "Upload Photos"}
-                    </span>
-                  </label>
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="postjob-upload"
-                  >
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*,video/*"
-                      multiple
-                      onChange={handleFileSelect}
-                      className="hidden"
-                    />
-                    <div className="postjob-upload-icon">
-                      <Image />
-                    </div>
-                    <p className="postjob-upload-title">
-                      {locale === "ka" ? "ატვირთე ფოტოები" : "Upload photos"}
-                    </p>
-                    <p className="postjob-upload-subtitle">PNG, JPG, MP4</p>
-                  </div>
-                </div>
-
-                {/* New Files Preview */}
-                {mediaFiles.length > 0 && (
-                  <div className="postjob-media-grid">
+                    {/* Preview */}
+                    {existingMedia.map((media, idx) => (
+                      <div key={`existing-${idx}`} className="relative w-16 h-16 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
+                        <img src={storage.getFileUrl(media.url)} alt="" className="w-full h-full object-cover" />
+                        <button
+                          onClick={() => removeExistingMedia(idx)}
+                          className="absolute top-1 right-1 w-4 h-4 bg-black/50 rounded-full flex items-center justify-center"
+                        >
+                          <X className="w-2.5 h-2.5 text-white" />
+                        </button>
+                      </div>
+                    ))}
                     {mediaFiles.map((media, idx) => (
-                      <div key={idx} className="postjob-media-item">
-                        {media.type === "image" ? (
-                          <img src={media.preview} alt="" />
-                        ) : (
-                          <video src={media.preview} />
-                        )}
-                        <div className="postjob-media-overlay">
-                          <button
-                            type="button"
-                            onClick={() => removeMediaFile(idx)}
-                            className="postjob-media-remove"
-                          >
-                            <Trash2 className="w-4 h-4 text-white" />
-                          </button>
-                        </div>
+                      <div key={`new-${idx}`} className="relative w-16 h-16 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
+                        <img src={media.preview} alt="" className="w-full h-full object-cover" />
+                        <button
+                          onClick={() => removeMediaFile(idx)}
+                          className="absolute top-1 right-1 w-4 h-4 bg-black/50 rounded-full flex items-center justify-center"
+                        >
+                          <X className="w-2.5 h-2.5 text-white" />
+                        </button>
                       </div>
                     ))}
                   </div>
-                )}
-
-                {/* References/Inspiration Links */}
-                <div>
-                  <label className="postjob-label">
-                    <Link2 className="w-4 h-4 text-[#E07B4F]" />
-                    <span>
-                      {locale === "ka"
-                        ? "ინსპირაციის ბმულები"
-                        : "Inspiration Links"}
-                    </span>
-                  </label>
-                  <div className="postjob-ref-input">
-                    <input
-                      type="url"
-                      value={newReferenceUrl}
-                      onChange={(e) => setNewReferenceUrl(e.target.value)}
-                      onKeyPress={(e) =>
-                        e.key === "Enter" &&
-                        (e.preventDefault(), addReference())
-                      }
-                      placeholder={
-                        locale === "ka"
-                          ? "Pinterest, Instagram..."
-                          : "Pinterest, Instagram..."
-                      }
-                      className="postjob-input flex-1"
-                    />
-                    <button
-                      type="button"
-                      onClick={addReference}
-                      disabled={!newReferenceUrl.trim()}
-                      className="postjob-ref-add"
-                    >
-                      <Plus className="w-5 h-5" />
-                    </button>
-                  </div>
-                  {references.length > 0 && (
-                    <div className="postjob-ref-list">
-                      {references.map((ref, idx) => (
-                        <div key={idx} className="postjob-ref-item">
-                          <Link2 className="postjob-ref-icon" />
-                          <span className="postjob-ref-url">{ref.url}</span>
-                          <button
-                            type="button"
-                            onClick={() => removeReference(idx)}
-                            className="postjob-ref-remove"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </div>
-            </section>
-
-            {/* Notify All Professionals */}
-            <section
-              className="postjob-section animate-postjob-slide-up"
-              style={{ animationDelay: "350ms" }}
-            >
-              <div
-                onClick={() => setNotifyAllPros(!notifyAllPros)}
-                className={`postjob-notify ${notifyAllPros ? "active" : ""}`}
-              >
-                <div className="postjob-notify-checkbox">
-                  {notifyAllPros && <Check className="w-4 h-4 text-white" />}
-                </div>
-                <div className="postjob-notify-content">
-                  <div className="postjob-notify-header">
-                    <Bell className="postjob-notify-icon" />
-                    <span className="postjob-notify-title">
-                      {locale === "ka"
-                        ? "მიიღეთ მეტი შეთავაზება"
-                        : "Get More Proposals"}
-                    </span>
-                    <span className="postjob-notify-badge">
-                      {locale === "ka" ? "რეკომენდებული" : "Recommended"}
-                    </span>
-                  </div>
-                  <p className="postjob-notify-desc">
-                    {locale === "ka"
-                      ? "ჩართვით ადასტურებთ რომ მიუვიდეს შეტყობინება ყველა შესაბამის პროფესიონალს თქვენი პროექტის შესახებ."
-                      : "Notify all matching professionals about your project and receive more proposals faster."}
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            {/* Error */}
-            {error && (
-              <div className="postjob-error animate-postjob-fade-in">
-                <AlertCircle className="postjob-error-icon" />
-                <p className="postjob-error-text">{error}</p>
-              </div>
-            )}
-          </form>
-        </div>
-      </main>
-
-      {/* Submit Footer */}
-      <div className="postjob-footer">
-        <div className="postjob-footer-inner">
-          {/* Progress indicator */}
-          {!canSubmit() && (
-            <div className="postjob-footer-progress">
-              <div className="postjob-footer-ring">
-                <svg viewBox="0 0 36 36">
-                  <circle
-                    className="postjob-footer-ring-bg"
-                    cx="18"
-                    cy="18"
-                    r="14"
-                  />
-                  <circle
-                    className="postjob-footer-ring-fill"
-                    cx="18"
-                    cy="18"
-                    r="14"
-                    strokeDasharray={`${progressPercent * 0.88} 88`}
-                  />
-                </svg>
-                <span className="postjob-footer-ring-text">
-                  {completedFields}/{totalFields}
-                </span>
-              </div>
-              <span className="postjob-footer-hint">
-                {getFirstMissingField()?.label}
-              </span>
             </div>
           )}
 
-          {/* Submit button */}
-          <button
-            type="button"
-            onClick={() => {
-              const form = document.querySelector("form");
-              if (form) form.requestSubmit();
-            }}
-            disabled={isSubmitting || !canSubmit()}
-            className={`postjob-submit ${canSubmit() ? "ready" : "disabled"}`}
-          >
-            {isSubmitting ? (
-              <>
-                <div className="postjob-submit-spinner" />
-                <span>
-                  {uploadProgress > 0
-                    ? `${uploadProgress}%`
-                    : locale === "ka"
-                      ? "მიმდინარეობს..."
-                      : "Processing..."}
-                </span>
-              </>
-            ) : canSubmit() ? (
-              <>
-                <span>
-                  {isEditMode
-                    ? locale === "ka"
-                      ? "შენახვა"
-                      : "Save Changes"
-                    : locale === "ka"
-                      ? "გამოქვეყნება"
-                      : "Publish Project"}
-                </span>
-                <ArrowRight className="w-5 h-5" />
-              </>
-            ) : (
-              <span>
-                {locale === "ka" ? "შეავსე ველები" : "Fill required fields"}
-              </span>
-            )}
-          </button>
+          {/* STEP 4: Review - Compact */}
+          {currentStep === "review" && (
+            <div className="max-w-2xl mx-auto space-y-3">
+              <div className="mb-2">
+                <h1 className="text-lg font-bold text-neutral-900">
+                  {locale === "ka" ? "გადახედე შენს პროექტს" : "Review your Job Post"}
+                </h1>
+                <p className="text-xs text-neutral-500">
+                  {locale === "ka"
+                    ? "გთხოვთ დარწმუნდეთ რომ ყველა დეტალი სწორია."
+                    : "Please ensure all details are correct before publishing."}
+                </p>
+              </div>
+
+              {/* Service Details - Compact */}
+              <div className="bg-white rounded-xl border border-neutral-200 p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
+                    <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
+                      <CategoryIcon type={selectedCategoryData?.icon || ""} className="w-3 h-3 text-[#C4735B]" />
+                    </div>
+                    {locale === "ka" ? "სერვისი" : "Service"}
+                  </h3>
+                  <button onClick={() => goToStep("category")} className="text-[#C4735B] hover:underline p-1">
+                    <Pencil className="w-3 h-3" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <p className="text-neutral-400 mb-0.5">{locale === "ka" ? "კატეგორია" : "Category"}</p>
+                    <p className="font-medium text-neutral-900">
+                      {locale === "ka" ? selectedCategoryData?.nameKa : selectedCategoryData?.name}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-neutral-400 mb-0.5">{locale === "ka" ? "ტიპი" : "Type"}</p>
+                    <p className="font-medium text-neutral-900">
+                      {(() => {
+                        const sub = selectedCategoryData?.subcategories.find((s) => s.key === selectedSubcategory);
+                        return locale === "ka" ? sub?.nameKa : sub?.name;
+                      })()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Location & Budget - Combined Compact */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-white rounded-xl border border-neutral-200 p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
+                      <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
+                        <MapPin className="w-3 h-3 text-[#C4735B]" />
+                      </div>
+                      {locale === "ka" ? "ლოკაცია" : "Location"}
+                    </h3>
+                    <button onClick={() => goToStep("location")} className="text-[#C4735B] hover:underline p-1">
+                      <Pencil className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <p className="text-xs font-medium text-neutral-900 line-clamp-1">{formData.location}</p>
+                  <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-neutral-100 text-neutral-700">
+                    {formData.propertyType === "apartment" && (locale === "ka" ? "ბინა" : "Apartment")}
+                    {formData.propertyType === "house" && (locale === "ka" ? "სახლი" : "House")}
+                    {formData.propertyType === "office" && (locale === "ka" ? "ოფისი" : "Office")}
+                    {formData.propertyType === "building" && (locale === "ka" ? "შენობა" : "Building")}
+                    {formData.propertyType === "other" && (locale === "ka" ? "სხვა" : "Other")}
+                  </span>
+                </div>
+
+                <div className="bg-white rounded-xl border border-neutral-200 p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
+                      <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
+                        <Clock className="w-3 h-3 text-[#C4735B]" />
+                      </div>
+                      {locale === "ka" ? "ბიუჯეტი" : "Budget"}
+                    </h3>
+                    <button onClick={() => goToStep("location")} className="text-[#C4735B] hover:underline p-1">
+                      <Pencil className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <p className="text-xs font-medium text-neutral-900">
+                    {formData.budgetType === "negotiable"
+                      ? (locale === "ka" ? "შეთანხმებით" : "Negotiable")
+                      : formData.budgetType === "range"
+                      ? `${formData.budgetMin} - ${formData.budgetMax} GEL`
+                      : `${formData.budgetMin} GEL`}
+                  </p>
+                  <div className="flex gap-1 mt-1">
+                    <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                      formData.timing === "asap"
+                        ? "bg-red-100 text-red-700"
+                        : formData.timing === "this_week"
+                        ? "bg-orange-100 text-orange-700"
+                        : "bg-neutral-100 text-neutral-700"
+                    }`}>
+                      {formData.timing === "flexible" && (locale === "ka" ? "მოქნილი" : "Flexible")}
+                      {formData.timing === "asap" && (locale === "ka" ? "სასწრაფოდ" : "ASAP")}
+                      {formData.timing === "this_week" && (locale === "ka" ? "ამ კვირაში" : "This week")}
+                      {formData.timing === "this_month" && (locale === "ka" ? "ამ თვეში" : "This month")}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Description - Compact */}
+              <div className="bg-white rounded-xl border border-neutral-200 p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
+                    <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
+                      <svg className="w-3 h-3 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                      </svg>
+                    </div>
+                    {locale === "ka" ? "აღწერა" : "Description"}
+                  </h3>
+                  <button onClick={() => goToStep("details")} className="text-[#C4735B] hover:underline p-1">
+                    <Pencil className="w-3 h-3" />
+                  </button>
+                </div>
+                <h4 className="text-xs font-medium text-neutral-900 mb-1">{formData.title}</h4>
+                <p className="text-neutral-600 text-xs leading-relaxed line-clamp-2">{formData.description}</p>
+              </div>
+
+              {/* Photos - Compact */}
+              {(existingMedia.length > 0 || mediaFiles.length > 0) && (
+                <div className="bg-white rounded-xl border border-neutral-200 p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
+                      <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
+                        <ImageIcon className="w-3 h-3 text-[#C4735B]" />
+                      </div>
+                      {locale === "ka" ? "ფოტოები" : "Photos"} ({existingMedia.length + mediaFiles.length})
+                    </h3>
+                    <button onClick={() => goToStep("details")} className="text-[#C4735B] hover:underline p-1">
+                      <Pencil className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <div className="flex gap-2">
+                    {existingMedia.map((media, idx) => (
+                      <div key={`review-existing-${idx}`} className="w-14 h-14 rounded-lg overflow-hidden bg-neutral-100">
+                        <img src={storage.getFileUrl(media.url)} alt="" className="w-full h-full object-cover" />
+                      </div>
+                    ))}
+                    {mediaFiles.map((media, idx) => (
+                      <div key={`review-new-${idx}`} className="w-14 h-14 rounded-lg overflow-hidden bg-neutral-100">
+                        <img src={media.preview} alt="" className="w-full h-full object-cover" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Info Note - Compact */}
+              <div className="flex items-center justify-center gap-1.5 text-[10px] text-neutral-400 py-1">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                {locale === "ka"
+                  ? "გადაიხილება ადმინისტრატორის მიერ 24 საათში."
+                  : "Will be reviewed by admins within 24 hours."}
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      </main>
+
+      {/* Footer Navigation - Compact */}
+      <footer className="sticky bottom-0 bg-white border-t border-neutral-100 z-40">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-2.5">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={handleBack}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-600 hover:bg-neutral-100 transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              {locale === "ka" ? "უკან" : "Back"}
+            </button>
+
+            <button
+              onClick={handleNext}
+              disabled={
+                isSubmitting ||
+                (currentStep === "category" && !canProceedFromCategory()) ||
+                (currentStep === "location" && !canProceedFromLocation()) ||
+                (currentStep === "details" && !canProceedFromDetails())
+              }
+              className="flex items-center gap-1.5 px-5 py-2 rounded-lg bg-[#C4735B] hover:bg-[#A85D47] disabled:bg-neutral-200 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>{locale === "ka" ? "..." : "..."}</span>
+                </>
+              ) : currentStep === "review" ? (
+                <>
+                  <span>{locale === "ka" ? "გამოქვეყნება" : "Post Job"}</span>
+                  <Check className="w-3.5 h-3.5" />
+                </>
+              ) : (
+                <>
+                  <span>{locale === "ka" ? "გაგრძელება" : "Continue"}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
@@ -1362,8 +1237,8 @@ export default function PostJobPage() {
     <AuthGuard allowedRoles={["client", "pro", "company", "admin"]}>
       <Suspense
         fallback={
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#E07B4F]"></div>
+          <div className="min-h-screen flex items-center justify-center bg-[#FAFAF9]">
+            <div className="w-12 h-12 rounded-full border-2 border-[#C4735B]/20 border-t-[#C4735B] animate-spin" />
           </div>
         }
       >

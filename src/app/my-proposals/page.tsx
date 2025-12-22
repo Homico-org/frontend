@@ -327,7 +327,6 @@ function MyProposalsPageContent() {
   const filterTabs = [
     { key: 'all', label: language === 'ka' ? 'ყველა' : 'All', count: stats.total, icon: Inbox },
     { key: 'pending', label: language === 'ka' ? 'მოლოდინში' : 'Pending', count: stats.pending, icon: Clock },
-    { key: 'in_discussion', label: language === 'ka' ? 'მიმოწერა' : 'Discussion', count: stats.inDiscussion, icon: MessageSquare },
     { key: 'accepted', label: language === 'ka' ? 'მიღებული' : 'Accepted', count: stats.accepted, icon: CheckCircle },
     { key: 'rejected', label: language === 'ka' ? 'უარყოფილი' : 'Rejected', count: stats.rejected, icon: XCircle },
     { key: 'withdrawn', label: language === 'ka' ? 'გაუქმებული' : 'Withdrawn', count: stats.withdrawn, icon: Ban },

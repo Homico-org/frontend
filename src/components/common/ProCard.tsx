@@ -144,14 +144,11 @@ export default function ProCard({
             </div>
           </div>
 
-          {/* Name & Title - Centered */}
+          {/* Name - Centered */}
           <div className="text-center mb-3">
             <h3 className="font-semibold text-[15px] text-neutral-900 dark:text-white leading-snug line-clamp-1">
               {profile.name}
             </h3>
-            <p className="text-[12px] text-neutral-500 dark:text-neutral-400 line-clamp-1 mt-0.5">
-              {getCategoryLabel(profile.selectedCategories[0])}
-            </p>
           </div>
 
           {/* Rating */}
@@ -214,21 +211,38 @@ export default function ProCard({
           {/* Divider */}
           <div className="h-px bg-neutral-100 dark:bg-neutral-800 mb-3" />
 
-          {/* Category Tags */}
-          <div className="flex flex-wrap justify-center gap-1.5">
-            {profile.categories.slice(0, 2).map((cat, i) => (
-              <span
-                key={i}
-                className="px-2 py-0.5 text-[11px] text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 rounded"
-              >
-                {getCategoryLabel(cat)}
-              </span>
-            ))}
-            {profile.categories.length > 2 && (
-              <span className="text-[11px] text-neutral-400 px-1">
-                +{profile.categories.length - 2}
-              </span>
-            )}
+          {/* Categories with Subcategories */}
+          <div className="space-y-2">
+            {(profile.selectedCategories || profile.categories || []).slice(0, 2).map((cat, i) => {
+              // Get subcategories for this category
+              const subcats = (profile.selectedSubcategories || profile.subcategories || [])
+                .slice(0, 3);
+
+              return (
+                <div key={i} className="text-center">
+                  <span className="text-[11px] font-medium text-neutral-700 dark:text-neutral-300">
+                    {getCategoryLabel(cat)}
+                  </span>
+                  {i === 0 && subcats.length > 0 && (
+                    <div className="flex flex-wrap justify-center gap-1 mt-1">
+                      {subcats.map((subcat, j) => (
+                        <span
+                          key={j}
+                          className="px-2 py-0.5 text-[10px] text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 rounded"
+                        >
+                          {getCategoryLabel(subcat)}
+                        </span>
+                      ))}
+                      {(profile.selectedSubcategories || profile.subcategories || []).length > 3 && (
+                        <span className="text-[10px] text-neutral-400 px-1">
+                          +{(profile.selectedSubcategories || profile.subcategories || []).length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </Link>
