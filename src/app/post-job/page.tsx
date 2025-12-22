@@ -328,10 +328,6 @@ function PostJobPageContent() {
 
   const canProceedFromCategory = () => {
     if (!selectedCategory || !selectedSubcategory || !formData.propertyType) return false;
-    // Require cadastral code for architecture/design
-    if ((selectedCategory === "architecture" || selectedCategory === "design") && !formData.cadastralId.trim()) {
-      return false;
-    }
     return true;
   };
   const canProceedFromLocation = () => formData.location && (formData.budgetType === "negotiable" || formData.budgetMin);
@@ -716,7 +712,7 @@ function PostJobPageContent() {
                 {(selectedCategory === "architecture" || selectedCategory === "design") && (
                   <div className="bg-white rounded-xl border border-neutral-200 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
                     <label className="block text-sm font-medium text-neutral-900 mb-2">
-                      {locale === "ka" ? "საკადასტრო კოდი" : "Cadastral Code"} *
+                      {locale === "ka" ? "საკადასტრო კოდი" : "Cadastral Code"} <span className="text-neutral-400 font-normal">({locale === "ka" ? "არასავალდებულო" : "optional"})</span>
                     </label>
                     <input
                       type="text"
@@ -727,8 +723,8 @@ function PostJobPageContent() {
                     />
                     <p className="mt-2 text-[11px] text-neutral-500 leading-relaxed">
                       {locale === "ka"
-                        ? "საკადასტრო კოდი საჭიროა არქიტექტურული და დიზაინ პროექტებისთვის. ის გვეხმარება ობიექტის იდენტიფიცირებაში."
-                        : "Cadastral code is required for architecture and design projects. It helps identify the property."}
+                        ? "საკადასტრო კოდი გვეხმარება ობიექტის იდენტიფიცირებაში."
+                        : "Cadastral code helps identify the property."}
                     </p>
                   </div>
                 )}

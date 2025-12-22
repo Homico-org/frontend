@@ -1,27 +1,12 @@
 'use client';
 
 import { FeedItem, FeedItemType } from '@/types';
+import { getCategoryLabelStatic } from '@/hooks/useCategoryLabels';
 import Link from 'next/link';
 import { useState, useCallback } from 'react';
 
 // Terracotta accent - matching design
 const ACCENT_COLOR = '#C4735B';
-
-// Category labels for the tag
-const CATEGORY_LABELS: Record<string, { en: string; ka: string }> = {
-  renovation: { en: 'Renovation', ka: 'რემონტი' },
-  tiling: { en: 'Tiling', ka: 'კაფელი' },
-  painting: { en: 'Painting', ka: 'შეღებვა' },
-  flooring: { en: 'Flooring', ka: 'იატაკი' },
-  design: { en: 'Design', ka: 'დიზაინი' },
-  plumbing: { en: 'Plumbing', ka: 'სანტექნიკა' },
-  electrical: { en: 'Electrical', ka: 'ელექტრობა' },
-  'interior-design': { en: 'Design', ka: 'დიზაინი' },
-  architecture: { en: 'Architecture', ka: 'არქიტექტურა' },
-  craftsmen: { en: 'Craftsmen', ka: 'ხელოსანი' },
-  'home-care': { en: 'Home Care', ka: 'მოვლა' },
-  cleaning: { en: 'Cleaning', ka: 'დასუფთავება' },
-};
 
 interface FeedCardProps {
   item: FeedItem;
@@ -76,8 +61,7 @@ export default function FeedCard({ item, locale = 'en' }: FeedCardProps) {
   // Get category label for the tag
   const getCategoryLabel = () => {
     const category = item.category || 'design';
-    const label = CATEGORY_LABELS[category];
-    return label ? label[locale as 'en' | 'ka'] : (locale === 'ka' ? 'დიზაინი' : 'Design');
+    return getCategoryLabelStatic(category, locale);
   };
 
   return (

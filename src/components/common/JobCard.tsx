@@ -3,7 +3,7 @@
 import { storage } from "@/services/storage";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useCategoryLabels } from "@/hooks/useCategoryLabels";
 
 interface MediaItem {
   type: "image" | "video";
@@ -52,39 +52,13 @@ interface JobCardProps {
   hasApplied?: boolean;
 }
 
-const getCategoryLabel = (category?: string, locale: string = 'en'): string => {
-  const labels: Record<string, { en: string; ka: string }> = {
-    renovation: { en: "Renovation", ka: "რემონტი" },
-    plumbing: { en: "Plumbing", ka: "სანტექნიკა" },
-    electrical: { en: "Electrical", ka: "ელექტრობა" },
-    painting: { en: "Painting", ka: "მალიარობა" },
-    flooring: { en: "Flooring", ka: "იატაკი" },
-    roofing: { en: "Roofing", ka: "სახურავი" },
-    hvac: { en: "HVAC", ka: "გათბობა" },
-    cleaning: { en: "Cleaning", ka: "დალაგება" },
-    landscaping: { en: "Landscaping", ka: "ლანდშაფტი" },
-    moving: { en: "Moving", ka: "გადაზიდვა" },
-    furniture: { en: "Furniture", ka: "ავეჯი" },
-    appliances: { en: "Appliances", ka: "ტექნიკა" },
-    windows: { en: "Windows", ka: "ფანჯრები" },
-    doors: { en: "Doors", ka: "კარები" },
-    security: { en: "Security", ka: "უსაფრთხოება" },
-    "interior-design": { en: "Interior", ka: "ინტერიერი" },
-    architecture: { en: "Architecture", ka: "არქიტექტურა" },
-    other: { en: "Other", ka: "სხვა" },
-  };
-  if (!category) return "";
-  const label = labels[category];
-  return label ? label[locale as 'en' | 'ka'] : category.replace(/-/g, ' ');
-};
-
 export default function JobCard({
   job,
   onSave,
   isSaved = false,
   hasApplied = false,
 }: JobCardProps) {
-  const { locale } = useLanguage();
+  const { getCategoryLabel, locale } = useCategoryLabels();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -274,7 +248,7 @@ export default function JobCard({
           {/* Category badge */}
           <div className="flex items-center gap-2 mb-2">
             <span className="px-2 py-0.5 text-[11px] font-medium rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
-              {getCategoryLabel(job.category, locale)}
+              {getCategoryLabel(job.category)}
             </span>
             <span className="text-[11px] text-neutral-400">
               {getTimeAgo(job.createdAt)}

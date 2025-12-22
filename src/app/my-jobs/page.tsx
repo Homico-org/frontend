@@ -4,8 +4,8 @@ import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useCategoryLabels } from '@/hooks/useCategoryLabels';
 import { api } from '@/lib/api';
 import { storage } from '@/services/storage';
 import {
@@ -59,41 +59,6 @@ interface Job {
 
 type StatusFilter = 'all' | 'open' | 'hired' | 'closed';
 
-// Category display names
-const CATEGORY_LABELS: Record<string, { en: string; ka: string }> = {
-  // Main categories
-  architecture: { en: 'Architecture', ka: 'არქიტექტურა' },
-  design: { en: 'Design', ka: 'დიზაინი' },
-  craftsmen: { en: 'Craftsmen', ka: 'ხელოსნები' },
-  homecare: { en: 'Home Care', ka: 'სახლის მოვლა' },
-  services: { en: 'Services', ka: 'სერვისები' },
-  // Subcategories
-  residential: { en: 'Residential', ka: 'საცხოვრებელი' },
-  commercial: { en: 'Commercial', ka: 'კომერციული' },
-  landscape: { en: 'Landscape', ka: 'ლანდშაფტი' },
-  interior: { en: 'Interior', ka: 'ინტერიერი' },
-  renovation: { en: 'Renovation', ka: 'რემონტი' },
-  'interior-design': { en: 'Interior Design', ka: 'ინტერიერის დიზაინი' },
-  plumbing: { en: 'Plumbing', ka: 'სანტექნიკა' },
-  electrical: { en: 'Electrical', ka: 'ელექტრობა' },
-  cleaning: { en: 'Cleaning', ka: 'დასუფთავება' },
-  landscaping: { en: 'Landscaping', ka: 'ლანდშაფტი' },
-  painting: { en: 'Painting', ka: 'შეღებვა' },
-  flooring: { en: 'Flooring', ka: 'იატაკი' },
-  tiling: { en: 'Tiling', ka: 'მოპირკეთება' },
-  designer: { en: 'Designer', ka: 'დიზაინერი' },
-  'deep-clean': { en: 'Deep Clean', ka: 'ღრმა წმენდა' },
-  hvac: { en: 'HVAC', ka: 'კონდიცირება/გათბობა' },
-  carpentry: { en: 'Carpentry', ka: 'ხის სამუშაოები' },
-  roofing: { en: 'Roofing', ka: 'სახურავი' },
-  windows: { en: 'Windows & Doors', ka: 'ფანჯრები და კარები' },
-  insulation: { en: 'Insulation', ka: 'იზოლაცია' },
-  demolition: { en: 'Demolition', ka: 'დემონტაჟი' },
-  masonry: { en: 'Masonry', ka: 'ქვის სამუშაო' },
-  drywall: { en: 'Drywall', ka: 'თაბაშირმუყაო' },
-  lighting: { en: 'Lighting', ka: 'განათება' },
-};
-
 function getTimeAgo(dateStr: string, locale: string) {
   const date = new Date(dateStr);
   const now = new Date();
@@ -120,7 +85,7 @@ function getTimeAgo(dateStr: string, locale: string) {
 
 function MyJobsPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
-  const { locale } = useLanguage();
+  const { getCategoryLabel, locale } = useCategoryLabels();
   const toast = useToast();
   const router = useRouter();
 
@@ -198,12 +163,6 @@ function MyJobsPageContent() {
     }
   };
 
-
-  // Get category label
-  const getCategoryLabel = (category: string) => {
-    const label = CATEGORY_LABELS[category];
-    return label ? label[locale as 'en' | 'ka'] : category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-  };
 
   // Initial loading skeleton
   if (authLoading || isInitialLoading) {
