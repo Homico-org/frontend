@@ -399,56 +399,36 @@ export default function BrowseFiltersSidebar({
             title={locale === 'ka' ? 'რეიტინგი' : 'Rating'}
             activeCount={minRating > 0 ? 1 : 0}
           >
-            <div className="space-y-3">
-              {/* 4 stars & up */}
-              <button
-                onClick={() => handleRatingToggle(4)}
-                className="flex items-center gap-3 w-full text-left group"
-              >
-                <div
-                  className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
-                    minRating === 4
-                      ? 'scale-105'
-                      : 'border-neutral-300 group-hover:border-neutral-400 bg-white group-hover:scale-105'
-                  }`}
-                  style={minRating === 4 ? { borderColor: ACCENT_COLOR, backgroundColor: ACCENT_COLOR } : {}}
-                >
-                  {minRating === 4 && (
-                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            <div className="space-y-2">
+              {/* Interactive star rating row */}
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => handleRatingToggle(star)}
+                    className="p-1 transition-transform hover:scale-110 focus:outline-none"
+                    title={`${star}+ ${locale === 'ka' ? 'ვარსკვლავი' : 'stars'}`}
+                  >
+                    <svg
+                      className={`w-6 h-6 transition-colors ${
+                        minRating > 0 && star <= minRating
+                          ? 'text-amber-400'
+                          : 'text-neutral-300 hover:text-amber-300'
+                      }`}
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
-                  )}
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="flex">{renderStars(5, 4)}</div>
-                  <span className="text-sm text-neutral-600 group-hover:text-neutral-900 transition-colors">& up</span>
-                </div>
-              </button>
-
-              {/* 3 stars & up */}
-              <button
-                onClick={() => handleRatingToggle(3)}
-                className="flex items-center gap-3 w-full text-left group"
-              >
-                <div
-                  className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
-                    minRating === 3
-                      ? 'scale-105'
-                      : 'border-neutral-300 group-hover:border-neutral-400 bg-white group-hover:scale-105'
-                  }`}
-                  style={minRating === 3 ? { borderColor: ACCENT_COLOR, backgroundColor: ACCENT_COLOR } : {}}
-                >
-                  {minRating === 3 && (
-                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="flex">{renderStars(5, 3)}</div>
-                  <span className="text-sm text-neutral-600 group-hover:text-neutral-900 transition-colors">& up</span>
-                </div>
-              </button>
+                  </button>
+                ))}
+              </div>
+              {/* Helper text */}
+              <p className="text-xs text-neutral-500">
+                {minRating > 0
+                  ? `${minRating}+ ${locale === 'ka' ? 'ვარსკვლავი' : 'stars'}`
+                  : locale === 'ka' ? 'აირჩიეთ მინიმალური რეიტინგი' : 'Select minimum rating'}
+              </p>
             </div>
           </CollapsibleCard>
         )}

@@ -3,7 +3,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAnalytics, AnalyticsEvent } from '@/hooks/useAnalytics';
+import { AnalyticsEvent, useAnalytics } from '@/hooks/useAnalytics';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -133,11 +133,6 @@ export default function LoginModal() {
                 </svg>
               </div>
             </div>
-
-            {/* Title */}
-            <h2 className="text-[26px] font-bold text-center text-neutral-900 mb-2">
-              {locale === 'ka' ? 'კეთილი იყოს შენი დაბრუნება' : 'Welcome Back'}
-            </h2>
 
             {/* Subtitle */}
             <p className="text-center text-neutral-500 text-[15px] mb-8">

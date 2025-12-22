@@ -9,6 +9,7 @@ import {
   useLanguage,
 } from "@/contexts/LanguageContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
+import AvatarCropper from "@/components/common/AvatarCropper";
 import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
@@ -117,10 +118,11 @@ function RegisterContent() {
   });
 
   // Avatar upload state (for pro registration)
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [uploadedAvatarUrl, setUploadedAvatarUrl] = useState<string | null>(null);
+  const [showAvatarCropper, setShowAvatarCropper] = useState(false);
+  const [rawAvatarImage, setRawAvatarImage] = useState<string | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   // Service/Portfolio data
@@ -392,8 +394,8 @@ function RegisterContent() {
     setFormData({ ...formData, [field]: value });
   };
 
-  // Avatar upload handler
-  const handleAvatarSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Avatar upload handler - opens cropper first
+  const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -403,21 +405,38 @@ function RegisterContent() {
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError(locale === "ka" ? "ფაილი ძალიან დიდია (მაქს. 5MB)" : "File is too large (max 5MB)");
+    // Validate file size (max 10MB for raw image, will be compressed after crop)
+    if (file.size > 10 * 1024 * 1024) {
+      setError(locale === "ka" ? "ფაილი ძალიან დიდია (მაქს. 10MB)" : "File is too large (max 10MB)");
       return;
     }
 
-    setAvatarFile(file);
-    setAvatarPreview(URL.createObjectURL(file));
     setError("");
+    // Open cropper with the selected image
+    const imageUrl = URL.createObjectURL(file);
+    setRawAvatarImage(imageUrl);
+    setShowAvatarCropper(true);
+  };
 
-    // Upload immediately
+  // Handle cropped image from cropper
+  const handleCroppedAvatar = async (croppedBlob: Blob) => {
+    setShowAvatarCropper(false);
+
+    // Clean up raw image URL
+    if (rawAvatarImage) {
+      URL.revokeObjectURL(rawAvatarImage);
+      setRawAvatarImage(null);
+    }
+
+    // Create preview from cropped blob
+    const previewUrl = URL.createObjectURL(croppedBlob);
+    setAvatarPreview(previewUrl);
+
+    // Upload the cropped image
     setAvatarUploading(true);
     try {
       const formDataUpload = new FormData();
-      formDataUpload.append('file', file);
+      formDataUpload.append('file', croppedBlob, 'avatar.jpg');
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/avatar`, {
         method: 'POST',
@@ -430,10 +449,24 @@ function RegisterContent() {
       setUploadedAvatarUrl(data.url);
     } catch {
       setError(locale === "ka" ? "სურათის ატვირთვა ვერ მოხერხდა" : "Failed to upload image");
-      setAvatarFile(null);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
       setAvatarPreview(null);
     } finally {
       setAvatarUploading(false);
+    }
+  };
+
+  // Cancel cropping
+  const handleCropCancel = () => {
+    setShowAvatarCropper(false);
+    if (rawAvatarImage) {
+      URL.revokeObjectURL(rawAvatarImage);
+      setRawAvatarImage(null);
+    }
+    if (avatarInputRef.current) {
+      avatarInputRef.current.value = '';
     }
   };
 
@@ -441,7 +474,6 @@ function RegisterContent() {
     if (avatarPreview) {
       URL.revokeObjectURL(avatarPreview);
     }
-    setAvatarFile(null);
     setAvatarPreview(null);
     setUploadedAvatarUrl(null);
     if (avatarInputRef.current) {
@@ -1362,7 +1394,18 @@ function RegisterContent() {
 
   // PRO REGISTRATION - Multi-step wizard
   return (
-    <div className="min-h-screen bg-[#FAFAF9] flex flex-col">
+    <>
+      {/* Avatar Cropper Modal */}
+      {showAvatarCropper && rawAvatarImage && (
+        <AvatarCropper
+          image={rawAvatarImage}
+          onCropComplete={handleCroppedAvatar}
+          onCancel={handleCropCancel}
+          locale={locale}
+        />
+      )}
+
+      <div className="min-h-screen bg-[#FAFAF9] flex flex-col">
       {/* Header with progress */}
       <header className="sticky top-0 z-50 bg-white border-b border-neutral-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1945,161 +1988,294 @@ function RegisterContent() {
             </div>
           )}
 
-          {/* STEP 4: Review */}
+          {/* STEP 4: Review - Profile Preview */}
           {currentStep === 'review' && (
-            <div className="space-y-4">
-              <div>
-                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
-                  {locale === "ka" ? "გადახედვა" : "Review"}
-                </h1>
-                <p className="text-sm text-neutral-500">
-                  {locale === "ka" ? "დაადასტურე მონაცემები" : "Confirm your details"}
-                </p>
-              </div>
+            <div className="space-y-6">
+              {/* Profile Card Preview */}
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1a1a1a] to-[#2d2d2d] p-6 lg:p-8">
+                {/* Decorative elements */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-[#C4735B]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#C4735B]/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
 
-              <div className="grid lg:grid-cols-2 gap-4">
-                {/* Account Info Review */}
-                <div className="p-4 rounded-xl bg-white border border-[#C4735B]/20">
-                  <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
-                        <svg className="w-3 h-3 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                      </div>
-                      {locale === "ka" ? "ანგარიში" : "Account"}
-                    </h2>
-                    <button onClick={() => goToStep('account')} className="text-xs font-medium text-[#C4735B] hover:underline">
-                      {locale === "ka" ? "რედაქტირება" : "Edit"}
+                <div className="relative">
+                  {/* Header label */}
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-[10px] font-medium text-white/70 uppercase tracking-wider">
+                      {locale === "ka" ? "პროფილის გადახედვა" : "Profile Preview"}
+                    </span>
+                    <button
+                      onClick={() => goToStep('account')}
+                      className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm text-[10px] font-medium text-white/70 transition-all"
+                    >
+                      {locale === "ka" ? "რედაქტირება" : "Edit Profile"}
                     </button>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <p className="text-neutral-500">{locale === "ka" ? "სახელი" : "Name"}</p>
-                      <p className="font-medium text-neutral-900 truncate">{formData.fullName || '-'}</p>
+
+                  {/* Profile info */}
+                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+                    {/* Avatar */}
+                    <div className="relative group">
+                      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden ring-4 ring-white/10 shadow-2xl">
+                        {avatarPreview ? (
+                          <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-[#C4735B] to-[#A85D47] flex items-center justify-center">
+                            <span className="text-3xl font-bold text-white/90">
+                              {formData.fullName?.charAt(0)?.toUpperCase() || 'P'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      {/* Status indicator */}
+                      <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 ring-4 ring-[#1a1a1a] flex items-center justify-center">
+                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-neutral-500">{locale === "ka" ? "ტელ." : "Phone"}</p>
-                      <p className="font-medium text-neutral-900">{countries[phoneCountry].phonePrefix}{formData.phone || '-'}</p>
+
+                    {/* Info */}
+                    <div className="flex-1 text-center sm:text-left">
+                      <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1">
+                        {formData.fullName || (locale === "ka" ? "თქვენი სახელი" : "Your Name")}
+                      </h2>
+                      <p className="text-white/50 text-sm mb-3">
+                        {formData.city && <span>{formData.city} • </span>}
+                        <span>{locale === "ka" ? "პროფესიონალი" : "Professional"}</span>
+                      </p>
+
+                      {/* Categories as tags */}
+                      <div className="flex flex-wrap justify-center sm:justify-start gap-2">
+                        {formData.selectedCategories.slice(0, 3).map(catKey => {
+                          const category = categories.find(c => c.key === catKey);
+                          return (
+                            <span
+                              key={catKey}
+                              className="px-3 py-1 rounded-full bg-[#C4735B]/20 text-[#E8A090] text-xs font-medium backdrop-blur-sm"
+                            >
+                              {locale === "ka" ? category?.nameKa : category?.name}
+                            </span>
+                          );
+                        })}
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-neutral-500">{locale === "ka" ? "ელ-ფოსტა" : "Email"}</p>
-                      <p className="font-medium text-neutral-900 truncate">{formData.email || '-'}</p>
+                  </div>
+
+                  {/* Stats row */}
+                  <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-white/10">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-white">{portfolioProjects.length}</p>
+                      <p className="text-[11px] text-white/40 uppercase tracking-wider">
+                        {locale === "ka" ? "პროექტი" : "Projects"}
+                      </p>
                     </div>
-                    <div>
-                      <p className="text-neutral-500">{locale === "ka" ? "ქალაქი" : "City"}</p>
-                      <p className="font-medium text-neutral-900">{formData.city || '-'}</p>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-white">{services.length}</p>
+                      <p className="text-[11px] text-white/40 uppercase tracking-wider">
+                        {locale === "ka" ? "სერვისი" : "Services"}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-white">{formData.selectedSubcategories.length}</p>
+                      <p className="text-[11px] text-white/40 uppercase tracking-wider">
+                        {locale === "ka" ? "უნარი" : "Skills"}
+                      </p>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Categories Review */}
-                <div className="p-4 rounded-xl bg-white border border-[#C4735B]/20">
-                  <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
+              {/* Portfolio Gallery */}
+              {portfolioProjects.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
                       <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
                         <svg className="w-3 h-3 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       </div>
-                      {locale === "ka" ? "კატეგორიები" : "Categories"}
-                    </h2>
-                    <button onClick={() => goToStep('category')} className="text-xs font-medium text-[#C4735B] hover:underline">
+                      {locale === "ka" ? "პორტფოლიო" : "Portfolio"}
+                    </h3>
+                    <button onClick={() => goToStep('services')} className="text-xs font-medium text-[#C4735B] hover:underline">
                       {locale === "ka" ? "რედაქტირება" : "Edit"}
+                    </button>
+                  </div>
+
+                  {/* Projects Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {portfolioProjects.map((project) => (
+                      <div key={project.id} className="group relative">
+                        {project.images.length > 0 ? (
+                          <div className="aspect-[4/3] rounded-xl overflow-hidden bg-neutral-100">
+                            <img
+                              src={project.images[0]}
+                              alt={project.title || 'Project'}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                            {/* Overlay on hover */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              <div className="absolute bottom-0 left-0 right-0 p-3">
+                                <p className="text-white text-sm font-medium truncate">
+                                  {project.title || (locale === "ka" ? "უსათაურო" : "Untitled")}
+                                </p>
+                                {project.images.length > 1 && (
+                                  <p className="text-white/60 text-xs mt-0.5">
+                                    +{project.images.length - 1} {locale === "ka" ? "ფოტო" : "more"}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            {/* Image count badge */}
+                            {project.images.length > 1 && (
+                              <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm text-white text-[10px] font-medium">
+                                {project.images.length}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="aspect-[4/3] rounded-xl bg-neutral-100 flex items-center justify-center">
+                            <div className="text-center">
+                              <svg className="w-8 h-8 text-neutral-300 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              <p className="text-xs text-neutral-400">{locale === "ka" ? "ფოტო არ არის" : "No image"}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Details Cards */}
+              <div className="grid sm:grid-cols-2 gap-4">
+                {/* Contact Info */}
+                <div className="p-4 rounded-xl bg-white border border-neutral-200 hover:border-[#C4735B]/30 hover:shadow-sm transition-all">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                      {locale === "ka" ? "საკონტაქტო" : "Contact"}
+                    </h3>
+                    <button onClick={() => goToStep('account')} className="text-[10px] font-medium text-[#C4735B] hover:underline">
+                      {locale === "ka" ? "შეცვლა" : "Change"}
                     </button>
                   </div>
                   <div className="space-y-2">
-                    <div className="flex flex-wrap gap-1">
-                      {formData.selectedCategories.map(catKey => {
-                        const category = categories.find(c => c.key === catKey);
-                        return (
-                          <span key={catKey} className="px-2 py-0.5 rounded-full bg-[#C4735B] text-white text-[10px] font-medium">
-                            {locale === "ka" ? category?.nameKa : category?.name}
-                          </span>
-                        );
-                      })}
-                      {formData.selectedCategories.length === 0 && <span className="text-neutral-400 text-xs">-</span>}
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs text-neutral-400">{locale === "ka" ? "ტელეფონი" : "Phone"}</p>
+                        <p className="text-sm font-medium text-neutral-900 truncate">
+                          {countries[phoneCountry].phonePrefix}{formData.phone || '-'}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex flex-wrap gap-1">
-                      {formData.selectedSubcategories.slice(0, 5).map(subKey => {
-                        let subcategory;
-                        for (const cat of categories) {
-                          const found = cat.subcategories.find(s => s.key === subKey);
-                          if (found) { subcategory = found; break; }
-                        }
-                        return (
-                          <span key={subKey} className="px-2 py-0.5 rounded-full bg-[#C4735B]/10 text-[#C4735B] text-[10px]">
-                            {locale === "ka" ? subcategory?.nameKa : subcategory?.name}
-                          </span>
-                        );
-                      })}
-                      {formData.selectedSubcategories.length > 5 && (
-                        <span className="text-[10px] text-[#C4735B]">+{formData.selectedSubcategories.length - 5}</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Portfolio Review */}
-              <div className="p-4 rounded-xl bg-white border border-[#C4735B]/20">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
-                      <svg className="w-3 h-3 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                      </svg>
-                    </div>
-                    {locale === "ka" ? "პორტფოლიო" : "Portfolio"}
-                  </h2>
-                  <button onClick={() => goToStep('services')} className="text-xs font-medium text-[#C4735B] hover:underline">
-                    {locale === "ka" ? "რედაქტირება" : "Edit"}
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {/* Services summary */}
-                  <div className="p-3 rounded-lg bg-[#C4735B]/5 border border-[#C4735B]/10">
-                    <p className="text-xs text-neutral-500 mb-1">{locale === "ka" ? "სერვისები" : "Services"}</p>
-                    <p className="text-lg font-semibold text-[#C4735B]">
-                      {services.length}
-                    </p>
-                    {services.length > 0 && (
-                      <p className="text-[10px] text-neutral-500 truncate mt-0.5">
-                        {services.slice(0, 2).map(s => s.title).join(', ')}
-                        {services.length > 2 && '...'}
-                      </p>
+                    {formData.email && (
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center flex-shrink-0">
+                          <svg className="w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs text-neutral-400">{locale === "ka" ? "ელ-ფოსტა" : "Email"}</p>
+                          <p className="text-sm font-medium text-neutral-900 truncate">{formData.email}</p>
+                        </div>
+                      </div>
                     )}
                   </div>
-                  {/* Projects summary */}
-                  <div className="p-3 rounded-lg bg-[#C4735B]/5 border border-[#C4735B]/10">
-                    <p className="text-xs text-neutral-500 mb-1">{locale === "ka" ? "პროექტები" : "Projects"}</p>
-                    <p className="text-lg font-semibold text-[#C4735B]">
-                      {portfolioProjects.length}
-                    </p>
-                    {portfolioProjects.length > 0 && (
-                      <p className="text-[10px] text-neutral-500 truncate mt-0.5">
-                        {portfolioProjects.filter(p => p.title).slice(0, 2).map(p => p.title).join(', ') || (locale === "ka" ? "უსათაურო" : "Untitled")}
-                      </p>
+                </div>
+
+                {/* Skills */}
+                <div className="p-4 rounded-xl bg-white border border-neutral-200 hover:border-[#C4735B]/30 hover:shadow-sm transition-all">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                      {locale === "ka" ? "უნარები" : "Skills"}
+                    </h3>
+                    <button onClick={() => goToStep('category')} className="text-[10px] font-medium text-[#C4735B] hover:underline">
+                      {locale === "ka" ? "შეცვლა" : "Change"}
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {formData.selectedSubcategories.slice(0, 8).map(subKey => {
+                      let subcategory;
+                      for (const cat of categories) {
+                        const found = cat.subcategories.find(s => s.key === subKey);
+                        if (found) { subcategory = found; break; }
+                      }
+                      return (
+                        <span
+                          key={subKey}
+                          className="px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-700 text-xs font-medium"
+                        >
+                          {locale === "ka" ? subcategory?.nameKa : subcategory?.name}
+                        </span>
+                      );
+                    })}
+                    {formData.selectedSubcategories.length > 8 && (
+                      <span className="px-2.5 py-1 rounded-lg bg-[#C4735B]/10 text-[#C4735B] text-xs font-medium">
+                        +{formData.selectedSubcategories.length - 8}
+                      </span>
+                    )}
+                    {formData.selectedSubcategories.length === 0 && (
+                      <span className="text-neutral-400 text-xs">{locale === "ka" ? "არ არის არჩეული" : "None selected"}</span>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Ready message */}
-              <div className="p-4 rounded-xl bg-[#C4735B]/5 border border-[#C4735B]/20 text-center">
-                <div className="w-10 h-10 rounded-full bg-[#C4735B]/10 flex items-center justify-center mx-auto mb-2">
-                  <svg className="w-5 h-5 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+              {/* Services List */}
+              {services.length > 0 && (
+                <div className="p-4 rounded-xl bg-white border border-neutral-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                      {locale === "ka" ? "სერვისები" : "Services"}
+                    </h3>
+                    <button onClick={() => goToStep('services')} className="text-[10px] font-medium text-[#C4735B] hover:underline">
+                      {locale === "ka" ? "შეცვლა" : "Change"}
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {services.slice(0, 4).map((service, idx) => (
+                      <div key={idx} className="flex items-center justify-between py-2 border-b border-neutral-100 last:border-0">
+                        <span className="text-sm text-neutral-900">{service.title}</span>
+                        {service.price && (
+                          <span className="text-sm font-semibold text-[#C4735B]">{service.price}</span>
+                        )}
+                      </div>
+                    ))}
+                    {services.length > 4 && (
+                      <p className="text-xs text-neutral-400 pt-1">
+                        +{services.length - 4} {locale === "ka" ? "სხვა სერვისი" : "more services"}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <p className="text-sm font-medium text-neutral-900">
-                  {locale === "ka" ? "ყველაფერი მზადაა!" : "All set!"}
-                </p>
-                <p className="text-xs text-neutral-500 mt-1">
-                  {locale === "ka"
-                    ? "დააჭირე რეგისტრაციას ანგარიშის შესაქმნელად"
-                    : "Click Register to create your account"}
-                </p>
+              )}
+
+              {/* Ready to launch banner */}
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#C4735B] to-[#A85D47] p-6 text-center">
+                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDYwIEwgNjAgMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMDUiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-50" />
+                <div className="relative">
+                  <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">
+                    {locale === "ka" ? "მზად ხარ გასაშვებად!" : "Ready to Launch!"}
+                  </h3>
+                  <p className="text-white/80 text-sm max-w-sm mx-auto">
+                    {locale === "ka"
+                      ? "შენი პროფესიონალური პროფილი მზადაა. დააჭირე რეგისტრაციას და დაიწყე კლიენტების მოძიება."
+                      : "Your professional profile is ready. Click Register to start connecting with clients."}
+                  </p>
+                </div>
               </div>
             </div>
           )}
@@ -2161,6 +2337,7 @@ function RegisterContent() {
         </div>
       </footer>
     </div>
+    </>
   );
 }
 
