@@ -35,7 +35,16 @@ export default function ReviewStep({
   isEditMode = false,
 }: ReviewStepProps) {
   const { locale } = useLanguage();
-  const { getCategoryByKey, getSubcategoryByKey } = useCategories();
+  const { getCategoryByKey, categories } = useCategories();
+
+  // Helper to find subcategory by key across all categories
+  const getSubcategoryByKey = (subKey: string) => {
+    for (const cat of categories) {
+      const sub = cat.subcategories?.find(s => s.key === subKey);
+      if (sub) return sub;
+    }
+    return undefined;
+  };
 
   const getPricingSuffix = () => {
     switch (formData.pricingModel) {
