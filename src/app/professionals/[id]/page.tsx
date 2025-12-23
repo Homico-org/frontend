@@ -1,44 +1,28 @@
 'use client';
 
 import Header, { HeaderSpacer } from '@/components/common/Header';
+import AppBackground from '@/components/common/AppBackground';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useAnalytics, AnalyticsEvent } from '@/hooks/useAnalytics';
-import { Briefcase, CheckCircle, Clock, MapPin, MessageSquare, Shield, Star, Trophy } from 'lucide-react';
+import {
+  Briefcase, CheckCircle, Clock, MapPin, MessageSquare, Shield, Star, Trophy,
+  ChevronLeft, ChevronRight, X, ExternalLink, Phone, Calendar, Award, Sparkles
+} from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 // Helper function to get proper image URL
 const getImageUrl = (path: string | undefined): string => {
   if (!path) return '';
-  // Handle base64 data URLs
-  if (path.startsWith('data:')) {
-    return path;
-  }
-  if (path.startsWith('http://') || path.startsWith('https://')) {
-    return path;
-  }
+  if (path.startsWith('data:')) return path;
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-  if (path.startsWith('/')) {
-    return `${apiUrl}${path}`;
-  }
+  if (path.startsWith('/')) return `${apiUrl}${path}`;
   return `${apiUrl}/uploads/${path}`;
-};
-
-// Warm terracotta color palette matching the design
-const COLORS = {
-  primary: '#C4735B',      // Terracotta/coral for buttons
-  primaryLight: '#D4937B',
-  teal: '#4A9B9B',         // Teal for cover background
-  tealDark: '#3D8585',
-  text: '#1F2937',         // Dark text
-  textLight: '#6B7280',    // Gray text
-  border: '#E5E7EB',       // Light border
-  background: '#FFFFFF',
-  cardBg: '#FFFFFF',
 };
 
 interface PortfolioProject {
@@ -86,7 +70,7 @@ interface ProProfile {
   subcategories?: string[];
   yearsExperience: number;
   serviceAreas: string[];
-  pricingModel: 'hourly' | 'project_based' | 'from';
+  pricingModel: 'hourly' | 'project_based' | 'from' | 'sqm' | 'daily';
   basePrice: number;
   maxPrice?: number;
   currency: string;
@@ -145,6 +129,15 @@ export default function ProfessionalDetailPage() {
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
   const [portfolioLoading, setPortfolioLoading] = useState(false);
+
+  // Lightbox state
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -217,7 +210,6 @@ export default function ProfessionalDetailPage() {
       openLoginModal();
       return;
     }
-    // Navigate to messages with this pro as recipient (using proProfileId)
     router.push(`/messages?recipient=${profile?._id}`);
   };
 
@@ -297,21 +289,38 @@ export default function ProfessionalDetailPage() {
     return `${diffMonths} month${diffMonths > 1 ? 's' : ''} ago`;
   };
 
-  // Get all portfolio images
-  const getAllPortfolioImages = () => {
-    const images: string[] = [];
+  // Get all portfolio images with metadata
+  const getAllPortfolioImages = useCallback(() => {
+    const images: { url: string; title?: string; description?: string }[] = [];
+
     portfolio.forEach(item => {
-      if (item.imageUrl) images.push(item.imageUrl);
-      if (item.images) images.push(...item.images.filter(img => img !== item.imageUrl));
+      if (item.imageUrl) {
+        images.push({ url: item.imageUrl, title: item.title, description: item.description });
+      }
+      if (item.images) {
+        item.images.filter(img => img !== item.imageUrl).forEach(img => {
+          images.push({ url: img, title: item.title });
+        });
+      }
     });
+
     profile?.portfolioProjects?.forEach(project => {
-      if (project.images) images.push(...project.images);
+      if (project.images) {
+        project.images.forEach((img, idx) => {
+          images.push({
+            url: img,
+            title: project.title,
+            description: idx === 0 ? project.description : undefined
+          });
+        });
+      }
     });
+
     return images;
-  };
+  }, [portfolio, profile?.portfolioProjects]);
 
   // Group subcategories by parent category
-  const getGroupedServices = () => {
+  const getGroupedServices = useCallback(() => {
     const groups: Record<string, string[]> = {};
 
     profile?.categories.forEach(cat => {
@@ -319,7 +328,6 @@ export default function ProfessionalDetailPage() {
     });
 
     profile?.subcategories?.forEach(sub => {
-      // Find parent category
       for (const category of CATEGORIES) {
         const found = category.subcategories.find(s => s.key === sub);
         if (found) {
@@ -331,21 +339,64 @@ export default function ProfessionalDetailPage() {
     });
 
     return groups;
+  }, [profile?.categories, profile?.subcategories, CATEGORIES]);
+
+  const getPricingLabel = () => {
+    switch (profile?.pricingModel) {
+      case 'hourly': return locale === 'ka' ? '/სთ' : '/hr';
+      case 'daily': return locale === 'ka' ? '/დღე' : '/day';
+      case 'sqm': return '/m²';
+      default: return '';
+    }
   };
 
   const totalCompletedJobs = (profile?.completedJobs || 0) + (profile?.externalCompletedJobs || 0);
 
+  // Lightbox navigation
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeLightbox = () => {
+    setLightboxOpen(false);
+    document.body.style.overflow = '';
+  };
+
+  const nextImage = () => {
+    const images = getAllPortfolioImages();
+    setLightboxIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const prevImage = () => {
+    const images = getAllPortfolioImages();
+    setLightboxIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  // Keyboard navigation for lightbox
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!lightboxOpen) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowRight') nextImage();
+      if (e.key === 'ArrowLeft') prevImage();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [lightboxOpen]);
+
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-[var(--color-bg-primary)]">
         <Header />
-      <HeaderSpacer />
+        <HeaderSpacer />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="flex flex-col items-center gap-4">
-            <div className="relative w-10 h-10">
-              <div className="absolute inset-0 rounded-full border-2 border-neutral-200" />
-              <div className="absolute inset-0 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: COLORS.primary }} />
+            <div className="relative w-12 h-12">
+              <div className="absolute inset-0 rounded-full border-2 border-[#E07B4F]/20" />
+              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#E07B4F] animate-spin" />
             </div>
           </div>
         </div>
@@ -356,26 +407,25 @@ export default function ProfessionalDetailPage() {
   // Error state
   if (error || !profile) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-[var(--color-bg-primary)]">
         <Header />
-      <HeaderSpacer />
+        <HeaderSpacer />
         <div className="py-16 text-center">
           <div className="max-w-md mx-auto px-4">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-neutral-100 flex items-center justify-center">
-              <svg className="w-10 h-10 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-[var(--color-bg-tertiary)] flex items-center justify-center">
+              <svg className="w-10 h-10 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="text-xl font-semibold text-neutral-900 mb-2">
+            <h2 className="text-xl font-semibold text-[var(--color-text-primary)] mb-2">
               {locale === 'ka' ? 'პროფილი ვერ მოიძებნა' : 'Profile not found'}
             </h2>
-            <p className="text-neutral-500 mb-6">
+            <p className="text-[var(--color-text-secondary)] mb-6">
               {locale === 'ka' ? 'სამწუხაროდ, ეს გვერდი არ არსებობს' : 'Sorry, this page doesn\'t exist'}
             </p>
             <button
               onClick={() => router.push('/browse')}
-              className="px-6 py-3 text-sm font-semibold rounded-lg text-white transition-colors"
-              style={{ backgroundColor: COLORS.primary }}
+              className="px-6 py-3 text-sm font-semibold rounded-xl text-white bg-[#E07B4F] hover:bg-[#D26B3F] transition-colors"
             >
               {locale === 'ka' ? 'პროფესიონალების ნახვა' : 'Browse Professionals'}
             </button>
@@ -390,87 +440,129 @@ export default function ProfessionalDetailPage() {
   const groupedServices = getGroupedServices();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[var(--color-bg-primary)]">
+      <AppBackground />
       <Header />
       <HeaderSpacer />
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <main className={`relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
         <div className="flex flex-col lg:flex-row gap-6">
 
           {/* Left Column - Main Content */}
           <div className="flex-1 space-y-6">
 
-            {/* Hero Card with Cover */}
-            <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden shadow-sm">
+            {/* Hero Card with Teal Cover */}
+            <div
+              className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] overflow-hidden shadow-sm"
+              style={{ animationDelay: '0.1s' }}
+            >
               {/* Teal Cover Background */}
-              <div
-                className="h-32 sm:h-40 relative"
-                style={{ backgroundColor: COLORS.teal }}
-              >
+              <div className="h-36 sm:h-44 relative bg-gradient-to-br from-[#4A9B9B] via-[#3D8A8A] to-[#2D7A7A] overflow-hidden">
+                {/* Decorative pattern */}
+                <div className="absolute inset-0 opacity-10">
+                  <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <defs>
+                      <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                        <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5"/>
+                      </pattern>
+                    </defs>
+                    <rect width="100" height="100" fill="url(#grid)" />
+                  </svg>
+                </div>
+
+                {/* Floating shapes */}
+                <div className="absolute top-4 right-8 w-24 h-24 rounded-full bg-white/5 blur-xl" />
+                <div className="absolute bottom-8 left-12 w-32 h-32 rounded-full bg-white/5 blur-2xl" />
+
                 {profile.coverImage && (
                   <img
                     src={getImageUrl(profile.coverImage)}
                     alt=""
-                    className="w-full h-full object-cover opacity-30"
+                    className="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay"
                   />
+                )}
+
+                {/* Premium badge */}
+                {profile.isPremium && (
+                  <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs font-semibold">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    PRO
+                  </div>
                 )}
               </div>
 
               {/* Profile Info */}
-              <div className="px-5 sm:px-6 pb-5 sm:pb-6 -mt-12 sm:-mt-14 relative">
+              <div className="px-5 sm:px-6 pb-6 -mt-14 sm:-mt-16 relative">
                 {/* Avatar */}
                 <div className="relative inline-block mb-4">
                   {avatarUrl ? (
                     <img
                       src={getImageUrl(avatarUrl)}
                       alt={profile.name}
-                      className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white shadow-lg"
+                      className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-4 border-[var(--color-bg-elevated)] shadow-xl"
                     />
                   ) : (
-                    <div
-                      className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white shadow-lg flex items-center justify-center text-white text-2xl font-bold"
-                      style={{ backgroundColor: COLORS.teal }}
-                    >
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border-4 border-[var(--color-bg-elevated)] shadow-xl flex items-center justify-center text-white text-3xl font-bold bg-gradient-to-br from-[#4A9B9B] to-[#3D8585]">
                       {profile.name.charAt(0)}
+                    </div>
+                  )}
+
+                  {/* Online indicator */}
+                  {profile.isAvailable && (
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 border-3 border-[var(--color-bg-elevated)] flex items-center justify-center">
+                      <div className="w-2 h-2 rounded-full bg-white" />
                     </div>
                   )}
                 </div>
 
                 {/* Name & Title */}
-                <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 mb-1">
-                  {profile.name}
-                </h1>
-                <p className="text-base sm:text-lg mb-3" style={{ color: COLORS.primary }}>
-                  {profile.title}
-                </p>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-1 tracking-tight">
+                      {profile.name}
+                    </h1>
+                    <p className="text-lg font-medium text-[#E07B4F] mb-3">
+                      {profile.title}
+                    </p>
 
-                {/* Location & Rating */}
-                <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-600">
-                  {profile.serviceAreas.length > 0 && (
-                    <div className="flex items-center gap-1.5">
-                      <MapPin className="w-4 h-4 text-neutral-400" />
-                      <span>{profile.serviceAreas[0]}, Georgia</span>
+                    {/* Location & Rating Row */}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                      {profile.serviceAreas.length > 0 && (
+                        <div className="flex items-center gap-1.5 text-[var(--color-text-secondary)]">
+                          <MapPin className="w-4 h-4 text-[var(--color-text-muted)]" />
+                          <span>{profile.serviceAreas[0]}, Georgia</span>
+                        </div>
+                      )}
+
+                      {profile.avgRating > 0 && (
+                        <div className="flex items-center gap-1.5">
+                          <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                          <span className="font-semibold text-[var(--color-text-primary)]">{profile.avgRating.toFixed(1)}</span>
+                          <span className="text-[var(--color-text-muted)]">
+                            ({profile.totalReviews} {locale === 'ka' ? 'შეფასება' : 'reviews'})
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {profile.avgRating > 0 && (
-                    <div className="flex items-center gap-1.5">
-                      <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                      <span className="font-semibold text-neutral-900">{profile.avgRating.toFixed(1)}</span>
-                      <span className="text-neutral-400">({profile.totalReviews} {locale === 'ka' ? 'შეფასება' : 'reviews'})</span>
-                    </div>
-                  )}
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* About Section */}
             {profile.description && (
-              <div className="bg-white rounded-2xl border border-neutral-200 p-5 sm:p-6 shadow-sm">
-                <h2 className="text-lg font-bold text-neutral-900 mb-4">
+              <div
+                className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-5 sm:p-6 shadow-sm"
+                style={{ animationDelay: '0.2s' }}
+              >
+                <h2 className="text-lg font-bold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-[#E07B4F]/10 flex items-center justify-center">
+                    <Award className="w-4 h-4 text-[#E07B4F]" />
+                  </div>
                   {locale === 'ka' ? `${profile.name.split(' ')[0]}-ს შესახებ` : `About ${profile.name.split(' ')[0]}`}
                 </h2>
-                <div className="text-neutral-600 leading-relaxed whitespace-pre-wrap text-sm sm:text-base">
+                <div className="text-[var(--color-text-secondary)] leading-relaxed whitespace-pre-wrap">
                   {profile.description}
                 </div>
               </div>
@@ -478,8 +570,14 @@ export default function ProfessionalDetailPage() {
 
             {/* Services Offered Section */}
             {profile.subcategories && profile.subcategories.length > 0 && (
-              <div className="bg-white rounded-2xl border border-neutral-200 p-5 sm:p-6 shadow-sm">
-                <h2 className="text-lg font-bold text-neutral-900 mb-5">
+              <div
+                className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-5 sm:p-6 shadow-sm"
+                style={{ animationDelay: '0.3s' }}
+              >
+                <h2 className="text-lg font-bold text-[var(--color-text-primary)] mb-5 flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-[#4A9B9B]/10 flex items-center justify-center">
+                    <Briefcase className="w-4 h-4 text-[#4A9B9B]" />
+                  </div>
                   {locale === 'ka' ? 'შეთავაზებული სერვისები' : 'Services Offered'}
                 </h2>
 
@@ -488,14 +586,14 @@ export default function ProfessionalDetailPage() {
                     if (subcats.length === 0) return null;
                     return (
                       <div key={categoryKey}>
-                        <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">
+                        <h3 className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
                           {getCategoryLabel(categoryKey)}
                         </h3>
                         <div className="flex flex-wrap gap-2">
                           {subcats.map((sub, idx) => (
                             <span
                               key={idx}
-                              className="px-3 py-1.5 rounded-full text-sm font-medium bg-neutral-100 text-neutral-700 border border-neutral-200"
+                              className="px-3 py-1.5 rounded-lg text-sm font-medium bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)] hover:border-[#E07B4F]/30 hover:bg-[#E07B4F]/5 transition-colors cursor-default"
                             >
                               {getSubcategoryLabel(sub)}
                             </span>
@@ -508,35 +606,68 @@ export default function ProfessionalDetailPage() {
               </div>
             )}
 
-            {/* Recent Projects Section */}
+            {/* Portfolio Gallery Section */}
             {portfolioImages.length > 0 && (
-              <div className="bg-white rounded-2xl border border-neutral-200 p-5 sm:p-6 shadow-sm">
+              <div
+                className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-5 sm:p-6 shadow-sm"
+                style={{ animationDelay: '0.4s' }}
+              >
                 <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-lg font-bold text-neutral-900">
+                  <h2 className="text-lg font-bold text-[var(--color-text-primary)] flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
                     {locale === 'ka' ? 'ბოლო პროექტები' : 'Recent Projects'}
                   </h2>
-                  {portfolioImages.length > 3 && (
-                    <button
-                      className="text-sm font-medium transition-colors"
-                      style={{ color: COLORS.primary }}
-                    >
-                      {locale === 'ka' ? 'ყველას ნახვა' : 'View All Projects'}
+                  {portfolioImages.length > 6 && (
+                    <button className="text-sm font-medium text-[#E07B4F] hover:text-[#D26B3F] transition-colors flex items-center gap-1">
+                      {locale === 'ka' ? 'ყველას ნახვა' : 'View All'}
+                      <ChevronRight className="w-4 h-4" />
                     </button>
                   )}
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
-                  {portfolioImages.slice(0, 3).map((img, idx) => (
-                    <div
+                {/* Masonry-style grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {portfolioImages.slice(0, 6).map((img, idx) => (
+                    <button
                       key={idx}
-                      className="aspect-square rounded-xl overflow-hidden bg-neutral-100 cursor-pointer group"
+                      onClick={() => openLightbox(idx)}
+                      className={`relative rounded-xl overflow-hidden bg-[var(--color-bg-tertiary)] group cursor-pointer ${
+                        idx === 0 ? 'col-span-2 row-span-2 aspect-[4/3]' : 'aspect-square'
+                      }`}
                     >
                       <img
-                        src={getImageUrl(img)}
-                        alt=""
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        src={getImageUrl(img.url)}
+                        alt={img.title || ''}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
-                    </div>
+                      {/* Hover overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                      {/* Title on hover */}
+                      {img.title && idx === 0 && (
+                        <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                          <p className="text-white font-medium text-sm truncate">{img.title}</p>
+                        </div>
+                      )}
+
+                      {/* View icon */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                          <ExternalLink className="w-5 h-5 text-white" />
+                        </div>
+                      </div>
+
+                      {/* More indicator */}
+                      {idx === 5 && portfolioImages.length > 6 && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <span className="text-white text-lg font-bold">+{portfolioImages.length - 6}</span>
+                        </div>
+                      )}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -544,14 +675,23 @@ export default function ProfessionalDetailPage() {
 
             {/* Client Reviews Section */}
             {reviews.length > 0 && (
-              <div className="bg-white rounded-2xl border border-neutral-200 p-5 sm:p-6 shadow-sm">
-                <h2 className="text-lg font-bold text-neutral-900 mb-5">
+              <div
+                className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-5 sm:p-6 shadow-sm"
+                style={{ animationDelay: '0.5s' }}
+              >
+                <h2 className="text-lg font-bold text-[var(--color-text-primary)] mb-5 flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                    <Star className="w-4 h-4 text-emerald-500" />
+                  </div>
                   {locale === 'ka' ? 'კლიენტების შეფასებები' : 'Client Reviews'}
                 </h2>
 
                 <div className="space-y-5">
-                  {reviews.slice(0, 3).map((review) => (
-                    <div key={review._id} className="pb-5 border-b border-neutral-100 last:border-0 last:pb-0">
+                  {reviews.slice(0, 3).map((review, idx) => (
+                    <div
+                      key={review._id}
+                      className={`pb-5 ${idx < Math.min(reviews.length, 3) - 1 ? 'border-b border-[var(--color-border-subtle)]' : ''}`}
+                    >
                       <div className="flex items-start gap-3">
                         {/* Avatar */}
                         {review.clientId.avatar ? (
@@ -561,8 +701,8 @@ export default function ProfessionalDetailPage() {
                             className="w-10 h-10 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center">
-                            <span className="text-sm font-semibold text-neutral-600">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--color-bg-tertiary)] to-[var(--color-bg-muted)] flex items-center justify-center">
+                            <span className="text-sm font-semibold text-[var(--color-text-secondary)]">
                               {review.isAnonymous ? '?' : review.clientId.name.charAt(0)}
                             </span>
                           </div>
@@ -571,26 +711,37 @@ export default function ProfessionalDetailPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2 mb-1">
                             <div>
-                              <p className="font-semibold text-neutral-900 text-sm">
+                              <p className="font-semibold text-[var(--color-text-primary)] text-sm">
                                 {review.isAnonymous ? (locale === 'ka' ? 'ანონიმური' : 'Anonymous') : review.clientId.name}
                               </p>
-                              <p className="text-xs text-neutral-400">{formatTimeAgo(review.createdAt)}</p>
+                              <p className="text-xs text-[var(--color-text-muted)]">{formatTimeAgo(review.createdAt)}</p>
                             </div>
                             {/* Stars */}
                             <div className="flex items-center gap-0.5">
                               {[1, 2, 3, 4, 5].map((star) => (
                                 <Star
                                   key={star}
-                                  className={`w-3.5 h-3.5 ${star <= review.rating ? 'fill-amber-400 text-amber-400' : 'text-neutral-200'}`}
+                                  className={`w-3.5 h-3.5 ${star <= review.rating ? 'fill-amber-400 text-amber-400' : 'text-[var(--color-border)]'}`}
                                 />
                               ))}
                             </div>
                           </div>
 
                           {review.text && (
-                            <p className="text-sm text-neutral-600 leading-relaxed mt-2">
+                            <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed mt-2">
                               {review.text}
                             </p>
+                          )}
+
+                          {/* Review photos */}
+                          {review.photos && review.photos.length > 0 && (
+                            <div className="flex gap-2 mt-3">
+                              {review.photos.slice(0, 3).map((photo, pIdx) => (
+                                <div key={pIdx} className="w-16 h-16 rounded-lg overflow-hidden">
+                                  <img src={getImageUrl(photo)} alt="" className="w-full h-full object-cover" />
+                                </div>
+                              ))}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -600,10 +751,7 @@ export default function ProfessionalDetailPage() {
 
                 {/* Read All Reviews Link */}
                 {profile.totalReviews > 3 && (
-                  <button
-                    className="w-full mt-5 text-center text-sm font-medium py-3 rounded-xl transition-colors"
-                    style={{ color: COLORS.primary }}
-                  >
+                  <button className="w-full mt-5 text-center text-sm font-semibold py-3 rounded-xl text-[#E07B4F] hover:bg-[#E07B4F]/5 transition-colors border border-[var(--color-border-subtle)]">
                     {locale === 'ka' ? `ყველა ${profile.totalReviews} შეფასების ნახვა` : `Read all ${profile.totalReviews} reviews`}
                   </button>
                 )}
@@ -616,19 +764,20 @@ export default function ProfessionalDetailPage() {
             <div className="lg:sticky lg:top-24 space-y-5">
 
               {/* Pricing & CTA Card */}
-              <div className="bg-white rounded-2xl border border-neutral-200 p-5 shadow-sm">
+              <div
+                className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-5 shadow-sm"
+                style={{ animationDelay: '0.15s' }}
+              >
                 {/* Starting Rate */}
                 {profile.basePrice > 0 && (
                   <div className="flex items-baseline justify-between mb-5">
-                    <span className="text-sm text-neutral-500">
+                    <span className="text-sm text-[var(--color-text-secondary)]">
                       {locale === 'ka' ? 'საწყისი ფასი' : 'Starting Rate'}
                     </span>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-bold text-neutral-900">{profile.basePrice}</span>
-                      <span className="text-lg text-neutral-500">₾</span>
-                      <span className="text-sm text-neutral-400">
-                        /{profile.pricingModel === 'hourly' ? (locale === 'ka' ? 'სთ' : 'hr') : (locale === 'ka' ? 'პროექტი' : 'project')}
-                      </span>
+                      <span className="text-3xl font-bold text-[var(--color-text-primary)]">{profile.basePrice}</span>
+                      <span className="text-xl text-[var(--color-text-secondary)]">₾</span>
+                      <span className="text-sm text-[var(--color-text-muted)]">{getPricingLabel()}</span>
                     </div>
                   </div>
                 )}
@@ -636,8 +785,7 @@ export default function ProfessionalDetailPage() {
                 {/* Request Quote Button */}
                 <button
                   onClick={handleContact}
-                  className="w-full py-3.5 rounded-xl text-white font-semibold text-sm transition-all hover:opacity-90 mb-3"
-                  style={{ backgroundColor: COLORS.primary }}
+                  className="w-full py-3.5 rounded-xl text-white font-semibold text-sm transition-all bg-[#E07B4F] hover:bg-[#D26B3F] shadow-lg shadow-[#E07B4F]/20 hover:shadow-xl hover:shadow-[#E07B4F]/25 mb-3"
                 >
                   {locale === 'ka' ? 'ფასის მოთხოვნა' : 'Request Quote'}
                 </button>
@@ -645,76 +793,80 @@ export default function ProfessionalDetailPage() {
                 {/* Message Button */}
                 <button
                   onClick={handleContact}
-                  className="w-full py-3 rounded-xl font-medium text-sm border border-neutral-300 text-neutral-700 hover:bg-neutral-50 transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-xl font-medium text-sm border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)] transition-colors flex items-center justify-center gap-2"
                 >
                   <MessageSquare className="w-4 h-4" />
                   {locale === 'ka' ? 'შეტყობინება' : 'Message'}
                 </button>
 
                 {/* Divider */}
-                <div className="border-t border-neutral-100 my-5" />
+                <div className="border-t border-[var(--color-border-subtle)] my-5" />
 
                 {/* Quick Stats */}
                 <div className="grid grid-cols-2 gap-4 mb-5">
-                  <div>
-                    <div className="flex items-center gap-1.5 text-xs text-neutral-500 mb-1">
+                  <div className="p-3 rounded-xl bg-[var(--color-bg-tertiary)]">
+                    <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)] mb-1">
                       <Clock className="w-3.5 h-3.5" />
-                      <span>{locale === 'ka' ? 'პასუხი' : 'RESPONSE'}</span>
+                      <span>{locale === 'ka' ? 'პასუხი' : 'Response'}</span>
                     </div>
-                    <p className="font-semibold text-neutral-900">{profile.responseTime || '< 1 hr'}</p>
+                    <p className="font-bold text-[var(--color-text-primary)]">&lt; 1 {locale === 'ka' ? 'სთ' : 'hr'}</p>
                   </div>
-                  <div>
-                    <div className="flex items-center gap-1.5 text-xs text-neutral-500 mb-1">
+                  <div className="p-3 rounded-xl bg-[var(--color-bg-tertiary)]">
+                    <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)] mb-1">
                       <Briefcase className="w-3.5 h-3.5" />
-                      <span>{locale === 'ka' ? 'გამოცდ.' : 'EXP.'}</span>
+                      <span>{locale === 'ka' ? 'გამოცდილება' : 'Experience'}</span>
                     </div>
-                    <p className="font-semibold text-neutral-900">{profile.yearsExperience}+ {locale === 'ka' ? 'წელი' : 'Years'}</p>
+                    <p className="font-bold text-[var(--color-text-primary)]">{profile.yearsExperience}+ {locale === 'ka' ? 'წელი' : 'Years'}</p>
                   </div>
                 </div>
 
                 {/* Trust Badges */}
                 <div className="space-y-3">
                   {/* Identity Verified */}
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center">
-                      <Shield className="w-4 h-4 text-rose-500" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-neutral-900">
-                        {locale === 'ka' ? 'პირადობა დადასტურებული' : 'Identity Verified'}
-                      </p>
-                      <p className="text-xs text-neutral-400">
-                        {locale === 'ka' ? 'სახელმწიფო ID შემოწმებული' : 'Government ID checked'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Insured */}
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center">
-                      <CheckCircle className="w-4 h-4 text-orange-500" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-neutral-900">
-                        {locale === 'ka' ? 'დაზღვეული' : 'Insured'}
-                      </p>
-                      <p className="text-xs text-neutral-400">
-                        {locale === 'ka' ? '10,000₾-მდე დაფარვა' : 'Covered up to 10k ₾'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Top Rated */}
-                  {profile.avgRating >= 4.5 && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center">
-                        <Trophy className="w-4 h-4 text-amber-500" />
+                  {profile.isVerified !== false && (
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20">
+                      <div className="w-9 h-9 rounded-full bg-rose-100 dark:bg-rose-500/20 flex items-center justify-center flex-shrink-0">
+                        <Shield className="w-4.5 h-4.5 text-rose-500" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-neutral-900">
+                        <p className="text-sm font-semibold text-rose-700 dark:text-rose-400">
+                          {locale === 'ka' ? 'პირადობა დადასტურებული' : 'Identity Verified'}
+                        </p>
+                        <p className="text-xs text-rose-600/70 dark:text-rose-400/70">
+                          {locale === 'ka' ? 'სახელმწიფო ID შემოწმებული' : 'Government ID checked'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Insured */}
+                  {profile.isInsured !== false && (
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20">
+                      <div className="w-9 h-9 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                        <CheckCircle className="w-4.5 h-4.5 text-amber-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">
+                          {locale === 'ka' ? 'დაზღვეული' : 'Insured'}
+                        </p>
+                        <p className="text-xs text-amber-600/70 dark:text-amber-400/70">
+                          {locale === 'ka' ? '10,000₾-მდე დაფარვა' : 'Covered up to 10k ₾'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Top Rated */}
+                  {profile.avgRating >= 4.5 && profile.totalReviews >= 5 && (
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20">
+                      <div className="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                        <Trophy className="w-4.5 h-4.5 text-emerald-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
                           {locale === 'ka' ? 'ტოპ რეიტინგი' : 'Top Rated Pro'}
                         </p>
-                        <p className="text-xs text-neutral-400">
+                        <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70">
                           {locale === 'ka' ? 'თბილისის ტოპ 5%-ში' : 'Top 5% in Tbilisi'}
                         </p>
                       </div>
@@ -724,70 +876,159 @@ export default function ProfessionalDetailPage() {
               </div>
 
               {/* Map Card */}
-              <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden shadow-sm">
-                <div className="aspect-[4/3] bg-neutral-100 relative">
-                  {/* Placeholder map - you can integrate Google Maps or Mapbox here */}
+              <div
+                className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] overflow-hidden shadow-sm"
+                style={{ animationDelay: '0.25s' }}
+              >
+                <div className="aspect-[4/3] bg-gradient-to-br from-[#E8F4F4] to-[#D4EBEB] dark:from-[#1a2f2f] dark:to-[#152525] relative">
+                  {/* Stylized map background */}
+                  <div className="absolute inset-0 opacity-30">
+                    <svg className="w-full h-full" viewBox="0 0 200 150" preserveAspectRatio="none">
+                      <path d="M0,75 Q50,50 100,75 T200,75" fill="none" stroke="#4A9B9B" strokeWidth="0.5" opacity="0.5"/>
+                      <path d="M0,85 Q50,60 100,85 T200,85" fill="none" stroke="#4A9B9B" strokeWidth="0.5" opacity="0.3"/>
+                      <path d="M0,95 Q50,70 100,95 T200,95" fill="none" stroke="#4A9B9B" strokeWidth="0.5" opacity="0.2"/>
+                      <circle cx="100" cy="75" r="15" fill="#4A9B9B" opacity="0.1"/>
+                      <circle cx="100" cy="75" r="8" fill="#4A9B9B" opacity="0.2"/>
+                    </svg>
+                  </div>
+
+                  {/* Location pin */}
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
-                      <MapPin className="w-8 h-8 mx-auto mb-2" style={{ color: COLORS.primary }} />
-                      <p className="text-sm font-medium text-neutral-700">
+                      <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-[#E07B4F] shadow-lg flex items-center justify-center">
+                        <MapPin className="w-6 h-6 text-white" />
+                      </div>
+                      <p className="text-sm font-semibold text-[#3D8585] dark:text-[#6BB5B5]">
                         {profile.serviceAreas[0] || 'Tbilisi'}, Georgia
                       </p>
                     </div>
                   </div>
-                  {/* Map image placeholder */}
-                  <img
-                    src={`https://api.mapbox.com/styles/v1/mapbox/light-v11/static/${41.7151},${44.8271},11,0/400x300?access_token=pk.placeholder`}
-                    alt="Map"
-                    className="w-full h-full object-cover opacity-50"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
                 </div>
+
+                {/* Service areas list */}
+                {profile.serviceAreas.length > 1 && (
+                  <div className="p-4 border-t border-[var(--color-border-subtle)]">
+                    <p className="text-xs font-medium text-[var(--color-text-muted)] mb-2">
+                      {locale === 'ka' ? 'მომსახურების ზონები' : 'Service Areas'}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {profile.serviceAreas.slice(0, 4).map((area, idx) => (
+                        <span key={idx} className="px-2 py-1 text-xs rounded-md bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]">
+                          {area}
+                        </span>
+                      ))}
+                      {profile.serviceAreas.length > 4 && (
+                        <span className="px-2 py-1 text-xs rounded-md bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)]">
+                          +{profile.serviceAreas.length - 4}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </main>
 
+      {/* Lightbox Modal */}
+      {lightboxOpen && portfolioImages.length > 0 && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center"
+          onClick={closeLightbox}
+        >
+          {/* Close button */}
+          <button
+            onClick={closeLightbox}
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10"
+          >
+            <X className="w-5 h-5 text-white" />
+          </button>
+
+          {/* Navigation arrows */}
+          {portfolioImages.length > 1 && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10"
+              >
+                <ChevronLeft className="w-6 h-6 text-white" />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10"
+              >
+                <ChevronRight className="w-6 h-6 text-white" />
+              </button>
+            </>
+          )}
+
+          {/* Image container */}
+          <div
+            className="max-w-5xl max-h-[85vh] mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={getImageUrl(portfolioImages[lightboxIndex].url)}
+              alt={portfolioImages[lightboxIndex].title || ''}
+              className="max-w-full max-h-[85vh] object-contain rounded-lg"
+            />
+
+            {/* Caption */}
+            {(portfolioImages[lightboxIndex].title || portfolioImages[lightboxIndex].description) && (
+              <div className="mt-4 text-center">
+                {portfolioImages[lightboxIndex].title && (
+                  <h3 className="text-white font-semibold text-lg">{portfolioImages[lightboxIndex].title}</h3>
+                )}
+                {portfolioImages[lightboxIndex].description && (
+                  <p className="text-white/70 text-sm mt-1">{portfolioImages[lightboxIndex].description}</p>
+                )}
+              </div>
+            )}
+
+            {/* Image counter */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-white/10 text-white text-sm">
+              {lightboxIndex + 1} / {portfolioImages.length}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Contact Modal */}
       {showContactModal && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowContactModal(false)}>
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
           <div
-            className="relative w-full sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl overflow-hidden"
+            className="relative w-full sm:max-w-md bg-[var(--color-bg-elevated)] rounded-t-2xl sm:rounded-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="sm:hidden w-10 h-1 bg-neutral-300 rounded-full mx-auto mt-3" />
+            <div className="sm:hidden w-10 h-1 bg-[var(--color-border)] rounded-full mx-auto mt-3" />
 
             <div className="p-5">
               <div className="flex items-center justify-between mb-5">
-                <h3 className="text-lg font-bold text-neutral-900">
+                <h3 className="text-lg font-bold text-[var(--color-text-primary)]">
                   {locale === 'ka' ? 'შეტყობინება' : 'Send Message'}
                 </h3>
                 <button
                   onClick={() => setShowContactModal(false)}
-                  className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center hover:bg-neutral-200 transition-colors"
+                  className="w-8 h-8 rounded-full bg-[var(--color-bg-tertiary)] flex items-center justify-center hover:bg-[var(--color-bg-muted)] transition-colors"
                 >
-                  <svg className="w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <X className="w-4 h-4 text-[var(--color-text-secondary)]" />
                 </button>
               </div>
 
               {/* Pro Info */}
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-neutral-50 mb-4">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--color-bg-tertiary)] mb-4">
                 {avatarUrl ? (
-                  <img src={getImageUrl(avatarUrl)} alt="" className="w-12 h-12 rounded-full object-cover" />
+                  <img src={getImageUrl(avatarUrl)} alt="" className="w-12 h-12 rounded-xl object-cover" />
                 ) : (
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold" style={{ backgroundColor: COLORS.teal }}>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-semibold bg-gradient-to-br from-[#4A9B9B] to-[#3D8585]">
                     {profile.name.charAt(0)}
                   </div>
                 )}
                 <div>
-                  <p className="font-semibold text-neutral-900">{profile.name}</p>
-                  <p className="text-sm text-neutral-500">{profile.title}</p>
+                  <p className="font-semibold text-[var(--color-text-primary)]">{profile.name}</p>
+                  <p className="text-sm text-[var(--color-text-secondary)]">{profile.title}</p>
                 </div>
               </div>
 
@@ -795,23 +1036,21 @@ export default function ProfessionalDetailPage() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder={locale === 'ka' ? 'გამარჯობა! მაინტერესებს თქვენი მომსახურება...' : 'Hello! I\'m interested in your services...'}
-                className="w-full px-4 py-3 text-sm rounded-xl border border-neutral-200 bg-white text-neutral-900 placeholder:text-neutral-400 resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all"
-                style={{ '--tw-ring-color': COLORS.primary } as any}
+                className="w-full px-4 py-3 text-sm rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] resize-none focus:outline-none focus:ring-2 focus:ring-[#E07B4F]/30 focus:border-[#E07B4F]/50 transition-all"
                 rows={4}
               />
 
               <div className="flex gap-3 mt-4">
                 <button
                   onClick={() => setShowContactModal(false)}
-                  className="flex-1 py-3 rounded-xl text-sm font-medium border border-neutral-200 text-neutral-700 hover:bg-neutral-50 transition-colors"
+                  className="flex-1 py-3 rounded-xl text-sm font-medium border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
                 >
                   {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
                 </button>
                 <button
                   onClick={handleSendMessage}
                   disabled={isSending || !message.trim()}
-                  className="flex-1 py-3 text-sm font-semibold rounded-xl text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  style={{ backgroundColor: COLORS.primary }}
+                  className="flex-1 py-3 text-sm font-semibold rounded-xl text-white bg-[#E07B4F] hover:bg-[#D26B3F] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isSending ? (locale === 'ka' ? 'იგზავნება...' : 'Sending...') : (locale === 'ka' ? 'გაგზავნა' : 'Send')}
                 </button>
