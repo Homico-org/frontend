@@ -23,6 +23,20 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Google Analytics (gtag.js) */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-V4JH4QTFF3" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-V4JH4QTFF3');
+            `,
+          }}
+        />
+        {/* End Google Analytics */}
+
         {/* Google Tag Manager */}
         <script
           dangerouslySetInnerHTML={{
