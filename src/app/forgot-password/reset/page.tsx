@@ -9,8 +9,7 @@ export default function ResetPasswordPage() {
   const router = useRouter();
   const { openLoginModal } = useAuthModal();
   const { t, locale } = useLanguage();
-  const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -20,14 +19,12 @@ export default function ResetPasswordPage() {
   const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
-    const storedEmail = sessionStorage.getItem('resetEmail');
-    const storedCode = sessionStorage.getItem('resetCode');
-    if (!storedEmail || !storedCode) {
+    const storedPhone = sessionStorage.getItem('resetPhone');
+    if (!storedPhone) {
       router.push('/forgot-password');
       return;
     }
-    setEmail(storedEmail);
-    setCode(storedCode);
+    setPhone(storedPhone);
   }, [router]);
 
   const passwordStrength = () => {
@@ -79,7 +76,7 @@ export default function ResetPasswordPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, code, newPassword: password }),
+        body: JSON.stringify({ phone, newPassword: password }),
       });
 
       const data = await response.json();
@@ -89,13 +86,20 @@ export default function ResetPasswordPage() {
       }
 
       // Clear session storage
-      sessionStorage.removeItem('resetEmail');
-      sessionStorage.removeItem('resetCode');
+      sessionStorage.removeItem('resetPhone');
 
       setIsSuccess(true);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : t('forgotPassword.resetFailed');
-      setError(errorMessage);
+      if (errorMessage.includes('session expired') || errorMessage.includes('verify your phone')) {
+        setError(locale === 'ka' ? 'სესია ამოიწურა. გთხოვთ დაიწყოთ თავიდან.' : 'Session expired. Please start over.');
+        setTimeout(() => {
+          sessionStorage.removeItem('resetPhone');
+          router.push('/forgot-password');
+        }, 2000);
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }

@@ -10,13 +10,47 @@ export default function ForgotPasswordPage() {
   const router = useRouter();
   const { openLoginModal } = useAuthModal();
   const { t, locale } = useLanguage();
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const formatPhoneNumber = (value: string) => {
+    // Remove all non-digit characters except +
+    let cleaned = value.replace(/[^\d+]/g, '');
+
+    // Ensure it starts with +995
+    if (!cleaned.startsWith('+')) {
+      if (cleaned.startsWith('995')) {
+        cleaned = '+' + cleaned;
+      } else if (cleaned.startsWith('5')) {
+        cleaned = '+995' + cleaned;
+      } else if (cleaned.length > 0 && !cleaned.startsWith('+995')) {
+        cleaned = '+995' + cleaned;
+      }
+    }
+
+    return cleaned;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setPhone(formatted);
+  };
+
+  const isValidPhone = () => {
+    // Georgian phone format: +995 5XX XXX XXX (12 digits total with +995)
+    return /^\+995[5][0-9]{8}$/.test(phone);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!isValidPhone()) {
+      setError(locale === 'ka' ? 'გთხოვთ შეიყვანოთ სწორი ტელეფონის ნომერი' : 'Please enter a valid phone number');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -25,7 +59,7 @@ export default function ForgotPasswordPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ phone }),
       });
 
       const data = await response.json();
@@ -34,14 +68,16 @@ export default function ForgotPasswordPage() {
         throw new Error(data.message || t('forgotPassword.sendFailed'));
       }
 
-      // Store email for the next step and navigate
-      sessionStorage.setItem('resetEmail', email);
+      // Store phone for the next step and navigate
+      sessionStorage.setItem('resetPhone', phone);
       router.push('/forgot-password/verify');
     } catch (err: unknown) {
       // Check if it's a network error (Failed to fetch)
       const errorMessage = err instanceof Error ? err.message : '';
       if (errorMessage === 'Failed to fetch' || (err instanceof Error && err.name === 'TypeError')) {
         setError(t('forgotPassword.networkError'));
+      } else if (errorMessage.includes('No account found')) {
+        setError(locale === 'ka' ? 'ამ ნომრით ანგარიში ვერ მოიძებნა' : 'No account found with this phone number');
       } else {
         setError(t('forgotPassword.sendFailed'));
       }
@@ -72,7 +108,7 @@ export default function ForgotPasswordPage() {
 
           {/* Subtitle */}
           <p className="text-center text-neutral-500 text-[15px] mb-8">
-            {locale === 'ka' ? 'შეიყვანეთ თქვენი ელ-ფოსტა კოდის მისაღებად.' : 'Enter your email to receive a reset code.'}
+            {locale === 'ka' ? 'შეიყვანეთ თქვენი ტელეფონის ნომერი კოდის მისაღებად.' : 'Enter your phone number to receive a reset code.'}
           </p>
 
           {/* Error Message */}
@@ -87,28 +123,38 @@ export default function ForgotPasswordPage() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email Input */}
+            {/* Phone Input */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-2">
-                {locale === 'ka' ? 'ელ-ფოსტა' : 'Email Address'}
+              <label htmlFor="phone" className="block text-sm font-medium text-neutral-700 mb-2">
+                {locale === 'ka' ? 'ტელეფონის ნომერი' : 'Phone Number'}
               </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full h-[52px] px-4 bg-[#F5F5F5] border-0 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C47B65]/30 transition-all"
-                placeholder="example@homico.com"
-                autoComplete="email"
-                autoFocus
-              />
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 text-neutral-500">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                  </svg>
+                </div>
+                <input
+                  id="phone"
+                  type="tel"
+                  required
+                  value={phone}
+                  onChange={handlePhoneChange}
+                  className="w-full h-[52px] pl-12 pr-4 bg-[#F5F5F5] border-0 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C47B65]/30 transition-all"
+                  placeholder="+995 5XX XXX XXX"
+                  autoComplete="tel"
+                  autoFocus
+                />
+              </div>
+              <p className="mt-2 text-xs text-neutral-400">
+                {locale === 'ka' ? 'მაგ: +995 555 123 456' : 'e.g: +995 555 123 456'}
+              </p>
             </div>
 
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading || !email}
+              disabled={isLoading || !phone}
               className="w-full h-[52px] bg-[#C47B65] hover:bg-[#B36A55] text-white font-semibold rounded-xl transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isLoading ? (

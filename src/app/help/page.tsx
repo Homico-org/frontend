@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Link from 'next/link';
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface FAQ {
   question: string;
@@ -242,18 +242,6 @@ export default function HelpPage() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
 
-        {/* Success Message */}
-        {submitSuccess && (
-          <div className="mb-8 p-4 bg-[#C4735B]/5 dark:bg-[#C4735B]/10 border border-[#C4735B]/20 dark:border-[#C4735B]/20 rounded-xl flex items-center gap-3 animate-fade-in">
-            <div className="w-8 h-8 rounded-full bg-[#C4735B]/10 dark:bg-[#C4735B]/20 flex items-center justify-center flex-shrink-0">
-              <svg className="w-4 h-4 text-[#C4735B] dark:text-[#E8956A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <p className="text-sm text-[#C4735B] dark:text-[#E8956A]">{t('helpPage.contact.success')}</p>
-          </div>
-        )}
-
         {/* Quick Actions for Authenticated Users */}
         {isAuthenticated && (
           <section className="mb-12">
@@ -376,6 +364,21 @@ export default function HelpPage() {
                     </button>
                   </div>
                 </form>
+              </div>
+            )}
+
+            {/* Success Message for Ticket Submission */}
+            {submitSuccess && !showTicketForm && (
+              <div className="mb-6 p-4 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-xl flex items-center gap-3 animate-fade-in">
+                <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-medium text-green-800 dark:text-green-300">{t('helpPage.contact.success')}</p>
+                  <p className="text-sm text-green-600 dark:text-green-400">{t('helpPage.myTickets.successDesc') || 'Your ticket has been created successfully.'}</p>
+                </div>
               </div>
             )}
 
@@ -585,28 +588,42 @@ export default function HelpPage() {
                   <p className="text-sm text-terracotta-600 dark:text-terracotta-400">{submitError}</p>
                 )}
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting || !contactForm.message.trim()}
-                  className="w-full py-3.5 bg-[#C4735B] hover:bg-[#B8654D] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                {submitSuccess ? (
+                  <div className="p-4 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-xl flex items-center gap-3 animate-fade-in">
+                    <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      {t('common.loading')}
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                      </svg>
-                      {t('helpPage.contact.send')}
-                    </>
-                  )}
-                </button>
+                    </div>
+                    <div>
+                      <p className="font-medium text-green-800 dark:text-green-300">{t('helpPage.contact.success')}</p>
+                      <p className="text-sm text-green-600 dark:text-green-400">{t('helpPage.contact.successDesc') || 'We will get back to you soon.'}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || !contactForm.message.trim()}
+                    className="w-full py-3.5 bg-[#C4735B] hover:bg-[#B8654D] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        {t('common.loading')}
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                        {t('helpPage.contact.send')}
+                      </>
+                    )}
+                  </button>
+                )}
               </form>
             </div>
 

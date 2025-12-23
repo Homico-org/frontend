@@ -7,7 +7,7 @@ import { useState, useEffect, useRef } from 'react';
 export default function VerifyResetCodePage() {
   const router = useRouter();
   const { t, locale } = useLanguage();
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -17,12 +17,14 @@ export default function VerifyResetCodePage() {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
-    const storedEmail = sessionStorage.getItem('resetEmail');
-    if (!storedEmail) {
+    const storedPhone = sessionStorage.getItem('resetPhone');
+    if (!storedPhone) {
       router.push('/forgot-password');
       return;
     }
-    setEmail(storedEmail);
+    setPhone(storedPhone);
+    // Focus first input
+    setTimeout(() => inputRefs.current[0]?.focus(), 100);
   }, [router]);
 
   useEffect(() => {
@@ -76,7 +78,7 @@ export default function VerifyResetCodePage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ phone }),
       });
 
       if (!response.ok) {
@@ -113,7 +115,7 @@ export default function VerifyResetCodePage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, code: fullCode }),
+        body: JSON.stringify({ phone, code: fullCode }),
       });
 
       const data = await response.json();
@@ -122,8 +124,7 @@ export default function VerifyResetCodePage() {
         throw new Error(data.message || t('forgotPassword.invalidCode'));
       }
 
-      // Store the verified code and navigate to reset page
-      sessionStorage.setItem('resetCode', fullCode);
+      // Navigate to reset page (phone is already in sessionStorage)
       router.push('/forgot-password/reset');
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : t('forgotPassword.invalidCode');
@@ -135,7 +136,7 @@ export default function VerifyResetCodePage() {
     }
   };
 
-  const maskedEmail = email ? email.replace(/(.{2})(.*)(@.*)/, '$1***$3') : '';
+  const maskedPhone = phone ? phone.replace(/(\+995)(\d{2})(\d{3})(\d{2})(\d{2})/, '$1 $2* *** *$5') : '';
 
   return (
     <div className="min-h-screen bg-neutral-500/50 flex items-center justify-center p-4">
@@ -160,7 +161,7 @@ export default function VerifyResetCodePage() {
           {/* Subtitle */}
           <p className="text-center text-neutral-500 text-[15px] mb-8">
             {locale === 'ka' ? 'კოდი გაგზავნილია' : 'Code sent to'}{' '}
-            <span className="font-medium text-neutral-700">{maskedEmail}</span>
+            <span className="font-medium text-neutral-700">{maskedPhone}</span>
           </p>
 
           {/* Error Message */}
@@ -195,7 +196,6 @@ export default function VerifyResetCodePage() {
                     onChange={(e) => handleCodeChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
                     className="w-11 h-14 sm:w-12 sm:h-14 text-center text-xl font-semibold rounded-xl bg-[#F5F5F5] border-0 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#C47B65]/30 transition-all"
-                    autoFocus={index === 0}
                   />
                 ))}
               </div>
@@ -249,17 +249,17 @@ export default function VerifyResetCodePage() {
             <div className="flex-1 h-px bg-neutral-200"></div>
           </div>
 
-          {/* Change Email Link */}
+          {/* Change Phone Link */}
           <p className="text-center text-[15px] text-neutral-600">
-            {locale === 'ka' ? 'სხვა ელ-ფოსტა?' : 'Wrong email?'}{' '}
+            {locale === 'ka' ? 'სხვა ნომერი?' : 'Wrong number?'}{' '}
             <button
               onClick={() => {
-                sessionStorage.removeItem('resetEmail');
+                sessionStorage.removeItem('resetPhone');
                 router.push('/forgot-password');
               }}
               className="font-semibold text-[#C47B65] hover:text-[#B36A55] transition-colors"
             >
-              {locale === 'ka' ? 'შეცვლა' : 'Change Email'}
+              {locale === 'ka' ? 'შეცვლა' : 'Change Number'}
             </button>
           </p>
         </div>

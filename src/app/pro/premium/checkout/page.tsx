@@ -8,7 +8,7 @@ import Header, { HeaderSpacer } from '@/components/common/Header';
 import AppBackground from '@/components/common/AppBackground';
 import {
   ArrowLeft, Check, CreditCard, Shield, Lock, Sparkles, Star, Zap, Crown,
-  Building2, Loader2, ChevronDown, CheckCircle2, ShieldCheck, BadgeCheck,
+  Loader2, ChevronDown, CheckCircle2, ShieldCheck, BadgeCheck,
   ArrowRight, Users, Clock, RefreshCw
 } from 'lucide-react';
 import Link from 'next/link';
@@ -18,13 +18,11 @@ import { Suspense, useState, useEffect, useCallback } from 'react';
 // Types for saved payment methods
 interface SavedPaymentMethod {
   id: string;
-  type: 'card' | 'bank';
+  type: 'card';
   cardLast4?: string;
   cardBrand?: string;
   cardExpiry?: string;
   cardholderName?: string;
-  bankName?: string;
-  maskedIban?: string;
   isDefault: boolean;
   createdAt: string;
 }
@@ -100,7 +98,7 @@ function CheckoutContent() {
   const TierIcon = tier?.icon || Zap;
   const price = tier?.price[period] || 0;
 
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'bank'>('card');
+  // Card-only payments
   const [isProcessing, setIsProcessing] = useState(false);
   const [formData, setFormData] = useState({
     cardNumber: '',
@@ -308,83 +306,6 @@ function CheckoutContent() {
                 </div>
 
                 <div className="p-6 sm:p-8">
-                  {/* Payment Method Selection */}
-                  <div className="mb-8">
-                    <label className="block text-sm font-semibold text-[var(--color-text-primary)] mb-4">
-                      {locale === 'ka' ? 'გადახდის მეთოდი' : 'Payment Method'}
-                    </label>
-                    <div className="grid grid-cols-2 gap-4">
-                      <button
-                        type="button"
-                        onClick={() => setPaymentMethod('card')}
-                        className={`relative p-5 rounded-2xl border-2 transition-all duration-300 flex items-center gap-4 ${
-                          paymentMethod === 'card'
-                            ? 'border-[var(--color-border-subtle)] bg-[var(--color-bg-secondary)] shadow-md'
-                            : 'border-[var(--color-border-subtle)] hover:border-[var(--color-border)] bg-[var(--color-bg-primary)]'
-                        }`}
-                        style={paymentMethod === 'card' ? { borderColor: tier.accentColor } : {}}
-                      >
-                        <div
-                          className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
-                            paymentMethod === 'card' ? '' : 'bg-[var(--color-bg-tertiary)]'
-                          }`}
-                          style={paymentMethod === 'card' ? { backgroundColor: tier.accentColor } : {}}
-                        >
-                          <CreditCard className={`w-6 h-6 ${paymentMethod === 'card' ? 'text-white' : 'text-[var(--color-text-tertiary)]'}`} />
-                        </div>
-                        <div className="text-left">
-                          <span className="block font-semibold text-[var(--color-text-primary)]">
-                            {locale === 'ka' ? 'ბარათი' : 'Credit Card'}
-                          </span>
-                          <span className="text-xs text-[var(--color-text-tertiary)]">Visa, Mastercard</span>
-                        </div>
-                        {paymentMethod === 'card' && (
-                          <div
-                            className="absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center"
-                            style={{ backgroundColor: tier.accentColor }}
-                          >
-                            <Check className="w-3.5 h-3.5 text-white" />
-                          </div>
-                        )}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setPaymentMethod('bank')}
-                        className={`relative p-5 rounded-2xl border-2 transition-all duration-300 flex items-center gap-4 ${
-                          paymentMethod === 'bank'
-                            ? 'border-[var(--color-border-subtle)] bg-[var(--color-bg-secondary)] shadow-md'
-                            : 'border-[var(--color-border-subtle)] hover:border-[var(--color-border)] bg-[var(--color-bg-primary)]'
-                        }`}
-                        style={paymentMethod === 'bank' ? { borderColor: tier.accentColor } : {}}
-                      >
-                        <div
-                          className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
-                            paymentMethod === 'bank' ? '' : 'bg-[var(--color-bg-tertiary)]'
-                          }`}
-                          style={paymentMethod === 'bank' ? { backgroundColor: tier.accentColor } : {}}
-                        >
-                          <Building2 className={`w-6 h-6 ${paymentMethod === 'bank' ? 'text-white' : 'text-[var(--color-text-tertiary)]'}`} />
-                        </div>
-                        <div className="text-left">
-                          <span className="block font-semibold text-[var(--color-text-primary)]">
-                            {locale === 'ka' ? 'ბანკი' : 'Bank Transfer'}
-                          </span>
-                          <span className="text-xs text-[var(--color-text-tertiary)]">TBC, BOG, Liberty</span>
-                        </div>
-                        {paymentMethod === 'bank' && (
-                          <div
-                            className="absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center"
-                            style={{ backgroundColor: tier.accentColor }}
-                          >
-                            <Check className="w-3.5 h-3.5 text-white" />
-                          </div>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  {paymentMethod === 'card' && (
                     <form onSubmit={handleSubmit} className="space-y-6">
                       {/* Saved Cards Section */}
                       {isAuthenticated && isLoadingSavedCards ? (
@@ -677,60 +598,6 @@ function CheckoutContent() {
                           : 'By completing payment, you agree to our Terms of Service and Privacy Policy'}
                       </p>
                     </form>
-                  )}
-
-                  {paymentMethod === 'bank' && (
-                    <div className="space-y-6">
-                      <div className="p-6 rounded-2xl bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)]">
-                        <div className="flex items-center gap-4 mb-6">
-                          <div
-                            className="w-12 h-12 rounded-xl flex items-center justify-center"
-                            style={{ backgroundColor: `${tier.accentColor}15` }}
-                          >
-                            <Building2 className="w-6 h-6" style={{ color: tier.accentColor }} />
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-[var(--color-text-primary)]">
-                              {locale === 'ka' ? 'საბანკო გადარიცხვა' : 'Bank Transfer Details'}
-                            </h3>
-                            <p className="text-sm text-[var(--color-text-tertiary)]">
-                              {locale === 'ka' ? 'გადარიცხე ქვემოთ მოცემულ ანგარიშზე' : 'Transfer to the account below'}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="space-y-4">
-                          {[
-                            { label: locale === 'ka' ? 'ბანკი' : 'Bank', value: 'TBC Bank' },
-                            { label: 'IBAN', value: 'GE00TB0000000000000000', mono: true },
-                            { label: locale === 'ka' ? 'მიმღები' : 'Recipient', value: 'Homico LLC' },
-                            { label: locale === 'ka' ? 'თანხა' : 'Amount', value: `${tier.currency}${price}`, highlight: true },
-                          ].map((item, i) => (
-                            <div key={i} className="flex justify-between items-center py-3 border-b border-[var(--color-border-subtle)] last:border-0">
-                              <span className="text-sm text-[var(--color-text-tertiary)]">{item.label}</span>
-                              <span
-                                className={`text-sm font-semibold ${item.mono ? 'font-mono text-xs' : ''}`}
-                                style={item.highlight ? { color: tier.accentColor } : { color: 'var(--color-text-primary)' }}
-                              >
-                                {item.value}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-4 p-5 rounded-xl bg-amber-500/5 border border-amber-500/20">
-                        <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Clock className="w-4 h-4 text-amber-600" />
-                        </div>
-                        <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
-                          {locale === 'ka'
-                            ? 'გადარიცხვის შემდეგ გთხოვთ გამოაგზავნოთ ქვითარი info@homico.ge მისამართზე. თქვენი გეგმა გააქტიურდება 24 საათის განმავლობაში.'
-                            : 'After completing the transfer, please send the receipt to info@homico.ge. Your plan will be activated within 24 hours.'}
-                        </p>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>

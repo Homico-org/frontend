@@ -49,6 +49,8 @@ interface Conversation {
   unreadCount: number;
 }
 
+type MessageStatus = 'sent' | 'delivered' | 'read';
+
 interface Message {
   _id: string;
   content: string;
@@ -56,6 +58,7 @@ interface Message {
   createdAt: string;
   attachments?: string[];
   isRead?: boolean;
+  status?: MessageStatus;
 }
 
 // Helper function to format time
@@ -107,6 +110,79 @@ function formatDateDivider(dateStr: string, locale: string): string {
 function getSenderId(senderId: string | { _id: string }): string {
   if (typeof senderId === 'string') return senderId;
   return senderId._id;
+}
+
+// Message Status Indicator Component - elegant double checkmarks
+function MessageStatusIndicator({ status, locale }: { status?: MessageStatus; locale: string }) {
+  // Default to 'sent' if no status
+  const currentStatus = status || 'sent';
+
+  const getStatusTitle = () => {
+    switch (currentStatus) {
+      case 'sent':
+        return locale === 'ka' ? 'გაგზავნილი' : 'Sent';
+      case 'delivered':
+        return locale === 'ka' ? 'მიწოდებული' : 'Delivered';
+      case 'read':
+        return locale === 'ka' ? 'წაკითხული' : 'Read';
+    }
+  };
+
+  return (
+    <span
+      className="inline-flex items-center ml-1.5 transition-all duration-300"
+      title={getStatusTitle()}
+    >
+      {currentStatus === 'sent' && (
+        // Single gray checkmark for sent
+        <svg
+          className="w-4 h-4 text-white/50"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      )}
+      {currentStatus === 'delivered' && (
+        // Double gray checkmarks for delivered
+        <svg
+          className="w-4 h-4 text-white/60"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="18 6 7 17 2 12" />
+          <polyline points="22 6 11 17 9 15" />
+        </svg>
+      )}
+      {currentStatus === 'read' && (
+        // Double blue checkmarks for read - with subtle glow
+        <svg
+          className="w-4 h-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{
+            color: '#60D4F7',
+            filter: 'drop-shadow(0 0 2px rgba(96, 212, 247, 0.5))',
+          }}
+        >
+          <polyline points="18 6 7 17 2 12" />
+          <polyline points="22 6 11 17 9 15" />
+        </svg>
+      )}
+    </span>
+  );
 }
 
 // Conversation List Item Component
@@ -239,11 +315,13 @@ function MessageBubble({
   isMine,
   showAvatar,
   participant,
+  locale,
 }: {
   message: Message;
   isMine: boolean;
   showAvatar: boolean;
   participant?: Participant;
+  locale: string;
 }) {
   const hasAttachments = message.attachments && message.attachments.length > 0;
 
@@ -283,7 +361,8 @@ function MessageBubble({
                   : 'bg-white border border-neutral-200 text-neutral-800 rounded-bl-md'
               }`}
             >
-              <p className="text-[15px] leading-relaxed">{message.content}</p>
+              <p className="text-[15px] leading-relaxed inline">{message.content}</p>
+              {isMine && <MessageStatusIndicator status={message.status} locale={locale} />}
             </div>
           )}
         </div>
@@ -310,7 +389,8 @@ function MessageBubble({
             : 'bg-white border border-neutral-200 text-neutral-800 rounded-bl-md'
         }`}
       >
-        <p className="text-[15px] leading-relaxed">{message.content}</p>
+        <p className="text-[15px] leading-relaxed inline">{message.content}</p>
+        {isMine && <MessageStatusIndicator status={message.status} locale={locale} />}
       </div>
     </div>
   );
@@ -352,8 +432,9 @@ const ChatContent = memo(function ChatContent({
         const response = await api.get(`/messages/conversation/${conversation._id}`);
         setMessages(response.data);
 
-        // Mark messages as read
+        // Mark messages as delivered first, then read
         try {
+          await api.patch(`/messages/conversation/${conversation._id}/delivered`);
           await api.patch(`/messages/conversation/${conversation._id}/read-all`);
           await api.patch(`/conversations/${conversation._id}/read`);
         } catch (e) {
@@ -396,14 +477,25 @@ const ChatContent = memo(function ChatContent({
       }
     };
 
+    // Handle message status updates (sent → delivered → read)
+    const handleStatusUpdate = ({ messageIds, status }: { conversationId: string; messageIds: string[]; status: MessageStatus }) => {
+      setMessages(prev =>
+        prev.map(msg =>
+          messageIds.includes(msg._id) ? { ...msg, status } : msg
+        )
+      );
+    };
+
     socketRef.current.on('newMessage', handleNewMessage);
     socketRef.current.on('userTyping', handleTyping);
+    socketRef.current.on('messageStatusUpdate', handleStatusUpdate);
 
     return () => {
       if (socketRef.current) {
         socketRef.current.emit('leaveConversation', conversation._id);
         socketRef.current.off('newMessage', handleNewMessage);
         socketRef.current.off('userTyping', handleTyping);
+        socketRef.current.off('messageStatusUpdate', handleStatusUpdate);
       }
     };
   }, [conversation._id, socketRef, userId]);
@@ -455,6 +547,7 @@ const ChatContent = memo(function ChatContent({
       content: messageContent,
       senderId: userId,
       createdAt: new Date().toISOString(),
+      status: 'sent',
     };
     setMessages(prev => [...prev, tempMessage]);
 
@@ -492,12 +585,23 @@ const ChatContent = memo(function ChatContent({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Show optimistic temp message with loading state
+    const tempId = `temp-upload-${Date.now()}`;
+    const tempMessage: Message = {
+      _id: tempId,
+      content: '',
+      senderId: userId,
+      createdAt: new Date().toISOString(),
+      status: 'sent',
+      attachments: [URL.createObjectURL(file)], // Temporary local preview
+    };
+    setMessages(prev => [...prev, tempMessage]);
+
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const uploadResponse = await api.post('/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      // Don't set Content-Type header - let axios handle it for FormData (adds boundary automatically)
+      const uploadResponse = await api.post('/upload', formData);
 
       const response = await api.post('/messages', {
         conversationId: conversation._id,
@@ -505,9 +609,12 @@ const ChatContent = memo(function ChatContent({
         attachments: [uploadResponse.data.url || uploadResponse.data.filename],
       });
 
-      setMessages(prev => [...prev, response.data]);
+      // Replace temp message with real one
+      setMessages(prev => prev.map(m => m._id === tempId ? response.data : m));
     } catch (error) {
       console.error('Failed to upload file:', error);
+      // Remove temp message on error
+      setMessages(prev => prev.filter(m => m._id !== tempId));
     }
 
     e.target.value = '';
@@ -610,6 +717,7 @@ const ChatContent = memo(function ChatContent({
                         isMine={isMine}
                         showAvatar={showAvatar}
                         participant={conversation.participant}
+                        locale={locale}
                       />
                     );
                   })}
