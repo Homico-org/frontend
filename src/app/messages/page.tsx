@@ -25,8 +25,8 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, memo } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-// Terracotta accent color matching the app
-const ACCENT_COLOR = '#C4735B';
+// Terracotta accent color matching the design system (--color-accent)
+const ACCENT_COLOR = '#E07B4F';
 
 // Types
 interface Participant {
@@ -144,7 +144,7 @@ function ConversationItem({
     <div
       className={`relative w-full flex items-start gap-3 p-4 text-left transition-all duration-200 border-l-2 group ${
         isSelected
-          ? 'bg-[#FDF8F6] border-l-[#C4735B]'
+          ? 'bg-[#FEF6F3] border-l-[#E07B4F]'
           : 'border-l-transparent hover:bg-neutral-50'
       }`}
     >
@@ -265,7 +265,7 @@ function MessageBubble({
             <div
               key={idx}
               className={`max-w-[280px] rounded-2xl overflow-hidden border-2 ${
-                isMine ? 'border-[#C4735B]/30 bg-[#FDF5F0]' : 'border-neutral-200 bg-white'
+                isMine ? 'border-[#E07B4F]/30 bg-[#FEF6F3]' : 'border-neutral-200 bg-white'
               }`}
             >
               <img
@@ -279,7 +279,7 @@ function MessageBubble({
             <div
               className={`max-w-[70%] px-4 py-2.5 rounded-2xl ${
                 isMine
-                  ? 'bg-[#C4735B] text-white rounded-br-md'
+                  ? 'bg-[#E07B4F] text-white rounded-br-md'
                   : 'bg-white border border-neutral-200 text-neutral-800 rounded-bl-md'
               }`}
             >
@@ -306,7 +306,7 @@ function MessageBubble({
       <div
         className={`max-w-[70%] px-4 py-2.5 rounded-2xl ${
           isMine
-            ? 'bg-[#C4735B] text-white rounded-br-md'
+            ? 'bg-[#E07B4F] text-white rounded-br-md'
             : 'bg-white border border-neutral-200 text-neutral-800 rounded-bl-md'
         }`}
       >
@@ -1020,7 +1020,7 @@ function MessagesPageContent() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={locale === 'ka' ? 'მიმოწერის ძებნა...' : 'Search conversations...'}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-neutral-200 bg-neutral-50 text-sm placeholder-neutral-400 focus:outline-none focus:border-[#C4735B]/50 focus:bg-white transition-all"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-neutral-200 bg-neutral-50 text-sm placeholder-neutral-400 focus:outline-none focus:border-[#E07B4F]/50 focus:ring-2 focus:ring-[#E07B4F]/10 focus:bg-white transition-all"
               />
             </div>
           </div>
@@ -1129,7 +1129,7 @@ function MessagesPageContent() {
                   value={userSearchQuery}
                   onChange={(e) => handleUserSearch(e.target.value)}
                   placeholder={locale === 'ka' ? 'მოძებნე პროფესიონალი...' : 'Search for a professional...'}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-neutral-200 bg-neutral-50 text-sm placeholder-neutral-400 focus:outline-none focus:border-[#C4735B]/50 focus:bg-white transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-neutral-200 bg-neutral-50 text-sm placeholder-neutral-400 focus:outline-none focus:border-[#E07B4F]/50 focus:ring-2 focus:ring-[#E07B4F]/10 focus:bg-white transition-all"
                   autoFocus
                 />
               </div>

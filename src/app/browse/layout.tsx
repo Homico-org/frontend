@@ -49,10 +49,10 @@ function JobsSearchInput() {
   return (
     <div className="relative group">
       <div
-        className={`absolute left-4 top-1/2 -translate-y-1/2 transition-all duration-300 ${isFocused ? 'scale-110' : ''}`}
+        className={`absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 transition-all duration-300 ${isFocused ? 'scale-110' : ''}`}
         style={{ color: isFocused ? ACCENT_COLOR : '#9ca3af' }}
       >
-        <Search className="w-5 h-5" />
+        <Search className="w-4 h-4 sm:w-5 sm:h-5" />
       </div>
       <input
         type="text"
@@ -61,7 +61,7 @@ function JobsSearchInput() {
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         placeholder={locale === 'ka' ? 'სამუშაოს ძებნა...' : 'Search jobs...'}
-        className="w-full pl-12 pr-12 py-3.5 rounded-xl border-0 bg-neutral-50 dark:bg-neutral-800/50 text-base text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:bg-white dark:focus:bg-neutral-800 transition-all duration-300"
+        className="w-full pl-9 sm:pl-12 pr-10 sm:pr-12 py-2.5 sm:py-3 rounded-xl border-0 bg-neutral-50 dark:bg-neutral-800/50 text-sm sm:text-base text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:bg-white dark:focus:bg-neutral-800 transition-all duration-300"
         style={{
           boxShadow: isFocused ? `0 0 0 2px ${ACCENT_COLOR}40, 0 4px 12px ${ACCENT_COLOR}10` : 'none',
         }}
@@ -69,10 +69,10 @@ function JobsSearchInput() {
       {localSearch && (
         <button
           onClick={() => handleSearchChange('')}
-          className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110"
+          className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110"
           style={{ backgroundColor: `${ACCENT_COLOR}20`, color: ACCENT_COLOR }}
         >
-          <X className="w-3.5 h-3.5" />
+          <X className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
         </button>
       )}
     </div>
@@ -101,10 +101,10 @@ function BrowseSearchInput({ placeholder }: { placeholder: string }) {
   return (
     <div className="relative group">
       <div
-        className={`absolute left-4 top-1/2 -translate-y-1/2 transition-all duration-300 ${isFocused ? 'scale-110' : ''}`}
+        className={`absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 transition-all duration-300 ${isFocused ? 'scale-110' : ''}`}
         style={{ color: isFocused ? ACCENT_COLOR : '#9ca3af' }}
       >
-        <Search className="w-5 h-5" />
+        <Search className="w-4 h-4 sm:w-5 sm:h-5" />
       </div>
       <input
         type="text"
@@ -113,7 +113,7 @@ function BrowseSearchInput({ placeholder }: { placeholder: string }) {
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         placeholder={placeholder}
-        className="w-full pl-12 pr-12 py-3.5 rounded-xl border-0 bg-neutral-50 dark:bg-neutral-800/50 text-base text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:bg-white dark:focus:bg-neutral-800 transition-all duration-300"
+        className="w-full pl-9 sm:pl-12 pr-10 sm:pr-12 py-2.5 sm:py-3 rounded-xl border-0 bg-neutral-50 dark:bg-neutral-800/50 text-sm sm:text-base text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:bg-white dark:focus:bg-neutral-800 transition-all duration-300"
         style={{
           boxShadow: isFocused ? `0 0 0 2px ${ACCENT_COLOR}40, 0 4px 12px ${ACCENT_COLOR}10` : 'none',
         }}
@@ -121,10 +121,10 @@ function BrowseSearchInput({ placeholder }: { placeholder: string }) {
       {localSearch && (
         <button
           onClick={() => handleSearchChange('')}
-          className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110"
+          className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110"
           style={{ backgroundColor: `${ACCENT_COLOR}20`, color: ACCENT_COLOR }}
         >
-          <X className="w-3.5 h-3.5" />
+          <X className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
         </button>
       )}
     </div>
@@ -250,17 +250,17 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
 
         {/* Scrollable Content */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 bg-white dark:bg-neutral-950">
-          <div className="p-4 sm:p-6 lg:p-8">
+          <div className="p-3 sm:p-4 lg:p-6">
             <div className={`max-w-[1600px] mx-auto ${mounted ? 'animate-fade-in' : 'opacity-0'}`}>
               {/* Search Bar - Elevated card design */}
-              <div className="mb-8">
+              <div className="mb-4 sm:mb-6">
                 <div
-                  className="relative p-1 rounded-2xl"
+                  className="relative p-0.5 sm:p-1 rounded-xl sm:rounded-2xl"
                   style={{
                     background: `linear-gradient(135deg, ${ACCENT_COLOR}15 0%, ${ACCENT_COLOR}05 50%, transparent 100%)`,
                   }}
                 >
-                  <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 p-1">
+                  <div className="bg-white dark:bg-neutral-900 rounded-lg sm:rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 p-0.5 sm:p-1">
                     {isJobsPage ? (
                       <JobsSearchInput />
                     ) : isProfessionalsPage ? (
@@ -279,7 +279,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
 
       {/* Mobile Bottom Tab Bar */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#0a0a0a] border-t border-neutral-200 dark:border-neutral-800 safe-area-bottom">
-        <div className="flex items-center justify-around h-16 px-2">
+        <div className="flex items-center justify-around h-14 px-1">
           {visibleTabs.map(tab => {
             const isActive = activeTab === tab.key;
             const Icon = tab.icon;
@@ -287,13 +287,13 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
               <Link
                 key={tab.key}
                 href={tab.route}
-                className={`flex flex-col items-center justify-center gap-1 flex-1 py-2 transition-colors ${
+                className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 transition-colors ${
                   isActive ? '' : 'text-neutral-400 dark:text-neutral-500'
                 }`}
                 style={isActive ? { color: ACCENT_COLOR } : {}}
               >
-                <Icon className="w-5 h-5" />
-                <span className="text-[10px] font-medium">
+                <Icon className="w-[18px] h-[18px]" />
+                <span className="text-[9px] font-medium">
                   {locale === 'ka' ? tab.labelKa : tab.label}
                 </span>
               </Link>
@@ -302,10 +302,10 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
           {/* Filter button for mobile */}
           <button
             onClick={() => setShowMobileFilters(true)}
-            className="flex flex-col items-center justify-center gap-1 flex-1 py-2 text-neutral-400 dark:text-neutral-500"
+            className="flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 text-neutral-400 dark:text-neutral-500"
           >
-            <Filter className="w-5 h-5" />
-            <span className="text-[10px] font-medium">
+            <Filter className="w-[18px] h-[18px]" />
+            <span className="text-[9px] font-medium">
               {locale === 'ka' ? 'ფილტრი' : 'Filter'}
             </span>
           </button>
@@ -313,7 +313,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
       </nav>
 
       {/* Mobile content padding for bottom bar */}
-      <div className="lg:hidden h-16" />
+      <div className="lg:hidden h-14" />
 
       {/* Mobile Filters Drawer */}
       {showMobileFilters && (
@@ -324,41 +324,41 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
             onClick={() => setShowMobileFilters(false)}
           />
           {/* Drawer */}
-          <div className="absolute left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white dark:bg-[#0a0a0a] shadow-2xl animate-slide-in-left">
-            <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-800">
-              <h3 className="font-semibold text-neutral-900 dark:text-white">
+          <div className="absolute left-0 top-0 bottom-0 w-72 max-w-[80vw] bg-white dark:bg-[#0a0a0a] shadow-2xl animate-slide-in-left">
+            <div className="flex items-center justify-between p-3 border-b border-neutral-200 dark:border-neutral-800">
+              <h3 className="font-semibold text-sm text-neutral-900 dark:text-white">
                 {locale === 'ka' ? 'ძებნა და ფილტრები' : 'Search & Filters'}
               </h3>
               <button
                 onClick={() => setShowMobileFilters(false)}
-                className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
               >
-                <X className="w-5 h-5 text-neutral-500" />
+                <X className="w-4 h-4 text-neutral-500" />
               </button>
             </div>
             {/* Mobile Pro Quick Actions */}
             {isPro && (
-              <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex gap-2">
+              <div className="p-3 border-b border-neutral-200 dark:border-neutral-800 flex gap-2">
                 <Link
                   href="/my-proposals"
                   onClick={() => setShowMobileFilters(false)}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
+                  className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-all bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
                 >
-                  <FileText className="w-4 h-4" />
+                  <FileText className="w-3.5 h-3.5" />
                   <span>{locale === 'ka' ? 'შეთავაზებები' : 'Proposals'}</span>
                 </Link>
                 <Link
                   href="/my-jobs"
                   onClick={() => setShowMobileFilters(false)}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
+                  className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-all bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
                 >
-                  <Hammer className="w-4 h-4" />
+                  <Hammer className="w-3.5 h-3.5" />
                   <span>{locale === 'ka' ? 'სამუშაოები' : 'Jobs'}</span>
                 </Link>
               </div>
             )}
             {/* Mobile Search Input */}
-            <div className="p-4 border-b border-neutral-200 dark:border-neutral-800">
+            <div className="p-3 border-b border-neutral-200 dark:border-neutral-800">
               {isJobsPage ? (
                 <JobsSearchInput />
               ) : isProfessionalsPage ? (
@@ -367,7 +367,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                 <BrowseSearchInput placeholder={locale === 'ka' ? 'ნამუშევრის ძებნა...' : 'Search portfolio...'} />
               )}
             </div>
-            <div className="overflow-y-auto h-[calc(100%-120px)]">
+            <div className="overflow-y-auto h-[calc(100%-100px)]">
               {isJobsPage ? (
                 <JobsSidebar />
               ) : (

@@ -3,10 +3,13 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import EmptyState from '@/components/common/EmptyState';
 import { Package, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 
 export default function ClientOrdersPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const { locale } = useLanguage();
   const router = useRouter();
 
   useEffect(() => {
@@ -24,31 +27,35 @@ export default function ClientOrdersPage() {
   }
 
   const stats = [
-    { label: 'Total Orders', value: '0', icon: Package, color: 'bg-forest-800' },
-    { label: 'In Progress', value: '0', icon: Clock, color: 'bg-terracotta-400' },
-    { label: 'Completed', value: '0', icon: CheckCircle, color: 'bg-primary-500' },
-    { label: 'Requires Action', value: '0', icon: AlertCircle, color: 'bg-terracotta-500' },
+    { label: locale === 'ka' ? 'სულ შეკვეთები' : 'Total Orders', value: '0', icon: Package, color: 'bg-forest-800' },
+    { label: locale === 'ka' ? 'მიმდინარე' : 'In Progress', value: '0', icon: Clock, color: 'bg-terracotta-400' },
+    { label: locale === 'ka' ? 'დასრულებული' : 'Completed', value: '0', icon: CheckCircle, color: 'bg-primary-500' },
+    { label: locale === 'ka' ? 'მოქმედება საჭირო' : 'Requires Action', value: '0', icon: AlertCircle, color: 'bg-terracotta-500' },
   ];
 
   return (
-    <div className="min-h-screen bg-cream-50 dark:bg-dark-bg py-8">
+    <div className="min-h-screen bg-cream-50 dark:bg-dark-bg py-6 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-serif font-medium text-neutral-900 dark:text-neutral-50">My Orders</h1>
-          <p className="mt-2 text-neutral-500 dark:text-neutral-400">Track your ongoing and completed orders</p>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-serif font-medium text-neutral-900 dark:text-neutral-50">
+            {locale === 'ka' ? 'ჩემი შეკვეთები' : 'My Orders'}
+          </h1>
+          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-neutral-500 dark:text-neutral-400">
+            {locale === 'ka' ? 'თვალყური ადევნე მიმდინარე და დასრულებულ შეკვეთებს' : 'Track your ongoing and completed orders'}
+          </p>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
           {stats.map((stat) => (
-            <div key={stat.label} className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-6">
+            <div key={stat.label} className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-3 sm:p-6">
               <div className="flex items-center">
-                <div className={`${stat.color} p-3 rounded-xl`}>
-                  <stat.icon className="h-6 w-6 text-white" />
+                <div className={`${stat.color} p-2 sm:p-3 rounded-lg sm:rounded-xl`}>
+                  <stat.icon className="h-4 sm:h-6 w-4 sm:w-6 text-white" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400">{stat.label}</p>
-                  <p className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50">{stat.value}</p>
+                <div className="ml-2.5 sm:ml-4">
+                  <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">{stat.label}</p>
+                  <p className="text-lg sm:text-2xl font-semibold text-neutral-900 dark:text-neutral-50">{stat.value}</p>
                 </div>
               </div>
             </div>
@@ -56,16 +63,19 @@ export default function ClientOrdersPage() {
         </div>
 
         {/* Empty State */}
-        <div className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-12 text-center">
-          <Package className="h-16 w-16 text-neutral-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-50 mb-2">No orders yet</h3>
-          <p className="text-neutral-500 dark:text-neutral-400 mb-6">Post a job and accept proposals to create orders</p>
-          <button
-            onClick={() => router.push('/post-job')}
-            className="inline-flex items-center px-6 py-3.5 bg-forest-800 dark:bg-primary-400 dark:text-dark-300 text-white rounded-xl hover:bg-forest-700 transition-all duration-200 ease-out font-medium"
-          >
-            Post a Job
-          </button>
+        <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none">
+          <EmptyState
+            icon={Package}
+            title="No orders yet"
+            titleKa="შეკვეთები ჯერ არ არის"
+            description="Post a job and accept proposals to create orders"
+            descriptionKa="გამოაქვეყნე სამუშაო და მიიღე შეთავაზებები შეკვეთების შესაქმნელად"
+            actionLabel="Post a Job"
+            actionLabelKa="სამუშაოს გამოქვეყნება"
+            actionHref="/post-job"
+            variant="illustrated"
+            size="md"
+          />
         </div>
       </div>
     </div>

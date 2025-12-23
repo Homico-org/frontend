@@ -1,25 +1,30 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/common/AuthGuard';
+import EmptyState from '@/components/common/EmptyState';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { BarChart3, Eye, MousePointer, TrendingUp } from 'lucide-react';
 
 function ProAnalyticsPageContent() {
-  const router = useRouter();
+  const { locale } = useLanguage();
 
   const stats = [
-    { label: 'Profile Views', value: '0', icon: Eye, color: 'bg-forest-800' },
-    { label: 'Impressions', value: '0', icon: BarChart3, color: 'bg-terracotta-500' },
-    { label: 'Click Rate', value: '0%', icon: MousePointer, color: 'bg-primary-500' },
-    { label: 'Conversion', value: '0%', icon: TrendingUp, color: 'bg-terracotta-400' },
+    { label: locale === 'ka' ? 'პროფილის ნახვები' : 'Profile Views', value: '0', icon: Eye, color: 'bg-forest-800' },
+    { label: locale === 'ka' ? 'შთაბეჭდილებები' : 'Impressions', value: '0', icon: BarChart3, color: 'bg-terracotta-500' },
+    { label: locale === 'ka' ? 'დაკლიკების მაჩვ.' : 'Click Rate', value: '0%', icon: MousePointer, color: 'bg-primary-500' },
+    { label: locale === 'ka' ? 'კონვერსია' : 'Conversion', value: '0%', icon: TrendingUp, color: 'bg-terracotta-400' },
   ];
 
   return (
     <div className="min-h-screen bg-cream-50 dark:bg-dark-bg py-6 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-serif font-medium text-neutral-900 dark:text-neutral-50">Analytics</h1>
-          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-neutral-500 dark:text-neutral-400">Understand your performance and growth</p>
+          <h1 className="text-2xl sm:text-3xl font-serif font-medium text-neutral-900 dark:text-neutral-50">
+            {locale === 'ka' ? 'ანალიტიკა' : 'Analytics'}
+          </h1>
+          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-neutral-500 dark:text-neutral-400">
+            {locale === 'ka' ? 'გაიგე შენი შედეგები და ზრდა' : 'Understand your performance and growth'}
+          </p>
         </div>
 
         {/* Stats Grid */}
@@ -41,26 +46,33 @@ function ProAnalyticsPageContent() {
 
         {/* Chart Placeholder */}
         <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-4 sm:p-8 mb-6 sm:mb-8">
-          <h3 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-50 mb-3 sm:mb-4">Performance Overview</h3>
+          <h3 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-50 mb-3 sm:mb-4">
+            {locale === 'ka' ? 'შედეგების მიმოხილვა' : 'Performance Overview'}
+          </h3>
           <div className="h-48 sm:h-64 flex items-center justify-center border-2 border-dashed border-neutral-200 dark:border-dark-border rounded-xl">
             <div className="text-center px-4">
               <BarChart3 className="h-10 sm:h-12 w-10 sm:w-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-2" />
-              <p className="text-sm sm:text-base text-neutral-500 dark:text-neutral-400">Charts will appear once you have data</p>
+              <p className="text-sm sm:text-base text-neutral-500 dark:text-neutral-400">
+                {locale === 'ka' ? 'გრაფიკი გამოჩნდება მონაცემების არსებობისას' : 'Charts will appear once you have data'}
+              </p>
             </div>
           </div>
         </div>
 
         {/* Empty State */}
-        <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-8 sm:p-12 text-center">
-          <BarChart3 className="h-12 sm:h-16 w-12 sm:w-16 text-neutral-300 dark:text-neutral-600 mx-auto mb-3 sm:mb-4" />
-          <h3 className="text-base sm:text-lg font-medium text-neutral-900 dark:text-neutral-50 mb-2">No analytics data yet</h3>
-          <p className="text-sm sm:text-base text-neutral-500 dark:text-neutral-400 mb-5 sm:mb-6">Start completing orders to see your performance metrics</p>
-          <button
-            onClick={() => router.push('/browse')}
-            className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 sm:py-3.5 bg-forest-800 dark:bg-primary-400 dark:text-dark-300 text-white rounded-xl hover:bg-forest-700 transition-all duration-200 ease-out font-medium touch-manipulation"
-          >
-            Find Jobs
-          </button>
+        <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none">
+          <EmptyState
+            icon={BarChart3}
+            title="No analytics data yet"
+            titleKa="ანალიტიკის მონაცემები ჯერ არ არის"
+            description="Start completing orders to see your performance metrics"
+            descriptionKa="დაიწყე შეკვეთების შესრულება შედეგების სანახავად"
+            actionLabel="Find Jobs"
+            actionLabelKa="სამუშაოების ძებნა"
+            actionHref="/browse/jobs"
+            variant="illustrated"
+            size="md"
+          />
         </div>
       </div>
     </div>

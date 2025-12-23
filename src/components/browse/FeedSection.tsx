@@ -5,8 +5,10 @@ import { useBrowseContext } from '@/contexts/BrowseContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useLikes } from '@/hooks/useLikes';
 import { FeedItem, LikeTargetType } from '@/types';
+import { Image } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import FeedCard from './FeedCard';
+import EmptyState from '../common/EmptyState';
 
 // Terracotta accent
 const ACCENT_COLOR = '#C4735B';
@@ -202,54 +204,17 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
     </div>
   );
 
-  // Illustrated Empty state
-  const EmptyState = () => (
-    <div className="flex flex-col items-center justify-center py-24 px-4">
-      {/* Illustration */}
-      <div className="relative mb-8">
-        {/* Main illustration container */}
-        <div className="w-32 h-32 rounded-3xl bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center relative overflow-hidden">
-          {/* Abstract shapes */}
-          <div className="absolute top-4 left-4 w-8 h-8 rounded-lg bg-neutral-200 dark:bg-neutral-800 rotate-12" />
-          <div className="absolute bottom-6 right-4 w-6 h-6 rounded-full bg-neutral-200 dark:bg-neutral-800" />
-          <div className="absolute top-8 right-8 w-4 h-4 rounded bg-neutral-300 dark:bg-neutral-700" />
-
-          {/* Main icon */}
-          <svg
-            className="w-12 h-12 text-neutral-400 dark:text-neutral-600 relative z-10"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
-            />
-          </svg>
-        </div>
-
-        {/* Floating decorative elements */}
-        <div
-          className="absolute -top-2 -right-2 w-6 h-6 rounded-full"
-          style={{ backgroundColor: `${ACCENT_COLOR}20` }}
-        />
-        <div
-          className="absolute -bottom-1 -left-3 w-4 h-4 rounded-full"
-          style={{ backgroundColor: `${ACCENT_COLOR}15` }}
-        />
-      </div>
-
-      <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
-        {locale === 'ka' ? 'ნამუშევრები არ მოიძებნა' : 'No work found'}
-      </h3>
-      <p className="text-neutral-500 dark:text-neutral-400 text-center max-w-sm">
-        {locale === 'ka'
-          ? 'ამჟამად არ არის შესაბამისი ნამუშევარი. სცადეთ სხვა კატეგორია.'
-          : 'No matching work found in this category. Try exploring other categories.'}
-      </p>
-    </div>
+  // Empty state using shared component
+  const FeedEmptyState = () => (
+    <EmptyState
+      icon={Image}
+      title="No work found"
+      titleKa="ნამუშევრები არ მოიძებნა"
+      description="No matching work found in this category. Try exploring other categories."
+      descriptionKa="ამჟამად არ არის შესაბამისი ნამუშევარი. სცადეთ სხვა კატეგორია."
+      variant="illustrated"
+      size="lg"
+    />
   );
 
   return (
@@ -257,7 +222,7 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
       {isLoading ? (
         <FeedSkeleton />
       ) : feedItems.length === 0 ? (
-        <EmptyState />
+        <FeedEmptyState />
       ) : (
         <>
           {/* Grid Layout */}

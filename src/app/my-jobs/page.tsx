@@ -2,6 +2,7 @@
 
 import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
+import EmptyState from '@/components/common/EmptyState';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -17,6 +18,7 @@ import {
   ChevronRight,
   X,
   AlertTriangle,
+  Briefcase,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -240,19 +242,18 @@ function MyJobsPageContent() {
             ))}
           </div>
         ) : jobs.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-              <FileText className="w-7 h-7 text-neutral-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
-              {locale === 'ka' ? 'პროექტები არ მოიძებნა' : 'No jobs found'}
-            </h3>
-            <p className="text-neutral-500 dark:text-neutral-400 text-sm">
-              {statusFilter === 'all'
-                ? (locale === 'ka' ? 'შექმენი პირველი პროექტი და დაიწყე შეთავაზებების მიღება' : 'Create your first project and start receiving proposals')
-                : (locale === 'ka' ? 'ამ ფილტრით პროექტები ვერ მოიძებნა' : 'No jobs found with this filter')}
-            </p>
-          </div>
+          <EmptyState
+            icon={Briefcase}
+            title={statusFilter === 'all' ? "No jobs yet" : "No jobs found"}
+            titleKa={statusFilter === 'all' ? "პროექტები ჯერ არ არის" : "პროექტები არ მოიძებნა"}
+            description={statusFilter === 'all' ? "Create your first project and start receiving proposals" : "No jobs found with this filter"}
+            descriptionKa={statusFilter === 'all' ? "შექმენი პირველი პროექტი და დაიწყე შეთავაზებების მიღება" : "ამ ფილტრით პროექტები ვერ მოიძებნა"}
+            actionLabel={statusFilter === 'all' ? "Post a Job" : undefined}
+            actionLabelKa={statusFilter === 'all' ? "სამუშაოს გამოქვეყნება" : undefined}
+            actionHref={statusFilter === 'all' ? "/post-job" : undefined}
+            variant="illustrated"
+            size="md"
+          />
         ) : (
           <div className="space-y-4">
             {jobs.map((job) => {

@@ -1,10 +1,12 @@
 "use client";
 
 import JobCard from "@/components/common/JobCard";
+import EmptyState from "@/components/common/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
 import { useJobsContext } from "@/contexts/JobsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAnalytics, AnalyticsEvent } from "@/hooks/useAnalytics";
+import { Briefcase, Bookmark } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -254,55 +256,17 @@ export default function JobsPage() {
     </div>
   );
 
-  // Illustrated Empty state
-  const EmptyState = () => (
-    <div className="flex flex-col items-center justify-center py-24 px-4">
-      {/* Illustration */}
-      <div className="relative mb-8">
-        {/* Main illustration container */}
-        <div className="w-32 h-32 rounded-3xl bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center relative overflow-hidden">
-          {/* Abstract shapes */}
-          <div className="absolute top-4 left-4 w-8 h-8 rounded-lg bg-neutral-200 dark:bg-neutral-800 rotate-12" />
-          <div className="absolute bottom-6 right-4 w-6 h-6 rounded-full bg-neutral-200 dark:bg-neutral-800" />
-          <div className="absolute top-8 right-8 w-4 h-4 rounded bg-neutral-300 dark:bg-neutral-700" />
-
-          {/* Main icon - Briefcase */}
-          <svg
-            className="w-12 h-12 text-neutral-400 dark:text-neutral-600 relative z-10"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          >
-            <rect x="2" y="7" width="20" height="14" rx="2" />
-            <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" strokeLinecap="round" />
-          </svg>
-        </div>
-
-        {/* Floating decorative elements */}
-        <div
-          className="absolute -top-2 -right-2 w-6 h-6 rounded-full"
-          style={{ backgroundColor: `${ACCENT_COLOR}20` }}
-        />
-        <div
-          className="absolute -bottom-1 -left-3 w-4 h-4 rounded-full"
-          style={{ backgroundColor: `${ACCENT_COLOR}15` }}
-        />
-      </div>
-
-      <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
-        {filters.showFavoritesOnly
-          ? (locale === "ka" ? "შენახული სამუშაოები არ არის" : "No saved jobs")
-          : (locale === "ka" ? "სამუშაოები არ მოიძებნა" : "No jobs found")
-        }
-      </h3>
-      <p className="text-neutral-500 dark:text-neutral-400 text-center max-w-sm">
-        {filters.showFavoritesOnly
-          ? (locale === "ka" ? "შეინახეთ სამუშაოები მონიშვნით" : "Save jobs by clicking the bookmark icon")
-          : (locale === "ka" ? "სცადეთ ფილტრების შეცვლა" : "Try adjusting your filters to find more jobs")
-        }
-      </p>
-    </div>
+  // Empty state using shared component
+  const JobsEmptyState = () => (
+    <EmptyState
+      icon={filters.showFavoritesOnly ? Bookmark : Briefcase}
+      title={filters.showFavoritesOnly ? "No saved jobs" : "No jobs found"}
+      titleKa={filters.showFavoritesOnly ? "შენახული სამუშაოები არ არის" : "სამუშაოები არ მოიძებნა"}
+      description={filters.showFavoritesOnly ? "Save jobs by clicking the bookmark icon" : "Try adjusting your filters to find more jobs"}
+      descriptionKa={filters.showFavoritesOnly ? "შეინახეთ სამუშაოები მონიშვნით" : "სცადეთ ფილტრების შეცვლა"}
+      variant="illustrated"
+      size="lg"
+    />
   );
 
   // Show loading while auth is loading or redirecting non-pro users
@@ -322,7 +286,7 @@ export default function JobsPage() {
       {isLoading ? (
         <JobsSkeleton />
       ) : displayedJobs.length === 0 ? (
-        <EmptyState />
+        <JobsEmptyState />
       ) : (
         <>
           {/* Jobs Grid */}

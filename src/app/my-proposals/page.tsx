@@ -3,6 +3,7 @@
 import AppBackground from '@/components/common/AppBackground';
 import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
+import EmptyState from '@/components/common/EmptyState';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -404,31 +405,18 @@ function MyProposalsPageContent() {
             </p>
           </div>
         ) : proposals.length === 0 ? (
-          <div className="myproposals-empty">
-            <div className="myproposals-empty-icon">
-              <Send />
-            </div>
-            <h3 className="myproposals-empty-title">
-              {stats.total === 0
-                ? (language === 'ka' ? 'ჯერ არ გაქვს შეთავაზება' : 'No proposals yet')
-                : (language === 'ka' ? 'შედეგი ვერ მოიძებნა' : 'No matching proposals')}
-            </h3>
-            <p className="myproposals-empty-text">
-              {stats.total === 0
-                ? (language === 'ka'
-                    ? 'მოძებნე შენთვის შესაფერისი სამუშაო და გაგზავნე შეთავაზება'
-                    : 'Find jobs that match your skills and submit proposals')
-                : (language === 'ka'
-                    ? 'სცადე ფილტრების შეცვლა'
-                    : 'Try adjusting your filters')}
-            </p>
-            {stats.total === 0 && (
-              <Link href="/browse/jobs" className="myproposals-empty-btn">
-                <Briefcase className="w-5 h-5" />
-                {language === 'ka' ? 'სამუშაოების ნახვა' : 'Browse Jobs'}
-              </Link>
-            )}
-          </div>
+          <EmptyState
+            icon={Send}
+            title={stats.total === 0 ? "No proposals yet" : "No matching proposals"}
+            titleKa={stats.total === 0 ? "შეთავაზებები ჯერ არ არის" : "შედეგი ვერ მოიძებნა"}
+            description={stats.total === 0 ? "Find jobs that match your skills and submit proposals" : "Try adjusting your filters"}
+            descriptionKa={stats.total === 0 ? "მოძებნე შენთვის შესაფერისი სამუშაო და გაგზავნე შეთავაზება" : "სცადე ფილტრების შეცვლა"}
+            actionLabel={stats.total === 0 ? "Browse Jobs" : undefined}
+            actionLabelKa={stats.total === 0 ? "სამუშაოების ნახვა" : undefined}
+            actionHref={stats.total === 0 ? "/browse/jobs" : undefined}
+            variant="illustrated"
+            size="md"
+          />
         ) : (
           <div className="myproposals-list">
             {proposals.map((proposal) => {
