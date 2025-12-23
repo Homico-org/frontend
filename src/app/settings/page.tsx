@@ -57,7 +57,7 @@ interface NotificationSettingsData {
 }
 
 function SettingsPageContent() {
-  const { user, isAuthenticated, isLoading, updateUser } = useAuth();
+  const { user, isAuthenticated, isLoading, updateUser, logout } = useAuth();
   const { openLoginModal } = useAuthModal();
   const { t, locale } = useLanguage();
   const router = useRouter();
@@ -732,10 +732,8 @@ function SettingsPageContent() {
       });
 
       if (res.ok) {
-        // Clear auth and redirect
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('user');
-        router.replace('/');
+        // Clear auth state and redirect - logout() will handle state cleanup and navigation
+        logout();
       } else {
         const data = await res.json();
         throw new Error(data.message || 'Failed to delete account');
