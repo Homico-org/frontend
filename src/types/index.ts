@@ -106,6 +106,7 @@ export interface ProProfile {
   statusAutoSuggested: boolean;
   subcategories: string[];
   telegram: string;
+  totalReviews: number;
   whatsapp: string;
   yearsExperience: number;
   __v: number;

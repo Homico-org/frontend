@@ -18,7 +18,7 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 
 function ProProfileSetupPageContent() {
   const router = useRouter();
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, updateUser } = useAuth();
   const { locale } = useLanguage();
   const { categories: allCategories, getCategoryByKey } = useCategories();
 
@@ -459,6 +459,9 @@ function ProProfileSetupPageContent() {
       if (!response.ok) {
         throw new Error(data.message || (isEditMode ? 'Failed to update profile' : 'Failed to create profile'));
       }
+
+      // Update the user context to mark profile as completed
+      updateUser({ isProfileCompleted: true });
 
       router.push('/browse');
     } catch (err: any) {

@@ -11,6 +11,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Avatar from "./Avatar";
+import api from "@/lib/api";
 
 // Muted terracotta accent
 const ACCENT_COLOR = '#C4735B';
@@ -26,6 +27,37 @@ export default function Header() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Counter states for proposals/jobs badges
+  const [proposalUpdatesCount, setProposalUpdatesCount] = useState(0);
+  const [unviewedProposalsCount, setUnviewedProposalsCount] = useState(0);
+
+  // Fetch counter data for pro users
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+
+    const fetchCounters = async () => {
+      try {
+        if (user.role === 'pro') {
+          // Pro users: get count of proposal status updates (accepted/rejected)
+          const response = await api.get('/jobs/counters/proposal-updates');
+          setProposalUpdatesCount(response.data.count || 0);
+        }
+
+        // All users who post jobs: get count of unviewed proposals
+        const proposalsResponse = await api.get('/jobs/counters/unviewed-proposals');
+        setUnviewedProposalsCount(proposalsResponse.data.count || 0);
+      } catch (error) {
+        console.error('Failed to fetch counters:', error);
+      }
+    };
+
+    fetchCounters();
+
+    // Refresh counters every 30 seconds
+    const interval = setInterval(fetchCounters, 30000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, user]);
 
   // Helper to get subcategory name from flat categories
   const getSubcategoryDisplayName = useCallback((key: string): string => {
@@ -104,20 +136,42 @@ export default function Header() {
             <div className="hidden lg:flex items-center gap-1 p-1 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700/50">
               <Link
                 href="/my-proposals"
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all hover:bg-white dark:hover:bg-neutral-700"
+                className="relative flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all hover:bg-white dark:hover:bg-neutral-700"
                 style={{ color: ACCENT_COLOR }}
               >
                 <FileText className="w-4 h-4" />
                 <span>{locale === 'ka' ? 'შეთავაზებები' : 'Proposals'}</span>
+                {proposalUpdatesCount > 0 && (
+                  <span
+                    className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white rounded-full shadow-sm"
+                    style={{
+                      background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                      boxShadow: '0 2px 8px rgba(16, 185, 129, 0.4)'
+                    }}
+                  >
+                    {proposalUpdatesCount > 99 ? "99+" : proposalUpdatesCount}
+                  </span>
+                )}
               </Link>
               <div className="w-px h-4 bg-neutral-300 dark:bg-neutral-600" />
               <Link
                 href="/my-jobs"
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all hover:bg-white dark:hover:bg-neutral-700"
+                className="relative flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all hover:bg-white dark:hover:bg-neutral-700"
                 style={{ color: ACCENT_COLOR }}
               >
                 <Hammer className="w-4 h-4" />
                 <span>{locale === 'ka' ? 'სამუშაოები' : 'Jobs'}</span>
+                {unviewedProposalsCount > 0 && (
+                  <span
+                    className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white rounded-full shadow-sm"
+                    style={{
+                      background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                      boxShadow: '0 2px 8px rgba(245, 158, 11, 0.4)'
+                    }}
+                  >
+                    {unviewedProposalsCount > 99 ? "99+" : unviewedProposalsCount}
+                  </span>
+                )}
               </Link>
             </div>
           )}
@@ -127,17 +181,39 @@ export default function Header() {
             <div className="hidden sm:flex lg:hidden items-center gap-1">
               <Link
                 href="/my-proposals"
-                className="flex items-center justify-center w-9 h-9 rounded-xl transition-all bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
                 title={locale === 'ka' ? 'შეთავაზებები' : 'Proposals'}
               >
                 <FileText className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                {proposalUpdatesCount > 0 && (
+                  <span
+                    className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-white rounded-full"
+                    style={{
+                      background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                      boxShadow: '0 2px 6px rgba(16, 185, 129, 0.4)'
+                    }}
+                  >
+                    {proposalUpdatesCount > 99 ? "99+" : proposalUpdatesCount}
+                  </span>
+                )}
               </Link>
               <Link
                 href="/my-jobs"
-                className="flex items-center justify-center w-9 h-9 rounded-xl transition-all bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
                 title={locale === 'ka' ? 'სამუშაოები' : 'Jobs'}
               >
                 <Hammer className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                {unviewedProposalsCount > 0 && (
+                  <span
+                    className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-white rounded-full"
+                    style={{
+                      background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                      boxShadow: '0 2px 6px rgba(245, 158, 11, 0.4)'
+                    }}
+                  >
+                    {unviewedProposalsCount > 99 ? "99+" : unviewedProposalsCount}
+                  </span>
+                )}
               </Link>
             </div>
           )}

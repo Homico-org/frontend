@@ -90,9 +90,10 @@ interface ProProfile {
   isPremium?: boolean;
   premiumTier?: 'none' | 'basic' | 'pro' | 'elite';
   portfolioProjects?: PortfolioProject[];
-  isVerified?: boolean;
-  isInsured?: boolean;
-  insuranceAmount?: number;
+  // Verification fields
+  isPhoneVerified?: boolean;
+  isEmailVerified?: boolean;
+  verificationStatus?: 'pending' | 'verified' | 'rejected';
 }
 
 interface Review {
@@ -567,7 +568,7 @@ export default function ProfessionalDetailPage() {
                       <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--color-text-primary)] tracking-tight">
                         {profile.name}
                       </h1>
-                      {profile.isVerified !== false && (
+                      {(profile as any).isVerified !== false && (
                         <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">
                           <BadgeCheck className="w-4 h-4" />
                           <span className="text-xs font-semibold">{locale === 'ka' ? 'დადასტურებული' : 'Verified'}</span>
@@ -965,41 +966,41 @@ export default function ProfessionalDetailPage() {
                 </h3>
 
                 <div className="space-y-3">
-                  {/* Verified */}
-                  {profile.isVerified !== false && (
+                  {/* Phone Verified */}
+                  {profile.isPhoneVerified && (
                     <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/5 border border-blue-500/10">
                       <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
                         <BadgeCheck className="w-5 h-5 text-blue-500" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-                          {locale === 'ka' ? 'ვერიფიცირებული' : 'Identity Verified'}
+                          {locale === 'ka' ? 'ტელეფონი დადასტურებული' : 'Phone Verified'}
                         </p>
                         <p className="text-xs text-[var(--color-text-tertiary)]">
-                          {locale === 'ka' ? 'პირადობა დადასტურებული' : 'Government ID checked'}
+                          {locale === 'ka' ? 'ტელეფონის ნომერი შემოწმებული' : 'Phone number confirmed'}
                         </p>
                       </div>
                     </div>
                   )}
 
-                  {/* Insured */}
-                  {profile.isInsured !== false && (
+                  {/* Email Verified */}
+                  {profile.isEmailVerified && (
                     <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
                       <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
                         <Shield className="w-5 h-5 text-emerald-500" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-                          {locale === 'ka' ? 'დაზღვეული' : 'Insured'}
+                          {locale === 'ka' ? 'ელფოსტა დადასტურებული' : 'Email Verified'}
                         </p>
                         <p className="text-xs text-[var(--color-text-tertiary)]">
-                          {locale === 'ka' ? '₾10,000-მდე დაფარვა' : 'Up to ₾10,000 coverage'}
+                          {locale === 'ka' ? 'ელფოსტის მისამართი შემოწმებული' : 'Email address confirmed'}
                         </p>
                       </div>
                     </div>
                   )}
 
-                  {/* Top Rated */}
+                  {/* Top Rated - only show if user actually has high rating */}
                   {profile.avgRating >= 4.5 && profile.totalReviews >= 5 && (
                     <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
                       <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
@@ -1010,7 +1011,47 @@ export default function ProfessionalDetailPage() {
                           {locale === 'ka' ? 'ტოპ რეიტინგი' : 'Top Rated'}
                         </p>
                         <p className="text-xs text-[var(--color-text-tertiary)]">
-                          {locale === 'ka' ? 'თბილისის ტოპ 5%' : 'Top 5% in Tbilisi'}
+                          {locale === 'ka'
+                            ? `${profile.avgRating.toFixed(1)} ★ (${profile.totalReviews} შეფასება)`
+                            : `${profile.avgRating.toFixed(1)} ★ from ${profile.totalReviews} reviews`}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Experience Badge - show if 5+ years experience */}
+                  {profile.yearsExperience >= 5 && (
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-purple-500/5 border border-purple-500/10">
+                      <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                        <Briefcase className="w-5 h-5 text-purple-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+                          {locale === 'ka' ? 'გამოცდილი' : 'Experienced'}
+                        </p>
+                        <p className="text-xs text-[var(--color-text-tertiary)]">
+                          {locale === 'ka'
+                            ? `${profile.yearsExperience}+ წლის გამოცდილება`
+                            : `${profile.yearsExperience}+ years of experience`}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Completed Jobs Badge - show if has completed jobs */}
+                  {totalCompletedJobs >= 10 && (
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-teal-500/5 border border-teal-500/10">
+                      <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center">
+                        <CheckCircle className="w-5 h-5 text-teal-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+                          {locale === 'ka' ? 'აქტიური პროფესიონალი' : 'Active Professional'}
+                        </p>
+                        <p className="text-xs text-[var(--color-text-tertiary)]">
+                          {locale === 'ka'
+                            ? `${totalCompletedJobs}+ დასრულებული პროექტი`
+                            : `${totalCompletedJobs}+ completed projects`}
                         </p>
                       </div>
                     </div>

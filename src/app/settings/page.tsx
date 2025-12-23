@@ -122,6 +122,17 @@ function SettingsPageContent() {
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [deleteError, setDeleteError] = useState('');
 
+  // Profile deactivation state (for pro users)
+  const [isProfileDeactivated, setIsProfileDeactivated] = useState(false);
+  const [deactivatedUntil, setDeactivatedUntil] = useState<Date | null>(null);
+  const [deactivationReason, setDeactivationReason] = useState('');
+  const [showDeactivateModal, setShowDeactivateModal] = useState(false);
+  const [isDeactivating, setIsDeactivating] = useState(false);
+  const [isReactivating, setIsReactivating] = useState(false);
+  const [deactivateUntilInput, setDeactivateUntilInput] = useState('');
+  const [deactivateReasonInput, setDeactivateReasonInput] = useState('');
+  const [deactivationError, setDeactivationError] = useState('');
+
   // Avatar cropper state
   const [showAvatarCropper, setShowAvatarCropper] = useState(false);
   const [rawAvatarImage, setRawAvatarImage] = useState<string | null>(null);
@@ -742,6 +753,91 @@ function SettingsPageContent() {
       setDeleteError(error.message || (locale === 'ka' ? 'ანგარიშის წაშლა ვერ მოხერხდა' : 'Failed to delete account'));
     } finally {
       setIsDeletingAccount(false);
+    }
+  };
+
+  // Fetch deactivation status for pro users
+  const fetchDeactivationStatus = useCallback(async () => {
+    if (!isAuthenticated || user?.role !== 'pro') return;
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const token = localStorage.getItem('access_token');
+      const res = await fetch(`${API_URL}/users/me/deactivation-status`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setIsProfileDeactivated(data.isDeactivated);
+        setDeactivatedUntil(data.deactivatedUntil ? new Date(data.deactivatedUntil) : null);
+        setDeactivationReason(data.reason || '');
+      }
+    } catch (error) {
+      console.error('Failed to fetch deactivation status:', error);
+    }
+  }, [isAuthenticated, user?.role]);
+
+  useEffect(() => {
+    if (activeTab === 'account' && user?.role === 'pro') {
+      fetchDeactivationStatus();
+    }
+  }, [activeTab, user?.role, fetchDeactivationStatus]);
+
+  // Deactivate pro profile
+  const handleDeactivateProfile = async () => {
+    setIsDeactivating(true);
+    setDeactivationError('');
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const token = localStorage.getItem('access_token');
+      const res = await fetch(`${API_URL}/users/me/deactivate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          deactivateUntil: deactivateUntilInput || undefined,
+          reason: deactivateReasonInput || undefined,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setIsProfileDeactivated(true);
+        setDeactivatedUntil(data.deactivatedUntil ? new Date(data.deactivatedUntil) : null);
+        setDeactivationReason(data.deactivationReason || '');
+        setShowDeactivateModal(false);
+        setDeactivateUntilInput('');
+        setDeactivateReasonInput('');
+      } else {
+        const data = await res.json();
+        throw new Error(data.message || 'Failed to deactivate profile');
+      }
+    } catch (error: any) {
+      setDeactivationError(error.message || (locale === 'ka' ? 'დეაქტივაცია ვერ მოხერხდა' : 'Failed to deactivate profile'));
+    } finally {
+      setIsDeactivating(false);
+    }
+  };
+
+  // Reactivate pro profile
+  const handleReactivateProfile = async () => {
+    setIsReactivating(true);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const token = localStorage.getItem('access_token');
+      const res = await fetch(`${API_URL}/users/me/reactivate`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setIsProfileDeactivated(false);
+        setDeactivatedUntil(null);
+        setDeactivationReason('');
+      }
+    } catch (error) {
+      console.error('Failed to reactivate profile:', error);
+    } finally {
+      setIsReactivating(false);
     }
   };
 
@@ -1694,6 +1790,94 @@ function SettingsPageContent() {
                   </p>
                 </div>
 
+                {/* Pro Profile Deactivation - Only for pro users */}
+                {user?.role === 'pro' && (
+                  <div
+                    className="rounded-2xl overflow-hidden"
+                    style={{
+                      border: isProfileDeactivated
+                        ? '1px solid rgba(234, 179, 8, 0.3)'
+                        : '1px solid var(--color-border)',
+                      background: isProfileDeactivated
+                        ? 'linear-gradient(135deg, rgba(234, 179, 8, 0.05) 0%, rgba(234, 179, 8, 0.1) 100%)'
+                        : 'var(--color-bg-elevated)',
+                    }}
+                  >
+                    <div className="px-5 py-4 border-b" style={{ borderColor: isProfileDeactivated ? 'rgba(234, 179, 8, 0.15)' : 'var(--color-border)' }}>
+                      <div className="flex items-center gap-2">
+                        <BriefcaseBusiness className={`w-5 h-5 ${isProfileDeactivated ? 'text-yellow-600' : 'text-[#E07B4F]'}`} />
+                        <h3 className={`font-semibold ${isProfileDeactivated ? 'text-yellow-600 dark:text-yellow-500' : ''}`} style={{ color: isProfileDeactivated ? undefined : 'var(--color-text-primary)' }}>
+                          {locale === 'ka' ? 'პროფესიონალის პროფილი' : 'Professional Profile'}
+                        </h3>
+                      </div>
+                    </div>
+
+                    <div className="p-5">
+                      {isProfileDeactivated ? (
+                        // Show reactivation UI when deactivated
+                        <div className="space-y-4">
+                          <div className="flex items-start gap-3 p-4 rounded-xl bg-yellow-500/10">
+                            <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                            <div>
+                              <p className="font-medium text-yellow-700 dark:text-yellow-500">
+                                {locale === 'ka' ? 'პროფილი დეაქტივირებულია' : 'Profile is deactivated'}
+                              </p>
+                              <p className="text-sm mt-1 text-yellow-600/80 dark:text-yellow-500/80">
+                                {locale === 'ka'
+                                  ? 'თქვენი პროფილი არ ჩანს კლიენტებისთვის'
+                                  : 'Your profile is hidden from clients'}
+                              </p>
+                              {deactivatedUntil && (
+                                <p className="text-sm mt-2 text-yellow-600/80 dark:text-yellow-500/80">
+                                  {locale === 'ka' ? 'დაბრუნდება:' : 'Returns:'} {deactivatedUntil.toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                </p>
+                              )}
+                              {deactivationReason && (
+                                <p className="text-sm mt-1 text-yellow-600/60 dark:text-yellow-500/60">
+                                  {locale === 'ka' ? 'მიზეზი:' : 'Reason:'} {deactivationReason}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <button
+                            onClick={handleReactivateProfile}
+                            disabled={isReactivating}
+                            className="w-full px-5 py-3 bg-[#E07B4F] hover:bg-[#C4735B] text-white text-sm font-medium rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                          >
+                            {isReactivating ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Check className="w-4 h-4" />
+                            )}
+                            {locale === 'ka' ? 'პროფილის გააქტიურება' : 'Reactivate Profile'}
+                          </button>
+                        </div>
+                      ) : (
+                        // Show deactivation option when active
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div>
+                            <h4 className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                              {locale === 'ka' ? 'დროებით გამორთვა' : 'Temporarily Pause'}
+                            </h4>
+                            <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
+                              {locale === 'ka'
+                                ? 'დროებით დამალეთ თქვენი პროფილი კლიენტებისგან. შეგიძლიათ ნებისმიერ დროს გააქტიუროთ.'
+                                : 'Temporarily hide your profile from clients. You can reactivate anytime.'}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => setShowDeactivateModal(true)}
+                            className="px-5 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium rounded-xl transition-all flex items-center gap-2 whitespace-nowrap shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30"
+                          >
+                            <BriefcaseBusiness className="w-4 h-4" />
+                            {locale === 'ka' ? 'პროფილის დამალვა' : 'Pause Profile'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Danger Zone */}
                 <div
                   className="rounded-2xl overflow-hidden"
@@ -1890,6 +2074,163 @@ function SettingsPageContent() {
                     <>
                       <Trash2 className="w-4 h-4" />
                       {locale === 'ka' ? 'წაშლა' : 'Delete'}
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Deactivate Profile Modal */}
+      {showDeactivateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => {
+              if (!isDeactivating) {
+                setShowDeactivateModal(false);
+                setDeactivateUntilInput('');
+                setDeactivateReasonInput('');
+                setDeactivationError('');
+              }
+            }}
+          />
+
+          {/* Modal */}
+          <div
+            className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-fade-in"
+            style={{ backgroundColor: 'var(--color-bg-primary)' }}
+          >
+            {/* Header */}
+            <div
+              className="p-6 text-center"
+              style={{
+                background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.1) 0%, rgba(234, 179, 8, 0.05) 100%)',
+                borderBottom: '1px solid rgba(234, 179, 8, 0.15)',
+              }}
+            >
+              <div className="w-16 h-16 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center mx-auto mb-4">
+                <BriefcaseBusiness className="w-8 h-8 text-yellow-600" />
+              </div>
+              <h3 className="text-xl font-bold text-yellow-600 dark:text-yellow-500">
+                {locale === 'ka' ? 'პროფილის დამალვა' : 'Pause Profile'}
+              </h3>
+              <p className="text-sm mt-2" style={{ color: 'var(--color-text-secondary)' }}>
+                {locale === 'ka'
+                  ? 'თქვენი პროფილი დროებით დაიმალება კლიენტებისგან'
+                  : 'Your profile will be temporarily hidden from clients'}
+              </p>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-5">
+              {/* Until date (optional) */}
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                  {locale === 'ka' ? 'დაბრუნების თარიღი (არასავალდებულო)' : 'Return date (optional)'}
+                </label>
+                <input
+                  type="date"
+                  value={deactivateUntilInput}
+                  onChange={(e) => setDeactivateUntilInput(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+                  style={{
+                    backgroundColor: 'var(--color-bg-elevated)',
+                    border: '1px solid var(--color-border)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                />
+                <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
+                  {locale === 'ka'
+                    ? 'თუ არ აირჩევთ, შეგიძლიათ ხელით გააქტიუროთ'
+                    : 'If not set, you can manually reactivate anytime'}
+                </p>
+              </div>
+
+              {/* Reason (optional) */}
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                  {locale === 'ka' ? 'მიზეზი (არასავალდებულო)' : 'Reason (optional)'}
+                </label>
+                <select
+                  value={deactivateReasonInput}
+                  onChange={(e) => setDeactivateReasonInput(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+                  style={{
+                    backgroundColor: 'var(--color-bg-elevated)',
+                    border: '1px solid var(--color-border)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                >
+                  <option value="">{locale === 'ka' ? 'აირჩიეთ მიზეზი' : 'Select reason'}</option>
+                  <option value="vacation">{locale === 'ka' ? 'შვებულება' : 'Vacation'}</option>
+                  <option value="busy">{locale === 'ka' ? 'დატვირთული გრაფიკი' : 'Busy schedule'}</option>
+                  <option value="personal">{locale === 'ka' ? 'პირადი მიზეზები' : 'Personal reasons'}</option>
+                  <option value="other">{locale === 'ka' ? 'სხვა' : 'Other'}</option>
+                </select>
+              </div>
+
+              {/* Info */}
+              <div className="p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/50">
+                <div className="flex gap-3">
+                  <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="font-medium text-yellow-700 dark:text-yellow-500">
+                      {locale === 'ka' ? 'რა მოხდება?' : 'What happens?'}
+                    </p>
+                    <ul className="mt-2 space-y-1 text-yellow-600/80 dark:text-yellow-500/80">
+                      <li>• {locale === 'ka' ? 'კლიენტები ვერ ნახავენ თქვენს პროფილს' : 'Clients won\'t see your profile'}</li>
+                      <li>• {locale === 'ka' ? 'არსებული შეტყობინებები შენარჩუნდება' : 'Existing messages will be preserved'}</li>
+                      <li>• {locale === 'ka' ? 'ნებისმიერ დროს შეგიძლიათ გააქტიურება' : 'You can reactivate anytime'}</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Error message */}
+              {deactivationError && (
+                <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                  <p className="text-sm text-red-600 dark:text-red-400">{deactivationError}</p>
+                </div>
+              )}
+
+              {/* Action buttons */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => {
+                    setShowDeactivateModal(false);
+                    setDeactivateUntilInput('');
+                    setDeactivateReasonInput('');
+                    setDeactivationError('');
+                  }}
+                  disabled={isDeactivating}
+                  className="flex-1 py-3 rounded-xl font-medium transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50"
+                  style={{
+                    border: '1px solid var(--color-border)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                >
+                  {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+                </button>
+                <button
+                  onClick={handleDeactivateProfile}
+                  disabled={isDeactivating}
+                  className="flex-1 py-3 bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-300 dark:disabled:bg-yellow-800 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2 disabled:cursor-not-allowed"
+                >
+                  {isDeactivating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      {locale === 'ka' ? 'იმალება...' : 'Pausing...'}
+                    </>
+                  ) : (
+                    <>
+                      <BriefcaseBusiness className="w-4 h-4" />
+                      {locale === 'ka' ? 'პროფილის დამალვა' : 'Pause Profile'}
                     </>
                   )}
                 </button>

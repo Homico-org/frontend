@@ -70,6 +70,9 @@ function useAuthRedirectFromRegister() {
         router.replace("/company/jobs");
       } else if (user.role === "admin") {
         router.replace("/admin");
+      } else if (user.role === "pro" && user.isProfileCompleted === false) {
+        // Incomplete pro users must complete their profile
+        router.replace("/pro/profile-setup");
       } else {
         router.replace("/browse");
       }
@@ -190,6 +193,15 @@ function RegisterContent() {
       return () => clearTimeout(timer);
     }
   }, [resendTimer]);
+
+  // Auto-focus first OTP input when verification step appears
+  useEffect(() => {
+    if (showVerification) {
+      setTimeout(() => {
+        otpInputRefs.current[0]?.focus();
+      }, 100);
+    }
+  }, [showVerification]);
 
   // Decode JWT token to get user info
   const decodeJwt = (token: string): { email: string; name: string; picture?: string; sub: string } | null => {

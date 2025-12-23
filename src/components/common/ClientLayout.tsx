@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import LoginModal from '@/components/auth/LoginModal';
 import AppBackground from './AppBackground';
 import SupportChat from './SupportChat';
+import ProProfileGuard from './ProProfileGuard';
 
 interface ClientLayoutProps {
   children: React.ReactNode;
@@ -15,7 +16,9 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   return (
     <>
       <AppBackground />
-      {children}
+      <ProProfileGuard>
+        {children}
+      </ProProfileGuard>
       {isAuthenticated && <SupportChat />}
       <LoginModal />
     </>

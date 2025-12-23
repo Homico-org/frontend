@@ -133,6 +133,15 @@ function MyJobsPageContent() {
     }
   }, [isAuthenticated]);
 
+  // Mark proposals on each job as viewed when clicking "View Proposals"
+  const handleViewProposals = async (jobId: string) => {
+    try {
+      await api.post(`/jobs/counters/mark-proposals-viewed/${jobId}`);
+    } catch {
+      // Silently ignore errors
+    }
+  };
+
   // Filter change
   useEffect(() => {
     if (isAuthenticated && !isInitialLoading) {
@@ -436,6 +445,7 @@ function MyJobsPageContent() {
                           {isOpen && job.proposalCount > 0 && (
                             <Link
                               href={`/my-jobs/${job._id}/proposals`}
+                              onClick={() => handleViewProposals(job._id)}
                               className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-all hover:bg-neutral-50 dark:hover:bg-neutral-800"
                               style={{ borderColor: ACCENT_COLOR, color: ACCENT_COLOR }}
                             >

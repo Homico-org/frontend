@@ -18,6 +18,7 @@ interface User {
   selectedSubcategories?: string[];
   accountType?: AccountType;
   companyName?: string;
+  isProfileCompleted?: boolean;
 }
 
 interface AuthContextType {
@@ -77,7 +78,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         selectedCategories: userData.selectedCategories,
         selectedSubcategories: userData.selectedSubcategories,
         accountType: userData.accountType,
-        companyName: userData.companyName
+        companyName: userData.companyName,
+        isProfileCompleted: userData.isProfileCompleted
       };
     } catch (err) {
       console.error('Token validation failed:', err);

@@ -48,33 +48,48 @@ function JobsSearchInput() {
 
   return (
     <div className="relative group">
+      {/* Animated gradient border */}
       <div
-        className={`absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 transition-all duration-300 ${isFocused ? 'scale-110' : ''}`}
-        style={{ color: isFocused ? ACCENT_COLOR : '#9ca3af' }}
-      >
-        <Search className="w-4 h-4 sm:w-5 sm:h-5" />
-      </div>
-      <input
-        type="text"
-        value={localSearch}
-        onChange={(e) => handleSearchChange(e.target.value)}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        placeholder={locale === 'ka' ? 'სამუშაოს ძებნა...' : 'Search jobs...'}
-        className="w-full pl-9 sm:pl-12 pr-10 sm:pr-12 py-2.5 sm:py-3 rounded-xl border-0 bg-neutral-50 dark:bg-neutral-800/50 text-sm sm:text-base text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:bg-white dark:focus:bg-neutral-800 transition-all duration-300"
+        className={`absolute -inset-[1px] rounded-lg transition-opacity duration-300 ${isFocused ? 'opacity-100' : 'opacity-0'}`}
         style={{
-          boxShadow: isFocused ? `0 0 0 2px ${ACCENT_COLOR}40, 0 4px 12px ${ACCENT_COLOR}10` : 'none',
+          background: `linear-gradient(135deg, ${ACCENT_COLOR}, #E07B4F, ${ACCENT_COLOR})`,
+          backgroundSize: '200% 200%',
+          animation: isFocused ? 'gradient-shift 3s ease infinite' : 'none',
         }}
       />
-      {localSearch && (
-        <button
-          onClick={() => handleSearchChange('')}
-          className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110"
-          style={{ backgroundColor: `${ACCENT_COLOR}20`, color: ACCENT_COLOR }}
+      <div className={`relative flex items-center bg-white dark:bg-neutral-900 rounded-lg border transition-all duration-300 ${isFocused ? 'border-transparent' : 'border-neutral-200/80 dark:border-neutral-700/50'}`}>
+        <div
+          className={`flex items-center justify-center w-9 h-9 ml-0.5 rounded-md transition-all duration-300 ${isFocused ? 'scale-105' : ''}`}
+          style={{
+            backgroundColor: isFocused ? `${ACCENT_COLOR}15` : 'transparent',
+            color: isFocused ? ACCENT_COLOR : '#9ca3af'
+          }}
         >
-          <X className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-        </button>
-      )}
+          <Search className="w-[18px] h-[18px]" />
+        </div>
+        <input
+          type="text"
+          value={localSearch}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          placeholder={locale === 'ka' ? 'სამუშაოს ძებნა...' : 'Search jobs...'}
+          className="flex-1 h-10 pr-9 bg-transparent text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none"
+        />
+        {localSearch ? (
+          <button
+            onClick={() => handleSearchChange('')}
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center transition-all duration-200 hover:scale-105"
+            style={{ backgroundColor: `${ACCENT_COLOR}15`, color: ACCENT_COLOR }}
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        ) : (
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800">
+            <kbd className="text-[10px] font-medium text-neutral-400">⌘K</kbd>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -100,33 +115,48 @@ function BrowseSearchInput({ placeholder }: { placeholder: string }) {
 
   return (
     <div className="relative group">
+      {/* Animated gradient border */}
       <div
-        className={`absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 transition-all duration-300 ${isFocused ? 'scale-110' : ''}`}
-        style={{ color: isFocused ? ACCENT_COLOR : '#9ca3af' }}
-      >
-        <Search className="w-4 h-4 sm:w-5 sm:h-5" />
-      </div>
-      <input
-        type="text"
-        value={localSearch}
-        onChange={(e) => handleSearchChange(e.target.value)}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        placeholder={placeholder}
-        className="w-full pl-9 sm:pl-12 pr-10 sm:pr-12 py-2.5 sm:py-3 rounded-xl border-0 bg-neutral-50 dark:bg-neutral-800/50 text-sm sm:text-base text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:bg-white dark:focus:bg-neutral-800 transition-all duration-300"
+        className={`absolute -inset-[1px] rounded-lg transition-opacity duration-300 ${isFocused ? 'opacity-100' : 'opacity-0'}`}
         style={{
-          boxShadow: isFocused ? `0 0 0 2px ${ACCENT_COLOR}40, 0 4px 12px ${ACCENT_COLOR}10` : 'none',
+          background: `linear-gradient(135deg, ${ACCENT_COLOR}, #E07B4F, ${ACCENT_COLOR})`,
+          backgroundSize: '200% 200%',
+          animation: isFocused ? 'gradient-shift 3s ease infinite' : 'none',
         }}
       />
-      {localSearch && (
-        <button
-          onClick={() => handleSearchChange('')}
-          className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110"
-          style={{ backgroundColor: `${ACCENT_COLOR}20`, color: ACCENT_COLOR }}
+      <div className={`relative flex items-center bg-white dark:bg-neutral-900 rounded-lg border transition-all duration-300 ${isFocused ? 'border-transparent' : 'border-neutral-200/80 dark:border-neutral-700/50'}`}>
+        <div
+          className={`flex items-center justify-center w-9 h-9 ml-0.5 rounded-md transition-all duration-300 ${isFocused ? 'scale-105' : ''}`}
+          style={{
+            backgroundColor: isFocused ? `${ACCENT_COLOR}15` : 'transparent',
+            color: isFocused ? ACCENT_COLOR : '#9ca3af'
+          }}
         >
-          <X className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-        </button>
-      )}
+          <Search className="w-[18px] h-[18px]" />
+        </div>
+        <input
+          type="text"
+          value={localSearch}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          placeholder={placeholder}
+          className="flex-1 h-10 pr-9 bg-transparent text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none"
+        />
+        {localSearch ? (
+          <button
+            onClick={() => handleSearchChange('')}
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center transition-all duration-200 hover:scale-105"
+            style={{ backgroundColor: `${ACCENT_COLOR}15`, color: ACCENT_COLOR }}
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        ) : (
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800">
+            <kbd className="text-[10px] font-medium text-neutral-400">⌘K</kbd>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -252,23 +282,16 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
         <main className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 bg-white dark:bg-neutral-950">
           <div className="p-3 sm:p-4 lg:p-6">
             <div className={`max-w-[1600px] mx-auto ${mounted ? 'animate-fade-in' : 'opacity-0'}`}>
-              {/* Search Bar - Elevated card design */}
-              <div className="mb-4 sm:mb-6">
-                <div
-                  className="relative p-0.5 sm:p-1 rounded-xl sm:rounded-2xl"
-                  style={{
-                    background: `linear-gradient(135deg, ${ACCENT_COLOR}15 0%, ${ACCENT_COLOR}05 50%, transparent 100%)`,
-                  }}
-                >
-                  <div className="bg-white dark:bg-neutral-900 rounded-lg sm:rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 p-0.5 sm:p-1">
-                    {isJobsPage ? (
-                      <JobsSearchInput />
-                    ) : isProfessionalsPage ? (
-                      <BrowseSearchInput placeholder={locale === 'ka' ? 'სპეციალისტის ძებნა...' : 'Search professionals...'} />
-                    ) : (
-                      <BrowseSearchInput placeholder={locale === 'ka' ? 'ნამუშევრის ძებნა...' : 'Search portfolio...'} />
-                    )}
-                  </div>
+              {/* Search Bar - Compact & Distinctive */}
+              <div className="mb-4 sm:mb-5">
+                <div className="max-w-xl">
+                  {isJobsPage ? (
+                    <JobsSearchInput />
+                  ) : isProfessionalsPage ? (
+                    <BrowseSearchInput placeholder={locale === 'ka' ? 'სპეციალისტის ძებნა...' : 'Search professionals...'} />
+                  ) : (
+                    <BrowseSearchInput placeholder={locale === 'ka' ? 'ნამუშევრის ძებნა...' : 'Search portfolio...'} />
+                  )}
                 </div>
               </div>
               {children}

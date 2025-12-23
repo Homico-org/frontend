@@ -413,6 +413,13 @@ const ChatContent = memo(function ChatContent({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Focus input when chat loads
+  useEffect(() => {
+    if (!isLoadingMessages) {
+      inputRef.current?.focus();
+    }
+  }, [isLoadingMessages]);
+
   // Handle typing indicator
   const handleTyping = useCallback(() => {
     if (!socketRef.current) return;
@@ -467,7 +474,10 @@ const ChatContent = memo(function ChatContent({
       setNewMessage(messageContent);
     } finally {
       setIsSending(false);
-      inputRef.current?.focus();
+      // Use setTimeout to ensure the input is re-enabled before focusing
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 0);
     }
   };
 
@@ -549,21 +559,11 @@ const ChatContent = memo(function ChatContent({
                   {conversation.participant.name}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-sm">
-                {conversation.participant.role === 'pro' && (
-                  <span
-                    className="px-1.5 py-0.5 rounded text-xs font-semibold"
-                    style={{ backgroundColor: '#E8956A', color: 'white' }}
-                  >
-                    PRO
-                  </span>
-                )}
-                {conversation.participant.title && (
-                  <span className="text-neutral-500">
-                    {conversation.participant.title}
-                  </span>
-                )}
-              </div>
+              {conversation.participant.title && (
+                <div className="text-sm text-neutral-500">
+                  {conversation.participant.title}
+                </div>
+              )}
             </div>
           </Link>
         </div>
@@ -1158,17 +1158,9 @@ function MessagesPageContent() {
                         className="w-11 h-11"
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-neutral-900 truncate">
-                            {profile.name || 'Professional'}
-                          </span>
-                          <span
-                            className="px-1.5 py-0.5 rounded text-xs font-semibold flex-shrink-0"
-                            style={{ backgroundColor: '#E8956A', color: 'white' }}
-                          >
-                            PRO
-                          </span>
-                        </div>
+                        <span className="font-semibold text-neutral-900 truncate block">
+                          {profile.name || 'Professional'}
+                        </span>
                         {(profile.title || profile.categories?.[0]) && (
                           <p className="text-sm text-neutral-500 truncate">
                             {profile.title || profile.categories?.[0]}
