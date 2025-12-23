@@ -401,16 +401,16 @@ export default function BrowseFiltersSidebar({
           >
             <div className="space-y-2">
               {/* Interactive star rating row */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
                     onClick={() => handleRatingToggle(star)}
-                    className="p-1 transition-transform hover:scale-110 focus:outline-none"
+                    className="p-0.5 transition-transform hover:scale-110 focus:outline-none"
                     title={`${star}+ ${locale === 'ka' ? 'ვარსკვლავი' : 'stars'}`}
                   >
                     <svg
-                      className={`w-6 h-6 transition-colors ${
+                      className={`w-5 h-5 transition-colors ${
                         minRating > 0 && star <= minRating
                           ? 'text-amber-400'
                           : 'text-neutral-300 hover:text-amber-300'
