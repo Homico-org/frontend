@@ -883,7 +883,9 @@ function MessagesPageContent() {
       try {
         // Search for pro profiles using existing endpoint
         const response = await api.get(`/users/pros?search=${encodeURIComponent(query)}&limit=10`);
-        setSearchResults(response.data.profiles || response.data || []);
+        // API returns { data: [...], pagination: {...} }
+        const results = response.data.data || response.data.profiles || response.data || [];
+        setSearchResults(Array.isArray(results) ? results : []);
       } catch (error) {
         console.error('Failed to search users:', error);
         setSearchResults([]);
@@ -916,7 +918,7 @@ function MessagesPageContent() {
 
       trackEvent(AnalyticsEvent.CONVERSATION_START, {
         proId: proProfile._id,
-        proName: proProfile.displayName || proProfile.userId?.name,
+        proName: proProfile.name,
       });
 
       // Close modal
@@ -1150,15 +1152,15 @@ function MessagesPageContent() {
                       className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-neutral-50 transition-colors text-left"
                     >
                       <Avatar
-                        src={profile.avatar || profile.userId?.avatar}
-                        name={profile.displayName || profile.userId?.name || 'Pro'}
+                        src={profile.avatar}
+                        name={profile.name || 'Pro'}
                         size="md"
                         className="w-11 h-11"
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-neutral-900 truncate">
-                            {profile.displayName || profile.userId?.name || 'Professional'}
+                            {profile.name || 'Professional'}
                           </span>
                           <span
                             className="px-1.5 py-0.5 rounded text-xs font-semibold flex-shrink-0"
@@ -1167,9 +1169,9 @@ function MessagesPageContent() {
                             PRO
                           </span>
                         </div>
-                        {(profile.title || profile.primaryCategory) && (
+                        {(profile.title || profile.categories?.[0]) && (
                           <p className="text-sm text-neutral-500 truncate">
-                            {profile.title || profile.primaryCategory}
+                            {profile.title || profile.categories?.[0]}
                           </p>
                         )}
                       </div>

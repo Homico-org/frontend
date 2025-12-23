@@ -74,11 +74,6 @@ export default function ProCard({
           {/* Top Row - Badges & Like */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-1.5">
-              {isPremium && (
-                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">
-                  PRO
-                </span>
-              )}
               {isTopRated && (
                 <span className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400">
                   <svg
