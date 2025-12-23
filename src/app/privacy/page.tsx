@@ -111,9 +111,9 @@ export default function PrivacyPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <div className="flex gap-10">
 
-          {/* Table of Contents - Fixed Sidebar */}
+          {/* Table of Contents - Sticky Sidebar */}
           <aside className="hidden lg:block w-64 flex-shrink-0">
-            <div className="fixed top-28 w-64">
+            <div className="sticky top-24 max-h-[calc(100vh-120px)] overflow-hidden">
               <div className="bg-white/70 dark:bg-dark-card/70 backdrop-blur-sm rounded-2xl border border-neutral-100 dark:border-dark-border p-5 max-h-[calc(100vh-180px)] overflow-y-auto">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-4">
                   {locale === 'ka' ? 'სარჩევი' : 'Table of Contents'}

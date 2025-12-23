@@ -112,10 +112,10 @@ export default function TermsPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <div className="flex gap-10">
 
-          {/* Table of Contents - Fixed Sidebar */}
+          {/* Table of Contents - Sticky Sidebar */}
           <aside className="hidden lg:block w-64 flex-shrink-0">
-            <div className="fixed top-28 w-64">
-              <div className="bg-white/70 dark:bg-dark-card/70 backdrop-blur-sm rounded-2xl border border-neutral-100 dark:border-dark-border p-5 max-h-[calc(100vh-180px)] overflow-y-auto">
+            <div className="sticky top-24 max-h-[calc(100vh-120px)] overflow-hidden">
+              <div className="bg-white/70 dark:bg-dark-card/70 backdrop-blur-sm rounded-2xl border border-neutral-100 dark:border-dark-border p-5 max-h-[calc(100vh-200px)] overflow-y-auto">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-4">
                   {locale === 'ka' ? 'სარჩევი' : 'Table of Contents'}
                 </h3>
@@ -338,12 +338,28 @@ export default function TermsPage() {
                     <li>{locale === 'ka' ? 'დროულად უპასუხებთ კლიენტების შეკითხვებს' : 'You will respond to client inquiries promptly'}</li>
                   </ul>
 
-                  <h3>{locale === 'ka' ? 'პროფესიონალის ვალდებულებები' : 'Professional Obligations'}</h3>
-                  <ul className="list-disc pl-6 space-y-2">
-                    <li>{locale === 'ka' ? 'ზუსტი პორტფოლიოს და გამოცდილების მითითება' : 'Provide accurate portfolio and experience information'}</li>
-                    <li>{locale === 'ka' ? 'შეთანხმებული პირობების შესრულება' : 'Honor agreed-upon terms and conditions'}</li>
-                    <li>{locale === 'ka' ? 'პროფესიონალური ქცევის სტანდარტების დაცვა' : 'Maintain professional conduct standards'}</li>
-                  </ul>
+                  <div className="mt-8 p-5 bg-neutral-50 dark:bg-dark-elevated rounded-xl border border-neutral-100 dark:border-dark-border">
+                    <h3 className="!mt-0 flex items-center gap-2 text-base font-semibold text-neutral-800 dark:text-neutral-200">
+                      <svg className="w-5 h-5 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
+                      </svg>
+                      {locale === 'ka' ? 'პროფესიონალის ვალდებულებები' : 'Professional Obligations'}
+                    </h3>
+                    <ul className="!mb-0 list-none pl-0 space-y-2 mt-4">
+                      <li className="flex items-start gap-3 text-sm">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#C4735B] mt-1.5 flex-shrink-0"></span>
+                        {locale === 'ka' ? 'ზუსტი პორტფოლიოს და გამოცდილების მითითება' : 'Provide accurate portfolio and experience information'}
+                      </li>
+                      <li className="flex items-start gap-3 text-sm">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#C4735B] mt-1.5 flex-shrink-0"></span>
+                        {locale === 'ka' ? 'შეთანხმებული პირობების შესრულება' : 'Honor agreed-upon terms and conditions'}
+                      </li>
+                      <li className="flex items-start gap-3 text-sm">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#C4735B] mt-1.5 flex-shrink-0"></span>
+                        {locale === 'ka' ? 'პროფესიონალური ქცევის სტანდარტების დაცვა' : 'Maintain professional conduct standards'}
+                      </li>
+                    </ul>
+                  </div>
                 </section>
 
                 {/* Section 6: Clients */}
