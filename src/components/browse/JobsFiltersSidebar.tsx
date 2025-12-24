@@ -100,7 +100,7 @@ function Checkbox({
 function CollapsibleSection({
   title,
   children,
-  defaultOpen = true,
+  defaultOpen = false,
   activeCount = 0,
 }: {
   title: string;

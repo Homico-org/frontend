@@ -155,7 +155,7 @@ function CategoryAccordion({
 function CollapsibleCard({
   title,
   children,
-  defaultOpen = true,
+  defaultOpen = false,
   activeCount = 0,
 }: {
   title: string;
@@ -331,7 +331,8 @@ export default function BrowseFiltersSidebar({
         <div className="space-y-2">
           {categories.map((category) => {
             const categoryKey = category.key;
-            const isExpanded = expandedCategories[categoryKey] || selectedCategory === categoryKey;
+            // Only expand if manually toggled - don't auto-expand on selection
+            const isExpanded = expandedCategories[categoryKey] ?? false;
             const subcategories = getSubcategoriesForCategory(categoryKey);
             const categoryLabel = locale === 'ka' ? category.nameKa : category.name;
             const CategoryIcon = CATEGORY_ICONS[categoryKey] || <DefaultCategoryIcon />;

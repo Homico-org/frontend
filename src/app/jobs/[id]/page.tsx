@@ -892,41 +892,6 @@ export default function JobDetailPage() {
             </div>
           )}
 
-          {/* ==================== CLIENT CARD ==================== */}
-          {job.clientId && (
-            <div className="p-5 rounded-2xl border border-neutral-100 dark:border-neutral-800 mb-8">
-              <h3 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-4">
-                {locale === "ka" ? "დამკვეთი" : "Posted By"}
-              </h3>
-              <div className="flex items-center gap-4">
-                <Avatar
-                  src={job.clientId.avatar}
-                  name={job.clientId.name || "Client"}
-                  size="md"
-                  className="w-12 h-12"
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-neutral-900 dark:text-white truncate">
-                    {job.clientId.accountType === "organization"
-                      ? job.clientId.companyName || job.clientId.name
-                      : job.clientId.name}
-                  </p>
-                  {job.clientId.city && (
-                    <p className="text-sm text-neutral-500">
-                      {job.clientId.city}
-                    </p>
-                  )}
-                </div>
-                <Link
-                  href={`/messages?recipient=${job.clientId._id}`}
-                  className="px-4 py-2 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-                >
-                  {locale === "ka" ? "მიწერა" : "Message"}
-                </Link>
-              </div>
-            </div>
-          )}
-
           {/* ==================== PROPOSAL FORM ==================== */}
           {isPro && isOpen && !myProposal && showProposalForm && (
             <div className="p-5 rounded-2xl border border-neutral-200 dark:border-neutral-800 mb-8">
@@ -1105,27 +1070,58 @@ export default function JobDetailPage() {
 
       {/* ==================== FOOTER ==================== */}
       <footer className="border-t border-neutral-200 dark:border-neutral-800 py-6 bg-white dark:bg-neutral-900">
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between text-sm text-neutral-500 dark:text-neutral-400">
-          <span>© 2024 Homico. All rights reserved.</span>
-          <div className="flex items-center gap-6">
-            <Link
-              href="/privacy"
-              className="hover:text-neutral-900 dark:hover:text-white transition-colors"
-            >
-              Privacy
-            </Link>
-            <Link
-              href="/terms"
-              className="hover:text-neutral-900 dark:hover:text-white transition-colors"
-            >
-              Terms
-            </Link>
-            <Link
-              href="/help"
-              className="hover:text-neutral-900 dark:hover:text-white transition-colors"
-            >
-              Help
-            </Link>
+        <div className="max-w-6xl mx-auto px-6">
+          {/* Client info in footer */}
+          {job.clientId && (
+            <div className="flex items-center justify-between mb-6 pb-6 border-b border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center gap-3">
+                <Avatar
+                  src={job.clientId.avatar}
+                  name={job.clientId.name || "Client"}
+                  size="sm"
+                  className="w-10 h-10"
+                />
+                <div>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                    {locale === "ka" ? "დამკვეთი" : "Posted by"}
+                  </p>
+                  <p className="font-medium text-neutral-900 dark:text-white">
+                    {job.clientId.accountType === "organization"
+                      ? job.clientId.companyName || job.clientId.name
+                      : job.clientId.name}
+                  </p>
+                </div>
+              </div>
+              <Link
+                href={`/messages?recipient=${job.clientId._id}`}
+                className="px-4 py-2 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+              >
+                {locale === "ka" ? "მიწერა" : "Message"}
+              </Link>
+            </div>
+          )}
+          <div className="flex items-center justify-between text-sm text-neutral-500 dark:text-neutral-400">
+            <span>© 2024 Homico. All rights reserved.</span>
+            <div className="flex items-center gap-6">
+              <Link
+                href="/privacy"
+                className="hover:text-neutral-900 dark:hover:text-white transition-colors"
+              >
+                Privacy
+              </Link>
+              <Link
+                href="/terms"
+                className="hover:text-neutral-900 dark:hover:text-white transition-colors"
+              >
+                Terms
+              </Link>
+              <Link
+                href="/help"
+                className="hover:text-neutral-900 dark:hover:text-white transition-colors"
+              >
+                Help
+              </Link>
+            </div>
           </div>
         </div>
       </footer>

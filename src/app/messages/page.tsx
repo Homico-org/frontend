@@ -1128,7 +1128,7 @@ function MessagesPageContent() {
                 : 'Chat is only available for designers and architects. Clients will contact professionals in other categories by phone.'}
             </p>
             <button
-              onClick={() => router.push('/browse/portfolios')}
+              onClick={() => router.push('/browse/portfolio')}
               className="px-6 py-2.5 rounded-xl text-white font-medium transition-colors"
               style={{ backgroundColor: ACCENT_COLOR }}
             >
