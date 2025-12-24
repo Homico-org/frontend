@@ -7,8 +7,8 @@ import BackButton from '@/components/common/BackButton';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { AlertCircle, AlertTriangle, Bell, BriefcaseBusiness, Camera, Check, CheckCircle2, ChevronRight, CreditCard, Eye, EyeOff, FileText, Loader2, Lock, Mail, Megaphone, MessageSquare, Send, Shield, Smartphone, Trash2, User, X } from 'lucide-react';
+import { useLanguage, countries } from '@/contexts/LanguageContext';
+import { AlertCircle, AlertTriangle, Bell, BriefcaseBusiness, Calendar, Camera, Check, CheckCircle2, ChevronDown, ChevronRight, CreditCard, Eye, EyeOff, FileText, Loader2, Lock, Mail, MapPin, Megaphone, MessageCircle, MessageSquare, RefreshCw, Send, Shield, Smartphone, Trash2, User, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -137,6 +137,38 @@ function SettingsPageContent() {
   const [showAvatarCropper, setShowAvatarCropper] = useState(false);
   const [rawAvatarImage, setRawAvatarImage] = useState<string | null>(null);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  // Phone change verification state
+  const [showPhoneChangeModal, setShowPhoneChangeModal] = useState(false);
+  const [newPhone, setNewPhone] = useState('');
+  const [phoneOtpStep, setPhoneOtpStep] = useState<'phone' | 'otp' | 'success'>('phone');
+  const [phoneOtpCode, setPhoneOtpCode] = useState('');
+  const [isChangingPhone, setIsChangingPhone] = useState(false);
+  const [phoneChangeError, setPhoneChangeError] = useState('');
+  const [isSendingPhoneOtp, setIsSendingPhoneOtp] = useState(false);
+  const [isVerifyingPhoneOtp, setIsVerifyingPhoneOtp] = useState(false);
+
+  // City dropdown state
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const cityDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Get cities from country data
+  const georgianCities = countries.GE.citiesLocal;
+  const englishCities = countries.GE.cities;
+
+  // Click outside to close city dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (cityDropdownRef.current && !cityDropdownRef.current.contains(event.target as Node)) {
+        setShowCityDropdown(false);
+      }
+    };
+
+    if (showCityDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showCityDropdown]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -524,13 +556,39 @@ function SettingsPageContent() {
       if (res.ok) {
         const data = await res.json();
         setNotificationData(data);
+      } else {
+        // If endpoint fails, set default preferences so UI still works
+        console.error('Notification preferences endpoint failed:', res.status);
+        setNotificationData({
+          email: user?.email || null,
+          isEmailVerified: false,
+          phone: user?.phone || null,
+          isPhoneVerified: false,
+          preferences: {
+            email: { enabled: true, newJobs: true, proposals: true, messages: true, marketing: false },
+            push: { enabled: true, newJobs: true, proposals: true, messages: true },
+            sms: { enabled: false, proposals: false, messages: false },
+          },
+        });
       }
     } catch (error) {
       console.error('Failed to fetch notification preferences:', error);
+      // Set defaults on error so UI renders
+      setNotificationData({
+        email: user?.email || null,
+        isEmailVerified: false,
+        phone: user?.phone || null,
+        isPhoneVerified: false,
+        preferences: {
+          email: { enabled: true, newJobs: true, proposals: true, messages: true, marketing: false },
+          push: { enabled: true, newJobs: true, proposals: true, messages: true },
+          sms: { enabled: false, proposals: false, messages: false },
+        },
+      });
     } finally {
       setIsLoadingNotifications(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
     if (activeTab === 'notifications' && !notificationData) {
@@ -575,17 +633,20 @@ function SettingsPageContent() {
         }),
       });
 
-      if (!res.ok) {
-        // Revert on error
-        fetchNotificationPreferences();
-        throw new Error('Failed to update preferences');
+      if (res.ok) {
+        // Show success briefly
+        setNotificationMessage({
+          type: 'success',
+          text: locale === 'ka' ? 'შენახულია' : 'Saved',
+        });
+        setTimeout(() => setNotificationMessage(null), 1500);
+      } else {
+        console.error('Failed to update notification preferences:', res.status);
+        // Keep the optimistic update - user changed the toggle
       }
     } catch (error) {
-      setNotificationMessage({
-        type: 'error',
-        text: locale === 'ka' ? 'პარამეტრების შენახვა ვერ მოხერხდა' : 'Failed to save preferences',
-      });
-      setTimeout(() => setNotificationMessage(null), 3000);
+      console.error('Failed to update notification preferences:', error);
+      // Keep the optimistic update - don't show error for better UX
     }
   };
 
@@ -717,6 +778,136 @@ function SettingsPageContent() {
       setAddEmailError(locale === 'ka' ? 'კოდის გაგზავნა ვერ მოხერხდა' : 'Failed to resend code');
     } finally {
       setIsSendingOtp(false);
+    }
+  };
+
+  // Phone change flow
+  const handleChangePhone = async () => {
+    const cleanPhone = newPhone.replace(/\s/g, '');
+
+    if (!cleanPhone || cleanPhone.length < 9) {
+      setPhoneChangeError(locale === 'ka' ? 'შეიყვანეთ სწორი ტელეფონის ნომერი' : 'Please enter a valid phone number');
+      return;
+    }
+
+    setIsChangingPhone(true);
+    setPhoneChangeError('');
+
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+      // Format the phone number
+      let formattedPhone = cleanPhone;
+      if (!formattedPhone.startsWith('+')) {
+        if (formattedPhone.startsWith('995')) {
+          formattedPhone = '+' + formattedPhone;
+        } else {
+          formattedPhone = '+995' + formattedPhone;
+        }
+      }
+
+      // Send OTP to new phone
+      setIsSendingPhoneOtp(true);
+      const otpRes = await fetch(`${API_URL}/verification/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: formattedPhone, type: 'phone' }),
+      });
+
+      if (otpRes.ok) {
+        setNewPhone(formattedPhone);
+        setPhoneOtpStep('otp');
+      } else {
+        const data = await otpRes.json();
+        throw new Error(data.message || 'Failed to send verification code');
+      }
+    } catch (error: any) {
+      setPhoneChangeError(error.message || (locale === 'ka' ? 'კოდის გაგზავნა ვერ მოხერხდა' : 'Failed to send verification code'));
+    } finally {
+      setIsChangingPhone(false);
+      setIsSendingPhoneOtp(false);
+    }
+  };
+
+  const handleVerifyPhoneOtp = async () => {
+    if (phoneOtpCode.length !== 6) {
+      setPhoneChangeError(locale === 'ka' ? 'შეიყვანეთ 6-ნიშნა კოდი' : 'Please enter 6-digit code');
+      return;
+    }
+
+    setIsVerifyingPhoneOtp(true);
+    setPhoneChangeError('');
+
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const token = localStorage.getItem('access_token');
+
+      // Verify the OTP
+      const verifyRes = await fetch(`${API_URL}/verification/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: newPhone, code: phoneOtpCode, type: 'phone' }),
+      });
+
+      if (!verifyRes.ok) {
+        const data = await verifyRes.json();
+        throw new Error(data.message || 'Invalid code');
+      }
+
+      // Update phone number in profile
+      const updateRes = await fetch(`${API_URL}/users/me`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ phone: newPhone }),
+      });
+
+      if (updateRes.ok) {
+        setPhoneOtpStep('success');
+        // Update local state
+        setFormData(prev => ({ ...prev, phone: newPhone }));
+        // Update user context
+        if (user) {
+          updateUser({ ...user, phone: newPhone });
+        }
+        setTimeout(() => {
+          setShowPhoneChangeModal(false);
+          setPhoneOtpStep('phone');
+          setNewPhone('');
+          setPhoneOtpCode('');
+        }, 2000);
+      } else {
+        throw new Error('Failed to update phone');
+      }
+    } catch (error: any) {
+      setPhoneChangeError(error.message || (locale === 'ka' ? 'კოდი არასწორია' : 'Invalid verification code'));
+    } finally {
+      setIsVerifyingPhoneOtp(false);
+    }
+  };
+
+  const resendPhoneOtp = async () => {
+    setIsSendingPhoneOtp(true);
+    setPhoneChangeError('');
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const res = await fetch(`${API_URL}/verification/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: newPhone, type: 'phone' }),
+      });
+      if (!res.ok) throw new Error('Failed to resend code');
+      setMessage({
+        type: 'success',
+        text: locale === 'ka' ? 'კოდი გაიგზავნა ხელახლა' : 'Code resent successfully',
+      });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error) {
+      setPhoneChangeError(locale === 'ka' ? 'კოდის გაგზავნა ვერ მოხერხდა' : 'Failed to resend code');
+    } finally {
+      setIsSendingPhoneOtp(false);
     }
   };
 
@@ -1061,39 +1252,137 @@ function SettingsPageContent() {
                       >
                         {t('settings.profile.phone')}
                       </label>
-                      <input
-                        type="tel"
-                        inputMode="tel"
-                        value={formData.phone}
-                        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                        placeholder={t('settings.profile.phonePlaceholder')}
-                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-base rounded-xl transition-all duration-200"
-                        style={{
-                          backgroundColor: 'var(--color-bg-elevated)',
-                          border: '1px solid var(--color-border)',
-                          color: 'var(--color-text-primary)',
-                        }}
-                      />
+                      <div className="flex gap-2">
+                        <div className="flex-1 relative">
+                          <input
+                            type="tel"
+                            inputMode="tel"
+                            value={formData.phone}
+                            disabled
+                            placeholder={t('settings.profile.phonePlaceholder')}
+                            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-base rounded-xl transition-all duration-200 cursor-not-allowed opacity-70"
+                            style={{
+                              backgroundColor: 'var(--color-bg-elevated)',
+                              border: '1px solid var(--color-border)',
+                              color: 'var(--color-text-primary)',
+                            }}
+                          />
+                          {formData.phone && (
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30">
+                                <Check className="w-3 h-3 text-green-600 dark:text-green-400" />
+                                <span className="text-[10px] font-medium text-green-600 dark:text-green-400">
+                                  {locale === 'ka' ? 'დადასტურებული' : 'Verified'}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNewPhone(formData.phone || '');
+                            setShowPhoneChangeModal(true);
+                          }}
+                          className="px-4 py-2.5 text-sm font-medium rounded-xl transition-all hover:bg-[#E07B4F]/10"
+                          style={{
+                            border: '1px solid #E07B4F',
+                            color: '#E07B4F',
+                          }}
+                        >
+                          {formData.phone
+                            ? (locale === 'ka' ? 'შეცვლა' : 'Change')
+                            : (locale === 'ka' ? 'დამატება' : 'Add')}
+                        </button>
+                      </div>
+                      <p
+                        className="mt-1 text-xs"
+                        style={{ color: 'var(--color-text-tertiary)' }}
+                      >
+                        {locale === 'ka' ? 'ნომრის შეცვლა მოითხოვს ვერიფიკაციას' : 'Changing your number requires verification'}
+                      </p>
                     </div>
-                    <div>
+                    <div ref={cityDropdownRef} className="relative">
                       <label
                         className="block text-sm font-medium mb-1.5"
                         style={{ color: 'var(--color-text-secondary)' }}
                       >
                         {t('settings.profile.city')}
                       </label>
-                      <input
-                        type="text"
-                        value={formData.city}
-                        onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                        placeholder={t('settings.profile.cityPlaceholder')}
-                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-base rounded-xl transition-all duration-200"
+                      <button
+                        type="button"
+                        onClick={() => setShowCityDropdown(!showCityDropdown)}
+                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-base rounded-xl transition-all duration-200 flex items-center justify-between text-left"
                         style={{
                           backgroundColor: 'var(--color-bg-elevated)',
                           border: '1px solid var(--color-border)',
-                          color: 'var(--color-text-primary)',
+                          color: formData.city ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)',
                         }}
-                      />
+                      >
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4" style={{ color: 'var(--color-text-tertiary)' }} />
+                          <span>
+                            {formData.city || t('settings.profile.cityPlaceholder')}
+                          </span>
+                        </div>
+                        <ChevronDown
+                          className={`w-4 h-4 transition-transform duration-200 ${showCityDropdown ? 'rotate-180' : ''}`}
+                          style={{ color: 'var(--color-text-tertiary)' }}
+                        />
+                      </button>
+
+                      {/* City Dropdown */}
+                      {showCityDropdown && (
+                        <div
+                          className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-xl shadow-lg animate-fade-in"
+                          style={{
+                            backgroundColor: 'var(--color-bg-elevated)',
+                            border: '1px solid var(--color-border)',
+                          }}
+                        >
+                          {/* Clear selection option */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData(prev => ({ ...prev, city: '' }));
+                              setShowCityDropdown(false);
+                            }}
+                            className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-2"
+                            style={{ color: 'var(--color-text-tertiary)' }}
+                          >
+                            <X className="w-3.5 h-3.5" />
+                            {locale === 'ka' ? 'არ მითითება' : 'Not specified'}
+                          </button>
+                          <div className="h-px" style={{ backgroundColor: 'var(--color-border)' }} />
+                          {georgianCities.map((cityKa, index) => {
+                            const cityEn = englishCities[index];
+                            const displayCity = locale === 'ka' ? cityKa : cityEn;
+                            const isSelected = formData.city === cityKa || formData.city === cityEn;
+
+                            return (
+                              <button
+                                key={cityEn}
+                                type="button"
+                                onClick={() => {
+                                  setFormData(prev => ({ ...prev, city: displayCity }));
+                                  setShowCityDropdown(false);
+                                }}
+                                className={`w-full px-4 py-2.5 text-left text-sm transition-colors flex items-center justify-between ${
+                                  isSelected
+                                    ? 'bg-[#E07B4F]/10'
+                                    : 'hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                                }`}
+                                style={{
+                                  color: isSelected ? '#E07B4F' : 'var(--color-text-primary)',
+                                }}
+                              >
+                                <span>{displayCity}</span>
+                                {isSelected && <Check className="w-4 h-4" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -2132,19 +2421,32 @@ function SettingsPageContent() {
                 <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
                   {locale === 'ka' ? 'დაბრუნების თარიღი (არასავალდებულო)' : 'Return date (optional)'}
                 </label>
-                <input
-                  type="date"
-                  value={deactivateUntilInput}
-                  onChange={(e) => setDeactivateUntilInput(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
-                  style={{
-                    backgroundColor: 'var(--color-bg-elevated)',
-                    border: '1px solid var(--color-border)',
-                    color: 'var(--color-text-primary)',
-                  }}
-                />
-                <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+                    <Calendar className="w-5 h-5 text-yellow-600" />
+                  </div>
+                  {!deactivateUntilInput && (
+                    <div
+                      className="absolute left-12 top-1/2 -translate-y-1/2 pointer-events-none text-sm"
+                      style={{ color: 'var(--color-text-tertiary)' }}
+                    >
+                      {locale === 'ka' ? 'აირჩიეთ თარიღი' : 'Select date'}
+                    </div>
+                  )}
+                  <input
+                    type="date"
+                    value={deactivateUntilInput}
+                    onChange={(e) => setDeactivateUntilInput(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    className={`w-full pl-12 pr-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-yellow-500/50 ${!deactivateUntilInput ? 'text-transparent' : ''}`}
+                    style={{
+                      backgroundColor: 'var(--color-bg-elevated)',
+                      border: '1px solid var(--color-border)',
+                      color: deactivateUntilInput ? 'var(--color-text-primary)' : 'transparent',
+                    }}
+                  />
+                </div>
+                <p className="text-xs mt-1.5" style={{ color: 'var(--color-text-tertiary)' }}>
                   {locale === 'ka'
                     ? 'თუ არ აირჩევთ, შეგიძლიათ ხელით გააქტიუროთ'
                     : 'If not set, you can manually reactivate anytime'}
@@ -2156,37 +2458,61 @@ function SettingsPageContent() {
                 <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
                   {locale === 'ka' ? 'მიზეზი (არასავალდებულო)' : 'Reason (optional)'}
                 </label>
-                <select
-                  value={deactivateReasonInput}
-                  onChange={(e) => setDeactivateReasonInput(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
-                  style={{
-                    backgroundColor: 'var(--color-bg-elevated)',
-                    border: '1px solid var(--color-border)',
-                    color: 'var(--color-text-primary)',
-                  }}
-                >
-                  <option value="">{locale === 'ka' ? 'აირჩიეთ მიზეზი' : 'Select reason'}</option>
-                  <option value="vacation">{locale === 'ka' ? 'შვებულება' : 'Vacation'}</option>
-                  <option value="busy">{locale === 'ka' ? 'დატვირთული გრაფიკი' : 'Busy schedule'}</option>
-                  <option value="personal">{locale === 'ka' ? 'პირადი მიზეზები' : 'Personal reasons'}</option>
-                  <option value="other">{locale === 'ka' ? 'სხვა' : 'Other'}</option>
-                </select>
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <BriefcaseBusiness className="w-5 h-5 text-yellow-600" />
+                  </div>
+                  <select
+                    value={deactivateReasonInput}
+                    onChange={(e) => setDeactivateReasonInput(e.target.value)}
+                    className="w-full pl-12 pr-10 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-yellow-500/50 appearance-none cursor-pointer"
+                    style={{
+                      backgroundColor: 'var(--color-bg-elevated)',
+                      border: '1px solid var(--color-border)',
+                      color: deactivateReasonInput ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)',
+                    }}
+                  >
+                    <option value="">{locale === 'ka' ? 'აირჩიეთ მიზეზი' : 'Select reason'}</option>
+                    <option value="vacation">{locale === 'ka' ? 'შვებულება' : 'Vacation'}</option>
+                    <option value="busy">{locale === 'ka' ? 'დატვირთული გრაფიკი' : 'Busy schedule'}</option>
+                    <option value="personal">{locale === 'ka' ? 'პირადი მიზეზები' : 'Personal reasons'}</option>
+                    <option value="other">{locale === 'ka' ? 'სხვა' : 'Other'}</option>
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <ChevronDown className="w-5 h-5 text-neutral-400" />
+                  </div>
+                </div>
               </div>
 
               {/* Info */}
               <div className="p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/50">
-                <div className="flex gap-3">
-                  <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm">
-                    <p className="font-medium text-yellow-700 dark:text-yellow-500">
-                      {locale === 'ka' ? 'რა მოხდება?' : 'What happens?'}
-                    </p>
-                    <ul className="mt-2 space-y-1 text-yellow-600/80 dark:text-yellow-500/80">
-                      <li>• {locale === 'ka' ? 'კლიენტები ვერ ნახავენ თქვენს პროფილს' : 'Clients won\'t see your profile'}</li>
-                      <li>• {locale === 'ka' ? 'არსებული შეტყობინებები შენარჩუნდება' : 'Existing messages will be preserved'}</li>
-                      <li>• {locale === 'ka' ? 'ნებისმიერ დროს შეგიძლიათ გააქტიურება' : 'You can reactivate anytime'}</li>
-                    </ul>
+                <p className="font-medium text-yellow-700 dark:text-yellow-500 text-sm mb-3">
+                  {locale === 'ka' ? 'რა მოხდება?' : 'What happens?'}
+                </p>
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-lg bg-yellow-100 dark:bg-yellow-800/40 flex items-center justify-center flex-shrink-0">
+                      <EyeOff className="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-500" />
+                    </div>
+                    <span className="text-sm text-yellow-700/90 dark:text-yellow-500/90">
+                      {locale === 'ka' ? 'კლიენტები ვერ ნახავენ თქვენს პროფილს' : 'Clients won\'t see your profile'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-lg bg-yellow-100 dark:bg-yellow-800/40 flex items-center justify-center flex-shrink-0">
+                      <MessageCircle className="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-500" />
+                    </div>
+                    <span className="text-sm text-yellow-700/90 dark:text-yellow-500/90">
+                      {locale === 'ka' ? 'არსებული შეტყობინებები შენარჩუნდება' : 'Existing messages will be preserved'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-lg bg-yellow-100 dark:bg-yellow-800/40 flex items-center justify-center flex-shrink-0">
+                      <RefreshCw className="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-500" />
+                    </div>
+                    <span className="text-sm text-yellow-700/90 dark:text-yellow-500/90">
+                      {locale === 'ka' ? 'ნებისმიერ დროს შეგიძლიათ გააქტიურება' : 'You can reactivate anytime'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -2637,6 +2963,244 @@ function SettingsPageContent() {
                   {locale === 'ka' ? 'თქვენი მონაცემები დაცულია' : 'Your data is secure'}
                 </span>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Phone Change Modal */}
+      {showPhoneChangeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => {
+              if (phoneOtpStep === 'phone') {
+                setShowPhoneChangeModal(false);
+                setNewPhone('');
+                setPhoneChangeError('');
+              }
+            }}
+          />
+
+          {/* Modal */}
+          <div
+            className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-fade-in"
+            style={{ backgroundColor: 'var(--color-bg-primary)' }}
+          >
+            {/* Header */}
+            <div className="p-5 border-b" style={{ borderColor: 'var(--color-border)' }}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#E07B4F]/10">
+                    <Smartphone className="w-5 h-5 text-[#E07B4F]" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                      {phoneOtpStep === 'success'
+                        ? (locale === 'ka' ? 'წარმატებით შეიცვალა!' : 'Successfully Changed!')
+                        : phoneOtpStep === 'otp'
+                          ? (locale === 'ka' ? 'დაადასტურე ნომერი' : 'Verify Number')
+                          : (locale === 'ka' ? 'ტელეფონის შეცვლა' : 'Change Phone')}
+                    </h3>
+                    {phoneOtpStep === 'otp' && (
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
+                        {locale === 'ka' ? `კოდი გაიგზავნა ${newPhone}-ზე` : `Code sent to ${newPhone}`}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {phoneOtpStep !== 'success' && (
+                  <button
+                    onClick={() => {
+                      setShowPhoneChangeModal(false);
+                      setPhoneOtpStep('phone');
+                      setNewPhone('');
+                      setPhoneOtpCode('');
+                      setPhoneChangeError('');
+                    }}
+                    className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  >
+                    <X className="w-5 h-5" style={{ color: 'var(--color-text-tertiary)' }} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-5">
+              {phoneOtpStep === 'success' ? (
+                <div className="text-center py-6">
+                  <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle2 className="w-8 h-8 text-green-500" />
+                  </div>
+                  <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                    {locale === 'ka'
+                      ? 'თქვენი ტელეფონის ნომერი წარმატებით შეიცვალა'
+                      : 'Your phone number has been changed successfully'}
+                  </p>
+                </div>
+              ) : phoneOtpStep === 'otp' ? (
+                <div className="space-y-4">
+                  {phoneChangeError && (
+                    <div className="p-3 rounded-xl text-sm flex items-center gap-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800">
+                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                      {phoneChangeError}
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+                      {locale === 'ka' ? '6-ნიშნა კოდი' : '6-digit code'}
+                    </label>
+                    <div className="flex gap-2">
+                      {[0, 1, 2, 3, 4, 5].map((index) => (
+                        <input
+                          key={index}
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={1}
+                          value={phoneOtpCode[index] || ''}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, '');
+                            const newOtp = phoneOtpCode.split('');
+                            newOtp[index] = val;
+                            setPhoneOtpCode(newOtp.join(''));
+                            // Auto-focus next input
+                            if (val && index < 5) {
+                              const next = e.target.nextElementSibling as HTMLInputElement;
+                              next?.focus();
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Backspace' && !phoneOtpCode[index] && index > 0) {
+                              const prev = (e.target as HTMLInputElement).previousElementSibling as HTMLInputElement;
+                              prev?.focus();
+                            }
+                          }}
+                          onPaste={(e) => {
+                            e.preventDefault();
+                            const paste = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+                            setPhoneOtpCode(paste);
+                          }}
+                          className="w-full h-12 text-center text-xl font-bold rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F]"
+                          style={{
+                            backgroundColor: 'var(--color-bg-elevated)',
+                            border: '1px solid var(--color-border)',
+                            color: 'var(--color-text-primary)',
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2">
+                    <button
+                      onClick={resendPhoneOtp}
+                      disabled={isSendingPhoneOtp}
+                      className="text-sm font-medium text-[#E07B4F] hover:text-[#D26B3F] disabled:opacity-50 flex items-center gap-1"
+                    >
+                      {isSendingPhoneOtp ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                      {locale === 'ka' ? 'ხელახლა გაგზავნა' : 'Resend code'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setPhoneOtpStep('phone');
+                        setPhoneOtpCode('');
+                      }}
+                      className="text-sm font-medium" style={{ color: 'var(--color-text-tertiary)' }}
+                    >
+                      {locale === 'ka' ? 'ნომრის შეცვლა' : 'Change number'}
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={handleVerifyPhoneOtp}
+                    disabled={isVerifyingPhoneOtp || phoneOtpCode.length !== 6}
+                    className="w-full py-3 bg-[#E07B4F] hover:bg-[#D26B3F] text-white rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isVerifyingPhoneOtp ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        {locale === 'ka' ? 'მოწმდება...' : 'Verifying...'}
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-4 h-4" />
+                        {locale === 'ka' ? 'დადასტურება' : 'Verify'}
+                      </>
+                    )}
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                    {locale === 'ka'
+                      ? 'შეიყვანე ახალი ტელეფონის ნომერი. ჩვენ გამოგიგზავნით ვერიფიკაციის კოდს.'
+                      : 'Enter your new phone number. We will send you a verification code.'}
+                  </p>
+
+                  {phoneChangeError && (
+                    <div className="p-3 rounded-xl text-sm flex items-center gap-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800">
+                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                      {phoneChangeError}
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+                      {locale === 'ka' ? 'ტელეფონის ნომერი' : 'Phone number'}
+                    </label>
+                    <div className="flex gap-2">
+                      <div
+                        className="flex items-center px-3 rounded-xl text-sm font-medium"
+                        style={{
+                          backgroundColor: 'var(--color-bg-elevated)',
+                          border: '1px solid var(--color-border)',
+                          color: 'var(--color-text-secondary)',
+                        }}
+                      >
+                        +995
+                      </div>
+                      <input
+                        type="tel"
+                        inputMode="tel"
+                        value={newPhone.replace(/^\+995/, '')}
+                        onChange={(e) => {
+                          const cleaned = e.target.value.replace(/\D/g, '');
+                          setNewPhone(cleaned);
+                        }}
+                        placeholder="5XX XXX XXX"
+                        className="flex-1 px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F]"
+                        style={{
+                          backgroundColor: 'var(--color-bg-elevated)',
+                          border: '1px solid var(--color-border)',
+                          color: 'var(--color-text-primary)',
+                        }}
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleChangePhone}
+                    disabled={isChangingPhone || !newPhone}
+                    className="w-full py-3 bg-[#E07B4F] hover:bg-[#D26B3F] text-white rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isChangingPhone ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        {isSendingPhoneOtp ? (locale === 'ka' ? 'კოდი იგზავნება...' : 'Sending code...') : (locale === 'ka' ? 'იტვირთება...' : 'Loading...')}
+                      </>
+                    ) : (
+                      <>
+                        <ChevronRight className="w-4 h-4" />
+                        {locale === 'ka' ? 'გაგრძელება' : 'Continue'}
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
