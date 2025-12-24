@@ -8,6 +8,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAnalytics, AnalyticsEvent } from '@/hooks/useAnalytics';
 import { api } from '@/lib/api';
 import { storage } from '@/services/storage';
+import { isHighLevelPro } from '@/utils/categoryHelpers';
 import {
   Edit3,
   MessageCircle,
@@ -19,9 +20,10 @@ import {
   Trash2,
   AlertTriangle,
   MoreVertical,
+  Lock,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, memo } from 'react';
 import { io, Socket } from 'socket.io-client';
 
@@ -796,6 +798,20 @@ function MessagesPageContent() {
   const { locale } = useLanguage();
   const { trackEvent } = useAnalytics();
   const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // Check if user has access to messages (clients always have access, pros only if high-level)
+  const hasMessagesAccess = useMemo(() => {
+    if (!user) return false;
+    // Clients always have access to messages
+    if (user.role === 'client') return true;
+    // Pros only have access if they're high-level (design, architecture)
+    if (user.role === 'pro') {
+      return isHighLevelPro(user.selectedCategories);
+    }
+    // Other roles (admin, company) have access
+    return true;
+  }, [user]);
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
@@ -1086,6 +1102,38 @@ function MessagesPageContent() {
             <p className="text-lg font-medium text-neutral-600">
               {locale === 'ka' ? 'გთხოვთ გაიაროთ ავტორიზაცია' : 'Please log in to view messages'}
             </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Access control: Only high-level pros (design, architecture) and clients can access messages
+  if (!hasMessagesAccess) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col">
+        <Header />
+        <HeaderSpacer />
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="text-center max-w-md">
+            <div className="w-20 h-20 rounded-full bg-neutral-100 flex items-center justify-center mx-auto mb-6">
+              <Lock className="w-10 h-10 text-neutral-400" />
+            </div>
+            <h2 className="text-xl font-semibold text-neutral-900 mb-3">
+              {locale === 'ka' ? 'მესიჯები არ არის ხელმისაწვდომი' : 'Messages Not Available'}
+            </h2>
+            <p className="text-neutral-600 mb-6">
+              {locale === 'ka'
+                ? 'ჩატი ხელმისაწვდომია მხოლოდ დიზაინერებისა და არქიტექტორებისთვის. სხვა კატეგორიების პროფესიონალებთან კლიენტები ტელეფონით დაუკავშირდებიან.'
+                : 'Chat is only available for designers and architects. Clients will contact professionals in other categories by phone.'}
+            </p>
+            <button
+              onClick={() => router.push('/jobs')}
+              className="px-6 py-2.5 rounded-xl text-white font-medium transition-colors"
+              style={{ backgroundColor: ACCENT_COLOR }}
+            >
+              {locale === 'ka' ? 'სამუშაოების ნახვა' : 'Browse Jobs'}
+            </button>
           </div>
         </div>
       </div>

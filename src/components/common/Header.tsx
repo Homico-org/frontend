@@ -6,10 +6,11 @@ import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMessages } from "@/contexts/MessagesContext";
 import { useNotifications } from "@/contexts/NotificationContext";
+import { isHighLevelPro } from "@/utils/categoryHelpers";
 import { FileText, Hammer, MessageCircle, Plus, X, UserPlus, LogIn } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Avatar from "./Avatar";
 import api from "@/lib/api";
 
@@ -31,6 +32,12 @@ export default function Header() {
   // Counter states for proposals/jobs badges
   const [proposalUpdatesCount, setProposalUpdatesCount] = useState(0);
   const [unviewedProposalsCount, setUnviewedProposalsCount] = useState(0);
+
+  // Check if user is a high-level pro (design/architecture) - they get messages access
+  const showMessagesIcon = useMemo(() => {
+    if (!user || user.role !== 'pro') return false;
+    return isHighLevelPro(user.selectedCategories);
+  }, [user]);
 
   // Fetch counter data for pro users
   useEffect(() => {
@@ -237,18 +244,20 @@ export default function Header() {
             <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
           ) : isAuthenticated && user ? (
             <>
-              {/* Messages */}
-              <Link
-                href="/messages"
-                className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
-              >
-                <MessageCircle className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
-                {unreadMessagesCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-white bg-red-500 rounded-full">
-                    {unreadMessagesCount > 99 ? "99+" : unreadMessagesCount}
-                  </span>
-                )}
-              </Link>
+              {/* Messages - Only for high-level pros (design/architecture) */}
+              {showMessagesIcon && (
+                <Link
+                  href="/messages"
+                  className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                >
+                  <MessageCircle className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
+                  {unreadMessagesCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-white bg-red-500 rounded-full">
+                      {unreadMessagesCount > 99 ? "99+" : unreadMessagesCount}
+                    </span>
+                  )}
+                </Link>
+              )}
 
               {/* Notification Bell */}
               <Link

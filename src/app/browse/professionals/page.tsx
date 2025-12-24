@@ -1,11 +1,11 @@
 "use client";
 
-import ProCard from "@/components/common/ProCard";
 import EmptyState from "@/components/common/EmptyState";
+import ProCard from "@/components/common/ProCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBrowseContext } from "@/contexts/BrowseContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAnalytics, AnalyticsEvent } from "@/hooks/useAnalytics";
+import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { useLikes } from "@/hooks/useLikes";
 import { LikeTargetType, ProProfile } from "@/types";
 import { Users } from "lucide-react";
@@ -216,17 +216,6 @@ export default function ProfessionalsPage() {
 
   return (
     <div className="space-y-3 sm:space-y-4">
-      {/* Results count */}
-      {!isLoading && results.length > 0 && (
-        <div className="flex items-center justify-between">
-          <p className="text-xs sm:text-sm text-[var(--color-text-tertiary)]">
-            <span className="font-semibold text-[#E07B4F]">{totalCount}</span>
-            {' '}
-            {locale === 'ka' ? 'სპეციალისტი' : 'professionals'}
-          </p>
-        </div>
-      )}
-
       {/* Results Grid */}
       {isLoading ? (
         <ProfessionalsSkeleton />
