@@ -143,10 +143,13 @@ function AdminDashboardPageContent() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [activeChart, setActiveChart] = useState<'signups' | 'jobs' | 'proposals'>('signups');
 
+  const [error, setError] = useState<string | null>(null);
+
   const fetchDashboardData = useCallback(async (showRefresh = false) => {
     try {
       if (showRefresh) setIsRefreshing(true);
       else setIsLoading(true);
+      setError(null);
 
       const [
         statsRes,
@@ -180,8 +183,10 @@ function AdminDashboardPageContent() {
       setDailyJobs(dailyJobsRes.data);
       setDailyProposals(dailyProposalsRes.data);
       setLastUpdated(new Date());
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to fetch dashboard data:', err);
+      const message = err?.response?.data?.message || err?.message || 'Failed to load dashboard data';
+      setError(message);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -296,6 +301,34 @@ function AdminDashboardPageContent() {
           <p className="mt-6 text-sm" style={{ color: THEME.textMuted }}>
             {locale === 'ka' ? 'იტვირთება...' : 'Loading dashboard...'}
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: THEME.surface }}>
+        <div className="text-center max-w-md mx-auto px-4">
+          <div
+            className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6"
+            style={{ background: `${THEME.error}20` }}
+          >
+            <AlertCircle className="w-10 h-10" style={{ color: THEME.error }} />
+          </div>
+          <h2 className="text-xl font-semibold mb-2" style={{ color: THEME.text }}>
+            {locale === 'ka' ? 'შეცდომა' : 'Error Loading Dashboard'}
+          </h2>
+          <p className="text-sm mb-6" style={{ color: THEME.textMuted }}>
+            {error}
+          </p>
+          <button
+            onClick={() => fetchDashboardData()}
+            className="px-6 py-3 rounded-xl text-white font-medium transition-all hover:opacity-90"
+            style={{ background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primaryDark})` }}
+          >
+            {locale === 'ka' ? 'ხელახლა ცდა' : 'Try Again'}
+          </button>
         </div>
       </div>
     );
