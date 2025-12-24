@@ -26,6 +26,16 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 
+// Terracotta color palette
+const TERRACOTTA = {
+  primary: "#C4735B",
+  light: "#D4897A",
+  dark: "#A85D4A",
+  cream: "#F9F5F2",
+  sand: "#F0E6DE",
+  warm: "#E8DDD5",
+};
+
 // Premium tier type
 interface PremiumTier {
   id: string;
@@ -74,9 +84,9 @@ const PREMIUM_TIERS: Record<string, PremiumTier> = {
     price: { monthly: 59, yearly: 590 },
     currency: "₾",
     icon: Zap,
-    accentColor: "#E07B4F",
-    gradientFrom: "#E07B4F",
-    gradientTo: "#D26A3E",
+    accentColor: TERRACOTTA.primary,
+    gradientFrom: TERRACOTTA.primary,
+    gradientTo: TERRACOTTA.dark,
     highlight: { en: "Most Popular", ka: "პოპულარული" },
     features: [
       { icon: BadgeCheck, text: { en: "Everything in Premium", ka: "ყველაფერი პრემიუმიდან" }, included: true },
@@ -96,9 +106,9 @@ const PREMIUM_TIERS: Record<string, PremiumTier> = {
     price: { monthly: 99, yearly: 990 },
     currency: "₾",
     icon: Crown,
-    accentColor: "#C9A227",
-    gradientFrom: "#C9A227",
-    gradientTo: "#A68620",
+    accentColor: "#B8860B",
+    gradientFrom: "#B8860B",
+    gradientTo: "#8B6914",
     features: [
       { icon: BadgeCheck, text: { en: "Everything in Pro", ka: "ყველაფერი პრო-დან" }, included: true },
       { icon: Crown, text: { en: "Elite Gold Badge", ka: "ელიტა ოქროს ბეჯი" } },
@@ -115,7 +125,7 @@ const PREMIUM_TIERS: Record<string, PremiumTier> = {
 
 type BillingPeriod = "monthly" | "yearly";
 
-// Luxury Portfolio Showcase for Elite
+// Elite Portfolio Showcase
 function EliteShowcase({ locale, isVisible }: { locale: string; isVisible: boolean }) {
   const portfolioImages = [
     { url: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&q=90", title: "Modern Living" },
@@ -126,21 +136,18 @@ function EliteShowcase({ locale, isVisible }: { locale: string; isVisible: boole
 
   return (
     <div className={`relative transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-      {/* Decorative gold line */}
-      <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-px h-16 bg-gradient-to-b from-transparent via-amber-400 to-transparent" />
-
       {/* Section Title */}
       <div className="text-center mb-12">
-        <p className="text-amber-400 text-sm tracking-[0.3em] uppercase mb-3 font-medium">
+        <p className="text-sm tracking-[0.3em] uppercase mb-3 font-medium" style={{ color: TERRACOTTA.primary }}>
           {locale === "ka" ? "ელიტა პორტფოლიო" : "Elite Portfolio"}
         </p>
-        <h3 className="text-3xl md:text-4xl font-serif text-white mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+        <h3 className="text-3xl md:text-4xl font-serif text-neutral-800 mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
           {locale === "ka" ? "შენი ნამუშევრები, განსაკუთრებულად" : "Your Work, Elevated"}
         </h3>
-        <p className="text-neutral-400 max-w-xl mx-auto">
+        <p className="text-neutral-500 max-w-xl mx-auto">
           {locale === "ka"
-            ? "ელიტა პორტფოლიო გაძლევს უნიკალურ, ხელით შექმნილ დიზაინს რომელიც შენს ნამუშევრებს განსაკუთრებულად წარმოაჩენს"
-            : "Elite gives you a bespoke, hand-crafted portfolio design that presents your work with the prestige it deserves"}
+            ? "ელიტა პორტფოლიო გაძლევს უნიკალურ დიზაინს რომელიც შენს ნამუშევრებს განსაკუთრებულად წარმოაჩენს"
+            : "Elite gives you a bespoke portfolio design that presents your work with the prestige it deserves"}
         </p>
       </div>
 
@@ -148,43 +155,68 @@ function EliteShowcase({ locale, isVisible }: { locale: string; isVisible: boole
       <div className="relative">
         {/* Floating Badge */}
         <div className="absolute -top-4 left-8 z-20">
-          <div className="px-4 py-2 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-black text-xs font-bold tracking-wider flex items-center gap-2 shadow-lg shadow-amber-400/25">
+          <div
+            className="px-4 py-2 rounded-full text-white text-xs font-bold tracking-wider flex items-center gap-2 shadow-lg"
+            style={{ background: `linear-gradient(135deg, ${TERRACOTTA.primary}, ${TERRACOTTA.dark})` }}
+          >
             <Crown className="w-3.5 h-3.5" />
             ELITE EXCLUSIVE
           </div>
         </div>
 
         {/* Main Showcase Frame */}
-        <div className="relative rounded-2xl overflow-hidden border border-amber-400/20 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900">
-          {/* Gold corner accents */}
-          <div className="absolute top-0 left-0 w-24 h-24 border-t-2 border-l-2 border-amber-400/40 rounded-tl-2xl" />
-          <div className="absolute bottom-0 right-0 w-24 h-24 border-b-2 border-r-2 border-amber-400/40 rounded-br-2xl" />
+        <div
+          className="relative rounded-2xl overflow-hidden shadow-2xl"
+          style={{
+            background: TERRACOTTA.cream,
+            border: `1px solid ${TERRACOTTA.sand}`,
+          }}
+        >
+          {/* Corner accents */}
+          <div className="absolute top-0 left-0 w-24 h-24 border-t-2 border-l-2 rounded-tl-2xl" style={{ borderColor: `${TERRACOTTA.primary}40` }} />
+          <div className="absolute bottom-0 right-0 w-24 h-24 border-b-2 border-r-2 rounded-br-2xl" style={{ borderColor: `${TERRACOTTA.primary}40` }} />
 
           {/* Profile Header */}
-          <div className="relative p-8 border-b border-amber-400/10">
+          <div className="relative p-8 border-b" style={{ borderColor: TERRACOTTA.sand }}>
             <div className="flex items-center gap-6">
-              {/* Avatar with gold ring */}
+              {/* Avatar */}
               <div className="relative">
-                <div className="w-24 h-24 rounded-full p-1 bg-gradient-to-br from-amber-400 via-amber-300 to-amber-500">
-                  <div className="w-full h-full rounded-full bg-gradient-to-br from-amber-600 to-amber-800 flex items-center justify-center">
-                    <span className="text-3xl font-bold text-white" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>NS</span>
+                <div
+                  className="w-24 h-24 rounded-full p-1"
+                  style={{ background: `linear-gradient(135deg, ${TERRACOTTA.primary}, ${TERRACOTTA.dark})` }}
+                >
+                  <div
+                    className="w-full h-full rounded-full flex items-center justify-center"
+                    style={{ background: TERRACOTTA.warm }}
+                  >
+                    <span className="text-3xl font-bold" style={{ color: TERRACOTTA.dark, fontFamily: "'Playfair Display', Georgia, serif" }}>NS</span>
                   </div>
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 border-3 border-neutral-900 flex items-center justify-center shadow-lg">
-                  <Crown className="w-4 h-4 text-neutral-900" />
+                <div
+                  className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full flex items-center justify-center shadow-lg"
+                  style={{ background: `linear-gradient(135deg, #B8860B, #8B6914)` }}
+                >
+                  <Crown className="w-4 h-4 text-white" />
                 </div>
               </div>
 
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <h4 className="text-2xl font-semibold text-white" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                  <h4 className="text-2xl font-semibold text-neutral-800" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
                     {locale === "ka" ? "ნინო სანიკიძე" : "Nino Sanikidze"}
                   </h4>
-                  <span className="px-3 py-1 rounded-full bg-gradient-to-r from-amber-400/20 to-amber-500/20 border border-amber-400/30 text-amber-400 text-xs font-bold tracking-wider">
+                  <span
+                    className="px-3 py-1 rounded-full text-xs font-bold tracking-wider"
+                    style={{
+                      background: `linear-gradient(135deg, #B8860B20, #8B691420)`,
+                      border: '1px solid #B8860B40',
+                      color: '#8B6914'
+                    }}
+                  >
                     ELITE
                   </span>
                 </div>
-                <p className="text-neutral-400 mb-3">
+                <p className="text-neutral-500 mb-3">
                   {locale === "ka" ? "ინტერიერის დიზაინერი & არქიტექტორი" : "Interior Designer & Architect"}
                 </p>
                 <div className="flex items-center gap-4">
@@ -192,17 +224,17 @@ function EliteShowcase({ locale, isVisible }: { locale: string; isVisible: boole
                     {[1,2,3,4,5].map(i => (
                       <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
                     ))}
-                    <span className="text-white font-semibold ml-1">5.0</span>
+                    <span className="text-neutral-800 font-semibold ml-1">5.0</span>
                   </div>
-                  <span className="text-neutral-600">|</span>
-                  <span className="text-neutral-400 text-sm">156 {locale === "ka" ? "მიმოხილვა" : "reviews"}</span>
+                  <span className="text-neutral-300">|</span>
+                  <span className="text-neutral-500 text-sm">156 {locale === "ka" ? "მიმოხილვა" : "reviews"}</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Portfolio Grid */}
-          <div className="p-8">
+          <div className="p-8" style={{ background: 'white' }}>
             <div className="grid grid-cols-12 gap-4">
               {/* Large featured image */}
               <div className="col-span-7 row-span-2 relative rounded-xl overflow-hidden group cursor-pointer aspect-[4/3]">
@@ -211,16 +243,19 @@ function EliteShowcase({ locale, isVisible }: { locale: string; isVisible: boole
                   alt={portfolioImages[0].title}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4">
                   <p className="text-white font-medium text-lg" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
                     {portfolioImages[0].title}
                   </p>
-                  <p className="text-neutral-300 text-sm mt-1">Tbilisi, 2024</p>
+                  <p className="text-white/70 text-sm mt-1">Tbilisi, 2024</p>
                 </div>
                 {/* Elite watermark */}
-                <div className="absolute top-4 right-4 w-10 h-10 rounded-full bg-gradient-to-br from-amber-400/90 to-amber-500/90 backdrop-blur-sm flex items-center justify-center">
-                  <Crown className="w-5 h-5 text-neutral-900" />
+                <div
+                  className="absolute top-4 right-4 w-10 h-10 rounded-full backdrop-blur-sm flex items-center justify-center"
+                  style={{ background: `linear-gradient(135deg, ${TERRACOTTA.primary}E6, ${TERRACOTTA.dark}E6)` }}
+                >
+                  <Crown className="w-5 h-5 text-white" />
                 </div>
               </div>
 
@@ -232,7 +267,7 @@ function EliteShowcase({ locale, isVisible }: { locale: string; isVisible: boole
                     alt={img.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="absolute bottom-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity">
                     <p className="text-white text-sm font-medium">{img.title}</p>
                   </div>
@@ -242,7 +277,10 @@ function EliteShowcase({ locale, isVisible }: { locale: string; isVisible: boole
 
             {/* View all link */}
             <div className="mt-6 flex justify-center">
-              <button className="group flex items-center gap-2 text-amber-400 hover:text-amber-300 transition-colors">
+              <button
+                className="group flex items-center gap-2 transition-colors"
+                style={{ color: TERRACOTTA.primary }}
+              >
                 <span className="text-sm tracking-wide">{locale === "ka" ? "ყველა პროექტის ნახვა" : "View All Projects"}</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
@@ -250,14 +288,14 @@ function EliteShowcase({ locale, isVisible }: { locale: string; isVisible: boole
           </div>
 
           {/* Stats Bar */}
-          <div className="grid grid-cols-3 border-t border-amber-400/10">
+          <div className="grid grid-cols-3" style={{ borderTop: `1px solid ${TERRACOTTA.sand}`, background: TERRACOTTA.cream }}>
             {[
               { value: "156", label: locale === "ka" ? "პროექტი" : "Projects" },
               { value: "10x", label: locale === "ka" ? "მეტი ნახვა" : "More Views" },
               { value: "#1", label: locale === "ka" ? "ძიებაში" : "In Search" },
             ].map((stat, i) => (
-              <div key={i} className="p-6 text-center border-r last:border-r-0 border-amber-400/10">
-                <p className="text-2xl font-bold text-amber-400" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{stat.value}</p>
+              <div key={i} className="p-6 text-center border-r last:border-r-0" style={{ borderColor: TERRACOTTA.sand }}>
+                <p className="text-2xl font-bold" style={{ color: TERRACOTTA.dark, fontFamily: "'Playfair Display', Georgia, serif" }}>{stat.value}</p>
                 <p className="text-neutral-500 text-sm mt-1">{stat.label}</p>
               </div>
             ))}
@@ -265,12 +303,12 @@ function EliteShowcase({ locale, isVisible }: { locale: string; isVisible: boole
         </div>
       </div>
 
-      {/* Before/After comparison hint */}
+      {/* Comparison hint */}
       <div className="mt-8 text-center">
-        <p className="text-neutral-500 text-sm flex items-center justify-center gap-2">
-          <span className="w-8 h-px bg-neutral-700" />
+        <p className="text-neutral-400 text-sm flex items-center justify-center gap-2">
+          <span className="w-8 h-px" style={{ background: TERRACOTTA.sand }} />
           {locale === "ka" ? "სტანდარტული vs ელიტა პორტფოლიო" : "Standard vs Elite Portfolio"}
-          <span className="w-8 h-px bg-neutral-700" />
+          <span className="w-8 h-px" style={{ background: TERRACOTTA.sand }} />
         </p>
       </div>
     </div>
@@ -290,18 +328,21 @@ function FAQItem({
   onToggle: () => void;
 }) {
   return (
-    <div className="border-b border-neutral-800 last:border-0">
+    <div className="border-b last:border-0" style={{ borderColor: TERRACOTTA.sand }}>
       <button
         onClick={onToggle}
         className="w-full flex items-center justify-between gap-4 py-6 text-left group"
       >
-        <span className="font-medium text-white group-hover:text-amber-400 transition-colors">
+        <span className="font-medium text-neutral-800 group-hover:text-neutral-600 transition-colors">
           {question}
         </span>
-        <ChevronDown className={`w-5 h-5 text-neutral-500 transition-transform duration-300 ${isOpen ? "rotate-180 text-amber-400" : ""}`} />
+        <ChevronDown
+          className={`w-5 h-5 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+          style={{ color: isOpen ? TERRACOTTA.primary : '#9CA3AF' }}
+        />
       </button>
       <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-48 pb-6" : "max-h-0"}`}>
-        <p className="text-neutral-400 leading-relaxed">{answer}</p>
+        <p className="text-neutral-500 leading-relaxed">{answer}</p>
       </div>
     </div>
   );
@@ -382,7 +423,7 @@ export default function PremiumPlansPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-neutral-950">
+    <div className="min-h-screen" style={{ background: TERRACOTTA.cream }}>
       {/* Custom font import */}
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap');
@@ -397,36 +438,47 @@ export default function PremiumPlansPage() {
         <section className="relative pt-16 pb-24 overflow-hidden">
           {/* Background Effects */}
           <div className="absolute inset-0 pointer-events-none">
-            {/* Gradient orbs */}
-            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-amber-400/5 blur-[150px]" />
-            <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full bg-orange-500/5 blur-[120px]" />
-
-            {/* Grid pattern */}
-            <div className="absolute inset-0 opacity-[0.015]"
-              style={{
-                backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)',
-                backgroundSize: '60px 60px'
-              }}
+            {/* Soft gradient orbs */}
+            <div
+              className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full blur-[150px]"
+              style={{ background: `${TERRACOTTA.primary}10` }}
+            />
+            <div
+              className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full blur-[120px]"
+              style={{ background: `${TERRACOTTA.light}10` }}
             />
 
             {/* Decorative lines */}
-            <div className="absolute top-32 left-0 w-1/3 h-px bg-gradient-to-r from-transparent via-amber-400/20 to-transparent" />
-            <div className="absolute top-32 right-0 w-1/3 h-px bg-gradient-to-l from-transparent via-amber-400/20 to-transparent" />
+            <div
+              className="absolute top-32 left-0 w-1/3 h-px"
+              style={{ background: `linear-gradient(to right, transparent, ${TERRACOTTA.primary}20, transparent)` }}
+            />
+            <div
+              className="absolute top-32 right-0 w-1/3 h-px"
+              style={{ background: `linear-gradient(to left, transparent, ${TERRACOTTA.primary}20, transparent)` }}
+            />
           </div>
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
             {/* Trust Badge */}
             <div className="flex justify-center mb-8">
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-neutral-800 bg-neutral-900/50 backdrop-blur-sm">
+              <div
+                className="flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm"
+                style={{ background: 'white', border: `1px solid ${TERRACOTTA.sand}` }}
+              >
                 <div className="flex -space-x-2">
                   {[1,2,3,4].map((i) => (
-                    <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 border-2 border-neutral-900 flex items-center justify-center text-xs font-bold text-neutral-900">
+                    <div
+                      key={i}
+                      className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-xs font-bold text-white"
+                      style={{ background: `linear-gradient(135deg, ${TERRACOTTA.primary}, ${TERRACOTTA.dark})` }}
+                    >
                       {String.fromCharCode(64 + i)}
                     </div>
                   ))}
                 </div>
-                <span className="text-neutral-400 text-sm ml-2">
-                  <span className="text-white font-semibold">500+</span> {locale === "ka" ? "პროფესიონალი" : "professionals"}
+                <span className="text-neutral-500 text-sm ml-2">
+                  <span className="text-neutral-800 font-semibold">500+</span> {locale === "ka" ? "პროფესიონალი" : "professionals"}
                 </span>
               </div>
             </div>
@@ -434,25 +486,18 @@ export default function PremiumPlansPage() {
             {/* Main Headline */}
             <div className="text-center max-w-4xl mx-auto mb-16">
               <h1
-                className="text-5xl sm:text-6xl lg:text-7xl font-semibold text-white mb-6 leading-[1.1]"
+                className="text-5xl sm:text-6xl lg:text-7xl font-semibold text-neutral-800 mb-6 leading-[1.1]"
                 style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
               >
                 {locale === "ka" ? (
                   <>
                     შენი ბიზნესი იმსახურებს{" "}
                     <span className="relative inline-block">
-                      <span className="bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 bg-clip-text text-transparent">
+                      <span style={{ color: TERRACOTTA.primary }}>
                         განსაკუთრებულს
                       </span>
                       <svg className="absolute -bottom-2 left-0 w-full h-3" viewBox="0 0 200 12" fill="none" preserveAspectRatio="none">
-                        <path d="M0 8C40 4 80 6 120 4C160 2 180 6 200 5" stroke="url(#gold-gradient)" strokeWidth="2" strokeLinecap="round" fill="none" />
-                        <defs>
-                          <linearGradient id="gold-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stopColor="#C9A227" stopOpacity="0.3" />
-                            <stop offset="50%" stopColor="#C9A227" stopOpacity="0.8" />
-                            <stop offset="100%" stopColor="#C9A227" stopOpacity="0.3" />
-                          </linearGradient>
-                        </defs>
+                        <path d="M0 8C40 4 80 6 120 4C160 2 180 6 200 5" stroke={TERRACOTTA.primary} strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.4" />
                       </svg>
                     </span>
                   </>
@@ -460,17 +505,17 @@ export default function PremiumPlansPage() {
                   <>
                     Your Business Deserves{" "}
                     <span className="relative inline-block">
-                      <span className="bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 bg-clip-text text-transparent">
+                      <span style={{ color: TERRACOTTA.primary }}>
                         Extraordinary
                       </span>
                       <svg className="absolute -bottom-2 left-0 w-full h-3" viewBox="0 0 200 12" fill="none" preserveAspectRatio="none">
-                        <path d="M0 8C40 4 80 6 120 4C160 2 180 6 200 5" stroke="url(#gold-gradient)" strokeWidth="2" strokeLinecap="round" fill="none" />
+                        <path d="M0 8C40 4 80 6 120 4C160 2 180 6 200 5" stroke={TERRACOTTA.primary} strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.4" />
                       </svg>
                     </span>
                   </>
                 )}
               </h1>
-              <p className="text-lg sm:text-xl text-neutral-400 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-lg sm:text-xl text-neutral-500 max-w-2xl mx-auto leading-relaxed">
                 {locale === "ka"
                   ? "შეუერთდი ელიტა პროფესიონალებს და გახსენი ახალი შესაძლებლობები"
                   : "Join elite professionals and unlock opportunities that transform your career"}
@@ -479,26 +524,35 @@ export default function PremiumPlansPage() {
 
             {/* Billing Toggle */}
             <div className="flex items-center justify-center mb-12">
-              <div className="flex items-center gap-1 p-1 rounded-full bg-neutral-900 border border-neutral-800">
+              <div
+                className="flex items-center gap-1 p-1 rounded-full"
+                style={{ background: 'white', border: `1px solid ${TERRACOTTA.sand}` }}
+              >
                 <button
                   onClick={() => setBillingPeriod("monthly")}
                   className={`relative px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
-                    billingPeriod === "monthly" ? "text-neutral-900" : "text-neutral-400 hover:text-white"
+                    billingPeriod === "monthly" ? "text-white" : "text-neutral-500 hover:text-neutral-700"
                   }`}
                 >
                   {billingPeriod === "monthly" && (
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-amber-400 to-amber-500" />
+                    <div
+                      className="absolute inset-0 rounded-full"
+                      style={{ background: `linear-gradient(135deg, ${TERRACOTTA.primary}, ${TERRACOTTA.dark})` }}
+                    />
                   )}
                   <span className="relative z-10">{locale === "ka" ? "თვიური" : "Monthly"}</span>
                 </button>
                 <button
                   onClick={() => setBillingPeriod("yearly")}
                   className={`relative px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
-                    billingPeriod === "yearly" ? "text-neutral-900" : "text-neutral-400 hover:text-white"
+                    billingPeriod === "yearly" ? "text-white" : "text-neutral-500 hover:text-neutral-700"
                   }`}
                 >
                   {billingPeriod === "yearly" && (
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-amber-400 to-amber-500" />
+                    <div
+                      className="absolute inset-0 rounded-full"
+                      style={{ background: `linear-gradient(135deg, ${TERRACOTTA.primary}, ${TERRACOTTA.dark})` }}
+                    />
                   )}
                   <span className="relative z-10 flex items-center gap-2">
                     {locale === "ka" ? "წლიური" : "Yearly"}
@@ -523,7 +577,7 @@ export default function PremiumPlansPage() {
                     className={`relative rounded-2xl p-px cursor-pointer transition-all duration-500 ${
                       isSelected
                         ? isElite
-                          ? "scale-[1.02] shadow-2xl shadow-amber-400/10"
+                          ? "scale-[1.02] shadow-2xl"
                           : "scale-[1.02] shadow-xl"
                         : "hover:scale-[1.01]"
                     }`}
@@ -535,14 +589,21 @@ export default function PremiumPlansPage() {
                     }}
                   >
                     {/* Card inner */}
-                    <div className={`relative rounded-2xl p-6 h-full ${
-                      isSelected ? 'bg-neutral-950' : 'bg-neutral-900/50 border border-neutral-800'
-                    }`}>
+                    <div
+                      className="relative rounded-2xl p-6 h-full"
+                      style={{
+                        background: 'white',
+                        border: isSelected ? 'none' : `1px solid ${TERRACOTTA.sand}`,
+                      }}
+                    >
 
                       {/* Popular badge */}
                       {tier.popular && (
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                          <span className="px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg">
+                          <span
+                            className="px-3 py-1 rounded-full text-xs font-bold text-white shadow-lg"
+                            style={{ background: `linear-gradient(135deg, ${TERRACOTTA.primary}, ${TERRACOTTA.dark})` }}
+                          >
                             {tier.highlight?.[locale === "ka" ? "ka" : "en"]}
                           </span>
                         </div>
@@ -553,12 +614,12 @@ export default function PremiumPlansPage() {
                         <div
                           className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
                           style={{
-                            background: `linear-gradient(135deg, ${tier.gradientFrom}20, ${tier.gradientTo}10)`,
+                            background: `linear-gradient(135deg, ${tier.gradientFrom}15, ${tier.gradientTo}08)`,
                           }}
                         >
                           <TierIcon className="w-6 h-6" style={{ color: tier.accentColor }} />
                         </div>
-                        <h3 className="text-xl font-semibold text-white mb-1" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                        <h3 className="text-xl font-semibold text-neutral-800 mb-1" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
                           {tier.name[locale === "ka" ? "ka" : "en"]}
                         </h3>
                         <p className="text-neutral-500 text-sm">
@@ -569,15 +630,15 @@ export default function PremiumPlansPage() {
                       {/* Price */}
                       <div className="mb-6">
                         <div className="flex items-baseline gap-1">
-                          <span className="text-4xl font-bold text-white" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                          <span className="text-4xl font-bold text-neutral-800" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
                             {tier.currency}{price}
                           </span>
-                          <span className="text-neutral-500">
+                          <span className="text-neutral-400">
                             /{billingPeriod === "monthly" ? (locale === "ka" ? "თვე" : "mo") : (locale === "ka" ? "წელი" : "yr")}
                           </span>
                         </div>
                         {billingPeriod === "yearly" && (
-                          <p className="text-emerald-400 text-sm mt-1 flex items-center gap-1">
+                          <p className="text-emerald-600 text-sm mt-1 flex items-center gap-1">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             {locale === "ka" ? `დაზოგე ₾${tier.price.monthly * 12 - tier.price.yearly}` : `Save ₾${tier.price.monthly * 12 - tier.price.yearly}`}
                           </p>
@@ -592,15 +653,15 @@ export default function PremiumPlansPage() {
                             <li key={i} className={`flex items-center gap-3 ${feature.included ? "opacity-50" : ""}`}>
                               <div
                                 className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0"
-                                style={{ backgroundColor: feature.included ? 'rgba(255,255,255,0.05)' : `${tier.accentColor}20` }}
+                                style={{ backgroundColor: feature.included ? '#F3F4F6' : `${tier.accentColor}15` }}
                               >
                                 {feature.included ? (
-                                  <Check className="w-3 h-3 text-neutral-500" />
+                                  <Check className="w-3 h-3 text-neutral-400" />
                                 ) : (
                                   <FeatureIcon className="w-3 h-3" style={{ color: tier.accentColor }} />
                                 )}
                               </div>
-                              <span className={`text-sm ${feature.included ? "text-neutral-500" : "text-neutral-300"}`}>
+                              <span className={`text-sm ${feature.included ? "text-neutral-400" : "text-neutral-600"}`}>
                                 {feature.text[locale === "ka" ? "ka" : "en"]}
                               </span>
                             </li>
@@ -617,15 +678,15 @@ export default function PremiumPlansPage() {
                         disabled={currentTier === tier.id}
                         className={`w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
                           currentTier === tier.id
-                            ? "bg-neutral-800 text-neutral-500 cursor-not-allowed"
+                            ? "bg-neutral-100 text-neutral-400 cursor-not-allowed"
                             : isSelected
-                              ? "text-neutral-900 hover:opacity-90"
-                              : "bg-neutral-800 text-white hover:bg-neutral-700"
+                              ? "text-white hover:opacity-90"
+                              : "text-neutral-700 hover:bg-neutral-100"
                         }`}
                         style={{
                           background: isSelected && currentTier !== tier.id
                             ? `linear-gradient(135deg, ${tier.gradientFrom}, ${tier.gradientTo})`
-                            : undefined,
+                            : currentTier === tier.id ? undefined : TERRACOTTA.sand,
                         }}
                       >
                         {currentTier === tier.id ? (
@@ -646,14 +707,14 @@ export default function PremiumPlansPage() {
         </section>
 
         {/* Elite Showcase Section */}
-        <section ref={showcaseRef} className="py-24 bg-neutral-900/50">
+        <section ref={showcaseRef} className="py-24" style={{ background: 'white' }}>
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <EliteShowcase locale={locale} isVisible={showcaseVisible} />
           </div>
         </section>
 
         {/* Trust Section */}
-        <section className="py-20">
+        <section className="py-20" style={{ background: TERRACOTTA.cream }}>
           <div className="max-w-5xl mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
@@ -662,9 +723,13 @@ export default function PremiumPlansPage() {
                 { icon: Star, value: "4.9", label: locale === "ka" ? "საშუალო რეიტინგი" : "Avg Rating" },
                 { icon: TrendingUp, value: "10x", label: locale === "ka" ? "მეტი ნახვა" : "More Views" },
               ].map((stat, i) => (
-                <div key={i} className="text-center p-6 rounded-2xl bg-neutral-900/30 border border-neutral-800 hover:border-amber-400/20 transition-colors">
-                  <stat.icon className="w-6 h-6 text-amber-400 mx-auto mb-3" />
-                  <p className="text-3xl font-bold text-white mb-1" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{stat.value}</p>
+                <div
+                  key={i}
+                  className="text-center p-6 rounded-2xl transition-all hover:shadow-lg"
+                  style={{ background: 'white', border: `1px solid ${TERRACOTTA.sand}` }}
+                >
+                  <stat.icon className="w-6 h-6 mx-auto mb-3" style={{ color: TERRACOTTA.primary }} />
+                  <p className="text-3xl font-bold text-neutral-800 mb-1" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{stat.value}</p>
                   <p className="text-neutral-500 text-sm">{stat.label}</p>
                 </div>
               ))}
@@ -673,15 +738,18 @@ export default function PremiumPlansPage() {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-20 bg-neutral-900/50">
+        <section className="py-20" style={{ background: 'white' }}>
           <div className="max-w-3xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-semibold text-white mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+              <h2 className="text-3xl font-semibold text-neutral-800 mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
                 {locale === "ka" ? "ხშირად დასმული კითხვები" : "Frequently Asked Questions"}
               </h2>
             </div>
 
-            <div className="rounded-2xl bg-neutral-900 border border-neutral-800 p-6 sm:p-8">
+            <div
+              className="rounded-2xl p-6 sm:p-8"
+              style={{ background: TERRACOTTA.cream, border: `1px solid ${TERRACOTTA.sand}` }}
+            >
               {faqs.map((faq, i) => (
                 <FAQItem
                   key={i}
@@ -696,28 +764,32 @@ export default function PremiumPlansPage() {
         </section>
 
         {/* Final CTA */}
-        <section className="py-24">
+        <section className="py-24" style={{ background: TERRACOTTA.cream }}>
           <div className="max-w-4xl mx-auto px-4 sm:px-6">
             <div className="relative rounded-3xl overflow-hidden">
               {/* Background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-500 via-amber-600 to-orange-600" />
+              <div
+                className="absolute inset-0"
+                style={{ background: `linear-gradient(135deg, ${TERRACOTTA.primary}, ${TERRACOTTA.dark})` }}
+              />
               <div className="absolute inset-0 opacity-20" style={{
-                backgroundImage: 'radial-gradient(circle at 30% 40%, rgba(0,0,0,0.3) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255,255,255,0.1) 0%, transparent 40%)'
+                backgroundImage: 'radial-gradient(circle at 30% 40%, rgba(255,255,255,0.3) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(0,0,0,0.1) 0%, transparent 40%)'
               }} />
 
               <div className="relative p-12 text-center">
-                <Crown className="w-12 h-12 text-neutral-900/20 mx-auto mb-6" />
-                <h2 className="text-4xl font-semibold text-neutral-900 mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                <Crown className="w-12 h-12 text-white/20 mx-auto mb-6" />
+                <h2 className="text-4xl font-semibold text-white mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
                   {locale === "ka" ? "მზად ხარ ელიტა გახდე?" : "Ready to Go Elite?"}
                 </h2>
-                <p className="text-neutral-800 text-lg max-w-xl mx-auto mb-8">
+                <p className="text-white/80 text-lg max-w-xl mx-auto mb-8">
                   {locale === "ka"
                     ? "შეუერთდი საუკეთესო პროფესიონალებს და გახსენი ახალი შესაძლებლობები"
                     : "Join the best professionals and unlock new opportunities for your business"}
                 </p>
                 <button
                   onClick={() => handleSelectPlan("elite")}
-                  className="px-8 py-4 rounded-xl bg-neutral-900 text-white font-semibold shadow-2xl hover:bg-neutral-800 hover:-translate-y-0.5 transition-all flex items-center gap-2 mx-auto"
+                  className="px-8 py-4 rounded-xl bg-white font-semibold shadow-2xl hover:bg-neutral-50 hover:-translate-y-0.5 transition-all flex items-center gap-2 mx-auto"
+                  style={{ color: TERRACOTTA.dark }}
                 >
                   {locale === "ka" ? "დაიწყე ელიტათი" : "Start with Elite"}
                   <ArrowRight className="w-5 h-5" />
