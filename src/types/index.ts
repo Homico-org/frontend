@@ -67,6 +67,8 @@ export interface PortfolioProject {
   images: string[];
   videos?: string[];
   beforeAfterPairs?: { id?: string; beforeImage: string; afterImage: string }[];
+  source?: 'external' | 'homico'; // 'external' = work done outside Homico, 'homico' = completed via platform
+  jobId?: string; // Reference to original job if done through Homico
 }
 export interface ProProfile {
   accountType: AccountType;

@@ -5,26 +5,26 @@ import Avatar from '@/components/common/Avatar';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAnalytics, AnalyticsEvent } from '@/hooks/useAnalytics';
+import { AnalyticsEvent, useAnalytics } from '@/hooks/useAnalytics';
 import { api } from '@/lib/api';
 import { storage } from '@/services/storage';
 import { isHighLevelPro } from '@/utils/categoryHelpers';
 import {
+  AlertTriangle,
   Edit3,
+  Loader2,
+  Lock,
   MessageCircle,
+  MoreVertical,
   Paperclip,
   Search,
   Send,
-  X,
-  Loader2,
   Trash2,
-  AlertTriangle,
-  MoreVertical,
-  Lock,
+  X,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState, memo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { memo, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 // Terracotta accent color matching the design system (--color-accent)
@@ -1128,7 +1128,7 @@ function MessagesPageContent() {
                 : 'Chat is only available for designers and architects. Clients will contact professionals in other categories by phone.'}
             </p>
             <button
-              onClick={() => router.push('/jobs')}
+              onClick={() => router.push('/browse/portfolios')}
               className="px-6 py-2.5 rounded-xl text-white font-medium transition-colors"
               style={{ backgroundColor: ACCENT_COLOR }}
             >
