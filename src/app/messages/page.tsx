@@ -473,7 +473,7 @@ const ChatContent = memo(function ChatContent({
       });
     };
 
-    const handleTyping = ({ odliserId: typingUserId, isTyping: typing }: { odliserId: string; isTyping: boolean }) => {
+    const handleTyping = ({ userId: typingUserId, isTyping: typing }: { userId: string; isTyping: boolean }) => {
       if (typingUserId !== userId) {
         setOtherUserTyping(typing);
       }
@@ -851,14 +851,30 @@ function MessagesPageContent() {
     socketRef.current = io(`${backendUrl}/chat`, {
       auth: { token },
       transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
     });
 
     socketRef.current.on('connect', () => {
       console.log('Connected to chat WebSocket');
+      // Rejoin current conversation if we were in one
+      if (selectedConversation) {
+        socketRef.current?.emit('joinConversation', selectedConversation._id);
+      }
     });
 
     socketRef.current.on('disconnect', () => {
       console.log('Disconnected from chat WebSocket');
+    });
+
+    socketRef.current.on('reconnect', (attemptNumber: number) => {
+      console.log(`Reconnected to chat WebSocket after ${attemptNumber} attempts`);
+    });
+
+    socketRef.current.on('reconnect_error', (error: Error) => {
+      console.error('WebSocket reconnection error:', error.message);
     });
 
     socketRef.current.on('conversationUpdate', (update: { conversationId: string; lastMessage: string; lastMessageAt: string }) => {

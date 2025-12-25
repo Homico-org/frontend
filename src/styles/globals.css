@@ -9952,3 +9952,118 @@ img:not(.loading) {
   cursor: not-allowed;
   transform: none;
 }
+
+/* ============================================
+   GAME CARD BORDER ANIMATION
+   Clean, slim animated border on hover
+   ============================================ */
+
+.game-card-wrapper {
+  position: relative;
+  border-radius: 12px;
+}
+
+.game-card-wrapper > .game-card-content {
+  position: relative;
+  z-index: 1;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Animated border using SVG-style approach */
+.game-card-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 13px;
+  background: transparent;
+  border: 2px solid transparent;
+  background-image: conic-gradient(
+    from var(--border-angle, 0deg),
+    transparent 0deg,
+    transparent 30deg,
+    #E07B4F 90deg,
+    #D26B3F 150deg,
+    transparent 210deg,
+    transparent 360deg
+  );
+  background-origin: border-box;
+  background-clip: border-box;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) padding-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) padding-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.game-card-wrapper:hover::before {
+  opacity: 1;
+  animation: border-spin 2.5s linear infinite;
+}
+
+/* Premium - golden border */
+.game-card-wrapper.game-card-premium::before {
+  background-image: conic-gradient(
+    from var(--border-angle, 0deg),
+    transparent 0deg,
+    transparent 30deg,
+    #fbbf24 90deg,
+    #f59e0b 150deg,
+    transparent 210deg,
+    transparent 360deg
+  );
+}
+
+@keyframes border-spin {
+  to { --border-angle: 360deg; }
+}
+
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* Premium ribbon - top right corner */
+.game-card-premium-symbol {
+  position: absolute;
+  top: 10px;
+  right: -4px;
+  z-index: 10;
+}
+
+/* Premium ribbon badge with star */
+.premium-diamond-badge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 20px;
+  background: linear-gradient(135deg, #E07B4F 0%, #D26B3F 100%);
+  color: white;
+  border-radius: 3px 0 0 3px;
+  box-shadow: 0 2px 4px rgba(210, 107, 63, 0.3);
+}
+
+.premium-diamond-badge svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Ribbon fold effect */
+.premium-diamond-badge::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  right: 0;
+  border-left: 4px solid #a3452a;
+  border-top: 0px solid transparent;
+  border-bottom: 3px solid transparent;
+}

@@ -64,13 +64,17 @@ export default function FeedCard({ item, locale = 'en' }: FeedCardProps) {
     return getCategoryLabelStatic(category, locale);
   };
 
+  // Check if pro is premium (if available in the data)
+  const isPremium = (item.pro as { isPremium?: boolean })?.isPremium || false;
+
   return (
     <Link
       href={`/professionals/${item.pro._id}`}
       className="group block"
     >
-      {/* Card Container - Matching design exactly */}
-      <div className="bg-white dark:bg-neutral-900 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg">
+      {/* Card Container with Game Card Effect */}
+      <div className={`game-card-wrapper ${isPremium ? 'game-card-premium' : ''}`}>
+        <div className="game-card-content bg-white dark:bg-neutral-900 rounded-xl overflow-hidden transition-all duration-300">
 
         {/* Image Section */}
         <div className="relative">
@@ -263,6 +267,17 @@ export default function FeedCard({ item, locale = 'en' }: FeedCardProps) {
             </span>
           </div>
         </div>
+        </div>
+        {/* Premium Ribbon - always visible */}
+        {isPremium && (
+          <div className="game-card-premium-symbol">
+            <div className="premium-diamond-badge">
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+              </svg>
+            </div>
+          </div>
+        )}
       </div>
     </Link>
   );

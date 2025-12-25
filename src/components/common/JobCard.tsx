@@ -142,7 +142,8 @@ export default function JobCard({
 
   return (
     <Link href={`/jobs/${job._id}`} className="group block">
-      <div className={`bg-white dark:bg-neutral-900 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 border border-neutral-100 dark:border-neutral-800 ${isExpired ? 'opacity-60' : ''}`}>
+      <div className="game-card-wrapper">
+        <div className={`game-card-content bg-white dark:bg-neutral-900 rounded-lg overflow-hidden shadow-sm transition-shadow duration-300 border border-neutral-100 dark:border-neutral-800 ${isExpired ? 'opacity-60' : ''}`}>
 
         {/* Image Section */}
         <div className="relative aspect-[16/10] bg-neutral-100 dark:bg-neutral-800">
@@ -312,6 +313,7 @@ export default function JobCard({
               )}
             </div>
           </div>
+        </div>
         </div>
       </div>
     </Link>

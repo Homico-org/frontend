@@ -70,7 +70,8 @@ export default function ProCard({
   if (variant === "compact" || variant === "default") {
     return (
       <Link href={`/professionals/${profile._id}`} className="group block">
-        <div className="bg-white dark:bg-neutral-900 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 border border-neutral-100 dark:border-neutral-800 p-4">
+        <div className={`game-card-wrapper ${isPremium ? 'game-card-premium' : ''}`}>
+          <div className="game-card-content bg-white dark:bg-neutral-900 rounded-lg overflow-hidden shadow-sm transition-shadow duration-300 border border-neutral-100 dark:border-neutral-800 p-4">
           {/* Top Row - Badges & Like */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-1.5">
@@ -251,6 +252,17 @@ export default function ProCard({
               );
             })}
           </div>
+          </div>
+          {/* Premium Ribbon - always visible */}
+          {isPremium && (
+            <div className="game-card-premium-symbol">
+              <div className="premium-diamond-badge">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
+                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                </svg>
+              </div>
+            </div>
+          )}
         </div>
       </Link>
     );
@@ -260,7 +272,8 @@ export default function ProCard({
   if (variant === "horizontal") {
     return (
       <Link href={`/professionals/${profile._id}`} className="group block">
-        <div className="bg-white dark:bg-neutral-900 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 border border-neutral-100 dark:border-neutral-800 p-3">
+        <div className={`game-card-wrapper ${isPremium ? 'game-card-premium' : ''}`}>
+          <div className="game-card-content bg-white dark:bg-neutral-900 rounded-lg overflow-hidden shadow-sm transition-shadow duration-300 border border-neutral-100 dark:border-neutral-800 p-3">
           <div className="flex items-center gap-3">
             {/* Avatar */}
             <div className="relative flex-shrink-0">
@@ -353,6 +366,17 @@ export default function ProCard({
               </button>
             )} */}
           </div>
+          </div>
+          {/* Premium Ribbon - always visible */}
+          {isPremium && (
+            <div className="game-card-premium-symbol">
+              <div className="premium-diamond-badge">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
+                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                </svg>
+              </div>
+            </div>
+          )}
         </div>
       </Link>
     );

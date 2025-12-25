@@ -1,51 +1,326 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import AuthGuard from '@/components/common/AuthGuard';
-import { Briefcase, Search, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
+import Avatar from '@/components/common/Avatar';
+import { api } from '@/lib/api';
+import {
+  Briefcase,
+  Search,
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  XCircle,
+  ArrowLeft,
+  RefreshCw,
+  MoreVertical,
+  Eye,
+  Trash2,
+  MapPin,
+  Calendar,
+  DollarSign,
+  ChevronLeft,
+  ChevronRight,
+  Play,
+  Pause,
+  Tag,
+  User,
+  FileText,
+} from 'lucide-react';
+
+// Terracotta admin theme (matching dashboard)
+const THEME = {
+  primary: '#C4735B',
+  primaryDark: '#A85D4A',
+  accent: '#D4897A',
+  surface: '#1A1A1C',
+  surfaceLight: '#232326',
+  surfaceHover: '#2A2A2E',
+  border: '#333338',
+  borderLight: '#3D3D42',
+  text: '#FAFAFA',
+  textMuted: '#A1A1AA',
+  textDim: '#71717A',
+  success: '#22C55E',
+  warning: '#F59E0B',
+  error: '#EF4444',
+  info: '#3B82F6',
+};
+
+interface Job {
+  _id: string;
+  title: string;
+  description?: string;
+  category: string;
+  subcategory?: string;
+  status: 'open' | 'in_progress' | 'completed' | 'cancelled';
+  budget?: {
+    min?: number;
+    max?: number;
+    type?: string;
+  };
+  location?: string;
+  clientId: {
+    _id: string;
+    name: string;
+    avatar?: string;
+  };
+  proposalCount?: number;
+  createdAt: string;
+}
+
+interface JobStats {
+  total: number;
+  open: number;
+  inProgress: number;
+  completed: number;
+  cancelled: number;
+  thisWeek: number;
+  thisMonth: number;
+}
 
 function AdminJobsPageContent() {
-  const { t } = useLanguage();
+  const { isAuthenticated } = useAuth();
+  const { t, locale } = useLanguage();
   const router = useRouter();
+
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [stats, setStats] = useState<JobStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [actionMenuJob, setActionMenuJob] = useState<string | null>(null);
 
-  const stats = [
-    { label: t('admin.totalJobs'), value: '0', icon: Briefcase, color: 'bg-blue-500' },
-    { label: t('admin.jobsPage.pendingReview'), value: '0', icon: Clock, color: 'bg-yellow-500' },
-    { label: t('admin.jobsPage.approved'), value: '0', icon: CheckCircle, color: 'bg-[#D2691E]' },
-    { label: t('admin.jobsPage.flagged'), value: '0', icon: AlertTriangle, color: 'bg-red-500' },
+  const fetchData = useCallback(async (showRefresh = false) => {
+    try {
+      if (showRefresh) setIsRefreshing(true);
+      else setIsLoading(true);
+
+      const params = new URLSearchParams();
+      params.set('page', page.toString());
+      params.set('limit', '20');
+      if (searchQuery) params.set('search', searchQuery);
+      if (statusFilter !== 'all') params.set('status', statusFilter);
+
+      // Fetch stats first (this always works)
+      const statsRes = await api.get('/admin/stats').catch((err) => {
+        console.error('Failed to fetch /admin/stats:', err.response?.status, err.response?.data || err.message);
+        return { data: { jobs: {} } };
+      });
+
+      // Try to fetch paginated jobs
+      let jobsData: Job[] = [];
+      let totalPagesData = 1;
+
+      try {
+        const jobsRes = await api.get(`/admin/jobs?${params.toString()}`);
+        console.log('Jobs API response:', jobsRes.data);
+        jobsData = jobsRes.data.jobs || [];
+        totalPagesData = jobsRes.data.totalPages || 1;
+      } catch (err: any) {
+        console.error('Failed to fetch /admin/jobs:', err.response?.status, err.response?.data || err.message);
+        // Fallback: use recent-jobs endpoint if paginated endpoint fails
+        try {
+          const recentRes = await api.get('/admin/recent-jobs?limit=50');
+          console.log('Fallback to recent-jobs:', recentRes.data);
+          jobsData = recentRes.data || [];
+        } catch (fallbackErr) {
+          console.error('Fallback also failed:', fallbackErr);
+        }
+      }
+
+      setJobs(jobsData);
+      setTotalPages(totalPagesData);
+      setStats({
+        total: statsRes.data.jobs?.total || 0,
+        open: statsRes.data.jobs?.open || 0,
+        inProgress: statsRes.data.jobs?.inProgress || 0,
+        completed: statsRes.data.jobs?.completed || 0,
+        cancelled: statsRes.data.jobs?.cancelled || 0,
+        thisWeek: statsRes.data.jobs?.thisWeek || 0,
+        thisMonth: statsRes.data.jobs?.thisMonth || 0,
+      });
+    } catch (err) {
+      console.error('Failed to fetch jobs:', err);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  }, [page, searchQuery, statusFilter]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchData();
+    }
+  }, [isAuthenticated, fetchData]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, statusFilter]);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const formatBudget = (budget?: Job['budget']) => {
+    if (!budget) return '-';
+    if (budget.min && budget.max) {
+      return `₾${budget.min} - ₾${budget.max}`;
+    }
+    if (budget.min) return `₾${budget.min}+`;
+    if (budget.max) return `${locale === 'ka' ? 'მდე' : 'Up to'} ₾${budget.max}`;
+    return '-';
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'open': return THEME.success;
+      case 'in_progress': return THEME.warning;
+      case 'completed': return THEME.info;
+      case 'cancelled': return THEME.error;
+      default: return THEME.textDim;
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'open': return locale === 'ka' ? 'ღია' : 'Open';
+      case 'in_progress': return locale === 'ka' ? 'მიმდინარე' : 'In Progress';
+      case 'completed': return locale === 'ka' ? 'დასრულებული' : 'Completed';
+      case 'cancelled': return locale === 'ka' ? 'გაუქმებული' : 'Cancelled';
+      default: return status;
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'open': return Play;
+      case 'in_progress': return Clock;
+      case 'completed': return CheckCircle;
+      case 'cancelled': return XCircle;
+      default: return Briefcase;
+    }
+  };
+
+  const statCards = [
+    { label: locale === 'ka' ? 'სულ სამუშაო' : 'Total Jobs', value: stats?.total || 0, icon: Briefcase, color: THEME.primary },
+    { label: locale === 'ka' ? 'ღია' : 'Open', value: stats?.open || 0, icon: Play, color: THEME.success },
+    { label: locale === 'ka' ? 'მიმდინარე' : 'In Progress', value: stats?.inProgress || 0, icon: Clock, color: THEME.warning },
+    { label: locale === 'ka' ? 'დასრულებული' : 'Completed', value: stats?.completed || 0, icon: CheckCircle, color: THEME.info },
   ];
 
-  return (
-    <div className="min-h-screen bg-cream-50 dark:bg-dark-bg py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-50">{t('admin.jobsPage.title')}</h1>
-            <p className="mt-2 text-neutral-600 dark:text-neutral-400">{t('admin.jobsPage.subtitle')}</p>
-          </div>
-          <button
-            onClick={() => router.push('/admin')}
-            className="text-sm text-forest-800 dark:text-primary-400 hover:text-terracotta-500 font-medium transition-all duration-200 ease-out"
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: THEME.surface }}>
+        <div className="text-center">
+          <div
+            className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto animate-pulse"
+            style={{ background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primaryDark})` }}
           >
-            ← {t('admin.backToDashboard')}
-          </button>
+            <Briefcase className="w-8 h-8 text-white" />
+          </div>
+          <p className="mt-4 text-sm" style={{ color: THEME.textMuted }}>
+            {locale === 'ka' ? 'იტვირთება...' : 'Loading jobs...'}
+          </p>
         </div>
+      </div>
+    );
+  }
 
+  return (
+    <div className="min-h-screen" style={{ background: THEME.surface }}>
+      {/* Google Fonts */}
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+      `}</style>
+
+      {/* Header */}
+      <header
+        className="sticky top-0 z-50 backdrop-blur-xl"
+        style={{
+          background: `${THEME.surface}E6`,
+          borderBottom: `1px solid ${THEME.border}`,
+        }}
+      >
+        <div className="max-w-[1800px] mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => router.push('/admin')}
+                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+              >
+                <ArrowLeft className="w-5 h-5" style={{ color: THEME.textMuted }} />
+              </button>
+              <div>
+                <h1
+                  className="text-xl font-semibold tracking-tight"
+                  style={{ color: THEME.text, fontFamily: "'Inter', sans-serif" }}
+                >
+                  {locale === 'ka' ? 'სამუშაოების მართვა' : 'Job Management'}
+                </h1>
+                <p className="text-sm mt-0.5" style={{ color: THEME.textMuted }}>
+                  {stats?.total.toLocaleString() || 0} {locale === 'ka' ? 'სამუშაო' : 'jobs total'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => fetchData(true)}
+              disabled={isRefreshing}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all hover:scale-105 disabled:opacity-50"
+              style={{
+                background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primaryDark})`,
+                color: 'white',
+                boxShadow: `0 4px 16px ${THEME.primary}40`,
+              }}
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">{locale === 'ka' ? 'განახლება' : 'Refresh'}</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-[1800px] mx-auto px-6 py-8">
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat) => (
-            <div key={stat.label} className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-6">
-              <div className="flex items-center">
-                <div className={`${stat.color} p-3 rounded-xl`}>
-                  <stat.icon className="h-6 w-6 text-white" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {statCards.map((stat) => (
+            <div
+              key={stat.label}
+              className="group relative overflow-hidden rounded-2xl p-5 transition-all duration-300 hover:scale-[1.02]"
+              style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+            >
+              <div
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ background: `radial-gradient(circle at top right, ${stat.color}10, transparent 70%)` }}
+              />
+              <div className="relative flex items-center gap-4">
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center"
+                  style={{ background: `${stat.color}20` }}
+                >
+                  <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400">{stat.label}</p>
-                  <p className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50">{stat.value}</p>
+                <div>
+                  <p
+                    className="text-2xl font-bold tracking-tight"
+                    style={{ color: THEME.text, fontFamily: "'JetBrains Mono', monospace" }}
+                  >
+                    {stat.value.toLocaleString()}
+                  </p>
+                  <p className="text-sm" style={{ color: THEME.textMuted }}>{stat.label}</p>
                 </div>
               </div>
             </div>
@@ -53,68 +328,269 @@ function AdminJobsPageContent() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-4 mb-6">
+        <div
+          className="rounded-2xl p-4 mb-6"
+          style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+        >
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-neutral-400" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: THEME.textDim }} />
               <input
                 type="text"
-                placeholder={t('admin.jobsPage.searchPlaceholder')}
+                placeholder={locale === 'ka' ? 'სათაური ან კატეგორია...' : 'Search by title or category...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 dark:border-dark-border dark:bg-dark-bg dark:text-neutral-50 rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 transition-all duration-200 ease-out"
+                className="w-full pl-12 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-all"
+                style={{
+                  background: THEME.surface,
+                  border: `1px solid ${THEME.border}`,
+                  color: THEME.text,
+                }}
               />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2.5 border border-neutral-200 dark:border-dark-border dark:bg-dark-bg dark:text-neutral-50 rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 transition-all duration-200 ease-out"
+              className="px-4 py-3 rounded-xl text-sm cursor-pointer focus:outline-none transition-all"
+              style={{
+                background: THEME.surface,
+                border: `1px solid ${THEME.border}`,
+                color: THEME.text,
+              }}
             >
-              <option value="all">{t('admin.jobsPage.allStatus')}</option>
-              <option value="pending">{t('admin.jobsPage.pendingReview')}</option>
-              <option value="approved">{t('admin.jobsPage.approved')}</option>
-              <option value="flagged">{t('admin.jobsPage.flagged')}</option>
-              <option value="rejected">{t('admin.jobsPage.rejected')}</option>
+              <option value="all">{locale === 'ka' ? 'ყველა სტატუსი' : 'All Status'}</option>
+              <option value="open">{locale === 'ka' ? 'ღია' : 'Open'}</option>
+              <option value="in_progress">{locale === 'ka' ? 'მიმდინარე' : 'In Progress'}</option>
+              <option value="completed">{locale === 'ka' ? 'დასრულებული' : 'Completed'}</option>
+              <option value="cancelled">{locale === 'ka' ? 'გაუქმებული' : 'Cancelled'}</option>
             </select>
           </div>
         </div>
 
         {/* Jobs Table */}
-        <div className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none overflow-hidden">
-          <table className="min-w-full divide-y divide-neutral-100 dark:divide-dark-border">
-            <thead className="bg-neutral-50 dark:bg-dark-bg">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  {t('admin.jobsPage.tableJob')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  {t('admin.jobsPage.tableClient')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  {t('admin.jobsPage.tableCategory')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  {t('admin.jobsPage.tableStatus')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  {t('admin.jobsPage.tablePosted')}
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  {t('admin.jobsPage.tableActions')}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-dark-card divide-y divide-neutral-100 dark:divide-dark-border">
-              <tr>
-                <td colSpan={6} className="px-6 py-12 text-center">
-                  <Briefcase className="h-12 w-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-3" />
-                  <p className="text-neutral-500 dark:text-neutral-400">{t('admin.jobsPage.noJobsFound')}</p>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div
+          className="rounded-2xl overflow-hidden"
+          style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+        >
+          {/* Table Header */}
+          <div
+            className="px-6 py-4 grid grid-cols-12 gap-4 text-xs font-medium uppercase tracking-wider"
+            style={{ borderBottom: `1px solid ${THEME.border}`, color: THEME.textDim }}
+          >
+            <div className="col-span-4">{locale === 'ka' ? 'სამუშაო' : 'Job'}</div>
+            <div className="col-span-2">{locale === 'ka' ? 'კლიენტი' : 'Client'}</div>
+            <div className="col-span-2 hidden lg:block">{locale === 'ka' ? 'სტატუსი' : 'Status'}</div>
+            <div className="col-span-2 hidden md:block">{locale === 'ka' ? 'თარიღი' : 'Posted'}</div>
+            <div className="col-span-2 text-right">{locale === 'ka' ? 'მოქმედებები' : 'Actions'}</div>
+          </div>
+
+          {/* Table Body */}
+          {jobs.length === 0 ? (
+            <div className="p-12 text-center">
+              <Briefcase className="w-16 h-16 mx-auto mb-4" style={{ color: THEME.textDim }} />
+              <p className="text-lg font-medium" style={{ color: THEME.textMuted }}>
+                {locale === 'ka' ? 'სამუშაოები არ მოიძებნა' : 'No jobs found'}
+              </p>
+              <p className="text-sm mt-1" style={{ color: THEME.textDim }}>
+                {locale === 'ka' ? 'სცადეთ სხვა ძებნა' : 'Try adjusting your search or filters'}
+              </p>
+            </div>
+          ) : (
+            jobs.map((job, index) => {
+              const StatusIcon = getStatusIcon(job.status);
+              return (
+                <div
+                  key={job._id}
+                  className="px-6 py-4 grid grid-cols-12 gap-4 items-center transition-colors cursor-pointer"
+                  style={{
+                    borderBottom: index < jobs.length - 1 ? `1px solid ${THEME.border}` : 'none',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = THEME.surfaceHover}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  {/* Job Info */}
+                  <div className="col-span-4 min-w-0">
+                    <p className="font-medium text-sm truncate" style={{ color: THEME.text }}>
+                      {job.title}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="flex items-center gap-1 text-xs" style={{ color: THEME.textDim }}>
+                        <Tag className="w-3 h-3" />
+                        {t(`categories.${job.category}`) || job.category}
+                      </span>
+                      {job.location && (
+                        <>
+                          <span style={{ color: THEME.textDim }}>·</span>
+                          <span className="flex items-center gap-1 text-xs" style={{ color: THEME.textDim }}>
+                            <MapPin className="w-3 h-3" />
+                            {job.location}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    {job.budget && (
+                      <div className="flex items-center gap-1 mt-1 text-xs" style={{ color: THEME.accent }}>
+                        <DollarSign className="w-3 h-3" />
+                        {formatBudget(job.budget)}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Client */}
+                  <div className="col-span-2 flex items-center gap-2">
+                    <Avatar src={job.clientId?.avatar} name={job.clientId?.name || 'Client'} size="sm" />
+                    <span className="text-sm truncate" style={{ color: THEME.textMuted }}>
+                      {job.clientId?.name || 'Unknown'}
+                    </span>
+                  </div>
+
+                  {/* Status */}
+                  <div className="col-span-2 hidden lg:block">
+                    <span
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium"
+                      style={{
+                        background: `${getStatusColor(job.status)}20`,
+                        color: getStatusColor(job.status),
+                      }}
+                    >
+                      <StatusIcon className="w-3 h-3" />
+                      {getStatusLabel(job.status)}
+                    </span>
+                  </div>
+
+                  {/* Posted Date */}
+                  <div className="col-span-2 hidden md:block">
+                    <p
+                      className="text-sm"
+                      style={{ color: THEME.textMuted, fontFamily: "'JetBrains Mono', monospace" }}
+                    >
+                      {formatDate(job.createdAt)}
+                    </p>
+                    {job.proposalCount !== undefined && (
+                      <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: THEME.textDim }}>
+                        <FileText className="w-3 h-3" />
+                        {job.proposalCount} {locale === 'ka' ? 'შეთავაზება' : 'proposals'}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="col-span-2 flex items-center justify-end gap-2">
+                    <button
+                      onClick={() => router.push(`/jobs/${job._id}`)}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+                      style={{ background: `${THEME.info}20` }}
+                      title={locale === 'ka' ? 'ნახვა' : 'View Job'}
+                    >
+                      <Eye className="w-4 h-4" style={{ color: THEME.info }} />
+                    </button>
+                    <div className="relative">
+                      <button
+                        onClick={() => setActionMenuJob(actionMenuJob === job._id ? null : job._id)}
+                        className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+                        style={{ background: THEME.surface }}
+                      >
+                        <MoreVertical className="w-4 h-4" style={{ color: THEME.textMuted }} />
+                      </button>
+                      {actionMenuJob === job._id && (
+                        <div
+                          className="absolute right-0 mt-2 w-48 rounded-xl overflow-hidden shadow-xl z-10"
+                          style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+                        >
+                          <button
+                            className="w-full px-4 py-3 text-left text-sm flex items-center gap-3 transition-colors"
+                            style={{ color: THEME.text }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = THEME.surfaceHover}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                            onClick={() => {
+                              setActionMenuJob(null);
+                              router.push(`/jobs/${job._id}`);
+                            }}
+                          >
+                            <Eye className="w-4 h-4" style={{ color: THEME.info }} />
+                            {locale === 'ka' ? 'დეტალების ნახვა' : 'View Details'}
+                          </button>
+                          <button
+                            className="w-full px-4 py-3 text-left text-sm flex items-center gap-3 transition-colors"
+                            style={{ color: THEME.text }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = THEME.surfaceHover}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                            onClick={() => {
+                              setActionMenuJob(null);
+                              router.push(`/profile/${job.clientId?._id}`);
+                            }}
+                          >
+                            <User className="w-4 h-4" style={{ color: THEME.warning }} />
+                            {locale === 'ka' ? 'კლიენტის პროფილი' : 'View Client'}
+                          </button>
+                          <div style={{ borderTop: `1px solid ${THEME.border}` }} />
+                          {job.status === 'open' && (
+                            <button
+                              className="w-full px-4 py-3 text-left text-sm flex items-center gap-3 transition-colors"
+                              style={{ color: THEME.warning }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = THEME.surfaceHover}
+                              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                              onClick={() => setActionMenuJob(null)}
+                            >
+                              <Pause className="w-4 h-4" />
+                              {locale === 'ka' ? 'შეჩერება' : 'Pause Job'}
+                            </button>
+                          )}
+                          <button
+                            className="w-full px-4 py-3 text-left text-sm flex items-center gap-3 transition-colors"
+                            style={{ color: THEME.error }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = THEME.surfaceHover}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                            onClick={() => setActionMenuJob(null)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            {locale === 'ka' ? 'წაშლა' : 'Delete Job'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
-      </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-6">
+            <p className="text-sm" style={{ color: THEME.textMuted }}>
+              {locale === 'ka' ? `გვერდი ${page} / ${totalPages}` : `Page ${page} of ${totalPages}`}
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all disabled:opacity-50"
+                style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+              >
+                <ChevronLeft className="w-5 h-5" style={{ color: THEME.textMuted }} />
+              </button>
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all disabled:opacity-50"
+                style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+              >
+                <ChevronRight className="w-5 h-5" style={{ color: THEME.textMuted }} />
+              </button>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Click outside to close menu */}
+      {actionMenuJob && (
+        <div
+          className="fixed inset-0 z-0"
+          onClick={() => setActionMenuJob(null)}
+        />
+      )}
     </div>
   );
 }

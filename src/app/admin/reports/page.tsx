@@ -1,52 +1,368 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import AuthGuard from '@/components/common/AuthGuard';
-import { Flag, Search, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
+import Avatar from '@/components/common/Avatar';
+import { api } from '@/lib/api';
+import {
+  Flag,
+  Search,
+  AlertTriangle,
+  Clock,
+  CheckCircle,
+  XCircle,
+  ArrowLeft,
+  RefreshCw,
+  MoreVertical,
+  Eye,
+  MessageCircle,
+  User,
+  Briefcase,
+  CreditCard,
+  ShieldAlert,
+  ChevronLeft,
+  ChevronRight,
+  Archive,
+  Trash2,
+} from 'lucide-react';
+
+// Terracotta admin theme (matching dashboard)
+const THEME = {
+  primary: '#C4735B',
+  primaryDark: '#A85D4A',
+  accent: '#D4897A',
+  surface: '#1A1A1C',
+  surfaceLight: '#232326',
+  surfaceHover: '#2A2A2E',
+  border: '#333338',
+  borderLight: '#3D3D42',
+  text: '#FAFAFA',
+  textMuted: '#A1A1AA',
+  textDim: '#71717A',
+  success: '#22C55E',
+  warning: '#F59E0B',
+  error: '#EF4444',
+  info: '#3B82F6',
+};
+
+interface Report {
+  _id: string;
+  type: 'user' | 'job' | 'order' | 'payment';
+  reason: string;
+  description?: string;
+  status: 'pending' | 'investigating' | 'resolved' | 'dismissed';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  reporterId: {
+    _id: string;
+    name: string;
+    avatar?: string;
+  };
+  reportedId?: {
+    _id: string;
+    name?: string;
+    title?: string;
+  };
+  createdAt: string;
+  updatedAt?: string;
+}
+
+interface ReportStats {
+  total: number;
+  pending: number;
+  investigating: number;
+  resolved: number;
+  dismissed: number;
+  urgent: number;
+}
 
 function AdminReportsPageContent() {
-  const { t } = useLanguage();
+  const { isAuthenticated } = useAuth();
+  const { t, locale } = useLanguage();
   const router = useRouter();
+
+  const [reports, setReports] = useState<Report[]>([]);
+  const [stats, setStats] = useState<ReportStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [actionMenuReport, setActionMenuReport] = useState<string | null>(null);
 
-  const stats = [
-    { label: t('admin.reportsPage.totalReports'), value: '0', icon: Flag, color: 'bg-blue-500' },
-    { label: t('admin.pending'), value: '0', icon: Clock, color: 'bg-yellow-500' },
-    { label: t('admin.resolved'), value: '0', icon: CheckCircle, color: 'bg-[#D2691E]' },
-    { label: t('admin.reportsPage.urgent'), value: '0', icon: AlertTriangle, color: 'bg-red-500' },
+  const fetchData = useCallback(async (showRefresh = false) => {
+    try {
+      if (showRefresh) setIsRefreshing(true);
+      else setIsLoading(true);
+
+      const params = new URLSearchParams();
+      params.set('page', page.toString());
+      params.set('limit', '20');
+      if (searchQuery) params.set('search', searchQuery);
+      if (statusFilter !== 'all') params.set('status', statusFilter);
+      if (typeFilter !== 'all') params.set('type', typeFilter);
+
+      // Try to fetch paginated reports
+      let reportsData: Report[] = [];
+      let totalPagesData = 1;
+      let statsData: ReportStats = { total: 0, pending: 0, investigating: 0, resolved: 0, dismissed: 0, urgent: 0 };
+
+      try {
+        const [reportsRes, statsRes] = await Promise.all([
+          api.get(`/admin/reports?${params.toString()}`),
+          api.get('/admin/report-stats'),
+        ]);
+        console.log('Reports API response:', reportsRes.data);
+        console.log('Report stats response:', statsRes.data);
+        reportsData = reportsRes.data.reports || [];
+        totalPagesData = reportsRes.data.totalPages || 1;
+        statsData = statsRes.data;
+      } catch (err: any) {
+        console.error('Failed to fetch /admin/reports:', err.response?.status, err.response?.data || err.message);
+        // Fallback: use support tickets endpoint
+        try {
+          const ticketsRes = await api.get('/support/admin/tickets');
+          console.log('Fallback to support tickets:', ticketsRes.data);
+          // Transform tickets to report format
+          const tickets = ticketsRes.data || [];
+          reportsData = tickets.map((ticket: any) => ({
+            _id: ticket._id,
+            type: ticket.category || 'user',
+            reason: ticket.subject,
+            description: ticket.messages?.[0]?.content || '',
+            status: ticket.status === 'open' ? 'pending' : ticket.status === 'in_progress' ? 'investigating' : ticket.status === 'resolved' ? 'resolved' : 'dismissed',
+            priority: ticket.priority || 'medium',
+            reporterId: ticket.userId,
+            createdAt: ticket.createdAt,
+            updatedAt: ticket.updatedAt,
+          }));
+          // Get stats from dashboard stats
+          const dashboardStats = await api.get('/admin/stats').catch(() => ({ data: { support: {} } }));
+          statsData = {
+            total: dashboardStats.data.support?.total || tickets.length,
+            pending: dashboardStats.data.support?.open || 0,
+            investigating: dashboardStats.data.support?.inProgress || 0,
+            resolved: dashboardStats.data.support?.resolved || 0,
+            dismissed: 0,
+            urgent: dashboardStats.data.support?.unread || 0,
+          };
+        } catch (fallbackErr) {
+          console.error('Fallback also failed:', fallbackErr);
+        }
+      }
+
+      setReports(reportsData);
+      setTotalPages(totalPagesData);
+      setStats(statsData);
+    } catch (err) {
+      console.error('Failed to fetch reports:', err);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  }, [page, searchQuery, statusFilter, typeFilter]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchData();
+    }
+  }, [isAuthenticated, fetchData]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, statusFilter, typeFilter]);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending': return THEME.warning;
+      case 'investigating': return THEME.info;
+      case 'resolved': return THEME.success;
+      case 'dismissed': return THEME.textDim;
+      default: return THEME.textDim;
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'pending': return locale === 'ka' ? 'მოლოდინში' : 'Pending';
+      case 'investigating': return locale === 'ka' ? 'გამოძიება' : 'Investigating';
+      case 'resolved': return locale === 'ka' ? 'გადაჭრილი' : 'Resolved';
+      case 'dismissed': return locale === 'ka' ? 'უარყოფილი' : 'Dismissed';
+      default: return status;
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'pending': return Clock;
+      case 'investigating': return ShieldAlert;
+      case 'resolved': return CheckCircle;
+      case 'dismissed': return XCircle;
+      default: return Flag;
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return THEME.error;
+      case 'high': return '#F97316';
+      case 'medium': return THEME.warning;
+      case 'low': return THEME.textDim;
+      default: return THEME.textDim;
+    }
+  };
+
+  const getPriorityLabel = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return locale === 'ka' ? 'გადაუდებელი' : 'Urgent';
+      case 'high': return locale === 'ka' ? 'მაღალი' : 'High';
+      case 'medium': return locale === 'ka' ? 'საშუალო' : 'Medium';
+      case 'low': return locale === 'ka' ? 'დაბალი' : 'Low';
+      default: return priority;
+    }
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'user': return User;
+      case 'job': return Briefcase;
+      case 'order': return MessageCircle;
+      case 'payment': return CreditCard;
+      default: return Flag;
+    }
+  };
+
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'user': return locale === 'ka' ? 'მომხმარებელი' : 'User';
+      case 'job': return locale === 'ka' ? 'სამუშაო' : 'Job';
+      case 'order': return locale === 'ka' ? 'შეკვეთა' : 'Order';
+      case 'payment': return locale === 'ka' ? 'გადახდა' : 'Payment';
+      default: return type;
+    }
+  };
+
+  const statCards = [
+    { label: locale === 'ka' ? 'სულ რეპორტი' : 'Total Reports', value: stats?.total || 0, icon: Flag, color: THEME.primary },
+    { label: locale === 'ka' ? 'მოლოდინში' : 'Pending', value: stats?.pending || 0, icon: Clock, color: THEME.warning },
+    { label: locale === 'ka' ? 'გადაჭრილი' : 'Resolved', value: stats?.resolved || 0, icon: CheckCircle, color: THEME.success },
+    { label: locale === 'ka' ? 'გადაუდებელი' : 'Urgent', value: stats?.urgent || 0, icon: AlertTriangle, color: THEME.error },
   ];
 
-  return (
-    <div className="min-h-screen bg-cream-50 dark:bg-dark-bg py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-50">{t('admin.reportsPage.title')}</h1>
-            <p className="mt-2 text-neutral-600 dark:text-neutral-400">{t('admin.reportsPage.subtitle')}</p>
-          </div>
-          <button
-            onClick={() => router.push('/admin')}
-            className="text-sm text-forest-800 dark:text-primary-400 hover:text-terracotta-500 font-medium transition-all duration-200 ease-out"
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: THEME.surface }}>
+        <div className="text-center">
+          <div
+            className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto animate-pulse"
+            style={{ background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primaryDark})` }}
           >
-            ← {t('admin.backToDashboard')}
-          </button>
+            <Flag className="w-8 h-8 text-white" />
+          </div>
+          <p className="mt-4 text-sm" style={{ color: THEME.textMuted }}>
+            {locale === 'ka' ? 'იტვირთება...' : 'Loading reports...'}
+          </p>
         </div>
+      </div>
+    );
+  }
 
+  return (
+    <div className="min-h-screen" style={{ background: THEME.surface }}>
+      {/* Google Fonts */}
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+      `}</style>
+
+      {/* Header */}
+      <header
+        className="sticky top-0 z-50 backdrop-blur-xl"
+        style={{
+          background: `${THEME.surface}E6`,
+          borderBottom: `1px solid ${THEME.border}`,
+        }}
+      >
+        <div className="max-w-[1800px] mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => router.push('/admin')}
+                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+              >
+                <ArrowLeft className="w-5 h-5" style={{ color: THEME.textMuted }} />
+              </button>
+              <div>
+                <h1
+                  className="text-xl font-semibold tracking-tight"
+                  style={{ color: THEME.text, fontFamily: "'Inter', sans-serif" }}
+                >
+                  {locale === 'ka' ? 'რეპორტების მართვა' : 'Report Management'}
+                </h1>
+                <p className="text-sm mt-0.5" style={{ color: THEME.textMuted }}>
+                  {stats?.total.toLocaleString() || 0} {locale === 'ka' ? 'რეპორტი' : 'reports total'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => fetchData(true)}
+              disabled={isRefreshing}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all hover:scale-105 disabled:opacity-50"
+              style={{
+                background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primaryDark})`,
+                color: 'white',
+                boxShadow: `0 4px 16px ${THEME.primary}40`,
+              }}
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">{locale === 'ka' ? 'განახლება' : 'Refresh'}</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-[1800px] mx-auto px-6 py-8">
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat) => (
-            <div key={stat.label} className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-6">
-              <div className="flex items-center">
-                <div className={`${stat.color} p-3 rounded-xl`}>
-                  <stat.icon className="h-6 w-6 text-white" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {statCards.map((stat) => (
+            <div
+              key={stat.label}
+              className="group relative overflow-hidden rounded-2xl p-5 transition-all duration-300 hover:scale-[1.02]"
+              style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+            >
+              <div
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ background: `radial-gradient(circle at top right, ${stat.color}10, transparent 70%)` }}
+              />
+              <div className="relative flex items-center gap-4">
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center"
+                  style={{ background: `${stat.color}20` }}
+                >
+                  <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400">{stat.label}</p>
-                  <p className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50">{stat.value}</p>
+                <div>
+                  <p
+                    className="text-2xl font-bold tracking-tight"
+                    style={{ color: THEME.text, fontFamily: "'JetBrains Mono', monospace" }}
+                  >
+                    {stat.value.toLocaleString()}
+                  </p>
+                  <p className="text-sm" style={{ color: THEME.textMuted }}>{stat.label}</p>
                 </div>
               </div>
             </div>
@@ -54,82 +370,278 @@ function AdminReportsPageContent() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-4 mb-6">
+        <div
+          className="rounded-2xl p-4 mb-6"
+          style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+        >
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-neutral-400" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: THEME.textDim }} />
               <input
                 type="text"
-                placeholder={t('admin.reportsPage.searchPlaceholder')}
+                placeholder={locale === 'ka' ? 'ძებნა...' : 'Search reports...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 dark:border-dark-border dark:bg-dark-bg dark:text-neutral-50 rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 transition-all duration-200 ease-out"
+                className="w-full pl-12 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-all"
+                style={{
+                  background: THEME.surface,
+                  border: `1px solid ${THEME.border}`,
+                  color: THEME.text,
+                }}
               />
             </div>
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="px-4 py-2.5 border border-neutral-200 dark:border-dark-border dark:bg-dark-bg dark:text-neutral-50 rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 transition-all duration-200 ease-out"
+              className="px-4 py-3 rounded-xl text-sm cursor-pointer focus:outline-none transition-all"
+              style={{
+                background: THEME.surface,
+                border: `1px solid ${THEME.border}`,
+                color: THEME.text,
+              }}
             >
-              <option value="all">{t('admin.reportsPage.allTypes')}</option>
-              <option value="user">{t('admin.reportsPage.userReport')}</option>
-              <option value="job">{t('admin.reportsPage.jobReport')}</option>
-              <option value="order">{t('admin.reportsPage.orderDispute')}</option>
-              <option value="payment">{t('admin.reportsPage.paymentIssue')}</option>
+              <option value="all">{locale === 'ka' ? 'ყველა ტიპი' : 'All Types'}</option>
+              <option value="user">{locale === 'ka' ? 'მომხმარებელი' : 'User'}</option>
+              <option value="job">{locale === 'ka' ? 'სამუშაო' : 'Job'}</option>
+              <option value="order">{locale === 'ka' ? 'შეკვეთა' : 'Order'}</option>
+              <option value="payment">{locale === 'ka' ? 'გადახდა' : 'Payment'}</option>
             </select>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2.5 border border-neutral-200 dark:border-dark-border dark:bg-dark-bg dark:text-neutral-50 rounded-xl focus:ring-2 focus:ring-forest-800/20 focus:border-forest-800 transition-all duration-200 ease-out"
+              className="px-4 py-3 rounded-xl text-sm cursor-pointer focus:outline-none transition-all"
+              style={{
+                background: THEME.surface,
+                border: `1px solid ${THEME.border}`,
+                color: THEME.text,
+              }}
             >
-              <option value="all">{t('admin.reportsPage.allStatus')}</option>
-              <option value="pending">{t('admin.pending')}</option>
-              <option value="investigating">{t('admin.reportsPage.investigating')}</option>
-              <option value="resolved">{t('admin.resolved')}</option>
-              <option value="dismissed">{t('admin.reportsPage.dismissed')}</option>
+              <option value="all">{locale === 'ka' ? 'ყველა სტატუსი' : 'All Status'}</option>
+              <option value="pending">{locale === 'ka' ? 'მოლოდინში' : 'Pending'}</option>
+              <option value="investigating">{locale === 'ka' ? 'გამოძიება' : 'Investigating'}</option>
+              <option value="resolved">{locale === 'ka' ? 'გადაჭრილი' : 'Resolved'}</option>
+              <option value="dismissed">{locale === 'ka' ? 'უარყოფილი' : 'Dismissed'}</option>
             </select>
           </div>
         </div>
 
         {/* Reports Table */}
-        <div className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none overflow-hidden">
-          <table className="min-w-full divide-y divide-neutral-100 dark:divide-dark-border">
-            <thead className="bg-neutral-50 dark:bg-dark-bg">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  {t('admin.reportsPage.tableReport')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  {t('admin.reportsPage.tableType')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  {t('admin.reportsPage.tableReporter')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  {t('admin.reportsPage.tableStatus')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  {t('admin.reportsPage.tablePriority')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  {t('admin.reportsPage.tableDate')}
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  {t('admin.reportsPage.tableActions')}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-dark-card divide-y divide-neutral-100 dark:divide-dark-border">
-              <tr>
-                <td colSpan={7} className="px-6 py-12 text-center">
-                  <Flag className="h-12 w-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-3" />
-                  <p className="text-neutral-500 dark:text-neutral-400">{t('admin.reportsPage.noReportsFound')}</p>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div
+          className="rounded-2xl overflow-hidden"
+          style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+        >
+          {/* Table Header */}
+          <div
+            className="px-6 py-4 grid grid-cols-12 gap-4 text-xs font-medium uppercase tracking-wider"
+            style={{ borderBottom: `1px solid ${THEME.border}`, color: THEME.textDim }}
+          >
+            <div className="col-span-3">{locale === 'ka' ? 'რეპორტი' : 'Report'}</div>
+            <div className="col-span-2">{locale === 'ka' ? 'ტიპი' : 'Type'}</div>
+            <div className="col-span-2">{locale === 'ka' ? 'რეპორტერი' : 'Reporter'}</div>
+            <div className="col-span-2 hidden lg:block">{locale === 'ka' ? 'სტატუსი' : 'Status'}</div>
+            <div className="col-span-1 hidden md:block">{locale === 'ka' ? 'პრიორიტეტი' : 'Priority'}</div>
+            <div className="col-span-2 text-right">{locale === 'ka' ? 'მოქმედებები' : 'Actions'}</div>
+          </div>
+
+          {/* Table Body */}
+          {reports.length === 0 ? (
+            <div className="p-12 text-center">
+              <Flag className="w-16 h-16 mx-auto mb-4" style={{ color: THEME.textDim }} />
+              <p className="text-lg font-medium" style={{ color: THEME.textMuted }}>
+                {locale === 'ka' ? 'რეპორტები არ მოიძებნა' : 'No reports found'}
+              </p>
+              <p className="text-sm mt-1" style={{ color: THEME.textDim }}>
+                {locale === 'ka' ? 'რეპორტები ჯერ არ არის' : 'No reports have been submitted yet'}
+              </p>
+            </div>
+          ) : (
+            reports.map((report, index) => {
+              const StatusIcon = getStatusIcon(report.status);
+              const TypeIcon = getTypeIcon(report.type);
+              return (
+                <div
+                  key={report._id}
+                  className="px-6 py-4 grid grid-cols-12 gap-4 items-center transition-colors cursor-pointer"
+                  style={{
+                    borderBottom: index < reports.length - 1 ? `1px solid ${THEME.border}` : 'none',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = THEME.surfaceHover}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  {/* Report Info */}
+                  <div className="col-span-3 min-w-0">
+                    <p className="font-medium text-sm truncate" style={{ color: THEME.text }}>
+                      {report.reason}
+                    </p>
+                    {report.description && (
+                      <p className="text-xs mt-1 truncate" style={{ color: THEME.textDim }}>
+                        {report.description}
+                      </p>
+                    )}
+                    <p className="text-xs mt-1" style={{ color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace" }}>
+                      {formatDate(report.createdAt)}
+                    </p>
+                  </div>
+
+                  {/* Type */}
+                  <div className="col-span-2">
+                    <span
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium"
+                      style={{
+                        background: `${THEME.info}20`,
+                        color: THEME.info,
+                      }}
+                    >
+                      <TypeIcon className="w-3 h-3" />
+                      {getTypeLabel(report.type)}
+                    </span>
+                  </div>
+
+                  {/* Reporter */}
+                  <div className="col-span-2 flex items-center gap-2">
+                    <Avatar src={report.reporterId?.avatar} name={report.reporterId?.name || 'User'} size="sm" />
+                    <span className="text-sm truncate" style={{ color: THEME.textMuted }}>
+                      {report.reporterId?.name || 'Anonymous'}
+                    </span>
+                  </div>
+
+                  {/* Status */}
+                  <div className="col-span-2 hidden lg:block">
+                    <span
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium"
+                      style={{
+                        background: `${getStatusColor(report.status)}20`,
+                        color: getStatusColor(report.status),
+                      }}
+                    >
+                      <StatusIcon className="w-3 h-3" />
+                      {getStatusLabel(report.status)}
+                    </span>
+                  </div>
+
+                  {/* Priority */}
+                  <div className="col-span-1 hidden md:block">
+                    <span
+                      className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium"
+                      style={{
+                        background: `${getPriorityColor(report.priority)}20`,
+                        color: getPriorityColor(report.priority),
+                      }}
+                    >
+                      {getPriorityLabel(report.priority)}
+                    </span>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="col-span-2 flex items-center justify-end gap-2">
+                    <button
+                      className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+                      style={{ background: `${THEME.info}20` }}
+                      title={locale === 'ka' ? 'ნახვა' : 'View Details'}
+                    >
+                      <Eye className="w-4 h-4" style={{ color: THEME.info }} />
+                    </button>
+                    <div className="relative">
+                      <button
+                        onClick={() => setActionMenuReport(actionMenuReport === report._id ? null : report._id)}
+                        className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+                        style={{ background: THEME.surface }}
+                      >
+                        <MoreVertical className="w-4 h-4" style={{ color: THEME.textMuted }} />
+                      </button>
+                      {actionMenuReport === report._id && (
+                        <div
+                          className="absolute right-0 mt-2 w-48 rounded-xl overflow-hidden shadow-xl z-10"
+                          style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+                        >
+                          <button
+                            className="w-full px-4 py-3 text-left text-sm flex items-center gap-3 transition-colors"
+                            style={{ color: THEME.text }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = THEME.surfaceHover}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                            onClick={() => setActionMenuReport(null)}
+                          >
+                            <Eye className="w-4 h-4" style={{ color: THEME.info }} />
+                            {locale === 'ka' ? 'დეტალების ნახვა' : 'View Details'}
+                          </button>
+                          {report.status === 'pending' && (
+                            <button
+                              className="w-full px-4 py-3 text-left text-sm flex items-center gap-3 transition-colors"
+                              style={{ color: THEME.info }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = THEME.surfaceHover}
+                              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                              onClick={() => setActionMenuReport(null)}
+                            >
+                              <ShieldAlert className="w-4 h-4" />
+                              {locale === 'ka' ? 'გამოძიების დაწყება' : 'Start Investigation'}
+                            </button>
+                          )}
+                          <button
+                            className="w-full px-4 py-3 text-left text-sm flex items-center gap-3 transition-colors"
+                            style={{ color: THEME.success }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = THEME.surfaceHover}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                            onClick={() => setActionMenuReport(null)}
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                            {locale === 'ka' ? 'გადაჭრა' : 'Mark Resolved'}
+                          </button>
+                          <div style={{ borderTop: `1px solid ${THEME.border}` }} />
+                          <button
+                            className="w-full px-4 py-3 text-left text-sm flex items-center gap-3 transition-colors"
+                            style={{ color: THEME.textDim }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = THEME.surfaceHover}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                            onClick={() => setActionMenuReport(null)}
+                          >
+                            <Archive className="w-4 h-4" />
+                            {locale === 'ka' ? 'უარყოფა' : 'Dismiss'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
-      </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-6">
+            <p className="text-sm" style={{ color: THEME.textMuted }}>
+              {locale === 'ka' ? `გვერდი ${page} / ${totalPages}` : `Page ${page} of ${totalPages}`}
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all disabled:opacity-50"
+                style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+              >
+                <ChevronLeft className="w-5 h-5" style={{ color: THEME.textMuted }} />
+              </button>
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all disabled:opacity-50"
+                style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+              >
+                <ChevronRight className="w-5 h-5" style={{ color: THEME.textMuted }} />
+              </button>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Click outside to close menu */}
+      {actionMenuReport && (
+        <div
+          className="fixed inset-0 z-0"
+          onClick={() => setActionMenuReport(null)}
+        />
+      )}
     </div>
   );
 }
