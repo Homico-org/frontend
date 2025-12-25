@@ -13,7 +13,7 @@ export default function ClientOrdersPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && (!isAuthenticated || user?.role !== 'client')) {
+    if (!isLoading && (!isAuthenticated || (user?.role !== 'client' && user?.role !== 'admin'))) {
       router.push('/');
     }
   }, [isLoading, isAuthenticated, user, router]);

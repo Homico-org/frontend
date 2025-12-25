@@ -57,9 +57,9 @@ export default function PostJobPage() {
     fetchCategories();
   }, []);
 
-  // Redirect if not authenticated or not a client
+  // Redirect if not authenticated or not a client/admin
   useEffect(() => {
-    if (!authLoading && (!isAuthenticated || user?.role !== 'client')) {
+    if (!authLoading && (!isAuthenticated || (user?.role !== 'client' && user?.role !== 'admin'))) {
       router.push('/browse');
     }
   }, [user, isAuthenticated, authLoading, router]);

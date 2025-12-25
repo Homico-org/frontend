@@ -59,7 +59,7 @@ export default function JobsPage() {
   const router = useRouter();
   const { filters, savedJobIds, handleSaveJob, appliedJobIds } = useJobsContext();
 
-  const isPro = user?.role === "pro";
+  const isPro = user?.role === "pro" || user?.role === "admin";
 
   // Redirect non-pro users to portfolio page
   useEffect(() => {

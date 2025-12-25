@@ -10,7 +10,7 @@ export default function BrowsePage() {
 
   useEffect(() => {
     if (!isLoading) {
-      const isPro = user?.role === "pro";
+      const isPro = user?.role === "pro" || user?.role === "admin";
       if (isPro) {
         router.replace("/browse/jobs");
       } else {

@@ -160,7 +160,7 @@ export default function JobDetailPage() {
   const galleryRef = useRef<HTMLDivElement>(null);
 
   const isOwner = user && job?.clientId && user.id === job.clientId._id;
-  const isPro = user?.role === "pro";
+  const isPro = user?.role === "pro" || user?.role === "admin";
 
   // Combine all media
   const allMedia: MediaItem[] = job
@@ -201,7 +201,7 @@ export default function JobDetailPage() {
 
   useEffect(() => {
     const fetchMyProposal = async () => {
-      if (!user || user.role !== "pro" || !params.id) return;
+      if (!user || (user.role !== "pro" && user.role !== "admin") || !params.id) return;
 
       try {
         const token = localStorage.getItem("access_token");
@@ -220,7 +220,7 @@ export default function JobDetailPage() {
       }
     };
 
-    if (user?.role === "pro") {
+    if (user?.role === "pro" || user?.role === "admin") {
       fetchMyProposal();
     }
   }, [user, params.id]);

@@ -34,8 +34,11 @@ export default function Header() {
   const [unviewedProposalsCount, setUnviewedProposalsCount] = useState(0);
 
   // Check if user is a high-level pro (design/architecture) - they get messages access
+  // Admin can also see messages
   const showMessagesIcon = useMemo(() => {
-    if (!user || user.role !== 'pro') return false;
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+    if (user.role !== 'pro') return false;
     return isHighLevelPro(user.selectedCategories);
   }, [user]);
 
@@ -45,8 +48,8 @@ export default function Header() {
 
     const fetchCounters = async () => {
       try {
-        if (user.role === 'pro') {
-          // Pro users: get count of proposal status updates (accepted/rejected)
+        if (user.role === 'pro' || user.role === 'admin') {
+          // Pro users and admin: get count of proposal status updates (accepted/rejected)
           const response = await api.get('/jobs/counters/proposal-updates');
           setProposalUpdatesCount(response.data.count || 0);
         }
@@ -139,7 +142,7 @@ export default function Header() {
         {/* Right side - Actions + Profile */}
         <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3">
           {/* Pro-specific buttons: My Proposals & My Jobs - only on large screens */}
-          {user?.role === "pro" && (
+          {(user?.role === "pro" || user?.role === "admin") && (
             <div className="hidden lg:flex items-center gap-1 p-1 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700/50">
               <Link
                 href="/my-proposals"
@@ -184,7 +187,7 @@ export default function Header() {
           )}
 
           {/* Pro-specific buttons: Icon only on tablet */}
-          {user?.role === "pro" && (
+          {(user?.role === "pro" || user?.role === "admin") && (
             <div className="hidden sm:flex lg:hidden items-center gap-1">
               <Link
                 href="/my-proposals"

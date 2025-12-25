@@ -119,7 +119,7 @@ function MyProposalsPageContent() {
   };
 
   useEffect(() => {
-    if (!authLoading && (!isAuthenticated || user?.role !== 'pro')) {
+    if (!authLoading && (!isAuthenticated || (user?.role !== 'pro' && user?.role !== 'admin'))) {
       router.push('/');
     }
   }, [authLoading, isAuthenticated, user, router]);
@@ -141,7 +141,7 @@ function MyProposalsPageContent() {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated && user?.role === 'pro' && !hasFetched.current) {
+    if (isAuthenticated && (user?.role === 'pro' || user?.role === 'admin') && !hasFetched.current) {
       hasFetched.current = true;
       fetchAllProposals();
 

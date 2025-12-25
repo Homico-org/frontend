@@ -949,7 +949,7 @@ function SettingsPageContent() {
 
   // Fetch deactivation status for pro users
   const fetchDeactivationStatus = useCallback(async () => {
-    if (!isAuthenticated || user?.role !== 'pro') return;
+    if (!isAuthenticated || (user?.role !== 'pro' && user?.role !== 'admin')) return;
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
       const token = localStorage.getItem('access_token');
@@ -968,7 +968,7 @@ function SettingsPageContent() {
   }, [isAuthenticated, user?.role]);
 
   useEffect(() => {
-    if (activeTab === 'account' && user?.role === 'pro') {
+    if (activeTab === 'account' && (user?.role === 'pro' || user?.role === 'admin')) {
       fetchDeactivationStatus();
     }
   }, [activeTab, user?.role, fetchDeactivationStatus]);
@@ -2079,8 +2079,8 @@ function SettingsPageContent() {
                   </p>
                 </div>
 
-                {/* Pro Profile Deactivation - Only for pro users */}
-                {user?.role === 'pro' && (
+                {/* Pro Profile Deactivation - Only for pro users and admin */}
+                {(user?.role === 'pro' || user?.role === 'admin') && (
                   <div
                     className="rounded-2xl overflow-hidden"
                     style={{

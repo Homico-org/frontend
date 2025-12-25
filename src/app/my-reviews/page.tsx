@@ -69,7 +69,7 @@ function MyReviewsPageContent() {
   const [actionMenuId, setActionMenuId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!authLoading && (!isAuthenticated || user?.role !== 'client')) {
+    if (!authLoading && (!isAuthenticated || (user?.role !== 'client' && user?.role !== 'admin'))) {
       router.push('/');
     }
   }, [authLoading, isAuthenticated, user, router]);
@@ -96,7 +96,7 @@ function MyReviewsPageContent() {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated && user?.role === 'client') {
+    if (isAuthenticated && (user?.role === 'client' || user?.role === 'admin')) {
       fetchReviews();
     }
   }, [isAuthenticated, user, fetchReviews]);

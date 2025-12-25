@@ -31,7 +31,6 @@ import {
   Zap,
   BarChart3,
   PieChart,
-  ArrowRight,
   Radio,
   Layers,
   Target,
@@ -426,6 +425,69 @@ function AdminDashboardPageContent() {
       </header>
 
       <main className="max-w-[1800px] mx-auto px-6 py-8">
+        {/* Quick Actions - Prominent at top */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+          {[
+            { label: locale === 'ka' ? 'მომხმარებლები' : 'Users', icon: Users, href: '/admin/users', color: THEME.primary, count: stats?.users.total },
+            { label: locale === 'ka' ? 'სამუშაოები' : 'Jobs', icon: Briefcase, href: '/admin/jobs', color: THEME.info, count: stats?.jobs.total },
+            { label: locale === 'ka' ? 'მხარდაჭერა' : 'Support', icon: MessageCircle, href: '/admin/support', color: THEME.warning, count: stats?.support.open, badge: stats?.support.unread },
+            { label: locale === 'ka' ? 'რეპორტები' : 'Reports', icon: BarChart3, href: '/admin/reports', color: '#8B5CF6' },
+          ].map((action) => (
+            <Link
+              key={action.label}
+              href={action.href}
+              className="group relative overflow-hidden rounded-2xl p-4 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+              style={{
+                background: `linear-gradient(135deg, ${THEME.surfaceLight}, ${THEME.surface})`,
+                border: `1px solid ${THEME.border}`,
+              }}
+            >
+              {/* Gradient overlay on hover */}
+              <div
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                style={{ background: `linear-gradient(135deg, ${action.color}15, transparent 60%)` }}
+              />
+
+              {/* Badge for unread */}
+              {action.badge && action.badge > 0 && (
+                <div
+                  className="absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold animate-pulse"
+                  style={{ background: THEME.error, color: 'white' }}
+                >
+                  {action.badge}
+                </div>
+              )}
+
+              <div className="relative flex items-center gap-3">
+                <div
+                  className="w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-3"
+                  style={{
+                    background: `linear-gradient(135deg, ${action.color}, ${action.color}B0)`,
+                    boxShadow: `0 4px 12px ${action.color}30`,
+                  }}
+                >
+                  <action.icon className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="font-semibold text-sm block" style={{ color: THEME.text }}>{action.label}</span>
+                  {action.count !== undefined && (
+                    <span
+                      className="text-xs"
+                      style={{ color: THEME.textMuted, fontFamily: "'JetBrains Mono', monospace" }}
+                    >
+                      {action.count?.toLocaleString() || 0}
+                    </span>
+                  )}
+                </div>
+                <ArrowUpRight
+                  className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                  style={{ color: action.color }}
+                />
+              </div>
+            </Link>
+          ))}
+        </div>
+
         {/* Main Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {/* Users Card */}
@@ -1090,42 +1152,6 @@ function AdminDashboardPageContent() {
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { label: locale === 'ka' ? 'მომხმარებლები' : 'Manage Users', icon: Users, href: '/admin/users', color: THEME.primary },
-            { label: locale === 'ka' ? 'სამუშაოები' : 'Manage Jobs', icon: Briefcase, href: '/admin/jobs', color: THEME.info },
-            { label: locale === 'ka' ? 'მხარდაჭერა' : 'Support', icon: MessageCircle, href: '/admin/support', color: THEME.warning },
-            { label: locale === 'ka' ? 'რეპორტები' : 'Reports', icon: BarChart3, href: '/admin/reports', color: '#8B5CF6' },
-          ].map((action) => (
-            <Link
-              key={action.label}
-              href={action.href}
-              className="group relative overflow-hidden rounded-xl p-5 transition-all duration-300 hover:scale-[1.02]"
-              style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
-            >
-              <div
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ background: `radial-gradient(circle at center, ${action.color}10, transparent 70%)` }}
-              />
-              <div className="relative flex items-center gap-4">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110"
-                  style={{ background: `linear-gradient(135deg, ${action.color}, ${action.color}CC)` }}
-                >
-                  <action.icon className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <span className="font-medium text-sm" style={{ color: THEME.text }}>{action.label}</span>
-                </div>
-                <ArrowRight
-                  className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1"
-                  style={{ color: THEME.textMuted }}
-                />
-              </div>
-            </Link>
-          ))}
-        </div>
       </main>
     </div>
   );

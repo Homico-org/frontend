@@ -35,9 +35,9 @@ export function ViewModeProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Reset to pro mode if user is not a pro
+  // Reset to pro mode if user is not a pro or admin
   useEffect(() => {
-    if (user && user.role !== 'pro') {
+    if (user && user.role !== 'pro' && user.role !== 'admin') {
       setViewModeState('pro');
     }
   }, [user]);
@@ -55,8 +55,8 @@ export function ViewModeProvider({ children }: { children: ReactNode }) {
     router.push('/browse');
   };
 
-  // Only allow client mode for pro users
-  const effectiveViewMode = user?.role === 'pro' ? viewMode : 'pro';
+  // Only allow client mode for pro users and admin
+  const effectiveViewMode = (user?.role === 'pro' || user?.role === 'admin') ? viewMode : 'pro';
 
   return (
     <ViewModeContext.Provider

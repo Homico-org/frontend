@@ -197,7 +197,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  const isPro = user?.role === "pro";
+  const isPro = user?.role === "pro" || user?.role === "admin";
   const isJobsPage = pathname.includes("/browse/jobs");
   const isProfessionalsPage = pathname.includes("/browse/professionals");
 
