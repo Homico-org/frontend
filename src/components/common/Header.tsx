@@ -432,6 +432,25 @@ export default function Header() {
                       {user.role === "company" && (
                         <>
                           <Link
+                            href="/company/dashboard"
+                            className="group flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-200 mx-2 rounded-xl"
+                            style={{ background: `linear-gradient(135deg, ${ACCENT_COLOR}12 0%, ${ACCENT_COLOR}08 100%)`, border: `1px solid ${ACCENT_COLOR}25` }}
+                            onClick={() => setShowDropdown(false)}
+                          >
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${ACCENT_COLOR} 0%, #B8654D 100%)` }}>
+                              <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <rect x="3" y="3" width="7" height="9" rx="1.5" strokeWidth={1.5} />
+                                <rect x="14" y="3" width="7" height="5" rx="1.5" strokeWidth={1.5} />
+                                <rect x="14" y="12" width="7" height="9" rx="1.5" strokeWidth={1.5} />
+                                <rect x="3" y="16" width="7" height="5" rx="1.5" strokeWidth={1.5} />
+                              </svg>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <span className="font-semibold block" style={{ color: ACCENT_COLOR }}>{locale === 'ka' ? 'მართვის პანელი' : 'Dashboard'}</span>
+                              <span className="text-[10px]" style={{ color: `${ACCENT_COLOR}99` }}>{locale === 'ka' ? 'კომპანიის მთავარი' : 'Company overview'}</span>
+                            </div>
+                          </Link>
+                          <Link
                             href="/company/jobs"
                             className="group flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-600 hover:text-neutral-900 transition-all duration-200"
                             onClick={() => setShowDropdown(false)}
@@ -442,7 +461,19 @@ export default function Header() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21h18M9 7h1M9 11h1M14 7h1M14 11h1M9 21v-4h6v4" />
                               </svg>
                             </div>
-                            <span>{t("menu.companyJobs")}</span>
+                            <span>{locale === 'ka' ? 'სამუშაოები' : 'Jobs'}</span>
+                          </Link>
+                          <Link
+                            href="/company/proposals"
+                            className="group flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-600 hover:text-neutral-900 transition-all duration-200"
+                            onClick={() => setShowDropdown(false)}
+                          >
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-neutral-100">
+                              <svg className="w-4 h-4" style={{ color: ACCENT_COLOR }} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                            </div>
+                            <span>{locale === 'ka' ? 'შეთავაზებები' : 'Proposals'}</span>
                           </Link>
                           <Link
                             href="/company/employees"
@@ -457,7 +488,20 @@ export default function Header() {
                                 <path strokeLinecap="round" strokeWidth={1.5} d="M12 9v3M12 12H5v2.5M12 12h7v2.5" />
                               </svg>
                             </div>
-                            <span>{t("menu.team")}</span>
+                            <span>{locale === 'ka' ? 'თანამშრომლები' : 'Employees'}</span>
+                          </Link>
+                          <Link
+                            href="/company/settings"
+                            className="group flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-600 hover:text-neutral-900 transition-all duration-200"
+                            onClick={() => setShowDropdown(false)}
+                          >
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-neutral-100">
+                              <svg className="w-4 h-4" style={{ color: ACCENT_COLOR }} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              </svg>
+                            </div>
+                            <span>{locale === 'ka' ? 'პარამეტრები' : 'Settings'}</span>
                           </Link>
                         </>
                       )}

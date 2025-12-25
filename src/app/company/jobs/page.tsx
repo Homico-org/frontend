@@ -1,11 +1,35 @@
 'use client';
 
-import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import {
+  Briefcase,
+  Plus,
+  Clock,
+  UserCheck,
+  PlayCircle,
+  CheckCircle2,
+  XCircle,
+  MapPin,
+  Calendar,
+  User,
+  Timer,
+  ChevronRight,
+  Search,
+  Filter,
+  AlertTriangle,
+  ArrowUpRight,
+  MoreHorizontal,
+  Clipboard
+} from 'lucide-react';
+
+// Terracotta accent colors
+const ACCENT = '#E07B4F';
+const ACCENT_HOVER = '#D26B3F';
 
 interface Employee {
   _id: string;
@@ -42,12 +66,14 @@ interface CompanyJob {
 export default function CompanyJobsPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { openLoginModal } = useAuthModal();
+  const { locale } = useLanguage();
   const router = useRouter();
 
   const [jobs, setJobs] = useState<CompanyJob[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, hasMore: false });
-  const [filter, setFilter] = useState({ status: '', priority: '' });
+  const [filter, setFilter] = useState({ status: '', priority: '', search: '' });
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -62,7 +88,7 @@ export default function CompanyJobsPage() {
     if (!authLoading && user?.role === 'company') {
       fetchJobs();
     }
-  }, [authLoading, user, filter]);
+  }, [authLoading, user, filter.status, filter.priority]);
 
   const fetchJobs = async (page = 1) => {
     try {
@@ -74,6 +100,7 @@ export default function CompanyJobsPage() {
       params.append('page', page.toString());
       params.append('limit', '20');
       if (filter.status) params.append('status', filter.status);
+      if (filter.priority) params.append('priority', filter.priority);
 
       const res = await fetch(`${API_URL}/companies/my/company/jobs?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -91,244 +118,485 @@ export default function CompanyJobsPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusInfo = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-amber-100 text-amber-700';
-      case 'assigned': return 'bg-blue-100 text-blue-700';
-      case 'in_progress': return 'bg-indigo-100 text-indigo-700';
-      case 'completed': return 'bg-green-100 text-green-700';
-      case 'cancelled': return 'bg-red-100 text-red-700';
-      default: return 'bg-neutral-100 text-neutral-700';
+      case 'pending':
+        return {
+          color: 'bg-amber-50 text-amber-700 border-amber-200',
+          icon: Clock,
+          label: locale === 'ka' ? 'მოლოდინში' : 'Pending'
+        };
+      case 'assigned':
+        return {
+          color: 'bg-blue-50 text-blue-700 border-blue-200',
+          icon: UserCheck,
+          label: locale === 'ka' ? 'დანიშნული' : 'Assigned'
+        };
+      case 'in_progress':
+        return {
+          color: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+          icon: PlayCircle,
+          label: locale === 'ka' ? 'მიმდინარე' : 'In Progress'
+        };
+      case 'completed':
+        return {
+          color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+          icon: CheckCircle2,
+          label: locale === 'ka' ? 'დასრულებული' : 'Completed'
+        };
+      case 'cancelled':
+        return {
+          color: 'bg-red-50 text-red-700 border-red-200',
+          icon: XCircle,
+          label: locale === 'ka' ? 'გაუქმებული' : 'Cancelled'
+        };
+      default:
+        return {
+          color: 'bg-neutral-50 text-neutral-700 border-neutral-200',
+          icon: Briefcase,
+          label: status
+        };
     }
   };
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityInfo = (priority: string) => {
     switch (priority) {
-      case 'low': return 'bg-neutral-100 text-neutral-600';
-      case 'medium': return 'bg-blue-100 text-blue-600';
-      case 'high': return 'bg-amber-100 text-amber-600';
-      case 'urgent': return 'bg-red-100 text-red-600';
-      default: return 'bg-neutral-100 text-neutral-600';
+      case 'urgent':
+        return {
+          color: 'bg-red-50 text-red-600 border-red-200',
+          label: locale === 'ka' ? 'სასწრაფო' : 'Urgent'
+        };
+      case 'high':
+        return {
+          color: 'bg-amber-50 text-amber-600 border-amber-200',
+          label: locale === 'ka' ? 'მაღალი' : 'High'
+        };
+      case 'medium':
+        return {
+          color: 'bg-blue-50 text-blue-600 border-blue-200',
+          label: locale === 'ka' ? 'საშუალო' : 'Medium'
+        };
+      case 'low':
+        return {
+          color: 'bg-neutral-50 text-neutral-500 border-neutral-200',
+          label: locale === 'ka' ? 'დაბალი' : 'Low'
+        };
+      default:
+        return {
+          color: 'bg-neutral-50 text-neutral-500 border-neutral-200',
+          label: priority
+        };
     }
   };
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    return new Date(dateStr).toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
     });
   };
 
-  if (authLoading || isLoading) {
+  // Stats calculations
+  const stats = {
+    total: pagination.total || jobs.length,
+    pending: jobs.filter(j => j.status === 'pending').length,
+    assigned: jobs.filter(j => j.status === 'assigned').length,
+    inProgress: jobs.filter(j => j.status === 'in_progress').length,
+    completed: jobs.filter(j => j.status === 'completed').length,
+  };
+
+  // Filter displayed jobs by search
+  const displayedJobs = filter.search
+    ? jobs.filter(j =>
+        j.title.toLowerCase().includes(filter.search.toLowerCase()) ||
+        j.clientName?.toLowerCase().includes(filter.search.toLowerCase()) ||
+        j.location?.toLowerCase().includes(filter.search.toLowerCase())
+      )
+    : jobs;
+
+  if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-2 border-blue-500 border-t-transparent"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-primary)]">
+        <div
+          className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
+          style={{ borderColor: ACCENT, borderTopColor: 'transparent' }}
+        />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-dark-bg">
-      <Header />
-      <HeaderSpacer />
-
-      <main className="container-custom py-8">
+    <div className="min-h-screen bg-[var(--color-bg-secondary)]">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">Jobs</h1>
-            <p className="text-neutral-500 dark:text-neutral-400 mt-1">Manage your company's jobs and assignments</p>
+            <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
+              {locale === 'ka' ? 'სამუშაოები' : 'Jobs'}
+            </h1>
+            <p className="text-[var(--color-text-secondary)] mt-1">
+              {locale === 'ka' ? 'მართეთ კომპანიის სამუშაოები და დავალებები' : 'Manage your company jobs and assignments'}
+            </p>
           </div>
           <Link
             href="/company/jobs/new"
-            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-all duration-200 ease-out flex items-center gap-2 self-start"
+            className="inline-flex items-center gap-2 px-5 py-2.5 text-white font-medium rounded-xl transition-all duration-200 self-start"
+            style={{ backgroundColor: ACCENT }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = ACCENT_HOVER}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ACCENT}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Create Job
+            <Plus className="w-5 h-5" />
+            {locale === 'ka' ? 'ახალი სამუშაო' : 'Create Job'}
           </Link>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
           <button
             onClick={() => setFilter({ ...filter, status: '' })}
-            className={`bg-white dark:bg-dark-card rounded-xl border p-4 text-left transition-all duration-200 ease-out ${!filter.status ? 'border-blue-500 ring-2 ring-blue-100' : 'border-neutral-200 dark:border-dark-border hover:border-neutral-300'}`}
+            className={`bg-[var(--color-bg-primary)] rounded-xl border p-4 text-left transition-all duration-200 ${
+              !filter.status
+                ? 'border-[#E07B4F] ring-2 ring-[#E07B4F]/20'
+                : 'border-[var(--color-border-primary)] hover:border-[var(--color-border-secondary)]'
+            }`}
           >
-            <div className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">{pagination.total || jobs.length}</div>
-            <div className="text-sm text-neutral-500 dark:text-neutral-400">All Jobs</div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${ACCENT}15` }}>
+                <Briefcase className="w-5 h-5" style={{ color: ACCENT }} />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-[var(--color-text-primary)]">{stats.total}</div>
+            <div className="text-sm text-[var(--color-text-secondary)]">
+              {locale === 'ka' ? 'ყველა' : 'All Jobs'}
+            </div>
           </button>
+
           <button
             onClick={() => setFilter({ ...filter, status: 'pending' })}
-            className={`bg-white dark:bg-dark-card rounded-xl border p-4 text-left transition-all duration-200 ease-out ${filter.status === 'pending' ? 'border-amber-500 ring-2 ring-amber-100' : 'border-neutral-200 dark:border-dark-border hover:border-neutral-300'}`}
+            className={`bg-[var(--color-bg-primary)] rounded-xl border p-4 text-left transition-all duration-200 ${
+              filter.status === 'pending'
+                ? 'border-amber-500 ring-2 ring-amber-100'
+                : 'border-[var(--color-border-primary)] hover:border-[var(--color-border-secondary)]'
+            }`}
           >
-            <div className="text-2xl font-bold text-amber-600">{jobs.filter(j => j.status === 'pending').length}</div>
-            <div className="text-sm text-neutral-500 dark:text-neutral-400">Pending</div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+                <Clock className="w-5 h-5 text-amber-600" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-amber-600">{stats.pending}</div>
+            <div className="text-sm text-[var(--color-text-secondary)]">
+              {locale === 'ka' ? 'მოლოდინში' : 'Pending'}
+            </div>
           </button>
+
           <button
             onClick={() => setFilter({ ...filter, status: 'assigned' })}
-            className={`bg-white dark:bg-dark-card rounded-xl border p-4 text-left transition-all duration-200 ease-out ${filter.status === 'assigned' ? 'border-blue-500 ring-2 ring-blue-100' : 'border-neutral-200 dark:border-dark-border hover:border-neutral-300'}`}
+            className={`bg-[var(--color-bg-primary)] rounded-xl border p-4 text-left transition-all duration-200 ${
+              filter.status === 'assigned'
+                ? 'border-blue-500 ring-2 ring-blue-100'
+                : 'border-[var(--color-border-primary)] hover:border-[var(--color-border-secondary)]'
+            }`}
           >
-            <div className="text-2xl font-bold text-blue-600">{jobs.filter(j => j.status === 'assigned').length}</div>
-            <div className="text-sm text-neutral-500 dark:text-neutral-400">Assigned</div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                <UserCheck className="w-5 h-5 text-blue-600" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-blue-600">{stats.assigned}</div>
+            <div className="text-sm text-[var(--color-text-secondary)]">
+              {locale === 'ka' ? 'დანიშნული' : 'Assigned'}
+            </div>
           </button>
+
           <button
             onClick={() => setFilter({ ...filter, status: 'in_progress' })}
-            className={`bg-white dark:bg-dark-card rounded-xl border p-4 text-left transition-all duration-200 ease-out ${filter.status === 'in_progress' ? 'border-indigo-500 ring-2 ring-indigo-100' : 'border-neutral-200 dark:border-dark-border hover:border-neutral-300'}`}
+            className={`bg-[var(--color-bg-primary)] rounded-xl border p-4 text-left transition-all duration-200 ${
+              filter.status === 'in_progress'
+                ? 'border-indigo-500 ring-2 ring-indigo-100'
+                : 'border-[var(--color-border-primary)] hover:border-[var(--color-border-secondary)]'
+            }`}
           >
-            <div className="text-2xl font-bold text-indigo-600">{jobs.filter(j => j.status === 'in_progress').length}</div>
-            <div className="text-sm text-neutral-500 dark:text-neutral-400">In Progress</div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+                <PlayCircle className="w-5 h-5 text-indigo-600" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-indigo-600">{stats.inProgress}</div>
+            <div className="text-sm text-[var(--color-text-secondary)]">
+              {locale === 'ka' ? 'მიმდინარე' : 'In Progress'}
+            </div>
           </button>
+
           <button
             onClick={() => setFilter({ ...filter, status: 'completed' })}
-            className={`bg-white dark:bg-dark-card rounded-xl border p-4 text-left transition-all duration-200 ease-out ${filter.status === 'completed' ? 'border-[#E07B4F] ring-2 ring-[#E07B4F]/10' : 'border-neutral-200 dark:border-dark-border hover:border-neutral-300'}`}
+            className={`bg-[var(--color-bg-primary)] rounded-xl border p-4 text-left transition-all duration-200 ${
+              filter.status === 'completed'
+                ? 'border-emerald-500 ring-2 ring-emerald-100'
+                : 'border-[var(--color-border-primary)] hover:border-[var(--color-border-secondary)]'
+            }`}
           >
-            <div className="text-2xl font-bold text-[#E07B4F]">{jobs.filter(j => j.status === 'completed').length}</div>
-            <div className="text-sm text-neutral-500 dark:text-neutral-400">Completed</div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-emerald-600">{stats.completed}</div>
+            <div className="text-sm text-[var(--color-text-secondary)]">
+              {locale === 'ka' ? 'დასრულებული' : 'Completed'}
+            </div>
           </button>
         </div>
 
-        {/* Jobs List */}
-        <div className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-200 dark:border-dark-border overflow-hidden">
-          {jobs.length > 0 ? (
-            <div className="divide-y divide-neutral-100 dark:border-dark-border">
-              {jobs.map((job) => (
-                <Link
-                  key={job._id}
-                  href={`/company/jobs/${job._id}`}
-                  className="block p-5 hover:bg-neutral-50 dark:hover:bg-dark-elevated transition-all duration-200 ease-out"
+        {/* Search and Filters */}
+        <div className="bg-[var(--color-bg-primary)] rounded-2xl border border-[var(--color-border-primary)] p-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            {/* Search */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-tertiary)]" />
+              <input
+                type="text"
+                placeholder={locale === 'ka' ? 'მოძებნე სამუშაო...' : 'Search jobs...'}
+                value={filter.search}
+                onChange={(e) => setFilter({ ...filter, search: e.target.value })}
+                className="w-full pl-10 pr-4 py-2.5 bg-[var(--color-bg-secondary)] border border-[var(--color-border-primary)] rounded-xl text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E07B4F] transition-colors"
+              />
+            </div>
+
+            {/* Priority Filter */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-200 ${
+                  showFilters || filter.priority
+                    ? 'border-[#E07B4F] bg-[#E07B4F]/5 text-[#E07B4F]'
+                    : 'border-[var(--color-border-primary)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-secondary)]'
+                }`}
+              >
+                <Filter className="w-4 h-4" />
+                <span className="text-sm font-medium">
+                  {locale === 'ka' ? 'ფილტრები' : 'Filters'}
+                </span>
+              </button>
+
+              {filter.status && (
+                <button
+                  onClick={() => setFilter({ ...filter, status: '' })}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] text-sm text-[var(--color-text-secondary)]"
                 >
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-neutral-900 dark:text-neutral-50 truncate">{job.title}</h3>
-                        <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getStatusColor(job.status)}`}>
-                          {job.status.replace('_', ' ')}
-                        </span>
-                        <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getPriorityColor(job.priority)}`}>
-                          {job.priority}
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-neutral-500 dark:text-neutral-400">
-                        {job.clientName && (
-                          <span className="flex items-center gap-1">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            {job.clientName}
-                          </span>
-                        )}
-                        {job.location && (
-                          <span className="flex items-center gap-1">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            {job.location}
-                          </span>
-                        )}
-                        {job.scheduledDate && (
-                          <span className="flex items-center gap-1">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            {formatDate(job.scheduledDate)}
-                            {job.scheduledTime && ` at ${job.scheduledTime}`}
-                          </span>
-                        )}
-                        {job.estimatedDuration && (
-                          <span className="flex items-center gap-1">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            {job.estimatedDuration}
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                  <XCircle className="w-4 h-4" />
+                  {locale === 'ka' ? 'გაწმინდე' : 'Clear'}
+                </button>
+              )}
+            </div>
+          </div>
 
-                    <div className="flex items-center gap-4">
-                      {/* Assigned Team */}
-                      {job.assignedEmployees && job.assignedEmployees.length > 0 && (
-                        <div className="flex -space-x-2">
-                          {job.assignedEmployees.slice(0, 3).map((emp) => (
-                            <div
-                              key={emp._id}
-                              className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 border-2 border-white flex items-center justify-center text-white text-xs font-medium"
-                              title={emp.name}
-                            >
-                              {emp.name?.charAt(0)}
-                            </div>
-                          ))}
-                          {job.assignedEmployees.length > 3 && (
-                            <div className="w-8 h-8 rounded-full bg-neutral-200 border-2 border-white flex items-center justify-center text-neutral-600 text-xs font-medium">
-                              +{job.assignedEmployees.length - 3}
-                            </div>
+          {/* Expanded Filters */}
+          {showFilters && (
+            <div className="mt-4 pt-4 border-t border-[var(--color-border-primary)]">
+              <div className="flex flex-wrap gap-2">
+                <span className="text-sm text-[var(--color-text-secondary)] mr-2">
+                  {locale === 'ka' ? 'პრიორიტეტი:' : 'Priority:'}
+                </span>
+                {['urgent', 'high', 'medium', 'low'].map((priority) => {
+                  const info = getPriorityInfo(priority);
+                  return (
+                    <button
+                      key={priority}
+                      onClick={() => setFilter({ ...filter, priority: filter.priority === priority ? '' : priority })}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all duration-200 ${
+                        filter.priority === priority
+                          ? info.color
+                          : 'border-[var(--color-border-primary)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-secondary)]'
+                      }`}
+                    >
+                      {info.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Jobs List */}
+        <div className="bg-[var(--color-bg-primary)] rounded-2xl border border-[var(--color-border-primary)] overflow-hidden">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <div
+                className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
+                style={{ borderColor: ACCENT, borderTopColor: 'transparent' }}
+              />
+            </div>
+          ) : displayedJobs.length > 0 ? (
+            <div className="divide-y divide-[var(--color-border-primary)]">
+              {displayedJobs.map((job) => {
+                const statusInfo = getStatusInfo(job.status);
+                const priorityInfo = getPriorityInfo(job.priority);
+                const StatusIcon = statusInfo.icon;
+
+                return (
+                  <Link
+                    key={job._id}
+                    href={`/company/jobs/${job._id}`}
+                    className="block p-5 hover:bg-[var(--color-bg-secondary)] transition-all duration-200"
+                  >
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        {/* Title and badges */}
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <h3 className="font-semibold text-[var(--color-text-primary)] truncate">
+                            {job.title}
+                          </h3>
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full border ${statusInfo.color}`}>
+                            <StatusIcon className="w-3 h-3" />
+                            {statusInfo.label}
+                          </span>
+                          {job.priority !== 'medium' && (
+                            <span className={`px-2 py-0.5 text-xs font-medium rounded-full border ${priorityInfo.color}`}>
+                              {job.priority === 'urgent' && <AlertTriangle className="w-3 h-3 inline mr-1" />}
+                              {priorityInfo.label}
+                            </span>
                           )}
                         </div>
-                      )}
 
-                      {/* Price */}
-                      {(job.quotedPrice || job.finalPrice) && (
-                        <div className="text-right">
-                          <div className="font-semibold text-neutral-900 dark:text-neutral-50">
-                            {(job.finalPrice || job.quotedPrice)?.toLocaleString()} {job.currency || 'GEL'}
+                        {/* Meta info */}
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--color-text-secondary)]">
+                          {job.clientName && (
+                            <span className="flex items-center gap-1.5">
+                              <User className="w-4 h-4" />
+                              {job.clientName}
+                            </span>
+                          )}
+                          {job.location && (
+                            <span className="flex items-center gap-1.5">
+                              <MapPin className="w-4 h-4" />
+                              {job.location}
+                            </span>
+                          )}
+                          {job.scheduledDate && (
+                            <span className="flex items-center gap-1.5">
+                              <Calendar className="w-4 h-4" />
+                              {formatDate(job.scheduledDate)}
+                              {job.scheduledTime && ` ${job.scheduledTime}`}
+                            </span>
+                          )}
+                          {job.estimatedDuration && (
+                            <span className="flex items-center gap-1.5">
+                              <Timer className="w-4 h-4" />
+                              {job.estimatedDuration}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Tags */}
+                        {job.tags && job.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {job.tags.slice(0, 4).map((tag) => (
+                              <span
+                                key={tag}
+                                className="px-2 py-0.5 bg-[var(--color-bg-secondary)] text-[var(--color-text-tertiary)] text-xs rounded-full"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                            {job.tags.length > 4 && (
+                              <span className="px-2 py-0.5 text-[var(--color-text-tertiary)] text-xs">
+                                +{job.tags.length - 4}
+                              </span>
+                            )}
                           </div>
-                          {job.finalPrice && job.quotedPrice && job.finalPrice !== job.quotedPrice && (
-                            <div className="text-sm text-neutral-400 line-through">
-                              {job.quotedPrice.toLocaleString()} {job.currency || 'GEL'}
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-4">
+                        {/* Assigned Team */}
+                        {job.assignedEmployees && job.assignedEmployees.length > 0 && (
+                          <div className="flex -space-x-2">
+                            {job.assignedEmployees.slice(0, 3).map((emp) => (
+                              <div
+                                key={emp._id}
+                                className="w-8 h-8 rounded-full border-2 border-[var(--color-bg-primary)] flex items-center justify-center text-white text-xs font-medium"
+                                style={{ background: `linear-gradient(135deg, ${ACCENT} 0%, ${ACCENT_HOVER} 100%)` }}
+                                title={emp.name}
+                              >
+                                {emp.avatar ? (
+                                  <img src={emp.avatar} alt={emp.name} className="w-full h-full rounded-full object-cover" />
+                                ) : (
+                                  emp.name?.charAt(0)
+                                )}
+                              </div>
+                            ))}
+                            {job.assignedEmployees.length > 3 && (
+                              <div className="w-8 h-8 rounded-full bg-[var(--color-bg-secondary)] border-2 border-[var(--color-bg-primary)] flex items-center justify-center text-[var(--color-text-secondary)] text-xs font-medium">
+                                +{job.assignedEmployees.length - 3}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Price */}
+                        {(job.quotedPrice || job.finalPrice) && (
+                          <div className="text-right">
+                            <div className="font-semibold text-[var(--color-text-primary)]">
+                              {(job.finalPrice || job.quotedPrice)?.toLocaleString()} {job.currency || 'GEL'}
                             </div>
-                          )}
-                        </div>
-                      )}
+                            {job.finalPrice && job.quotedPrice && job.finalPrice !== job.quotedPrice && (
+                              <div className="text-sm text-[var(--color-text-tertiary)] line-through">
+                                {job.quotedPrice.toLocaleString()} {job.currency || 'GEL'}
+                              </div>
+                            )}
+                          </div>
+                        )}
 
-                      <svg className="w-5 h-5 text-neutral-400 dark:text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
+                        <ChevronRight className="w-5 h-5 text-[var(--color-text-tertiary)]" />
+                      </div>
                     </div>
-                  </div>
-
-                  {/* Tags */}
-                  {job.tags && job.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-3">
-                      {job.tags.map((tag) => (
-                        <span key={tag} className="px-2 py-0.5 bg-neutral-100 dark:bg-dark-elevated text-neutral-500 dark:text-neutral-400 text-xs rounded-full">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           ) : (
-            <div className="text-center py-12 text-neutral-500 dark:text-neutral-400">
-              <svg className="w-12 h-12 mx-auto mb-4 text-neutral-300 dark:text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-              <p className="mb-4">No jobs found</p>
+            <div className="text-center py-16">
+              <div
+                className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+                style={{ backgroundColor: `${ACCENT}15` }}
+              >
+                <Clipboard className="w-8 h-8" style={{ color: ACCENT }} />
+              </div>
+              <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
+                {locale === 'ka' ? 'სამუშაოები არ მოიძებნა' : 'No jobs found'}
+              </h3>
+              <p className="text-[var(--color-text-secondary)] mb-6 max-w-md mx-auto">
+                {filter.status || filter.search
+                  ? (locale === 'ka' ? 'სცადეთ ფილტრების შეცვლა' : 'Try adjusting your filters')
+                  : (locale === 'ka' ? 'შექმენით პირველი სამუშაო თქვენი გუნდისთვის' : 'Create your first job for your team')
+                }
+              </p>
               <Link
                 href="/company/jobs/new"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition-all duration-200 ease-out"
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-white font-medium rounded-xl transition-all duration-200"
+                style={{ backgroundColor: ACCENT }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = ACCENT_HOVER}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ACCENT}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Create First Job
+                <Plus className="w-5 h-5" />
+                {locale === 'ka' ? 'ახალი სამუშაო' : 'Create First Job'}
               </Link>
             </div>
           )}
 
           {/* Pagination */}
           {pagination.hasMore && (
-            <div className="p-4 border-t border-neutral-100 dark:border-dark-border text-center">
+            <div className="p-4 border-t border-[var(--color-border-primary)] text-center">
               <button
                 onClick={() => fetchJobs(pagination.page + 1)}
-                className="px-4 py-2 text-blue-600 hover:text-blue-700 font-medium"
+                className="inline-flex items-center gap-2 px-4 py-2 font-medium transition-all duration-200 hover:opacity-80"
+                style={{ color: ACCENT }}
               >
-                Load More
+                {locale === 'ka' ? 'მეტის ჩატვირთვა' : 'Load More'}
+                <ArrowUpRight className="w-4 h-4" />
               </button>
             </div>
           )}
