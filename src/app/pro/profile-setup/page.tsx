@@ -4,10 +4,9 @@ import AuthGuard from '@/components/common/AuthGuard';
 import AboutStep from '@/components/pro/steps/AboutStep';
 import Image from 'next/image';
 import CategoriesStep from '@/components/pro/steps/CategoriesStep';
-import PricingStep from '@/components/pro/steps/PricingStep';
-import ServiceAreasStep from '@/components/pro/steps/ServiceAreasStep';
+import PricingAreasStep from '@/components/pro/steps/PricingAreasStep';
 import ReviewStep from '@/components/pro/steps/ReviewStep';
-import { PortfolioProject } from '@/components/common/PortfolioProjectsInput';
+import ProjectsStep, { PortfolioProject } from '@/components/pro/steps/ProjectsStep';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -15,13 +14,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useRef, useState, useMemo } from 'react';
 
-type ProfileSetupStep = 'about' | 'categories' | 'pricing' | 'areas' | 'review';
+type ProfileSetupStep = 'about' | 'categories' | 'pricing-areas' | 'projects' | 'review';
 
 const STEPS: { id: ProfileSetupStep; title: { en: string; ka: string } }[] = [
   { id: 'about', title: { en: 'About You', ka: 'შენს შესახებ' } },
   { id: 'categories', title: { en: 'Services', ka: 'სერვისები' } },
-  { id: 'pricing', title: { en: 'Pricing', ka: 'ფასები' } },
-  { id: 'areas', title: { en: 'Service Areas', ka: 'ზონები' } },
+  { id: 'pricing-areas', title: { en: 'Pricing & Areas', ka: 'ფასები და ზონები' } },
+  { id: 'projects', title: { en: 'Portfolio', ka: 'პორტფოლიო' } },
   { id: 'review', title: { en: 'Review', ka: 'გადახედვა' } },
 ];
 
@@ -45,6 +44,7 @@ function ProProfileSetupPageContent() {
   // Form state
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
+  const [customServices, setCustomServices] = useState<string[]>([]);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -134,6 +134,9 @@ function ProProfileSetupPageContent() {
           const categories = parsed.categories || (parsed.category ? [parsed.category] : ['interior-design']);
           setSelectedCategories(categories);
           setSelectedSubcategories(parsed.subcategories || []);
+          if (parsed.customServices && Array.isArray(parsed.customServices)) {
+            setCustomServices(parsed.customServices);
+          }
           if (parsed.pinterestLinks?.[0]) {
             setFormData(prev => ({ ...prev, portfolioUrl: parsed.pinterestLinks[0] }));
           }
@@ -182,6 +185,9 @@ function ProProfileSetupPageContent() {
 
           setSelectedCategories(profile.categories || ['interior-design']);
           setSelectedSubcategories(profile.subcategories || []);
+          if (profile.customServices && Array.isArray(profile.customServices)) {
+            setCustomServices(profile.customServices);
+          }
 
           setFormData(prev => ({
             ...prev,
@@ -414,6 +420,7 @@ function ProProfileSetupPageContent() {
         description: formData.bio,
         categories: selectedCategories.length > 0 ? selectedCategories : ['interior-design'],
         subcategories: selectedSubcategories.length > 0 ? selectedSubcategories : (user?.selectedSubcategories || []),
+        customServices: customServices.length > 0 ? customServices : undefined,
         yearsExperience: parseInt(formData.yearsExperience) || 0,
         avatar: formData.avatar || user?.avatar,
         pricingModel,
@@ -461,8 +468,8 @@ function ProProfileSetupPageContent() {
     switch (currentStep) {
       case 'about': return validation.avatar && validation.bio && validation.experience;
       case 'categories': return validation.categories && validation.subcategories;
-      case 'pricing': return validation.pricing;
-      case 'areas': return validation.serviceAreas;
+      case 'pricing-areas': return validation.pricing && validation.serviceAreas;
+      case 'projects': return true; // Projects are optional, can always proceed
       case 'review': return isFormValid;
       default: return false;
     }
@@ -477,7 +484,7 @@ function ProProfileSetupPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAF9] flex flex-col">
+    <div className="min-h-screen bg-[#FAFAF9] flex flex-col pb-20">
       {/* Header with progress - matches register page */}
       <header className="sticky top-0 z-50 bg-white border-b border-neutral-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -548,7 +555,7 @@ function ProProfileSetupPageContent() {
             </div>
           )}
 
-          {/* STEP 2: Categories */}
+          {/* STEP 2: Categories & Skills */}
           {currentStep === 'categories' && (
             <div className="space-y-4">
               <div>
@@ -565,58 +572,78 @@ function ProProfileSetupPageContent() {
                 selectedSubcategories={selectedSubcategories}
                 onCategoriesChange={setSelectedCategories}
                 onSubcategoriesChange={setSelectedSubcategories}
+                customServices={customServices}
+                onCustomServicesChange={setCustomServices}
               />
             </div>
           )}
 
-          {/* STEP 3: Pricing */}
-          {currentStep === 'pricing' && (
+          {/* STEP 3: Pricing & Service Areas (Combined) */}
+          {currentStep === 'pricing-areas' && (
             <div className="space-y-4">
               <div>
                 <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
-                  {locale === "ka" ? "ფასები" : "Pricing"}
+                  {locale === "ka" ? "ფასები და ზონები" : "Pricing & Areas"}
                 </h1>
                 <p className="text-sm text-neutral-500">
-                  {locale === "ka" ? "განსაზღვრე შენი ტარიფები" : "Set your rates"}
+                  {locale === "ka" ? "განსაზღვრე ტარიფები და სამუშაო ზონები" : "Set your rates and work areas"}
                 </p>
               </div>
 
-              <PricingStep
+              <PricingAreasStep
                 formData={{
-                  basePrice: formData.basePrice,
-                  maxPrice: formData.maxPrice,
-                  pricingModel: formData.pricingModel,
-                }}
-                onFormChange={handleFormChange}
-                validation={{
-                  pricing: validation.pricing,
-                }}
-              />
-            </div>
-          )}
-
-          {/* STEP 4: Service Areas */}
-          {currentStep === 'areas' && (
-            <div className="space-y-4">
-              <div>
-                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
-                  {locale === "ka" ? "მომსახურების ზონები" : "Service Areas"}
-                </h1>
-                <p className="text-sm text-neutral-500">
-                  {locale === "ka" ? "სად მუშაობ?" : "Where do you work?"}
-                </p>
-              </div>
-
-              <ServiceAreasStep
-                formData={{
+                  priceRange: {
+                    min: parseInt(formData.basePrice) || 0,
+                    max: parseInt(formData.maxPrice) || 0,
+                  },
+                  priceType: (formData.pricingModel === 'hourly' ? 'hourly' : formData.pricingModel === 'sqm' ? 'fixed' : 'project') as 'hourly' | 'fixed' | 'project',
                   serviceAreas: formData.serviceAreas,
                   nationwide: formData.nationwide,
                 }}
                 locationData={locationData}
-                onFormChange={handleFormChange}
-                validation={{
-                  serviceAreas: validation.serviceAreas,
+                onFormChange={(updates) => {
+                  if ('priceRange' in updates && updates.priceRange) {
+                    handleFormChange({
+                      basePrice: updates.priceRange.min.toString(),
+                      maxPrice: updates.priceRange.max.toString(),
+                    });
+                  }
+                  if ('priceType' in updates && updates.priceType) {
+                    const typeMap: Record<string, typeof formData.pricingModel> = {
+                      'hourly': 'hourly',
+                      'fixed': 'sqm',
+                      'project': 'project_based',
+                    };
+                    handleFormChange({ pricingModel: typeMap[updates.priceType] || 'project_based' });
+                  }
+                  if ('serviceAreas' in updates) {
+                    handleFormChange({ serviceAreas: updates.serviceAreas });
+                  }
+                  if ('nationwide' in updates) {
+                    handleFormChange({ nationwide: updates.nationwide });
+                  }
                 }}
+              />
+            </div>
+          )}
+
+          {/* STEP 4: Projects */}
+          {currentStep === 'projects' && (
+            <div className="space-y-4">
+              <div>
+                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
+                  {locale === "ka" ? "პორტფოლიო" : "Portfolio"}
+                </h1>
+                <p className="text-sm text-neutral-500">
+                  {locale === "ka" ? "აჩვენე შენი ნამუშევრები" : "Showcase your work"}
+                </p>
+              </div>
+
+              <ProjectsStep
+                projects={portfolioProjects}
+                onChange={setPortfolioProjects}
+                maxProjects={20}
+                maxVisibleInBrowse={6}
               />
             </div>
           )}
@@ -639,7 +666,11 @@ function ProProfileSetupPageContent() {
                 selectedSubcategories={selectedSubcategories}
                 avatarPreview={avatarPreview}
                 locationData={locationData}
-                onEditStep={(stepIndex) => goToStep(STEPS[stepIndex].id)}
+                onEditStep={(stepIndex) => {
+                  // Map old step indices to new step ids
+                  const stepMap: ProfileSetupStep[] = ['about', 'categories', 'pricing-areas', 'projects', 'review'];
+                  goToStep(stepMap[stepIndex] || 'about');
+                }}
                 isEditMode={isEditMode}
               />
             </div>
@@ -647,14 +678,14 @@ function ProProfileSetupPageContent() {
         </div>
       </main>
 
-      {/* Footer with navigation - matches register page */}
-      <footer className="sticky bottom-0 bg-white border-t border-neutral-100">
+      {/* Fixed Footer with navigation */}
+      <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-100 shadow-lg shadow-black/5 z-50">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             {getCurrentStepIndex() > 0 ? (
               <button
                 onClick={handleBack}
-                className="flex items-center gap-1 px-3 py-2 rounded-lg text-xs text-neutral-700 hover:bg-neutral-100 transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium text-neutral-700 hover:bg-neutral-100 transition-all active:scale-[0.98]"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -668,7 +699,7 @@ function ProProfileSetupPageContent() {
             <button
               onClick={handleNext}
               disabled={isLoading || !canProceedToNextStep}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#C4735B] hover:bg-[#A85D47] disabled:bg-neutral-200 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#C4735B] hover:bg-[#A85D47] disabled:bg-neutral-200 disabled:cursor-not-allowed text-white text-sm font-semibold transition-all shadow-lg shadow-[#C4735B]/25 disabled:shadow-none active:scale-[0.98]"
             >
               {isLoading ? (
                 <>

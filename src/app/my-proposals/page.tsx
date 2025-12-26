@@ -14,15 +14,12 @@ import {
   AlertTriangle,
   ArrowLeft,
   Ban,
-  Briefcase,
   Building2,
-  Calendar,
   CheckCheck,
   CheckCircle,
   Clock,
   DollarSign,
   ExternalLink,
-  FileText,
   Inbox,
   Mail,
   MapPin,
@@ -31,9 +28,7 @@ import {
   Phone,
   Search,
   Send,
-  Sparkles,
   Timer,
-  TrendingUp,
   X,
   XCircle
 } from 'lucide-react';
@@ -396,56 +391,6 @@ function MyProposalsPageContent() {
               </p>
             </div>
           </div>
-
-          {/* Quick Stats */}
-          {stats.total > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-              <div className="p-4 rounded-2xl bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-[#E07B4F]/20 transition-all group">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#E07B4F]/10 to-[#E07B4F]/5 flex items-center justify-center">
-                    <Send className="w-5 h-5 text-[#E07B4F]" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-[var(--color-text-primary)]">{stats.total}</p>
-                    <p className="text-xs text-[var(--color-text-tertiary)]">{language === 'ka' ? 'სულ' : 'Total'}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="p-4 rounded-2xl bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-amber-500/20 transition-all">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                    <Clock className="w-5 h-5 text-amber-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-[var(--color-text-primary)]">{stats.pending}</p>
-                    <p className="text-xs text-[var(--color-text-tertiary)]">{language === 'ka' ? 'მოლოდინში' : 'Pending'}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="p-4 rounded-2xl bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-blue-500/20 transition-all">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                    <MessageSquare className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-[var(--color-text-primary)]">{stats.inDiscussion}</p>
-                    <p className="text-xs text-[var(--color-text-tertiary)]">{language === 'ka' ? 'აქტიური' : 'Active'}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="p-4 rounded-2xl bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-emerald-500/20 transition-all">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-emerald-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-[var(--color-text-primary)]">{stats.accepted}</p>
-                    <p className="text-xs text-[var(--color-text-tertiary)]">{language === 'ka' ? 'მოგებული' : 'Won'}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Filters Bar */}
