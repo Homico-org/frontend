@@ -8,7 +8,7 @@ export default function VerifyResetCodePage() {
   const router = useRouter();
   const { t, locale } = useLanguage();
   const [phone, setPhone] = useState('');
-  const [code, setCode] = useState(['', '', '', '', '', '']);
+  const [code, setCode] = useState(['', '', '', '']);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
@@ -44,7 +44,7 @@ export default function VerifyResetCodePage() {
     setCode(newCode);
 
     // Auto-focus next input
-    if (value && index < 5) {
+    if (value && index < 3) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -57,13 +57,13 @@ export default function VerifyResetCodePage() {
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 4);
     const newCode = [...code];
     for (let i = 0; i < pastedData.length; i++) {
       newCode[i] = pastedData[i];
     }
     setCode(newCode);
-    inputRefs.current[Math.min(pastedData.length, 5)]?.focus();
+    inputRefs.current[Math.min(pastedData.length, 3)]?.focus();
   };
 
   const handleResend = async () => {
@@ -88,7 +88,7 @@ export default function VerifyResetCodePage() {
 
       setCanResend(false);
       setCountdown(60);
-      setCode(['', '', '', '', '', '']);
+      setCode(['', '', '', '']);
       inputRefs.current[0]?.focus();
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : t('forgotPassword.resendFailed');
@@ -101,7 +101,7 @@ export default function VerifyResetCodePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const fullCode = code.join('');
-    if (fullCode.length !== 6) {
+    if (fullCode.length !== 4) {
       setError(t('forgotPassword.enterFullCode'));
       return;
     }
@@ -129,7 +129,7 @@ export default function VerifyResetCodePage() {
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : t('forgotPassword.invalidCode');
       setError(errorMessage);
-      setCode(['', '', '', '', '', '']);
+      setCode(['', '', '', '']);
       inputRefs.current[0]?.focus();
     } finally {
       setIsLoading(false);
@@ -179,7 +179,7 @@ export default function VerifyResetCodePage() {
             {/* OTP Input */}
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-4 text-center">
-                {locale === 'ka' ? 'შეიყვანეთ 6-ნიშნა კოდი' : 'Enter 6-digit code'}
+                {locale === 'ka' ? 'შეიყვანეთ 4-ნიშნა კოდი' : 'Enter 4-digit code'}
               </label>
               <div className="flex justify-center gap-2 sm:gap-3" onPaste={handlePaste}>
                 {code.map((digit, index) => (
@@ -195,7 +195,7 @@ export default function VerifyResetCodePage() {
                     value={digit}
                     onChange={(e) => handleCodeChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
-                    className="w-11 h-14 sm:w-12 sm:h-14 text-center text-xl font-semibold rounded-xl bg-[#F5F5F5] border-0 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#C47B65]/30 transition-all"
+                    className="w-14 h-14 sm:w-16 sm:h-16 text-center text-2xl font-semibold rounded-xl bg-[#F5F5F5] border-0 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#C47B65]/30 transition-all"
                   />
                 ))}
               </div>
