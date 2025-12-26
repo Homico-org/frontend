@@ -1,8 +1,14 @@
-'use client';
+"use client";
 
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useCategories } from '@/contexts/CategoriesContext';
-import { Check, Pencil, MapPin, Briefcase, DollarSign, User } from 'lucide-react';
+import { useCategories } from "@/contexts/CategoriesContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import {
+  Briefcase,
+  DollarSign,
+  MapPin,
+  Pencil,
+  User
+} from "lucide-react";
 
 interface ReviewStepProps {
   formData: {
@@ -40,7 +46,7 @@ export default function ReviewStep({
   // Helper to find subcategory by key across all categories
   const getSubcategoryByKey = (subKey: string) => {
     for (const cat of categories) {
-      const sub = cat.subcategories?.find(s => s.key === subKey);
+      const sub = cat.subcategories?.find((s) => s.key === subKey);
       if (sub) return sub;
     }
     return undefined;
@@ -48,41 +54,34 @@ export default function ReviewStep({
 
   const getPricingSuffix = () => {
     switch (formData.pricingModel) {
-      case 'hourly': return locale === 'ka' ? '₾/სთ' : '₾/hr';
-      case 'daily': return locale === 'ka' ? '₾/დღე' : '₾/day';
-      case 'sqm': return '₾/m²';
-      default: return '₾';
+      case "hourly":
+        return locale === "ka" ? "₾/სთ" : "₾/hr";
+      case "daily":
+        return locale === "ka" ? "₾/დღე" : "₾/day";
+      case "sqm":
+        return "₾/m²";
+      default:
+        return "₾";
     }
   };
 
   const getPricingLabel = () => {
     switch (formData.pricingModel) {
-      case 'hourly': return locale === 'ka' ? 'საათობრივი' : 'Hourly';
-      case 'daily': return locale === 'ka' ? 'დღიური' : 'Daily';
-      case 'sqm': return locale === 'ka' ? 'კვადრატულ მეტრზე' : 'Per square meter';
-      case 'project_based': return locale === 'ka' ? 'პროექტზე' : 'Per project';
-      default: return '';
+      case "hourly":
+        return locale === "ka" ? "საათობრივი" : "Hourly";
+      case "daily":
+        return locale === "ka" ? "დღიური" : "Daily";
+      case "sqm":
+        return locale === "ka" ? "კვადრატულ მეტრზე" : "Per square meter";
+      case "project_based":
+        return locale === "ka" ? "პროექტზე" : "Per project";
+      default:
+        return "";
     }
   };
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-      {/* Section Header */}
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-sm font-medium mb-4">
-          <Check className="w-4 h-4" />
-          {locale === 'ka' ? 'გადახედვა' : 'Review'}
-        </div>
-        <h2 className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)] mb-2">
-          {locale === 'ka' ? 'გადახედე შენს პროფილს' : 'Review your profile'}
-        </h2>
-        <p className="text-[var(--color-text-secondary)] max-w-md mx-auto">
-          {locale === 'ka'
-            ? 'დარწმუნდი რომ ყველა დეტალი სწორია გამოქვეყნებამდე'
-            : 'Make sure all details are correct before publishing'}
-        </p>
-      </div>
-
       {/* Profile Preview Card */}
       <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] overflow-hidden shadow-sm">
         {/* About Section */}
@@ -91,7 +90,7 @@ export default function ReviewStep({
             <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
               <User className="w-4 h-4 text-[#E07B4F]" />
               <span className="text-xs font-semibold uppercase tracking-wider">
-                {locale === 'ka' ? 'შენს შესახებ' : 'About'}
+                {locale === "ka" ? "შენს შესახებ" : "About"}
               </span>
             </div>
             <button
@@ -100,7 +99,7 @@ export default function ReviewStep({
               className="flex items-center gap-1.5 text-sm text-[#E07B4F] hover:text-[#D26B3F] font-medium transition-colors"
             >
               <Pencil className="w-3.5 h-3.5" />
-              {locale === 'ka' ? 'რედაქტირება' : 'Edit'}
+              {locale === "ka" ? "რედაქტირება" : "Edit"}
             </button>
           </div>
 
@@ -119,11 +118,13 @@ export default function ReviewStep({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-lg font-semibold text-[var(--color-text-primary)]">
-                  {formData.yearsExperience || '0'} {locale === 'ka' ? 'წლის გამოცდილება' : 'years experience'}
+                  {formData.yearsExperience || "0"}{" "}
+                  {locale === "ka" ? "წლის გამოცდილება" : "years experience"}
                 </span>
               </div>
               <p className="text-sm text-[var(--color-text-secondary)] line-clamp-3">
-                {formData.bio || (locale === 'ka' ? 'არ არის დამატებული' : 'Not added')}
+                {formData.bio ||
+                  (locale === "ka" ? "არ არის დამატებული" : "Not added")}
               </p>
             </div>
           </div>
@@ -135,7 +136,7 @@ export default function ReviewStep({
             <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
               <Briefcase className="w-4 h-4 text-[#E07B4F]" />
               <span className="text-xs font-semibold uppercase tracking-wider">
-                {locale === 'ka' ? 'სერვისები' : 'Services'}
+                {locale === "ka" ? "სერვისები" : "Services"}
               </span>
             </div>
             <button
@@ -144,14 +145,14 @@ export default function ReviewStep({
               className="flex items-center gap-1.5 text-sm text-[#E07B4F] hover:text-[#D26B3F] font-medium transition-colors"
             >
               <Pencil className="w-3.5 h-3.5" />
-              {locale === 'ka' ? 'რედაქტირება' : 'Edit'}
+              {locale === "ka" ? "რედაქტირება" : "Edit"}
             </button>
           </div>
 
           {/* Categories */}
           <div className="mb-4">
             <p className="text-xs text-[var(--color-text-tertiary)] mb-2">
-              {locale === 'ka' ? 'კატეგორიები' : 'Categories'}
+              {locale === "ka" ? "კატეგორიები" : "Categories"}
             </p>
             <div className="flex flex-wrap gap-2">
               {selectedCategories.map((catKey) => {
@@ -161,7 +162,7 @@ export default function ReviewStep({
                     key={catKey}
                     className="px-3 py-1.5 rounded-lg bg-[#E07B4F]/10 text-[#E07B4F] text-sm font-medium"
                   >
-                    {locale === 'ka' ? cat?.nameKa : cat?.name}
+                    {locale === "ka" ? cat?.nameKa : cat?.name}
                   </span>
                 );
               })}
@@ -172,7 +173,7 @@ export default function ReviewStep({
           {selectedSubcategories.length > 0 && (
             <div>
               <p className="text-xs text-[var(--color-text-tertiary)] mb-2">
-                {locale === 'ka' ? 'უნარები' : 'Skills'}
+                {locale === "ka" ? "უნარები" : "Skills"}
               </p>
               <div className="flex flex-wrap gap-2">
                 {selectedSubcategories.slice(0, 6).map((subKey) => {
@@ -182,13 +183,14 @@ export default function ReviewStep({
                       key={subKey}
                       className="px-3 py-1.5 rounded-lg bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] text-sm"
                     >
-                      {locale === 'ka' ? sub?.nameKa : sub?.name}
+                      {locale === "ka" ? sub?.nameKa : sub?.name}
                     </span>
                   );
                 })}
                 {selectedSubcategories.length > 6 && (
                   <span className="px-3 py-1.5 rounded-lg bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] text-sm">
-                    +{selectedSubcategories.length - 6} {locale === 'ka' ? 'სხვა' : 'more'}
+                    +{selectedSubcategories.length - 6}{" "}
+                    {locale === "ka" ? "სხვა" : "more"}
                   </span>
                 )}
               </div>
@@ -202,7 +204,7 @@ export default function ReviewStep({
             <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
               <DollarSign className="w-4 h-4 text-[#E07B4F]" />
               <span className="text-xs font-semibold uppercase tracking-wider">
-                {locale === 'ka' ? 'ფასები' : 'Pricing'}
+                {locale === "ka" ? "ფასები" : "Pricing"}
               </span>
             </div>
             <button
@@ -211,15 +213,18 @@ export default function ReviewStep({
               className="flex items-center gap-1.5 text-sm text-[#E07B4F] hover:text-[#D26B3F] font-medium transition-colors"
             >
               <Pencil className="w-3.5 h-3.5" />
-              {locale === 'ka' ? 'რედაქტირება' : 'Edit'}
+              {locale === "ka" ? "რედაქტირება" : "Edit"}
             </button>
           </div>
 
           <div className="flex items-baseline gap-3">
             <span className="text-2xl font-bold text-[var(--color-text-primary)]">
-              {formData.basePrice || '0'}{formData.maxPrice && ` - ${formData.maxPrice}`}
+              {formData.basePrice || "0"}
+              {formData.maxPrice && ` - ${formData.maxPrice}`}
             </span>
-            <span className="text-[var(--color-text-secondary)]">{getPricingSuffix()}</span>
+            <span className="text-[var(--color-text-secondary)]">
+              {getPricingSuffix()}
+            </span>
           </div>
           <p className="text-sm text-[var(--color-text-tertiary)] mt-1">
             {getPricingLabel()}
@@ -232,7 +237,7 @@ export default function ReviewStep({
             <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
               <MapPin className="w-4 h-4 text-[#E07B4F]" />
               <span className="text-xs font-semibold uppercase tracking-wider">
-                {locale === 'ka' ? 'მომსახურების ზონა' : 'Service Area'}
+                {locale === "ka" ? "მომსახურების ზონა" : "Service Area"}
               </span>
             </div>
             <button
@@ -241,7 +246,7 @@ export default function ReviewStep({
               className="flex items-center gap-1.5 text-sm text-[#E07B4F] hover:text-[#D26B3F] font-medium transition-colors"
             >
               <Pencil className="w-3.5 h-3.5" />
-              {locale === 'ka' ? 'რედაქტირება' : 'Edit'}
+              {locale === "ka" ? "რედაქტირება" : "Edit"}
             </button>
           </div>
 
@@ -249,7 +254,7 @@ export default function ReviewStep({
             <div className="flex items-center gap-2">
               <span className="text-lg">🇬🇪</span>
               <span className="font-medium text-[var(--color-text-primary)]">
-                {locationData?.nationwide || 'Nationwide'}
+                {locationData?.nationwide || "Nationwide"}
               </span>
             </div>
           ) : formData.serviceAreas.length > 0 ? (
@@ -264,39 +269,16 @@ export default function ReviewStep({
               ))}
               {formData.serviceAreas.length > 5 && (
                 <span className="px-3 py-1.5 rounded-lg bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] text-sm">
-                  +{formData.serviceAreas.length - 5} {locale === 'ka' ? 'სხვა' : 'more'}
+                  +{formData.serviceAreas.length - 5}{" "}
+                  {locale === "ka" ? "სხვა" : "more"}
                 </span>
               )}
             </div>
           ) : (
             <span className="text-[var(--color-text-muted)]">
-              {locale === 'ka' ? 'არ არის არჩეული' : 'None selected'}
+              {locale === "ka" ? "არ არის არჩეული" : "None selected"}
             </span>
           )}
-        </div>
-      </div>
-
-      {/* Confirmation Notice */}
-      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-500/5 dark:to-teal-500/5 rounded-2xl p-5 border border-emerald-200/50 dark:border-emerald-500/20">
-        <div className="flex gap-4">
-          <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-            <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <div>
-            <h4 className="font-semibold text-emerald-700 dark:text-emerald-400 mb-1">
-              {locale === 'ka' ? 'მზად ხარ!' : "You're all set!"}
-            </h4>
-            <p className="text-sm text-emerald-600/80 dark:text-emerald-400/80">
-              {isEditMode
-                ? (locale === 'ka'
-                    ? 'დააჭირე "ცვლილებების შენახვა" ღილაკს პროფილის განახლებისთვის.'
-                    : 'Click "Save Changes" to update your profile.')
-                : (locale === 'ka'
-                    ? 'დააჭირე "პროფილის შექმნა" ღილაკს გამოქვეყნებისთვის. შენი პროფილი გადაიხედება 24 საათში.'
-                    : 'Click "Create Profile" to publish. Your profile will be reviewed within 24 hours.')
-              }
-            </p>
-          </div>
         </div>
       </div>
     </div>

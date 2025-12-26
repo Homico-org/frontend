@@ -314,7 +314,7 @@ function ProProfileSetupPageContent() {
           detectedCountry = 'Georgia';
         }
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/users/pros/locations?country=${encodeURIComponent(detectedCountry)}`
+          `${process.env.NEXT_PUBLIC_API_URL}/users/pros/locations?country=${encodeURIComponent(detectedCountry)}&locale=${locale}`
         );
         const data = await response.json();
         setLocationData(data);
@@ -323,7 +323,7 @@ function ProProfileSetupPageContent() {
       }
     };
     fetchLocationData();
-  }, []);
+  }, [locale]);
 
   // Auth redirect
   useEffect(() => {

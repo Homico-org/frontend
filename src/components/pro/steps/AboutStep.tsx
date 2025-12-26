@@ -1,9 +1,9 @@
 'use client';
 
-import { useLanguage } from '@/contexts/LanguageContext';
 import AvatarCropper from '@/components/common/AvatarCropper';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { AlertCircle, Camera, CheckCircle2, Clock, FileText } from 'lucide-react';
 import { useRef, useState } from 'react';
-import { Camera, User, Clock, FileText, AlertCircle, CheckCircle2, Sparkles } from 'lucide-react';
 
 interface AboutStepProps {
   formData: {
@@ -91,31 +91,6 @@ export default function AboutStep({
   return (
     <>
       <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-        {/* Section Header */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#E07B4F]/10 text-[#E07B4F] text-sm font-medium mb-4">
-            <User className="w-4 h-4" />
-            {locale === 'ka' ? 'პირადი ინფორმაცია' : 'Personal Information'}
-          </div>
-          <h2 className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)] mb-2">
-            {locale === 'ka' ? 'შენს შესახებ' : 'About You'}
-          </h2>
-          <p className="text-[var(--color-text-secondary)] max-w-md mx-auto">
-            {locale === 'ka'
-              ? 'ეს ინფორმაცია დაეხმარება კლიენტებს გაიცნონ შენ უკეთესად'
-              : 'This information will help clients get to know you better'}
-          </p>
-        </div>
-
-        {/* Required Fields Notice */}
-        <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20">
-          <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-          <p className="text-sm text-amber-700 dark:text-amber-300">
-            {locale === 'ka'
-              ? 'ველები ვარსკვლავით (*) სავალდებულოა'
-              : 'Fields marked with (*) are required'}
-          </p>
-        </div>
 
         {/* Avatar Upload Card - REQUIRED */}
         <div className={`
@@ -316,65 +291,6 @@ export default function AboutStep({
             <span className={`text-xs font-medium ${formData.bio.length >= 50 ? 'text-emerald-600' : formData.bio.length > 0 ? 'text-amber-600' : 'text-[var(--color-text-muted)]'}`}>
               {formData.bio.length}/500
             </span>
-          </div>
-        </div>
-
-        {/* Pro Tip Card */}
-        <div className="bg-gradient-to-r from-[#E07B4F]/5 to-[#E8956A]/5 rounded-2xl p-5 border border-[#E07B4F]/10">
-          <div className="flex gap-4">
-            <div className="w-10 h-10 rounded-full bg-[#E07B4F]/10 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-5 h-5 text-[#E07B4F]" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-[#E07B4F] mb-1">
-                {locale === 'ka' ? 'პრო რჩევა' : 'Pro Tip'}
-              </h4>
-              <p className="text-sm text-[var(--color-text-secondary)]">
-                {locale === 'ka'
-                  ? 'პროფილები დეტალური აღწერით იღებენ 40%-ით მეტ მოთხოვნას. გაუზიარე კლიენტებს რა გამოგარჩევს!'
-                  : 'Profiles with detailed descriptions receive 40% more requests. Share what makes you unique!'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Progress Summary */}
-        <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-5">
-          <h4 className="font-semibold text-[var(--color-text-primary)] mb-3 flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-[#E07B4F]" />
-            {locale === 'ka' ? 'ამ გვერდის პროგრესი' : 'This Page Progress'}
-          </h4>
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              {hasAvatar ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-              ) : (
-                <div className="w-4 h-4 rounded-full border-2 border-[var(--color-border)]" />
-              )}
-              <span className={`text-sm ${hasAvatar ? 'text-emerald-600' : 'text-[var(--color-text-secondary)]'}`}>
-                {locale === 'ka' ? 'პროფილის ფოტო' : 'Profile Photo'}
-              </span>
-            </div>
-            <div className="flex items-center gap-3">
-              {validation.experience ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-              ) : (
-                <div className="w-4 h-4 rounded-full border-2 border-[var(--color-border)]" />
-              )}
-              <span className={`text-sm ${validation.experience ? 'text-emerald-600' : 'text-[var(--color-text-secondary)]'}`}>
-                {locale === 'ka' ? 'გამოცდილება' : 'Years of Experience'}
-              </span>
-            </div>
-            <div className="flex items-center gap-3">
-              {validation.bio ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-              ) : (
-                <div className="w-4 h-4 rounded-full border-2 border-[var(--color-border)]" />
-              )}
-              <span className={`text-sm ${validation.bio ? 'text-emerald-600' : 'text-[var(--color-text-secondary)]'}`}>
-                {locale === 'ka' ? 'აღწერა' : 'About You'}
-              </span>
-            </div>
           </div>
         </div>
       </div>
