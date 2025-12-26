@@ -128,7 +128,11 @@ function RegisterContent() {
   const [rawAvatarImage, setRawAvatarImage] = useState<string | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
-  // Service/Portfolio data
+  // Service/Portfolio data - custom services that user types (up to 5)
+  const [customServices, setCustomServices] = useState<string[]>([]);
+  const [newCustomService, setNewCustomService] = useState('');
+
+  // Legacy services (keeping for backwards compatibility)
   const [services, setServices] = useState<Array<{
     title: string;
     price: string;
@@ -277,6 +281,18 @@ function RegisterContent() {
     setError("");
 
     try {
+      // Prepare pro-specific fields for Google registration
+      const proFieldsGoogle = userType === "pro" ? {
+        selectedCategories: formData.selectedCategories,
+        selectedSubcategories: formData.selectedSubcategories,
+        customServices: customServices.length > 0 ? customServices : undefined,
+        portfolioProjects: portfolioProjects.filter(p => p.images.length > 0).map(p => ({
+          title: p.title,
+          description: p.description,
+          images: p.images,
+        })),
+      } : {};
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/google-register`,
         {
@@ -290,9 +306,8 @@ function RegisterContent() {
             phone: `${countries[phoneCountry].phonePrefix}${formData.phone}`,
             role: userType,
             city: formData.city || undefined,
-            selectedCategories: userType === "pro" ? formData.selectedCategories : undefined,
-            selectedSubcategories: userType === "pro" ? formData.selectedSubcategories : undefined,
             isPhoneVerified: true,
+            ...proFieldsGoogle,
           }),
         }
       );
@@ -312,6 +327,8 @@ function RegisterContent() {
           JSON.stringify({
             categories: formData.selectedCategories,
             subcategories: formData.selectedSubcategories,
+            customServices: customServices.length > 0 ? customServices : undefined,
+            portfolioProjects: portfolioProjects.filter(p => p.images.length > 0),
             services: services.length > 0 ? services : undefined,
             tags: selectedTags.length > 0 ? selectedTags : undefined,
           })
@@ -505,11 +522,18 @@ function RegisterContent() {
   };
 
   const canProceedFromAccount = () => {
-    return formData.fullName.trim() && formData.password.length >= 6 && formData.phone && agreedToTerms;
+    // Avatar is required for pro registration
+    const hasAvatar = userType === 'pro' ? !!uploadedAvatarUrl : true;
+    return formData.fullName.trim() && formData.password.length >= 6 && formData.phone && agreedToTerms && hasAvatar;
   };
 
   const canProceedFromCategory = () => {
     return formData.selectedCategories.length > 0;
+  };
+
+  const canProceedFromServices = () => {
+    // Require at least 1 project with at least 1 image
+    return portfolioProjects.length > 0 && portfolioProjects.some(p => p.images.length > 0);
   };
 
   const handleCategoryToggle = (categoryKey: string) => {
@@ -765,6 +789,18 @@ function RegisterContent() {
   const submitRegistration = async () => {
     setIsLoading(true);
     try {
+      // Prepare pro-specific fields
+      const proFields = userType === "pro" ? {
+        selectedCategories: formData.selectedCategories,
+        selectedSubcategories: formData.selectedSubcategories,
+        customServices: customServices.length > 0 ? customServices : undefined,
+        portfolioProjects: portfolioProjects.filter(p => p.images.length > 0).map(p => ({
+          title: p.title,
+          description: p.description,
+          images: p.images,
+        })),
+      } : {};
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
         {
@@ -779,10 +815,9 @@ function RegisterContent() {
             city: formData.city || undefined,
             whatsapp: formData.whatsapp || undefined,
             telegram: formData.telegram || undefined,
-            selectedCategories: userType === "pro" ? formData.selectedCategories : undefined,
-            selectedSubcategories: userType === "pro" ? formData.selectedSubcategories : undefined,
             avatar: uploadedAvatarUrl || undefined,
             isPhoneVerified: true,
+            ...proFields,
           }),
         }
       );
@@ -802,6 +837,8 @@ function RegisterContent() {
           JSON.stringify({
             categories: formData.selectedCategories,
             subcategories: formData.selectedSubcategories,
+            customServices: customServices.length > 0 ? customServices : undefined,
+            portfolioProjects: portfolioProjects.filter(p => p.images.length > 0),
             services: services.length > 0 ? services : undefined,
             tags: selectedTags.length > 0 ? selectedTags : undefined,
           })
@@ -972,7 +1009,7 @@ function RegisterContent() {
                 <div className="space-y-3">
                   <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">
-                      {locale === "ka" ? "ტელეფონი" : "Phone"} *
+                      {locale === "ka" ? "ტელეფონი" : "Phone"} <span className="text-red-500">*</span>
                     </label>
                     <div className="flex gap-2">
                       <div className="flex items-center gap-1.5 px-2 py-2 rounded-lg border border-neutral-200 bg-neutral-50 flex-shrink-0">
@@ -1423,16 +1460,9 @@ function RegisterContent() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="h-12 flex items-center justify-between">
             <Logo />
-            <div className="flex items-center gap-3">
-              <button className="px-3 py-1.5 rounded-lg border border-neutral-200 text-xs font-medium text-neutral-700 hover:bg-neutral-50 transition-colors">
-                {locale === "ka" ? "შენახვა" : "Save"}
-              </button>
-              <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center">
-                <svg className="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-            </div>
+            <Link href="/help" className="text-xs text-neutral-600 hover:text-neutral-900 transition-colors">
+              {locale === "ka" ? "დახმარება" : "Help"}
+            </Link>
           </div>
 
           {/* Progress bar */}
@@ -1476,23 +1506,28 @@ function RegisterContent() {
                 </p>
               </div>
 
-              {/* Avatar Upload */}
-              <div className="flex items-center gap-4 p-4 bg-white rounded-xl border border-neutral-200">
+              {/* Avatar Upload - REQUIRED */}
+              <div className={`flex items-center gap-4 p-4 bg-white rounded-xl border-2 transition-all ${
+                uploadedAvatarUrl
+                  ? 'border-emerald-500/50'
+                  : 'border-[#C4735B] ring-4 ring-[#C4735B]/10'
+              }`}>
                 <div className="relative">
                   <div
                     onClick={() => avatarInputRef.current?.click()}
                     className={`w-20 h-20 rounded-full overflow-hidden cursor-pointer border-2 border-dashed transition-all ${
                       avatarPreview
                         ? 'border-transparent'
-                        : 'border-neutral-300 hover:border-[#C4735B]'
+                        : 'border-[#C4735B] hover:border-[#A85D47]'
                     }`}
                   >
                     {avatarPreview ? (
                       <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
-                        <svg className="w-8 h-8 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      <div className="w-full h-full bg-[#C4735B]/10 flex items-center justify-center">
+                        <svg className="w-8 h-8 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                       </div>
                     )}
@@ -1524,27 +1559,31 @@ function RegisterContent() {
                   />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-sm font-medium text-neutral-900">
-                    {locale === "ka" ? "პროფილის ფოტო" : "Profile Photo"}
-                  </h3>
-                  <p className="text-xs text-neutral-500 mt-0.5">
-                    {locale === "ka" ? "ატვირთე შენი ფოტო (არასავალდებულო)" : "Upload your photo (optional)"}
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-sm font-medium text-neutral-900">
+                      {locale === "ka" ? "პროფილის ფოტო" : "Profile Photo"}
+                      <span className="text-red-500 ml-1">*</span>
+                    </h3>
+                    {uploadedAvatarUrl ? (
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-medium">
+                        {locale === "ka" ? "ატვირთულია" : "Uploaded"}
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full bg-[#C4735B]/10 text-[#C4735B] text-[10px] font-medium">
+                        {locale === "ka" ? "სავალდებულო" : "Required"}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-neutral-500">
+                    {locale === "ka" ? "კლიენტები უფრო ენდობიან ფოტოიან პროფილებს" : "Clients trust profiles with photos more"}
                   </p>
                   {!avatarPreview && (
                     <button
                       onClick={() => avatarInputRef.current?.click()}
-                      className="mt-2 text-xs font-medium text-[#C4735B] hover:text-[#A85D47] transition-colors"
+                      className="mt-2 px-3 py-1.5 rounded-lg bg-[#C4735B] text-white text-xs font-medium hover:bg-[#A85D47] transition-colors"
                     >
                       {locale === "ka" ? "ფოტოს ატვირთვა" : "Upload photo"}
                     </button>
-                  )}
-                  {uploadedAvatarUrl && (
-                    <p className="mt-1 text-xs text-green-600 flex items-center gap-1">
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      {locale === "ka" ? "ატვირთულია" : "Uploaded"}
-                    </p>
                   )}
                 </div>
               </div>
@@ -1553,7 +1592,7 @@ function RegisterContent() {
                 <div className="space-y-3">
                   <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">
-                      {locale === "ka" ? "სრული სახელი" : "Full Name"} *
+                      {locale === "ka" ? "სრული სახელი" : "Full Name"} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -1567,7 +1606,7 @@ function RegisterContent() {
 
                   <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">
-                      {locale === "ka" ? "ტელეფონი" : "Phone"} *
+                      {locale === "ka" ? "ტელეფონი" : "Phone"} <span className="text-red-500">*</span>
                     </label>
                     <div className="flex gap-2">
                       <div className="flex items-center gap-1.5 px-2 py-2 rounded-lg border border-neutral-200 bg-neutral-50 flex-shrink-0">
@@ -1587,7 +1626,7 @@ function RegisterContent() {
 
                   <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">
-                      {locale === "ka" ? "პაროლი" : "Password"} *
+                      {locale === "ka" ? "პაროლი" : "Password"} <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <input
@@ -1774,10 +1813,92 @@ function RegisterContent() {
                   </div>
                 </div>
               )}
+
+              {/* Custom Services - User can add up to 5 - Only show after category is selected */}
+              {formData.selectedCategories.length > 0 && (
+                <div className="p-4 rounded-xl bg-white border border-neutral-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
+                        <svg className="w-3.5 h-3.5 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                      </div>
+                      3. {locale === "ka" ? "სერვისები" : "Services"}
+                      <span className="text-neutral-400 font-normal text-[10px]">({locale === "ka" ? "არასავალდებულო" : "optional"})</span>
+                    </h2>
+                    {customServices.length > 0 && (
+                      <span className="text-xs text-[#C4735B] font-medium">
+                        {customServices.length}/5
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-neutral-500 mb-3">
+                    {locale === "ka"
+                      ? "ჩაწერე რა სერვისებს სთავაზობ კლიენტებს (მაქს. 5)"
+                      : "Write what services you offer to clients (max 5)"}
+                  </p>
+
+                  {/* Added custom services */}
+                  {customServices.length > 0 && (
+                    <div className="space-y-2 mb-3">
+                      {customServices.map((service, index) => (
+                        <div key={index} className="flex items-center gap-2 p-2 rounded-lg bg-[#C4735B]/5 border border-[#C4735B]/20">
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#C4735B] flex-shrink-0" />
+                          <span className="flex-1 text-sm text-neutral-900">{service}</span>
+                          <button
+                            onClick={() => setCustomServices(prev => prev.filter((_, i) => i !== index))}
+                            className="p-1 text-neutral-400 hover:text-red-500 transition-colors"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Add new service input */}
+                  {customServices.length < 5 && (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={newCustomService}
+                        onChange={(e) => setNewCustomService(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && newCustomService.trim()) {
+                            e.preventDefault();
+                            setCustomServices(prev => [...prev, newCustomService.trim()]);
+                            setNewCustomService('');
+                          }
+                        }}
+                        placeholder={locale === "ka" ? "მაგ: ინტერიერის დიზაინი" : "e.g: Interior design"}
+                        className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
+                      />
+                      <button
+                        onClick={() => {
+                          if (newCustomService.trim()) {
+                            setCustomServices(prev => [...prev, newCustomService.trim()]);
+                            setNewCustomService('');
+                          }
+                        }}
+                        disabled={!newCustomService.trim()}
+                        className="px-3 py-2 rounded-lg bg-[#C4735B] text-white text-sm font-medium hover:bg-[#A85D47] disabled:bg-neutral-200 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
-          {/* STEP 3: Services & Portfolio */}
+          {/* STEP 3: Portfolio (Projects Only) */}
           {currentStep === 'services' && (
             <div className="space-y-4">
               <div>
@@ -1785,95 +1906,47 @@ function RegisterContent() {
                   {locale === "ka" ? "პორტფოლიო" : "Portfolio"}
                 </h1>
                 <p className="text-sm text-neutral-500">
-                  {locale === "ka" ? "დაამატე სერვისები და პროექტები" : "Add services and projects"}
+                  {locale === "ka" ? "აჩვენე შენი ნამუშევრები (მინიმუმ 1 პროექტი სავალდებულოა)" : "Showcase your work (minimum 1 project required)"}
                 </p>
               </div>
 
-              {/* Services Section */}
-              <div className="p-4 rounded-xl bg-white border border-[#C4735B]/20">
-                <h2 className="text-sm font-semibold text-neutral-900 mb-3 flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
-                    <svg className="w-3.5 h-3.5 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                  </div>
-                  {locale === "ka" ? "სერვისები" : "Services"}
-                </h2>
-
-                {/* Quick Add from Subcategories */}
-                {formData.selectedCategories.length > 0 && (
-                  <div className="mb-3">
-                    <p className="text-xs text-neutral-500 mb-2">
-                      {locale === "ka" ? "სწრაფი დამატება:" : "Quick add:"}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
-                      {formData.selectedCategories.flatMap(catKey => {
-                        const category = categories.find(c => c.key === catKey);
-                        return category?.subcategories.map(sub => {
-                          const isAdded = services.some(s => s.title === (locale === "ka" ? sub.nameKa : sub.name));
-                          return (
-                            <button
-                              key={sub.key}
-                              onClick={() => {
-                                if (!isAdded) {
-                                  setServices(prev => [...prev, {
-                                    title: locale === "ka" ? sub.nameKa : sub.name,
-                                    price: '',
-                                    description: ''
-                                  }]);
-                                }
-                              }}
-                              disabled={isAdded}
-                              className={`px-2.5 py-1 rounded-full text-xs transition-all ${
-                                isAdded
-                                  ? 'bg-[#C4735B] text-white cursor-default'
-                                  : 'bg-[#C4735B]/10 text-[#C4735B] hover:bg-[#C4735B]/20'
-                              }`}
-                            >
-                              {isAdded ? '✓ ' : '+ '}{locale === "ka" ? sub.nameKa : sub.name}
-                            </button>
-                          );
-                        }) || [];
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Added Services */}
-                {services.length > 0 && (
-                  <div className="mt-3 space-y-1.5">
-                    {services.map((service, index) => (
-                      <div key={index} className="p-2 rounded-lg border border-[#C4735B]/20 bg-white flex items-center justify-between group">
-                        <div className="flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-[#C4735B]" />
-                          <span className="text-xs font-medium text-neutral-900">{service.title}</span>
-                          {service.price && <span className="text-xs text-[#C4735B]">₾{service.price}</span>}
-                        </div>
-                        <button
-                          onClick={() => removeService(index)}
-                          className="text-neutral-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              {/* Required notice */}
+              <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200">
+                <svg className="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <p className="text-sm text-amber-700">
+                  {locale === "ka" ? "მინიმუმ 1 პროექტი სავალდებულოა რეგისტრაციისთვის" : "At least 1 project is required to complete registration"}
+                </p>
               </div>
 
               {/* Portfolio Projects Section */}
-              <div className="p-4 rounded-xl bg-white border border-[#C4735B]/20">
+              <div className={`p-4 rounded-xl bg-white border-2 transition-all ${
+                portfolioProjects.length > 0 && portfolioProjects.some(p => p.images.length > 0)
+                  ? 'border-emerald-500/50'
+                  : 'border-[#C4735B] ring-4 ring-[#C4735B]/10'
+              }`}>
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
-                      <svg className="w-3.5 h-3.5 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    {locale === "ka" ? "პროექტები" : "Projects"}
-                  </h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
+                        <svg className="w-3.5 h-3.5 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      {locale === "ka" ? "პროექტები" : "Projects"}
+                      <span className="text-red-500">*</span>
+                    </h2>
+                    {portfolioProjects.length > 0 && portfolioProjects.some(p => p.images.length > 0) ? (
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-medium">
+                        {locale === "ka" ? "შევსებულია" : "Completed"}
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full bg-[#C4735B]/10 text-[#C4735B] text-[10px] font-medium">
+                        {locale === "ka" ? "სავალდებულო" : "Required"}
+                      </span>
+                    )}
+                  </div>
                   <button
                     onClick={addPortfolioProject}
                     className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#C4735B] text-white text-xs font-medium hover:bg-[#A85D47] transition-colors"
@@ -2004,20 +2077,20 @@ function RegisterContent() {
           {currentStep === 'review' && (
             <div className="space-y-6">
               {/* Profile Card Preview */}
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1a1a1a] to-[#2d2d2d] p-6 lg:p-8">
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#FDF8F6] to-[#FAF5F2] p-6 lg:p-8 border border-[#C4735B]/20">
                 {/* Decorative elements */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-[#C4735B]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute top-0 right-0 w-64 h-64 bg-[#C4735B]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#C4735B]/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
 
                 <div className="relative">
                   {/* Header label */}
                   <div className="flex items-center justify-between mb-6">
-                    <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-[10px] font-medium text-white/70 uppercase tracking-wider">
+                    <span className="px-3 py-1 rounded-full bg-[#C4735B]/10 text-[10px] font-medium text-[#C4735B] uppercase tracking-wider">
                       {locale === "ka" ? "პროფილის გადახედვა" : "Profile Preview"}
                     </span>
                     <button
                       onClick={() => goToStep('account')}
-                      className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm text-[10px] font-medium text-white/70 transition-all"
+                      className="px-3 py-1 rounded-full bg-[#C4735B]/10 hover:bg-[#C4735B]/20 text-[10px] font-medium text-[#C4735B] transition-all"
                     >
                       {locale === "ka" ? "რედაქტირება" : "Edit Profile"}
                     </button>
@@ -2027,19 +2100,19 @@ function RegisterContent() {
                   <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
                     {/* Avatar */}
                     <div className="relative group">
-                      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden ring-4 ring-white/10 shadow-2xl">
+                      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden ring-4 ring-[#C4735B]/20 shadow-lg">
                         {avatarPreview ? (
                           <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full bg-gradient-to-br from-[#C4735B] to-[#A85D47] flex items-center justify-center">
-                            <span className="text-3xl font-bold text-white/90">
+                            <span className="text-3xl font-bold text-white">
                               {formData.fullName?.charAt(0)?.toUpperCase() || 'P'}
                             </span>
                           </div>
                         )}
                       </div>
                       {/* Status indicator */}
-                      <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 ring-4 ring-[#1a1a1a] flex items-center justify-center">
+                      <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 ring-4 ring-[#FDF8F6] flex items-center justify-center">
                         <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -2048,13 +2121,14 @@ function RegisterContent() {
 
                     {/* Info */}
                     <div className="flex-1 text-center sm:text-left">
-                      <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1">
+                      <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-1">
                         {formData.fullName || (locale === "ka" ? "თქვენი სახელი" : "Your Name")}
                       </h2>
-                      <p className="text-white/50 text-sm mb-3">
-                        {formData.city && <span>{formData.city} • </span>}
-                        <span>{locale === "ka" ? "პროფესიონალი" : "Professional"}</span>
-                      </p>
+                      {formData.city && (
+                        <p className="text-neutral-500 text-sm mb-3">
+                          {formData.city}
+                        </p>
+                      )}
 
                       {/* Categories as tags */}
                       <div className="flex flex-wrap justify-center sm:justify-start gap-2">
@@ -2063,7 +2137,7 @@ function RegisterContent() {
                           return (
                             <span
                               key={catKey}
-                              className="px-3 py-1 rounded-full bg-[#C4735B]/20 text-[#E8A090] text-xs font-medium backdrop-blur-sm"
+                              className="px-3 py-1 rounded-full bg-[#C4735B]/10 text-[#C4735B] text-xs font-medium"
                             >
                               {locale === "ka" ? category?.nameKa : category?.name}
                             </span>
@@ -2073,24 +2147,18 @@ function RegisterContent() {
                     </div>
                   </div>
 
-                  {/* Stats row */}
-                  <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-white/10">
+                  {/* Stats row - show projects and services/skills count */}
+                  <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-[#C4735B]/10">
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-white">{portfolioProjects.length}</p>
-                      <p className="text-[11px] text-white/40 uppercase tracking-wider">
+                      <p className="text-2xl font-bold text-neutral-900">{portfolioProjects.filter(p => p.images.length > 0).length}</p>
+                      <p className="text-[11px] text-neutral-500 uppercase tracking-wider">
                         {locale === "ka" ? "პროექტი" : "Projects"}
                       </p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-white">{services.length}</p>
-                      <p className="text-[11px] text-white/40 uppercase tracking-wider">
+                      <p className="text-2xl font-bold text-neutral-900">{customServices.length}</p>
+                      <p className="text-[11px] text-neutral-500 uppercase tracking-wider">
                         {locale === "ka" ? "სერვისი" : "Services"}
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-white">{formData.selectedSubcategories.length}</p>
-                      <p className="text-[11px] text-white/40 uppercase tracking-wider">
-                        {locale === "ka" ? "უნარი" : "Skills"}
                       </p>
                     </div>
                   </div>
@@ -2203,91 +2271,29 @@ function RegisterContent() {
                   </div>
                 </div>
 
-                {/* Skills */}
-                <div className="p-4 rounded-xl bg-white border border-neutral-200 hover:border-[#C4735B]/30 hover:shadow-sm transition-all">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-                      {locale === "ka" ? "უნარები" : "Skills"}
-                    </h3>
-                    <button onClick={() => goToStep('category')} className="text-[10px] font-medium text-[#C4735B] hover:underline">
-                      {locale === "ka" ? "შეცვლა" : "Change"}
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {formData.selectedSubcategories.slice(0, 8).map(subKey => {
-                      let subcategory;
-                      for (const cat of categories) {
-                        const found = cat.subcategories.find(s => s.key === subKey);
-                        if (found) { subcategory = found; break; }
-                      }
-                      return (
+                {/* Services List - Show if there are custom services */}
+                {customServices.length > 0 && (
+                  <div className="p-4 rounded-xl bg-white border border-neutral-200 hover:border-[#C4735B]/30 hover:shadow-sm transition-all">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                        {locale === "ka" ? "სერვისები" : "Services"}
+                      </h3>
+                      <button onClick={() => goToStep('category')} className="text-[10px] font-medium text-[#C4735B] hover:underline">
+                        {locale === "ka" ? "შეცვლა" : "Change"}
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {customServices.map((service, idx) => (
                         <span
-                          key={subKey}
-                          className="px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-700 text-xs font-medium"
+                          key={idx}
+                          className="px-2.5 py-1 rounded-lg bg-[#C4735B]/10 text-[#C4735B] text-xs font-medium"
                         >
-                          {locale === "ka" ? subcategory?.nameKa : subcategory?.name}
+                          {service}
                         </span>
-                      );
-                    })}
-                    {formData.selectedSubcategories.length > 8 && (
-                      <span className="px-2.5 py-1 rounded-lg bg-[#C4735B]/10 text-[#C4735B] text-xs font-medium">
-                        +{formData.selectedSubcategories.length - 8}
-                      </span>
-                    )}
-                    {formData.selectedSubcategories.length === 0 && (
-                      <span className="text-neutral-400 text-xs">{locale === "ka" ? "არ არის არჩეული" : "None selected"}</span>
-                    )}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              </div>
-
-              {/* Services List */}
-              {services.length > 0 && (
-                <div className="p-4 rounded-xl bg-white border border-neutral-200">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-                      {locale === "ka" ? "სერვისები" : "Services"}
-                    </h3>
-                    <button onClick={() => goToStep('services')} className="text-[10px] font-medium text-[#C4735B] hover:underline">
-                      {locale === "ka" ? "შეცვლა" : "Change"}
-                    </button>
-                  </div>
-                  <div className="space-y-2">
-                    {services.slice(0, 4).map((service, idx) => (
-                      <div key={idx} className="flex items-center justify-between py-2 border-b border-neutral-100 last:border-0">
-                        <span className="text-sm text-neutral-900">{service.title}</span>
-                        {service.price && (
-                          <span className="text-sm font-semibold text-[#C4735B]">{service.price}</span>
-                        )}
-                      </div>
-                    ))}
-                    {services.length > 4 && (
-                      <p className="text-xs text-neutral-400 pt-1">
-                        +{services.length - 4} {locale === "ka" ? "სხვა სერვისი" : "more services"}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Ready to launch banner */}
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#C4735B] to-[#A85D47] p-6 text-center">
-                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDYwIEwgNjAgMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMDUiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-50" />
-                <div className="relative">
-                  <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-4 shadow-lg">
-                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-2">
-                    {locale === "ka" ? "მზად ხარ გასაშვებად!" : "Ready to Launch!"}
-                  </h3>
-                  <p className="text-white/80 text-sm max-w-sm mx-auto">
-                    {locale === "ka"
-                      ? "შენი პროფესიონალური პროფილი მზადაა. დააჭირე რეგისტრაციას და დაიწყე კლიენტების მოძიება."
-                      : "Your professional profile is ready. Click Register to start connecting with clients."}
-                  </p>
-                </div>
+                )}
               </div>
             </div>
           )}
@@ -2317,7 +2323,8 @@ function RegisterContent() {
               disabled={
                 isLoading ||
                 (currentStep === 'account' && !canProceedFromAccount()) ||
-                (currentStep === 'category' && !canProceedFromCategory())
+                (currentStep === 'category' && !canProceedFromCategory()) ||
+                (currentStep === 'services' && !canProceedFromServices())
               }
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#C4735B] hover:bg-[#A85D47] disabled:bg-neutral-200 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
             >

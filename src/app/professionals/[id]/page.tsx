@@ -69,6 +69,7 @@ interface ProProfile {
   description: string;
   categories: string[];
   subcategories?: string[];
+  customServices?: string[]; // Custom services added by user during registration
   yearsExperience: number;
   serviceAreas: string[];
   pricingModel: 'hourly' | 'project_based' | 'from' | 'sqm' | 'daily';
@@ -673,7 +674,35 @@ export default function ProfessionalDetailPage() {
               </section>
             )}
 
-            {/* Services Section */}
+            {/* Custom Services Section - Shows user-added services */}
+            {profile.customServices && profile.customServices.length > 0 && (
+              <section
+                className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 sm:p-8 shadow-sm"
+                style={{ animationDelay: '0.15s' }}
+              >
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-[#C4735B]/10 flex items-center justify-center">
+                    <Zap className="w-5 h-5 text-[#C4735B]" />
+                  </div>
+                  <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
+                    {locale === 'ka' ? 'სერვისები' : 'Services'}
+                  </h2>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {profile.customServices.map((service, idx) => (
+                    <span
+                      key={idx}
+                      className="px-4 py-2.5 rounded-xl text-sm font-medium bg-[#C4735B]/10 text-[#C4735B] border border-[#C4735B]/20 hover:bg-[#C4735B]/15 transition-colors"
+                    >
+                      {service}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Skills/Subcategories Section */}
             {profile.subcategories && profile.subcategories.length > 0 && (
               <section
                 className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 sm:p-8 shadow-sm"
@@ -684,7 +713,7 @@ export default function ProfessionalDetailPage() {
                     <Briefcase className="w-5 h-5 text-[#4A9B9B]" />
                   </div>
                   <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-                    {locale === 'ka' ? 'სერვისები' : 'Services'}
+                    {locale === 'ka' ? 'უნარები' : 'Skills'}
                   </h2>
                 </div>
 

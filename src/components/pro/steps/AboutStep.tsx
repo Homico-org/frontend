@@ -3,6 +3,7 @@
 import { useLanguage } from '@/contexts/LanguageContext';
 import AvatarCropper from '@/components/common/AvatarCropper';
 import { useRef, useState } from 'react';
+import { Camera, User, Clock, FileText, AlertCircle, CheckCircle2, Sparkles } from 'lucide-react';
 
 interface AboutStepProps {
   formData: {
@@ -17,6 +18,7 @@ interface AboutStepProps {
   validation: {
     bio: boolean;
     experience: boolean;
+    avatar?: boolean;
   };
 }
 
@@ -83,15 +85,16 @@ export default function AboutStep({
     setImageToCrop(null);
   };
 
+  // Check if avatar is valid (has data)
+  const hasAvatar = !!avatarPreview && avatarPreview.length > 0;
+
   return (
     <>
-      <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
+      <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
         {/* Section Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#E07B4F]/10 text-[#E07B4F] text-sm font-medium mb-4">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
+            <User className="w-4 h-4" />
             {locale === 'ka' ? 'პირადი ინფორმაცია' : 'Personal Information'}
           </div>
           <h2 className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)] mb-2">
@@ -104,22 +107,58 @@ export default function AboutStep({
           </p>
         </div>
 
-        {/* Avatar Upload Card */}
-        <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 shadow-sm">
+        {/* Required Fields Notice */}
+        <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20">
+          <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+          <p className="text-sm text-amber-700 dark:text-amber-300">
+            {locale === 'ka'
+              ? 'ველები ვარსკვლავით (*) სავალდებულოა'
+              : 'Fields marked with (*) are required'}
+          </p>
+        </div>
+
+        {/* Avatar Upload Card - REQUIRED */}
+        <div className={`
+          bg-[var(--color-bg-elevated)] rounded-2xl p-6 shadow-sm transition-all
+          ${hasAvatar
+            ? 'border-2 border-emerald-500/30'
+            : 'border-2 border-[#E07B4F]/50 ring-4 ring-[#E07B4F]/10'
+          }
+        `}>
+          {/* Required Badge */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Camera className="w-5 h-5 text-[#E07B4F]" />
+              <h3 className="font-semibold text-[var(--color-text-primary)]">
+                {locale === 'ka' ? 'პროფილის ფოტო' : 'Profile Photo'}
+                <span className="text-[#E07B4F] ml-1">*</span>
+              </h3>
+            </div>
+            {hasAvatar ? (
+              <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 rounded-full">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                {locale === 'ka' ? 'ატვირთულია' : 'Uploaded'}
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 text-xs font-medium text-[#E07B4F] bg-[#E07B4F]/10 px-2.5 py-1 rounded-full">
+                <AlertCircle className="w-3.5 h-3.5" />
+                {locale === 'ka' ? 'სავალდებულო' : 'Required'}
+              </span>
+            )}
+          </div>
+
           <div className="flex items-center gap-5">
             {!avatarPreview ? (
               <button
                 type="button"
                 onClick={() => avatarInputRef.current?.click()}
-                className="relative w-24 h-24 rounded-2xl bg-gradient-to-br from-[var(--color-bg-tertiary)] to-[var(--color-bg-muted)] flex items-center justify-center group transition-all hover:scale-105 overflow-hidden"
+                className="relative w-28 h-28 rounded-2xl bg-gradient-to-br from-[#E07B4F]/10 to-[#E07B4F]/5 border-2 border-dashed border-[#E07B4F]/40 flex items-center justify-center group transition-all hover:scale-105 hover:border-[#E07B4F] overflow-hidden"
               >
-                <svg className="w-10 h-10 text-[var(--color-text-muted)] group-hover:text-[#E07B4F] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[#E07B4F] flex items-center justify-center shadow-lg">
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
+                <div className="text-center">
+                  <Camera className="w-8 h-8 text-[#E07B4F]/60 group-hover:text-[#E07B4F] transition-colors mx-auto mb-1" />
+                  <span className="text-xs font-medium text-[#E07B4F]/60 group-hover:text-[#E07B4F]">
+                    {locale === 'ka' ? 'ატვირთე' : 'Upload'}
+                  </span>
                 </div>
               </button>
             ) : (
@@ -127,37 +166,38 @@ export default function AboutStep({
                 <img
                   src={avatarPreview}
                   alt=""
-                  className="w-24 h-24 rounded-2xl object-cover shadow-lg"
+                  className="w-28 h-28 rounded-2xl object-cover shadow-lg ring-2 ring-emerald-500/30"
                 />
                 <button
                   type="button"
                   onClick={() => avatarInputRef.current?.click()}
-                  className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[var(--color-bg-elevated)] border border-[var(--color-border)] flex items-center justify-center shadow-md hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                  className="absolute -bottom-2 -right-2 w-9 h-9 rounded-full bg-[#E07B4F] flex items-center justify-center shadow-lg hover:bg-[#D26B3F] transition-colors"
                 >
-                  <svg className="w-4 h-4 text-[var(--color-text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                  </svg>
+                  <Camera className="w-4 h-4 text-white" />
                 </button>
               </div>
             )}
 
             <div className="flex-1">
-              <h3 className="font-semibold text-[var(--color-text-primary)] mb-1">
-                {locale === 'ka' ? 'პროფილის ფოტო' : 'Profile Photo'}
-              </h3>
-              <p className="text-sm text-[var(--color-text-tertiary)] mb-3">
-                {locale === 'ka' ? 'PNG, JPG მაქს. 5MB' : 'PNG, JPG up to 5MB'}
+              <p className="text-sm text-[var(--color-text-secondary)] mb-3">
+                {locale === 'ka'
+                  ? 'კლიენტები უფრო ენდობიან პროფესიონალებს ფოტოთი. ატვირთე მაღალი ხარისხის ფოტო.'
+                  : 'Clients trust professionals with photos more. Upload a high-quality photo.'}
               </p>
               <button
                 type="button"
                 onClick={() => avatarInputRef.current?.click()}
-                className="text-sm font-medium text-[#E07B4F] hover:text-[#D26B3F] transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#E07B4F] text-white text-sm font-medium hover:bg-[#D26B3F] transition-colors"
               >
+                <Camera className="w-4 h-4" />
                 {avatarPreview
-                  ? (locale === 'ka' ? 'შეცვლა' : 'Change photo')
-                  : (locale === 'ka' ? 'ატვირთვა' : 'Upload photo')
+                  ? (locale === 'ka' ? 'შეცვალე ფოტო' : 'Change Photo')
+                  : (locale === 'ka' ? 'ატვირთე ფოტო' : 'Upload Photo')
                 }
               </button>
+              <p className="text-xs text-[var(--color-text-muted)] mt-2">
+                PNG, JPG {locale === 'ka' ? 'მაქს.' : 'max'} 5MB
+              </p>
             </div>
           </div>
           <input
@@ -169,21 +209,33 @@ export default function AboutStep({
           />
         </div>
 
-        {/* Years of Experience */}
-        <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 shadow-sm">
-          <label className="flex items-center justify-between mb-4">
-            <span className="font-semibold text-[var(--color-text-primary)]">
-              {locale === 'ka' ? 'გამოცდილება (წელი)' : 'Years of Experience'}
-            </span>
-            {validation.experience && (
-              <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-full">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                </svg>
+        {/* Years of Experience - REQUIRED */}
+        <div className={`
+          bg-[var(--color-bg-elevated)] rounded-2xl p-6 shadow-sm transition-all
+          ${validation.experience
+            ? 'border-2 border-emerald-500/30'
+            : 'border-2 border-[var(--color-border-subtle)]'
+          }
+        `}>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-[#E07B4F]" />
+              <span className="font-semibold text-[var(--color-text-primary)]">
+                {locale === 'ka' ? 'გამოცდილება (წელი)' : 'Years of Experience'}
+                <span className="text-[#E07B4F] ml-1">*</span>
+              </span>
+            </div>
+            {validation.experience ? (
+              <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 rounded-full">
+                <CheckCircle2 className="w-3.5 h-3.5" />
                 {locale === 'ka' ? 'შევსებულია' : 'Completed'}
               </span>
+            ) : (
+              <span className="flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-muted)] bg-[var(--color-bg-tertiary)] px-2.5 py-1 rounded-full">
+                {locale === 'ka' ? 'სავალდებულო' : 'Required'}
+              </span>
             )}
-          </label>
+          </div>
           <div className="relative">
             <input
               type="number"
@@ -208,23 +260,38 @@ export default function AboutStep({
               {locale === 'ka' ? 'წელი' : 'years'}
             </span>
           </div>
+          <p className="text-xs text-[var(--color-text-muted)] mt-2">
+            {locale === 'ka' ? 'რამდენი წელია მუშაობ ამ სფეროში?' : 'How many years have you been working in this field?'}
+          </p>
         </div>
 
-        {/* Bio / About */}
-        <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 shadow-sm">
-          <label className="flex items-center justify-between mb-4">
-            <span className="font-semibold text-[var(--color-text-primary)]">
-              {locale === 'ka' ? 'შენს შესახებ' : 'About You'}
-            </span>
-            {validation.bio && (
-              <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-full">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                </svg>
+        {/* Bio / About - REQUIRED */}
+        <div className={`
+          bg-[var(--color-bg-elevated)] rounded-2xl p-6 shadow-sm transition-all
+          ${validation.bio
+            ? 'border-2 border-emerald-500/30'
+            : 'border-2 border-[var(--color-border-subtle)]'
+          }
+        `}>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-[#E07B4F]" />
+              <span className="font-semibold text-[var(--color-text-primary)]">
+                {locale === 'ka' ? 'შენს შესახებ' : 'About You'}
+                <span className="text-[#E07B4F] ml-1">*</span>
+              </span>
+            </div>
+            {validation.bio ? (
+              <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 rounded-full">
+                <CheckCircle2 className="w-3.5 h-3.5" />
                 {locale === 'ka' ? 'შევსებულია' : 'Completed'}
               </span>
+            ) : (
+              <span className="flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-muted)] bg-[var(--color-bg-tertiary)] px-2.5 py-1 rounded-full">
+                {locale === 'ka' ? 'სავალდებულო' : 'Required'}
+              </span>
             )}
-          </label>
+          </div>
           <textarea
             rows={5}
             value={formData.bio}
@@ -246,7 +313,7 @@ export default function AboutStep({
             <p className="text-xs text-[var(--color-text-muted)]">
               {locale === 'ka' ? 'მინიმუმ 50 სიმბოლო რეკომენდებულია' : 'Minimum 50 characters recommended'}
             </p>
-            <span className={`text-xs ${formData.bio.length >= 50 ? 'text-emerald-600' : 'text-[var(--color-text-muted)]'}`}>
+            <span className={`text-xs font-medium ${formData.bio.length >= 50 ? 'text-emerald-600' : formData.bio.length > 0 ? 'text-amber-600' : 'text-[var(--color-text-muted)]'}`}>
               {formData.bio.length}/500
             </span>
           </div>
@@ -256,9 +323,7 @@ export default function AboutStep({
         <div className="bg-gradient-to-r from-[#E07B4F]/5 to-[#E8956A]/5 rounded-2xl p-5 border border-[#E07B4F]/10">
           <div className="flex gap-4">
             <div className="w-10 h-10 rounded-full bg-[#E07B4F]/10 flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-[#E07B4F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <Sparkles className="w-5 h-5 text-[#E07B4F]" />
             </div>
             <div>
               <h4 className="font-semibold text-[#E07B4F] mb-1">
@@ -269,6 +334,46 @@ export default function AboutStep({
                   ? 'პროფილები დეტალური აღწერით იღებენ 40%-ით მეტ მოთხოვნას. გაუზიარე კლიენტებს რა გამოგარჩევს!'
                   : 'Profiles with detailed descriptions receive 40% more requests. Share what makes you unique!'}
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress Summary */}
+        <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-5">
+          <h4 className="font-semibold text-[var(--color-text-primary)] mb-3 flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 text-[#E07B4F]" />
+            {locale === 'ka' ? 'ამ გვერდის პროგრესი' : 'This Page Progress'}
+          </h4>
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              {hasAvatar ? (
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              ) : (
+                <div className="w-4 h-4 rounded-full border-2 border-[var(--color-border)]" />
+              )}
+              <span className={`text-sm ${hasAvatar ? 'text-emerald-600' : 'text-[var(--color-text-secondary)]'}`}>
+                {locale === 'ka' ? 'პროფილის ფოტო' : 'Profile Photo'}
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              {validation.experience ? (
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              ) : (
+                <div className="w-4 h-4 rounded-full border-2 border-[var(--color-border)]" />
+              )}
+              <span className={`text-sm ${validation.experience ? 'text-emerald-600' : 'text-[var(--color-text-secondary)]'}`}>
+                {locale === 'ka' ? 'გამოცდილება' : 'Years of Experience'}
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              {validation.bio ? (
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              ) : (
+                <div className="w-4 h-4 rounded-full border-2 border-[var(--color-border)]" />
+              )}
+              <span className={`text-sm ${validation.bio ? 'text-emerald-600' : 'text-[var(--color-text-secondary)]'}`}>
+                {locale === 'ka' ? 'აღწერა' : 'About You'}
+              </span>
             </div>
           </div>
         </div>
