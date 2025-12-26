@@ -109,8 +109,14 @@ export interface ProProfile {
   subcategories: string[];
   telegram: string;
   totalReviews: number;
+  verificationStatus?: 'pending' | 'submitted' | 'verified' | 'rejected';
   whatsapp: string;
   yearsExperience: number;
+  // Social links
+  facebookUrl?: string;
+  instagramUrl?: string;
+  linkedinUrl?: string;
+  websiteUrl?: string;
   __v: number;
   _id: string;
 }

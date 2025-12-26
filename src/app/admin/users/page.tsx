@@ -28,6 +28,15 @@ import {
   XCircle,
   TrendingUp,
   Crown,
+  BadgeCheck,
+  Clock,
+  AlertCircle,
+  ExternalLink,
+  Facebook,
+  Instagram,
+  Linkedin,
+  Globe,
+  Image,
 } from 'lucide-react';
 
 // Terracotta admin theme (matching dashboard)
@@ -62,6 +71,16 @@ interface User {
   location?: string;
   createdAt: string;
   lastLoginAt?: string;
+  // Verification fields
+  verificationStatus?: 'pending' | 'submitted' | 'verified' | 'rejected';
+  idDocumentUrl?: string;
+  idDocumentBackUrl?: string;
+  selfieWithIdUrl?: string;
+  verificationSubmittedAt?: string;
+  facebookUrl?: string;
+  instagramUrl?: string;
+  linkedinUrl?: string;
+  websiteUrl?: string;
 }
 
 interface UserStats {
@@ -87,10 +106,15 @@ function AdminUsersPageContent() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
+  const [verificationFilter, setVerificationFilter] = useState('all');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [actionMenuUser, setActionMenuUser] = useState<string | null>(null);
+  const [showVerificationModal, setShowVerificationModal] = useState<User | null>(null);
+  const [verificationAction, setVerificationAction] = useState<'approve' | 'reject' | null>(null);
+  const [rejectionNote, setRejectionNote] = useState('');
+  const [isProcessingVerification, setIsProcessingVerification] = useState(false);
 
   const fetchData = useCallback(async (showRefresh = false) => {
     try {
@@ -102,6 +126,7 @@ function AdminUsersPageContent() {
       params.set('limit', '20');
       if (searchQuery) params.set('search', searchQuery);
       if (roleFilter !== 'all') params.set('role', roleFilter);
+      if (verificationFilter !== 'all') params.set('verificationStatus', verificationFilter);
 
       // Fetch stats first (this always works)
       const statsRes = await api.get('/admin/stats').catch((err) => {
@@ -149,7 +174,7 @@ function AdminUsersPageContent() {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [page, searchQuery, roleFilter]);
+  }, [page, searchQuery, roleFilter, verificationFilter]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -160,7 +185,7 @@ function AdminUsersPageContent() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setPage(1);
-  }, [searchQuery, roleFilter]);
+  }, [searchQuery, roleFilter, verificationFilter]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -186,6 +211,33 @@ function AdminUsersPageContent() {
       case 'pro': return locale === 'ka' ? 'პროფესიონალი' : 'Pro';
       case 'company': return locale === 'ka' ? 'კომპანია' : 'Company';
       default: return locale === 'ka' ? 'კლიენტი' : 'Client';
+    }
+  };
+
+  const handleVerificationAction = async (action: 'approve' | 'reject') => {
+    if (!showVerificationModal) return;
+
+    setIsProcessingVerification(true);
+    try {
+      await api.patch(`/admin/users/${showVerificationModal._id}/verification`, {
+        status: action === 'approve' ? 'verified' : 'rejected',
+        rejectionNote: action === 'reject' ? rejectionNote : undefined,
+      });
+
+      // Update local state
+      setUsers(prev => prev.map(u =>
+        u._id === showVerificationModal._id
+          ? { ...u, verificationStatus: action === 'approve' ? 'verified' : 'rejected' }
+          : u
+      ));
+
+      setShowVerificationModal(null);
+      setVerificationAction(null);
+      setRejectionNote('');
+    } catch (err) {
+      console.error('Failed to update verification:', err);
+    } finally {
+      setIsProcessingVerification(false);
     }
   };
 
@@ -340,6 +392,22 @@ function AdminUsersPageContent() {
               <option value="company">{locale === 'ka' ? 'კომპანიები' : 'Companies'}</option>
               <option value="admin">{locale === 'ka' ? 'ადმინები' : 'Admins'}</option>
             </select>
+            <select
+              value={verificationFilter}
+              onChange={(e) => setVerificationFilter(e.target.value)}
+              className="px-4 py-3 rounded-xl text-sm cursor-pointer focus:outline-none transition-all"
+              style={{
+                background: verificationFilter === 'submitted' ? THEME.warning + '20' : THEME.surface,
+                border: `1px solid ${verificationFilter === 'submitted' ? THEME.warning : THEME.border}`,
+                color: THEME.text,
+              }}
+            >
+              <option value="all">{locale === 'ka' ? 'ყველა ვერიფიკაცია' : 'All Verification'}</option>
+              <option value="submitted">{locale === 'ka' ? '⏳ მოლოდინში' : '⏳ Pending Review'}</option>
+              <option value="verified">{locale === 'ka' ? '✓ ვერიფიცირებული' : '✓ Verified'}</option>
+              <option value="rejected">{locale === 'ka' ? '✗ უარყოფილი' : '✗ Rejected'}</option>
+              <option value="pending">{locale === 'ka' ? 'არ გაგზავნილა' : 'Not Submitted'}</option>
+            </select>
           </div>
         </div>
 
@@ -413,7 +481,7 @@ function AdminUsersPageContent() {
                 </div>
 
                 {/* Status */}
-                <div className="col-span-2 hidden lg:block">
+                <div className="col-span-2 hidden lg:flex items-center gap-2">
                   {user.isSuspended ? (
                     <span
                       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium"
@@ -422,6 +490,45 @@ function AdminUsersPageContent() {
                       <Ban className="w-3 h-3" />
                       {locale === 'ka' ? 'დაბლოკილი' : 'Suspended'}
                     </span>
+                  ) : user.role === 'pro' || user.role === 'company' ? (
+                    // Show verification status for pros/companies
+                    user.verificationStatus === 'submitted' ? (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowVerificationModal(user);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all hover:scale-105"
+                        style={{ background: `${THEME.warning}20`, color: THEME.warning }}
+                      >
+                        <Clock className="w-3 h-3" />
+                        {locale === 'ka' ? 'გადასამოწმებელი' : 'Review'}
+                      </button>
+                    ) : user.verificationStatus === 'verified' ? (
+                      <span
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium"
+                        style={{ background: `${THEME.success}20`, color: THEME.success }}
+                      >
+                        <BadgeCheck className="w-3 h-3" />
+                        {locale === 'ka' ? 'დადასტურებული' : 'Verified'}
+                      </span>
+                    ) : user.verificationStatus === 'rejected' ? (
+                      <span
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium"
+                        style={{ background: `${THEME.error}20`, color: THEME.error }}
+                      >
+                        <XCircle className="w-3 h-3" />
+                        {locale === 'ka' ? 'უარყოფილი' : 'Rejected'}
+                      </span>
+                    ) : (
+                      <span
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium"
+                        style={{ background: `${THEME.textDim}20`, color: THEME.textDim }}
+                      >
+                        <AlertCircle className="w-3 h-3" />
+                        {locale === 'ka' ? 'არ გაგზავნილა' : 'Not Submitted'}
+                      </span>
+                    )
                   ) : (
                     <span
                       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium"
@@ -552,6 +659,312 @@ function AdminUsersPageContent() {
           className="fixed inset-0 z-0"
           onClick={() => setActionMenuUser(null)}
         />
+      )}
+
+      {/* Verification Modal */}
+      {showVerificationModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => {
+              setShowVerificationModal(null);
+              setVerificationAction(null);
+              setRejectionNote('');
+            }}
+          />
+          <div
+            className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl"
+            style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+          >
+            {/* Header */}
+            <div
+              className="sticky top-0 z-10 px-6 py-4 flex items-center justify-between"
+              style={{ background: THEME.surfaceLight, borderBottom: `1px solid ${THEME.border}` }}
+            >
+              <div className="flex items-center gap-3">
+                <Avatar src={showVerificationModal.avatar} name={showVerificationModal.name} size="lg" />
+                <div>
+                  <h3 className="font-semibold" style={{ color: THEME.text }}>
+                    {showVerificationModal.name}
+                  </h3>
+                  <p className="text-sm" style={{ color: THEME.textMuted }}>
+                    {showVerificationModal.email}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowVerificationModal(null);
+                  setVerificationAction(null);
+                  setRejectionNote('');
+                }}
+                className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+                style={{ background: THEME.surface }}
+              >
+                <XCircle className="w-5 h-5" style={{ color: THEME.textMuted }} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* ID Documents Section */}
+              <div>
+                <h4 className="text-sm font-medium mb-3 flex items-center gap-2" style={{ color: THEME.text }}>
+                  <Image className="w-4 h-4" style={{ color: THEME.primary }} />
+                  {locale === 'ka' ? 'საიდენტიფიკაციო დოკუმენტები' : 'ID Documents'}
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* ID Front */}
+                  <div
+                    className="rounded-xl p-3"
+                    style={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
+                  >
+                    <p className="text-xs mb-2" style={{ color: THEME.textDim }}>
+                      {locale === 'ka' ? 'პირადობის წინა მხარე' : 'ID Front'}
+                    </p>
+                    {showVerificationModal.idDocumentUrl ? (
+                      <a
+                        href={showVerificationModal.idDocumentUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block aspect-video rounded-lg overflow-hidden bg-black/20 hover:opacity-80 transition-opacity"
+                      >
+                        <img
+                          src={showVerificationModal.idDocumentUrl}
+                          alt="ID Front"
+                          className="w-full h-full object-cover"
+                        />
+                      </a>
+                    ) : (
+                      <div
+                        className="aspect-video rounded-lg flex items-center justify-center"
+                        style={{ background: THEME.surfaceHover }}
+                      >
+                        <p className="text-xs" style={{ color: THEME.textDim }}>
+                          {locale === 'ka' ? 'არ არის ატვირთული' : 'Not uploaded'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* ID Back */}
+                  <div
+                    className="rounded-xl p-3"
+                    style={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
+                  >
+                    <p className="text-xs mb-2" style={{ color: THEME.textDim }}>
+                      {locale === 'ka' ? 'პირადობის უკანა მხარე' : 'ID Back'}
+                    </p>
+                    {showVerificationModal.idDocumentBackUrl ? (
+                      <a
+                        href={showVerificationModal.idDocumentBackUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block aspect-video rounded-lg overflow-hidden bg-black/20 hover:opacity-80 transition-opacity"
+                      >
+                        <img
+                          src={showVerificationModal.idDocumentBackUrl}
+                          alt="ID Back"
+                          className="w-full h-full object-cover"
+                        />
+                      </a>
+                    ) : (
+                      <div
+                        className="aspect-video rounded-lg flex items-center justify-center"
+                        style={{ background: THEME.surfaceHover }}
+                      >
+                        <p className="text-xs" style={{ color: THEME.textDim }}>
+                          {locale === 'ka' ? 'არ არის ატვირთული' : 'Not uploaded'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Selfie with ID */}
+                  <div
+                    className="rounded-xl p-3"
+                    style={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
+                  >
+                    <p className="text-xs mb-2" style={{ color: THEME.textDim }}>
+                      {locale === 'ka' ? 'სელფი პირადობით' : 'Selfie with ID'}
+                    </p>
+                    {showVerificationModal.selfieWithIdUrl ? (
+                      <a
+                        href={showVerificationModal.selfieWithIdUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block aspect-video rounded-lg overflow-hidden bg-black/20 hover:opacity-80 transition-opacity"
+                      >
+                        <img
+                          src={showVerificationModal.selfieWithIdUrl}
+                          alt="Selfie with ID"
+                          className="w-full h-full object-cover"
+                        />
+                      </a>
+                    ) : (
+                      <div
+                        className="aspect-video rounded-lg flex items-center justify-center"
+                        style={{ background: THEME.surfaceHover }}
+                      >
+                        <p className="text-xs" style={{ color: THEME.textDim }}>
+                          {locale === 'ka' ? 'არ არის ატვირთული' : 'Not uploaded'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Social Links Section */}
+              <div>
+                <h4 className="text-sm font-medium mb-3 flex items-center gap-2" style={{ color: THEME.text }}>
+                  <Globe className="w-4 h-4" style={{ color: THEME.primary }} />
+                  {locale === 'ka' ? 'სოციალური ბმულები' : 'Social Links'}
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  {showVerificationModal.facebookUrl && (
+                    <a
+                      href={showVerificationModal.facebookUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-3 rounded-xl transition-all hover:scale-[1.02]"
+                      style={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
+                    >
+                      <Facebook className="w-5 h-5" style={{ color: '#1877F2' }} />
+                      <span className="text-sm truncate" style={{ color: THEME.text }}>Facebook</span>
+                      <ExternalLink className="w-3 h-3 ml-auto" style={{ color: THEME.textDim }} />
+                    </a>
+                  )}
+                  {showVerificationModal.instagramUrl && (
+                    <a
+                      href={showVerificationModal.instagramUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-3 rounded-xl transition-all hover:scale-[1.02]"
+                      style={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
+                    >
+                      <Instagram className="w-5 h-5" style={{ color: '#E4405F' }} />
+                      <span className="text-sm truncate" style={{ color: THEME.text }}>Instagram</span>
+                      <ExternalLink className="w-3 h-3 ml-auto" style={{ color: THEME.textDim }} />
+                    </a>
+                  )}
+                  {showVerificationModal.linkedinUrl && (
+                    <a
+                      href={showVerificationModal.linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-3 rounded-xl transition-all hover:scale-[1.02]"
+                      style={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
+                    >
+                      <Linkedin className="w-5 h-5" style={{ color: '#0A66C2' }} />
+                      <span className="text-sm truncate" style={{ color: THEME.text }}>LinkedIn</span>
+                      <ExternalLink className="w-3 h-3 ml-auto" style={{ color: THEME.textDim }} />
+                    </a>
+                  )}
+                  {showVerificationModal.websiteUrl && (
+                    <a
+                      href={showVerificationModal.websiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-3 rounded-xl transition-all hover:scale-[1.02]"
+                      style={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
+                    >
+                      <Globe className="w-5 h-5" style={{ color: THEME.primary }} />
+                      <span className="text-sm truncate" style={{ color: THEME.text }}>Website</span>
+                      <ExternalLink className="w-3 h-3 ml-auto" style={{ color: THEME.textDim }} />
+                    </a>
+                  )}
+                  {!showVerificationModal.facebookUrl && !showVerificationModal.instagramUrl && !showVerificationModal.linkedinUrl && !showVerificationModal.websiteUrl && (
+                    <p className="col-span-2 text-sm py-4 text-center" style={{ color: THEME.textDim }}>
+                      {locale === 'ka' ? 'სოციალური ბმულები არ არის დამატებული' : 'No social links added'}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Rejection Note (if rejecting) */}
+              {verificationAction === 'reject' && (
+                <div>
+                  <h4 className="text-sm font-medium mb-3" style={{ color: THEME.text }}>
+                    {locale === 'ka' ? 'უარყოფის მიზეზი' : 'Rejection Reason'}
+                  </h4>
+                  <textarea
+                    value={rejectionNote}
+                    onChange={(e) => setRejectionNote(e.target.value)}
+                    placeholder={locale === 'ka' ? 'მიუთითეთ უარყოფის მიზეზი...' : 'Enter rejection reason...'}
+                    rows={3}
+                    className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none resize-none"
+                    style={{
+                      background: THEME.surface,
+                      border: `1px solid ${THEME.border}`,
+                      color: THEME.text,
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Submitted Date */}
+              {showVerificationModal.verificationSubmittedAt && (
+                <p className="text-xs" style={{ color: THEME.textDim }}>
+                  {locale === 'ka' ? 'გაგზავნილია: ' : 'Submitted: '}
+                  {formatDate(showVerificationModal.verificationSubmittedAt)}
+                </p>
+              )}
+            </div>
+
+            {/* Footer Actions */}
+            <div
+              className="sticky bottom-0 px-6 py-4 flex items-center justify-end gap-3"
+              style={{ background: THEME.surfaceLight, borderTop: `1px solid ${THEME.border}` }}
+            >
+              {verificationAction === 'reject' ? (
+                <>
+                  <button
+                    onClick={() => setVerificationAction(null)}
+                    className="px-4 py-2 rounded-xl text-sm font-medium transition-all"
+                    style={{ background: THEME.surface, color: THEME.textMuted }}
+                  >
+                    {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+                  </button>
+                  <button
+                    onClick={() => handleVerificationAction('reject')}
+                    disabled={isProcessingVerification || !rejectionNote.trim()}
+                    className="px-4 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-50 flex items-center gap-2"
+                    style={{ background: THEME.error, color: 'white' }}
+                  >
+                    {isProcessingVerification && <RefreshCw className="w-4 h-4 animate-spin" />}
+                    {locale === 'ka' ? 'უარყოფა' : 'Confirm Reject'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setVerificationAction('reject')}
+                    className="px-4 py-2 rounded-xl text-sm font-medium transition-all hover:scale-105 flex items-center gap-2"
+                    style={{ background: `${THEME.error}20`, color: THEME.error }}
+                  >
+                    <XCircle className="w-4 h-4" />
+                    {locale === 'ka' ? 'უარყოფა' : 'Reject'}
+                  </button>
+                  <button
+                    onClick={() => handleVerificationAction('approve')}
+                    disabled={isProcessingVerification}
+                    className="px-4 py-2 rounded-xl text-sm font-medium transition-all hover:scale-105 disabled:opacity-50 flex items-center gap-2"
+                    style={{
+                      background: `linear-gradient(135deg, ${THEME.success}, #16A34A)`,
+                      color: 'white',
+                      boxShadow: `0 4px 16px ${THEME.success}40`,
+                    }}
+                  >
+                    {isProcessingVerification && <RefreshCw className="w-4 h-4 animate-spin" />}
+                    <BadgeCheck className="w-4 h-4" />
+                    {locale === 'ka' ? 'დადასტურება' : 'Approve'}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

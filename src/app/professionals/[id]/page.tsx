@@ -11,7 +11,8 @@ import { useAnalytics, AnalyticsEvent } from '@/hooks/useAnalytics';
 import {
   Briefcase, CheckCircle, Clock, MapPin, MessageSquare, Shield, Star, Trophy,
   ChevronLeft, ChevronRight, X, ExternalLink, Award, Sparkles, Heart,
-  Calendar, Users, Verified, BadgeCheck, Quote, ArrowRight, Phone, Zap
+  Calendar, Users, Verified, BadgeCheck, Quote, ArrowRight, Phone, Zap,
+  Facebook, Instagram, Linkedin, Globe
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
@@ -94,7 +95,12 @@ interface ProProfile {
   // Verification fields
   isPhoneVerified?: boolean;
   isEmailVerified?: boolean;
-  verificationStatus?: 'pending' | 'verified' | 'rejected';
+  verificationStatus?: 'pending' | 'submitted' | 'verified' | 'rejected';
+  // Social links
+  facebookUrl?: string;
+  instagramUrl?: string;
+  linkedinUrl?: string;
+  websiteUrl?: string;
 }
 
 interface Review {
@@ -569,8 +575,8 @@ export default function ProfessionalDetailPage() {
                       <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--color-text-primary)] tracking-tight">
                         {profile.name}
                       </h1>
-                      {(profile as any).isVerified !== false && (
-                        <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                      {profile.verificationStatus === 'verified' && (
+                        <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                           <BadgeCheck className="w-4 h-4" />
                           <span className="text-xs font-semibold">{locale === 'ka' ? 'დადასტურებული' : 'Verified'}</span>
                         </div>
@@ -1087,6 +1093,64 @@ export default function ProfessionalDetailPage() {
                   )}
                 </div>
               </div>
+
+              {/* Social Links - Only show if at least one is available */}
+              {(profile.facebookUrl || profile.instagramUrl || profile.linkedinUrl || profile.websiteUrl) && (
+                <div
+                  className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-5 shadow-sm"
+                  style={{ animationDelay: '0.22s' }}
+                >
+                  <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-4">
+                    {locale === 'ka' ? 'სოციალური ქსელები' : 'Social Links'}
+                  </h3>
+                  <div className="flex flex-wrap gap-3">
+                    {profile.facebookUrl && (
+                      <a
+                        href={profile.facebookUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#1877F2]/10 text-[#1877F2] hover:bg-[#1877F2]/20 transition-colors"
+                      >
+                        <Facebook className="w-4 h-4" />
+                        <span className="text-sm font-medium">Facebook</span>
+                      </a>
+                    )}
+                    {profile.instagramUrl && (
+                      <a
+                        href={profile.instagramUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#E4405F]/10 text-[#E4405F] hover:bg-[#E4405F]/20 transition-colors"
+                      >
+                        <Instagram className="w-4 h-4" />
+                        <span className="text-sm font-medium">Instagram</span>
+                      </a>
+                    )}
+                    {profile.linkedinUrl && (
+                      <a
+                        href={profile.linkedinUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0A66C2]/10 text-[#0A66C2] hover:bg-[#0A66C2]/20 transition-colors"
+                      >
+                        <Linkedin className="w-4 h-4" />
+                        <span className="text-sm font-medium">LinkedIn</span>
+                      </a>
+                    )}
+                    {profile.websiteUrl && (
+                      <a
+                        href={profile.websiteUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-neutral-500/10 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-500/20 transition-colors"
+                      >
+                        <Globe className="w-4 h-4" />
+                        <span className="text-sm font-medium">{locale === 'ka' ? 'ვებსაიტი' : 'Website'}</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Service Areas */}
               <div

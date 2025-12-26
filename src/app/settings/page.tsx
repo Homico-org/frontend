@@ -8,7 +8,7 @@ import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage, countries } from '@/contexts/LanguageContext';
-import { AlertCircle, AlertTriangle, Bell, BriefcaseBusiness, Calendar, Camera, Check, CheckCircle2, ChevronDown, ChevronRight, CreditCard, Eye, EyeOff, FileText, Loader2, Lock, Mail, MapPin, Megaphone, MessageCircle, MessageSquare, RefreshCw, Send, Shield, Smartphone, Trash2, User, X } from 'lucide-react';
+import { AlertCircle, AlertTriangle, BadgeCheck, Bell, BriefcaseBusiness, Calendar, Camera, Check, CheckCircle2, ChevronDown, ChevronRight, CreditCard, Eye, EyeOff, Facebook, FileText, Globe, Instagram, Linkedin, Loader2, Lock, Mail, MapPin, Megaphone, MessageCircle, MessageSquare, RefreshCw, Send, Shield, Smartphone, Trash2, Upload, User, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -115,6 +115,25 @@ function SettingsPageContent() {
   });
   const [paymentMessage, setPaymentMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
+
+  // Verification state (for pro users)
+  const [verificationData, setVerificationData] = useState({
+    facebookUrl: '',
+    instagramUrl: '',
+    linkedinUrl: '',
+    websiteUrl: '',
+    idDocumentUrl: '',
+    idDocumentBackUrl: '',
+    selfieWithIdUrl: '',
+    verificationStatus: 'pending',
+  });
+  const [isLoadingVerification, setIsLoadingVerification] = useState(false);
+  const [isSavingVerification, setIsSavingVerification] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [uploadingField, setUploadingField] = useState<string | null>(null);
+  const idDocumentInputRef = useRef<HTMLInputElement>(null);
+  const idBackInputRef = useRef<HTMLInputElement>(null);
+  const selfieInputRef = useRef<HTMLInputElement>(null);
 
   // Delete account state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -596,6 +615,123 @@ function SettingsPageContent() {
     }
   }, [activeTab, notificationData, fetchNotificationPreferences]);
 
+  // Fetch verification data for pro users
+  const fetchVerificationData = useCallback(async () => {
+    if (!isAuthenticated || user?.role !== 'pro') return;
+
+    setIsLoadingVerification(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setVerificationData({
+          facebookUrl: data.facebookUrl || '',
+          instagramUrl: data.instagramUrl || '',
+          linkedinUrl: data.linkedinUrl || '',
+          websiteUrl: data.websiteUrl || '',
+          idDocumentUrl: data.idDocumentUrl || '',
+          idDocumentBackUrl: data.idDocumentBackUrl || '',
+          selfieWithIdUrl: data.selfieWithIdUrl || '',
+          verificationStatus: data.verificationStatus || 'pending',
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch verification data:', error);
+    } finally {
+      setIsLoadingVerification(false);
+    }
+  }, [isAuthenticated, user?.role]);
+
+  useEffect(() => {
+    if (activeTab === 'verification' && user?.role === 'pro') {
+      fetchVerificationData();
+    }
+  }, [activeTab, user?.role, fetchVerificationData]);
+
+  // Upload verification document
+  const uploadVerificationDocument = async (file: File, field: 'idDocumentUrl' | 'idDocumentBackUrl' | 'selfieWithIdUrl') => {
+    setUploadingField(field);
+    try {
+      const token = localStorage.getItem('access_token');
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/image`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const imageUrl = data.url || data.path;
+        setVerificationData(prev => ({ ...prev, [field]: imageUrl }));
+      } else {
+        throw new Error('Upload failed');
+      }
+    } catch (error) {
+      setVerificationMessage({
+        type: 'error',
+        text: locale === 'ka' ? 'ატვირთვა ვერ მოხერხდა' : 'Upload failed',
+      });
+    } finally {
+      setUploadingField(null);
+    }
+  };
+
+  // Save verification data
+  const saveVerificationData = async () => {
+    setIsSavingVerification(true);
+    setVerificationMessage(null);
+
+    try {
+      const token = localStorage.getItem('access_token');
+      const hasIdDocuments = verificationData.idDocumentUrl && verificationData.selfieWithIdUrl;
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/profile`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          facebookUrl: verificationData.facebookUrl || undefined,
+          instagramUrl: verificationData.instagramUrl || undefined,
+          linkedinUrl: verificationData.linkedinUrl || undefined,
+          websiteUrl: verificationData.websiteUrl || undefined,
+          idDocumentUrl: verificationData.idDocumentUrl || undefined,
+          idDocumentBackUrl: verificationData.idDocumentBackUrl || undefined,
+          selfieWithIdUrl: verificationData.selfieWithIdUrl || undefined,
+          // Update status to 'submitted' if ID documents are uploaded
+          ...(hasIdDocuments && verificationData.verificationStatus === 'pending' ? { verificationStatus: 'submitted' } : {}),
+        }),
+      });
+
+      if (response.ok) {
+        if (hasIdDocuments && verificationData.verificationStatus === 'pending') {
+          setVerificationData(prev => ({ ...prev, verificationStatus: 'submitted' }));
+        }
+        setVerificationMessage({
+          type: 'success',
+          text: locale === 'ka' ? 'წარმატებით შეინახა' : 'Saved successfully',
+        });
+      } else {
+        throw new Error('Save failed');
+      }
+    } catch (error) {
+      setVerificationMessage({
+        type: 'error',
+        text: locale === 'ka' ? 'შენახვა ვერ მოხერხდა' : 'Save failed',
+      });
+    } finally {
+      setIsSavingVerification(false);
+    }
+  };
+
   // Update notification preference
   const updateNotificationPreference = async (
     channel: 'email' | 'push' | 'sms',
@@ -1048,6 +1184,7 @@ function SettingsPageContent() {
     { id: 'notifications', label: t('settings.tabs.notifications'), icon: Bell },
     { id: 'security', label: locale === 'ka' ? 'პაროლის შეცვლა' : 'Password', icon: Lock },
     { id: 'payments', label: t('settings.tabs.payments'), icon: CreditCard },
+    ...(user?.role === 'pro' ? [{ id: 'verification', label: locale === 'ka' ? 'ვერიფიკაცია' : 'Verification', icon: BadgeCheck }] : []),
     { id: 'account', label: locale === 'ka' ? 'ანგარიში' : 'Account', icon: Shield },
   ];
 
@@ -2225,6 +2362,442 @@ function SettingsPageContent() {
                     </p>
                     <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
                       {locale === 'ka' ? 'ანგარიშის ID:' : 'Account ID:'} #{user?.uid || 'N/A'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Verification Tab - Pro Users Only */}
+            {activeTab === 'verification' && user?.role === 'pro' && (
+              <div className="space-y-6">
+                <div>
+                  <h2
+                    className="text-base sm:text-lg font-semibold"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
+                    {locale === 'ka' ? 'პროფილის ვერიფიკაცია' : 'Profile Verification'}
+                  </h2>
+                  <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
+                    {locale === 'ka'
+                      ? 'დაადასტურეთ თქვენი პროფილი კლიენტების ნდობის მოსაპოვებლად'
+                      : 'Verify your profile to build trust with clients'}
+                  </p>
+                </div>
+
+                {/* Verification Status Banner */}
+                {verificationData.verificationStatus !== 'pending' && (
+                  <div
+                    className={`p-4 rounded-xl flex items-start gap-3 ${
+                      verificationData.verificationStatus === 'verified'
+                        ? 'bg-green-500/10 border border-green-500/20'
+                        : verificationData.verificationStatus === 'submitted'
+                        ? 'bg-yellow-500/10 border border-yellow-500/20'
+                        : 'bg-red-500/10 border border-red-500/20'
+                    }`}
+                  >
+                    {verificationData.verificationStatus === 'verified' ? (
+                      <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    ) : verificationData.verificationStatus === 'submitted' ? (
+                      <Loader2 className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5 animate-spin" />
+                    ) : (
+                      <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    )}
+                    <div>
+                      <p className={`font-medium ${
+                        verificationData.verificationStatus === 'verified'
+                          ? 'text-green-600 dark:text-green-400'
+                          : verificationData.verificationStatus === 'submitted'
+                          ? 'text-yellow-600 dark:text-yellow-400'
+                          : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {verificationData.verificationStatus === 'verified'
+                          ? (locale === 'ka' ? 'პროფილი ვერიფიცირებულია' : 'Profile Verified')
+                          : verificationData.verificationStatus === 'submitted'
+                          ? (locale === 'ka' ? 'განხილვის პროცესშია' : 'Under Review')
+                          : (locale === 'ka' ? 'ვერიფიკაცია უარყოფილია' : 'Verification Rejected')}
+                      </p>
+                      <p className={`text-sm mt-1 ${
+                        verificationData.verificationStatus === 'verified'
+                          ? 'text-green-600/80 dark:text-green-400/80'
+                          : verificationData.verificationStatus === 'submitted'
+                          ? 'text-yellow-600/80 dark:text-yellow-400/80'
+                          : 'text-red-600/80 dark:text-red-400/80'
+                      }`}>
+                        {verificationData.verificationStatus === 'verified'
+                          ? (locale === 'ka' ? 'თქვენი პროფილი დადასტურებულია და გაზრდილი ნდობა აქვს' : 'Your profile is verified and has increased trust')
+                          : verificationData.verificationStatus === 'submitted'
+                          ? (locale === 'ka' ? 'თქვენი დოკუმენტები განიხილება. ეს შეიძლება 1-2 დღე გასტანოს' : 'Your documents are being reviewed. This may take 1-2 days')
+                          : (locale === 'ka' ? 'გთხოვთ გადახედოთ მოთხოვნებს და ხელახლა გაგზავნოთ' : 'Please review the requirements and resubmit')}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Success/Error Message */}
+                {verificationMessage && (
+                  <div className={`p-4 rounded-xl flex items-start gap-3 ${
+                    verificationMessage.type === 'success'
+                      ? 'bg-green-500/10 border border-green-500/20'
+                      : 'bg-red-500/10 border border-red-500/20'
+                  }`}>
+                    {verificationMessage.type === 'success' ? (
+                      <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    ) : (
+                      <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    )}
+                    <p className={`text-sm ${
+                      verificationMessage.type === 'success'
+                        ? 'text-green-600 dark:text-green-400'
+                        : 'text-red-600 dark:text-red-400'
+                    }`}>
+                      {verificationMessage.text}
+                    </p>
+                  </div>
+                )}
+
+                {/* Social Links Section */}
+                <div
+                  className="rounded-2xl overflow-hidden"
+                  style={{
+                    border: '1px solid var(--color-border)',
+                    background: 'var(--color-bg-elevated)',
+                  }}
+                >
+                  <div className="px-5 py-4 border-b" style={{ borderColor: 'var(--color-border)' }}>
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-5 h-5 text-[#E07B4F]" />
+                      <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                        {locale === 'ka' ? 'სოციალური ბმულები' : 'Social Links'}
+                      </h3>
+                    </div>
+                    <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
+                      {locale === 'ka'
+                        ? 'დაამატეთ სოციალური ქსელების ბმულები თქვენი პროფილის დასადასტურებლად'
+                        : 'Add your social media links to help verify your profile'}
+                    </p>
+                  </div>
+
+                  <div className="p-5 space-y-4">
+                    {/* Facebook */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                        <Facebook className="w-4 h-4 text-[#1877F2]" />
+                        Facebook
+                      </label>
+                      <input
+                        type="url"
+                        value={verificationData.facebookUrl}
+                        onChange={(e) => setVerificationData(prev => ({ ...prev, facebookUrl: e.target.value }))}
+                        placeholder="https://facebook.com/yourpage"
+                        className="w-full px-4 py-3 rounded-xl text-sm transition-all"
+                        style={{
+                          backgroundColor: 'var(--color-bg-tertiary)',
+                          border: '1px solid var(--color-border)',
+                          color: 'var(--color-text-primary)',
+                        }}
+                      />
+                    </div>
+
+                    {/* Instagram */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                        <Instagram className="w-4 h-4 text-[#E4405F]" />
+                        Instagram
+                      </label>
+                      <input
+                        type="url"
+                        value={verificationData.instagramUrl}
+                        onChange={(e) => setVerificationData(prev => ({ ...prev, instagramUrl: e.target.value }))}
+                        placeholder="https://instagram.com/yourprofile"
+                        className="w-full px-4 py-3 rounded-xl text-sm transition-all"
+                        style={{
+                          backgroundColor: 'var(--color-bg-tertiary)',
+                          border: '1px solid var(--color-border)',
+                          color: 'var(--color-text-primary)',
+                        }}
+                      />
+                    </div>
+
+                    {/* LinkedIn */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                        <Linkedin className="w-4 h-4 text-[#0A66C2]" />
+                        LinkedIn
+                      </label>
+                      <input
+                        type="url"
+                        value={verificationData.linkedinUrl}
+                        onChange={(e) => setVerificationData(prev => ({ ...prev, linkedinUrl: e.target.value }))}
+                        placeholder="https://linkedin.com/in/yourprofile"
+                        className="w-full px-4 py-3 rounded-xl text-sm transition-all"
+                        style={{
+                          backgroundColor: 'var(--color-bg-tertiary)',
+                          border: '1px solid var(--color-border)',
+                          color: 'var(--color-text-primary)',
+                        }}
+                      />
+                    </div>
+
+                    {/* Website */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                        <Globe className="w-4 h-4 text-gray-500" />
+                        {locale === 'ka' ? 'ვებსაიტი' : 'Website'}
+                      </label>
+                      <input
+                        type="url"
+                        value={verificationData.websiteUrl}
+                        onChange={(e) => setVerificationData(prev => ({ ...prev, websiteUrl: e.target.value }))}
+                        placeholder="https://yourwebsite.com"
+                        className="w-full px-4 py-3 rounded-xl text-sm transition-all"
+                        style={{
+                          backgroundColor: 'var(--color-bg-tertiary)',
+                          border: '1px solid var(--color-border)',
+                          color: 'var(--color-text-primary)',
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* ID Verification Section */}
+                <div
+                  className="rounded-2xl overflow-hidden"
+                  style={{
+                    border: '1px solid var(--color-border)',
+                    background: 'var(--color-bg-elevated)',
+                  }}
+                >
+                  <div className="px-5 py-4 border-b" style={{ borderColor: 'var(--color-border)' }}>
+                    <div className="flex items-center gap-2">
+                      <BadgeCheck className="w-5 h-5 text-[#E07B4F]" />
+                      <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                        {locale === 'ka' ? 'პირადობის დადასტურება' : 'ID Verification'}
+                      </h3>
+                    </div>
+                    <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
+                      {locale === 'ka'
+                        ? 'ატვირთეთ პირადობის დამადასტურებელი დოკუმენტი ვერიფიკაციისთვის'
+                        : 'Upload your ID document for identity verification'}
+                    </p>
+                  </div>
+
+                  <div className="p-5 space-y-4">
+                    {/* ID Document Front */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                        {locale === 'ka' ? 'პირადობის წინა მხარე' : 'ID Front Side'} *
+                      </label>
+                      <input
+                        type="file"
+                        ref={idDocumentInputRef}
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) uploadVerificationDocument(file, 'idDocumentUrl');
+                        }}
+                      />
+                      {verificationData.idDocumentUrl ? (
+                        <div className="relative">
+                          <img
+                            src={verificationData.idDocumentUrl}
+                            alt="ID Front"
+                            className="w-full h-40 object-cover rounded-xl"
+                          />
+                          <button
+                            onClick={() => idDocumentInputRef.current?.click()}
+                            disabled={uploadingField === 'idDocumentUrl'}
+                            className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity rounded-xl"
+                          >
+                            {uploadingField === 'idDocumentUrl' ? (
+                              <Loader2 className="w-6 h-6 text-white animate-spin" />
+                            ) : (
+                              <Camera className="w-6 h-6 text-white" />
+                            )}
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => idDocumentInputRef.current?.click()}
+                          disabled={uploadingField === 'idDocumentUrl'}
+                          className="w-full h-40 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-all hover:border-[#E07B4F]/50"
+                          style={{
+                            borderColor: 'var(--color-border)',
+                            backgroundColor: 'var(--color-bg-tertiary)',
+                          }}
+                        >
+                          {uploadingField === 'idDocumentUrl' ? (
+                            <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--color-text-tertiary)' }} />
+                          ) : (
+                            <>
+                              <Upload className="w-8 h-8" style={{ color: 'var(--color-text-tertiary)' }} />
+                              <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                                {locale === 'ka' ? 'ატვირთეთ ფოტო' : 'Upload photo'}
+                              </span>
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* ID Document Back */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                        {locale === 'ka' ? 'პირადობის უკანა მხარე' : 'ID Back Side'} ({locale === 'ka' ? 'არასავალდებულო' : 'optional'})
+                      </label>
+                      <input
+                        type="file"
+                        ref={idBackInputRef}
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) uploadVerificationDocument(file, 'idDocumentBackUrl');
+                        }}
+                      />
+                      {verificationData.idDocumentBackUrl ? (
+                        <div className="relative">
+                          <img
+                            src={verificationData.idDocumentBackUrl}
+                            alt="ID Back"
+                            className="w-full h-40 object-cover rounded-xl"
+                          />
+                          <button
+                            onClick={() => idBackInputRef.current?.click()}
+                            disabled={uploadingField === 'idDocumentBackUrl'}
+                            className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity rounded-xl"
+                          >
+                            {uploadingField === 'idDocumentBackUrl' ? (
+                              <Loader2 className="w-6 h-6 text-white animate-spin" />
+                            ) : (
+                              <Camera className="w-6 h-6 text-white" />
+                            )}
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => idBackInputRef.current?.click()}
+                          disabled={uploadingField === 'idDocumentBackUrl'}
+                          className="w-full h-40 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-all hover:border-[#E07B4F]/50"
+                          style={{
+                            borderColor: 'var(--color-border)',
+                            backgroundColor: 'var(--color-bg-tertiary)',
+                          }}
+                        >
+                          {uploadingField === 'idDocumentBackUrl' ? (
+                            <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--color-text-tertiary)' }} />
+                          ) : (
+                            <>
+                              <Upload className="w-8 h-8" style={{ color: 'var(--color-text-tertiary)' }} />
+                              <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                                {locale === 'ka' ? 'ატვირთეთ ფოტო' : 'Upload photo'}
+                              </span>
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Selfie with ID */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                        {locale === 'ka' ? 'სელფი პირადობით' : 'Selfie with ID'} *
+                      </label>
+                      <p className="text-xs mb-2" style={{ color: 'var(--color-text-tertiary)' }}>
+                        {locale === 'ka'
+                          ? 'გადაიღეთ სელფი პირადობის დოკუმენტით ხელში'
+                          : 'Take a selfie holding your ID document'}
+                      </p>
+                      <input
+                        type="file"
+                        ref={selfieInputRef}
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) uploadVerificationDocument(file, 'selfieWithIdUrl');
+                        }}
+                      />
+                      {verificationData.selfieWithIdUrl ? (
+                        <div className="relative">
+                          <img
+                            src={verificationData.selfieWithIdUrl}
+                            alt="Selfie with ID"
+                            className="w-full h-40 object-cover rounded-xl"
+                          />
+                          <button
+                            onClick={() => selfieInputRef.current?.click()}
+                            disabled={uploadingField === 'selfieWithIdUrl'}
+                            className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity rounded-xl"
+                          >
+                            {uploadingField === 'selfieWithIdUrl' ? (
+                              <Loader2 className="w-6 h-6 text-white animate-spin" />
+                            ) : (
+                              <Camera className="w-6 h-6 text-white" />
+                            )}
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => selfieInputRef.current?.click()}
+                          disabled={uploadingField === 'selfieWithIdUrl'}
+                          className="w-full h-40 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-all hover:border-[#E07B4F]/50"
+                          style={{
+                            borderColor: 'var(--color-border)',
+                            backgroundColor: 'var(--color-bg-tertiary)',
+                          }}
+                        >
+                          {uploadingField === 'selfieWithIdUrl' ? (
+                            <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--color-text-tertiary)' }} />
+                          ) : (
+                            <>
+                              <Upload className="w-8 h-8" style={{ color: 'var(--color-text-tertiary)' }} />
+                              <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                                {locale === 'ka' ? 'ატვირთეთ ფოტო' : 'Upload photo'}
+                              </span>
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Save Button */}
+                <button
+                  onClick={saveVerificationData}
+                  disabled={isSavingVerification || isLoadingVerification}
+                  className="w-full px-6 py-3.5 bg-[#E07B4F] hover:bg-[#C4735B] text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#E07B4F]/20 hover:shadow-[#E07B4F]/30"
+                >
+                  {isSavingVerification ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      {locale === 'ka' ? 'ინახება...' : 'Saving...'}
+                    </>
+                  ) : (
+                    <>
+                      <BadgeCheck className="w-5 h-5" />
+                      {locale === 'ka' ? 'ვერიფიკაციის მოთხოვნა' : 'Submit for Verification'}
+                    </>
+                  )}
+                </button>
+
+                {/* Info Box */}
+                <div
+                  className="p-4 rounded-xl flex items-start gap-3"
+                  style={{
+                    backgroundColor: 'var(--color-bg-elevated)',
+                    border: '1px solid var(--color-border)',
+                  }}
+                >
+                  <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'var(--color-text-tertiary)' }} />
+                  <div>
+                    <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                      {locale === 'ka'
+                        ? 'ვერიფიკაციის პროცესი ჩვეულებრივ გრძელდება 1-2 სამუშაო დღე. დადასტურების შემდეგ თქვენს პროფილზე გამოჩნდება ვერიფიცირებული ბეჯი.'
+                        : 'The verification process usually takes 1-2 business days. Once verified, your profile will display a verified badge.'}
                     </p>
                   </div>
                 </div>

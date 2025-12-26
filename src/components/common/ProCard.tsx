@@ -2,6 +2,7 @@
 
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ProProfile, ProStatus } from "@/types";
+import { BadgeCheck } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -75,6 +76,12 @@ export default function ProCard({
           {/* Top Row - Badges & Like */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-1.5">
+              {profile.verificationStatus === 'verified' && (
+                <span className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400">
+                  <BadgeCheck className="w-3 h-3" />
+                  {locale === 'ka' ? 'დადასტურებული' : 'Verified'}
+                </span>
+              )}
               {isTopRated && (
                 <span className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400">
                   <svg

@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "Sentry": {
+      "url": "https://mcp.sentry.dev/mcp/homico-k4/javascript-nextjs"
+    }
+  }
+}
