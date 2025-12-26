@@ -14,9 +14,11 @@ import {
   AlertTriangle,
   ArrowLeft,
   Ban,
+  Briefcase,
   Building2,
   CheckCheck,
   CheckCircle,
+  ChevronRight,
   Clock,
   DollarSign,
   ExternalLink,
@@ -359,7 +361,7 @@ function MyProposalsPageContent() {
   const filterTabs = [
     { key: 'all', label: language === 'ka' ? 'ყველა' : 'All', count: stats.total, icon: Inbox },
     { key: 'pending', label: language === 'ka' ? 'მოლოდინში' : 'Pending', count: stats.pending, icon: Clock },
-    { key: 'in_discussion', label: language === 'ka' ? 'მიმოწერაში' : 'Active', count: stats.inDiscussion, icon: MessageSquare },
+    // { key: 'in_discussion', label: language === 'ka' ? 'მიმოწერაში' : 'Active', count: stats.inDiscussion, icon: MessageSquare },
     { key: 'accepted', label: language === 'ka' ? 'მიღებული' : 'Won', count: stats.accepted, icon: CheckCircle },
     { key: 'rejected', label: language === 'ka' ? 'უარყოფილი' : 'Declined', count: stats.rejected, icon: XCircle },
   ];
@@ -372,58 +374,81 @@ function MyProposalsPageContent() {
 
       <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-24">
         {/* Hero Section */}
-        <div className="mb-8">
-          <div className="flex items-start gap-4 mb-6">
+        <div className="mb-4 sm:mb-8">
+          <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-6">
             <button
               onClick={() => router.back()}
-              className="mt-1 w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-[#E07B4F]/30 hover:bg-[#E07B4F]/5 transition-all group"
+              className="mt-0.5 w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-[#E07B4F]/30 hover:bg-[#E07B4F]/5 transition-all group"
             >
-              <ArrowLeft className="w-5 h-5 text-[var(--color-text-secondary)] group-hover:text-[#E07B4F] transition-colors" />
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--color-text-secondary)] group-hover:text-[#E07B4F] transition-colors" />
             </button>
-            <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] tracking-tight">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg sm:text-3xl font-bold text-[var(--color-text-primary)] tracking-tight">
                 {language === 'ka' ? 'ჩემი შეთავაზებები' : 'My Proposals'}
               </h1>
-              <p className="text-[var(--color-text-secondary)] mt-1">
+              <p className="text-sm text-[var(--color-text-secondary)] mt-0.5 sm:mt-1 hidden sm:block">
                 {language === 'ka'
                   ? 'თვალყური ადევნე შენს შეთავაზებებს'
                   : 'Track and manage your submitted proposals'}
               </p>
             </div>
           </div>
+
+          {/* Quick Link to My Jobs - Mobile Only */}
+          <Link
+            href="/my-jobs"
+            className="sm:hidden flex items-center justify-between p-3 mb-4 rounded-xl bg-gradient-to-r from-[#E07B4F]/10 to-[#E07B4F]/5 border border-[#E07B4F]/20 active:scale-[0.98] transition-all"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-[#E07B4F]/20 flex items-center justify-center">
+                <Briefcase className="w-4 h-4 text-[#E07B4F]" />
+              </div>
+              <div>
+                <span className="text-sm font-semibold text-[var(--color-text-primary)]">
+                  {language === 'ka' ? 'ჩემი სამუშაოები' : 'My Jobs'}
+                </span>
+                <p className="text-xs text-[var(--color-text-secondary)]">
+                  {language === 'ka' ? 'განთავსებული განცხადებები' : 'Your posted jobs'}
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-[#E07B4F]" />
+          </Link>
         </div>
 
         {/* Filters Bar */}
-        <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border)] p-4 mb-6 shadow-sm">
-          <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-            {/* Filter Tabs */}
-            <div className="flex-1 flex flex-wrap gap-2">
-              {filterTabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = statusFilter === tab.key;
-                return (
-                  <button
-                    key={tab.key}
-                    onClick={() => setStatusFilter(tab.key as ProposalStatus)}
-                    className={`
-                      inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
-                      ${isActive
-                        ? 'bg-[#E07B4F] text-white shadow-lg shadow-[#E07B4F]/25'
-                        : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[#E07B4F]/10 hover:text-[#E07B4F]'
-                      }
-                    `}
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span>{tab.label}</span>
-                    <span className={`
-                      px-1.5 py-0.5 rounded-md text-xs font-bold
-                      ${isActive ? 'bg-white/20 text-white' : 'bg-[var(--color-bg-muted)] text-[var(--color-text-tertiary)]'}
-                    `}>
-                      {tab.count}
-                    </span>
-                  </button>
-                );
-              })}
+        <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border)] p-3 sm:p-4 mb-4 sm:mb-6 shadow-sm">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-3 sm:gap-4">
+            {/* Filter Tabs - Horizontally Scrollable on Mobile */}
+            <div className="flex-1 overflow-x-auto scrollbar-hide -mx-1 px-1">
+              <div className="flex gap-2 min-w-max pb-1 sm:pb-0 sm:flex-wrap">
+                {filterTabs.map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = statusFilter === tab.key;
+                  return (
+                    <button
+                      key={tab.key}
+                      onClick={() => setStatusFilter(tab.key as ProposalStatus)}
+                      className={`
+                        inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0
+                        ${isActive
+                          ? 'bg-[#E07B4F] text-white shadow-lg shadow-[#E07B4F]/25'
+                          : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[#E07B4F]/10 hover:text-[#E07B4F]'
+                        }
+                      `}
+                    >
+                      <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <span>{tab.label}</span>
+                      <span className={`
+                        px-1.5 py-0.5 rounded-md text-[10px] sm:text-xs font-bold
+                        ${isActive ? 'bg-white/20 text-white' : 'bg-[var(--color-bg-muted)] text-[var(--color-text-tertiary)]'}
+                      `}>
+                        {tab.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Search */}
@@ -434,7 +459,7 @@ function MyProposalsPageContent() {
                 placeholder={language === 'ka' ? 'ძებნა...' : 'Search proposals...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E07B4F]/30 focus:ring-2 focus:ring-[#E07B4F]/10 transition-all"
+                className="w-full pl-10 pr-4 py-2 sm:py-2.5 rounded-xl text-sm bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E07B4F]/30 focus:ring-2 focus:ring-[#E07B4F]/10 transition-all"
               />
             </div>
           </div>
@@ -459,7 +484,7 @@ function MyProposalsPageContent() {
             size="md"
           />
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {proposals.map((proposal, index) => {
               const job = proposal.jobId;
               if (!job || typeof job === 'string') return null;
@@ -477,7 +502,7 @@ function MyProposalsPageContent() {
               return (
                 <div
                   key={proposal._id}
-                  className="group bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border)] overflow-hidden transition-all duration-300 hover:border-[#E07B4F]/20 hover:shadow-xl hover:shadow-[#E07B4F]/5"
+                  className="group bg-[var(--color-bg-elevated)] rounded-xl sm:rounded-2xl border border-[var(--color-border)] overflow-hidden transition-all duration-300 hover:border-[#E07B4F]/20 hover:shadow-xl hover:shadow-[#E07B4F]/5"
                   style={{
                     animationDelay: `${index * 50}ms`,
                     borderLeftWidth: '3px',
@@ -488,16 +513,17 @@ function MyProposalsPageContent() {
                     {/* Media Thumbnail */}
                     {hasMedia && (
                       <div className="relative w-full sm:w-48 lg:w-56 flex-shrink-0">
-                        <div className="relative h-44 sm:h-full sm:min-h-[200px]">
+                        <div className="relative h-36 sm:h-full sm:min-h-[200px]">
                           <img
                             src={storage.getFileUrl(allMedia[0].url)}
                             alt=""
                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent sm:bg-gradient-to-t sm:from-black/50 sm:via-transparent sm:to-transparent" />
+
                           {/* Job Status Badge */}
                           <span className={`
-                            absolute top-3 left-3 px-2.5 py-1 rounded-lg text-xs font-semibold backdrop-blur-sm
+                            absolute top-2 left-2 sm:top-3 sm:left-3 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-[10px] sm:text-xs font-semibold backdrop-blur-sm
                             ${job.status === 'open'
                               ? 'bg-emerald-500/90 text-white'
                               : 'bg-neutral-600/90 text-white'
@@ -505,14 +531,37 @@ function MyProposalsPageContent() {
                           `}>
                             {job.status === 'open' ? (language === 'ka' ? 'ღია' : 'Open') : (language === 'ka' ? 'დახურული' : 'Closed')}
                           </span>
+
+                          {/* Mobile: Proposal Status on Image */}
+                          <div className="absolute bottom-2 left-2 right-2 sm:hidden">
+                            <div className="flex items-center justify-between">
+                              <span
+                                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold backdrop-blur-sm"
+                                style={{
+                                  backgroundColor: `${statusConfig.color}20`,
+                                  color: '#fff',
+                                  border: `1px solid ${statusConfig.color}40`
+                                }}
+                              >
+                                <StatusIcon className="w-3 h-3" />
+                                {language === 'ka' ? statusConfig.labelKa : statusConfig.label}
+                              </span>
+                              {hasUnread && (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold bg-blue-500 text-white shadow-lg shadow-blue-500/30 animate-pulse">
+                                  <MessageCircle className="w-3 h-3" />
+                                  {proposal.unreadMessageCount}
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     )}
 
                     {/* Content */}
-                    <div className="flex-1 p-5">
-                      {/* Status Row */}
-                      <div className="flex items-center gap-2 flex-wrap mb-3">
+                    <div className="flex-1 p-3 sm:p-5">
+                      {/* Status Row - Desktop Only (mobile shows on image) */}
+                      <div className="hidden sm:flex items-center gap-2 flex-wrap mb-3">
                         <span
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
                           style={{
@@ -543,25 +592,53 @@ function MyProposalsPageContent() {
                         </span>
                       </div>
 
-                      {/* Job Title */}
-                      <Link href={`/jobs/${job._id}`} className="block group/title">
-                        <h3 className="text-lg font-semibold text-[var(--color-text-primary)] leading-snug line-clamp-2 group-hover/title:text-[#E07B4F] transition-colors">
-                          {job.title}
-                        </h3>
-                      </Link>
+                      {/* Mobile: Show status if no media */}
+                      {!hasMedia && (
+                        <div className="flex sm:hidden items-center gap-2 flex-wrap mb-2">
+                          <span
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold"
+                            style={{
+                              backgroundColor: statusConfig.bg,
+                              color: statusConfig.color,
+                              border: `1px solid ${statusConfig.border}`
+                            }}
+                          >
+                            <StatusIcon className="w-3 h-3" />
+                            {language === 'ka' ? statusConfig.labelKa : statusConfig.label}
+                          </span>
+                          {hasUnread && (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold bg-blue-500 text-white">
+                              <MessageCircle className="w-3 h-3" />
+                              {proposal.unreadMessageCount}
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Job Title + Time */}
+                      <div className="flex items-start justify-between gap-2 mb-2 sm:mb-0">
+                        <Link href={`/jobs/${job._id}`} className="block group/title flex-1 min-w-0">
+                          <h3 className="text-sm sm:text-lg font-semibold text-[var(--color-text-primary)] leading-snug line-clamp-2 group-hover/title:text-[#E07B4F] transition-colors">
+                            {job.title}
+                          </h3>
+                        </Link>
+                        <span className="sm:hidden text-[10px] text-[var(--color-text-tertiary)] whitespace-nowrap flex-shrink-0">
+                          {formatRelativeTime(proposal.createdAt)}
+                        </span>
+                      </div>
 
                       {/* Client Info */}
-                      <div className="flex items-center gap-2 mt-3">
+                      <div className="flex items-center gap-2 mt-2 sm:mt-3">
                         <Avatar
                           src={job.clientId?.avatar}
                           name={job.clientId?.name || 'Client'}
                           size="xs"
                         />
-                        <span className="text-sm text-[var(--color-text-secondary)]">
+                        <span className="text-xs sm:text-sm text-[var(--color-text-secondary)] truncate">
                           {job.clientId?.name}
                         </span>
                         {isClient && job.clientId?.companyName && (
-                          <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-md bg-[#E07B4F]/10 text-[#E07B4F]">
+                          <span className="hidden sm:flex items-center gap-1 text-xs px-2 py-0.5 rounded-md bg-[#E07B4F]/10 text-[#E07B4F]">
                             <Building2 className="w-3 h-3" />
                             {job.clientId.companyName}
                           </span>
@@ -569,33 +646,33 @@ function MyProposalsPageContent() {
                       </div>
 
                       {/* Meta Row */}
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-3 text-sm text-[var(--color-text-secondary)]">
-                        <span className="flex items-center gap-1.5">
-                          <MapPin className="w-4 h-4 text-[#E07B4F]/60" />
+                      <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-1 sm:gap-y-2 mt-2 sm:mt-3 text-xs sm:text-sm text-[var(--color-text-secondary)]">
+                        <span className="flex items-center gap-1 sm:gap-1.5">
+                          <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E07B4F]/60" />
                           {job.location}
                         </span>
-                        <span className="flex items-center gap-1.5 font-semibold text-[#E07B4F]">
-                          <DollarSign className="w-4 h-4" />
+                        <span className="flex items-center gap-1 sm:gap-1.5 font-semibold text-[#E07B4F]">
+                          <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                           {formatBudget(job)}
                         </span>
                       </div>
 
                       {/* Your Proposal Box */}
-                      <div className="mt-4 p-4 rounded-xl bg-gradient-to-br from-[#E07B4F]/5 to-transparent border border-[#E07B4F]/10">
+                      <div className="mt-3 sm:mt-4 p-3 sm:p-4 rounded-xl bg-gradient-to-br from-[#E07B4F]/5 to-transparent border border-[#E07B4F]/10">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-bold uppercase tracking-wider text-[#E07B4F]">
+                          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#E07B4F]">
                             {language === 'ka' ? 'შენი შეთავაზება' : 'Your Proposal'}
                           </span>
-                          <span className="text-xs text-[var(--color-text-tertiary)]">
+                          <span className="hidden sm:inline text-xs text-[var(--color-text-tertiary)]">
                             {formatDate(proposal.createdAt)}
                           </span>
                         </div>
-                        <div className="flex items-center gap-4 mb-2">
-                          <span className="text-xl font-bold text-[#E07B4F]">
+                        <div className="flex items-center gap-3 sm:gap-4 mb-2">
+                          <span className="text-lg sm:text-xl font-bold text-[#E07B4F]">
                             ₾{proposal.proposedPrice?.toLocaleString()}
                           </span>
-                          <span className="flex items-center gap-1.5 text-sm text-[var(--color-text-secondary)]">
-                            <Timer className="w-4 h-4 text-[#E07B4F]/50" />
+                          <span className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-[var(--color-text-secondary)]">
+                            <Timer className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E07B4F]/50" />
                             {proposal.estimatedDuration} {
                               proposal.estimatedDurationUnit === 'days' ? (language === 'ka' ? 'დღე' : 'days') :
                               proposal.estimatedDurationUnit === 'weeks' ? (language === 'ka' ? 'კვირა' : 'weeks') :
@@ -603,15 +680,15 @@ function MyProposalsPageContent() {
                             }
                           </span>
                         </div>
-                        <p className="text-sm text-[var(--color-text-tertiary)] line-clamp-2 italic">
+                        <p className="text-xs sm:text-sm text-[var(--color-text-tertiary)] line-clamp-2 italic">
                           "{proposal.coverLetter}"
                         </p>
                       </div>
 
                       {/* Rejection Note */}
                       {proposal.status === 'rejected' && proposal.rejectionNote && (
-                        <div className="mt-3 p-3 rounded-xl bg-red-500/5 border border-red-500/10">
-                          <p className="text-xs text-red-600 dark:text-red-400">
+                        <div className="mt-2 sm:mt-3 p-2 sm:p-3 rounded-xl bg-red-500/5 border border-red-500/10">
+                          <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">
                             <strong>{language === 'ka' ? 'მიზეზი:' : 'Reason:'}</strong> {proposal.rejectionNote}
                           </p>
                         </div>
@@ -620,71 +697,77 @@ function MyProposalsPageContent() {
                   </div>
 
                   {/* Actions Footer */}
-                  <div className="px-5 py-4 bg-[var(--color-bg-tertiary)]/50 border-t border-[var(--color-border)] flex flex-wrap items-center gap-3">
-                    {/* Message Button */}
-                    {(proposal.status === 'in_discussion' || proposal.status === 'accepted' || proposal.status === 'completed') && proposal.conversationId && (
-                      <Link
-                        href={`/messages?conversation=${proposal.conversationId}`}
-                        className={`
-                          inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all
-                          ${hasUnread
-                            ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25 hover:bg-blue-600'
-                            : 'bg-[#E07B4F] text-white hover:bg-[#D26B3F]'
-                          }
-                        `}
-                      >
-                        <MessageCircle className="w-4 h-4" />
-                        {language === 'ka' ? 'მესიჯი' : 'Message'}
-                        {hasUnread && (
-                          <span className="px-1.5 py-0.5 rounded-md bg-white/20 text-xs font-bold">
-                            {proposal.unreadMessageCount}
-                          </span>
+                  <div className="px-3 py-3 sm:px-5 sm:py-4 bg-[var(--color-bg-tertiary)]/50 border-t border-[var(--color-border)]">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                      {/* Primary Actions Row */}
+                      <div className="flex items-center gap-2 flex-wrap flex-1">
+                        {/* Message Button */}
+                        {(proposal.status === 'in_discussion' || proposal.status === 'accepted' || proposal.status === 'completed') && proposal.conversationId && (
+                          <Link
+                            href={`/messages?conversation=${proposal.conversationId}`}
+                            className={`
+                              flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all
+                              ${hasUnread
+                                ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25 hover:bg-blue-600'
+                                : 'bg-[#E07B4F] text-white hover:bg-[#D26B3F]'
+                              }
+                            `}
+                          >
+                            <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            {language === 'ka' ? 'მესიჯი' : 'Message'}
+                            {hasUnread && (
+                              <span className="px-1.5 py-0.5 rounded-md bg-white/20 text-[10px] sm:text-xs font-bold">
+                                {proposal.unreadMessageCount}
+                              </span>
+                            )}
+                          </Link>
                         )}
-                      </Link>
-                    )}
 
-                    {/* Contact Info - if accepted */}
-                    {proposal.status === 'accepted' && proposal.contactRevealed && job.clientId && (
-                      <div className="flex items-center gap-2">
-                        {job.clientId.phone && (
-                          <a
-                            href={`tel:${job.clientId.phone}`}
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 transition-all"
+                        {/* Withdraw Button - only for pending */}
+                        {proposal.status === 'pending' && (
+                          <button
+                            onClick={() => setWithdrawModalId(proposal._id)}
+                            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium bg-red-500/10 text-red-600 hover:bg-red-500/20 transition-all"
                           >
-                            <Phone className="w-4 h-4" />
-                            {job.clientId.phone}
-                          </a>
+                            <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            {language === 'ka' ? 'გაუქმება' : 'Withdraw'}
+                          </button>
                         )}
-                        {job.clientId.email && (
-                          <a
-                            href={`mailto:${job.clientId.email}`}
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 transition-all"
-                          >
-                            <Mail className="w-4 h-4" />
-                            {language === 'ka' ? 'ემაილი' : 'Email'}
-                          </a>
-                        )}
+
+                        {/* View Job - Mobile compact */}
+                        <Link
+                          href={`/jobs/${job._id}`}
+                          className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium bg-[var(--color-bg-muted)] text-[var(--color-text-secondary)] hover:text-[#E07B4F] transition-colors sm:ml-auto"
+                        >
+                          {language === 'ka' ? 'სამუშაო' : 'View Job'}
+                          <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        </Link>
                       </div>
-                    )}
 
-                    {/* Withdraw Button - only for pending */}
-                    {proposal.status === 'pending' && (
-                      <button
-                        onClick={() => setWithdrawModalId(proposal._id)}
-                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-red-500/10 text-red-600 hover:bg-red-500/20 transition-all"
-                      >
-                        <X className="w-4 h-4" />
-                        {language === 'ka' ? 'გაუქმება' : 'Withdraw'}
-                      </button>
-                    )}
-
-                    <Link
-                      href={`/jobs/${job._id}`}
-                      className="ml-auto inline-flex items-center gap-1.5 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[#E07B4F] transition-colors"
-                    >
-                      {language === 'ka' ? 'სამუშაო' : 'View Job'}
-                      <ExternalLink className="w-4 h-4" />
-                    </Link>
+                      {/* Contact Info - if accepted (full width on mobile) */}
+                      {proposal.status === 'accepted' && proposal.contactRevealed && job.clientId && (
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                          {job.clientId.phone && (
+                            <a
+                              href={`tel:${job.clientId.phone}`}
+                              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 transition-all"
+                            >
+                              <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                              <span className="truncate">{job.clientId.phone}</span>
+                            </a>
+                          )}
+                          {job.clientId.email && (
+                            <a
+                              href={`mailto:${job.clientId.email}`}
+                              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 transition-all"
+                            >
+                              <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                              {language === 'ka' ? 'ემაილი' : 'Email'}
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               );

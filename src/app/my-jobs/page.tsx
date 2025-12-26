@@ -19,6 +19,8 @@ import {
   X,
   AlertTriangle,
   Briefcase,
+  Send,
+  ArrowLeft,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -181,17 +183,17 @@ function MyJobsPageContent() {
       <div className="min-h-screen bg-white dark:bg-neutral-950">
         <Header />
         <HeaderSpacer />
-        <div className="max-w-6xl mx-auto px-6 py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
           <div className="w-32 h-8 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse mb-2" />
-          <div className="w-64 h-5 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse mb-8" />
-          <div className="flex gap-2 mb-8">
+          <div className="w-64 h-5 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse mb-6" />
+          <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="w-24 h-10 bg-neutral-100 dark:bg-neutral-800 rounded-full animate-pulse" />
+              <div key={i} className="w-20 h-9 bg-neutral-100 dark:bg-neutral-800 rounded-full animate-pulse flex-shrink-0" />
             ))}
           </div>
           <div className="space-y-4">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-44 bg-neutral-50 dark:bg-neutral-900 rounded-2xl animate-pulse border border-neutral-100 dark:border-neutral-800" />
+              <div key={i} className="h-56 sm:h-44 bg-neutral-50 dark:bg-neutral-900 rounded-2xl animate-pulse border border-neutral-100 dark:border-neutral-800" />
             ))}
           </div>
         </div>
@@ -206,23 +208,56 @@ function MyJobsPageContent() {
       <HeaderSpacer />
 
       {/* ==================== MAIN CONTENT ==================== */}
-      <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-8">
-        {/* ==================== PAGE TITLE ZONE ==================== */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-1">
-            {locale === 'ka' ? 'ჩემი პროექტები' : 'My Jobs'}
-          </h1>
-          <p className="text-neutral-500 dark:text-neutral-400 text-sm">
-            {locale === 'ka'
-              ? 'მართე შენი აქტიური მოთხოვნები და შეთავაზებები.'
-              : 'Manage your active listings and proposals.'}
-          </p>
+      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-6">
+        {/* ==================== PAGE HEADER WITH BACK BUTTON ==================== */}
+        <div className="mb-6">
+          <div className="flex items-start gap-3 mb-4">
+            <button
+              onClick={() => router.back()}
+              className="mt-0.5 w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all"
+            >
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-600 dark:text-neutral-400" />
+            </button>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white">
+                {locale === 'ka' ? 'ჩემი პროექტები' : 'My Jobs'}
+              </h1>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5 hidden sm:block">
+                {locale === 'ka'
+                  ? 'მართე შენი აქტიური მოთხოვნები და შეთავაზებები.'
+                  : 'Manage your active listings and proposals.'}
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Links for Mobile - My Proposals */}
+          {(user?.role === 'pro' || user?.role === 'admin') && (
+            <Link
+              href="/my-proposals"
+              className="sm:hidden flex items-center justify-between p-3 mb-4 rounded-xl bg-gradient-to-r from-[#C4735B]/10 to-[#C4735B]/5 border border-[#C4735B]/20"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: ACCENT_COLOR }}>
+                  <Send className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <span className="text-sm font-semibold text-neutral-900 dark:text-white block">
+                    {locale === 'ka' ? 'ჩემი შეთავაზებები' : 'My Proposals'}
+                  </span>
+                  <span className="text-xs text-neutral-500">
+                    {locale === 'ka' ? 'გაგზავნილი შეთავაზებები' : 'Sent proposals'}
+                  </span>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-neutral-400" />
+            </Link>
+          )}
         </div>
 
-        {/* ==================== TABS FILTER ZONE ==================== */}
-        <div className="flex items-center gap-2 mb-8">
+        {/* ==================== TABS FILTER ZONE - Scrollable on mobile ==================== */}
+        <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
           {[
-            { key: 'all' as StatusFilter, label: locale === 'ka' ? 'ყველა' : 'All Jobs' },
+            { key: 'all' as StatusFilter, label: locale === 'ka' ? 'ყველა' : 'All' },
             { key: 'open' as StatusFilter, label: locale === 'ka' ? 'ღია' : 'Open' },
             { key: 'hired' as StatusFilter, label: locale === 'ka' ? 'დაქირავებული' : 'Hired' },
             { key: 'closed' as StatusFilter, label: locale === 'ka' ? 'დახურული' : 'Closed' },
@@ -231,7 +266,7 @@ function MyJobsPageContent() {
               key={tab.key}
               onClick={() => setStatusFilter(tab.key)}
               disabled={isFilterLoading}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all disabled:opacity-50 ${
+              className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all disabled:opacity-50 ${
                 statusFilter === tab.key
                   ? 'text-white shadow-sm'
                   : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700'
@@ -247,7 +282,7 @@ function MyJobsPageContent() {
         {isFilterLoading ? (
           <div className="space-y-4">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-44 bg-neutral-50 dark:bg-neutral-900 rounded-2xl animate-pulse border border-neutral-100 dark:border-neutral-800" />
+              <div key={i} className="h-56 sm:h-44 bg-neutral-50 dark:bg-neutral-900 rounded-2xl animate-pulse border border-neutral-100 dark:border-neutral-800" />
             ))}
           </div>
         ) : jobs.length === 0 ? (
@@ -276,33 +311,34 @@ function MyJobsPageContent() {
                   key={job._id}
                   className="bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-100 dark:border-neutral-800 transition-shadow hover:shadow-lg"
                 >
-                  <div className="flex">
+                  {/* Mobile: Vertical Stack Layout */}
+                  <div className="flex flex-col sm:flex-row">
                     {/* ===== IMAGE SECTION ===== */}
-                    <div className="relative w-64 flex-shrink-0 bg-neutral-100 dark:bg-neutral-800">
+                    <div className="relative w-full sm:w-48 lg:w-64 flex-shrink-0 bg-neutral-100 dark:bg-neutral-800">
                       {firstImage ? (
                         <img
                           src={storage.getFileUrl(firstImage)}
                           alt=""
-                          className="w-full h-full object-cover"
-                          style={{ minHeight: '180px' }}
+                          className="w-full h-40 sm:h-full object-cover"
+                          style={{ minHeight: '160px' }}
                         />
                       ) : (
-                        <div className="w-full h-full min-h-[180px] flex items-center justify-center">
-                          <FileText className="w-12 h-12 text-neutral-300 dark:text-neutral-700" />
+                        <div className="w-full h-40 sm:h-full min-h-[160px] flex items-center justify-center">
+                          <FileText className="w-10 h-10 text-neutral-300 dark:text-neutral-700" />
                         </div>
                       )}
 
                       {/* Status Badge */}
                       <div className="absolute top-3 left-3">
                         {isOpen && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm text-green-700 dark:text-green-400 shadow-sm">
-                            <span className="w-2 h-2 rounded-full bg-green-500" />
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm text-green-700 dark:text-green-400 shadow-sm">
+                            <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
                             {locale === 'ka' ? 'ღია' : 'Open'}
                           </span>
                         )}
                         {isHired && (
                           <span
-                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-white shadow-sm"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-white shadow-sm"
                             style={{ backgroundColor: ACCENT_COLOR }}
                           >
                             <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
@@ -312,45 +348,66 @@ function MyJobsPageContent() {
                           </span>
                         )}
                         {isClosed && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-neutral-200/95 dark:bg-neutral-700/95 backdrop-blur-sm text-neutral-600 dark:text-neutral-300 shadow-sm">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-neutral-200/95 dark:bg-neutral-700/95 backdrop-blur-sm text-neutral-600 dark:text-neutral-300 shadow-sm">
                             {locale === 'ka' ? 'დახურული' : 'Closed'}
                           </span>
+                        )}
+                      </div>
+
+                      {/* Mobile: Action buttons overlay */}
+                      <div className="absolute top-3 right-3 flex items-center gap-1 sm:hidden">
+                        {isOpen && (
+                          <>
+                            <Link
+                              href={`/post-job?edit=${job._id}`}
+                              className="p-2 rounded-lg bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm text-neutral-600 hover:text-neutral-900 shadow-sm"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </Link>
+                            <button
+                              onClick={() => setDeleteModalJob(job)}
+                              disabled={deletingJobId === job._id}
+                              className="p-2 rounded-lg bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm text-neutral-400 hover:text-red-500 shadow-sm disabled:opacity-50"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </>
                         )}
                       </div>
                     </div>
 
                     {/* ===== CONTENT SECTION ===== */}
-                    <div className="flex-1 p-5 flex flex-col">
+                    <div className="flex-1 p-4 sm:p-5 flex flex-col">
                       <div className="flex items-start justify-between flex-1">
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           {/* Category Tags & Time */}
-                          <div className="flex items-center gap-2 mb-2">
+                          <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <span
-                              className="text-[11px] font-semibold uppercase tracking-wider"
+                              className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider"
                               style={{ color: ACCENT_COLOR }}
                             >
                               {getCategoryLabel(job.category)}
                               {(job.subcategory || job.skills?.[0]) && ` • ${getCategoryLabel(job.subcategory || job.skills[0])}`}
                             </span>
-                            <span className="flex items-center gap-1 text-[11px] text-neutral-400">
+                            <span className="flex items-center gap-1 text-[10px] sm:text-[11px] text-neutral-400">
                               <Clock className="w-3 h-3" />
                               {getTimeAgo(job.createdAt, locale)}
                             </span>
                           </div>
 
                           {/* Title */}
-                          <h3 className="text-base font-semibold text-neutral-900 dark:text-white mb-2">
+                          <h3 className="text-sm sm:text-base font-semibold text-neutral-900 dark:text-white mb-2 line-clamp-2">
                             {job.title}
                           </h3>
 
-                          {/* Description */}
-                          <p className="text-sm text-neutral-500 dark:text-neutral-400 line-clamp-2 leading-relaxed">
+                          {/* Description - Hidden on very small screens */}
+                          <p className="hidden sm:block text-sm text-neutral-500 dark:text-neutral-400 line-clamp-2 leading-relaxed">
                             {job.description}
                           </p>
                         </div>
 
-                        {/* Action Icons - Top Right */}
-                        <div className="flex items-center gap-1 ml-4">
+                        {/* Action Icons - Top Right - Desktop only */}
+                        <div className="hidden sm:flex items-center gap-1 ml-4">
                           {isOpen && (
                             <>
                               <Link
@@ -380,7 +437,7 @@ function MyJobsPageContent() {
                       </div>
 
                       {/* ===== FOOTER SECTION ===== */}
-                      <div className="flex items-center justify-between mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800 gap-3">
                         {/* Left: Proposals or Hired Pro */}
                         <div className="flex items-center gap-3">
                           {isOpen && job.proposalCount > 0 && (
@@ -390,7 +447,7 @@ function MyJobsPageContent() {
                                 {[...Array(Math.min(job.proposalCount, 3))].map((_, i) => (
                                   <div
                                     key={i}
-                                    className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-700 border-2 border-white dark:border-neutral-900 overflow-hidden"
+                                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-neutral-200 dark:bg-neutral-700 border-2 border-white dark:border-neutral-900 overflow-hidden"
                                   >
                                     {job.recentProposals?.[i]?.proId?.avatar ? (
                                       <img
@@ -406,15 +463,15 @@ function MyJobsPageContent() {
                                   </div>
                                 ))}
                               </div>
-                              <span style={{ color: ACCENT_COLOR }} className="text-sm font-medium">
-                                {job.proposalCount} {locale === 'ka' ? 'ახალი შეთავაზება' : 'New Proposals'}
+                              <span style={{ color: ACCENT_COLOR }} className="text-xs sm:text-sm font-medium">
+                                {job.proposalCount} {locale === 'ka' ? 'შეთავაზება' : 'Proposals'}
                               </span>
                             </>
                           )}
                           {isOpen && job.proposalCount === 0 && (
-                            <span className="flex items-center gap-2 text-sm text-neutral-400">
+                            <span className="flex items-center gap-2 text-xs sm:text-sm text-neutral-400">
                               <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                              {locale === 'ka' ? 'ელოდება პირველ შეთავაზებას...' : 'Awaiting first proposal...'}
+                              {locale === 'ka' ? 'ელოდება შეთავაზებას...' : 'Awaiting proposals...'}
                             </span>
                           )}
                           {isHired && job.hiredPro && (
@@ -423,16 +480,16 @@ function MyJobsPageContent() {
                                 src={job.hiredPro.userId?.avatar || job.hiredPro.avatar}
                                 name={job.hiredPro.userId?.name || 'Pro'}
                                 size="sm"
-                                className="w-8 h-8"
+                                className="w-7 h-7 sm:w-8 sm:h-8"
                               />
                               <div>
                                 <span
-                                  className="text-[10px] font-semibold uppercase tracking-wider block"
+                                  className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider block"
                                   style={{ color: ACCENT_COLOR }}
                                 >
-                                  {locale === 'ka' ? 'დაქირავებული პრო' : 'HIRED PRO'}
+                                  {locale === 'ka' ? 'დაქირავებული' : 'HIRED'}
                                 </span>
-                                <span className="text-sm font-medium text-neutral-900 dark:text-white">
+                                <span className="text-xs sm:text-sm font-medium text-neutral-900 dark:text-white">
                                   {job.hiredPro.userId?.name || 'Professional'}
                                 </span>
                               </div>
@@ -441,12 +498,12 @@ function MyJobsPageContent() {
                         </div>
 
                         {/* Right: Action Button */}
-                        <div>
+                        <div className="flex-shrink-0">
                           {isOpen && job.proposalCount > 0 && (
                             <Link
                               href={`/my-jobs/${job._id}/proposals`}
                               onClick={() => handleViewProposals(job._id)}
-                              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-all hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                              className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 rounded-xl text-sm font-medium border transition-all hover:bg-neutral-50 dark:hover:bg-neutral-800"
                               style={{ borderColor: ACCENT_COLOR, color: ACCENT_COLOR }}
                             >
                               {locale === 'ka' ? 'შეთავაზებების ნახვა' : 'View Proposals'}
@@ -456,7 +513,7 @@ function MyJobsPageContent() {
                           {isOpen && job.proposalCount === 0 && (
                             <Link
                               href={`/jobs/${job._id}`}
-                              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
+                              className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
                             >
                               {locale === 'ka' ? 'დეტალები' : 'View Details'}
                             </Link>
@@ -464,10 +521,10 @@ function MyJobsPageContent() {
                           {isHired && (
                             <Link
                               href={`/messages?job=${job._id}`}
-                              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
+                              className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
                             >
                               <MessageSquare className="w-4 h-4" />
-                              {locale === 'ka' ? 'მესიჯი პროს' : 'Message Pro'}
+                              {locale === 'ka' ? 'მესიჯი' : 'Message'}
                             </Link>
                           )}
                         </div>
@@ -483,7 +540,7 @@ function MyJobsPageContent() {
 
       {/* ==================== DELETE CONFIRMATION MODAL ==================== */}
       {deleteModalJob && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -493,12 +550,12 @@ function MyJobsPageContent() {
           {/* Modal */}
           <div className="relative bg-white dark:bg-neutral-900 rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between p-5 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
                   <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                <h3 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-white">
                   {locale === 'ka' ? 'პროექტის წაშლა' : 'Delete Job'}
                 </h3>
               </div>
@@ -512,15 +569,15 @@ function MyJobsPageContent() {
             </div>
 
             {/* Content */}
-            <div className="p-5">
-              <p className="text-neutral-600 dark:text-neutral-400 mb-4">
+            <div className="p-4 sm:p-5">
+              <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 mb-4">
                 {locale === 'ka'
                   ? 'ნამდვილად გსურთ ამ პროექტის წაშლა? ეს მოქმედება შეუქცევადია.'
                   : 'Are you sure you want to delete this job? This action cannot be undone.'}
               </p>
 
               {/* Job preview */}
-              <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-xl p-4">
+              <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-xl p-3 sm:p-4">
                 <p className="font-medium text-neutral-900 dark:text-white text-sm">
                   {deleteModalJob.title}
                 </p>
@@ -531,7 +588,7 @@ function MyJobsPageContent() {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-3 p-5 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/30">
+            <div className="flex items-center gap-3 p-4 sm:p-5 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/30">
               <button
                 onClick={() => setDeleteModalJob(null)}
                 disabled={!!deletingJobId}
@@ -560,6 +617,17 @@ function MyJobsPageContent() {
           </div>
         </div>
       )}
+
+      {/* Hide scrollbar utility */}
+      <style jsx>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 }

@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { BrowseProvider, useBrowseContext } from "@/contexts/BrowseContext";
 import { JobsProvider, useJobsContext } from "@/contexts/JobsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Briefcase, FileText, Filter, Hammer, Images, Search, Users, X } from "lucide-react";
+import { Briefcase, ChevronRight, FileText, Filter, Hammer, Images, Search, Send, Users, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ReactNode, Suspense, useEffect, useRef, useState } from "react";
@@ -294,6 +294,45 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                   )}
                 </div>
               </div>
+
+              {/* Mobile Quick Access for Pro Users - My Jobs & My Proposals */}
+              {isPro && isJobsPage && (
+                <div className="lg:hidden mb-4 grid grid-cols-2 gap-2">
+                  <Link
+                    href="/my-jobs"
+                    className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-[#C4735B]/10 to-[#C4735B]/5 border border-[#C4735B]/20 active:scale-[0.98] transition-all"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-[#C4735B]/20 flex items-center justify-center">
+                        <Hammer className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                      </div>
+                      <div>
+                        <span className="text-xs font-semibold text-neutral-900 dark:text-white block">
+                          {locale === 'ka' ? 'სამუშაოები' : 'My Jobs'}
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                  </Link>
+                  <Link
+                    href="/my-proposals"
+                    className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-[#C4735B]/10 to-[#C4735B]/5 border border-[#C4735B]/20 active:scale-[0.98] transition-all"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-[#C4735B]/20 flex items-center justify-center">
+                        <Send className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                      </div>
+                      <div>
+                        <span className="text-xs font-semibold text-neutral-900 dark:text-white block">
+                          {locale === 'ka' ? 'შეთავაზებები' : 'Proposals'}
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                  </Link>
+                </div>
+              )}
+
               {children}
             </div>
           </div>
