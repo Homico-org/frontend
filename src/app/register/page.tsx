@@ -304,6 +304,7 @@ function RegisterContent() {
             name: googleUser.name,
             picture: googleUser.picture,
             phone: `${countries[phoneCountry].phonePrefix}${formData.phone}`,
+            password: formData.password,
             role: userType,
             city: formData.city || undefined,
             isPhoneVerified: true,
@@ -1027,6 +1028,26 @@ function RegisterContent() {
                     </div>
                   </div>
 
+                  {/* Password field for Google registration */}
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
+                      {locale === "ka" ? "პაროლი" : "Password"} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => handleInputChange("password", e.target.value)}
+                      placeholder={locale === "ka" ? "მინ. 6 სიმბოლო" : "Min. 6 characters"}
+                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
+                      required
+                    />
+                    <p className="mt-1 text-xs text-neutral-500">
+                      {locale === "ka"
+                        ? "პაროლი საჭიროა ტელეფონით შესვლისთვის"
+                        : "Password allows login with phone number"}
+                    </p>
+                  </div>
+
                   {/* User type selection for pro */}
                   <div className="flex gap-2">
                     <button
@@ -1053,7 +1074,7 @@ function RegisterContent() {
 
                   <button
                     onClick={handleGooglePhoneSubmit}
-                    disabled={isLoading || !formData.phone}
+                    disabled={isLoading || !formData.phone || formData.password.length < 6}
                     className="w-full py-2.5 rounded-lg bg-[#C4735B] hover:bg-[#A85D47] disabled:bg-neutral-200 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
                   >
                     {isLoading ? (
