@@ -431,7 +431,7 @@ function AdminDashboardPageContent() {
             { label: locale === 'ka' ? 'მომხმარებლები' : 'Users', icon: Users, href: '/admin/users', color: THEME.primary, count: stats?.users.total },
             { label: locale === 'ka' ? 'სამუშაოები' : 'Jobs', icon: Briefcase, href: '/admin/jobs', color: THEME.info, count: stats?.jobs.total },
             { label: locale === 'ka' ? 'მხარდაჭერა' : 'Support', icon: MessageCircle, href: '/admin/support', color: THEME.warning, count: stats?.support.open, badge: stats?.support.unread },
-            { label: locale === 'ka' ? 'რეპორტები' : 'Reports', icon: BarChart3, href: '/admin/reports', color: '#8B5CF6' },
+            { label: locale === 'ka' ? 'ლოგები' : 'Activity Logs', icon: Activity, href: '/admin/activity-logs', color: THEME.success },
           ].map((action) => (
             <Link
               key={action.label}
