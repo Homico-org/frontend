@@ -1,28 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import Avatar from '@/components/common/Avatar';
+import { useToast } from '@/contexts/ToastContext';
+import { api } from '@/lib/api';
+import { storage } from '@/services/storage';
 import {
   Calendar,
+  Check,
+  CheckCircle2,
+  ChevronRight,
   Clock,
+  Eye,
+  FileText,
   MessageSquare,
   Paperclip,
-  ChevronRight,
-  Check,
   Play,
-  Eye,
-  CheckCircle2,
-  User,
-  FileText,
-  Plus,
   Send,
-  X,
-  Upload,
+  X
 } from 'lucide-react';
-import Avatar from '@/components/common/Avatar';
-import { storage } from '@/services/storage';
-import { api } from '@/lib/api';
-import { useToast } from '@/contexts/ToastContext';
+import Link from 'next/link';
+import { useState } from 'react';
 
 // Terracotta palette
 const ACCENT = '#C4735B';
@@ -284,23 +281,28 @@ export default function ProjectTrackerCard({
                 </h3>
               </div>
 
-              {/* Pro Avatar */}
-              <div className="flex-shrink-0">
-                <div className="relative">
-                  <Avatar
-                    src={isClient ? project.proId?.avatar : project.clientId?.avatar}
-                    name={isClient ? project.proId?.name : project.clientId?.name}
-                    size="md"
-                    className="w-12 h-12 ring-2 ring-white/30"
-                  />
-                  <div
-                    className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-bold"
-                    style={{ backgroundColor: ACCENT }}
-                  >
-                    {isClient ? 'P' : 'C'}
-                  </div>
+              {/* Assigned Pro/Client Info */}
+              <Link
+                href={isClient ? `/professionals/${project.proId?._id}` : `/users/${project.clientId?._id}`}
+                className="flex-shrink-0 flex items-center gap-3 bg-black/30 backdrop-blur-sm rounded-xl px-3 py-2 hover:bg-black/40 transition-colors"
+              >
+                <Avatar
+                  src={isClient ? project.proId?.avatar : project.clientId?.avatar}
+                  name={isClient ? project.proId?.name : project.clientId?.name}
+                  size="md"
+                  className="w-10 h-10 ring-2 ring-white/30"
+                />
+                <div className="text-right">
+                  <p className="text-[10px] text-white/60 uppercase tracking-wider">
+                    {isClient
+                      ? (locale === 'ka' ? 'სპეციალისტი' : 'Assigned Pro')
+                      : (locale === 'ka' ? 'კლიენტი' : 'Client')}
+                  </p>
+                  <p className="text-sm font-semibold text-white">
+                    {isClient ? project.proId?.name : project.clientId?.name}
+                  </p>
                 </div>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
@@ -548,7 +550,7 @@ export default function ProjectTrackerCard({
         {/* Actions Footer */}
         <div className="px-4 sm:px-5 py-3 bg-neutral-50 dark:bg-neutral-800/50 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-3">
           <Link
-            href={`/messages?conversation=${job._id}`}
+            href={`/messages?conversation=${isClient ? project.proId?._id : project.clientId?._id}`}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-800 transition-colors"
           >
             <MessageSquare className="w-4 h-4" />

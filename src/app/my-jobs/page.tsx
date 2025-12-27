@@ -11,17 +11,17 @@ import { useCategoryLabels } from '@/hooks/useCategoryLabels';
 import { api } from '@/lib/api';
 import { storage } from '@/services/storage';
 import {
+  AlertTriangle,
+  ArrowLeft,
+  Briefcase,
+  ChevronRight,
   Clock,
   Edit3,
-  MessageSquare,
-  Trash2,
   FileText,
-  ChevronRight,
-  X,
-  AlertTriangle,
-  Briefcase,
+  MessageSquare,
   Send,
-  ArrowLeft,
+  Trash2,
+  X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -587,9 +587,9 @@ function MyJobsPageContent() {
                               {locale === 'ka' ? 'დეტალები' : 'View Details'}
                             </Link>
                           )}
-                          {isHired && (
+                          {isHired && job.hiredPro?.userId?._id && (
                             <Link
-                              href={`/messages?conversation=${job._id}`}
+                              href={`/messages?conversation=${job.hiredPro.userId._id}`}
                               className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
                             >
                               <MessageSquare className="w-4 h-4" />
