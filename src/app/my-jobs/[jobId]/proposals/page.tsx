@@ -7,19 +7,17 @@ import HiringChoiceModal from '@/components/proposals/HiringChoiceModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useCategoryLabels } from '@/hooks/useCategoryLabels';
-import { isHighLevelCategory } from '@/utils/categoryHelpers';
 import { api } from '@/lib/api';
-import { storage } from '@/services/storage';
+import { isHighLevelCategory } from '@/utils/categoryHelpers';
 import {
+  AlertCircle,
   ArrowLeft,
   Check,
   Clock,
-  Phone,
-  Star,
-  MessageCircle,
-  X,
   FileText,
-  AlertCircle,
+  MessageCircle,
+  Phone,
+  X
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -199,6 +197,29 @@ function ProposalsPageContent() {
     }
   }, [locale, toast]);
 
+  const handleAccept = useCallback(async (proposalId: string) => {
+    setIsProcessing(true);
+    try {
+      await api.post(`/jobs/proposals/${proposalId}/accept`);
+
+      toast.success(
+        locale === 'ka' ? 'წარმატება' : 'Success',
+        locale === 'ka' ? 'პროექტი დაიწყო! გადადიხართ პროექტის თრექერზე...' : 'Project started! Redirecting to project tracker...'
+      );
+
+      // Redirect to my-jobs where they'll see the project tracker
+      setTimeout(() => {
+        router.push('/my-jobs?status=hired');
+      }, 1500);
+    } catch (error: any) {
+      toast.error(
+        locale === 'ka' ? 'შეცდომა' : 'Error',
+        error.response?.data?.message || (locale === 'ka' ? 'ვერ მოხერხდა' : 'Failed to accept')
+      );
+      setIsProcessing(false);
+    }
+  }, [locale, toast, router]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white dark:bg-neutral-950">
@@ -312,6 +333,8 @@ function ProposalsPageContent() {
                       locale={locale}
                       isShortlisted
                       isHighLevel={isHighLevel}
+                      onAccept={() => handleAccept(proposal._id)}
+                      isProcessing={isProcessing}
                     />
                   ))}
                 </div>
@@ -396,17 +419,21 @@ function ProposalCard({
   locale,
   onShortlist,
   onReject,
+  onAccept,
   isShortlisted = false,
   isRejected = false,
   isHighLevel = true,
+  isProcessing = false,
 }: {
   proposal: Proposal;
   locale: string;
   onShortlist?: () => void;
   onReject?: () => void;
+  onAccept?: () => void;
   isShortlisted?: boolean;
   isRejected?: boolean;
   isHighLevel?: boolean;
+  isProcessing?: boolean;
 }) {
   const pro = proposal.proId;
 
@@ -531,12 +558,31 @@ function ProposalCard({
 
           {/* Actions for Shortlisted */}
           {isShortlisted && (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Accept/Start Project Button - Primary Action */}
+              <button
+                onClick={onAccept}
+                disabled={isProcessing}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                style={{ backgroundColor: ACCENT_COLOR }}
+              >
+                {isProcessing ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    {locale === 'ka' ? 'მუშავდება...' : 'Processing...'}
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" />
+                    {locale === 'ka' ? 'პროექტის დაწყება' : 'Start Project'}
+                  </>
+                )}
+              </button>
+
               {proposal.hiringChoice === 'homico' && isHighLevel && (
                 <Link
                   href={`/messages?recipient=${pro?._id}`}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white transition-colors"
-                  style={{ backgroundColor: ACCENT_COLOR }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                 >
                   <MessageCircle className="w-4 h-4" />
                   {locale === 'ka' ? 'მიწერა' : 'Message'}
