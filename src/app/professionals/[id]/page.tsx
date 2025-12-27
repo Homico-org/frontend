@@ -343,7 +343,7 @@ export default function ProfessionalDetailPage() {
   const cityTranslations: Record<string, string> = {
     'tbilisi': 'თბილისი', 'rustavi': 'რუსთავი', 'mtskheta': 'მცხეთა', 'batumi': 'ბათუმი',
     'kutaisi': 'ქუთაისი', 'gori': 'გორი', 'zugdidi': 'ზუგდიდი', 'telavi': 'თელავი',
-    'nationwide': 'მთელი საქართველო', 'georgia': 'საქართველო',
+    'nationwide': 'მთელი საქართველო', 'georgia': 'საქართველო', 'countrywide': 'მთელი საქართველო',
   };
 
   const translateCity = (city: string) => {
