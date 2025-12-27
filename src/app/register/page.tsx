@@ -106,6 +106,7 @@ function RegisterContent() {
   // Multi-step state
   const [currentStep, setCurrentStep] = useState<RegistrationStep>('account');
   const [userType, setUserType] = useState<'client' | 'pro'>(isProRegistration ? 'pro' : 'client');
+  const [showTypeSelection, setShowTypeSelection] = useState(!isProRegistration);
 
   // Form data
   const [formData, setFormData] = useState({
@@ -1167,6 +1168,124 @@ function RegisterContent() {
     );
   }
 
+  // TYPE SELECTION SCREEN
+  if (showTypeSelection) {
+    return (
+      <div className="min-h-screen bg-[#FAFAF9]">
+        {/* Header */}
+        <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-neutral-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-12 flex items-center justify-between">
+            <Logo />
+            <div className="flex items-center gap-3">
+              <Link href="/help" className="text-xs text-neutral-600 hover:text-neutral-900 transition-colors">
+                {locale === "ka" ? "დახმარება" : "Help"}
+              </Link>
+              <button
+                onClick={() => openLoginModal()}
+                className="text-xs font-medium text-[#C4735B] hover:text-[#A85D47] transition-colors"
+              >
+                {locale === "ka" ? "შესვლა" : "Log In"}
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <main className="pt-12 min-h-screen flex items-center justify-center px-4 py-12">
+          <div className="w-full max-w-2xl">
+            {/* Title */}
+            <div className="text-center mb-8">
+              <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
+                {locale === "ka" ? "როგორ გსურს დარეგისტრირება?" : "How do you want to register?"}
+              </h1>
+              <p className="text-neutral-600">
+                {locale === "ka" ? "აირჩიე შენთვის შესაფერისი ვარიანტი" : "Choose the option that suits you"}
+              </p>
+            </div>
+
+            {/* Type Selection Cards */}
+            <div className="grid sm:grid-cols-2 gap-4 mb-6">
+              {/* Client Card */}
+              <button
+                onClick={() => {
+                  setUserType('client');
+                  setShowTypeSelection(false);
+                }}
+                className="group relative bg-white rounded-2xl border-2 border-neutral-200 hover:border-[#C4735B] p-6 text-left transition-all hover:shadow-lg"
+              >
+                <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-neutral-900 mb-1">
+                  {locale === "ka" ? "კლიენტი" : "Client"}
+                </h3>
+                <p className="text-sm text-neutral-600 mb-4">
+                  {locale === "ka"
+                    ? "მინდა ვიპოვო პროფესიონალი ჩემი პროექტისთვის"
+                    : "I want to find a professional for my project"}
+                </p>
+                <div className="flex items-center text-sm text-[#C4735B] font-medium">
+                  <span>{locale === "ka" ? "გაგრძელება" : "Continue"}</span>
+                  <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </button>
+
+              {/* Pro Card - Highlighted */}
+              <button
+                onClick={() => {
+                  setUserType('pro');
+                  setShowTypeSelection(false);
+                }}
+                className="group relative bg-gradient-to-br from-[#C4735B] to-[#A85D47] rounded-2xl p-6 text-left transition-all hover:shadow-xl hover:scale-[1.02] overflow-hidden"
+              >
+                {/* Sparkle decoration */}
+                <div className="absolute top-3 right-3">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-white/20 text-white text-xs font-medium backdrop-blur-sm">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    {locale === "ka" ? "გამოიმუშავე" : "Earn money"}
+                  </span>
+                </div>
+
+                <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-4 group-hover:bg-white/30 transition-colors">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-1">
+                  {locale === "ka" ? "პროფესიონალი" : "Professional"}
+                </h3>
+                <p className="text-sm text-white/80 mb-4">
+                  {locale === "ka"
+                    ? "ვარ სპეციალისტი და მინდა ახალი კლიენტების მოძიება"
+                    : "I'm a specialist and want to find new clients"}
+                </p>
+                <div className="flex items-center text-sm text-white font-medium">
+                  <span>{locale === "ka" ? "დარეგისტრირდი როგორც პრო" : "Register as Pro"}</span>
+                  <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </button>
+            </div>
+
+            {/* Login link */}
+            <p className="text-center text-sm text-neutral-600">
+              {locale === "ka" ? "უკვე გაქვს ანგარიში?" : "Already have an account?"}{" "}
+              <button onClick={() => openLoginModal()} className="text-[#C4735B] font-medium hover:underline">
+                {locale === "ka" ? "შესვლა" : "Log in"}
+              </button>
+            </p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   // CLIENT REGISTRATION - Simple single-page form
   if (userType === 'client' && currentStep === 'account') {
     return (
@@ -1444,13 +1563,13 @@ function RegisterContent() {
                   </button>
                 </p>
 
-                {/* Pro registration link */}
+                {/* Back to type selection */}
                 <div className="mt-4 pt-4 border-t border-neutral-100">
                   <button
-                    onClick={() => setUserType('pro')}
+                    onClick={() => setShowTypeSelection(true)}
                     className="w-full py-2 rounded-lg border border-dashed border-neutral-200 hover:border-[#C4735B]/50 hover:bg-[#C4735B]/5 transition-all text-xs text-neutral-600 hover:text-[#C4735B]"
                   >
-                    {locale === "ka" ? "ხარ პროფესიონალი? დარეგისტრირდი აქ" : "Are you a professional? Register here"}
+                    {locale === "ka" ? "← სხვა ტიპით რეგისტრაცია" : "← Register as different type"}
                   </button>
                 </div>
               </div>
