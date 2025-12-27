@@ -59,6 +59,7 @@ interface ProProfile {
   uid?: number;
   name: string;
   email: string;
+  phone?: string;
   avatar?: string;
   city?: string;
   whatsapp?: string;
@@ -139,6 +140,7 @@ export default function ProfessionalDetailPage() {
   const [activeTab, setActiveTab] = useState<'about' | 'portfolio' | 'reviews'>('about');
 
   const [showFloatingButton, setShowFloatingButton] = useState(false);
+  const [phoneRevealed, setPhoneRevealed] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -213,11 +215,24 @@ export default function ProfessionalDetailPage() {
     if (profile?._id) fetchReviews();
   }, [profile?._id]);
 
+  const isBasicTier = !profile?.premiumTier || profile?.premiumTier === 'none' || profile?.premiumTier === 'basic';
+
   const handleContact = () => {
     if (!user) {
       openLoginModal();
       return;
     }
+
+    // For basic tier pros, reveal phone number instead of messaging
+    if (isBasicTier && profile?.phone) {
+      setPhoneRevealed(true);
+      trackEvent(AnalyticsEvent.CONTACT_REVEAL, {
+        proId: profile._id,
+        proName: profile.name,
+      });
+      return;
+    }
+
     router.push(`/messages?recipient=${profile?._id}`);
   };
 
@@ -500,20 +515,35 @@ export default function ProfessionalDetailPage() {
             </div>
 
             {/* CTA Button */}
-            <button
-              onClick={handleContact}
-              className="px-8 py-3 rounded-full text-white font-semibold text-sm bg-gradient-to-r from-[#C4735B] to-[#B5654D] hover:from-[#B5654D] hover:to-[#A65D47] transition-all shadow-lg shadow-[#C4735B]/25 hover:shadow-xl hover:shadow-[#C4735B]/30 hover:-translate-y-0.5"
-            >
-              <span className="flex items-center gap-2">
-                <MessageSquare className="w-4 h-4" />
-                {locale === 'ka' ? 'დაკავშირება' : 'Contact'}
-                {profile.basePrice > 0 && (
-                  <span className="ml-1 px-2 py-0.5 rounded-full bg-white/20 text-xs">
-                    {locale === 'ka' ? 'დან' : 'from'} {profile.basePrice}₾
-                  </span>
-                )}
-              </span>
-            </button>
+            {phoneRevealed && profile.phone ? (
+              <a
+                href={`tel:${profile.phone}`}
+                className="px-8 py-3 rounded-full text-white font-semibold text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 hover:-translate-y-0.5"
+              >
+                <span className="flex items-center gap-2">
+                  <Phone className="w-4 h-4" />
+                  {profile.phone}
+                </span>
+              </a>
+            ) : (
+              <button
+                onClick={handleContact}
+                className="px-8 py-3 rounded-full text-white font-semibold text-sm bg-gradient-to-r from-[#C4735B] to-[#B5654D] hover:from-[#B5654D] hover:to-[#A65D47] transition-all shadow-lg shadow-[#C4735B]/25 hover:shadow-xl hover:shadow-[#C4735B]/30 hover:-translate-y-0.5"
+              >
+                <span className="flex items-center gap-2">
+                  {isBasicTier ? <Phone className="w-4 h-4" /> : <MessageSquare className="w-4 h-4" />}
+                  {isBasicTier
+                    ? (locale === 'ka' ? 'ტელეფონის ნახვა' : 'Show Phone')
+                    : (locale === 'ka' ? 'დაკავშირება' : 'Contact')
+                  }
+                  {profile.basePrice > 0 && (
+                    <span className="ml-1 px-2 py-0.5 rounded-full bg-white/20 text-xs">
+                      {locale === 'ka' ? 'დან' : 'from'} {profile.basePrice}₾
+                    </span>
+                  )}
+                </span>
+              </button>
+            )}
           </div>
         </div>
       </section>
@@ -818,20 +848,35 @@ export default function ProfessionalDetailPage() {
           showFloatingButton ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'
         }`}
       >
-        <button
-          onClick={handleContact}
-          className="w-full py-4 rounded-2xl text-white font-semibold text-sm bg-gradient-to-r from-[#C4735B] to-[#B5654D] shadow-xl shadow-[#C4735B]/30"
-        >
-          <span className="flex items-center justify-center gap-2">
-            <MessageSquare className="w-5 h-5" />
-            {locale === 'ka' ? 'დაკავშირება' : 'Contact'}
-            {profile.basePrice > 0 && (
-              <span className="px-2 py-0.5 rounded-full bg-white/20 text-xs">
-                {profile.basePrice}₾
-              </span>
-            )}
-          </span>
-        </button>
+        {phoneRevealed && profile.phone ? (
+          <a
+            href={`tel:${profile.phone}`}
+            className="block w-full py-4 rounded-2xl text-white font-semibold text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-xl shadow-emerald-500/30 text-center"
+          >
+            <span className="flex items-center justify-center gap-2">
+              <Phone className="w-5 h-5" />
+              {profile.phone}
+            </span>
+          </a>
+        ) : (
+          <button
+            onClick={handleContact}
+            className="w-full py-4 rounded-2xl text-white font-semibold text-sm bg-gradient-to-r from-[#C4735B] to-[#B5654D] shadow-xl shadow-[#C4735B]/30"
+          >
+            <span className="flex items-center justify-center gap-2">
+              {isBasicTier ? <Phone className="w-5 h-5" /> : <MessageSquare className="w-5 h-5" />}
+              {isBasicTier
+                ? (locale === 'ka' ? 'ტელეფონის ნახვა' : 'Show Phone')
+                : (locale === 'ka' ? 'დაკავშირება' : 'Contact')
+              }
+              {profile.basePrice > 0 && (
+                <span className="px-2 py-0.5 rounded-full bg-white/20 text-xs">
+                  {profile.basePrice}₾
+                </span>
+              )}
+            </span>
+          </button>
+        )}
       </div>
 
       {/* ========== LIGHTBOX ========== */}
