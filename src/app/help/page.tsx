@@ -376,8 +376,8 @@ export default function HelpPage() {
                   </svg>
                 </div>
                 <div>
-                  <p className="font-medium text-green-800 dark:text-green-300">{t('helpPage.contact.success')}</p>
-                  <p className="text-sm text-green-600 dark:text-green-400">{t('helpPage.myTickets.successDesc') || 'Your ticket has been created successfully.'}</p>
+                  <p className="font-medium text-green-800 dark:text-green-300">{'თქვენი შეტყობინება წარმატებით გაიგზავნა!'}</p>
+                  <p className="text-sm text-green-600 dark:text-green-400">{'მალე გიპასუხებთ.'}</p>
                 </div>
               </div>
             )}
@@ -596,8 +596,8 @@ export default function HelpPage() {
                       </svg>
                     </div>
                     <div>
-                      <p className="font-medium text-green-800 dark:text-green-300">{t('helpPage.contact.success')}</p>
-                      <p className="text-sm text-green-600 dark:text-green-400">{t('helpPage.contact.successDesc') || 'We will get back to you soon.'}</p>
+                      <p className="font-medium text-green-800 dark:text-green-300">{'თქვენი შეტყობინება წარმატებით გაიგზავნა!'}</p>
+                      <p className="text-sm text-green-600 dark:text-green-400">{'მალე გიპასუხებთ.'}</p>
                     </div>
                   </div>
                 ) : (
