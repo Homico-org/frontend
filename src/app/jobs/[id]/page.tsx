@@ -8,38 +8,36 @@ import { useCategoryLabels } from "@/hooks/useCategoryLabels";
 import api from "@/lib/api";
 import { storage } from "@/services/storage";
 import {
+  Armchair,
   ArrowLeft,
+  Building2,
   Calendar,
   Check,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Clock,
   DoorOpen,
   Edit3,
   ExternalLink,
-  Eye,
   Home,
   Layers,
   Map,
   MapPin,
-  MessageCircle,
+  Maximize2,
   Mountain,
+  Package,
   Ruler,
   Send,
-  Trash2,
-  X,
-  Zap,
   Sparkles,
-  CheckCircle2,
-  Package,
-  Armchair,
-  Maximize2,
+  Trash2,
   Users,
-  Building2,
+  X,
+  Zap
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 // Design tokens
 const ACCENT = "#C4735B";
@@ -913,26 +911,26 @@ export default function JobDetailPage() {
                   </h3>
                   <div className="flex items-center gap-4 mb-4">
                     <Avatar
-                      src={job.clientId.avatar}
-                      name={job.clientId.name || "Client"}
+                      src={job.clientId?.avatar}
+                      name={job.clientId?.name || "Client"}
                       size="lg"
                       className="w-14 h-14 ring-2 ring-neutral-100 dark:ring-neutral-800"
                     />
                     <div className="min-w-0">
                       <p className="font-body font-semibold text-neutral-900 dark:text-white truncate">
-                        {job.clientId.accountType === "organization"
-                          ? job.clientId.companyName || job.clientId.name
-                          : job.clientId.name}
+                        {job.clientId?.accountType === "organization"
+                          ? job.clientId?.companyName || job.clientId?.name
+                          : job.clientId?.name}
                       </p>
-                      {job.clientId.city && (
+                      {job.clientId?.city && (
                         <p className="font-body text-sm text-neutral-500 dark:text-neutral-400 flex items-center gap-1">
                           <MapPin className="w-3 h-3" />
-                          {job.clientId.city}
+                          {job.clientId?.city}
                         </p>
                       )}
                     </div>
                   </div>
-                  {job.clientId.accountType === "organization" && (
+                  {job.clientId?.accountType === "organization" && (
                     <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
                       <Building2 className="w-4 h-4 text-neutral-400" />
                       <span className="font-body text-xs text-neutral-500 dark:text-neutral-400">
