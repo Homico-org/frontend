@@ -4,6 +4,7 @@ import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
 import EmptyState from '@/components/common/EmptyState';
 import Header, { HeaderSpacer } from '@/components/common/Header';
+import ProjectTrackerCard, { ProjectStage } from '@/components/projects/ProjectTrackerCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useCategoryLabels } from '@/hooks/useCategoryLabels';
@@ -28,6 +29,40 @@ import { Suspense, useCallback, useEffect, useState } from 'react';
 
 // Terracotta accent - matching design
 const ACCENT_COLOR = '#C4735B';
+
+interface ProjectTracking {
+  _id: string;
+  jobId: string;
+  clientId: { _id: string; name: string; avatar?: string };
+  proId: { _id: string; name: string; avatar?: string; phone?: string; title?: string };
+  currentStage: ProjectStage;
+  progress: number;
+  hiredAt: string;
+  startedAt?: string;
+  expectedEndDate?: string;
+  completedAt?: string;
+  comments: Array<{
+    userId: string;
+    userName: string;
+    userAvatar?: string;
+    userRole: 'client' | 'pro';
+    content: string;
+    createdAt: string;
+  }>;
+  attachments: Array<{
+    uploadedBy: string;
+    uploaderName: string;
+    fileName: string;
+    fileUrl: string;
+    fileType: string;
+    fileSize?: number;
+    description?: string;
+    uploadedAt: string;
+  }>;
+  agreedPrice?: number;
+  estimatedDuration?: number;
+  estimatedDurationUnit?: string;
+}
 
 interface Job {
   _id: string;
@@ -59,6 +94,8 @@ interface Job {
     _id: string;
     proId: { avatar?: string; name: string };
   }>;
+  // Project tracking data for in_progress jobs
+  projectTracking?: ProjectTracking;
 }
 
 type StatusFilter = 'all' | 'open' | 'hired' | 'closed';
@@ -115,7 +152,25 @@ function MyJobsPageContent() {
       }
       const params = status !== 'all' ? `?status=${status}` : '';
       const response = await api.get(`/jobs/my-jobs${params}`);
-      setJobs(response.data);
+      const jobsData = response.data;
+
+      // Fetch project tracking data for in_progress jobs
+      const jobsWithTracking = await Promise.all(
+        jobsData.map(async (job: Job) => {
+          if (job.status === 'in_progress') {
+            try {
+              const trackingResponse = await api.get(`/jobs/projects/${job._id}`);
+              return { ...job, projectTracking: trackingResponse.data.project };
+            } catch {
+              // If no project tracking exists, return job as-is
+              return job;
+            }
+          }
+          return job;
+        })
+      );
+
+      setJobs(jobsWithTracking);
     } catch (err: any) {
       console.error('Failed to fetch jobs:', err);
       toast.error(
@@ -305,6 +360,20 @@ function MyJobsPageContent() {
               const isHired = job.status === 'in_progress';
               const isOpen = job.status === 'open';
               const isClosed = job.status === 'completed' || job.status === 'cancelled';
+
+              // Show ProjectTrackerCard for in_progress jobs with tracking data
+              if (isHired && job.projectTracking) {
+                return (
+                  <ProjectTrackerCard
+                    key={job._id}
+                    job={job}
+                    project={job.projectTracking}
+                    isClient={true}
+                    locale={locale}
+                    onRefresh={() => fetchMyJobs(statusFilter, false)}
+                  />
+                );
+              }
 
               return (
                 <div
