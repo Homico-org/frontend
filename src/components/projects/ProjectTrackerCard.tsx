@@ -548,7 +548,7 @@ export default function ProjectTrackerCard({
         {/* Actions Footer */}
         <div className="px-4 sm:px-5 py-3 bg-neutral-50 dark:bg-neutral-800/50 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-3">
           <Link
-            href={`/messages?job=${job._id}`}
+            href={`/messages?conversation=${job._id}`}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-800 transition-colors"
           >
             <MessageSquare className="w-4 h-4" />
