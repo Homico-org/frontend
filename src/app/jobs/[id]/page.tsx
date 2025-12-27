@@ -29,13 +29,22 @@ import {
   Trash2,
   X,
   Zap,
+  Sparkles,
+  CheckCircle2,
+  Package,
+  Armchair,
+  Maximize2,
+  Users,
+  Building2,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-// Terracotta accent - matching design system
-const ACCENT_COLOR = "#C4735B";
+// Design tokens
+const ACCENT = "#C4735B";
+const ACCENT_LIGHT = "#D4897A";
+const ACCENT_DARK = "#A85D4A";
 
 interface MediaItem {
   type: "image" | "video";
@@ -93,7 +102,6 @@ interface Job {
   viewCount: number;
   createdAt: string;
   updatedAt: string;
-  // New fields
   cadastralId?: string;
   landArea?: number;
   pointsCount?: number;
@@ -109,7 +117,6 @@ interface Job {
   };
 }
 
-// Property type translations
 const propertyTypeLabels: Record<string, { en: string; ka: string }> = {
   apartment: { en: "Apartment", ka: "ბინა" },
   house: { en: "House", ka: "სახლი" },
@@ -118,7 +125,6 @@ const propertyTypeLabels: Record<string, { en: string; ka: string }> = {
   other: { en: "Other", ka: "სხვა" },
 };
 
-// Work types translations
 const workTypeLabels: Record<string, { en: string; ka: string }> = {
   Demolition: { en: "Demolition", ka: "დემონტაჟი" },
   "Wall Construction": { en: "Wall Construction", ka: "კედლების აშენება" },
@@ -152,17 +158,16 @@ export default function JobDetailPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(
-    null
-  );
+  const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const galleryRef = useRef<HTMLDivElement>(null);
+  const [deleteError, setDeleteError] = useState("");
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
 
   const isOwner = user && job?.clientId && user.id === job.clientId._id;
   const isPro = user?.role === "pro" || user?.role === "admin";
 
-  // Combine all media
   const allMedia: MediaItem[] = job
     ? [
         ...(job.media || []),
@@ -171,6 +176,10 @@ export default function JobDetailPage() {
           .map((url) => ({ type: "image" as const, url })),
       ]
     : [];
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -225,6 +234,15 @@ export default function JobDetailPage() {
     }
   }, [user, params.id]);
 
+  // Auto-rotate images
+  useEffect(() => {
+    if (allMedia.length <= 1) return;
+    const interval = setInterval(() => {
+      setActiveImageIndex((prev) => (prev + 1) % allMedia.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [allMedia.length]);
+
   const handleSubmitProposal = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -271,7 +289,6 @@ export default function JobDetailPage() {
           ? parseFloat(proposalData.proposedPrice)
           : undefined,
       });
-      // Refresh job data
       const jobResponse = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/jobs/${params.id}`
       );
@@ -283,8 +300,6 @@ export default function JobDetailPage() {
       setIsSubmitting(false);
     }
   };
-
-  const [deleteError, setDeleteError] = useState("");
 
   const handleDeleteJob = async () => {
     setIsDeleting(true);
@@ -311,9 +326,7 @@ export default function JobDetailPage() {
   const formatBudget = (job: Job) => {
     switch (job.budgetType) {
       case "fixed":
-        return job.budgetAmount
-          ? `₾${job.budgetAmount.toLocaleString()}`
-          : null;
+        return job.budgetAmount ? `₾${job.budgetAmount.toLocaleString()}` : null;
       case "range":
         return job.budgetMin && job.budgetMax
           ? `₾${job.budgetMin.toLocaleString()} - ₾${job.budgetMax.toLocaleString()}`
@@ -358,24 +371,20 @@ export default function JobDetailPage() {
     return label ? label[locale as "en" | "ka"] : type;
   };
 
-  // Loading state
+  // Loading state with elegant skeleton
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-neutral-950">
+      <div className="min-h-screen bg-[#FAFAF8] dark:bg-[#0D0D0C]">
         <Header />
         <HeaderSpacer />
-        <div className="max-w-3xl mx-auto px-6 py-8">
-          <div className="animate-pulse space-y-6">
-            <div className="h-6 w-20 bg-neutral-100 dark:bg-neutral-800 rounded" />
-            <div className="h-8 w-3/4 bg-neutral-100 dark:bg-neutral-800 rounded" />
-            <div className="h-5 w-1/2 bg-neutral-100 dark:bg-neutral-800 rounded" />
-            <div className="h-48 bg-neutral-100 dark:bg-neutral-800 rounded-2xl" />
-            <div className="space-y-3">
+        <div className="animate-pulse">
+          <div className="h-[60vh] bg-neutral-200 dark:bg-neutral-800" />
+          <div className="max-w-6xl mx-auto px-6 py-12">
+            <div className="h-8 w-48 bg-neutral-200 dark:bg-neutral-800 rounded-full mb-4" />
+            <div className="h-12 w-3/4 bg-neutral-200 dark:bg-neutral-800 rounded-lg mb-8" />
+            <div className="grid grid-cols-3 gap-4">
               {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="h-4 bg-neutral-100 dark:bg-neutral-800 rounded w-full"
-                />
+                <div key={i} className="h-24 bg-neutral-200 dark:bg-neutral-800 rounded-2xl" />
               ))}
             </div>
           </div>
@@ -391,721 +400,705 @@ export default function JobDetailPage() {
   const isHired = job.status === "in_progress";
 
   return (
-    <div className="min-h-screen bg-white dark:bg-neutral-950 flex flex-col">
-      {/* ==================== HEADER ==================== */}
+    <div className="min-h-screen bg-[#FAFAF8] dark:bg-[#0D0D0C]">
+      {/* Fonts */}
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+        .font-display {
+          font-family: 'Playfair Display', Georgia, serif;
+        }
+        .font-body {
+          font-family: 'DM Sans', system-ui, sans-serif;
+        }
+      `}</style>
+
       <Header />
       <HeaderSpacer />
 
-      {/* ==================== MAIN CONTENT ==================== */}
-      <main className="flex-1">
-        <div className="max-w-3xl mx-auto px-6 py-8">
-          {/* Back Button */}
+      {/* Hero Gallery Section */}
+      <section className="relative h-[55vh] md:h-[65vh] overflow-hidden bg-neutral-900">
+        {/* Background image with Ken Burns effect */}
+        {allMedia.length > 0 ? (
+          <>
+            {allMedia.map((media, idx) => (
+              <div
+                key={idx}
+                className={`absolute inset-0 transition-opacity duration-1000 ${
+                  idx === activeImageIndex ? 'opacity-100' : 'opacity-0'
+                }`}
+              >
+                <div
+                  className="absolute inset-0 bg-cover bg-center animate-ken-burns"
+                  style={{
+                    backgroundImage: `url(${storage.getFileUrl(media.url)})`,
+                    animationDelay: `${idx * 5}s`,
+                  }}
+                />
+              </div>
+            ))}
+            {/* Gradient overlays */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-transparent" />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-neutral-800 to-neutral-900" />
+        )}
+
+        {/* Back button */}
+        <div
+          className={`absolute top-6 left-6 z-20 transition-all duration-700 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
+          }`}
+        >
           <Link
             href="/browse/jobs"
-            className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors mb-6"
+            className="group flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all duration-300"
           >
-            <ArrowLeft className="w-4 h-4" />
-            {locale === "ka" ? "უკან" : "Back to Jobs"}
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span className="font-body text-sm font-medium">
+              {locale === "ka" ? "უკან" : "Back"}
+            </span>
           </Link>
+        </div>
 
-          {/* ==================== JOB HEADER ==================== */}
-          <div className="mb-8">
-            {/* Category & Status & Time */}
-            <div className="flex flex-wrap items-center gap-2 mb-3">
-              <span
-                className="text-[11px] font-semibold uppercase tracking-wider"
-                style={{ color: ACCENT_COLOR }}
+        {/* Image counter */}
+        {allMedia.length > 1 && (
+          <div className="absolute top-6 right-6 z-20 flex items-center gap-2">
+            <button
+              onClick={() => setSelectedMediaIndex(0)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all"
+            >
+              <Maximize2 className="w-4 h-4" />
+              <span className="font-body text-sm">{allMedia.length} {locale === "ka" ? "ფოტო" : "photos"}</span>
+            </button>
+          </div>
+        )}
+
+        {/* Thumbnail strip */}
+        {allMedia.length > 1 && (
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+            {allMedia.slice(0, 5).map((media, idx) => (
+              <button
+                key={idx}
+                onClick={() => setActiveImageIndex(idx)}
+                className={`relative w-16 h-12 rounded-lg overflow-hidden transition-all duration-300 ${
+                  idx === activeImageIndex
+                    ? 'ring-2 ring-white scale-110'
+                    : 'opacity-60 hover:opacity-100'
+                }`}
               >
-                {getCategoryLabel(job.category)}
-                {job.subcategory && ` • ${getCategoryLabel(job.subcategory)}`}
-              </span>
-              <span className="text-neutral-300 dark:text-neutral-700">•</span>
-              <span className="flex items-center gap-1 text-[11px] text-neutral-400">
-                <Clock className="w-3 h-3" />
-                {getTimeAgo(job.createdAt)}
-              </span>
-              <span className="text-neutral-300 dark:text-neutral-700">•</span>
+                <img
+                  src={storage.getFileUrl(media.url)}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              </button>
+            ))}
+            {allMedia.length > 5 && (
+              <button
+                onClick={() => setSelectedMediaIndex(0)}
+                className="w-16 h-12 rounded-lg bg-black/50 backdrop-blur flex items-center justify-center text-white text-sm font-medium"
+              >
+                +{allMedia.length - 5}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Hero content */}
+        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12">
+          <div className="max-w-6xl mx-auto">
+            {/* Status & Category */}
+            <div
+              className={`flex flex-wrap items-center gap-3 mb-4 transition-all duration-700 delay-100 ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+              }`}
+            >
               {isOpen && (
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-green-600 dark:text-green-400">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                  {locale === "ka" ? "ღია" : "Open"}
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 backdrop-blur-sm border border-emerald-500/30">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-emerald-300 text-xs font-body font-semibold uppercase tracking-wider">
+                    {locale === "ka" ? "ღია" : "Open"}
+                  </span>
                 </span>
               )}
               {isHired && (
-                <span
-                  className="inline-flex items-center gap-1.5 text-[11px] font-medium"
-                  style={{ color: ACCENT_COLOR }}
-                >
-                  <Check className="w-3 h-3" />
-                  {locale === "ka" ? "დაქირავებული" : "Hired"}
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-sm border" style={{ backgroundColor: `${ACCENT}30`, borderColor: `${ACCENT}50` }}>
+                  <Check className="w-3.5 h-3.5" style={{ color: ACCENT_LIGHT }} />
+                  <span className="text-xs font-body font-semibold uppercase tracking-wider" style={{ color: ACCENT_LIGHT }}>
+                    {locale === "ka" ? "დაქირავებული" : "Hired"}
+                  </span>
                 </span>
               )}
-              {job.status === "completed" && (
-                <span className="text-[11px] font-medium text-neutral-500">
-                  {locale === "ka" ? "დასრულებული" : "Completed"}
-                </span>
-              )}
+              <span className="text-white/60 text-xs font-body uppercase tracking-wider">
+                {getCategoryLabel(job.category)}
+                {job.subcategory && ` / ${getCategoryLabel(job.subcategory)}`}
+              </span>
             </div>
 
             {/* Title */}
-            <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-3">
+            <h1
+              className={`font-display text-3xl md:text-5xl lg:text-6xl font-semibold text-white leading-tight mb-4 transition-all duration-700 delay-200 ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+              }`}
+            >
               {job.title}
             </h1>
 
-            {/* Location */}
-            {job.location && (
-              <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400">
-                <MapPin className="w-4 h-4" />
-                <span className="text-sm">{job.location}</span>
-              </div>
-            )}
-
-            {/* Owner Actions */}
-            {isOwner && (
-              <div className="flex items-center gap-2 mt-4">
-                <Link
-                  href={`/post-job?edit=${job._id}`}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-                >
-                  <Edit3 className="w-4 h-4" />
-                  {locale === "ka" ? "რედაქტირება" : "Edit"}
-                </Link>
-                <button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  {locale === "ka" ? "წაშლა" : "Delete"}
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* ==================== IMAGE GALLERY ==================== */}
-          {allMedia.length > 0 && (
-            <div className="mb-8">
-              <div
-                ref={galleryRef}
-                className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 scrollbar-hide"
-                style={{ scrollSnapType: "x mandatory" }}
-              >
-                {allMedia.map((media, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedMediaIndex(idx)}
-                    className="flex-shrink-0 relative rounded-2xl overflow-hidden group"
-                    style={{ scrollSnapAlign: "start" }}
-                  >
-                    {media.type === "video" ? (
-                      <div className="w-56 h-40 bg-neutral-800 flex items-center justify-center">
-                        {media.thumbnail ? (
-                          <img
-                            src={storage.getFileUrl(media.thumbnail)}
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center">
-                            <svg
-                              className="w-5 h-5 ml-0.5"
-                              style={{ color: ACCENT_COLOR }}
-                              fill="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path d="M8 5v14l11-7z" />
-                            </svg>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <img
-                        src={storage.getFileUrl(media.url)}
-                        alt=""
-                        className="w-56 h-40 object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ==================== BUDGET CARD ==================== */}
-          {budgetDisplay && (
+            {/* Location & Time */}
             <div
-              className="p-5 rounded-2xl mb-8"
-              style={{ backgroundColor: `${ACCENT_COLOR}10` }}
+              className={`flex flex-wrap items-center gap-4 text-white/70 transition-all duration-700 delay-300 ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+              }`}
             >
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-1">
-                {locale === "ka" ? "ბიუჯეტი" : "Budget"}
-              </p>
-              <p className="text-2xl font-bold" style={{ color: ACCENT_COLOR }}>
-                {budgetDisplay}
-              </p>
-              {job.budgetType === "per_sqm" &&
-                job.areaSize &&
-                job.pricePerUnit && (
-                  <p className="text-sm text-neutral-500 mt-1">
-                    ≈ ₾{(job.areaSize * job.pricePerUnit).toLocaleString()}{" "}
-                    {locale === "ka" ? "სულ" : "total"}
-                  </p>
-                )}
+              {job.location && (
+                <span className="flex items-center gap-2 font-body">
+                  <MapPin className="w-4 h-4" />
+                  {job.location}
+                </span>
+              )}
+              <span className="flex items-center gap-2 font-body">
+                <Clock className="w-4 h-4" />
+                {getTimeAgo(job.createdAt)}
+              </span>
             </div>
-          )}
+          </div>
+        </div>
+      </section>
 
-          {/* ==================== SPECS GRID ==================== */}
-          {(job.propertyType ||
-            job.areaSize ||
-            job.roomCount ||
-            job.floorCount ||
-            job.deadline ||
-            job.cadastralId ||
-            job.landArea ||
-            job.pointsCount) && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
-              {job.propertyType && (
-                <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Home className="w-4 h-4 text-neutral-400" />
-                    <span className="text-[11px] font-medium uppercase tracking-wider text-neutral-400">
-                      {locale === "ka" ? "ტიპი" : "Type"}
-                    </span>
+      {/* Main Content */}
+      <main className="relative z-10 -mt-6">
+        <div className="max-w-6xl mx-auto px-6">
+          {/* Floating Stats Bar */}
+          <div
+            className={`relative bg-white dark:bg-neutral-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 p-4 md:p-6 mb-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-400 ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              {/* Budget */}
+              {budgetDisplay && (
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${ACCENT}15` }}>
+                    <span className="font-display text-xl font-bold" style={{ color: ACCENT }}>₾</span>
                   </div>
-                  <p className="text-sm font-semibold text-neutral-900 dark:text-white">
-                    {getPropertyTypeLabel(job.propertyType)}
-                  </p>
+                  <div>
+                    <p className="text-xs font-body font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                      {locale === "ka" ? "ბიუჯეტი" : "Budget"}
+                    </p>
+                    <p className="text-xl md:text-2xl font-display font-semibold text-neutral-900 dark:text-white">
+                      {budgetDisplay}
+                    </p>
+                  </div>
                 </div>
               )}
-              {job.areaSize && (
-                <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Ruler className="w-4 h-4 text-neutral-400" />
-                    <span className="text-[11px] font-medium uppercase tracking-wider text-neutral-400">
-                      {locale === "ka" ? "ფართი" : "Area"}
-                    </span>
-                  </div>
-                  <p className="text-sm font-semibold text-neutral-900 dark:text-white">
-                    {job.areaSize} მ²
-                  </p>
-                </div>
-              )}
-              {job.landArea && (
-                <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Mountain className="w-4 h-4 text-neutral-400" />
-                    <span className="text-[11px] font-medium uppercase tracking-wider text-neutral-400">
-                      {locale === "ka" ? "მიწის ფართი" : "Land Area"}
-                    </span>
-                  </div>
-                  <p className="text-sm font-semibold text-neutral-900 dark:text-white">
-                    {job.landArea} მ²
-                  </p>
-                </div>
-              )}
-              {job.roomCount && (
-                <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
-                  <div className="flex items-center gap-2 mb-1">
-                    <DoorOpen className="w-4 h-4 text-neutral-400" />
-                    <span className="text-[11px] font-medium uppercase tracking-wider text-neutral-400">
-                      {locale === "ka" ? "ოთახები" : "Rooms"}
-                    </span>
-                  </div>
-                  <p className="text-sm font-semibold text-neutral-900 dark:text-white">
-                    {job.roomCount}
-                  </p>
-                </div>
-              )}
-              {job.pointsCount && (
-                <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Zap className="w-4 h-4 text-neutral-400" />
-                    <span className="text-[11px] font-medium uppercase tracking-wider text-neutral-400">
-                      {locale === "ka" ? "წერტილები" : "Points"}
-                    </span>
-                  </div>
-                  <p className="text-sm font-semibold text-neutral-900 dark:text-white">
-                    {job.pointsCount}
-                  </p>
-                </div>
-              )}
-              {job.floorCount && (
-                <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Layers className="w-4 h-4 text-neutral-400" />
-                    <span className="text-[11px] font-medium uppercase tracking-wider text-neutral-400">
-                      {locale === "ka" ? "სართულები" : "Floors"}
-                    </span>
-                  </div>
-                  <p className="text-sm font-semibold text-neutral-900 dark:text-white">
-                    {job.floorCount}
-                  </p>
-                </div>
-              )}
-              {job.cadastralId && (
-                <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Map className="w-4 h-4 text-neutral-400" />
-                    <span className="text-[11px] font-medium uppercase tracking-wider text-neutral-400">
-                      {locale === "ka" ? "საკადასტრო" : "Cadastral"}
-                    </span>
-                  </div>
-                  <p className="text-sm font-semibold text-neutral-900 dark:text-white">
-                    {job.cadastralId}
-                  </p>
-                </div>
-              )}
-              {job.deadline && (
-                <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Calendar className="w-4 h-4 text-neutral-400" />
-                    <span className="text-[11px] font-medium uppercase tracking-wider text-neutral-400">
-                      {locale === "ka" ? "ვადა" : "Deadline"}
-                    </span>
-                  </div>
-                  <p className="text-sm font-semibold text-neutral-900 dark:text-white">
-                    {new Date(job.deadline).toLocaleDateString(
-                      locale === "ka" ? "ka-GE" : "en-US",
-                      { month: "short", day: "numeric" }
-                    )}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
 
-          {/* ==================== DESCRIPTION ==================== */}
-          {job.description && (
-            <div className="mb-8">
-              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-3">
-                {locale === "ka" ? "აღწერა" : "Description"}
-              </h2>
-              <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
-                {job.description}
-              </p>
-            </div>
-          )}
+              {/* Divider */}
+              <div className="hidden md:block w-px h-12 bg-neutral-200 dark:bg-neutral-700" />
 
-          {/* ==================== WORK TYPES ==================== */}
-          {job.workTypes && job.workTypes.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-3">
-                {locale === "ka" ? "სამუშაოს ტიპები" : "Work Types"}
-              </h2>
-              <div className="flex flex-wrap gap-2">
-                {job.workTypes.map((type) => (
-                  <span
-                    key={type}
-                    className="px-3 py-1.5 rounded-lg text-sm font-medium"
-                    style={{
-                      backgroundColor: `${ACCENT_COLOR}10`,
-                      color: ACCENT_COLOR,
-                    }}
+              {/* Stats */}
+              <div className="flex items-center gap-6">
+                <div className="text-center">
+                  <p className="text-2xl font-display font-semibold text-neutral-900 dark:text-white">{job.viewCount}</p>
+                  <p className="text-xs font-body text-neutral-500 dark:text-neutral-400">{locale === "ka" ? "ნახვა" : "Views"}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-display font-semibold text-neutral-900 dark:text-white">{job.proposalCount}</p>
+                  <p className="text-xs font-body text-neutral-500 dark:text-neutral-400">{locale === "ka" ? "შეთავაზება" : "Proposals"}</p>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="hidden md:block w-px h-12 bg-neutral-200 dark:bg-neutral-700" />
+
+              {/* Owner Actions or Submit Button */}
+              {isOwner ? (
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/post-job?edit=${job._id}`}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-body text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
                   >
-                    {getWorkTypeLabel(type)}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ==================== REQUIREMENTS ==================== */}
-          {(job.furnitureIncluded ||
-            job.visualizationNeeded ||
-            job.materialsProvided ||
-            job.occupiedDuringWork) && (
-            <div className="mb-8">
-              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-3">
-                {locale === "ka" ? "მოთხოვნები" : "Requirements"}
-              </h2>
-              <div className="space-y-2">
-                {job.furnitureIncluded && (
-                  <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-300">
-                    <Check className="w-4 h-4 text-green-500" />
-                    <span className="text-sm">
-                      {locale === "ka"
-                        ? "ავეჯის შერჩევა"
-                        : "Furniture Selection"}
-                    </span>
-                  </div>
-                )}
-                {job.visualizationNeeded && (
-                  <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-300">
-                    <Check className="w-4 h-4 text-green-500" />
-                    <span className="text-sm">
-                      {locale === "ka" ? "3D ვიზუალიზაცია" : "3D Visualization"}
-                    </span>
-                  </div>
-                )}
-                {job.materialsProvided && (
-                  <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-300">
-                    <Check className="w-4 h-4 text-green-500" />
-                    <span className="text-sm">
-                      {locale === "ka"
-                        ? "მასალები უზრუნველყოფილია"
-                        : "Materials Provided"}
-                    </span>
-                  </div>
-                )}
-                {job.occupiedDuringWork && (
-                  <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-300">
-                    <Check className="w-4 h-4 text-green-500" />
-                    <span className="text-sm">
-                      {locale === "ka"
-                        ? "დაკავებული სამუშაოს დროს"
-                        : "Occupied During Work"}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ==================== REFERENCES ==================== */}
-          {job.references && job.references.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-3">
-                {locale === "ka" ? "რეფერენსები" : "References"}
-              </h2>
-              <div className="space-y-2">
-                {job.references.map((ref, idx) => (
-                  <a
-                    key={idx}
-                    href={ref.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors group"
+                    <Edit3 className="w-4 h-4" />
+                    {locale === "ka" ? "რედაქტირება" : "Edit"}
+                  </Link>
+                  <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-body text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center flex-shrink-0">
-                      {ref.type === "pinterest" ? (
-                        <svg
-                          className="w-4 h-4"
-                          style={{ color: "#E60023" }}
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                        >
-                          <path d="M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z" />
-                        </svg>
-                      ) : ref.type === "instagram" ? (
-                        <svg
-                          className="w-4 h-4"
-                          style={{ color: "#E4405F" }}
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                        >
-                          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
-                        </svg>
-                      ) : (
-                        <ExternalLink className="w-4 h-4 text-neutral-400" />
-                      )}
-                    </div>
-                    <span className="text-sm text-neutral-600 dark:text-neutral-300 truncate flex-1">
-                      {ref.title ||
-                        (() => {
-                          try {
-                            return new URL(ref.url).hostname;
-                          } catch {
-                            return ref.url;
-                          }
-                        })()}
-                    </span>
-                    <ChevronRight className="w-4 h-4 text-neutral-300 group-hover:text-neutral-500 transition-colors" />
-                  </a>
-                ))}
-              </div>
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : isPro && isOpen && !myProposal ? (
+                <button
+                  onClick={() => setShowProposalForm(true)}
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl font-body text-sm font-semibold text-white transition-all hover:scale-105 hover:shadow-lg"
+                  style={{ backgroundColor: ACCENT, boxShadow: `0 4px 20px ${ACCENT}40` }}
+                >
+                  <Send className="w-4 h-4" />
+                  {locale === "ka" ? "შეთავაზების გაგზავნა" : "Submit Proposal"}
+                </button>
+              ) : null}
             </div>
-          )}
-
-          {/* ==================== STATS BAR ==================== */}
-          <div className="flex items-center gap-6 py-4 border-t border-b border-neutral-100 dark:border-neutral-800 mb-8 text-sm text-neutral-400">
-            <span className="flex items-center gap-1.5">
-              <Eye className="w-4 h-4" />
-              {job.viewCount} {locale === "ka" ? "ნახვა" : "views"}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <MessageCircle className="w-4 h-4" />
-              {job.proposalCount} {locale === "ka" ? "შეთავაზება" : "proposals"}
-            </span>
-            <span>ID: {job._id.slice(-8)}</span>
           </div>
 
-          {/* ==================== MY PROPOSAL (if exists) ==================== */}
-          {myProposal && isPro && (
-            <div className="p-5 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 mb-8">
-              <div className="flex items-center gap-3 mb-3">
-                <Check className="w-5 h-5 text-green-500" />
-                <span className="font-semibold text-neutral-900 dark:text-white">
-                  {locale === "ka" ? "თქვენი შეთავაზება" : "Your Proposal"}
-                </span>
-                <span
-                  className={`text-xs px-2 py-1 rounded-md font-medium ${
-                    myProposal.status === "pending"
-                      ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                      : myProposal.status === "accepted"
-                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+          {/* Two Column Layout */}
+          <div className="grid lg:grid-cols-3 gap-8 pb-24">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Description */}
+              <section
+                className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-500 ${
+                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                }`}
+              >
+                <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white mb-4">
+                  {locale === "ka" ? "აღწერა" : "Description"}
+                </h2>
+                <p className="font-body text-neutral-600 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
+                  {job.description}
+                </p>
+              </section>
+
+              {/* Property Specs */}
+              {(job.propertyType || job.areaSize || job.roomCount || job.floorCount || job.deadline || job.cadastralId || job.landArea || job.pointsCount) && (
+                <section
+                  className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-600 ${
+                    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                   }`}
                 >
-                  {myProposal.status === "pending"
-                    ? locale === "ka"
-                      ? "განხილვაში"
-                      : "Pending"
-                    : myProposal.status === "accepted"
-                      ? locale === "ka"
-                        ? "მიღებული"
-                        : "Accepted"
-                      : locale === "ka"
-                        ? "უარყოფილი"
-                        : "Rejected"}
-                </span>
-              </div>
-              <p className="text-sm text-neutral-600 dark:text-neutral-300 mb-3">
-                {myProposal.coverLetter}
-              </p>
-              {(myProposal.proposedPrice || myProposal.estimatedDuration) && (
-                <div className="flex gap-6 text-sm">
-                  {myProposal.proposedPrice && (
-                    <span
-                      className="font-semibold"
-                      style={{ color: ACCENT_COLOR }}
-                    >
-                      ₾{myProposal.proposedPrice.toLocaleString()}
-                    </span>
+                  <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white mb-6">
+                    {locale === "ka" ? "დეტალები" : "Property Details"}
+                  </h2>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {job.propertyType && (
+                      <SpecCard
+                        icon={<Home className="w-5 h-5" />}
+                        label={locale === "ka" ? "ტიპი" : "Type"}
+                        value={getPropertyTypeLabel(job.propertyType)}
+                      />
+                    )}
+                    {job.areaSize && (
+                      <SpecCard
+                        icon={<Ruler className="w-5 h-5" />}
+                        label={locale === "ka" ? "ფართი" : "Area"}
+                        value={`${job.areaSize} მ²`}
+                      />
+                    )}
+                    {job.landArea && (
+                      <SpecCard
+                        icon={<Mountain className="w-5 h-5" />}
+                        label={locale === "ka" ? "მიწის ფართი" : "Land Area"}
+                        value={`${job.landArea} მ²`}
+                      />
+                    )}
+                    {job.roomCount && (
+                      <SpecCard
+                        icon={<DoorOpen className="w-5 h-5" />}
+                        label={locale === "ka" ? "ოთახები" : "Rooms"}
+                        value={job.roomCount.toString()}
+                      />
+                    )}
+                    {job.pointsCount && (
+                      <SpecCard
+                        icon={<Zap className="w-5 h-5" />}
+                        label={locale === "ka" ? "წერტილები" : "Points"}
+                        value={job.pointsCount.toString()}
+                      />
+                    )}
+                    {job.floorCount && (
+                      <SpecCard
+                        icon={<Layers className="w-5 h-5" />}
+                        label={locale === "ka" ? "სართულები" : "Floors"}
+                        value={job.floorCount.toString()}
+                      />
+                    )}
+                    {job.cadastralId && (
+                      <SpecCard
+                        icon={<Map className="w-5 h-5" />}
+                        label={locale === "ka" ? "საკადასტრო" : "Cadastral"}
+                        value={job.cadastralId}
+                      />
+                    )}
+                    {job.deadline && (
+                      <SpecCard
+                        icon={<Calendar className="w-5 h-5" />}
+                        label={locale === "ka" ? "ვადა" : "Deadline"}
+                        value={new Date(job.deadline).toLocaleDateString(
+                          locale === "ka" ? "ka-GE" : "en-US",
+                          { month: "short", day: "numeric" }
+                        )}
+                      />
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {/* Work Types */}
+              {job.workTypes && job.workTypes.length > 0 && (
+                <section
+                  className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-700 ${
+                    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                  }`}
+                >
+                  <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white mb-4">
+                    {locale === "ka" ? "სამუშაოს ტიპები" : "Work Types"}
+                  </h2>
+                  <div className="flex flex-wrap gap-2">
+                    {job.workTypes.map((type) => (
+                      <span
+                        key={type}
+                        className="px-4 py-2 rounded-xl font-body text-sm font-medium transition-all hover:scale-105"
+                        style={{ backgroundColor: `${ACCENT}10`, color: ACCENT }}
+                      >
+                        {getWorkTypeLabel(type)}
+                      </span>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Requirements */}
+              {(job.furnitureIncluded || job.visualizationNeeded || job.materialsProvided || job.occupiedDuringWork) && (
+                <section
+                  className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-[800ms] ${
+                    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                  }`}
+                >
+                  <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white mb-4">
+                    {locale === "ka" ? "მოთხოვნები" : "Requirements"}
+                  </h2>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {job.furnitureIncluded && (
+                      <RequirementItem
+                        icon={<Armchair className="w-4 h-4" />}
+                        text={locale === "ka" ? "ავეჯის შერჩევა" : "Furniture Selection"}
+                      />
+                    )}
+                    {job.visualizationNeeded && (
+                      <RequirementItem
+                        icon={<Sparkles className="w-4 h-4" />}
+                        text={locale === "ka" ? "3D ვიზუალიზაცია" : "3D Visualization"}
+                      />
+                    )}
+                    {job.materialsProvided && (
+                      <RequirementItem
+                        icon={<Package className="w-4 h-4" />}
+                        text={locale === "ka" ? "მასალები უზრუნველყოფილია" : "Materials Provided"}
+                      />
+                    )}
+                    {job.occupiedDuringWork && (
+                      <RequirementItem
+                        icon={<Users className="w-4 h-4" />}
+                        text={locale === "ka" ? "დაკავებული სამუშაოს დროს" : "Occupied During Work"}
+                      />
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {/* References */}
+              {job.references && job.references.length > 0 && (
+                <section
+                  className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-[900ms] ${
+                    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                  }`}
+                >
+                  <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white mb-4">
+                    {locale === "ka" ? "რეფერენსები" : "References"}
+                  </h2>
+                  <div className="space-y-2">
+                    {job.references.map((ref, idx) => (
+                      <a
+                        key={idx}
+                        href={ref.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-4 p-4 rounded-xl border border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-all group"
+                      >
+                        <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center flex-shrink-0">
+                          {ref.type === "pinterest" ? (
+                            <svg className="w-5 h-5" style={{ color: "#E60023" }} viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z" />
+                            </svg>
+                          ) : ref.type === "instagram" ? (
+                            <svg className="w-5 h-5" style={{ color: "#E4405F" }} viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                            </svg>
+                          ) : (
+                            <ExternalLink className="w-5 h-5 text-neutral-400" />
+                          )}
+                        </div>
+                        <span className="font-body text-sm text-neutral-600 dark:text-neutral-300 truncate flex-1">
+                          {ref.title || (() => { try { return new URL(ref.url).hostname; } catch { return ref.url; } })()}
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-neutral-300 group-hover:text-neutral-500 group-hover:translate-x-1 transition-all" />
+                      </a>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* My Proposal */}
+              {myProposal && isPro && (
+                <section className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-800/10 rounded-2xl p-6 md:p-8 border border-emerald-200/50 dark:border-emerald-800/50">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-display text-lg font-semibold text-neutral-900 dark:text-white">
+                        {locale === "ka" ? "თქვენი შეთავაზება" : "Your Proposal"}
+                      </h3>
+                      <span
+                        className={`text-xs font-body font-medium uppercase tracking-wider ${
+                          myProposal.status === "pending"
+                            ? "text-amber-600 dark:text-amber-400"
+                            : myProposal.status === "accepted"
+                              ? "text-emerald-600 dark:text-emerald-400"
+                              : "text-red-600 dark:text-red-400"
+                        }`}
+                      >
+                        {myProposal.status === "pending"
+                          ? locale === "ka" ? "განხილვაში" : "Pending"
+                          : myProposal.status === "accepted"
+                            ? locale === "ka" ? "მიღებული" : "Accepted"
+                            : locale === "ka" ? "უარყოფილი" : "Rejected"}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="font-body text-neutral-600 dark:text-neutral-300 mb-4">
+                    {myProposal.coverLetter}
+                  </p>
+                  {(myProposal.proposedPrice || myProposal.estimatedDuration) && (
+                    <div className="flex gap-6">
+                      {myProposal.proposedPrice && (
+                        <div>
+                          <p className="text-xs font-body text-neutral-500 dark:text-neutral-400">{locale === "ka" ? "ფასი" : "Price"}</p>
+                          <p className="font-display text-xl font-semibold" style={{ color: ACCENT }}>
+                            ₾{myProposal.proposedPrice.toLocaleString()}
+                          </p>
+                        </div>
+                      )}
+                      {myProposal.estimatedDuration && (
+                        <div>
+                          <p className="text-xs font-body text-neutral-500 dark:text-neutral-400">{locale === "ka" ? "ვადა" : "Duration"}</p>
+                          <p className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
+                            {myProposal.estimatedDuration}{" "}
+                            {myProposal.estimatedDurationUnit === "days"
+                              ? locale === "ka" ? "დღე" : "days"
+                              : myProposal.estimatedDurationUnit === "weeks"
+                                ? locale === "ka" ? "კვირა" : "weeks"
+                                : locale === "ka" ? "თვე" : "months"}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   )}
-                  {myProposal.estimatedDuration && (
-                    <span className="text-neutral-500">
-                      {myProposal.estimatedDuration}{" "}
-                      {myProposal.estimatedDurationUnit === "days"
-                        ? locale === "ka"
-                          ? "დღე"
-                          : "days"
-                        : myProposal.estimatedDurationUnit === "weeks"
-                          ? locale === "ka"
-                            ? "კვირა"
-                            : "weeks"
-                          : locale === "ka"
-                            ? "თვე"
-                            : "months"}
-                    </span>
-                  )}
-                </div>
+                </section>
               )}
             </div>
-          )}
 
-          {/* ==================== PROPOSAL FORM ==================== */}
-          {isPro && isOpen && !myProposal && showProposalForm && (
-            <div className="p-5 rounded-2xl border border-neutral-200 dark:border-neutral-800 mb-8">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
+            {/* Sidebar */}
+            <div className="lg:col-span-1">
+              <div className="sticky top-24 space-y-6">
+                {/* Client Card */}
+                <div
+                  className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-500 ${
+                    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                  }`}
+                >
+                  <h3 className="font-display text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-4">
+                    {locale === "ka" ? "დამკვეთი" : "Client"}
+                  </h3>
+                  <div className="flex items-center gap-4 mb-4">
+                    <Avatar
+                      src={job.clientId.avatar}
+                      name={job.clientId.name || "Client"}
+                      size="lg"
+                      className="w-14 h-14 ring-2 ring-neutral-100 dark:ring-neutral-800"
+                    />
+                    <div className="min-w-0">
+                      <p className="font-body font-semibold text-neutral-900 dark:text-white truncate">
+                        {job.clientId.accountType === "organization"
+                          ? job.clientId.companyName || job.clientId.name
+                          : job.clientId.name}
+                      </p>
+                      {job.clientId.city && (
+                        <p className="font-body text-sm text-neutral-500 dark:text-neutral-400 flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          {job.clientId.city}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  {job.clientId.accountType === "organization" && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
+                      <Building2 className="w-4 h-4 text-neutral-400" />
+                      <span className="font-body text-xs text-neutral-500 dark:text-neutral-400">
+                        {locale === "ka" ? "ორგანიზაცია" : "Organization"}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Job ID */}
+                <div className="bg-neutral-100 dark:bg-neutral-800/50 rounded-2xl p-4">
+                  <p className="font-body text-xs text-neutral-500 dark:text-neutral-400 mb-1">
+                    {locale === "ka" ? "სამუშაოს ID" : "Job ID"}
+                  </p>
+                  <p className="font-mono text-sm text-neutral-700 dark:text-neutral-300">
+                    #{job._id.slice(-8).toUpperCase()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Proposal Form Modal */}
+      {showProposalForm && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowProposalForm(false)}
+          />
+          <div className="relative w-full sm:max-w-lg bg-white dark:bg-neutral-900 sm:rounded-2xl overflow-hidden shadow-2xl animate-slide-up">
+            <div className="p-6 border-b border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-between">
+                <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
                   {locale === "ka" ? "წინადადების გაგზავნა" : "Submit Proposal"}
                 </h2>
                 <button
                   onClick={() => setShowProposalForm(false)}
-                  className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                 >
                   <X className="w-5 h-5 text-neutral-400" />
                 </button>
               </div>
+            </div>
 
-              {error && (
-                <div className="px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm mb-4">
-                  {error}
-                </div>
-              )}
+            {error && (
+              <div className="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-body text-sm">
+                {error}
+              </div>
+            )}
 
-              <form onSubmit={handleSubmitProposal} className="space-y-4">
+            <form onSubmit={handleSubmitProposal} className="p-6 space-y-5">
+              <div>
+                <label className="block font-body text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                  {locale === "ka" ? "სამოტივაციო წერილი" : "Cover Letter"}
+                </label>
+                <textarea
+                  rows={4}
+                  required
+                  value={proposalData.coverLetter}
+                  onChange={(e) => setProposalData({ ...proposalData, coverLetter: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-body placeholder:text-neutral-400 focus:outline-none focus:ring-2 transition-all resize-none"
+                  style={{ '--tw-ring-color': ACCENT } as any}
+                  placeholder={locale === "ka" ? "წარმოადგინეთ თქვენი გამოცდილება..." : "Describe your experience..."}
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-2">
-                    {locale === "ka" ? "სამოტივაციო წერილი" : "Cover Letter"}
+                  <label className="block font-body text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                    {locale === "ka" ? "ფასი (₾)" : "Price (₾)"}
                   </label>
-                  <textarea
-                    rows={4}
-                    required
-                    value={proposalData.coverLetter}
-                    onChange={(e) =>
-                      setProposalData({
-                        ...proposalData,
-                        coverLetter: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-colors resize-none"
-                    placeholder={
-                      locale === "ka"
-                        ? "წარმოადგინეთ თქვენი გამოცდილება..."
-                        : "Describe your experience..."
-                    }
+                  <input
+                    type="number"
+                    min="0"
+                    value={proposalData.proposedPrice}
+                    onChange={(e) => setProposalData({ ...proposalData, proposedPrice: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-body focus:outline-none focus:ring-2 transition-all"
+                    style={{ '--tw-ring-color': ACCENT } as any}
+                    placeholder="0"
                   />
                 </div>
-
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-2">
-                      {locale === "ka" ? "ფასი (₾)" : "Price (₾)"}
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={proposalData.proposedPrice}
-                      onChange={(e) =>
-                        setProposalData({
-                          ...proposalData,
-                          proposedPrice: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-colors"
-                      placeholder="0"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-2">
-                      {locale === "ka" ? "ვადა" : "Duration"}
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={proposalData.estimatedDuration}
-                      onChange={(e) =>
-                        setProposalData({
-                          ...proposalData,
-                          estimatedDuration: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-colors"
-                      placeholder="0"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-2">
-                      {locale === "ka" ? "ერთეული" : "Unit"}
-                    </label>
-                    <select
-                      value={proposalData.estimatedDurationUnit}
-                      onChange={(e) =>
-                        setProposalData({
-                          ...proposalData,
-                          estimatedDurationUnit: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-colors cursor-pointer"
-                    >
-                      <option value="days">
-                        {locale === "ka" ? "დღე" : "Days"}
-                      </option>
-                      <option value="weeks">
-                        {locale === "ka" ? "კვირა" : "Weeks"}
-                      </option>
-                      <option value="months">
-                        {locale === "ka" ? "თვე" : "Months"}
-                      </option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowProposalForm(false)}
-                    className="flex-1 py-3 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-                  >
-                    {locale === "ka" ? "გაუქმება" : "Cancel"}
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex-1 py-3 rounded-xl text-sm font-medium text-white transition-colors disabled:opacity-50"
-                    style={{ backgroundColor: ACCENT_COLOR }}
-                  >
-                    {isSubmitting
-                      ? "..."
-                      : locale === "ka"
-                        ? "გაგზავნა"
-                        : "Submit"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-        </div>
-      </main>
-
-      {/* ==================== STICKY CTA BAR (for pros) ==================== */}
-      {isPro && isOpen && !myProposal && !showProposalForm && (
-        <div className="sticky bottom-0 z-40 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800">
-          <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              {job.clientId && (
-                <>
-                  <Avatar
-                    src={job.clientId.avatar}
-                    name={job.clientId.name || "Client"}
-                    size="sm"
-                    className="w-10 h-10"
+                <div>
+                  <label className="block font-body text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                    {locale === "ka" ? "ვადა" : "Duration"}
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={proposalData.estimatedDuration}
+                    onChange={(e) => setProposalData({ ...proposalData, estimatedDuration: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-body focus:outline-none focus:ring-2 transition-all"
+                    style={{ '--tw-ring-color': ACCENT } as any}
+                    placeholder="0"
                   />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
-                      {job.clientId.accountType === "organization"
-                        ? job.clientId.companyName || job.clientId.name
-                        : job.clientId.name}
-                    </p>
-                    {budgetDisplay && (
-                      <p className="text-xs" style={{ color: ACCENT_COLOR }}>
-                        {budgetDisplay}
-                      </p>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-            <button
-              onClick={() => setShowProposalForm(true)}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium text-white transition-colors"
-              style={{ backgroundColor: ACCENT_COLOR }}
-            >
-              <Send className="w-4 h-4" />
-              {locale === "ka" ? "შეთავაზების გაგზავნა" : "Submit Proposal"}
-            </button>
+                </div>
+                <div>
+                  <label className="block font-body text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                    {locale === "ka" ? "ერთეული" : "Unit"}
+                  </label>
+                  <select
+                    value={proposalData.estimatedDurationUnit}
+                    onChange={(e) => setProposalData({ ...proposalData, estimatedDurationUnit: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-body focus:outline-none focus:ring-2 transition-all cursor-pointer"
+                    style={{ '--tw-ring-color': ACCENT } as any}
+                  >
+                    <option value="days">{locale === "ka" ? "დღე" : "Days"}</option>
+                    <option value="weeks">{locale === "ka" ? "კვირა" : "Weeks"}</option>
+                    <option value="months">{locale === "ka" ? "თვე" : "Months"}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowProposalForm(false)}
+                  className="flex-1 py-3 rounded-xl font-body text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                >
+                  {locale === "ka" ? "გაუქმება" : "Cancel"}
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 py-3 rounded-xl font-body text-sm font-semibold text-white transition-all hover:shadow-lg disabled:opacity-50"
+                  style={{ backgroundColor: ACCENT }}
+                >
+                  {isSubmitting ? "..." : locale === "ka" ? "გაგზავნა" : "Submit"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
 
-      {/* ==================== DELETE CONFIRMATION MODAL ==================== */}
+      {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => {
-              setShowDeleteConfirm(false);
-              setDeleteError("");
-            }}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => { setShowDeleteConfirm(false); setDeleteError(""); }}
           />
-          <div className="relative bg-white dark:bg-neutral-900 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
-            <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
+          <div className="relative bg-white dark:bg-neutral-900 rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-scale-in">
+            <h3 className="font-display text-xl font-semibold text-neutral-900 dark:text-white mb-2">
               {locale === "ka" ? "წაშლის დადასტურება" : "Delete this job?"}
             </h3>
-            <p className="text-neutral-500 dark:text-neutral-400 mb-4 text-sm">
-              {locale === "ka"
-                ? "ეს მოქმედება ვერ გაუქმდება."
-                : "This action cannot be undone."}
+            <p className="font-body text-neutral-500 dark:text-neutral-400 mb-4 text-sm">
+              {locale === "ka" ? "ეს მოქმედება ვერ გაუქმდება." : "This action cannot be undone."}
             </p>
             {deleteError && (
-              <div className="px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm mb-4">
+              <div className="px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-body text-sm mb-4">
                 {deleteError}
               </div>
             )}
             <div className="flex gap-3">
               <button
-                onClick={() => {
-                  setShowDeleteConfirm(false);
-                  setDeleteError("");
-                }}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                onClick={() => { setShowDeleteConfirm(false); setDeleteError(""); }}
+                className="flex-1 px-4 py-2.5 rounded-xl font-body text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
               >
                 {locale === "ka" ? "გაუქმება" : "Cancel"}
               </button>
               <button
                 onClick={handleDeleteJob}
                 disabled={isDeleting}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2.5 rounded-xl font-body text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
               >
                 {isDeleting ? "..." : locale === "ka" ? "წაშლა" : "Delete"}
               </button>
@@ -1114,11 +1107,11 @@ export default function JobDetailPage() {
         </div>
       )}
 
-      {/* ==================== SUCCESS TOAST ==================== */}
+      {/* Success Toast */}
       {success && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-slide-down">
-          <div className="flex items-center gap-3 px-5 py-3 rounded-xl bg-green-500 text-white shadow-lg">
-            <Check className="w-5 h-5" />
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-slide-down">
+          <div className="flex items-center gap-3 px-5 py-3 rounded-xl bg-emerald-500 text-white shadow-lg font-body">
+            <CheckCircle2 className="w-5 h-5" />
             <span className="font-medium">{success}</span>
             <button
               onClick={() => setSuccess("")}
@@ -1130,7 +1123,7 @@ export default function JobDetailPage() {
         </div>
       )}
 
-      {/* ==================== LIGHTBOX ==================== */}
+      {/* Lightbox */}
       {selectedMediaIndex !== null && allMedia[selectedMediaIndex] && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/95"
@@ -1138,9 +1131,9 @@ export default function JobDetailPage() {
         >
           <button
             onClick={() => setSelectedMediaIndex(null)}
-            className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+            className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
           >
-            <X className="w-5 h-5 text-white" />
+            <X className="w-6 h-6 text-white" />
           </button>
 
           {allMedia[selectedMediaIndex].type === "video" ? (
@@ -1165,9 +1158,7 @@ export default function JobDetailPage() {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setSelectedMediaIndex(
-                    (selectedMediaIndex - 1 + allMedia.length) % allMedia.length
-                  );
+                  setSelectedMediaIndex((selectedMediaIndex - 1 + allMedia.length) % allMedia.length);
                 }}
                 className="absolute left-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
               >
@@ -1176,15 +1167,13 @@ export default function JobDetailPage() {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setSelectedMediaIndex(
-                    (selectedMediaIndex + 1) % allMedia.length
-                  );
+                  setSelectedMediaIndex((selectedMediaIndex + 1) % allMedia.length);
                 }}
                 className="absolute right-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
               >
                 <ChevronRight className="w-6 h-6 text-white" />
               </button>
-              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-white/10 text-white text-sm">
+              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-white/10 text-white font-body text-sm">
                 {selectedMediaIndex + 1} / {allMedia.length}
               </div>
             </>
@@ -1192,29 +1181,62 @@ export default function JobDetailPage() {
         </div>
       )}
 
-      {/* ==================== STYLES ==================== */}
+      {/* Animations */}
       <style jsx>{`
+        @keyframes ken-burns {
+          0% { transform: scale(1); }
+          100% { transform: scale(1.1); }
+        }
+        .animate-ken-burns {
+          animation: ken-burns 20s ease-out forwards;
+        }
         @keyframes slide-down {
-          from {
-            opacity: 0;
-            transform: translate(-50%, -20px);
-          }
-          to {
-            opacity: 1;
-            transform: translate(-50%, 0);
-          }
+          from { opacity: 0; transform: translate(-50%, -20px); }
+          to { opacity: 1; transform: translate(-50%, 0); }
         }
         .animate-slide-down {
           animation: slide-down 0.3s ease-out;
         }
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
+        @keyframes slide-up {
+          from { opacity: 0; transform: translateY(100%); }
+          to { opacity: 1; transform: translateY(0); }
         }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
+        .animate-slide-up {
+          animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes scale-in {
+          from { opacity: 0; transform: scale(0.95); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        .animate-scale-in {
+          animation: scale-in 0.2s ease-out;
         }
       `}</style>
+    </div>
+  );
+}
+
+// Spec Card Component
+function SpecCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="group p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50 hover:border-neutral-200 dark:hover:border-neutral-600 transition-all">
+      <div className="flex items-center gap-2 mb-2 text-neutral-400 dark:text-neutral-500">
+        {icon}
+        <span className="font-body text-xs font-medium uppercase tracking-wider">{label}</span>
+      </div>
+      <p className="font-display text-lg font-semibold text-neutral-900 dark:text-white">{value}</p>
+    </div>
+  );
+}
+
+// Requirement Item Component
+function RequirementItem({ icon, text }: { icon: React.ReactNode; text: string }) {
+  return (
+    <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/30">
+      <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+        {icon}
+      </div>
+      <span className="font-body text-sm text-neutral-700 dark:text-neutral-300">{text}</span>
     </div>
   );
 }
