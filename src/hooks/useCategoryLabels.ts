@@ -40,10 +40,10 @@ const CATEGORY_LABELS: Record<string, { en: string; ka: string }> = {
 
   // Subcategories - Architecture
   residential: { en: 'Residential', ka: 'საცხოვრებელი' },
-  'residential-architecture': { en: 'Residential Architecture', ka: 'საცხოვრებელი არქიტექტურა' },
+  'residential-architecture': { en: 'Residential Architecture', ka: 'საცხოვრებელი' },
   commercial: { en: 'Commercial', ka: 'კომერციული' },
-  'commercial-architecture': { en: 'Commercial Architecture', ka: 'კომერციული არქიტექტურა' },
-  'industrial-architecture': { en: 'Industrial Architecture', ka: 'სამრეწველო არქიტექტურა' },
+  'commercial-architecture': { en: 'Commercial Architecture', ka: 'კომერციული' },
+  'industrial-architecture': { en: 'Industrial Architecture', ka: 'სამრეწველო' },
   reconstruction: { en: 'Reconstruction', ka: 'რეკონსტრუქცია' },
   landscape: { en: 'Landscape', ka: 'ლანდშაფტი' },
 
@@ -65,6 +65,27 @@ const CATEGORY_LABELS: Record<string, { en: string; ka: string }> = {
   lighting: { en: 'Lighting', ka: 'განათება' },
   windows: { en: 'Windows', ka: 'ფანჯრები' },
   doors: { en: 'Doors', ka: 'კარები' },
+
+  // Craftsmen subcategories
+  handyman: { en: 'Handyman', ka: 'ხელოსანი' },
+  welder: { en: 'Welder', ka: 'შემდუღებელი' },
+  locksmith: { en: 'Locksmith', ka: 'საკეტების ოსტატი' },
+  glasswork: { en: 'Glasswork', ka: 'მინის სამუშაოები' },
+  upholstery: { en: 'Upholstery', ka: 'რბილი ავეჯის აღდგენა' },
+  'furniture-repair': { en: 'Furniture Repair', ka: 'ავეჯის შეკეთება' },
+  'furniture-assembly': { en: 'Furniture Assembly', ka: 'ავეჯის აწყობა' },
+
+  // Additional renovation subcategories
+  concrete: { en: 'Concrete', ka: 'ბეტონი' },
+  fencing: { en: 'Fencing', ka: 'ღობე' },
+  decking: { en: 'Decking', ka: 'ტერასა' },
+  waterproofing: { en: 'Waterproofing', ka: 'ჰიდროიზოლაცია' },
+
+  // Kitchen & Bathroom
+  'kitchen-design': { en: 'Kitchen Design', ka: 'სამზარეულოს დიზაინი' },
+  'bathroom-design': { en: 'Bathroom Design', ka: 'აბაზანის დიზაინი' },
+  'kitchen-renovation': { en: 'Kitchen Renovation', ka: 'სამზარეულოს რემონტი' },
+  'bathroom-renovation': { en: 'Bathroom Renovation', ka: 'აბაზანის რემონტი' },
 
   // Other
   furniture: { en: 'Furniture', ka: 'ავეჯი' },

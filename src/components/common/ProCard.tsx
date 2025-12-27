@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCategoryLabels } from "@/hooks/useCategoryLabels";
 import { ProProfile, ProStatus } from "@/types";
 import { BadgeCheck } from "lucide-react";
 import Link from "next/link";
@@ -34,20 +35,10 @@ export default function ProCard({
   onLike,
   showLikeButton = true,
 }: ProCardProps) {
-  const { t, locale } = useLanguage();
+  const { locale } = useLanguage();
+  const { getCategoryLabel } = useCategoryLabels();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const getCategoryLabel = (category: string) => {
-    if (!category) return "";
-    const translated = t(`categories.${category}`);
-    if (translated === `categories.${category}`) {
-      return category
-        .split("-")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
-    }
-    return translated;
-  };
 
   const currentStatus =
     STATUS_CONFIG[profile.status || ProStatus.AWAY] ||

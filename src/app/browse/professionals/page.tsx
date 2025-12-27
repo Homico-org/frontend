@@ -257,7 +257,7 @@ export default function ProfessionalsPage() {
           <div className="flex items-center gap-2 text-xs sm:text-sm text-[var(--color-text-tertiary)]">
             <div className="w-6 sm:w-8 h-px bg-gradient-to-r from-transparent via-[#E07B4F]/20 to-transparent" />
             <span className="text-[var(--color-text-tertiary)]">
-              {locale === 'ka' ? 'სია დასრულებულია' : 'End of list'}
+              {locale === 'ka' ? 'ყველა სპეციალისტი ნაჩვენებია' : 'All professionals are listed'}
             </span>
             <div className="w-6 sm:w-8 h-px bg-gradient-to-r from-transparent via-[#E07B4F]/20 to-transparent" />
           </div>

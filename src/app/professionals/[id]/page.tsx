@@ -1,7 +1,6 @@
 'use client';
 
 import Header, { HeaderSpacer } from '@/components/common/Header';
-import AppBackground from '@/components/common/AppBackground';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useCategories } from '@/contexts/CategoriesContext';
@@ -10,14 +9,13 @@ import { useToast } from '@/contexts/ToastContext';
 import { useAnalytics, AnalyticsEvent } from '@/hooks/useAnalytics';
 import {
   Briefcase, CheckCircle, Clock, MapPin, MessageSquare, Shield, Star, Trophy,
-  ChevronLeft, ChevronRight, X, ExternalLink, Award, Sparkles, Heart,
-  Calendar, Users, Verified, BadgeCheck, Quote, ArrowRight, Phone, Zap,
-  Facebook, Instagram, Linkedin, Globe
+  ChevronLeft, ChevronRight, X, ExternalLink, Award, Phone,
+  Calendar, BadgeCheck, Zap,
+  Facebook, Instagram, Linkedin, Globe, Camera, Sparkles
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 
-// Helper function to get proper image URL
 const getImageUrl = (path: string | undefined): string => {
   if (!path) return '';
   if (path.startsWith('data:')) return path;
@@ -70,7 +68,7 @@ interface ProProfile {
   description: string;
   categories: string[];
   subcategories?: string[];
-  customServices?: string[]; // Custom services added by user during registration
+  customServices?: string[];
   yearsExperience: number;
   serviceAreas: string[];
   pricingModel: 'hourly' | 'project_based' | 'from' | 'sqm' | 'daily';
@@ -92,11 +90,9 @@ interface ProProfile {
   isPremium?: boolean;
   premiumTier?: 'none' | 'basic' | 'pro' | 'elite';
   portfolioProjects?: PortfolioProject[];
-  // Verification fields
   isPhoneVerified?: boolean;
   isEmailVerified?: boolean;
   verificationStatus?: 'pending' | 'submitted' | 'verified' | 'rejected';
-  // Social links
   facebookUrl?: string;
   instagramUrl?: string;
   linkedinUrl?: string;
@@ -135,17 +131,26 @@ export default function ProfessionalDetailPage() {
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [reviewsLoading, setReviewsLoading] = useState(false);
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
-  const [portfolioLoading, setPortfolioLoading] = useState(false);
 
-  // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const [activeTab, setActiveTab] = useState<'about' | 'portfolio' | 'reviews'>('about');
+
+  const [showFloatingButton, setShowFloatingButton] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsVisible(true);
+    const handleScroll = () => {
+      if (heroRef.current) {
+        const heroBottom = heroRef.current.getBoundingClientRect().bottom;
+        setShowFloatingButton(heroBottom < 100);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   useEffect(() => {
@@ -179,7 +184,6 @@ export default function ProfessionalDetailPage() {
   useEffect(() => {
     const fetchPortfolio = async () => {
       if (!profile?._id) return;
-      setPortfolioLoading(true);
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/portfolio/pro/${profile._id}`);
         if (response.ok) {
@@ -188,8 +192,6 @@ export default function ProfessionalDetailPage() {
         }
       } catch (err) {
         console.error('Failed to fetch portfolio:', err);
-      } finally {
-        setPortfolioLoading(false);
       }
     };
     if (profile?._id) fetchPortfolio();
@@ -198,7 +200,6 @@ export default function ProfessionalDetailPage() {
   useEffect(() => {
     const fetchReviews = async () => {
       if (!profile?._id) return;
-      setReviewsLoading(true);
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reviews/pro/${profile._id}`);
         if (response.ok) {
@@ -207,8 +208,6 @@ export default function ProfessionalDetailPage() {
         }
       } catch (err) {
         console.error('Failed to fetch reviews:', err);
-      } finally {
-        setReviewsLoading(false);
       }
     };
     if (profile?._id) fetchReviews();
@@ -224,7 +223,6 @@ export default function ProfessionalDetailPage() {
 
   const handleSendMessage = async () => {
     if (!message.trim() || !user) return;
-
     setIsSending(true);
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/conversations/start`, {
@@ -233,20 +231,13 @@ export default function ProfessionalDetailPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         },
-        body: JSON.stringify({
-          proId: profile?._id,
-          message: message
-        })
+        body: JSON.stringify({ proId: profile?._id, message })
       });
-
       if (response.ok) {
         setShowContactModal(false);
         setMessage('');
         toast.success(locale === 'ka' ? 'შეტყობინება გაგზავნილია!' : 'Message sent!');
-        trackEvent(AnalyticsEvent.CONVERSATION_START, {
-          proId: profile?._id,
-          proName: profile?.name,
-        });
+        trackEvent(AnalyticsEvent.CONVERSATION_START, { proId: profile?._id, proName: profile?.name });
       } else {
         throw new Error('Failed to send message');
       }
@@ -257,39 +248,26 @@ export default function ProfessionalDetailPage() {
     }
   };
 
-  // Use categories context for proper translations
   const getCategoryLabel = (categoryKey: string) => {
     if (!categoryKey) return '';
     const category = CATEGORIES.find(cat => cat.key === categoryKey);
-    if (category) {
-      return locale === 'ka' ? category.nameKa : category.name;
-    }
-    // Fallback: format the key as readable text
+    if (category) return locale === 'ka' ? category.nameKa : category.name;
     return categoryKey.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
   const getSubcategoryLabel = (subcategoryKey: string) => {
     if (!subcategoryKey) return '';
-    if (subcategoryKey.startsWith('custom:')) {
-      return subcategoryKey.replace('custom:', '');
-    }
-    // Search through all categories to find the subcategory
+    if (subcategoryKey.startsWith('custom:')) return subcategoryKey.replace('custom:', '');
     for (const category of CATEGORIES) {
       const subcategory = category.subcategories.find(sub => sub.key === subcategoryKey);
-      if (subcategory) {
-        return locale === 'ka' ? subcategory.nameKa : subcategory.name;
-      }
-      // Also check sub-subcategories (children)
+      if (subcategory) return locale === 'ka' ? subcategory.nameKa : subcategory.name;
       for (const sub of category.subcategories) {
         if (sub.children) {
           const subSub = sub.children.find(child => child.key === subcategoryKey);
-          if (subSub) {
-            return locale === 'ka' ? subSub.nameKa : subSub.name;
-          }
+          if (subSub) return locale === 'ka' ? subSub.nameKa : subSub.name;
         }
       }
     }
-    // Fallback: format the key as readable text
     return subcategoryKey.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   };
 
@@ -300,7 +278,6 @@ export default function ProfessionalDetailPage() {
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     const diffWeeks = Math.floor(diffDays / 7);
     const diffMonths = Math.floor(diffDays / 30);
-
     if (locale === 'ka') {
       if (diffDays < 7) return `${diffDays} დღის წინ`;
       if (diffWeeks < 4) return `${diffWeeks} კვირის წინ`;
@@ -311,44 +288,21 @@ export default function ProfessionalDetailPage() {
     return `${diffMonths} month${diffMonths > 1 ? 's' : ''} ago`;
   };
 
-  // Get all portfolio images with metadata
   const getAllPortfolioImages = useCallback(() => {
     const images: { url: string; title?: string; description?: string }[] = [];
-
     portfolio.forEach(item => {
-      if (item.imageUrl) {
-        images.push({ url: item.imageUrl, title: item.title, description: item.description });
-      }
-      if (item.images) {
-        item.images.filter(img => img !== item.imageUrl).forEach(img => {
-          images.push({ url: img, title: item.title });
-        });
-      }
+      if (item.imageUrl) images.push({ url: item.imageUrl, title: item.title, description: item.description });
+      if (item.images) item.images.filter(img => img !== item.imageUrl).forEach(img => images.push({ url: img, title: item.title }));
     });
-
     profile?.portfolioProjects?.forEach(project => {
-      if (project.images) {
-        project.images.forEach((img, idx) => {
-          images.push({
-            url: img,
-            title: project.title,
-            description: idx === 0 ? project.description : undefined
-          });
-        });
-      }
+      if (project.images) project.images.forEach((img, idx) => images.push({ url: img, title: project.title, description: idx === 0 ? project.description : undefined }));
     });
-
     return images;
   }, [portfolio, profile?.portfolioProjects]);
 
-  // Group subcategories by parent category
   const getGroupedServices = useCallback(() => {
     const groups: Record<string, string[]> = {};
-
-    profile?.categories.forEach(cat => {
-      groups[cat] = [];
-    });
-
+    profile?.categories.forEach(cat => { groups[cat] = []; });
     profile?.subcategories?.forEach(sub => {
       for (const category of CATEGORIES) {
         const found = category.subcategories.find(s => s.key === sub);
@@ -359,7 +313,6 @@ export default function ProfessionalDetailPage() {
         }
       }
     });
-
     return groups;
   }, [profile?.categories, profile?.subcategories, CATEGORIES]);
 
@@ -372,62 +325,22 @@ export default function ProfessionalDetailPage() {
     }
   };
 
-  // City name translations (lowercase keys for case-insensitive matching)
   const cityTranslations: Record<string, string> = {
-    'tbilisi': 'თბილისი',
-    'rustavi': 'რუსთავი',
-    'mtskheta': 'მცხეთა',
-    'batumi': 'ბათუმი',
-    'kutaisi': 'ქუთაისი',
-    'gori': 'გორი',
-    'zugdidi': 'ზუგდიდი',
-    'poti': 'ფოთი',
-    'telavi': 'თელავი',
-    'akhaltsikhe': 'ახალციხე',
-    'kobuleti': 'ქობულეთი',
-    'ozurgeti': 'ოზურგეთი',
-    'marneuli': 'მარნეული',
-    'kaspi': 'კასპი',
-    'chiatura': 'ჭიათურა',
-    'tskhinvali': 'ცხინვალი',
-    'samtredzia': 'სამტრედია',
-    'borjomi': 'ბორჯომი',
-    'khashuri': 'ხაშური',
-    'senaki': 'სენაკი',
-    'zestaponi': 'ზესტაფონი',
-    'nationwide': 'მთელი საქართველო',
-    'georgia': 'საქართველო',
-    'saguramo': 'საგურამო',
-    'gardabani': 'გარდაბანი',
-    'sagarejo': 'საგარეჯო',
-    'signagi': 'სიღნაღი',
-    'lagodekhi': 'ლაგოდეხი',
-    'gurjaani': 'გურჯაანი',
-    'kvareli': 'ყვარელი',
-    'dedoplistsqaro': 'დედოფლისწყარო',
-    'tianeti': 'თიანეთი',
-    'dusheti': 'დუშეთი',
-    'kazbegi': 'ყაზბეგი',
-    'stepantsminda': 'სტეფანწმინდა',
-    'bolnisi': 'ბოლნისი',
-    'dmanisi': 'დმანისი',
-    'tetritskaro': 'თეთრიწყარო',
-    'tsalka': 'წალკა',
+    'tbilisi': 'თბილისი', 'rustavi': 'რუსთავი', 'mtskheta': 'მცხეთა', 'batumi': 'ბათუმი',
+    'kutaisi': 'ქუთაისი', 'gori': 'გორი', 'zugdidi': 'ზუგდიდი', 'telavi': 'თელავი',
+    'nationwide': 'მთელი საქართველო', 'georgia': 'საქართველო',
   };
 
   const translateCity = (city: string) => {
     if (locale === 'ka') {
       const lowerCity = city.toLowerCase().trim();
-      if (cityTranslations[lowerCity]) {
-        return cityTranslations[lowerCity];
-      }
+      if (cityTranslations[lowerCity]) return cityTranslations[lowerCity];
     }
     return city;
   };
 
   const totalCompletedJobs = (profile?.completedJobs || 0) + (profile?.externalCompletedJobs || 0);
 
-  // Lightbox navigation
   const openLightbox = (index: number) => {
     setLightboxIndex(index);
     setLightboxOpen(true);
@@ -449,7 +362,6 @@ export default function ProfessionalDetailPage() {
     setLightboxIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
-  // Keyboard navigation for lightbox
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!lightboxOpen) return;
@@ -464,18 +376,15 @@ export default function ProfessionalDetailPage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-primary)]">
+      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0A0A0A]">
         <Header />
         <HeaderSpacer />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="flex flex-col items-center gap-4">
-            <div className="relative w-16 h-16">
-              <div className="absolute inset-0 rounded-full border-3 border-[#E07B4F]/20" />
-              <div className="absolute inset-0 rounded-full border-3 border-transparent border-t-[#E07B4F] animate-spin" />
+            <div className="relative w-12 h-12">
+              <div className="absolute inset-0 rounded-full border-2 border-[#E8E0DB] dark:border-neutral-800" />
+              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#C4735B] animate-spin" />
             </div>
-            <p className="text-sm text-[var(--color-text-tertiary)]">
-              {locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
-            </p>
           </div>
         </div>
       </div>
@@ -485,27 +394,22 @@ export default function ProfessionalDetailPage() {
   // Error state
   if (error || !profile) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-primary)]">
+      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0A0A0A]">
         <Header />
         <HeaderSpacer />
         <div className="py-20 text-center">
           <div className="max-w-md mx-auto px-4">
-            <div className="w-24 h-24 mx-auto mb-8 rounded-3xl bg-gradient-to-br from-[var(--color-bg-tertiary)] to-[var(--color-bg-muted)] flex items-center justify-center">
-              <svg className="w-12 h-12 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#F5F0ED] dark:bg-neutral-900 flex items-center justify-center">
+              <X className="w-8 h-8 text-neutral-400" />
             </div>
-            <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-3">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
               {locale === 'ka' ? 'პროფილი ვერ მოიძებნა' : 'Profile not found'}
             </h2>
-            <p className="text-[var(--color-text-secondary)] mb-8">
-              {locale === 'ka' ? 'სამწუხაროდ, ეს გვერდი არ არსებობს' : 'Sorry, this page doesn\'t exist'}
-            </p>
             <button
               onClick={() => router.push('/browse')}
-              className="px-8 py-4 text-sm font-bold rounded-2xl text-white bg-[#E07B4F] hover:bg-[#D26B3F] transition-all shadow-lg shadow-[#E07B4F]/20 hover:shadow-xl hover:shadow-[#E07B4F]/30 hover:-translate-y-0.5"
+              className="mt-6 px-6 py-3 text-sm font-medium rounded-full text-white bg-[#C4735B] hover:bg-[#B5654D] transition-colors"
             >
-              {locale === 'ka' ? 'პროფესიონალების ნახვა' : 'Browse Professionals'}
+              {locale === 'ka' ? 'უკან დაბრუნება' : 'Go Back'}
             </button>
           </div>
         </div>
@@ -517,227 +421,191 @@ export default function ProfessionalDetailPage() {
   const portfolioImages = getAllPortfolioImages();
   const groupedServices = getGroupedServices();
 
-  // Get tier color
-  const getTierColor = () => {
-    switch (profile.premiumTier) {
-      case 'elite': return '#B8860B';
-      case 'pro': return '#E07B4F';
-      case 'basic': return '#4A9B9B';
-      default: return '#4A9B9B';
-    }
-  };
-
-  const tierColor = getTierColor();
-
   return (
-    <div className="min-h-screen bg-[var(--color-bg-primary)]">
-      <AppBackground />
+    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0A0A0A]">
       <Header />
       <HeaderSpacer />
 
-      {/* Hero Section */}
-      <section className={`relative transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-        {/* Profile Info Card */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
-          <div className="relative mb-8">
-            <div className="bg-[var(--color-bg-elevated)] rounded-3xl border border-[var(--color-border-subtle)] shadow-2xl shadow-black/5 overflow-hidden">
-              <div className="p-6 sm:p-8">
-                <div className="flex flex-col sm:flex-row gap-6 sm:gap-8">
-                  {/* Avatar */}
-                  <div className="relative flex-shrink-0 self-start">
-                    {avatarUrl ? (
-                      <img
-                        src={getImageUrl(avatarUrl)}
-                        alt={profile.name}
-                        className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl object-cover border-4 border-[var(--color-bg-elevated)] shadow-xl ring-4 ring-white/50 dark:ring-white/10"
-                      />
-                    ) : (
-                      <div
-                        className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl border-4 border-[var(--color-bg-elevated)] shadow-xl flex items-center justify-center text-white text-4xl font-bold"
-                        style={{ background: `linear-gradient(135deg, ${tierColor} 0%, ${tierColor}CC 100%)` }}
-                      >
-                        {profile.name.charAt(0)}
-                      </div>
-                    )}
+      {/* ========== HERO SECTION ========== */}
+      <section
+        ref={heroRef}
+        className={`relative transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+      >
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#F5F0ED] via-[#FAFAFA] to-[#FAFAFA] dark:from-[#1A1612] dark:via-[#0A0A0A] dark:to-[#0A0A0A]" />
 
-                    {/* Online Status */}
-                    {profile.isAvailable && (
-                      <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-emerald-500 border-4 border-[var(--color-bg-elevated)] flex items-center justify-center shadow-lg">
-                        <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    {/* Name & Verification */}
-                    <div className="flex flex-wrap items-center gap-3 mb-2">
-                      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--color-text-primary)] tracking-tight">
-                        {profile.name}
-                      </h1>
-                      {profile.verificationStatus === 'verified' && (
-                        <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                          <BadgeCheck className="w-4 h-4" />
-                          <span className="text-xs font-semibold">{locale === 'ka' ? 'დადასტურებული' : 'Verified'}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Title */}
-                    <p className="text-lg sm:text-xl font-medium mb-4" style={{ color: tierColor }}>
-                      {profile.title}
-                    </p>
-
-                    {/* Stats Row */}
-                    <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm">
-                      {/* Rating */}
-                      {profile.avgRating > 0 && (
-                        <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-amber-500/10">
-                            <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
-                            <span className="font-bold text-amber-600 dark:text-amber-400">{profile.avgRating.toFixed(1)}</span>
-                          </div>
-                          <span className="text-[var(--color-text-tertiary)]">
-                            ({profile.totalReviews} {locale === 'ka' ? 'შეფასება' : 'reviews'})
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Location */}
-                      {profile.serviceAreas.length > 0 && (
-                        <div className="flex items-center gap-1.5 text-[var(--color-text-secondary)]">
-                          <MapPin className="w-4 h-4 text-[var(--color-text-tertiary)]" />
-                          <span>{translateCity(profile.serviceAreas[0])}</span>
-                        </div>
-                      )}
-
-                      {/* Experience */}
-                      <div className="flex items-center gap-1.5 text-[var(--color-text-secondary)]">
-                        <Briefcase className="w-4 h-4 text-[var(--color-text-tertiary)]" />
-                        <span>{profile.yearsExperience}+ {locale === 'ka' ? 'წელი' : 'years'}</span>
-                      </div>
-
-                      {/* Completed Jobs */}
-                      {totalCompletedJobs > 0 && (
-                        <div className="flex items-center gap-1.5 text-[var(--color-text-secondary)]">
-                          <CheckCircle className="w-4 h-4 text-emerald-500" />
-                          <span>{totalCompletedJobs} {locale === 'ka' ? 'პროექტი' : 'projects'}</span>
-                        </div>
-                      )}
-                    </div>
-
-                  </div>
-
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-8 pb-6">
+          {/* Profile Header */}
+          <div className="flex flex-col items-center text-center">
+            {/* Avatar */}
+            <div className="relative mb-5">
+              {avatarUrl ? (
+                <img
+                  src={getImageUrl(avatarUrl)}
+                  alt={profile.name}
+                  className="w-32 h-32 sm:w-36 sm:h-36 rounded-full object-cover ring-4 ring-white dark:ring-neutral-900 shadow-xl"
+                />
+              ) : (
+                <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full flex items-center justify-center text-white text-5xl font-bold bg-gradient-to-br from-[#C4735B] to-[#A65D47] ring-4 ring-white dark:ring-neutral-900 shadow-xl">
+                  {profile.name.charAt(0)}
                 </div>
+              )}
 
-                {/* Mobile Actions */}
-                <div className="flex sm:hidden items-center gap-3 mt-6 pt-6 border-t border-[var(--color-border-subtle)]">
-                  <button
-                    onClick={handleContact}
-                    className="flex-1 py-3.5 rounded-xl text-white font-semibold text-sm transition-all shadow-lg flex items-center justify-center gap-2"
-                    style={{
-                      backgroundColor: '#C4735B',
-                      boxShadow: '0 10px 30px rgba(196, 115, 91, 0.3)',
-                    }}
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    {locale === 'ka' ? 'შეტყობინება' : 'Message'}
-                  </button>
+              {/* Verified badge */}
+              {profile.verificationStatus === 'verified' && (
+                <div className="absolute -bottom-1 -right-1 w-10 h-10 rounded-full bg-emerald-500 border-4 border-white dark:border-neutral-900 flex items-center justify-center shadow-lg">
+                  <BadgeCheck className="w-5 h-5 text-white" />
                 </div>
+              )}
+
+              {/* Online indicator */}
+              {profile.isAvailable && !profile.verificationStatus && (
+                <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-emerald-500 border-4 border-white dark:border-neutral-900 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                </div>
+              )}
+            </div>
+
+            {/* Name */}
+            <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white mb-1">
+              {profile.name}
+            </h1>
+
+            {/* Title */}
+            <p className="text-base sm:text-lg text-[#C4735B] font-medium mb-4">
+              {profile.title}
+            </p>
+
+            {/* Stats Row */}
+            <div className="flex items-center justify-center gap-6 text-sm mb-6">
+              {profile.avgRating > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  <span className="font-semibold text-neutral-900 dark:text-white">{profile.avgRating.toFixed(1)}</span>
+                  <span className="text-neutral-500">({profile.totalReviews})</span>
+                </div>
+              )}
+
+              {profile.serviceAreas.length > 0 && (
+                <div className="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400">
+                  <MapPin className="w-4 h-4" />
+                  <span>{translateCity(profile.serviceAreas[0])}</span>
+                </div>
+              )}
+
+              <div className="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400">
+                <Briefcase className="w-4 h-4" />
+                <span>{profile.yearsExperience}+ {locale === 'ka' ? 'წელი' : 'yrs'}</span>
               </div>
             </div>
+
+            {/* CTA Button */}
+            <button
+              onClick={handleContact}
+              className="px-8 py-3 rounded-full text-white font-semibold text-sm bg-gradient-to-r from-[#C4735B] to-[#B5654D] hover:from-[#B5654D] hover:to-[#A65D47] transition-all shadow-lg shadow-[#C4735B]/25 hover:shadow-xl hover:shadow-[#C4735B]/30 hover:-translate-y-0.5"
+            >
+              <span className="flex items-center gap-2">
+                <MessageSquare className="w-4 h-4" />
+                {locale === 'ka' ? 'დაკავშირება' : 'Contact'}
+                {profile.basePrice > 0 && (
+                  <span className="ml-1 px-2 py-0.5 rounded-full bg-white/20 text-xs">
+                    {locale === 'ka' ? 'დან' : 'from'} {profile.basePrice}₾
+                  </span>
+                )}
+              </span>
+            </button>
           </div>
         </div>
       </section>
 
-      {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 pb-12">
-        <div className="flex flex-col lg:flex-row gap-8">
-
-          {/* Left Column - Main Content */}
-          <div className="flex-1 space-y-8">
-
-            {/* About Section */}
-            {profile.description && (
-              <section
-                className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 sm:p-8 shadow-sm"
-                style={{ animationDelay: '0.1s' }}
+      {/* ========== TAB NAVIGATION ========== */}
+      <div className="sticky top-[60px] z-30 bg-[#FAFAFA]/80 dark:bg-[#0A0A0A]/80 backdrop-blur-lg border-b border-neutral-200/50 dark:border-neutral-800/50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="flex gap-1">
+            {[
+              { key: 'about', label: locale === 'ka' ? 'შესახებ' : 'About' },
+              { key: 'portfolio', label: locale === 'ka' ? 'ნამუშევრები' : 'Portfolio', count: portfolioImages.length },
+              { key: 'reviews', label: locale === 'ka' ? 'შეფასებები' : 'Reviews', count: profile.totalReviews },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key as any)}
+                className={`relative px-4 py-4 text-sm font-medium transition-colors ${
+                  activeTab === tab.key
+                    ? 'text-[#C4735B]'
+                    : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+                }`}
               >
-                <div className="flex items-center gap-3 mb-5">
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center"
-                    style={{ backgroundColor: `${tierColor}15` }}
-                  >
-                    <Award className="w-5 h-5" style={{ color: tierColor }} />
-                  </div>
-                  <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-                    {locale === 'ka' ? 'ჩემს შესახებ' : 'About Me'}
-                  </h2>
-                </div>
-                <div className="text-[var(--color-text-secondary)] leading-relaxed text-[15px] whitespace-pre-wrap">
+                <span className="flex items-center gap-1.5">
+                  {tab.label}
+                  {tab.count !== undefined && tab.count > 0 && (
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                      activeTab === tab.key
+                        ? 'bg-[#C4735B]/10 text-[#C4735B]'
+                        : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-500'
+                    }`}>
+                      {tab.count}
+                    </span>
+                  )}
+                </span>
+                {activeTab === tab.key && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C4735B] rounded-full" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ========== MAIN CONTENT ========== */}
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 pb-28 lg:pb-12">
+
+        {/* ABOUT TAB */}
+        {activeTab === 'about' && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            {/* Description */}
+            {profile.description && (
+              <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-sm border border-neutral-100 dark:border-neutral-800">
+                <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
                   {profile.description}
-                </div>
-              </section>
+                </p>
+              </div>
             )}
 
-            {/* Custom Services Section - Shows user-added services */}
+            {/* Services Grid */}
             {profile.customServices && profile.customServices.length > 0 && (
-              <section
-                className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 sm:p-8 shadow-sm"
-                style={{ animationDelay: '0.15s' }}
-              >
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-[#C4735B]/10 flex items-center justify-center">
-                    <Zap className="w-5 h-5 text-[#C4735B]" />
-                  </div>
-                  <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-                    {locale === 'ka' ? 'სერვისები' : 'Services'}
-                  </h2>
-                </div>
-
+              <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-sm border border-neutral-100 dark:border-neutral-800">
+                <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-4">
+                  {locale === 'ka' ? 'სერვისები' : 'Services'}
+                </h3>
                 <div className="flex flex-wrap gap-2">
                   {profile.customServices.map((service, idx) => (
                     <span
                       key={idx}
-                      className="px-4 py-2.5 rounded-xl text-sm font-medium bg-[#C4735B]/10 text-[#C4735B] border border-[#C4735B]/20 hover:bg-[#C4735B]/15 transition-colors"
+                      className="px-4 py-2 rounded-full text-sm font-medium bg-[#F5F0ED] dark:bg-neutral-800 text-[#8B5A42] dark:text-[#D4A489]"
                     >
                       {service}
                     </span>
                   ))}
                 </div>
-              </section>
+              </div>
             )}
 
-            {/* Skills/Subcategories Section */}
+            {/* Skills by Category */}
             {profile.subcategories && profile.subcategories.length > 0 && (
-              <section
-                className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 sm:p-8 shadow-sm"
-                style={{ animationDelay: '0.2s' }}
-              >
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-[#4A9B9B]/10 flex items-center justify-center">
-                    <Briefcase className="w-5 h-5 text-[#4A9B9B]" />
-                  </div>
-                  <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-                    {locale === 'ka' ? 'უნარები' : 'Skills'}
-                  </h2>
-                </div>
-
-                <div className="space-y-6">
+              <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-sm border border-neutral-100 dark:border-neutral-800">
+                <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-4">
+                  {locale === 'ka' ? 'უნარები' : 'Skills'}
+                </h3>
+                <div className="space-y-4">
                   {Object.entries(groupedServices).map(([categoryKey, subcats]) => {
                     if (subcats.length === 0) return null;
                     return (
                       <div key={categoryKey}>
-                        <h3 className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-3 flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tierColor }} />
-                          {getCategoryLabel(categoryKey)}
-                        </h3>
+                        <p className="text-xs font-medium text-neutral-400 mb-2">{getCategoryLabel(categoryKey)}</p>
                         <div className="flex flex-wrap gap-2">
                           {subcats.map((sub, idx) => (
-                            <span
-                              key={idx}
-                              className="px-4 py-2 rounded-xl text-sm font-medium bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)] hover:border-[var(--color-border)] transition-colors"
-                            >
+                            <span key={idx} className="px-3 py-1.5 rounded-lg text-sm bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
                               {getSubcategoryLabel(sub)}
                             </span>
                           ))}
@@ -746,605 +614,288 @@ export default function ProfessionalDetailPage() {
                     );
                   })}
                 </div>
-              </section>
+              </div>
             )}
 
-            {/* Portfolio Section */}
-            {portfolioImages.length > 0 && (
-              <section
-                className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 sm:p-8 shadow-sm"
-                style={{ animationDelay: '0.3s' }}
-              >
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-                      {locale === 'ka' ? 'პორტფოლიო' : 'Portfolio'}
-                    </h2>
-                  </div>
-                  {portfolioImages.length > 6 && (
-                    <button className="text-sm font-semibold flex items-center gap-1 transition-colors hover:gap-2" style={{ color: tierColor }}>
-                      {locale === 'ka' ? 'ყველას ნახვა' : 'View All'}
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  )}
+            {/* Info Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {profile.basePrice > 0 && (
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-neutral-800">
+                  <p className="text-xs text-neutral-500 mb-1">{locale === 'ka' ? 'ფასი' : 'Price'}</p>
+                  <p className="text-xl font-bold text-neutral-900 dark:text-white">{profile.basePrice}₾<span className="text-sm font-normal text-neutral-500">{getPricingLabel()}</span></p>
                 </div>
+              )}
 
-                {/* Bento Grid Layout */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-                  {portfolioImages.slice(0, 6).map((img, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => openLightbox(idx)}
-                      className={`relative rounded-2xl overflow-hidden bg-[var(--color-bg-tertiary)] group cursor-pointer ${
-                        idx === 0 ? 'col-span-2 row-span-2 aspect-[4/3]' : 'aspect-square'
-                      }`}
-                    >
-                      <img
-                        src={getImageUrl(img.url)}
-                        alt={img.title || ''}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
-
-                      {/* Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                      {/* View Icon */}
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100">
-                        <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
-                          <ExternalLink className="w-5 h-5 text-white" />
-                        </div>
-                      </div>
-
-                      {/* Title */}
-                      {img.title && idx === 0 && (
-                        <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                          <p className="text-white font-semibold truncate">{img.title}</p>
-                        </div>
-                      )}
-
-                      {/* More Indicator */}
-                      {idx === 5 && portfolioImages.length > 6 && (
-                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                          <span className="text-white text-2xl font-bold">+{portfolioImages.length - 6}</span>
-                        </div>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Reviews Section */}
-            {reviews.length > 0 && (
-              <section
-                className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 sm:p-8 shadow-sm"
-                style={{ animationDelay: '0.4s' }}
-              >
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                      <Star className="w-5 h-5 text-emerald-500" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-                        {locale === 'ka' ? 'შეფასებები' : 'Reviews'}
-                      </h2>
-                      <p className="text-sm text-[var(--color-text-tertiary)]">
-                        {profile.totalReviews} {locale === 'ka' ? 'შეფასება' : 'reviews'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Rating Summary */}
-                  {profile.avgRating > 0 && (
-                    <div className="hidden sm:flex items-center gap-3 px-4 py-2 rounded-xl bg-[var(--color-bg-tertiary)]">
-                      <div className="flex items-center gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className={`w-4 h-4 ${star <= Math.round(profile.avgRating) ? 'fill-amber-400 text-amber-400' : 'text-[var(--color-border)]'}`}
-                          />
-                        ))}
-                      </div>
-                      <span className="font-bold text-[var(--color-text-primary)]">{profile.avgRating.toFixed(1)}</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-6">
-                  {reviews.slice(0, 4).map((review, idx) => (
-                    <div
-                      key={review._id}
-                      className={`${idx < Math.min(reviews.length, 4) - 1 ? 'pb-6 border-b border-[var(--color-border-subtle)]' : ''}`}
-                    >
-                      <div className="flex items-start gap-4">
-                        {/* Avatar */}
-                        {review.clientId.avatar ? (
-                          <img
-                            src={getImageUrl(review.clientId.avatar)}
-                            alt=""
-                            className="w-12 h-12 rounded-xl object-cover"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--color-bg-tertiary)] to-[var(--color-bg-muted)] flex items-center justify-center">
-                            <span className="text-lg font-semibold text-[var(--color-text-secondary)]">
-                              {review.isAnonymous ? '?' : review.clientId.name.charAt(0)}
-                            </span>
-                          </div>
-                        )}
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2 mb-2">
-                            <div>
-                              <p className="font-semibold text-[var(--color-text-primary)]">
-                                {review.isAnonymous ? (locale === 'ka' ? 'ანონიმური' : 'Anonymous') : review.clientId.name}
-                              </p>
-                              <p className="text-xs text-[var(--color-text-muted)]">{formatTimeAgo(review.createdAt)}</p>
-                            </div>
-                            {/* Stars */}
-                            <div className="flex items-center gap-0.5">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`w-4 h-4 ${star <= review.rating ? 'fill-amber-400 text-amber-400' : 'text-[var(--color-border)]'}`}
-                                />
-                              ))}
-                            </div>
-                          </div>
-
-                          {review.text && (
-                            <p className="text-[15px] text-[var(--color-text-secondary)] leading-relaxed">
-                              {review.text}
-                            </p>
-                          )}
-
-                          {/* Review photos */}
-                          {review.photos && review.photos.length > 0 && (
-                            <div className="flex gap-2 mt-3">
-                              {review.photos.slice(0, 3).map((photo, pIdx) => (
-                                <div key={pIdx} className="w-20 h-20 rounded-xl overflow-hidden">
-                                  <img src={getImageUrl(photo)} alt="" className="w-full h-full object-cover" />
-                                </div>
-                              ))}
-                              {review.photos.length > 3 && (
-                                <div className="w-20 h-20 rounded-xl bg-[var(--color-bg-tertiary)] flex items-center justify-center text-sm font-semibold text-[var(--color-text-tertiary)]">
-                                  +{review.photos.length - 3}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* View All Reviews */}
-                {profile.totalReviews > 4 && (
-                  <button className="w-full mt-6 py-4 rounded-xl font-semibold text-sm border-2 border-[var(--color-border-subtle)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)] hover:border-[var(--color-border)] transition-all">
-                    {locale === 'ka' ? `ყველა ${profile.totalReviews} შეფასების ნახვა` : `Read all ${profile.totalReviews} reviews`}
-                  </button>
-                )}
-              </section>
-            )}
-          </div>
-
-          {/* Right Column - Sidebar */}
-          <div className="lg:w-[340px] flex-shrink-0">
-            <div className="lg:sticky lg:top-24 space-y-6">
-
-              {/* Quick Contact Card */}
-              <div
-                className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 shadow-sm"
-                style={{ animationDelay: '0.15s' }}
-              >
-                {/* Pricing */}
-                {profile.basePrice > 0 && (
-                  <div className="mb-6 pb-6 border-b border-[var(--color-border-subtle)]">
-                    <div className="flex items-baseline justify-between">
-                      <span className="text-sm text-[var(--color-text-secondary)]">
-                        {locale === 'ka' ? 'საწყისი ფასი' : 'Starting Rate'}
-                      </span>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-bold text-[var(--color-text-primary)]">{profile.basePrice}</span>
-                        <span className="text-lg text-[var(--color-text-secondary)]">₾</span>
-                        <span className="text-sm text-[var(--color-text-muted)]">{getPricingLabel()}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* CTA Button */}
-                <button
-                  onClick={handleContact}
-                  className="w-full py-4 rounded-xl text-white font-bold text-sm transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center gap-2"
-                  style={{
-                    backgroundColor: '#C4735B',
-                    boxShadow: '0 10px 30px rgba(196, 115, 91, 0.3)',
-                  }}
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  {locale === 'ka' ? 'შეტყობინება' : 'Message'}
-                </button>
-
-                {/* Quick Stats */}
-                <div className="grid grid-cols-2 gap-3 mt-6">
-                  <div className="p-4 rounded-xl bg-[var(--color-bg-tertiary)]">
-                    <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)] mb-1">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>{locale === 'ka' ? 'პასუხი' : 'Response'}</span>
-                    </div>
-                    <p className="font-bold text-[var(--color-text-primary)]">&lt;1 {locale === 'ka' ? 'სთ' : 'hour'}</p>
-                  </div>
-                  <div className="p-4 rounded-xl bg-[var(--color-bg-tertiary)]">
-                    <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)] mb-1">
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>{locale === 'ka' ? 'წევრობა' : 'Member'}</span>
-                    </div>
-                    <p className="font-bold text-[var(--color-text-primary)]">2024</p>
-                  </div>
-                </div>
+              <div className="bg-white dark:bg-neutral-900 rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-neutral-800">
+                <p className="text-xs text-neutral-500 mb-1">{locale === 'ka' ? 'პასუხი' : 'Response'}</p>
+                <p className="text-xl font-bold text-neutral-900 dark:text-white">&lt;1 <span className="text-sm font-normal text-neutral-500">{locale === 'ka' ? 'სთ' : 'hr'}</span></p>
               </div>
 
-              {/* Trust Badges */}
-              <div
-                className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 shadow-sm"
-                style={{ animationDelay: '0.2s' }}
-              >
-                <h3 className="text-sm font-bold text-[var(--color-text-primary)] mb-4">
-                  {locale === 'ka' ? 'სანდოობა' : 'Trust & Safety'}
-                </h3>
-
-                <div className="space-y-3">
-                  {/* Phone Verified */}
-                  {profile.isPhoneVerified && (
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/5 border border-blue-500/10">
-                      <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                        <BadgeCheck className="w-5 h-5 text-blue-500" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-                          {locale === 'ka' ? 'ტელეფონი დადასტურებული' : 'Phone Verified'}
-                        </p>
-                        <p className="text-xs text-[var(--color-text-tertiary)]">
-                          {locale === 'ka' ? 'ტელეფონის ნომერი შემოწმებული' : 'Phone number confirmed'}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Email Verified */}
-                  {profile.isEmailVerified && (
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                        <Shield className="w-5 h-5 text-emerald-500" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-                          {locale === 'ka' ? 'ელფოსტა დადასტურებული' : 'Email Verified'}
-                        </p>
-                        <p className="text-xs text-[var(--color-text-tertiary)]">
-                          {locale === 'ka' ? 'ელფოსტის მისამართი შემოწმებული' : 'Email address confirmed'}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Top Rated - only show if user actually has high rating */}
-                  {profile.avgRating >= 4.5 && profile.totalReviews >= 5 && (
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
-                      <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                        <Trophy className="w-5 h-5 text-amber-500" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-                          {locale === 'ka' ? 'ტოპ რეიტინგი' : 'Top Rated'}
-                        </p>
-                        <p className="text-xs text-[var(--color-text-tertiary)]">
-                          {locale === 'ka'
-                            ? `${profile.avgRating.toFixed(1)} ★ (${profile.totalReviews} შეფასება)`
-                            : `${profile.avgRating.toFixed(1)} ★ from ${profile.totalReviews} reviews`}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Experience Badge - show if 5+ years experience */}
-                  {profile.yearsExperience >= 5 && (
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-purple-500/5 border border-purple-500/10">
-                      <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                        <Briefcase className="w-5 h-5 text-purple-500" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-                          {locale === 'ka' ? 'გამოცდილი' : 'Experienced'}
-                        </p>
-                        <p className="text-xs text-[var(--color-text-tertiary)]">
-                          {locale === 'ka'
-                            ? `${profile.yearsExperience}+ წლის გამოცდილება`
-                            : `${profile.yearsExperience}+ years of experience`}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Completed Jobs Badge - show if has completed jobs */}
-                  {totalCompletedJobs >= 10 && (
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-teal-500/5 border border-teal-500/10">
-                      <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center">
-                        <CheckCircle className="w-5 h-5 text-teal-500" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-                          {locale === 'ka' ? 'აქტიური პროფესიონალი' : 'Active Professional'}
-                        </p>
-                        <p className="text-xs text-[var(--color-text-tertiary)]">
-                          {locale === 'ka'
-                            ? `${totalCompletedJobs}+ დასრულებული პროექტი`
-                            : `${totalCompletedJobs}+ completed projects`}
-                        </p>
-                      </div>
-                    </div>
-                  )}
+              {totalCompletedJobs > 0 && (
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-neutral-800">
+                  <p className="text-xs text-neutral-500 mb-1">{locale === 'ka' ? 'პროექტები' : 'Projects'}</p>
+                  <p className="text-xl font-bold text-neutral-900 dark:text-white">{totalCompletedJobs}</p>
                 </div>
-              </div>
+              )}
 
-              {/* Social Links - Only show if at least one is available */}
-              {(profile.facebookUrl || profile.instagramUrl || profile.linkedinUrl || profile.websiteUrl) && (
-                <div
-                  className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-5 shadow-sm"
-                  style={{ animationDelay: '0.22s' }}
-                >
-                  <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-4">
-                    {locale === 'ka' ? 'სოციალური ქსელები' : 'Social Links'}
+              <div className="bg-white dark:bg-neutral-900 rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-neutral-800">
+                <p className="text-xs text-neutral-500 mb-1">{locale === 'ka' ? 'წევრობა' : 'Member since'}</p>
+                <p className="text-xl font-bold text-neutral-900 dark:text-white">2024</p>
+              </div>
+            </div>
+
+            {/* Trust & Social */}
+            <div className="grid sm:grid-cols-2 gap-4">
+              {/* Verification Badges */}
+              {(profile.isPhoneVerified || profile.isEmailVerified || profile.verificationStatus === 'verified') && (
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl p-5 shadow-sm border border-neutral-100 dark:border-neutral-800">
+                  <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-3">
+                    {locale === 'ka' ? 'ვერიფიკაცია' : 'Verification'}
                   </h3>
-                  <div className="flex flex-wrap gap-3">
-                    {profile.facebookUrl && (
-                      <a
-                        href={profile.facebookUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#1877F2]/10 text-[#1877F2] hover:bg-[#1877F2]/20 transition-colors"
-                      >
-                        <Facebook className="w-4 h-4" />
-                        <span className="text-sm font-medium">Facebook</span>
-                      </a>
+                  <div className="space-y-2">
+                    {profile.verificationStatus === 'verified' && (
+                      <div className="flex items-center gap-2 text-emerald-600">
+                        <BadgeCheck className="w-4 h-4" />
+                        <span className="text-sm font-medium">{locale === 'ka' ? 'პირადობა დადასტურებული' : 'Identity Verified'}</span>
+                      </div>
                     )}
-                    {profile.instagramUrl && (
-                      <a
-                        href={profile.instagramUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#E4405F]/10 text-[#E4405F] hover:bg-[#E4405F]/20 transition-colors"
-                      >
-                        <Instagram className="w-4 h-4" />
-                        <span className="text-sm font-medium">Instagram</span>
-                      </a>
+                    {profile.isPhoneVerified && (
+                      <div className="flex items-center gap-2 text-blue-600">
+                        <Phone className="w-4 h-4" />
+                        <span className="text-sm font-medium">{locale === 'ka' ? 'ტელეფონი' : 'Phone'}</span>
+                      </div>
                     )}
-                    {profile.linkedinUrl && (
-                      <a
-                        href={profile.linkedinUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0A66C2]/10 text-[#0A66C2] hover:bg-[#0A66C2]/20 transition-colors"
-                      >
-                        <Linkedin className="w-4 h-4" />
-                        <span className="text-sm font-medium">LinkedIn</span>
-                      </a>
-                    )}
-                    {profile.websiteUrl && (
-                      <a
-                        href={profile.websiteUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-neutral-500/10 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-500/20 transition-colors"
-                      >
-                        <Globe className="w-4 h-4" />
-                        <span className="text-sm font-medium">{locale === 'ka' ? 'ვებსაიტი' : 'Website'}</span>
-                      </a>
+                    {profile.isEmailVerified && (
+                      <div className="flex items-center gap-2 text-purple-600">
+                        <Shield className="w-4 h-4" />
+                        <span className="text-sm font-medium">{locale === 'ka' ? 'ელფოსტა' : 'Email'}</span>
+                      </div>
                     )}
                   </div>
                 </div>
               )}
 
-              {/* Service Areas */}
-              <div
-                className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] overflow-hidden shadow-sm"
-                style={{ animationDelay: '0.25s' }}
-              >
-                {/* Map Illustration */}
-                <div className="aspect-[16/10] relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${tierColor}10 0%, ${tierColor}05 100%)` }}>
-                  {/* Decorative Map Lines */}
-                  <svg className="absolute inset-0 w-full h-full opacity-30" viewBox="0 0 200 125" preserveAspectRatio="none">
-                    <path d="M0,60 Q50,40 100,60 T200,60" fill="none" stroke={tierColor} strokeWidth="0.5" opacity="0.5"/>
-                    <path d="M0,70 Q50,50 100,70 T200,70" fill="none" stroke={tierColor} strokeWidth="0.5" opacity="0.3"/>
-                    <path d="M0,80 Q50,60 100,80 T200,80" fill="none" stroke={tierColor} strokeWidth="0.5" opacity="0.2"/>
-                    <circle cx="100" cy="60" r="20" fill={tierColor} opacity="0.1"/>
-                    <circle cx="100" cy="60" r="10" fill={tierColor} opacity="0.15"/>
-                  </svg>
-
-                  {/* Location Pin */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <div
-                        className="w-14 h-14 mx-auto mb-2 rounded-2xl shadow-xl flex items-center justify-center"
-                        style={{ backgroundColor: tierColor }}
-                      >
-                        <MapPin className="w-7 h-7 text-white" />
-                      </div>
-                      <p className="text-sm font-bold" style={{ color: tierColor }}>
-                        {translateCity(profile.serviceAreas[0] || 'Tbilisi')}
-                      </p>
-                    </div>
+              {/* Social Links */}
+              {(profile.facebookUrl || profile.instagramUrl || profile.linkedinUrl || profile.websiteUrl) && (
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl p-5 shadow-sm border border-neutral-100 dark:border-neutral-800">
+                  <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-3">
+                    {locale === 'ka' ? 'სოციალური' : 'Social'}
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.facebookUrl && (
+                      <a href={profile.facebookUrl} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-[#1877F2]/10 flex items-center justify-center text-[#1877F2] hover:bg-[#1877F2]/20 transition-colors">
+                        <Facebook className="w-4 h-4" />
+                      </a>
+                    )}
+                    {profile.instagramUrl && (
+                      <a href={profile.instagramUrl} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-[#E4405F]/10 flex items-center justify-center text-[#E4405F] hover:bg-[#E4405F]/20 transition-colors">
+                        <Instagram className="w-4 h-4" />
+                      </a>
+                    )}
+                    {profile.linkedinUrl && (
+                      <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-[#0A66C2]/10 flex items-center justify-center text-[#0A66C2] hover:bg-[#0A66C2]/20 transition-colors">
+                        <Linkedin className="w-4 h-4" />
+                      </a>
+                    )}
+                    {profile.websiteUrl && (
+                      <a href={profile.websiteUrl} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
+                        <Globe className="w-4 h-4" />
+                      </a>
+                    )}
                   </div>
                 </div>
-
-                {/* Areas List */}
-                {profile.serviceAreas.length > 1 && (
-                  <div className="p-4 border-t border-[var(--color-border-subtle)]">
-                    <p className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
-                      {locale === 'ka' ? 'მომსახურების ზონები' : 'Service Areas'}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {profile.serviceAreas.slice(0, 5).map((area, idx) => (
-                        <span
-                          key={idx}
-                          className="px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]"
-                        >
-                          {translateCity(area)}
-                        </span>
-                      ))}
-                      {profile.serviceAreas.length > 5 && (
-                        <span className="px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)]">
-                          +{profile.serviceAreas.length - 5}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
+              )}
             </div>
           </div>
-        </div>
+        )}
+
+        {/* PORTFOLIO TAB */}
+        {activeTab === 'portfolio' && (
+          <div className="animate-in fade-in duration-300">
+            {portfolioImages.length > 0 ? (
+              <div className="columns-2 sm:columns-3 gap-3">
+                {portfolioImages.map((img, idx) => {
+                  const heights = ['aspect-[3/4]', 'aspect-square', 'aspect-[4/5]', 'aspect-[5/6]', 'aspect-square'];
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => openLightbox(idx)}
+                      className={`relative w-full ${heights[idx % heights.length]} rounded-xl overflow-hidden bg-neutral-200 dark:bg-neutral-800 group cursor-pointer mb-3 break-inside-avoid`}
+                    >
+                      <img
+                        src={getImageUrl(img.url)}
+                        alt={img.title || ''}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
+                          <ExternalLink className="w-4 h-4 text-neutral-700" />
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <Camera className="w-12 h-12 text-neutral-300 dark:text-neutral-700 mx-auto mb-4" />
+                <p className="text-neutral-500">{locale === 'ka' ? 'ნამუშევრები არ არის' : 'No portfolio items yet'}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* REVIEWS TAB */}
+        {activeTab === 'reviews' && (
+          <div className="animate-in fade-in duration-300">
+            {reviews.length > 0 ? (
+              <div className="space-y-4">
+                {/* Rating Summary */}
+                {profile.avgRating > 0 && (
+                  <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-sm border border-neutral-100 dark:border-neutral-800 text-center">
+                    <div className="text-5xl font-bold text-neutral-900 dark:text-white mb-2">{profile.avgRating.toFixed(1)}</div>
+                    <div className="flex justify-center gap-1 mb-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star key={star} className={`w-5 h-5 ${star <= Math.round(profile.avgRating) ? 'fill-amber-400 text-amber-400' : 'text-neutral-300'}`} />
+                      ))}
+                    </div>
+                    <p className="text-sm text-neutral-500">{profile.totalReviews} {locale === 'ka' ? 'შეფასება' : 'reviews'}</p>
+                  </div>
+                )}
+
+                {/* Reviews List */}
+                {reviews.map((review) => (
+                  <div key={review._id} className="bg-white dark:bg-neutral-900 rounded-2xl p-5 shadow-sm border border-neutral-100 dark:border-neutral-800">
+                    <div className="flex items-start gap-4">
+                      {review.clientId.avatar ? (
+                        <img src={getImageUrl(review.clientId.avatar)} alt="" className="w-10 h-10 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                          <span className="text-sm font-semibold text-neutral-500">{review.isAnonymous ? '?' : review.clientId.name.charAt(0)}</span>
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="font-semibold text-neutral-900 dark:text-white text-sm">
+                            {review.isAnonymous ? (locale === 'ka' ? 'ანონიმური' : 'Anonymous') : review.clientId.name}
+                          </p>
+                          <div className="flex gap-0.5">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star key={star} className={`w-3.5 h-3.5 ${star <= review.rating ? 'fill-amber-400 text-amber-400' : 'text-neutral-200'}`} />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-xs text-neutral-400 mb-2">{formatTimeAgo(review.createdAt)}</p>
+                        {review.text && <p className="text-sm text-neutral-600 dark:text-neutral-400">{review.text}</p>}
+                        {review.photos && review.photos.length > 0 && (
+                          <div className="flex gap-2 mt-3">
+                            {review.photos.slice(0, 3).map((photo, pIdx) => (
+                              <div key={pIdx} className="w-16 h-16 rounded-lg overflow-hidden">
+                                <img src={getImageUrl(photo)} alt="" className="w-full h-full object-cover" />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <Star className="w-12 h-12 text-neutral-300 dark:text-neutral-700 mx-auto mb-4" />
+                <p className="text-neutral-500">{locale === 'ka' ? 'შეფასებები არ არის' : 'No reviews yet'}</p>
+              </div>
+            )}
+          </div>
+        )}
       </main>
 
-      {/* Lightbox Modal */}
-      {lightboxOpen && portfolioImages.length > 0 && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center"
-          onClick={closeLightbox}
+      {/* ========== FLOATING BUTTON - MOBILE ========== */}
+      <div
+        className={`lg:hidden fixed bottom-6 left-4 right-4 z-40 transition-all duration-300 ${
+          showFloatingButton ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'
+        }`}
+      >
+        <button
+          onClick={handleContact}
+          className="w-full py-4 rounded-2xl text-white font-semibold text-sm bg-gradient-to-r from-[#C4735B] to-[#B5654D] shadow-xl shadow-[#C4735B]/30"
         >
-          {/* Close button */}
-          <button
-            onClick={closeLightbox}
-            className="absolute top-4 right-4 sm:top-6 sm:right-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10 border border-white/10"
-          >
-            <X className="w-6 h-6 text-white" />
-          </button>
+          <span className="flex items-center justify-center gap-2">
+            <MessageSquare className="w-5 h-5" />
+            {locale === 'ka' ? 'დაკავშირება' : 'Contact'}
+            {profile.basePrice > 0 && (
+              <span className="px-2 py-0.5 rounded-full bg-white/20 text-xs">
+                {profile.basePrice}₾
+              </span>
+            )}
+          </span>
+        </button>
+      </div>
 
-          {/* Navigation arrows */}
+      {/* ========== LIGHTBOX ========== */}
+      {lightboxOpen && portfolioImages.length > 0 && (
+        <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center" onClick={closeLightbox}>
+          <button onClick={closeLightbox} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors">
+            <X className="w-5 h-5" />
+          </button>
           {portfolioImages.length > 1 && (
             <>
-              <button
-                onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10 border border-white/10"
-              >
-                <ChevronLeft className="w-6 h-6 text-white" />
+              <button onClick={(e) => { e.stopPropagation(); prevImage(); }} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors">
+                <ChevronLeft className="w-5 h-5" />
               </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10 border border-white/10"
-              >
-                <ChevronRight className="w-6 h-6 text-white" />
+              <button onClick={(e) => { e.stopPropagation(); nextImage(); }} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors">
+                <ChevronRight className="w-5 h-5" />
               </button>
             </>
           )}
-
-          {/* Image container */}
-          <div
-            className="max-w-6xl max-h-[85vh] mx-4 sm:mx-8"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src={getImageUrl(portfolioImages[lightboxIndex].url)}
-              alt={portfolioImages[lightboxIndex].title || ''}
-              className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl"
-            />
-
-            {/* Caption */}
-            {(portfolioImages[lightboxIndex].title || portfolioImages[lightboxIndex].description) && (
-              <div className="mt-6 text-center">
-                {portfolioImages[lightboxIndex].title && (
-                  <h3 className="text-white font-bold text-xl">{portfolioImages[lightboxIndex].title}</h3>
-                )}
-                {portfolioImages[lightboxIndex].description && (
-                  <p className="text-white/70 text-sm mt-2 max-w-2xl mx-auto">{portfolioImages[lightboxIndex].description}</p>
-                )}
-              </div>
-            )}
-
-            {/* Image counter */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm font-medium border border-white/10">
-              {lightboxIndex + 1} / {portfolioImages.length}
-            </div>
+          <div className="max-w-4xl max-h-[85vh] mx-4" onClick={(e) => e.stopPropagation()}>
+            <img src={getImageUrl(portfolioImages[lightboxIndex].url)} alt="" className="max-w-full max-h-[85vh] object-contain rounded-lg" />
+          </div>
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-white/10 text-white text-sm">
+            {lightboxIndex + 1} / {portfolioImages.length}
           </div>
         </div>
       )}
 
-      {/* Contact Modal */}
+      {/* ========== CONTACT MODAL ========== */}
       {showContactModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowContactModal(false)}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div
-            className="relative w-full sm:max-w-lg bg-[var(--color-bg-elevated)] rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="sm:hidden w-12 h-1.5 bg-[var(--color-border)] rounded-full mx-auto mt-3" />
-
-            <div className="p-6 sm:p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-[var(--color-text-primary)]">
-                  {locale === 'ka' ? 'შეტყობინება' : 'Send Message'}
-                </h3>
-                <button
-                  onClick={() => setShowContactModal(false)}
-                  className="w-10 h-10 rounded-xl bg-[var(--color-bg-tertiary)] flex items-center justify-center hover:bg-[var(--color-bg-muted)] transition-colors"
-                >
-                  <X className="w-5 h-5 text-[var(--color-text-secondary)]" />
-                </button>
-              </div>
-
-              {/* Pro Info */}
-              <div className="flex items-center gap-4 p-4 rounded-2xl bg-[var(--color-bg-tertiary)] mb-6">
-                {avatarUrl ? (
-                  <img src={getImageUrl(avatarUrl)} alt="" className="w-14 h-14 rounded-xl object-cover" />
-                ) : (
-                  <div
-                    className="w-14 h-14 rounded-xl flex items-center justify-center text-white text-xl font-bold"
-                    style={{ background: `linear-gradient(135deg, ${tierColor} 0%, ${tierColor}CC 100%)` }}
-                  >
-                    {profile.name.charAt(0)}
-                  </div>
-                )}
-                <div>
-                  <p className="font-bold text-[var(--color-text-primary)]">{profile.name}</p>
-                  <p className="text-sm text-[var(--color-text-secondary)]">{profile.title}</p>
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={() => setShowContactModal(false)}>
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div className="relative w-full sm:max-w-md bg-white dark:bg-neutral-900 rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="sm:hidden w-10 h-1 bg-neutral-300 rounded-full mx-auto mb-4" />
+            <div className="flex items-center gap-3 mb-4">
+              {avatarUrl ? (
+                <img src={getImageUrl(avatarUrl)} alt="" className="w-12 h-12 rounded-full object-cover" />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#C4735B] to-[#A65D47] flex items-center justify-center text-white text-lg font-bold">
+                  {profile.name.charAt(0)}
                 </div>
+              )}
+              <div>
+                <p className="font-semibold text-neutral-900 dark:text-white">{profile.name}</p>
+                <p className="text-sm text-neutral-500">{profile.title}</p>
               </div>
-
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder={locale === 'ka' ? 'გამარჯობა! მაინტერესებს თქვენი მომსახურება...' : 'Hello! I\'m interested in your services...'}
-                className="w-full px-4 py-4 text-[15px] rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] resize-none focus:outline-none focus:border-[var(--color-border-hover)] transition-colors"
-                style={{ ['--tw-ring-color' as any]: tierColor }}
-                rows={4}
-              />
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={() => setShowContactModal(false)}
-                  className="flex-1 py-4 rounded-xl text-sm font-semibold border-2 border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
-                >
-                  {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
-                </button>
-                <button
-                  onClick={handleSendMessage}
-                  disabled={isSending || !message.trim()}
-                  className="flex-1 py-4 text-sm font-bold rounded-xl text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 disabled:hover:translate-y-0"
-                  style={{
-                    backgroundColor: tierColor,
-                    boxShadow: `0 10px 30px ${tierColor}30`,
-                  }}
-                >
-                  {isSending ? (locale === 'ka' ? 'იგზავნება...' : 'Sending...') : (locale === 'ka' ? 'გაგზავნა' : 'Send')}
-                </button>
-              </div>
+            </div>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder={locale === 'ka' ? 'დაწერეთ შეტყობინება...' : 'Write a message...'}
+              className="w-full px-4 py-3 text-sm rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 resize-none focus:outline-none focus:ring-2 focus:ring-[#C4735B]"
+              rows={3}
+            />
+            <div className="flex gap-2 mt-4">
+              <button onClick={() => setShowContactModal(false)} className="flex-1 py-3 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400">
+                {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+              </button>
+              <button
+                onClick={handleSendMessage}
+                disabled={isSending || !message.trim()}
+                className="flex-1 py-3 rounded-xl text-sm font-semibold text-white bg-[#C4735B] disabled:opacity-50"
+              >
+                {isSending ? '...' : (locale === 'ka' ? 'გაგზავნა' : 'Send')}
+              </button>
             </div>
           </div>
         </div>

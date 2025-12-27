@@ -175,7 +175,7 @@ const TABS = [
     key: 'portfolio',
     route: '/browse/portfolio',
     label: 'Portfolio',
-    labelKa: 'პორტფოლიო',
+    labelKa: 'ნამუშევრები',
     icon: Images,
     showFor: 'all' as const,
   },
