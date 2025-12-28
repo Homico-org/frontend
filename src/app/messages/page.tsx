@@ -5,6 +5,7 @@ import Avatar from '@/components/common/Avatar';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useMessages } from '@/contexts/MessagesContext';
 import { AnalyticsEvent, useAnalytics } from '@/hooks/useAnalytics';
 import { api } from '@/lib/api';
 import { storage } from '@/services/storage';
@@ -406,6 +407,7 @@ const ChatContent = memo(function ChatContent({
   socketRef,
   onBack,
   onConversationUpdate,
+  onMessagesRead,
 }: {
   conversation: Conversation;
   userId: string;
@@ -413,6 +415,7 @@ const ChatContent = memo(function ChatContent({
   socketRef: React.MutableRefObject<Socket | null>;
   onBack: () => void;
   onConversationUpdate: (conversationId: string, lastMessage: string) => void;
+  onMessagesRead: () => void;
 }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -439,6 +442,8 @@ const ChatContent = memo(function ChatContent({
           await api.patch(`/messages/conversation/${conversation._id}/delivered`);
           await api.patch(`/messages/conversation/${conversation._id}/read-all`);
           await api.patch(`/conversations/${conversation._id}/read`);
+          // Refresh header unread count immediately
+          onMessagesRead();
         } catch (e) {
           // Ignore read errors
         }
@@ -797,6 +802,7 @@ function MessagesPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { locale } = useLanguage();
   const { trackEvent } = useAnalytics();
+  const { refreshUnreadCount } = useMessages();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -978,6 +984,12 @@ function MessagesPageContent() {
     setIsMobileListOpen(false);
     // Update URL without navigation
     window.history.replaceState({}, '', `/messages?conversation=${conv._id}`);
+    // Clear the unread count for this conversation in the list
+    if (conv.unreadCount > 0) {
+      setConversations(prev =>
+        prev.map(c => (c._id === conv._id ? { ...c, unreadCount: 0 } : c))
+      );
+    }
   }, []);
 
   // Handle conversation update from ChatContent
@@ -1242,6 +1254,7 @@ function MessagesPageContent() {
               socketRef={socketRef}
               onBack={handleBackToList}
               onConversationUpdate={handleConversationUpdate}
+              onMessagesRead={refreshUnreadCount}
             />
           ) : (
             /* No Conversation Selected */
