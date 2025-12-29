@@ -442,8 +442,8 @@ const ChatContent = memo(function ChatContent({
           await api.patch(`/messages/conversation/${conversation._id}/delivered`);
           await api.patch(`/messages/conversation/${conversation._id}/read-all`);
           await api.patch(`/conversations/${conversation._id}/read`);
-          // Refresh header unread count immediately
-          onMessagesRead();
+          // Refresh header unread count immediately after marking as read
+          await onMessagesRead();
         } catch (e) {
           // Ignore read errors
         }
@@ -914,16 +914,23 @@ function MessagesPageContent() {
     try {
       setIsLoading(true);
       const response = await api.get('/conversations');
-      setConversations(response.data);
+      let conversationsData = response.data;
 
       // If URL has conversation ID and this is the initial load, select it
       if (!initialLoadDoneRef.current && initialConversationIdRef.current) {
-        const conv = response.data.find((c: Conversation) => c._id === initialConversationIdRef.current);
+        const conv = conversationsData.find((c: Conversation) => c._id === initialConversationIdRef.current);
         if (conv) {
           setSelectedConversation(conv);
           setIsMobileListOpen(false);
+          // Clear unread count for this conversation in the data before setting state
+          if (conv.unreadCount > 0) {
+            conversationsData = conversationsData.map((c: Conversation) =>
+              c._id === conv._id ? { ...c, unreadCount: 0 } : c
+            );
+          }
         }
       }
+      setConversations(conversationsData);
       // Always mark initial load as done
       initialLoadDoneRef.current = true;
     } catch (error) {

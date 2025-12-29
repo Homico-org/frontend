@@ -9,8 +9,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage, countries } from '@/contexts/LanguageContext';
 import { AlertCircle, AlertTriangle, BadgeCheck, Bell, BriefcaseBusiness, Calendar, Camera, Check, CheckCircle2, ChevronDown, ChevronRight, CreditCard, Eye, EyeOff, Facebook, FileText, Globe, Instagram, Linkedin, Loader2, Lock, Mail, MapPin, Megaphone, MessageCircle, MessageSquare, RefreshCw, Send, Shield, Smartphone, Trash2, Upload, User, X } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 // Types for payment methods
 interface PaymentMethod {
@@ -61,7 +61,9 @@ function SettingsPageContent() {
   const { openLoginModal } = useAuthModal();
   const { t, locale } = useLanguage();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('profile');
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get('tab') || 'profile';
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -3785,8 +3787,10 @@ function SettingsPageContent() {
 
 export default function SettingsPage() {
   return (
-    <AuthGuard>
-      <SettingsPageContent />
-    </AuthGuard>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-neutral-400" /></div>}>
+      <AuthGuard>
+        <SettingsPageContent />
+      </AuthGuard>
+    </Suspense>
   );
 }

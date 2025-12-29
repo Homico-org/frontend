@@ -19,6 +19,7 @@ interface User {
   accountType?: AccountType;
   companyName?: string;
   isProfileCompleted?: boolean;
+  verificationStatus?: 'pending' | 'submitted' | 'verified' | 'rejected';
 }
 
 interface AuthContextType {
@@ -79,7 +80,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         selectedSubcategories: userData.selectedSubcategories,
         accountType: userData.accountType,
         companyName: userData.companyName,
-        isProfileCompleted: userData.isProfileCompleted
+        isProfileCompleted: userData.isProfileCompleted,
+        verificationStatus: userData.verificationStatus
       };
     } catch (err) {
       console.error('Token validation failed:', err);
