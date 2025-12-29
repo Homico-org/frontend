@@ -3,7 +3,7 @@
 import { AnalyticsEvent, trackAnalyticsEvent } from '@/hooks/useAnalytics';
 import { AccountType, UserRole } from '@/types';
 import { useRouter } from 'next/navigation';
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 interface User {
   id: string;
@@ -103,37 +103,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Get locally stored user data
+      // Get locally stored user data - use immediately for fast initial render
       const storedUserStr = localStorage.getItem('user');
       const storedUser = storedUserStr ? JSON.parse(storedUserStr) : null;
 
-      // Validate token with backend
-      const validatedUser = await validateToken(accessToken);
-
-      if (validatedUser) {
-        // Merge with local data - prefer local avatar if it's a data URL (recently uploaded)
-        // or if the backend avatar is empty/undefined
-        let finalUser = validatedUser;
-        if (storedUser?.avatar) {
-          const isLocalDataUrl = storedUser.avatar.startsWith('data:');
-          const isBackendAvatarEmpty = !validatedUser.avatar;
-          if (isLocalDataUrl || isBackendAvatarEmpty) {
-            finalUser = { ...validatedUser, avatar: storedUser.avatar };
-          }
-        }
-
-        // Token is valid, update user state and localStorage
-        localStorage.setItem('user', JSON.stringify(finalUser));
-        setUser(finalUser);
+      // Use cached user data immediately to prevent blocking
+      if (storedUser) {
+        setUser(storedUser);
         setToken(accessToken);
-      } else {
-        // Token is invalid, clear auth data
-        clearAuthData();
-        setUser(null);
-        setToken(null);
-      }
+        setIsLoading(false);
 
-      setIsLoading(false);
+        // Validate token in background (non-blocking)
+        validateToken(accessToken).then(validatedUser => {
+          if (validatedUser) {
+            // Merge with local data - prefer local avatar if it's a data URL (recently uploaded)
+            let finalUser = validatedUser;
+            if (storedUser?.avatar) {
+              const isLocalDataUrl = storedUser.avatar.startsWith('data:');
+              const isBackendAvatarEmpty = !validatedUser.avatar;
+              if (isLocalDataUrl || isBackendAvatarEmpty) {
+                finalUser = { ...validatedUser, avatar: storedUser.avatar };
+              }
+            }
+            // Update with fresh data from backend
+            localStorage.setItem('user', JSON.stringify(finalUser));
+            setUser(finalUser);
+          } else {
+            // Token is invalid, clear auth data
+            clearAuthData();
+            setUser(null);
+            setToken(null);
+          }
+        });
+      } else {
+        // No cached user, must validate synchronously
+        const validatedUser = await validateToken(accessToken);
+        if (validatedUser) {
+          localStorage.setItem('user', JSON.stringify(validatedUser));
+          setUser(validatedUser);
+          setToken(accessToken);
+        } else {
+          clearAuthData();
+        }
+        setIsLoading(false);
+      }
     };
 
     initAuth();
@@ -151,12 +164,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const login = (accessToken: string, userData: User) => {
+  const login = useCallback((accessToken: string, userData: User) => {
     localStorage.setItem('access_token', accessToken);
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
     setToken(accessToken);
-  };
+  }, []);
 
   const logout = useCallback(() => {
     // Track logout event before clearing data
@@ -169,26 +182,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.replace('/');
   }, [router, user?.role]);
 
-  const updateUser = (userData: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...userData };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      setUser(updatedUser);
-    }
-  };
+  const updateUser = useCallback((userData: Partial<User>) => {
+    setUser(prev => {
+      if (prev) {
+        const updatedUser = { ...prev, ...userData };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        return updatedUser;
+      }
+      return prev;
+    });
+  }, []);
+
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    user,
+    token,
+    isAuthenticated: !!user,
+    isLoading,
+    login,
+    logout,
+    updateUser,
+  }), [user, token, isLoading, login, logout, updateUser]);
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        token,
-        isAuthenticated: !!user,
-        isLoading,
-        login,
-        logout,
-        updateUser,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

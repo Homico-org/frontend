@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import api from '@/lib/api';
 
 // Types matching the backend schema
@@ -70,6 +70,9 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Ref to prevent duplicate fetches (React Strict Mode)
+  const fetchedRef = React.useRef(false);
+
   const fetchCategories = useCallback(async () => {
     try {
       setLoading(true);
@@ -91,6 +94,9 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // Prevent duplicate fetch in React Strict Mode
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
     fetchCategories();
   }, [fetchCategories]);
 
@@ -128,21 +134,22 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
     [getSubcategoriesForCategory]
   );
 
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    categories,
+    flatCategories,
+    loading,
+    error,
+    getCategoryByKey,
+    getSubcategoriesForCategory,
+    getSubSubcategoriesForSubcategory,
+    getCategoryName,
+    getSubcategoryName,
+    refetch: fetchCategories,
+  }), [categories, flatCategories, loading, error, getCategoryByKey, getSubcategoriesForCategory, getSubSubcategoriesForSubcategory, getCategoryName, getSubcategoryName, fetchCategories]);
+
   return (
-    <CategoriesContext.Provider
-      value={{
-        categories,
-        flatCategories,
-        loading,
-        error,
-        getCategoryByKey,
-        getSubcategoriesForCategory,
-        getSubSubcategoriesForSubcategory,
-        getCategoryName,
-        getSubcategoryName,
-        refetch: fetchCategories,
-      }}
-    >
+    <CategoriesContext.Provider value={contextValue}>
       {children}
     </CategoriesContext.Provider>
   );

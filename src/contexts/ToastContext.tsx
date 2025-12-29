@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, useMemo } from 'react';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -63,8 +63,19 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     addToast({ type: 'info', message, description });
   }, [addToast]);
 
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    toasts,
+    addToast,
+    removeToast,
+    success,
+    error,
+    warning,
+    info
+  }), [toasts, addToast, removeToast, success, error, warning, info]);
+
   return (
-    <ToastContext.Provider value={{ toasts, addToast, removeToast, success, error, warning, info }}>
+    <ToastContext.Provider value={contextValue}>
       {children}
     </ToastContext.Provider>
   );

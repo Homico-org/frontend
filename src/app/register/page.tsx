@@ -140,7 +140,8 @@ function RegisterContent() {
 
   const getClientAvatarUrl = () => {
     if (clientCustomAvatar) return clientCustomAvatar;
-    return `/images/avatars/avatar-${clientAvatarIndex}.png`;
+    // Use Cloudinary with auto quality/format and face detection for avatars
+    return `https://res.cloudinary.com/dakcvkodo/image/upload/w_200,h_200,c_fill,g_face,q_auto,f_auto/homico/avatars/avatar-${clientAvatarIndex}.png`;
   };
 
   // Handle client avatar file upload
@@ -1414,7 +1415,7 @@ function RegisterContent() {
                 <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 mb-5">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(99,102,241,0.08),transparent_50%)]" />
                   <Image
-                    src="/images/client.png"
+                    src="https://res.cloudinary.com/dakcvkodo/image/upload/w_600,h_450,c_pad,q_auto,f_auto/homico/avatars/client.png"
                     alt="Client"
                     fill
                     className="object-contain object-center p-6 group-hover:scale-105 transition-transform duration-700 ease-out"
@@ -1483,7 +1484,7 @@ function RegisterContent() {
                 <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-white/10 backdrop-blur-sm mb-5">
                   <div className="absolute inset-0 bg-gradient-to-t from-[#C4735B]/20 to-transparent" />
                   <Image
-                    src="/images/pro-plumber.png"
+                    src="https://res.cloudinary.com/dakcvkodo/image/upload/w_600,h_450,c_pad,q_auto,f_auto/homico/avatars/pro-plumber.png"
                     alt="Professional"
                     fill
                     className="object-contain object-center p-6 group-hover:scale-105 transition-transform duration-700 ease-out"

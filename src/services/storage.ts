@@ -1,6 +1,8 @@
 // Local Storage Service
 // Centralized service for managing localStorage operations
 
+import { optimizeCloudinaryUrl, IMAGE_PRESETS, type ImageTransformOptions } from '@/utils/imageOptimization';
+
 const STORAGE_KEYS = {
   BROWSE_VIEW_MODE: 'homi_browse_view_mode',
   PRO_VIEW_MODE: 'homi_pro_view_mode',
@@ -129,8 +131,11 @@ class StorageService {
   }
 
   // Get file URL - handles both local uploads and external URLs
-  getFileUrl(path: string | undefined): string {
-    if (!path) return '';
+  getFileUrl(path: string | undefined | null): string {
+    if (!path || path === 'undefined' || path === 'null') return '';
+
+    // Handle data URLs - return as-is
+    if (path.startsWith('data:')) return path;
 
     // If it's already a full URL, return as-is
     if (path.startsWith('http://') || path.startsWith('https://')) {
@@ -146,6 +151,34 @@ class StorageService {
     // Otherwise, assume it's just a filename and build the full path
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     return `${apiUrl}/uploads/${path}`;
+  }
+
+  // Get optimized image URL with Cloudinary transforms
+  getOptimizedImageUrl(
+    path: string | undefined,
+    preset: keyof typeof IMAGE_PRESETS | ImageTransformOptions = 'thumbnail'
+  ): string {
+    const url = this.getFileUrl(path);
+    if (!url) return '';
+
+    const options = typeof preset === 'string' ? IMAGE_PRESETS[preset] : preset;
+    return optimizeCloudinaryUrl(url, options);
+  }
+
+  // Get avatar URL with proper optimization
+  getAvatarUrl(path: string | undefined, size: 'sm' | 'md' | 'lg' = 'md'): string {
+    const preset = size === 'lg' ? 'avatarLarge' : 'avatar';
+    return this.getOptimizedImageUrl(path, preset);
+  }
+
+  // Get job card image URL
+  getJobCardImageUrl(path: string | undefined): string {
+    return this.getOptimizedImageUrl(path, 'jobCard');
+  }
+
+  // Get feed card image URL
+  getFeedCardImageUrl(path: string | undefined): string {
+    return this.getOptimizedImageUrl(path, 'feedCard');
   }
 }
 

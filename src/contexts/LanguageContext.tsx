@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import en from '@/locales/en.json';
 import ka from '@/locales/ka.json';
 
@@ -175,15 +175,15 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
   }, [locale, country, isInitialized]);
 
-  const handleSetCountry = (newCountry: string) => {
+  const handleSetCountry = useCallback((newCountry: string) => {
     const countryCode = newCountry as CountryCode;
     if (countries[countryCode]) {
       setCountry(countryCode);
       setLocale(countries[countryCode].locale);
     }
-  };
+  }, []);
 
-  const t = (key: string, params?: Record<string, string | number>): string => {
+  const t = useCallback((key: string, params?: Record<string, string | number>): string => {
     const keys = key.split('.');
     let value: any = translations[locale];
 
@@ -214,10 +214,19 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
 
     return value;
-  };
+  }, [locale]);
+
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    locale,
+    setLocale,
+    t,
+    country,
+    setCountry: handleSetCountry
+  }), [locale, setLocale, t, country, handleSetCountry]);
 
   return (
-    <LanguageContext.Provider value={{ locale, setLocale, t, country, setCountry: handleSetCountry }}>
+    <LanguageContext.Provider value={contextValue}>
       {children}
     </LanguageContext.Provider>
   );

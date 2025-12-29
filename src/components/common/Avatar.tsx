@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { storage } from '@/services/storage';
 
 interface AvatarProps {
   src?: string | null;
@@ -79,18 +80,29 @@ export default function Avatar({
     return colors[Math.abs(hash) % colors.length];
   };
 
-  // Handle relative URLs by prefixing with API URL
-  const getFullUrl = (url: string) => {
-    // Already a full URL or base64 data URL
-    if (url.startsWith('http') || url.startsWith('data:')) return url;
-    return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
+  // Get optimized avatar URL based on size
+  const getAvatarUrl = (url: string) => {
+    // Base64 data URLs should not be optimized
+    if (url.startsWith('data:')) return url;
+    // Use appropriate size for Cloudinary optimization
+    const sizeMap: Record<string, 'sm' | 'md' | 'lg'> = {
+      xs: 'sm',
+      sm: 'sm',
+      md: 'md',
+      lg: 'md',
+      xl: 'lg',
+      '2xl': 'lg',
+    };
+    return storage.getAvatarUrl(url, sizeMap[size] || 'md');
   };
 
   if (src && !imageError) {
     return (
       <img
-        src={getFullUrl(src)}
+        src={getAvatarUrl(src)}
         alt={name}
+        loading="lazy"
+        decoding="async"
         onClick={handleClick}
         onError={() => setImageError(true)}
         className={`${sizeClasses[size]} ${roundedClasses[rounded]} ${borderClass} ${cursorClass} object-cover ${className}`}

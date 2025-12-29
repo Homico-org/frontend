@@ -14,6 +14,19 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
   },
+  // Optimize imports for better tree-shaking
+  modularizeImports: {
+    'lucide-react': {
+      transform: 'lucide-react/dist/esm/icons/{{lowerCase kebabCase member}}',
+    },
+    'date-fns': {
+      transform: 'date-fns/{{member}}',
+    },
+  },
+  // Experimental optimizations
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'date-fns'],
+  },
 }
 
 module.exports = nextConfig

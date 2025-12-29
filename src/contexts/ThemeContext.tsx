@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -39,13 +39,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     // No-op - dark mode disabled for now
   }, []);
 
-  // Prevent flash
-  if (!mounted) {
-    return null;
-  }
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({ theme, toggleTheme, setTheme }), [theme, toggleTheme, setTheme]);
 
+  // Don't block render - always render children
+  // The theme is always 'light' so no flash will occur
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
+    <ThemeContext.Provider value={contextValue}>
       {children}
     </ThemeContext.Provider>
   );

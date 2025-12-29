@@ -2,8 +2,9 @@
 
 import { FeedItem, FeedItemType } from '@/types';
 import { getCategoryLabelStatic } from '@/hooks/useCategoryLabels';
+import { storage } from '@/services/storage';
 import Link from 'next/link';
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 
 // Terracotta accent - matching design
 const ACCENT_COLOR = '#C4735B';
@@ -15,7 +16,7 @@ interface FeedCardProps {
   locale?: string;
 }
 
-export default function FeedCard({ item, locale = 'en' }: FeedCardProps) {
+const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
@@ -26,15 +27,15 @@ export default function FeedCard({ item, locale = 'en' }: FeedCardProps) {
   const isBeforeAfter = item.type === FeedItemType.BEFORE_AFTER && item.beforeImage && item.afterImage;
   const totalImages = item.images.length;
 
-  // Check if this is a new item (created within last 7 days and no rating)
-  const isNew = (() => {
+  // Check if this is a new item (created within last 14 days and no rating)
+  const isNew = useMemo(() => {
     if (item.pro.rating && item.pro.rating > 0) return false;
     if (!item.createdAt) return true; // Default to new if no date
     const createdDate = new Date(item.createdAt);
     const now = new Date();
     const daysDiff = (now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
     return daysDiff < 14;
-  })();
+  }, [item.pro.rating, item.createdAt]);
 
   const nextImage = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -114,9 +115,9 @@ export default function FeedCard({ item, locale = 'en' }: FeedCardProps) {
               onTouchEnd={() => setIsDragging(false)}
               onTouchMove={handleSliderMove}
             >
-              <img src={item.afterImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
+              <img src={storage.getFeedCardImageUrl(item.afterImage)} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
               <div className="absolute inset-0 overflow-hidden" style={{ width: `${sliderPosition}%` }}>
-                <img src={item.beforeImage} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ width: `${100 / (sliderPosition / 100)}%`, maxWidth: 'none' }} />
+                <img src={storage.getFeedCardImageUrl(item.beforeImage)} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" style={{ width: `${100 / (sliderPosition / 100)}%`, maxWidth: 'none' }} />
               </div>
 
               {/* Slider handle */}
@@ -140,10 +141,12 @@ export default function FeedCard({ item, locale = 'en' }: FeedCardProps) {
           ) : (
             <div className="relative aspect-[4/3] bg-neutral-100 dark:bg-neutral-800 rounded-xl overflow-hidden">
               {/* Main Image */}
-              {!imageError && item.images.length > 0 ? (
+              {!imageError && item.images.length > 0 && item.images[currentImageIndex] ? (
                 <img
-                  src={item.images[currentImageIndex]}
+                  src={storage.getFeedCardImageUrl(item.images[currentImageIndex])}
                   alt={item.title}
+                  loading="lazy"
+                  decoding="async"
                   className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
                   onLoad={() => setImageLoaded(true)}
                   onError={() => setImageError(true)}
@@ -241,7 +244,7 @@ export default function FeedCard({ item, locale = 'en' }: FeedCardProps) {
               {/* Avatar - Circle with image or initial */}
               <div className="w-8 h-8 rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex-shrink-0">
                 {item.pro.avatar ? (
-                  <img src={item.pro.avatar} alt="" className="w-full h-full object-cover" />
+                  <img src={storage.getAvatarUrl(item.pro.avatar, 'sm')} alt="" loading="lazy" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-xs font-semibold text-neutral-500 dark:text-neutral-400 bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-700 dark:to-neutral-800">
                     {item.pro.name.charAt(0).toUpperCase()}
@@ -281,4 +284,6 @@ export default function FeedCard({ item, locale = 'en' }: FeedCardProps) {
       </div>
     </Link>
   );
-}
+});
+
+export default FeedCard;

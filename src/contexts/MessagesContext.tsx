@@ -1,7 +1,7 @@
 'use client';
 
 import api from '@/lib/api';
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from './AuthContext';
 
 interface MessagesContextType {
@@ -41,24 +41,17 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
     }
   }, [authLoading, isAuthenticated, refreshUnreadCount]);
 
-  // Poll for new messages every 30 seconds
-  useEffect(() => {
-    if (!isAuthenticated) return;
+  // No polling - messages page uses WebSocket for real-time updates
+  // refreshUnreadCount is called when user opens messages or receives WebSocket events
 
-    const interval = setInterval(() => {
-      refreshUnreadCount();
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [isAuthenticated, refreshUnreadCount]);
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    unreadCount,
+    refreshUnreadCount,
+  }), [unreadCount, refreshUnreadCount]);
 
   return (
-    <MessagesContext.Provider
-      value={{
-        unreadCount,
-        refreshUnreadCount,
-      }}
-    >
+    <MessagesContext.Provider value={contextValue}>
       {children}
     </MessagesContext.Provider>
   );

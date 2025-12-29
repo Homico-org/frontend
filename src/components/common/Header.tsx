@@ -50,31 +50,43 @@ export default function Header() {
     return isHighLevelPro(user.selectedCategories);
   }, [user]);
 
+  // Ref to prevent duplicate fetches (React Strict Mode)
+  const countersFetchedRef = useRef(false);
+
   // Fetch counter data for pro users
   useEffect(() => {
     if (!isAuthenticated || !user) return;
 
+    // Prevent duplicate fetch in React Strict Mode
+    if (countersFetchedRef.current) return;
+    countersFetchedRef.current = true;
+
     const fetchCounters = async () => {
       try {
-        if (user.role === 'pro' || user.role === 'admin') {
-          // Pro users and admin: get count of proposal status updates (accepted/rejected)
-          const response = await api.get('/jobs/counters/proposal-updates');
-          setProposalUpdatesCount(response.data.count || 0);
-        }
+        // Fetch both counters in parallel
+        const promises: Promise<any>[] = [];
 
-        // All users who post jobs: get count of unviewed proposals
-        const proposalsResponse = await api.get('/jobs/counters/unviewed-proposals');
-        setUnviewedProposalsCount(proposalsResponse.data.count || 0);
+        if (user.role === 'pro' || user.role === 'admin') {
+          promises.push(api.get('/jobs/counters/proposal-updates'));
+        }
+        promises.push(api.get('/jobs/counters/unviewed-proposals'));
+
+        const results = await Promise.all(promises);
+
+        if (user.role === 'pro' || user.role === 'admin') {
+          setProposalUpdatesCount(results[0]?.data?.count || 0);
+          setUnviewedProposalsCount(results[1]?.data?.count || 0);
+        } else {
+          setUnviewedProposalsCount(results[0]?.data?.count || 0);
+        }
       } catch (error) {
         console.error('Failed to fetch counters:', error);
       }
     };
 
     fetchCounters();
-
-    // Refresh counters every 30 seconds
-    const interval = setInterval(fetchCounters, 30000);
-    return () => clearInterval(interval);
+    // No polling - fetch once on mount/auth change
+    // Counters update via page navigation or WebSocket events
   }, [isAuthenticated, user]);
 
   // Helper to get subcategory name from flat categories

@@ -2,7 +2,7 @@
 
 import { storage } from "@/services/storage";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
 
 interface MediaItem {
@@ -53,7 +53,7 @@ interface JobCardProps {
   hasApplied?: boolean;
 }
 
-export default function JobCard({
+const JobCard = React.memo(function JobCard({
   job,
   onSave,
   isSaved = false,
@@ -66,23 +66,24 @@ export default function JobCard({
   const [daysLeft, setDaysLeft] = useState<number | null>(null);
   const [isNew, setIsNew] = useState(false);
 
-  // Combine media and images
-  const mediaImages = Array.isArray(job.media)
-    ? job.media.filter((m) => m.type === "image").map((m) => m.url)
-    : [];
-  const jobImages = Array.isArray(job.images) ? job.images : [];
-  const allImages: string[] = [
-    ...mediaImages,
-    ...jobImages.filter((img) => !mediaImages.includes(img)),
-  ];
+  // Memoize combined images array
+  const allImages = useMemo(() => {
+    const mediaImages = Array.isArray(job.media)
+      ? job.media.filter((m) => m.type === "image").map((m) => m.url)
+      : [];
+    const jobImages = Array.isArray(job.images) ? job.images : [];
+    return [
+      ...mediaImages,
+      ...jobImages.filter((img) => !mediaImages.includes(img)),
+    ];
+  }, [job.media, job.images]);
+
   const hasMultipleImages = allImages.length > 1;
 
   const getImageSrc = (img: string) => {
     if (!img) return "";
-    if (img.startsWith("http://") || img.startsWith("https://")) {
-      return img;
-    }
-    return storage.getFileUrl(img);
+    // Use optimized Cloudinary URL for job card images
+    return storage.getJobCardImageUrl(img);
   };
 
   const nextImage = useCallback((e: React.MouseEvent) => {
@@ -111,7 +112,7 @@ export default function JobCard({
     }
   }, [job.createdAt, job.deadline]);
 
-  const formatBudget = () => {
+  const formattedBudget = useMemo(() => {
     if (job.budgetType === "fixed" && job.budgetAmount) {
       return `${job.budgetAmount.toLocaleString()}₾`;
     } else if (job.budgetType === "per_sqm" && job.pricePerUnit) {
@@ -122,15 +123,15 @@ export default function JobCard({
       return `${job.budgetMin.toLocaleString()}-${job.budgetMax.toLocaleString()}₾`;
     }
     return locale === 'ka' ? "შეთანხმებით" : "Negotiable";
-  };
+  }, [job.budgetType, job.budgetAmount, job.pricePerUnit, job.areaSize, job.budgetMin, job.budgetMax, locale]);
 
-  const getTimeAgo = (date: string) => {
-    const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
+  const timeAgo = useMemo(() => {
+    const seconds = Math.floor((new Date().getTime() - new Date(job.createdAt).getTime()) / 1000);
     if (seconds < 3600) return `${Math.floor(seconds / 60)}${locale === 'ka' ? 'წთ' : 'm'}`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)}${locale === 'ka' ? 'სთ' : 'h'}`;
     if (seconds < 604800) return `${Math.floor(seconds / 86400)}${locale === 'ka' ? 'დ' : 'd'}`;
     return `${Math.floor(seconds / 604800)}${locale === 'ka' ? 'კვ' : 'w'}`;
-  };
+  }, [job.createdAt, locale]);
 
   const truncateLocation = (loc: string) => {
     if (!loc) return "";
@@ -152,6 +153,8 @@ export default function JobCard({
             <img
               src={getImageSrc(allImages[currentImageIndex])}
               alt={job.title}
+              loading="lazy"
+              decoding="async"
               className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
               onLoad={() => setImageLoaded(true)}
               onError={() => setImageError(true)}
@@ -174,7 +177,7 @@ export default function JobCard({
 
           {/* Budget badge */}
           <div className="absolute top-3 right-3 px-2.5 py-1 bg-white/95 dark:bg-black/70 rounded text-[13px] font-semibold text-neutral-900 dark:text-white shadow-sm">
-            {formatBudget()}
+            {formattedBudget}
           </div>
 
           {/* Status badges */}
@@ -258,7 +261,7 @@ export default function JobCard({
               </span>
             )}
             <span className="text-[11px] text-neutral-400">
-              {getTimeAgo(job.createdAt)}
+              {timeAgo}
             </span>
           </div>
 
@@ -281,7 +284,7 @@ export default function JobCard({
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-8 h-8 rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex-shrink-0">
                 {job.clientId?.avatar ? (
-                  <img src={job.clientId.avatar} alt="" className="w-full h-full object-cover" />
+                  <img src={storage.getAvatarUrl(job.clientId.avatar, 'sm')} alt="" loading="lazy" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                     {job.clientId?.name?.charAt(0) || 'C'}
@@ -324,4 +327,6 @@ export default function JobCard({
       </div>
     </Link>
   );
-}
+});
+
+export default JobCard;

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import api from '@/lib/api';
 import { io, Socket } from 'socket.io-client';
@@ -254,35 +254,25 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     }
   }, [authLoading, isAuthenticated, refreshUnreadCount]);
 
-  // Fallback polling when WebSocket is not connected
-  useEffect(() => {
-    if (!isAuthenticated) return;
+  // No polling fallback - WebSocket has built-in reconnection logic
+  // If WS disconnects, it will auto-reconnect and sync counts
 
-    // Only poll if WebSocket is not connected
-    if (isConnected) return;
-
-    const interval = setInterval(() => {
-      refreshUnreadCount();
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [isAuthenticated, isConnected, refreshUnreadCount]);
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    notifications,
+    unreadCount,
+    isLoading,
+    isConnected,
+    fetchNotifications,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification,
+    deleteAllNotifications,
+    refreshUnreadCount,
+  }), [notifications, unreadCount, isLoading, isConnected, fetchNotifications, markAsRead, markAllAsRead, deleteNotification, deleteAllNotifications, refreshUnreadCount]);
 
   return (
-    <NotificationContext.Provider
-      value={{
-        notifications,
-        unreadCount,
-        isLoading,
-        isConnected,
-        fetchNotifications,
-        markAsRead,
-        markAllAsRead,
-        deleteNotification,
-        deleteAllNotifications,
-        refreshUnreadCount,
-      }}
-    >
+    <NotificationContext.Provider value={contextValue}>
       {children}
     </NotificationContext.Provider>
   );

@@ -181,27 +181,44 @@ export default function JobsPage() {
 
   // Track if initial fetch has been done
   const hasFetchedRef = useRef(false);
+  // Track previous filter values to detect actual changes
+  const prevFiltersRef = useRef<string | null>(null);
 
-  // Reset and fetch when filters change (except showFavoritesOnly which filters client-side)
+  // Reset and fetch when filters change
   useEffect(() => {
     if (!isPro) return;
 
-    if (!hasFetchedRef.current) {
-      hasFetchedRef.current = true;
-      setPage(1);
-      fetchJobs(1, true);
+    // Create a stable filter key to detect actual changes
+    const filterKey = JSON.stringify({
+      category: filters.category,
+      budgetMin: filters.budgetMin,
+      budgetMax: filters.budgetMax,
+      propertyType: filters.propertyType,
+      location: filters.location,
+      searchQuery: filters.searchQuery,
+      deadline: filters.deadline,
+      showFavoritesOnly: filters.showFavoritesOnly,
+    });
+
+    // Skip if filters haven't actually changed (prevents duplicate fetches)
+    if (prevFiltersRef.current === filterKey && hasFetchedRef.current) {
       return;
     }
 
-    // Track search/filter events
-    if (filters.searchQuery) {
-      trackEvent(AnalyticsEvent.JOB_SEARCH, { searchQuery: filters.searchQuery, jobCategory: filters.category || undefined });
-    }
-    if (filters.category) {
-      trackEvent(AnalyticsEvent.JOB_FILTER, { jobCategory: filters.category });
+    const isInitialFetch = !hasFetchedRef.current;
+    hasFetchedRef.current = true;
+    prevFiltersRef.current = filterKey;
+
+    // Track search/filter events (only on filter changes, not initial load)
+    if (!isInitialFetch) {
+      if (filters.searchQuery) {
+        trackEvent(AnalyticsEvent.JOB_SEARCH, { searchQuery: filters.searchQuery, jobCategory: filters.category || undefined });
+      }
+      if (filters.category) {
+        trackEvent(AnalyticsEvent.JOB_FILTER, { jobCategory: filters.category });
+      }
     }
 
-    // For filter changes, reset and fetch
     setPage(1);
     fetchJobs(1, true);
   }, [isPro, filters.category, filters.budgetMin, filters.budgetMax, filters.propertyType, filters.location, filters.searchQuery, filters.deadline, filters.showFavoritesOnly, fetchJobs, trackEvent]);

@@ -33,8 +33,20 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
   const loaderRef = useRef<HTMLDivElement>(null);
   const initialFetchDone = useRef(false);
 
+  // Ref for AbortController to cancel stale requests
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   const fetchFeed = useCallback(
     async (pageNum: number, append: boolean = false) => {
+      // Cancel any in-flight request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      // Create new AbortController for this request
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
       if (append) {
         setIsLoadingMore(true);
       } else {
@@ -62,7 +74,8 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
         }
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/feed?${params.toString()}`
+          `${process.env.NEXT_PUBLIC_API_URL}/feed?${params.toString()}`,
+          { signal: controller.signal }
         );
 
         if (!response.ok) {
@@ -94,6 +107,10 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
           initializeLikeStates(likeStatesFromServer);
         }
       } catch (error) {
+        // Ignore abort errors - these are expected when canceling stale requests
+        if (error instanceof Error && error.name === 'AbortError') {
+          return;
+        }
         console.error('Failed to fetch feed:', error);
         if (!append) {
           setFeedItems([]);

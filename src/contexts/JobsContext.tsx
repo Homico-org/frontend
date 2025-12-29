@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, useEffect, ReactNode, useRef } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode, useRef, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import { trackAnalyticsEvent, AnalyticsEvent } from '@/hooks/useAnalytics';
 import api from '@/lib/api';
@@ -88,8 +88,15 @@ export function JobsProvider({ children }: { children: ReactNode }) {
     fetchSavedJobs();
   }, [user?.id, fetchSavedJobs]);
 
+  // Ref to prevent duplicate fetches (React Strict Mode)
+  const appliedFetchedRef = useRef(false);
+
   // Fetch user's proposals to know which jobs they've applied to
   useEffect(() => {
+    // Prevent duplicate fetch in React Strict Mode
+    if (appliedFetchedRef.current) return;
+    appliedFetchedRef.current = true;
+
     const fetchAppliedJobs = async () => {
       const token = localStorage.getItem("access_token");
       if (!token) {
@@ -98,30 +105,20 @@ export function JobsProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/jobs/my-proposals/list`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+        const response = await api.get('/jobs/my-proposals/list');
+        const data = response.data;
+        const proposals = data.data || data.proposals || data || [];
+        // Extract job IDs from proposals
+        const jobIds = new Set<string>(
+          proposals
+            .map((p: { jobId?: string | { _id: string } }) => {
+              if (typeof p.jobId === 'string') return p.jobId;
+              if (p.jobId && typeof p.jobId === 'object' && '_id' in p.jobId) return p.jobId._id;
+              return null;
+            })
+            .filter(Boolean)
         );
-
-        if (response.ok) {
-          const data = await response.json();
-          const proposals = data.data || data.proposals || data || [];
-          // Extract job IDs from proposals
-          const jobIds = new Set<string>(
-            proposals
-              .map((p: { jobId?: string | { _id: string } }) => {
-                if (typeof p.jobId === 'string') return p.jobId;
-                if (p.jobId && typeof p.jobId === 'object' && '_id' in p.jobId) return p.jobId._id;
-                return null;
-              })
-              .filter(Boolean)
-          );
-          setAppliedJobIds(jobIds);
-        }
+        setAppliedJobIds(jobIds);
       } catch (error) {
         console.error("Error fetching applied jobs:", error);
       } finally {
@@ -178,17 +175,20 @@ export function JobsProvider({ children }: { children: ReactNode }) {
     makeApiCall();
   }, [isAuthenticated]);
 
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    filters,
+    setFilters,
+    savedJobIds,
+    handleSaveJob,
+    appliedJobIds,
+    isLoadingApplied,
+    isLoadingSaved,
+    refreshSavedJobs: fetchSavedJobs
+  }), [filters, setFilters, savedJobIds, handleSaveJob, appliedJobIds, isLoadingApplied, isLoadingSaved, fetchSavedJobs]);
+
   return (
-    <JobsContext.Provider value={{
-      filters,
-      setFilters,
-      savedJobIds,
-      handleSaveJob,
-      appliedJobIds,
-      isLoadingApplied,
-      isLoadingSaved,
-      refreshSavedJobs: fetchSavedJobs
-    }}>
+    <JobsContext.Provider value={contextValue}>
       {children}
     </JobsContext.Provider>
   );
