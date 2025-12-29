@@ -13,7 +13,10 @@ interface PricingAreasStepProps {
   locationData: {
     country: string;
     nationwide: string;
+    nationwideKa?: string;
+    nationwideEn?: string;
     regions: Record<string, string[]>;
+    cityMapping?: Record<string, string>;
     emoji: string;
   } | null;
   onFormChange: (updates: Partial<PricingAreasStepProps["formData"]>) => void;

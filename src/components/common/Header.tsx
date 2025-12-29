@@ -6,13 +6,13 @@ import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMessages } from "@/contexts/MessagesContext";
 import { useNotifications } from "@/contexts/NotificationContext";
+import api from "@/lib/api";
 import { isHighLevelPro } from "@/utils/categoryHelpers";
-import { FileText, Hammer, MessageCircle, Plus, X, UserPlus, LogIn } from "lucide-react";
+import { FileText, Hammer, LogIn, MessageCircle, Plus, UserPlus, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Avatar from "./Avatar";
-import api from "@/lib/api";
 
 // Muted terracotta accent
 const ACCENT_COLOR = '#C4735B';
@@ -141,36 +141,42 @@ export default function Header() {
 
         {/* Right side - Actions + Profile */}
         <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3">
-          {/* Pro-specific buttons: My Proposals & My Jobs - only on large screens */}
-          {(user?.role === "pro" || user?.role === "admin") && (
+          {/* My Proposals & My Jobs buttons - large screens */}
+          {isAuthenticated && user && (
             <div className="hidden lg:flex items-center gap-1 p-1 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700/50">
-              <Link
-                href="/my-proposals"
-                className="relative flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all hover:bg-white dark:hover:bg-neutral-700"
-                style={{ color: ACCENT_COLOR }}
-              >
-                <FileText className="w-4 h-4" />
-                <span>{locale === 'ka' ? 'შეთავაზებები' : 'Proposals'}</span>
-                {proposalUpdatesCount > 0 && (
-                  <span
-                    className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white rounded-full shadow-sm"
-                    style={{
-                      background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-                      boxShadow: '0 2px 8px rgba(16, 185, 129, 0.4)'
-                    }}
+              {/* My Proposals - only for pro/admin */}
+              {(user.role === "pro" || user.role === "admin") && (
+                <>
+                  <Link
+                    href="/my-proposals"
+                    className="relative flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all hover:bg-white dark:hover:bg-neutral-700"
+                    style={{ color: ACCENT_COLOR }}
                   >
-                    {proposalUpdatesCount > 99 ? "99+" : proposalUpdatesCount}
-                  </span>
-                )}
-              </Link>
-              <div className="w-px h-4 bg-neutral-300 dark:bg-neutral-600" />
+                    <FileText className="w-4 h-4" />
+                    <span>{locale === 'ka' ? 'ჩემი შეთავაზებები' : 'My Proposals'}</span>
+                    {proposalUpdatesCount > 0 && (
+                      <span
+                        className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white rounded-full shadow-sm"
+                        style={{
+                          background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                          boxShadow: '0 2px 8px rgba(16, 185, 129, 0.4)'
+                        }}
+                      >
+                        {proposalUpdatesCount > 99 ? "99+" : proposalUpdatesCount}
+                      </span>
+                    )}
+                  </Link>
+                  <div className="w-px h-4 bg-neutral-300 dark:bg-neutral-600" />
+                </>
+              )}
+              {/* My Jobs - for all authenticated users */}
               <Link
                 href="/my-jobs"
                 className="relative flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all hover:bg-white dark:hover:bg-neutral-700"
                 style={{ color: ACCENT_COLOR }}
               >
                 <Hammer className="w-4 h-4" />
-                <span>{locale === 'ka' ? 'სამუშაოები' : 'Jobs'}</span>
+                <span>{locale === 'ka' ? 'ჩემი განცხადებები' : 'My Jobs'}</span>
                 {unviewedProposalsCount > 0 && (
                   <span
                     className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white rounded-full shadow-sm"
@@ -186,31 +192,35 @@ export default function Header() {
             </div>
           )}
 
-          {/* Pro-specific buttons: Icon only on tablet */}
-          {(user?.role === "pro" || user?.role === "admin") && (
+          {/* My Proposals & My Jobs buttons - tablet (icon only) */}
+          {isAuthenticated && user && (
             <div className="hidden sm:flex lg:hidden items-center gap-1">
-              <Link
-                href="/my-proposals"
-                className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
-                title={locale === 'ka' ? 'შეთავაზებები' : 'Proposals'}
-              >
-                <FileText className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
-                {proposalUpdatesCount > 0 && (
-                  <span
-                    className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-white rounded-full"
-                    style={{
-                      background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-                      boxShadow: '0 2px 6px rgba(16, 185, 129, 0.4)'
-                    }}
-                  >
-                    {proposalUpdatesCount > 99 ? "99+" : proposalUpdatesCount}
-                  </span>
-                )}
-              </Link>
+              {/* My Proposals - only for pro/admin */}
+              {(user.role === "pro" || user.role === "admin") && (
+                <Link
+                  href="/my-proposals"
+                  className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                  title={locale === 'ka' ? 'ჩემი შეთავაზებები' : 'My Proposals'}
+                >
+                  <FileText className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                  {proposalUpdatesCount > 0 && (
+                    <span
+                      className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-white rounded-full"
+                      style={{
+                        background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                        boxShadow: '0 2px 6px rgba(16, 185, 129, 0.4)'
+                      }}
+                    >
+                      {proposalUpdatesCount > 99 ? "99+" : proposalUpdatesCount}
+                    </span>
+                  )}
+                </Link>
+              )}
+              {/* My Jobs - for all authenticated users */}
               <Link
                 href="/my-jobs"
                 className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
-                title={locale === 'ka' ? 'სამუშაოები' : 'Jobs'}
+                title={locale === 'ka' ? 'ჩემი განცხადებები' : 'My Jobs'}
               >
                 <Hammer className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
                 {unviewedProposalsCount > 0 && (

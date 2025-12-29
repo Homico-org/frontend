@@ -597,7 +597,20 @@ export default function ProfessionalDetailPage() {
         {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#F5F0ED] via-[#FAFAFA] to-[#FAFAFA] dark:from-[#1A1612] dark:via-[#0A0A0A] dark:to-[#0A0A0A]" />
 
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-8 pb-6">
+        {/* Back button */}
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-4">
+          <button
+            onClick={() => router.back()}
+            className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/60 dark:bg-neutral-800/60 backdrop-blur-sm hover:bg-white dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 transition-all duration-300 border border-neutral-200/50 dark:border-neutral-700/50"
+          >
+            <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+            <span className="text-sm font-medium">
+              {locale === "ka" ? "უკან" : "Back"}
+            </span>
+          </button>
+        </div>
+
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-4 pb-6">
           {/* Profile Header */}
           <div className="flex flex-col items-center text-center">
             {/* Avatar */}
@@ -975,30 +988,44 @@ export default function ProfessionalDetailPage() {
         {activeTab === "portfolio" && (
           <div className="animate-in fade-in duration-300">
             {portfolioImages.length > 0 ? (
-              <div className="columns-2 sm:columns-3 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 auto-rows-[200px]">
                 {portfolioImages.map((img, idx) => {
-                  const heights = [
-                    "aspect-[3/4]",
-                    "aspect-square",
-                    "aspect-[4/5]",
-                    "aspect-[5/6]",
-                    "aspect-square",
+                  // Create visual variety: some items span 2 rows for masonry effect
+                  const spanPatterns = [
+                    "row-span-2", // tall
+                    "row-span-1", // normal
+                    "row-span-1", // normal
+                    "row-span-2", // tall
+                    "row-span-1", // normal
+                    "row-span-1", // normal
                   ];
+                  const spanClass = spanPatterns[idx % spanPatterns.length];
+
                   return (
                     <button
                       key={idx}
                       onClick={() => openLightbox(idx)}
-                      className={`relative w-full ${heights[idx % heights.length]} rounded-xl overflow-hidden bg-neutral-200 dark:bg-neutral-800 group cursor-pointer mb-3 break-inside-avoid`}
+                      className={`relative w-full h-full ${spanClass} rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 group cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300`}
                     >
                       <img
                         src={getImageUrl(img.url)}
                         alt={img.title || ""}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
-                          <ExternalLink className="w-4 h-4 text-neutral-700" />
+                      {/* Gradient overlay on hover */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      {/* Title and zoom icon */}
+                      <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                        {img.title && (
+                          <p className="text-white text-sm font-medium truncate mb-1">
+                            {img.title}
+                          </p>
+                        )}
+                      </div>
+                      {/* Center zoom icon */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="w-12 h-12 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg transform scale-75 group-hover:scale-100 transition-transform duration-300">
+                          <ExternalLink className="w-5 h-5 text-neutral-800" />
                         </div>
                       </div>
                     </button>

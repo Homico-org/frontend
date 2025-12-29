@@ -102,7 +102,10 @@ function ProProfileSetupPageContent() {
   const [locationData, setLocationData] = useState<{
     country: string;
     nationwide: string;
+    nationwideKa?: string;
+    nationwideEn?: string;
     regions: Record<string, string[]>;
+    cityMapping?: Record<string, string>;
     emoji: string;
   } | null>(null);
 
@@ -202,8 +205,8 @@ function ProProfileSetupPageContent() {
             basePrice: profile.basePrice?.toString() || '',
             maxPrice: profile.maxPrice?.toString() || '',
             pricingModel: profile.pricingModel || '',
-            serviceAreas: profile.serviceAreas?.includes('Countrywide') ? [] : (profile.serviceAreas || []),
-            nationwide: profile.serviceAreas?.includes('Countrywide') || false,
+            serviceAreas: (profile.serviceAreas?.includes('Countrywide') || profile.serviceAreas?.includes('საქართველოს მასშტაბით')) ? [] : (profile.serviceAreas || []),
+            nationwide: profile.serviceAreas?.includes('Countrywide') || profile.serviceAreas?.includes('საქართველოს მასშტაბით') || false,
           }));
 
           // Set avatar preview
@@ -330,6 +333,31 @@ function ProProfileSetupPageContent() {
     };
     fetchLocationData();
   }, [locale]);
+
+  // Translate saved serviceAreas to current locale when locationData is available
+  const hasTranslatedServiceAreas = useRef(false);
+  useEffect(() => {
+    if (locationData?.cityMapping && formData.serviceAreas.length > 0 && !hasTranslatedServiceAreas.current) {
+      hasTranslatedServiceAreas.current = true;
+      const translatedAreas = formData.serviceAreas.map(area => {
+        // Try to translate using cityMapping
+        return locationData.cityMapping?.[area] || area;
+      }).filter((area, index, self) => self.indexOf(area) === index); // Remove duplicates
+
+      if (translatedAreas.join(',') !== formData.serviceAreas.join(',')) {
+        setFormData(prev => ({ ...prev, serviceAreas: translatedAreas }));
+      }
+    }
+    // Also check for nationwide values in different locales
+    if (locationData && formData.serviceAreas.length === 0 && !formData.nationwide) {
+      // Check if saved areas contain countrywide in any locale
+      const savedAreas = formData.serviceAreas;
+      if (savedAreas.includes('Countrywide') || savedAreas.includes('საქართველოს მასშტაბით') ||
+          savedAreas.includes(locationData.nationwideKa || '') || savedAreas.includes(locationData.nationwideEn || '')) {
+        setFormData(prev => ({ ...prev, nationwide: true, serviceAreas: [] }));
+      }
+    }
+  }, [locationData, formData.serviceAreas, formData.nationwide]);
 
   // Auth redirect
   useEffect(() => {

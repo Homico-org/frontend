@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import api from '@/lib/api';
+import { io, Socket } from 'socket.io-client';
 
 export type NotificationType =
   | 'new_proposal'
@@ -35,6 +36,7 @@ interface NotificationContextType {
   notifications: Notification[];
   unreadCount: number;
   isLoading: boolean;
+  isConnected: boolean;
   fetchNotifications: (options?: { limit?: number; offset?: number; unreadOnly?: boolean }) => Promise<void>;
   markAsRead: (notificationIds?: string[]) => Promise<void>;
   markAllAsRead: () => Promise<void>;
@@ -50,9 +52,12 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
 
-  // Ref to prevent duplicate initial fetch (React Strict Mode)
+  // Refs for WebSocket management
+  const socketRef = useRef<Socket | null>(null);
   const initialFetchDoneRef = useRef(false);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const refreshUnreadCount = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -133,6 +138,108 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     }
   }, [isAuthenticated]);
 
+  // Handle new notification from WebSocket
+  const handleNewNotification = useCallback((notification: Notification) => {
+    console.log('[Notifications] New notification received:', notification.type);
+
+    // Add to notifications list (at the beginning)
+    setNotifications(prev => {
+      // Check if notification already exists
+      if (prev.some(n => n._id === notification._id)) {
+        return prev;
+      }
+      return [notification, ...prev];
+    });
+
+    // Increment unread count
+    setUnreadCount(prev => prev + 1);
+
+    // Play notification sound (optional)
+    try {
+      const audio = new Audio('/sounds/notification.mp3');
+      audio.volume = 0.3;
+      audio.play().catch(() => {
+        // Ignore autoplay errors
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }, []);
+
+  // Initialize WebSocket connection
+  useEffect(() => {
+    if (!isAuthenticated || authLoading) {
+      // Disconnect if not authenticated
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+        setIsConnected(false);
+      }
+      return;
+    }
+
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+
+    // Create socket connection to notifications namespace
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const socket = io(`${apiUrl}/notifications`, {
+      auth: { token },
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+    });
+
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      console.log('[Notifications] WebSocket connected');
+      setIsConnected(true);
+
+      // Clear any reconnect timeout
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.log('[Notifications] WebSocket disconnected:', reason);
+      setIsConnected(false);
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('[Notifications] Connection error:', error.message);
+      setIsConnected(false);
+    });
+
+    // Listen for new notifications
+    socket.on('notification:new', handleNewNotification);
+
+    // Listen for unread count updates
+    socket.on('notification:count', (data: { count: number }) => {
+      setUnreadCount(data.count);
+    });
+
+    // Listen for system announcements
+    socket.on('notification:system', (notification: Notification) => {
+      handleNewNotification(notification);
+    });
+
+    return () => {
+      socket.off('connect');
+      socket.off('disconnect');
+      socket.off('connect_error');
+      socket.off('notification:new');
+      socket.off('notification:count');
+      socket.off('notification:system');
+      socket.disconnect();
+      socketRef.current = null;
+    };
+  }, [isAuthenticated, authLoading, handleNewNotification]);
+
   // Fetch unread count on auth change
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
@@ -147,16 +254,19 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     }
   }, [authLoading, isAuthenticated, refreshUnreadCount]);
 
-  // Poll for new notifications every 30 seconds
+  // Fallback polling when WebSocket is not connected
   useEffect(() => {
     if (!isAuthenticated) return;
+
+    // Only poll if WebSocket is not connected
+    if (isConnected) return;
 
     const interval = setInterval(() => {
       refreshUnreadCount();
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [isAuthenticated, refreshUnreadCount]);
+  }, [isAuthenticated, isConnected, refreshUnreadCount]);
 
   return (
     <NotificationContext.Provider
@@ -164,6 +274,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         notifications,
         unreadCount,
         isLoading,
+        isConnected,
         fetchNotifications,
         markAsRead,
         markAllAsRead,
