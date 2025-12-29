@@ -40,7 +40,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import ProjectChat from '@/components/projects/ProjectChat';
 
-type ProposalStatus = 'all' | 'pending' | 'in_discussion' | 'accepted' | 'rejected' | 'withdrawn';
+type ProposalStatus = 'pending' | 'in_discussion' | 'accepted' | 'rejected' | 'withdrawn' | 'completed';
 
 interface Job {
   _id: string;
@@ -109,7 +109,7 @@ function MyProposalsPageContent() {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isContentLoading, setIsContentLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<ProposalStatus>('all');
+  const [statusFilter, setStatusFilter] = useState<ProposalStatus>('accepted');
   const [searchQuery, setSearchQuery] = useState('');
   const [withdrawModalId, setWithdrawModalId] = useState<string | null>(null);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
@@ -122,7 +122,8 @@ function MyProposalsPageContent() {
     total: allProposals.length,
     pending: allProposals.filter(p => p.status === 'pending').length,
     inDiscussion: allProposals.filter(p => p.status === 'in_discussion').length,
-    accepted: allProposals.filter(p => p.status === 'accepted' || p.status === 'completed').length,
+    accepted: allProposals.filter(p => p.status === 'accepted').length,
+    completed: allProposals.filter(p => p.status === 'completed').length,
     rejected: allProposals.filter(p => p.status === 'rejected').length,
     withdrawn: allProposals.filter(p => p.status === 'withdrawn').length,
   };
@@ -173,9 +174,7 @@ function MyProposalsPageContent() {
 
       let filtered = [...allProposals];
 
-      if (statusFilter !== 'all') {
-        filtered = filtered.filter(p => p.status === statusFilter);
-      }
+      filtered = filtered.filter(p => p.status === statusFilter);
 
       if (searchQuery) {
         const searchLower = searchQuery.toLowerCase();
@@ -407,10 +406,9 @@ function MyProposalsPageContent() {
   }
 
   const filterTabs = [
-    { key: 'all', label: language === 'ka' ? 'ყველა' : 'All', count: stats.total, icon: Inbox },
-    { key: 'pending', label: language === 'ka' ? 'მოლოდინში' : 'Pending', count: stats.pending, icon: Clock },
-    // { key: 'in_discussion', label: language === 'ka' ? 'მიმოწერაში' : 'Active', count: stats.inDiscussion, icon: MessageSquare },
     { key: 'accepted', label: language === 'ka' ? 'მიღებული' : 'Won', count: stats.accepted, icon: CheckCircle },
+    { key: 'pending', label: language === 'ka' ? 'მოლოდინში' : 'Pending', count: stats.pending, icon: Clock },
+    { key: 'completed', label: language === 'ka' ? 'დასრულებული' : 'Completed', count: stats.completed, icon: CheckCheck },
     { key: 'rejected', label: language === 'ka' ? 'უარყოფილი' : 'Declined', count: stats.rejected, icon: XCircle },
   ];
 
