@@ -17,6 +17,7 @@ import {
   FileText,
   MessageCircle,
   Phone,
+  RotateCcw,
   X
 } from 'lucide-react';
 import Link from 'next/link';
@@ -156,7 +157,7 @@ function ProposalsPageContent() {
       } else {
         toast.success(
           locale === 'ka' ? 'წარმატება' : 'Success',
-          locale === 'ka' ? 'შორტლისტში დაემატა' : 'Added to shortlist'
+          locale === 'ka' ? 'დაინტერესებულებში დაემატა' : 'Marked as interested'
         );
       }
     } catch (error: any) {
@@ -219,6 +220,33 @@ function ProposalsPageContent() {
       setIsProcessing(false);
     }
   }, [locale, toast, router]);
+
+  const handleRevertToPending = useCallback(async (proposalId: string) => {
+    setIsProcessing(true);
+    try {
+      await api.post(`/jobs/proposals/${proposalId}/revert-to-pending`);
+
+      setProposals(prev =>
+        prev.map(p =>
+          p._id === proposalId
+            ? { ...p, status: 'pending', hiringChoice: undefined, contactRevealed: false }
+            : p
+        )
+      );
+
+      toast.success(
+        locale === 'ka' ? 'წარმატება' : 'Success',
+        locale === 'ka' ? 'შეთავაზება დაბრუნდა ახალში' : 'Reverted to new proposals'
+      );
+    } catch (error: any) {
+      toast.error(
+        locale === 'ka' ? 'შეცდომა' : 'Error',
+        error.response?.data?.message || (locale === 'ka' ? 'ვერ მოხერხდა' : 'Failed to revert')
+      );
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [locale, toast]);
 
   if (isLoading) {
     return (
@@ -319,11 +347,11 @@ function ProposalsPageContent() {
               </div>
             )}
 
-            {/* Shortlisted Proposals */}
+            {/* Interested Proposals */}
             {shortlistedProposals.length > 0 && (
               <div>
                 <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-4">
-                  {locale === 'ka' ? 'შერჩეული' : 'Shortlisted'} ({shortlistedProposals.length})
+                  {locale === 'ka' ? 'დაინტერესებული' : 'Interested'} ({shortlistedProposals.length})
                 </h2>
                 <div className="space-y-4">
                   {shortlistedProposals.map(proposal => (
@@ -334,6 +362,7 @@ function ProposalsPageContent() {
                       isShortlisted
                       isHighLevel={isHighLevel}
                       onAccept={() => handleAccept(proposal._id)}
+                      onRevert={() => handleRevertToPending(proposal._id)}
                       isProcessing={isProcessing}
                     />
                   ))}
@@ -420,6 +449,7 @@ function ProposalCard({
   onShortlist,
   onReject,
   onAccept,
+  onRevert,
   isShortlisted = false,
   isRejected = false,
   isHighLevel = true,
@@ -430,6 +460,7 @@ function ProposalCard({
   onShortlist?: () => void;
   onReject?: () => void;
   onAccept?: () => void;
+  onRevert?: () => void;
   isShortlisted?: boolean;
   isRejected?: boolean;
   isHighLevel?: boolean;
@@ -538,7 +569,7 @@ function ProposalCard({
                 style={{ backgroundColor: ACCENT_COLOR }}
               >
                 <Check className="w-4 h-4" />
-                {locale === 'ka' ? 'შორტლისტში' : 'Shortlist'}
+                {locale === 'ka' ? 'დაინტერესება' : 'Interested'}
               </button>
               <button
                 onClick={onReject}
@@ -603,6 +634,17 @@ function ProposalCard({
               >
                 {locale === 'ka' ? 'პროფილი' : 'Profile'}
               </Link>
+              {/* Revert to Pending Button */}
+              {onRevert && (
+                <button
+                  onClick={onRevert}
+                  disabled={isProcessing}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors disabled:opacity-50"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  {locale === 'ka' ? 'დაბრუნება' : 'Revert'}
+                </button>
+              )}
             </div>
           )}
         </div>

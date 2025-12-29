@@ -74,7 +74,7 @@ export default function FeedCard({ item, locale = 'en' }: FeedCardProps) {
     >
       {/* Card Container with Game Card Effect */}
       <div className={`game-card-wrapper ${isPremium ? 'game-card-premium' : ''}`}>
-        <div className="game-card-content bg-white dark:bg-neutral-900 rounded-xl overflow-hidden transition-all duration-300">
+        <div className="game-card-content bg-white dark:bg-neutral-900 rounded-xl overflow-hidden shadow-sm transition-all duration-300 border border-neutral-100 dark:border-neutral-800">
 
         {/* Image Section */}
         <div className="relative">

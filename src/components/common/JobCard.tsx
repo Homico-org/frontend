@@ -16,6 +16,7 @@ interface Job {
   title: string;
   description: string;
   category: string;
+  subcategory?: string;
   skills: string[];
   location: string;
   propertyType?: string;
@@ -247,10 +248,15 @@ export default function JobCard({
         {/* Content Section */}
         <div className="p-4">
           {/* Category badge */}
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
             <span className="px-2 py-0.5 text-[11px] font-medium rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
               {getCategoryLabel(job.category)}
             </span>
+            {(job.subcategory || job.skills?.[0]) && (
+              <span className="px-2 py-0.5 text-[11px] font-medium rounded bg-[#C4735B]/10 text-[#C4735B]">
+                {getCategoryLabel(job.subcategory || job.skills[0])}
+              </span>
+            )}
             <span className="text-[11px] text-neutral-400">
               {getTimeAgo(job.createdAt)}
             </span>

@@ -151,6 +151,7 @@ export default function ProfessionalDetailPage() {
 
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [selectedProject, setSelectedProject] = useState<{ images: string[]; title: string; currentIndex: number } | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<"about" | "portfolio" | "reviews">(
     "about"
@@ -391,32 +392,80 @@ export default function ProfessionalDetailPage() {
     return `${diffMonths} month${diffMonths > 1 ? "s" : ""} ago`;
   };
 
-  const getAllPortfolioImages = useCallback(() => {
-    const images: { url: string; title?: string; description?: string }[] = [];
+  // Unified project structure for portfolio display
+  interface UnifiedProject {
+    id: string;
+    title: string;
+    description?: string;
+    location?: string;
+    images: string[];
+    date?: string;
+  }
+
+  const getUnifiedProjects = useCallback((): UnifiedProject[] => {
+    const projects: UnifiedProject[] = [];
+    const seenTitles = new Set<string>();
+
+    // Add from portfolio items (fetched separately)
     portfolio.forEach((item) => {
-      if (item.imageUrl)
-        images.push({
-          url: item.imageUrl,
+      const titleKey = item.title?.toLowerCase().trim() || item._id;
+      if (seenTitles.has(titleKey)) return;
+      seenTitles.add(titleKey);
+
+      const images: string[] = [];
+      if (item.imageUrl) images.push(item.imageUrl);
+      if (item.images) {
+        item.images.forEach((img) => {
+          if (!images.includes(img)) images.push(img);
+        });
+      }
+
+      if (images.length > 0) {
+        projects.push({
+          id: item._id,
           title: item.title,
           description: item.description,
+          location: item.location,
+          images,
+          date: item.completedDate || item.projectDate,
         });
-      if (item.images)
-        item.images
-          .filter((img) => img !== item.imageUrl)
-          .forEach((img) => images.push({ url: img, title: item.title }));
+      }
     });
-    profile?.portfolioProjects?.forEach((project) => {
-      if (project.images)
-        project.images.forEach((img, idx) =>
-          images.push({
-            url: img,
-            title: project.title,
-            description: idx === 0 ? project.description : undefined,
-          })
-        );
+
+    // Add from profile's embedded portfolioProjects (avoid duplicates by title)
+    profile?.portfolioProjects?.forEach((project, idx) => {
+      const titleKey = project.title?.toLowerCase().trim() || `project-${idx}`;
+      if (seenTitles.has(titleKey)) return;
+      seenTitles.add(titleKey);
+
+      if (project.images && project.images.length > 0) {
+        projects.push({
+          id: project.id || `embedded-${idx}`,
+          title: project.title,
+          description: project.description,
+          location: project.location,
+          images: project.images,
+        });
+      }
+    });
+
+    return projects;
+  }, [portfolio, profile?.portfolioProjects]);
+
+  // Flatten all images for lightbox navigation
+  const getAllPortfolioImages = useCallback(() => {
+    const images: { url: string; title?: string; description?: string }[] = [];
+    getUnifiedProjects().forEach((project) => {
+      project.images.forEach((img, idx) => {
+        images.push({
+          url: img,
+          title: project.title,
+          description: idx === 0 ? project.description : undefined,
+        });
+      });
     });
     return images;
-  }, [portfolio, profile?.portfolioProjects]);
+  }, [getUnifiedProjects]);
 
   const getGroupedServices = useCallback(() => {
     const groups: Record<string, string[]> = {};
@@ -497,6 +546,24 @@ export default function ProfessionalDetailPage() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Handle project lightbox navigation
+      if (selectedProject) {
+        if (e.key === "Escape") setSelectedProject(null);
+        if (e.key === "ArrowRight") {
+          setSelectedProject(prev => prev ? {
+            ...prev,
+            currentIndex: (prev.currentIndex + 1) % prev.images.length
+          } : null);
+        }
+        if (e.key === "ArrowLeft") {
+          setSelectedProject(prev => prev ? {
+            ...prev,
+            currentIndex: (prev.currentIndex - 1 + prev.images.length) % prev.images.length
+          } : null);
+        }
+        return;
+      }
+      // Handle old lightbox
       if (!lightboxOpen) return;
       if (e.key === "Escape") closeLightbox();
       if (e.key === "ArrowRight") nextImage();
@@ -504,7 +571,7 @@ export default function ProfessionalDetailPage() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [lightboxOpen]);
+  }, [lightboxOpen, selectedProject]);
 
   // Loading state
   if (isLoading) {
@@ -653,7 +720,7 @@ export default function ProfessionalDetailPage() {
             </p>
 
             {/* Stats Row */}
-            <div className="flex items-center justify-center gap-6 text-sm mb-6">
+            <div className="flex items-center justify-center flex-wrap gap-4 sm:gap-6 text-sm mb-6">
               {profile.avgRating > 0 && (
                 <div className="flex items-center gap-1.5">
                   <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
@@ -679,7 +746,35 @@ export default function ProfessionalDetailPage() {
                   {profile.yearsExperience}+ {locale === "ka" ? "წელი" : "yrs"}
                 </span>
               </div>
+
+              {profile.createdAt && (
+                <div className="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400">
+                  <span className="text-neutral-400">•</span>
+                  <span>
+                    {locale === "ka" ? "წევრი" : "Member"} {new Date(profile.createdAt).getFullYear()}-{locale === "ka" ? "დან" : ""}
+                  </span>
+                </div>
+              )}
             </div>
+
+            {/* Price Display */}
+            {profile.basePrice > 0 && (
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-lg font-bold text-neutral-900 dark:text-white">
+                  {profile.pricingModel === "from" && (locale === "ka" ? "" : "from ")}
+                  {profile.basePrice}₾
+                  {profile.pricingModel === "from" && (locale === "ka" ? "-დან" : "")}
+                  {getPricingLabel()}
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs text-neutral-600 dark:text-neutral-400">
+                  {profile.pricingModel === "hourly" && (locale === "ka" ? "საათობრივი" : "Hourly")}
+                  {profile.pricingModel === "daily" && (locale === "ka" ? "დღიური" : "Daily")}
+                  {profile.pricingModel === "project_based" && (locale === "ka" ? "პროექტით" : "Per Project")}
+                  {profile.pricingModel === "from" && (locale === "ka" ? "საწყისი ფასი" : "Starting Price")}
+                  {profile.pricingModel === "sqm" && (locale === "ka" ? "კვ.მ" : "Per sqm")}
+                </span>
+              </div>
+            )}
 
             {/* CTA Button */}
             {phoneRevealed && profile.phone ? (
@@ -710,11 +805,6 @@ export default function ProfessionalDetailPage() {
                     : locale === "ka"
                       ? "დაკავშირება"
                       : "Contact"}
-                  {profile.basePrice > 0 && (
-                    <span className="ml-1 px-2 py-0.5 rounded-full bg-white/20 text-xs">
-                      {locale === "ka" ? "დან" : "from"} {profile.basePrice}₾
-                    </span>
-                  )}
                 </span>
               </button>
             )}
@@ -837,98 +927,8 @@ export default function ProfessionalDetailPage() {
               </div>
             )}
 
-            {/* Info Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {profile.basePrice > 0 && (
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-neutral-800">
-                  <p className="text-xs text-neutral-500 mb-1">
-                    {locale === "ka" ? "ფასი" : "Price"}
-                  </p>
-                  <p className="text-xl font-bold text-neutral-900 dark:text-white">
-                    {profile.basePrice}₾
-                    <span className="text-sm font-normal text-neutral-500">
-                      {getPricingLabel()}
-                    </span>
-                  </p>
-                </div>
-              )}
-
-              <div className="bg-white dark:bg-neutral-900 rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-neutral-800">
-                <p className="text-xs text-neutral-500 mb-1">
-                  {locale === "ka" ? "პასუხი" : "Response"}
-                </p>
-                <p className="text-xl font-bold text-neutral-900 dark:text-white">
-                  &lt;1{" "}
-                  <span className="text-sm font-normal text-neutral-500">
-                    {locale === "ka" ? "სთ" : "hr"}
-                  </span>
-                </p>
-              </div>
-
-              {totalCompletedJobs > 0 && (
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-neutral-800">
-                  <p className="text-xs text-neutral-500 mb-1">
-                    {locale === "ka" ? "პროექტები" : "Projects"}
-                  </p>
-                  <p className="text-xl font-bold text-neutral-900 dark:text-white">
-                    {totalCompletedJobs}
-                  </p>
-                </div>
-              )}
-
-              <div className="bg-white dark:bg-neutral-900 rounded-2xl p-4 shadow-sm border border-neutral-100 dark:border-neutral-800">
-                <p className="text-xs text-neutral-500 mb-1">
-                  {locale === "ka" ? "წევრობა" : "Member since"}
-                </p>
-                <p className="text-xl font-bold text-neutral-900 dark:text-white">
-                  2024
-                </p>
-              </div>
-            </div>
-
-            {/* Trust & Social */}
-            <div className="grid sm:grid-cols-2 gap-4">
-              {/* Verification Badges */}
-              {(profile.isPhoneVerified ||
-                profile.isEmailVerified ||
-                profile.verificationStatus === "verified") && (
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl p-5 shadow-sm border border-neutral-100 dark:border-neutral-800">
-                  <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-3">
-                    {locale === "ka" ? "ვერიფიკაცია" : "Verification"}
-                  </h3>
-                  <div className="space-y-2">
-                    {profile.verificationStatus === "verified" && (
-                      <div className="flex items-center gap-2 text-emerald-600">
-                        <BadgeCheck className="w-4 h-4" />
-                        <span className="text-sm font-medium">
-                          {locale === "ka"
-                            ? "პირადობა დადასტურებული"
-                            : "Identity Verified"}
-                        </span>
-                      </div>
-                    )}
-                    {profile.isPhoneVerified && (
-                      <div className="flex items-center gap-2 text-blue-600">
-                        <Phone className="w-4 h-4" />
-                        <span className="text-sm font-medium">
-                          {locale === "ka" ? "ტელეფონი" : "Phone"}
-                        </span>
-                      </div>
-                    )}
-                    {profile.isEmailVerified && (
-                      <div className="flex items-center gap-2 text-purple-600">
-                        <Shield className="w-4 h-4" />
-                        <span className="text-sm font-medium">
-                          {locale === "ka" ? "ელფოსტა" : "Email"}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Social Links */}
-              {(profile.facebookUrl ||
+            {/* Social Links */}
+            {(profile.facebookUrl ||
                 profile.instagramUrl ||
                 profile.linkedinUrl ||
                 profile.websiteUrl) && (
@@ -980,68 +980,109 @@ export default function ProfessionalDetailPage() {
                   </div>
                 </div>
               )}
-            </div>
           </div>
         )}
 
         {/* PORTFOLIO TAB */}
         {activeTab === "portfolio" && (
           <div className="animate-in fade-in duration-300">
-            {portfolioImages.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 auto-rows-[200px]">
-                {portfolioImages.map((img, idx) => {
-                  // Create visual variety: some items span 2 rows for masonry effect
-                  const spanPatterns = [
-                    "row-span-2", // tall
-                    "row-span-1", // normal
-                    "row-span-1", // normal
-                    "row-span-2", // tall
-                    "row-span-1", // normal
-                    "row-span-1", // normal
-                  ];
-                  const spanClass = spanPatterns[idx % spanPatterns.length];
-
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => openLightbox(idx)}
-                      className={`relative w-full h-full ${spanClass} rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 group cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300`}
+            {(() => {
+              const projects = getUnifiedProjects();
+              return projects.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {projects.map((project) => (
+                    <div
+                      key={project.id}
+                      className="group bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden shadow-sm border border-neutral-100 dark:border-neutral-800 hover:shadow-xl hover:border-[#C4735B]/20 transition-all duration-300"
                     >
-                      <img
-                        src={getImageUrl(img.url)}
-                        alt={img.title || ""}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
-                      {/* Gradient overlay on hover */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      {/* Title and zoom icon */}
-                      <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                        {img.title && (
-                          <p className="text-white text-sm font-medium truncate mb-1">
-                            {img.title}
+                      {/* Main Image */}
+                      <button
+                        onClick={() => setSelectedProject({ images: project.images, title: project.title, currentIndex: 0 })}
+                        className="relative w-full aspect-[4/3] overflow-hidden"
+                      >
+                        <img
+                          src={getImageUrl(project.images[0])}
+                          alt={project.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        {/* Hover overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                        {/* Image count badge */}
+                        {project.images.length > 1 && (
+                          <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-xs font-medium flex items-center gap-1.5">
+                            <Camera className="w-3 h-3" />
+                            {project.images.length}
+                          </div>
+                        )}
+
+                        {/* View button on hover */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                          <div className="px-4 py-2 rounded-full bg-white/95 backdrop-blur-sm shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-300 flex items-center gap-2">
+                            <ExternalLink className="w-4 h-4 text-neutral-800" />
+                            <span className="text-sm font-medium text-neutral-800">
+                              {locale === "ka" ? "ნახვა" : "View"}
+                            </span>
+                          </div>
+                        </div>
+                      </button>
+
+                      {/* Thumbnail Strip - show if more than 1 image */}
+                      {project.images.length > 1 && (
+                        <div className="flex gap-1 p-2 bg-neutral-50 dark:bg-neutral-800/50">
+                          {project.images.slice(0, 4).map((img, imgIdx) => (
+                            <button
+                              key={imgIdx}
+                              onClick={() => setSelectedProject({ images: project.images, title: project.title, currentIndex: imgIdx })}
+                              className="relative flex-1 aspect-square rounded-lg overflow-hidden hover:ring-2 hover:ring-[#C4735B] transition-all"
+                            >
+                              <img
+                                src={getImageUrl(img)}
+                                alt=""
+                                className="w-full h-full object-cover"
+                              />
+                              {/* Show +N overlay on last thumbnail if more images */}
+                              {imgIdx === 3 && project.images.length > 4 && (
+                                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                  <span className="text-white text-sm font-bold">+{project.images.length - 4}</span>
+                                </div>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Project Info */}
+                      <div className="p-4">
+                        <h3 className="font-semibold text-neutral-900 dark:text-white text-base mb-1 line-clamp-1">
+                          {project.title}
+                        </h3>
+                        {project.description && (
+                          <p className="text-sm text-neutral-500 dark:text-neutral-400 line-clamp-2">
+                            {project.description}
                           </p>
                         )}
+                        {project.location && (
+                          <div className="flex items-center gap-1.5 mt-2 text-xs text-neutral-400">
+                            <MapPin className="w-3 h-3" />
+                            <span>{project.location}</span>
+                          </div>
+                        )}
                       </div>
-                      {/* Center zoom icon */}
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="w-12 h-12 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-lg transform scale-75 group-hover:scale-100 transition-transform duration-300">
-                          <ExternalLink className="w-5 h-5 text-neutral-800" />
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-16">
-                <Camera className="w-12 h-12 text-neutral-300 dark:text-neutral-700 mx-auto mb-4" />
-                <p className="text-neutral-500">
-                  {locale === "ka"
-                    ? "ნამუშევრები არ არის"
-                    : "No portfolio items yet"}
-                </p>
-              </div>
-            )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16">
+                  <Camera className="w-12 h-12 text-neutral-300 dark:text-neutral-700 mx-auto mb-4" />
+                  <p className="text-neutral-500">
+                    {locale === "ka"
+                      ? "ნამუშევრები არ არის"
+                      : "No portfolio items yet"}
+                  </p>
+                </div>
+              );
+            })()}
           </div>
         )}
 
@@ -1256,63 +1297,96 @@ export default function ProfessionalDetailPage() {
                 : locale === "ka"
                   ? "დაკავშირება"
                   : "Contact"}
-              {profile.basePrice > 0 && (
-                <span className="px-2 py-0.5 rounded-full bg-white/20 text-xs">
-                  {profile.basePrice}₾
-                </span>
-              )}
             </span>
           </button>
         )}
       </div>
 
-      {/* ========== LIGHTBOX ========== */}
-      {lightboxOpen && portfolioImages.length > 0 && (
+      {/* ========== PROJECT LIGHTBOX ========== */}
+      {selectedProject && (
         <div
-          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
-          onClick={closeLightbox}
+          className="fixed inset-0 z-[100] bg-black/95 flex flex-col"
+          onClick={() => setSelectedProject(null)}
         >
-          <button
-            onClick={closeLightbox}
-            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-          {portfolioImages.length > 1 && (
-            <>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  prevImage();
-                }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  nextImage();
-                }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </>
-          )}
-          <div
-            className="max-w-4xl max-h-[85vh] mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
+          {/* Header */}
+          <div className="flex items-center justify-between p-4">
+            <h3 className="text-white font-semibold text-lg truncate max-w-[70%]">
+              {selectedProject.title}
+            </h3>
+            <button
+              onClick={() => setSelectedProject(null)}
+              className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Main Image */}
+          <div className="flex-1 flex items-center justify-center relative px-4" onClick={(e) => e.stopPropagation()}>
+            {selectedProject.images.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedProject(prev => prev ? {
+                      ...prev,
+                      currentIndex: (prev.currentIndex - 1 + prev.images.length) % prev.images.length
+                    } : null);
+                  }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedProject(prev => prev ? {
+                      ...prev,
+                      currentIndex: (prev.currentIndex + 1) % prev.images.length
+                    } : null);
+                  }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              </>
+            )}
             <img
-              src={getImageUrl(portfolioImages[lightboxIndex].url)}
+              src={getImageUrl(selectedProject.images[selectedProject.currentIndex])}
               alt=""
-              className="max-w-full max-h-[85vh] object-contain rounded-lg"
+              className="max-w-full max-h-[70vh] object-contain rounded-lg"
             />
           </div>
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-white/10 text-white text-sm">
-            {lightboxIndex + 1} / {portfolioImages.length}
-          </div>
+
+          {/* Thumbnail Strip */}
+          {selectedProject.images.length > 1 && (
+            <div className="p-4" onClick={(e) => e.stopPropagation()}>
+              <div className="flex justify-center gap-2 overflow-x-auto pb-2">
+                {selectedProject.images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedProject(prev => prev ? { ...prev, currentIndex: idx } : null)}
+                    className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 transition-all ${
+                      idx === selectedProject.currentIndex
+                        ? 'ring-2 ring-[#C4735B] ring-offset-2 ring-offset-black'
+                        : 'opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <img
+                      src={getImageUrl(img)}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+              <div className="text-center mt-2">
+                <span className="text-white/60 text-sm">
+                  {selectedProject.currentIndex + 1} / {selectedProject.images.length}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

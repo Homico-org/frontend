@@ -28,6 +28,7 @@ import {
   MessageCircle,
   MessageSquare,
   Phone,
+  Play,
   Search,
   Send,
   Timer,
@@ -37,6 +38,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import ProjectChat from '@/components/projects/ProjectChat';
 
 type ProposalStatus = 'all' | 'pending' | 'in_discussion' | 'accepted' | 'rejected' | 'withdrawn';
 
@@ -70,6 +72,14 @@ interface Job {
   };
 }
 
+interface ProjectTracking {
+  _id: string;
+  currentStage: 'hired' | 'started' | 'in_progress' | 'review' | 'completed';
+  progress: number;
+  startedAt?: string;
+  completedAt?: string;
+}
+
 interface Proposal {
   _id: string;
   jobId: Job;
@@ -85,6 +95,7 @@ interface Proposal {
   rejectionNote?: string;
   unreadMessageCount?: number;
   createdAt: string;
+  projectTracking?: ProjectTracking;
 }
 
 function MyProposalsPageContent() {
@@ -102,6 +113,7 @@ function MyProposalsPageContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [withdrawModalId, setWithdrawModalId] = useState<string | null>(null);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [startingProjectId, setStartingProjectId] = useState<string | null>(null);
 
   const hasFetched = useRef(false);
   const debounceRef = useRef<NodeJS.Timeout>();
@@ -214,6 +226,42 @@ function MyProposalsPageContent() {
       );
     } finally {
       setIsWithdrawing(false);
+    }
+  };
+
+  const handleStartProject = async (jobId: string) => {
+    setStartingProjectId(jobId);
+    try {
+      await api.post(`/jobs/projects/${jobId}/stage`, { stage: 'started' });
+
+      // Update local state
+      const updateProposal = (p: Proposal) => {
+        if (p.jobId._id === jobId && p.projectTracking) {
+          return {
+            ...p,
+            projectTracking: {
+              ...p.projectTracking,
+              currentStage: 'started' as const,
+              startedAt: new Date().toISOString(),
+            }
+          };
+        }
+        return p;
+      };
+      setAllProposals(prev => prev.map(updateProposal));
+      setProposals(prev => prev.map(updateProposal));
+
+      toast.success(
+        language === 'ka' ? 'პროექტი დაიწყო' : 'Project started',
+        language === 'ka' ? 'კლიენტი მიიღებს შეტყობინებას' : 'Client will be notified'
+      );
+    } catch (err: any) {
+      toast.error(
+        language === 'ka' ? 'შეცდომა' : 'Error',
+        err.response?.data?.message || 'Failed to start project'
+      );
+    } finally {
+      setStartingProjectId(null);
     }
   };
 
@@ -723,6 +771,30 @@ function MyProposalsPageContent() {
                           </Link>
                         )}
 
+                        {/* Start Project Button - for accepted proposals with hired stage */}
+                        {proposal.status === 'accepted' && proposal.projectTracking?.currentStage === 'hired' && (
+                          <button
+                            onClick={() => handleStartProject(job._id)}
+                            disabled={startingProjectId === job._id}
+                            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50 transition-all shadow-lg shadow-emerald-500/25"
+                          >
+                            {startingProjectId === job._id ? (
+                              <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            )}
+                            {language === 'ka' ? 'დაწყება' : 'Start Project'}
+                          </button>
+                        )}
+
+                        {/* Project Started Badge */}
+                        {proposal.status === 'accepted' && proposal.projectTracking && proposal.projectTracking.currentStage !== 'hired' && (
+                          <span className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium bg-emerald-500/10 text-emerald-600">
+                            <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            {language === 'ka' ? 'დაწყებული' : 'Started'}
+                          </span>
+                        )}
+
                         {/* Withdraw Button - only for pending */}
                         {proposal.status === 'pending' && (
                           <button
@@ -769,6 +841,15 @@ function MyProposalsPageContent() {
                       )}
                     </div>
                   </div>
+
+                  {/* Project Chat - for accepted/completed proposals */}
+                  {(proposal.status === 'accepted' || proposal.status === 'completed') && (
+                    <ProjectChat
+                      jobId={job._id}
+                      locale={language}
+                      isClient={false}
+                    />
+                  )}
                 </div>
               );
             })}

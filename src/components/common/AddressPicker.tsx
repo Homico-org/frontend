@@ -385,16 +385,22 @@ export default function AddressPicker({
         {/* Label */}
         {label && (
           <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-            {label} {required && <span className="text-rose-500">*</span>}
+            {label} {required && <span className="text-[#C4735B]">*</span>}
           </label>
         )}
 
         {/* Map Container */}
         <div
-          className="rounded-2xl overflow-hidden relative group"
+          className={`rounded-2xl overflow-hidden relative group transition-all ${
+            required && !selectedAddress
+              ? 'ring-2 ring-[#C4735B]/30 ring-offset-2'
+              : selectedAddress
+                ? 'ring-2 ring-emerald-500/30 ring-offset-2'
+                : ''
+          }`}
           style={{
             height: '320px',
-            border: '1px solid var(--color-border)',
+            border: required && !selectedAddress ? '2px solid #C4735B' : selectedAddress ? '2px solid rgb(16 185 129 / 0.3)' : '1px solid var(--color-border)',
             backgroundColor: isDarkMode ? '#28282c' : '#f8f9fa',
           }}
         >
@@ -559,6 +565,37 @@ export default function AddressPicker({
             </div>
           )}
         </div>
+
+        {/* Selected Address Display Below Map */}
+        {selectedAddress ? (
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20">
+            <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+              <MapPin className="w-4 h-4 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 mb-0.5">
+                {locale === 'ka' ? 'არჩეული მისამართი' : 'Selected Address'}
+              </p>
+              <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
+                {selectedAddress}
+              </p>
+            </div>
+          </div>
+        ) : required ? (
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#C4735B]/5 border border-[#C4735B]/20">
+            <div className="w-8 h-8 rounded-full bg-[#C4735B]/10 flex items-center justify-center flex-shrink-0">
+              <MapPin className="w-4 h-4 text-[#C4735B]" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-[#C4735B]">
+                {locale === 'ka' ? 'გთხოვთ აირჩიოთ მისამართი რუკაზე' : 'Please select an address on the map'}
+              </p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                {locale === 'ka' ? 'დააკლიკეთ რუკაზე ან მოძებნეთ მისამართი' : 'Click on the map or search for an address'}
+              </p>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       {/* Fullscreen Modal - Portal to body */}

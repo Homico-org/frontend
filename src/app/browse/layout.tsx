@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { BrowseProvider, useBrowseContext } from "@/contexts/BrowseContext";
 import { JobsProvider, useJobsContext } from "@/contexts/JobsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Briefcase, ChevronRight, FileText, Filter, Hammer, Images, Search, Send, Users, X } from "lucide-react";
+import { Briefcase, ChevronRight, FileText, Filter, Hammer, Images, Plus, Search, Send, Users, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ReactNode, Suspense, useEffect, useRef, useState } from "react";
@@ -232,8 +232,20 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
       <div className="flex-1 flex min-h-0 overflow-hidden">
         {/* Left Sidebar - Matching design exactly */}
         <aside className="hidden lg:flex flex-col w-60 flex-shrink-0 border-r border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a]">
+          {/* Post a Job Button */}
+          <div className="px-3 pt-4 pb-2">
+            <Link
+              href="/post-job"
+              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90"
+              style={{ backgroundColor: ACCENT_COLOR }}
+            >
+              <Plus className="w-4 h-4" />
+              <span>{locale === 'ka' ? 'განცხადების დამატება' : 'Post a Job'}</span>
+            </Link>
+          </div>
+
           {/* BROWSE Label */}
-          <div className="px-5 pt-5 pb-2">
+          <div className="px-5 pt-3 pb-2">
             <span className="text-xs font-semibold tracking-wider text-neutral-400 uppercase">
               {locale === 'ka' ? 'დათვალიერება' : 'Browse'}
             </span>

@@ -1,43 +1,37 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import AuthGuard from '@/components/common/AuthGuard';
+import Avatar from '@/components/common/Avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import AuthGuard from '@/components/common/AuthGuard';
 import { api } from '@/lib/api';
-import Link from 'next/link';
-import Avatar from '@/components/common/Avatar';
 import {
-  Users,
-  Briefcase,
-  FileText,
-  MessageCircle,
-  TrendingUp,
-  TrendingDown,
   Activity,
-  Clock,
-  CheckCircle,
-  XCircle,
   AlertCircle,
   ArrowUpRight,
-  Building2,
-  UserCheck,
-  Shield,
-  MapPin,
-  Tag,
-  RefreshCw,
-  ChevronRight,
-  Sparkles,
-  Zap,
   BarChart3,
+  Briefcase,
+  Building2,
+  ChevronRight,
+  FileText,
+  Globe,
+  Layers,
+  MapPin,
+  MessageCircle,
   PieChart,
   Radio,
-  Layers,
+  RefreshCw,
+  Shield,
+  Tag,
   Target,
-  Eye,
-  Calendar,
-  Globe,
+  TrendingDown,
+  TrendingUp,
+  UserCheck,
+  Users,
+  Zap
 } from 'lucide-react';
+import Link from 'next/link';
+import { useCallback, useEffect, useState } from 'react';
 
 interface DashboardStats {
   users: {

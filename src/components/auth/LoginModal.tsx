@@ -53,10 +53,21 @@ export default function LoginModal() {
   const { t, locale } = useLanguage();
   const { trackEvent } = useAnalytics();
 
-  // Form state
-  const [phone, setPhone] = useState('');
+  // Form state - initialize from localStorage for returning users
+  const [phone, setPhone] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('lastLoginPhone') || '';
+    }
+    return '';
+  });
   const [password, setPassword] = useState('');
-  const [phoneCountry, setPhoneCountry] = useState<CountryCode>('GE');
+  const [phoneCountry, setPhoneCountry] = useState<CountryCode>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('lastLoginCountry') as CountryCode | null;
+      if (saved && countries[saved]) return saved;
+    }
+    return 'GE';
+  });
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -128,7 +139,7 @@ export default function LoginModal() {
 
   useEffect(() => {
     if (!isLoginModalOpen) {
-      setPhone('');
+      // Don't clear phone/country - keep them for next login
       setPassword('');
       setError('');
       setShowPassword(false);
@@ -250,6 +261,14 @@ export default function LoginModal() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Login failed');
+
+      // Save phone credentials for next login
+      try {
+        localStorage.setItem('lastLoginPhone', phone);
+        localStorage.setItem('lastLoginCountry', phoneCountry);
+      } catch {
+        // Ignore localStorage errors
+      }
 
       login(data.access_token, data.user);
       trackEvent(AnalyticsEvent.LOGIN, { userRole: data.user.role });

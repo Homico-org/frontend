@@ -95,7 +95,7 @@ export default function CategoriesStep({
       {/* Main Categories */}
       <div>
         <h2 className="text-sm font-semibold text-neutral-900 mb-2">
-          1. {locale === "ka" ? "კატეგორია" : "Category"}
+          1. {locale === "ka" ? "კატეგორია" : "Category"} <span className="text-[#C4735B]">*</span>
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
           {categories.map((category) => {

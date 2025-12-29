@@ -11,6 +11,7 @@ import { isHighLevelPro } from "@/utils/categoryHelpers";
 import { FileText, Hammer, LogIn, MessageCircle, Plus, UserPlus, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Avatar from "./Avatar";
 
@@ -24,10 +25,17 @@ export default function Header() {
   const { t, locale } = useLanguage();
   const { unreadCount } = useNotifications();
   const { unreadCount: unreadMessagesCount } = useMessages();
+  const pathname = usePathname();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Check active routes for navigation highlighting
+  const isMyProposalsActive = pathname === '/my-proposals';
+  const isMyJobsActive = pathname === '/my-jobs';
+  const isMessagesActive = pathname === '/messages' || pathname.startsWith('/messages/');
+  const isNotificationsActive = pathname === '/notifications';
 
   // Counter states for proposals/jobs badges
   const [proposalUpdatesCount, setProposalUpdatesCount] = useState(0);
@@ -149,7 +157,11 @@ export default function Header() {
                 <>
                   <Link
                     href="/my-proposals"
-                    className="relative flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all hover:bg-white dark:hover:bg-neutral-700"
+                    className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                      isMyProposalsActive
+                        ? 'bg-white dark:bg-neutral-700 shadow-sm'
+                        : 'hover:bg-white dark:hover:bg-neutral-700'
+                    }`}
                     style={{ color: ACCENT_COLOR }}
                   >
                     <FileText className="w-4 h-4" />
@@ -172,7 +184,11 @@ export default function Header() {
               {/* My Jobs - for all authenticated users */}
               <Link
                 href="/my-jobs"
-                className="relative flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all hover:bg-white dark:hover:bg-neutral-700"
+                className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  isMyJobsActive
+                    ? 'bg-white dark:bg-neutral-700 shadow-sm'
+                    : 'hover:bg-white dark:hover:bg-neutral-700'
+                }`}
                 style={{ color: ACCENT_COLOR }}
               >
                 <Hammer className="w-4 h-4" />
@@ -199,7 +215,12 @@ export default function Header() {
               {(user.role === "pro" || user.role === "admin") && (
                 <Link
                   href="/my-proposals"
-                  className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                  className={`relative flex items-center justify-center w-9 h-9 rounded-xl transition-all ${
+                    isMyProposalsActive
+                      ? 'bg-neutral-200 dark:bg-neutral-700 ring-2 ring-offset-1'
+                      : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                  }`}
+                  style={isMyProposalsActive ? { '--tw-ring-color': ACCENT_COLOR } as React.CSSProperties : {}}
                   title={locale === 'ka' ? 'ჩემი შეთავაზებები' : 'My Proposals'}
                 >
                   <FileText className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
@@ -219,7 +240,12 @@ export default function Header() {
               {/* My Jobs - for all authenticated users */}
               <Link
                 href="/my-jobs"
-                className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                className={`relative flex items-center justify-center w-9 h-9 rounded-xl transition-all ${
+                  isMyJobsActive
+                    ? 'bg-neutral-200 dark:bg-neutral-700 ring-2 ring-offset-1'
+                    : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                }`}
+                style={isMyJobsActive ? { '--tw-ring-color': ACCENT_COLOR } as React.CSSProperties : {}}
                 title={locale === 'ka' ? 'ჩემი განცხადებები' : 'My Jobs'}
               >
                 <Hammer className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
@@ -238,21 +264,6 @@ export default function Header() {
             </div>
           )}
 
-          {/* Post a Job Button */}
-          <Link
-            href="/post-job"
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 lg:px-4 py-2 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90"
-            style={{ backgroundColor: ACCENT_COLOR }}
-          >
-            <Plus className="w-4 h-4" />
-            <span className="hidden lg:inline">
-              {locale === 'ka' ? 'განცხადების დამატება' : 'Post a Job'}
-            </span>
-            <span className="hidden sm:inline lg:hidden">
-              {locale === 'ka' ? 'დამატება' : 'Post'}
-            </span>
-          </Link>
-
           {isLoading ? (
             <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
           ) : isAuthenticated && user ? (
@@ -261,9 +272,14 @@ export default function Header() {
               {showMessagesIcon && (
                 <Link
                   href="/messages"
-                  className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                  className={`relative flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-300 ${
+                    isMessagesActive
+                      ? 'bg-neutral-200 dark:bg-neutral-700 ring-2 ring-offset-1'
+                      : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                  }`}
+                  style={isMessagesActive ? { '--tw-ring-color': ACCENT_COLOR } as React.CSSProperties : {}}
                 >
-                  <MessageCircle className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
+                  <MessageCircle className={`w-4 h-4 ${isMessagesActive ? '' : 'text-neutral-600 dark:text-neutral-400'}`} style={isMessagesActive ? { color: ACCENT_COLOR } : {}} />
                   {unreadMessagesCount > 0 && (
                     <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-white bg-red-500 rounded-full">
                       {unreadMessagesCount > 99 ? "99+" : unreadMessagesCount}
@@ -275,10 +291,16 @@ export default function Header() {
               {/* Notification Bell */}
               <Link
                 href="/notifications"
-                className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                className={`relative flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-300 ${
+                  isNotificationsActive
+                    ? 'bg-neutral-200 dark:bg-neutral-700 ring-2 ring-offset-1'
+                    : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                }`}
+                style={isNotificationsActive ? { '--tw-ring-color': ACCENT_COLOR } as React.CSSProperties : {}}
               >
                 <svg
-                  className="w-4 h-4 text-neutral-600 dark:text-neutral-400"
+                  className={`w-4 h-4 ${isNotificationsActive ? '' : 'text-neutral-600 dark:text-neutral-400'}`}
+                  style={isNotificationsActive ? { color: ACCENT_COLOR } : {}}
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"

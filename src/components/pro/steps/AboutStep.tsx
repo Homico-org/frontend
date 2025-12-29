@@ -97,16 +97,16 @@ export default function AboutStep({
           bg-[var(--color-bg-elevated)] rounded-2xl p-6 shadow-sm transition-all
           ${hasAvatar
             ? 'border-2 border-emerald-500/30'
-            : 'border-2 border-[#E07B4F]/50 ring-4 ring-[#E07B4F]/10'
+            : 'border-2 border-[#C4735B]/50 ring-4 ring-[#C4735B]/10'
           }
         `}>
           {/* Required Badge */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Camera className="w-5 h-5 text-[#E07B4F]" />
+              <Camera className="w-5 h-5 text-[#C4735B]" />
               <h3 className="font-semibold text-[var(--color-text-primary)]">
                 {locale === 'ka' ? 'პროფილის ფოტო' : 'Profile Photo'}
-                <span className="text-[#E07B4F] ml-1">*</span>
+                <span className="text-[#C4735B] ml-1">*</span>
               </h3>
             </div>
             {hasAvatar ? (
@@ -115,7 +115,7 @@ export default function AboutStep({
                 {locale === 'ka' ? 'ატვირთულია' : 'Uploaded'}
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 text-xs font-medium text-[#E07B4F] bg-[#E07B4F]/10 px-2.5 py-1 rounded-full">
+              <span className="flex items-center gap-1.5 text-xs font-medium text-[#C4735B] bg-[#C4735B]/10 px-2.5 py-1 rounded-full">
                 <AlertCircle className="w-3.5 h-3.5" />
                 {locale === 'ka' ? 'სავალდებულო' : 'Required'}
               </span>
@@ -127,11 +127,11 @@ export default function AboutStep({
               <button
                 type="button"
                 onClick={() => avatarInputRef.current?.click()}
-                className="relative w-28 h-28 rounded-2xl bg-gradient-to-br from-[#E07B4F]/10 to-[#E07B4F]/5 border-2 border-dashed border-[#E07B4F]/40 flex items-center justify-center group transition-all hover:scale-105 hover:border-[#E07B4F] overflow-hidden"
+                className="relative w-28 h-28 rounded-2xl bg-gradient-to-br from-[#C4735B]/10 to-[#C4735B]/5 border-2 border-dashed border-[#C4735B]/40 flex items-center justify-center group transition-all hover:scale-105 hover:border-[#C4735B] overflow-hidden"
               >
                 <div className="text-center">
-                  <Camera className="w-8 h-8 text-[#E07B4F]/60 group-hover:text-[#E07B4F] transition-colors mx-auto mb-1" />
-                  <span className="text-xs font-medium text-[#E07B4F]/60 group-hover:text-[#E07B4F]">
+                  <Camera className="w-8 h-8 text-[#C4735B]/60 group-hover:text-[#C4735B] transition-colors mx-auto mb-1" />
+                  <span className="text-xs font-medium text-[#C4735B]/60 group-hover:text-[#C4735B]">
                     {locale === 'ka' ? 'ატვირთე' : 'Upload'}
                   </span>
                 </div>
@@ -146,7 +146,7 @@ export default function AboutStep({
                 <button
                   type="button"
                   onClick={() => avatarInputRef.current?.click()}
-                  className="absolute -bottom-2 -right-2 w-9 h-9 rounded-full bg-[#E07B4F] flex items-center justify-center shadow-lg hover:bg-[#D26B3F] transition-colors"
+                  className="absolute -bottom-2 -right-2 w-9 h-9 rounded-full bg-[#C4735B] flex items-center justify-center shadow-lg hover:bg-[#A85D47] transition-colors"
                 >
                   <Camera className="w-4 h-4 text-white" />
                 </button>
@@ -162,7 +162,7 @@ export default function AboutStep({
               <button
                 type="button"
                 onClick={() => avatarInputRef.current?.click()}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#E07B4F] text-white text-sm font-medium hover:bg-[#D26B3F] transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#C4735B] text-white text-sm font-medium hover:bg-[#A85D47] transition-colors"
               >
                 <Camera className="w-4 h-4" />
                 {avatarPreview
@@ -194,10 +194,10 @@ export default function AboutStep({
         `}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-[#E07B4F]" />
+              <Clock className="w-5 h-5 text-[#C4735B]" />
               <span className="font-semibold text-[var(--color-text-primary)]">
                 {locale === 'ka' ? 'გამოცდილება (წელი)' : 'Years of Experience'}
-                <span className="text-[#E07B4F] ml-1">*</span>
+                <span className="text-[#C4735B] ml-1">*</span>
               </span>
             </div>
             {validation.experience ? (
@@ -226,7 +226,7 @@ export default function AboutStep({
                 focus:outline-none transition-all duration-200
                 ${validation.experience
                   ? 'border-emerald-500/30 focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10'
-                  : 'border-transparent focus:border-[#E07B4F]/50 focus:ring-4 focus:ring-[#E07B4F]/10'
+                  : 'border-transparent focus:border-[#C4735B]/50 focus:ring-4 focus:ring-[#C4735B]/10'
                 }
               `}
               placeholder="0"
@@ -250,10 +250,10 @@ export default function AboutStep({
         `}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-[#E07B4F]" />
+              <FileText className="w-5 h-5 text-[#C4735B]" />
               <span className="font-semibold text-[var(--color-text-primary)]">
                 {locale === 'ka' ? 'შენს შესახებ' : 'About You'}
-                <span className="text-[#E07B4F] ml-1">*</span>
+                <span className="text-[#C4735B] ml-1">*</span>
               </span>
             </div>
             {validation.bio ? (
@@ -279,7 +279,7 @@ export default function AboutStep({
               focus:outline-none transition-all duration-200 resize-none
               ${validation.bio
                 ? 'border-emerald-500/30 focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10'
-                : 'border-transparent focus:border-[#E07B4F]/50 focus:ring-4 focus:ring-[#E07B4F]/10'
+                : 'border-transparent focus:border-[#C4735B]/50 focus:ring-4 focus:ring-[#C4735B]/10'
               }
             `}
             placeholder={locale === 'ka' ? 'მოკლედ აღწერე შენი გამოცდილება და უნარები...' : 'Briefly describe your experience and skills...'}

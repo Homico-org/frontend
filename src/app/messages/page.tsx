@@ -12,10 +12,11 @@ import { storage } from '@/services/storage';
 import { isHighLevelPro } from '@/utils/categoryHelpers';
 import {
   AlertTriangle,
-  Edit3,
+  ArrowLeft,
   Loader2,
   Lock,
   MessageCircle,
+  MessageSquarePlus,
   MoreVertical,
   Paperclip,
   Search,
@@ -459,21 +460,39 @@ const ChatContent = memo(function ChatContent({
 
   // Join/leave conversation room
   useEffect(() => {
-    if (!socketRef.current) return;
+    const socket = socketRef.current;
+    if (!socket) return;
 
-    socketRef.current.emit('joinConversation', conversation._id);
+    // Join conversation room
+    const joinRoom = () => {
+      socket.emit('joinConversation', conversation._id);
+      console.log('[Chat] Joined conversation room:', conversation._id);
+    };
+
+    // Join immediately if connected, otherwise wait for connection
+    if (socket.connected) {
+      joinRoom();
+    } else {
+      socket.on('connect', joinRoom);
+    }
 
     const handleNewMessage = (message: Message) => {
+      console.log('[Chat] Received new message:', message._id);
       const messageSenderId = getSenderId(message.senderId);
 
       // If this is my own message, skip - the API response will handle it
       if (messageSenderId === userId) {
+        console.log('[Chat] Skipping own message');
         return;
       }
 
       setMessages(prev => {
         // Skip if this exact message already exists
-        if (prev.some(m => m._id === message._id)) return prev;
+        if (prev.some(m => m._id === message._id)) {
+          console.log('[Chat] Message already exists, skipping');
+          return prev;
+        }
+        console.log('[Chat] Adding new message to state');
         return [...prev, message];
       });
     };
@@ -493,17 +512,16 @@ const ChatContent = memo(function ChatContent({
       );
     };
 
-    socketRef.current.on('newMessage', handleNewMessage);
-    socketRef.current.on('userTyping', handleTyping);
-    socketRef.current.on('messageStatusUpdate', handleStatusUpdate);
+    socket.on('newMessage', handleNewMessage);
+    socket.on('userTyping', handleTyping);
+    socket.on('messageStatusUpdate', handleStatusUpdate);
 
     return () => {
-      if (socketRef.current) {
-        socketRef.current.emit('leaveConversation', conversation._id);
-        socketRef.current.off('newMessage', handleNewMessage);
-        socketRef.current.off('userTyping', handleTyping);
-        socketRef.current.off('messageStatusUpdate', handleStatusUpdate);
-      }
+      socket.emit('leaveConversation', conversation._id);
+      socket.off('connect', joinRoom);
+      socket.off('newMessage', handleNewMessage);
+      socket.off('userTyping', handleTyping);
+      socket.off('messageStatusUpdate', handleStatusUpdate);
     };
   }, [conversation._id, socketRef, userId]);
 
@@ -574,10 +592,8 @@ const ChatContent = memo(function ChatContent({
       setNewMessage(messageContent);
     } finally {
       setIsSending(false);
-      // Use setTimeout to ensure the input is re-enabled before focusing
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 0);
+      // Focus input after sending
+      inputRef.current?.focus();
     }
   };
 
@@ -776,7 +792,6 @@ const ChatContent = memo(function ChatContent({
               onKeyDown={handleKeyPress}
               placeholder={locale === 'ka' ? 'დაწერე შეტყობინება...' : 'Type your message...'}
               className="flex-1 bg-transparent text-[15px] placeholder-neutral-400 focus:outline-none"
-              disabled={isSending}
             />
 
             <button
@@ -852,7 +867,9 @@ function MessagesPageContent() {
     const token = localStorage.getItem('access_token');
     if (!token) return;
 
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:3001';
+    // WebSocket URL - strip /api suffix if present, otherwise use as-is
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const backendUrl = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl;
 
     socketRef.current = io(`${backendUrl}/chat`, {
       auth: { token },
@@ -864,23 +881,28 @@ function MessagesPageContent() {
     });
 
     socketRef.current.on('connect', () => {
-      console.log('Connected to chat WebSocket');
+      console.log('[Chat] Connected to WebSocket, socket ID:', socketRef.current?.id);
       // Rejoin current conversation if we were in one
       if (selectedConversation) {
         socketRef.current?.emit('joinConversation', selectedConversation._id);
+        console.log('[Chat] Rejoined conversation after connect:', selectedConversation._id);
       }
     });
 
-    socketRef.current.on('disconnect', () => {
-      console.log('Disconnected from chat WebSocket');
+    socketRef.current.on('disconnect', (reason) => {
+      console.log('[Chat] Disconnected from WebSocket:', reason);
+    });
+
+    socketRef.current.on('connect_error', (error: Error) => {
+      console.error('[Chat] Connection error:', error.message);
     });
 
     socketRef.current.on('reconnect', (attemptNumber: number) => {
-      console.log(`Reconnected to chat WebSocket after ${attemptNumber} attempts`);
+      console.log(`[Chat] Reconnected after ${attemptNumber} attempts`);
     });
 
     socketRef.current.on('reconnect_error', (error: Error) => {
-      console.error('WebSocket reconnection error:', error.message);
+      console.error('[Chat] Reconnection error:', error.message);
     });
 
     socketRef.current.on('conversationUpdate', (update: { conversationId: string; lastMessage: string; lastMessageAt: string }) => {
@@ -1192,16 +1214,25 @@ function MessagesPageContent() {
           {/* Sidebar Header */}
           <div className="flex-shrink-0 p-5 border-b border-neutral-100">
             <div className="flex items-center justify-between mb-4">
-              <h1 className="text-2xl font-bold text-neutral-900">
-                {locale === 'ka' ? 'შეტყობინებები' : 'Messages'}
-              </h1>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => router.back()}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 transition-all"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+                <h1 className="text-2xl font-bold text-neutral-900">
+                  {locale === 'ka' ? 'შეტყობინებები' : 'Messages'}
+                </h1>
+              </div>
               <button
                 onClick={() => setShowNewConversationModal(true)}
-                className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors hover:bg-neutral-100"
-                style={{ color: ACCENT_COLOR }}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl text-white text-sm font-medium transition-all hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] shadow-sm"
+                style={{ backgroundColor: ACCENT_COLOR }}
                 title={locale === 'ka' ? 'ახალი მიმოწერა' : 'New conversation'}
               >
-                <Edit3 className="w-5 h-5" />
+                <MessageSquarePlus className="w-4 h-4" />
+                <span className="hidden sm:inline">{locale === 'ka' ? 'ახალი' : 'New'}</span>
               </button>
             </div>
 

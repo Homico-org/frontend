@@ -536,7 +536,7 @@ function PostJobPageContent() {
                 {/* Property Type Selection with Icons */}
                 <div>
                   <label className="block text-xs font-medium text-neutral-600 mb-2">
-                    {locale === "ka" ? "ობიექტის ტიპი" : "Property Type"} *
+                    {locale === "ka" ? "ობიექტის ტიპი" : "Property Type"} <span className="text-[#C4735B]">*</span>
                   </label>
                   <div className="grid grid-cols-5 gap-2">
                     {[
@@ -592,6 +592,10 @@ function PostJobPageContent() {
                 </div>
 
                 {/* Category Cards - Horizontal compact layout */}
+                <div>
+                  <label className="block text-xs font-medium text-neutral-600 mb-2">
+                    {locale === "ka" ? "კატეგორია" : "Category"} <span className="text-[#C4735B]">*</span>
+                  </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   {categories.map((category) => {
                     const isSelected = selectedCategory === category.key;
@@ -623,6 +627,7 @@ function PostJobPageContent() {
                     );
                   })}
                 </div>
+                </div>
 
                 {/* Subcategories Panel - Compact */}
                 {selectedCategory && selectedCategoryData && (
@@ -633,7 +638,7 @@ function PostJobPageContent() {
                           <CategoryIcon type={selectedCategoryData.icon || ""} className="w-3.5 h-3.5 text-[#C4735B]" />
                         </div>
                         <span className="font-medium text-sm text-neutral-900">
-                          {locale === "ka" ? selectedCategoryData.nameKa : selectedCategoryData.name}
+                          {locale === "ka" ? "სერვისი" : "Service"} <span className="text-[#C4735B]">*</span>
                         </span>
                       </div>
                       <div className="relative">
@@ -793,7 +798,7 @@ function PostJobPageContent() {
                   {/* Address */}
                   <div>
                     <label className="block text-xs font-medium text-neutral-600 mb-1.5">
-                      {locale === "ka" ? "სამუშაო მისამართი" : "Job Address"}
+                      {locale === "ka" ? "სამუშაო მისამართი" : "Job Address"} <span className="text-[#C4735B]">*</span>
                     </label>
                     <AddressPicker
                       value={formData.location}
@@ -806,7 +811,7 @@ function PostJobPageContent() {
                   {/* Budget Type Selection */}
                   <div>
                     <label className="block text-xs font-medium text-neutral-600 mb-2">
-                      {locale === "ka" ? "ბიუჯეტის ტიპი" : "Budget Type"}
+                      {locale === "ka" ? "ბიუჯეტის ტიპი" : "Budget Type"} <span className="text-[#C4735B]">*</span>
                     </label>
                     <div className="flex gap-2">
                       <button
@@ -855,7 +860,7 @@ function PostJobPageContent() {
                       <label className="block text-xs font-medium text-neutral-600 mb-1.5">
                         {formData.budgetType === "fixed"
                           ? (locale === "ka" ? "თანხა (GEL)" : "Amount (GEL)")
-                          : (locale === "ka" ? "დიაპაზონი (GEL)" : "Range (GEL)")}
+                          : (locale === "ka" ? "დიაპაზონი (GEL)" : "Range (GEL)")} <span className="text-[#C4735B]">*</span>
                       </label>
                       <div className="flex items-center gap-2">
                         <div className="relative flex-1">
@@ -890,7 +895,7 @@ function PostJobPageContent() {
                   {/* Timing Selection */}
                   <div>
                     <label className="block text-xs font-medium text-neutral-600 mb-2">
-                      {locale === "ka" ? "როდის გჭირდება?" : "When do you need it?"}
+                      {locale === "ka" ? "როდის გჭირდება?" : "When do you need it?"} <span className="text-[#C4735B]">*</span>
                     </label>
                     <div className="grid grid-cols-4 gap-2">
                       {[
@@ -934,7 +939,7 @@ function PostJobPageContent() {
                 {/* Title */}
                 <div>
                   <label className="block text-xs font-medium text-neutral-600 mb-1.5">
-                    {locale === "ka" ? "სათაური" : "Title"} *
+                    {locale === "ka" ? "სათაური" : "Title"} <span className="text-[#C4735B]">*</span>
                   </label>
                   <input
                     type="text"
@@ -948,7 +953,7 @@ function PostJobPageContent() {
                 {/* Description */}
                 <div>
                   <label className="block text-xs font-medium text-neutral-600 mb-1.5">
-                    {locale === "ka" ? "აღწერა" : "Description"} *
+                    {locale === "ka" ? "აღწერა" : "Description"} <span className="text-[#C4735B]">*</span>
                   </label>
                   <textarea
                     value={formData.description}
@@ -962,16 +967,64 @@ function PostJobPageContent() {
                 </div>
 
 
-                {/* Photos - Compact */}
-                <div>
-                  <label className="block text-xs font-medium text-neutral-600 mb-1.5">
-                    {locale === "ka" ? "ფოტოები" : "Photos"} <span className="text-neutral-400 font-normal">({locale === "ka" ? "არასავალდებულო" : "optional"})</span>
-                  </label>
+                {/* Photos - Enhanced with explanation */}
+                <div className={`p-4 rounded-xl border-2 transition-all ${
+                  (existingMedia.length + mediaFiles.length) > 0
+                    ? 'bg-emerald-50/50 border-emerald-200'
+                    : 'bg-gradient-to-br from-amber-50/50 to-orange-50/30 border-amber-200/60'
+                }`}>
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                      (existingMedia.length + mediaFiles.length) > 0
+                        ? 'bg-emerald-100'
+                        : 'bg-amber-100'
+                    }`}>
+                      <ImageIcon className={`w-5 h-5 ${
+                        (existingMedia.length + mediaFiles.length) > 0
+                          ? 'text-emerald-600'
+                          : 'text-amber-600'
+                      }`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <label className="block text-sm font-semibold text-neutral-800 mb-0.5">
+                        {locale === "ka" ? "დაამატე ფოტოები" : "Add Photos"}
+                        <span className="ml-1.5 text-xs font-normal text-neutral-400">
+                          ({locale === "ka" ? "რეკომენდირებული" : "recommended"})
+                        </span>
+                      </label>
+                      <p className="text-xs text-neutral-500 leading-relaxed">
+                        {locale === "ka"
+                          ? "ფოტოები ეხმარება პროფესიონალებს უკეთ გაიგონ რა გჭირდება და მოგცენ ზუსტი შეფასება"
+                          : "Photos help professionals better understand what you need and give you accurate quotes"}
+                      </p>
+                    </div>
+                  </div>
 
-                  <div className="flex gap-2">
+                  {/* Tips when no photos */}
+                  {(existingMedia.length + mediaFiles.length) === 0 && (
+                    <div className="mb-3 flex flex-wrap gap-1.5">
+                      {[
+                        { icon: "📸", text: locale === "ka" ? "პრობლემის ადგილი" : "Problem area" },
+                        { icon: "📐", text: locale === "ka" ? "ზომები" : "Dimensions" },
+                        { icon: "🎨", text: locale === "ka" ? "სასურველი სტილი" : "Desired style" },
+                      ].map((tip, i) => (
+                        <span key={i} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-white/80 border border-amber-200/50 text-xs text-neutral-600">
+                          <span>{tip.icon}</span>
+                          {tip.text}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Upload area and previews */}
+                  <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="w-16 h-16 rounded-lg border-2 border-dashed border-neutral-200 flex flex-col items-center justify-center hover:border-[#C4735B]/50 hover:bg-[#C4735B]/5 transition-colors flex-shrink-0"
+                      className={`w-20 h-20 rounded-xl border-2 border-dashed flex flex-col items-center justify-center transition-all flex-shrink-0 ${
+                        (existingMedia.length + mediaFiles.length) > 0
+                          ? 'border-emerald-300 hover:border-emerald-400 hover:bg-emerald-100/50 bg-white'
+                          : 'border-amber-300 hover:border-amber-400 hover:bg-amber-100/50 bg-white'
+                      }`}
                     >
                       <input
                         ref={fileInputRef}
@@ -981,34 +1034,54 @@ function PostJobPageContent() {
                         onChange={handleFileSelect}
                         className="hidden"
                       />
-                      <Upload className="w-4 h-4 text-neutral-400" />
-                      <span className="text-[9px] text-neutral-400 mt-0.5">Add</span>
+                      <Plus className={`w-5 h-5 ${
+                        (existingMedia.length + mediaFiles.length) > 0 ? 'text-emerald-500' : 'text-amber-500'
+                      }`} />
+                      <span className={`text-[10px] font-medium mt-0.5 ${
+                        (existingMedia.length + mediaFiles.length) > 0 ? 'text-emerald-600' : 'text-amber-600'
+                      }`}>
+                        {locale === "ka" ? "დამატება" : "Add"}
+                      </span>
                     </button>
 
-                    {/* Preview */}
+                    {/* Preview - Existing */}
                     {existingMedia.map((media, idx) => (
-                      <div key={`existing-${idx}`} className="relative w-16 h-16 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
+                      <div key={`existing-${idx}`} className="relative w-20 h-20 rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0 ring-2 ring-emerald-200 ring-offset-1">
                         <img src={storage.getFileUrl(media.url)} alt="" className="w-full h-full object-cover" />
                         <button
                           onClick={() => removeExistingMedia(idx)}
-                          className="absolute top-1 right-1 w-4 h-4 bg-black/50 rounded-full flex items-center justify-center"
+                          className="absolute top-1.5 right-1.5 w-5 h-5 bg-black/60 hover:bg-red-500 rounded-full flex items-center justify-center transition-colors"
                         >
-                          <X className="w-2.5 h-2.5 text-white" />
+                          <X className="w-3 h-3 text-white" />
                         </button>
                       </div>
                     ))}
+
+                    {/* Preview - New */}
                     {mediaFiles.map((media, idx) => (
-                      <div key={`new-${idx}`} className="relative w-16 h-16 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
+                      <div key={`new-${idx}`} className="relative w-20 h-20 rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0 ring-2 ring-emerald-200 ring-offset-1">
                         <img src={media.preview} alt="" className="w-full h-full object-cover" />
                         <button
                           onClick={() => removeMediaFile(idx)}
-                          className="absolute top-1 right-1 w-4 h-4 bg-black/50 rounded-full flex items-center justify-center"
+                          className="absolute top-1.5 right-1.5 w-5 h-5 bg-black/60 hover:bg-red-500 rounded-full flex items-center justify-center transition-colors"
                         >
-                          <X className="w-2.5 h-2.5 text-white" />
+                          <X className="w-3 h-3 text-white" />
                         </button>
                       </div>
                     ))}
                   </div>
+
+                  {/* Success state */}
+                  {(existingMedia.length + mediaFiles.length) > 0 && (
+                    <div className="mt-3 flex items-center gap-1.5 text-xs text-emerald-600">
+                      <Check className="w-3.5 h-3.5" />
+                      <span>
+                        {locale === "ka"
+                          ? `${existingMedia.length + mediaFiles.length} ფოტო დამატებულია - პროფესიონალები უკეთ გაიგებენ შენს პროექტს!`
+                          : `${existingMedia.length + mediaFiles.length} photo${(existingMedia.length + mediaFiles.length) > 1 ? 's' : ''} added - pros will better understand your project!`}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

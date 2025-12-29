@@ -19,8 +19,10 @@ import {
   Edit3,
   FileText,
   MessageSquare,
+  RefreshCw,
   Send,
   Trash2,
+  Users,
   X,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -76,10 +78,11 @@ interface Job {
   budgetAmount?: number;
   budgetMin?: number;
   budgetMax?: number;
-  status: 'open' | 'in_progress' | 'completed' | 'cancelled';
+  status: 'open' | 'in_progress' | 'completed' | 'cancelled' | 'expired';
   images: string[];
   media: { type: string; url: string }[];
   proposalCount: number;
+  shortlistedCount?: number;
   viewCount: number;
   createdAt: string;
   deadline?: string;
@@ -98,7 +101,7 @@ interface Job {
   projectTracking?: ProjectTracking;
 }
 
-type StatusFilter = 'all' | 'open' | 'hired' | 'closed';
+type StatusFilter = 'all' | 'open' | 'hired' | 'closed' | 'expired';
 
 function getTimeAgo(dateStr: string, locale: string) {
   const date = new Date(dateStr);
@@ -136,6 +139,7 @@ function MyJobsPageContent() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [deletingJobId, setDeletingJobId] = useState<string | null>(null);
   const [deleteModalJob, setDeleteModalJob] = useState<Job | null>(null);
+  const [renewingJobId, setRenewingJobId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -231,6 +235,30 @@ function MyJobsPageContent() {
     }
   };
 
+  // Renew expired job handler
+  const handleRenewJob = async (jobId: string) => {
+    try {
+      setRenewingJobId(jobId);
+      await api.post(`/jobs/${jobId}/renew`);
+
+      // Update job in local state to open status
+      setJobs(prev => prev.map(j =>
+        j._id === jobId ? { ...j, status: 'open' as const } : j
+      ));
+
+      toast.success(
+        locale === 'ka' ? 'წარმატება' : 'Success',
+        locale === 'ka' ? 'პროექტი განახლდა 30 დღით' : 'Job renewed for 30 days'
+      );
+    } catch (err) {
+      toast.error(
+        locale === 'ka' ? 'შეცდომა' : 'Error',
+        locale === 'ka' ? 'განახლება ვერ მოხერხდა' : 'Failed to renew job'
+      );
+    } finally {
+      setRenewingJobId(null);
+    }
+  };
 
   // Initial loading skeleton
   if (authLoading || isInitialLoading) {
@@ -257,7 +285,19 @@ function MyJobsPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-neutral-950 flex flex-col">
+    <div className="min-h-screen bg-white dark:bg-neutral-950 flex flex-col font-body">
+      {/* Font imports */}
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+        .font-display {
+          font-family: 'Playfair Display', Georgia, serif;
+        }
+        .font-body {
+          font-family: 'DM Sans', system-ui, sans-serif;
+        }
+      `}</style>
+
       {/* ==================== HEADER ==================== */}
       <Header />
       <HeaderSpacer />
@@ -274,8 +314,8 @@ function MyJobsPageContent() {
               <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-600 dark:text-neutral-400" />
             </button>
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white">
-                {locale === 'ka' ? 'ჩემი პროექტები' : 'My Jobs'}
+              <h1 className="text-xl sm:text-2xl font-display font-semibold text-neutral-900 dark:text-white">
+                {locale === 'ka' ? 'ჩემი განცხადებები' : 'My Jobs'}
               </h1>
               <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5 hidden sm:block">
                 {locale === 'ka'
@@ -313,9 +353,10 @@ function MyJobsPageContent() {
         <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
           {[
             { key: 'all' as StatusFilter, label: locale === 'ka' ? 'ყველა' : 'All' },
-            { key: 'open' as StatusFilter, label: locale === 'ka' ? 'ღია' : 'Open' },
+            { key: 'open' as StatusFilter, label: locale === 'ka' ? 'აქტიური' : 'Active' },
             { key: 'hired' as StatusFilter, label: locale === 'ka' ? 'დაქირავებული' : 'Hired' },
             { key: 'closed' as StatusFilter, label: locale === 'ka' ? 'დახურული' : 'Closed' },
+            { key: 'expired' as StatusFilter, label: locale === 'ka' ? 'ვადაგასული' : 'Expired' },
           ].map(tab => (
             <button
               key={tab.key}
@@ -358,8 +399,11 @@ function MyJobsPageContent() {
             {jobs.map((job) => {
               const firstImage = job.media?.[0]?.url || job.images?.[0];
               const isHired = job.status === 'in_progress';
-              const isOpen = job.status === 'open';
+              const hasShortlisted = (job.shortlistedCount || 0) > 0;
+              const isOpen = job.status === 'open' && !hasShortlisted;
+              const isShortlisted = job.status === 'open' && hasShortlisted;
               const isClosed = job.status === 'completed' || job.status === 'cancelled';
+              const isExpired = job.status === 'expired';
 
               // Show ProjectTrackerCard for in_progress jobs with tracking data
               if (isHired && job.projectTracking) {
@@ -378,7 +422,8 @@ function MyJobsPageContent() {
               return (
                 <div
                   key={job._id}
-                  className="bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-100 dark:border-neutral-800 transition-shadow hover:shadow-lg"
+                  onClick={() => router.push(`/jobs/${job._id}`)}
+                  className="bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-100 dark:border-neutral-800 transition-shadow hover:shadow-lg cursor-pointer"
                 >
                   {/* Mobile: Vertical Stack Layout */}
                   <div className="flex flex-col sm:flex-row">
@@ -405,6 +450,12 @@ function MyJobsPageContent() {
                             {locale === 'ka' ? 'ღია' : 'Open'}
                           </span>
                         )}
+                        {isShortlisted && (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100/95 dark:bg-blue-900/50 backdrop-blur-sm text-blue-700 dark:text-blue-400 shadow-sm">
+                            <Users className="w-3 h-3" />
+                            {locale === 'ka' ? 'შორტლისტი' : 'Shortlisted'} ({job.shortlistedCount})
+                          </span>
+                        )}
                         {isHired && (
                           <span
                             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-white shadow-sm"
@@ -421,26 +472,47 @@ function MyJobsPageContent() {
                             {locale === 'ka' ? 'დახურული' : 'Closed'}
                           </span>
                         )}
+                        {isExpired && (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100/95 dark:bg-amber-900/50 backdrop-blur-sm text-amber-700 dark:text-amber-400 shadow-sm">
+                            <Clock className="w-3 h-3" />
+                            {locale === 'ka' ? 'ვადაგასული' : 'Expired'}
+                          </span>
+                        )}
                       </div>
 
                       {/* Mobile: Action buttons overlay */}
                       <div className="absolute top-3 right-3 flex items-center gap-1 sm:hidden">
+                        {/* Only show edit/delete when job is open (no shortlist, no pro hired) */}
                         {isOpen && (
                           <>
                             <Link
                               href={`/post-job?edit=${job._id}`}
+                              onClick={(e) => e.stopPropagation()}
                               className="p-2 rounded-lg bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm text-neutral-600 hover:text-neutral-900 shadow-sm"
                             >
                               <Edit3 className="w-4 h-4" />
                             </Link>
                             <button
-                              onClick={() => setDeleteModalJob(job)}
+                              onClick={(e) => { e.stopPropagation(); setDeleteModalJob(job); }}
                               disabled={deletingJobId === job._id}
                               className="p-2 rounded-lg bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm text-neutral-400 hover:text-red-500 shadow-sm disabled:opacity-50"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </>
+                        )}
+                        {isExpired && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleRenewJob(job._id); }}
+                            disabled={renewingJobId === job._id}
+                            className="p-2 rounded-lg bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm text-amber-600 hover:text-amber-700 shadow-sm disabled:opacity-50"
+                          >
+                            {renewingJobId === job._id ? (
+                              <div className="w-4 h-4 border-2 border-amber-300 border-t-amber-600 rounded-full animate-spin" />
+                            ) : (
+                              <RefreshCw className="w-4 h-4" />
+                            )}
+                          </button>
                         )}
                       </div>
                     </div>
@@ -465,7 +537,7 @@ function MyJobsPageContent() {
                           </div>
 
                           {/* Title */}
-                          <h3 className="text-sm sm:text-base font-semibold text-neutral-900 dark:text-white mb-2 line-clamp-2">
+                          <h3 className="text-sm sm:text-base font-display font-semibold text-neutral-900 dark:text-white mb-2 line-clamp-2">
                             {job.title}
                           </h3>
 
@@ -477,16 +549,18 @@ function MyJobsPageContent() {
 
                         {/* Action Icons - Top Right - Desktop only */}
                         <div className="hidden sm:flex items-center gap-1 ml-4">
+                          {/* Only show edit/delete when job is open (no shortlist, no pro hired) */}
                           {isOpen && (
                             <>
                               <Link
                                 href={`/post-job?edit=${job._id}`}
+                                onClick={(e) => e.stopPropagation()}
                                 className="p-2 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                               >
                                 <Edit3 className="w-4 h-4" />
                               </Link>
                               <button
-                                onClick={() => setDeleteModalJob(job)}
+                                onClick={(e) => { e.stopPropagation(); setDeleteModalJob(job); }}
                                 disabled={deletingJobId === job._id}
                                 className="p-2 rounded-lg text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
                               >
@@ -494,13 +568,19 @@ function MyJobsPageContent() {
                               </button>
                             </>
                           )}
-                          {isHired && (
-                            <Link
-                              href={`/jobs/${job._id}`}
-                              className="p-2 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                          {isExpired && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleRenewJob(job._id); }}
+                              disabled={renewingJobId === job._id}
+                              className="p-2 rounded-lg text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors disabled:opacity-50"
+                              title={locale === 'ka' ? 'განახლება' : 'Renew'}
                             >
-                              <FileText className="w-4 h-4" />
-                            </Link>
+                              {renewingJobId === job._id ? (
+                                <div className="w-4 h-4 border-2 border-amber-300 border-t-amber-600 rounded-full animate-spin" />
+                              ) : (
+                                <RefreshCw className="w-4 h-4" />
+                              )}
+                            </button>
                           )}
                         </div>
                       </div>
@@ -564,6 +644,12 @@ function MyJobsPageContent() {
                               </div>
                             </div>
                           )}
+                          {isExpired && (
+                            <span className="flex items-center gap-2 text-xs sm:text-sm text-amber-600 dark:text-amber-500">
+                              <Clock className="w-4 h-4" />
+                              {locale === 'ka' ? 'ვადა ამოიწურა - განაახლეთ კვლავ გასააქტიურებლად' : 'Expired - renew to reactivate'}
+                            </span>
+                          )}
                         </div>
 
                         {/* Right: Action Button */}
@@ -571,7 +657,7 @@ function MyJobsPageContent() {
                           {isOpen && job.proposalCount > 0 && (
                             <Link
                               href={`/my-jobs/${job._id}/proposals`}
-                              onClick={() => handleViewProposals(job._id)}
+                              onClick={(e) => { e.stopPropagation(); handleViewProposals(job._id); }}
                               className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 rounded-xl text-sm font-medium border transition-all hover:bg-neutral-50 dark:hover:bg-neutral-800"
                               style={{ borderColor: ACCENT_COLOR, color: ACCENT_COLOR }}
                             >
@@ -579,22 +665,34 @@ function MyJobsPageContent() {
                               <ChevronRight className="w-4 h-4" />
                             </Link>
                           )}
-                          {isOpen && job.proposalCount === 0 && (
-                            <Link
-                              href={`/jobs/${job._id}`}
-                              className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
-                            >
-                              {locale === 'ka' ? 'დეტალები' : 'View Details'}
-                            </Link>
-                          )}
                           {isHired && job.hiredPro?.userId?._id && (
                             <Link
                               href={`/messages?conversation=${job.hiredPro.userId._id}`}
+                              onClick={(e) => e.stopPropagation()}
                               className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
                             >
                               <MessageSquare className="w-4 h-4" />
                               {locale === 'ka' ? 'მესიჯი' : 'Message'}
                             </Link>
+                          )}
+                          {isExpired && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleRenewJob(job._id); }}
+                              disabled={renewingJobId === job._id}
+                              className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 rounded-xl text-sm font-medium bg-amber-500 hover:bg-amber-600 text-white transition-all disabled:opacity-50"
+                            >
+                              {renewingJobId === job._id ? (
+                                <>
+                                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                  {locale === 'ka' ? 'მიმდინარეობს...' : 'Renewing...'}
+                                </>
+                              ) : (
+                                <>
+                                  <RefreshCw className="w-4 h-4" />
+                                  {locale === 'ka' ? 'განახლება 30 დღით' : 'Renew for 30 days'}
+                                </>
+                              )}
+                            </button>
                           )}
                         </div>
                       </div>
@@ -624,7 +722,7 @@ function MyJobsPageContent() {
                 <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
                   <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
                 </div>
-                <h3 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-white">
+                <h3 className="text-base sm:text-lg font-display font-semibold text-neutral-900 dark:text-white">
                   {locale === 'ka' ? 'პროექტის წაშლა' : 'Delete Job'}
                 </h3>
               </div>
