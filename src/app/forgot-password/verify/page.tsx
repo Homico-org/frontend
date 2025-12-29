@@ -136,7 +136,8 @@ export default function VerifyResetCodePage() {
     }
   };
 
-  const maskedPhone = phone ? phone.replace(/(\+995)(\d{2})(\d{3})(\d{2})(\d{2})/, '$1 $2* *** *$5') : '';
+  // Mask phone number - show first few and last 2 digits
+  const maskedPhone = phone ? phone.replace(/^(\+\d{1,3})(\d{2,3})(.*)(\d{2})$/, '$1 $2*** ***$4') : '';
 
   return (
     <div className="min-h-screen bg-neutral-500/50 flex items-center justify-center p-4">
