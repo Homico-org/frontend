@@ -30,6 +30,7 @@ export const countries = {
     locale: 'ka' as Locale,
     phonePrefix: '+995',
     flag: '🇬🇪',
+    placeholder: '5XX XXX XXX',
     cities: [
       'Tbilisi', 'Batumi', 'Kutaisi', 'Rustavi', 'Zugdidi', 'Gori', 'Poti', 'Kobuleti', 'Khashuri', 'Samtredia',
       'Senaki', 'Zestafoni', 'Marneuli', 'Telavi', 'Akhaltsikhe', 'Ozurgeti', 'Kaspi', 'Chiatura', 'Tsqaltubo', 'Sagarejo'
@@ -45,6 +46,7 @@ export const countries = {
     locale: 'en' as Locale,
     phonePrefix: '+972',
     flag: '🇮🇱',
+    placeholder: '5X XXX XXXX',
     cities: [
       'Tel Aviv', 'Jerusalem', 'Haifa', 'Rishon LeZion', 'Petah Tikva', 'Ashdod', 'Netanya', 'Beer Sheva',
       'Holon', 'Bnei Brak', 'Ramat Gan', 'Ashkelon', 'Rehovot', 'Bat Yam', 'Herzliya', 'Kfar Saba',
@@ -62,6 +64,7 @@ export const countries = {
     locale: 'en' as Locale,
     phonePrefix: '+33',
     flag: '🇫🇷',
+    placeholder: 'X XX XX XX XX',
     cities: [
       'Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice', 'Nantes', 'Strasbourg', 'Montpellier',
       'Bordeaux', 'Lille', 'Rennes', 'Reims', 'Le Havre', 'Saint-Étienne', 'Toulon', 'Grenoble',
@@ -79,6 +82,7 @@ export const countries = {
     locale: 'en' as Locale,
     phonePrefix: '+1',
     flag: '🇺🇸',
+    placeholder: '(XXX) XXX-XXXX',
     cities: [
       'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego',
       'Dallas', 'San Jose', 'Austin', 'Jacksonville', 'Fort Worth', 'Columbus', 'Charlotte', 'Seattle', 'Denver',
@@ -96,6 +100,7 @@ export const countries = {
     locale: 'en' as Locale,
     phonePrefix: '+49',
     flag: '🇩🇪',
+    placeholder: 'XXX XXXXXXXX',
     cities: [
       'Berlin', 'Hamburg', 'Munich', 'Cologne', 'Frankfurt', 'Stuttgart', 'Düsseldorf', 'Leipzig',
       'Dortmund', 'Essen', 'Bremen', 'Dresden', 'Hanover', 'Nuremberg', 'Duisburg', 'Bochum',
@@ -113,6 +118,7 @@ export const countries = {
     locale: 'en' as Locale,
     phonePrefix: '+44',
     flag: '🇬🇧',
+    placeholder: 'XXXX XXXXXX',
     cities: [
       'London', 'Birmingham', 'Manchester', 'Glasgow', 'Liverpool', 'Leeds', 'Sheffield', 'Edinburgh',
       'Bristol', 'Leicester', 'Coventry', 'Bradford', 'Cardiff', 'Belfast', 'Nottingham', 'Newcastle',

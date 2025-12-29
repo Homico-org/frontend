@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage, countries, CountryCode } from '@/contexts/LanguageContext';
 import { AnalyticsEvent, useAnalytics } from '@/hooks/useAnalytics';
 import Link from 'next/link';
 import Script from 'next/script';
@@ -45,14 +45,6 @@ function decodeJwt(token: string): { email: string; name: string; picture?: stri
   }
 }
 
-// Country data
-const countries = {
-  ge: { name: 'Georgia', code: 'GE', phonePrefix: '+995', flag: '🇬🇪', placeholder: '5XX XXX XXX' },
-  us: { name: 'USA', code: 'US', phonePrefix: '+1', flag: '🇺🇸', placeholder: '(XXX) XXX-XXXX' },
-  de: { name: 'Germany', code: 'DE', phonePrefix: '+49', flag: '🇩🇪', placeholder: 'XXX XXXXXXXX' },
-};
-
-type CountryCode = keyof typeof countries;
 
 export default function LoginModal() {
   const router = useRouter();
@@ -64,7 +56,7 @@ export default function LoginModal() {
   // Form state
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
-  const [phoneCountry, setPhoneCountry] = useState<CountryCode>('ge');
+  const [phoneCountry, setPhoneCountry] = useState<CountryCode>('GE');
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
