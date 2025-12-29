@@ -39,6 +39,40 @@ export const countries = {
       'სენაკი', 'ზესტაფონი', 'მარნეული', 'თელავი', 'ახალციხე', 'ოზურგეთი', 'კასპი', 'ჭიათურა', 'წყალტუბო', 'საგარეჯო'
     ]
   },
+  IL: {
+    name: 'Israel',
+    nameLocal: 'ישראל',
+    locale: 'en' as Locale,
+    phonePrefix: '+972',
+    flag: '🇮🇱',
+    cities: [
+      'Tel Aviv', 'Jerusalem', 'Haifa', 'Rishon LeZion', 'Petah Tikva', 'Ashdod', 'Netanya', 'Beer Sheva',
+      'Holon', 'Bnei Brak', 'Ramat Gan', 'Ashkelon', 'Rehovot', 'Bat Yam', 'Herzliya', 'Kfar Saba',
+      'Hadera', 'Modi\'in', 'Nazareth', 'Lod'
+    ],
+    citiesLocal: [
+      'תל אביב', 'ירושלים', 'חיפה', 'ראשון לציון', 'פתח תקווה', 'אשדוד', 'נתניה', 'באר שבע',
+      'חולון', 'בני ברק', 'רמת גן', 'אשקלון', 'רחובות', 'בת ים', 'הרצליה', 'כפר סבא',
+      'חדרה', 'מודיעין', 'נצרת', 'לוד'
+    ]
+  },
+  FR: {
+    name: 'France',
+    nameLocal: 'France',
+    locale: 'en' as Locale,
+    phonePrefix: '+33',
+    flag: '🇫🇷',
+    cities: [
+      'Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice', 'Nantes', 'Strasbourg', 'Montpellier',
+      'Bordeaux', 'Lille', 'Rennes', 'Reims', 'Le Havre', 'Saint-Étienne', 'Toulon', 'Grenoble',
+      'Dijon', 'Angers', 'Nîmes', 'Villeurbanne'
+    ],
+    citiesLocal: [
+      'Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice', 'Nantes', 'Strasbourg', 'Montpellier',
+      'Bordeaux', 'Lille', 'Rennes', 'Reims', 'Le Havre', 'Saint-Étienne', 'Toulon', 'Grenoble',
+      'Dijon', 'Angers', 'Nîmes', 'Villeurbanne'
+    ]
+  },
   US: {
     name: 'United States',
     nameLocal: 'United States',
@@ -54,6 +88,40 @@ export const countries = {
       'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego',
       'Dallas', 'San Jose', 'Austin', 'Jacksonville', 'Fort Worth', 'Columbus', 'Charlotte', 'Seattle', 'Denver',
       'Boston', 'Portland', 'Las Vegas'
+    ]
+  },
+  DE: {
+    name: 'Germany',
+    nameLocal: 'Deutschland',
+    locale: 'en' as Locale,
+    phonePrefix: '+49',
+    flag: '🇩🇪',
+    cities: [
+      'Berlin', 'Hamburg', 'Munich', 'Cologne', 'Frankfurt', 'Stuttgart', 'Düsseldorf', 'Leipzig',
+      'Dortmund', 'Essen', 'Bremen', 'Dresden', 'Hanover', 'Nuremberg', 'Duisburg', 'Bochum',
+      'Wuppertal', 'Bielefeld', 'Bonn', 'Münster'
+    ],
+    citiesLocal: [
+      'Berlin', 'Hamburg', 'München', 'Köln', 'Frankfurt', 'Stuttgart', 'Düsseldorf', 'Leipzig',
+      'Dortmund', 'Essen', 'Bremen', 'Dresden', 'Hannover', 'Nürnberg', 'Duisburg', 'Bochum',
+      'Wuppertal', 'Bielefeld', 'Bonn', 'Münster'
+    ]
+  },
+  UK: {
+    name: 'United Kingdom',
+    nameLocal: 'United Kingdom',
+    locale: 'en' as Locale,
+    phonePrefix: '+44',
+    flag: '🇬🇧',
+    cities: [
+      'London', 'Birmingham', 'Manchester', 'Glasgow', 'Liverpool', 'Leeds', 'Sheffield', 'Edinburgh',
+      'Bristol', 'Leicester', 'Coventry', 'Bradford', 'Cardiff', 'Belfast', 'Nottingham', 'Newcastle',
+      'Southampton', 'Brighton', 'Plymouth', 'Reading'
+    ],
+    citiesLocal: [
+      'London', 'Birmingham', 'Manchester', 'Glasgow', 'Liverpool', 'Leeds', 'Sheffield', 'Edinburgh',
+      'Bristol', 'Leicester', 'Coventry', 'Bradford', 'Cardiff', 'Belfast', 'Nottingham', 'Newcastle',
+      'Southampton', 'Brighton', 'Plymouth', 'Reading'
     ]
   }
 };
