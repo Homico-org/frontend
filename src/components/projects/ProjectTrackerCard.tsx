@@ -264,19 +264,19 @@ export default function ProjectTrackerCard({
 
   const handleNewMessage = useCallback((message: ProjectMessage) => {
     const senderId = getSenderId(message.senderId);
-    if (senderId === user?._id) return; // Skip own messages
+    if (senderId === user?.id) return; // Skip own messages
 
     setMessages(prev => {
       if (prev.some(m => m._id === message._id)) return prev;
       return [...prev, message];
     });
-  }, [user?._id]);
+  }, [user?.id]);
 
   const handleTyping = useCallback(({ userId, isTyping: typing }: { userId: string; isTyping: boolean }) => {
-    if (userId !== user?._id) {
+    if (userId !== user?.id) {
       setOtherUserTyping(typing);
     }
-  }, [user?._id]);
+  }, [user?.id]);
 
   const emitTyping = useCallback(() => {
     if (!socketRef.current) return;
@@ -305,7 +305,7 @@ export default function ProjectTrackerCard({
     // Optimistic update
     const optimisticMessage: ProjectMessage = {
       _id: tempId,
-      senderId: user._id,
+      senderId: user.id,
       senderName: user.name,
       senderAvatar: user.avatar,
       senderRole: isClient ? 'client' : 'pro',
@@ -701,7 +701,7 @@ export default function ProjectTrackerCard({
                     <>
                       {messages.map((msg, idx) => {
                         const senderId = getSenderId(msg.senderId);
-                        const isMine = senderId === user?._id;
+                        const isMine = senderId === user?.id;
                         const senderName = msg.senderName || (typeof msg.senderId === 'object' ? msg.senderId.name : '');
                         const senderAvatar = msg.senderAvatar || (typeof msg.senderId === 'object' ? msg.senderId.avatar : undefined);
 

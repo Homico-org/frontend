@@ -187,7 +187,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
     // Optimistic update
     const optimisticMessage: ProjectMessage = {
       _id: tempId,
-      senderId: user._id,
+      senderId: user.id,
       senderName: user.name,
       senderAvatar: user.avatar,
       senderRole: isClient ? 'client' : 'pro',
