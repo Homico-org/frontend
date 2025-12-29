@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const description = job.description?.slice(0, 200) + (job.description?.length > 200 ? "..." : "") || "";
     const imageUrl = job.images?.[0] || job.media?.[0]?.url
       ? `${process.env.NEXT_PUBLIC_STORAGE_URL || ""}/${job.images?.[0] || job.media?.[0]?.url}`
-      : `${process.env.NEXT_PUBLIC_APP_URL || "https://homi.ge"}/og-default.jpg`;
+      : `${process.env.NEXT_PUBLIC_APP_URL || "https://homi.ge"}/og-image.png`;
 
     return {
       title: `${job.title} | Homi`,
@@ -53,6 +53,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title: job.title,
         description: description,
         images: [imageUrl],
+      },
+      other: {
+        "fb:app_id": process.env.NEXT_PUBLIC_FB_APP_ID || "1234567890",
       },
     };
   } catch (error) {
