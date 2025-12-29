@@ -24,17 +24,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const job = await response.json();
 
-    const description = job.description?.slice(0, 200) + (job.description?.length > 200 ? "..." : "") || "";
+    // Format price based on budget type
+    const formatPrice = () => {
+      if (job.budgetType === "fixed" && job.budgetAmount) {
+        return `${job.budgetAmount.toLocaleString()} ₾`;
+      } else if (job.budgetType === "range" && job.budgetMin && job.budgetMax) {
+        return `${job.budgetMin.toLocaleString()} - ${job.budgetMax.toLocaleString()} ₾`;
+      } else if (job.budgetType === "per_sqm" && job.pricePerUnit) {
+        return `${job.pricePerUnit.toLocaleString()} ₾/მ²`;
+      }
+      return "შეთანხმებით";
+    };
+
+    const priceText = formatPrice();
+    const descriptionWithPrice = `💰 ${priceText} • ${job.description?.slice(0, 150) + (job.description?.length > 150 ? "..." : "") || ""}`;
+    const shortDescription = job.description?.slice(0, 200) + (job.description?.length > 200 ? "..." : "") || "";
     const imageUrl = job.images?.[0] || job.media?.[0]?.url
       ? `${process.env.NEXT_PUBLIC_STORAGE_URL || ""}/${job.images?.[0] || job.media?.[0]?.url}`
       : `${process.env.NEXT_PUBLIC_APP_URL || "https://homi.ge"}/og-image.png`;
 
     return {
-      title: `${job.title} | Homi`,
-      description: description,
+      title: `${job.title} | ${priceText} | Homi`,
+      description: shortDescription,
       openGraph: {
-        title: job.title,
-        description: description,
+        title: `${job.title} • ${priceText}`,
+        description: descriptionWithPrice,
         url: `${process.env.NEXT_PUBLIC_APP_URL || "https://homi.ge"}/jobs/${id}`,
         siteName: "Homi",
         images: [
@@ -50,12 +64,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
       twitter: {
         card: "summary_large_image",
-        title: job.title,
-        description: description,
+        title: `${job.title} • ${priceText}`,
+        description: descriptionWithPrice,
         images: [imageUrl],
       },
       other: {
         "fb:app_id": process.env.NEXT_PUBLIC_FB_APP_ID || "1234567890",
+        "product:price:amount": job.budgetAmount || job.budgetMin || "",
+        "product:price:currency": "GEL",
       },
     };
   } catch (error) {

@@ -229,10 +229,13 @@ export default function ProjectTrackerCard({
     };
   }, [isExpanded, user, job._id]);
 
-  // Scroll to bottom when messages change
+  // Scroll to bottom when messages change - only scroll within chat container
   useEffect(() => {
-    if (isExpanded) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (isExpanded && messagesEndRef.current) {
+      const container = messagesEndRef.current.parentElement;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
     }
   }, [messages, isExpanded]);
 
@@ -297,9 +300,12 @@ export default function ProjectTrackerCard({
   }, [job._id, isTyping]);
 
   const handleSendMessage = async (attachments?: string[]) => {
-    if ((!newMessage.trim() && !attachments?.length) || isSubmitting || !user) return;
-
     const messageContent = newMessage.trim();
+    const hasContent = messageContent.length > 0;
+    const hasAttachments = attachments && attachments.length > 0;
+
+    if ((!hasContent && !hasAttachments) || isSubmitting || !user) return;
+
     const tempId = `temp-${Date.now()}`;
 
     // Optimistic update
@@ -320,8 +326,8 @@ export default function ProjectTrackerCard({
     try {
       setIsSubmitting(true);
       const response = await api.post(`/jobs/projects/${job._id}/messages`, {
-        content: messageContent,
-        attachments,
+        content: messageContent || '',
+        attachments: hasAttachments ? attachments : undefined,
       });
 
       // Replace temp message with real one
@@ -718,9 +724,15 @@ export default function ProjectTrackerCard({
                               )}
                               <div>
                                 {/* Attachments */}
-                                {msg.attachments?.map((attachment, aIdx) => (
+                                {msg.attachments?.map((attachment, aIdx) => {
+                                  // Check if it's an image (handle both file extensions and Cloudinary URLs)
+                                  const isImage = attachment.match(/\.(jpg|jpeg|png|gif|webp)$/i) ||
+                                    attachment.includes('/image/upload/') ||
+                                    attachment.includes('cloudinary') && !attachment.includes('/raw/');
+
+                                  return (
                                   <div key={aIdx} className="mb-1">
-                                    {attachment.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                                    {isImage ? (
                                       <a href={storage.getFileUrl(attachment)} target="_blank" rel="noopener noreferrer">
                                         <img
                                           src={storage.getFileUrl(attachment)}
@@ -740,9 +752,10 @@ export default function ProjectTrackerCard({
                                       </a>
                                     )}
                                   </div>
-                                ))}
+                                );
+                                })}
                                 {/* Message Content */}
-                                {msg.content && (
+                                {msg.content ? (
                                   <div
                                     className={`px-3.5 py-2 rounded-2xl ${
                                       isMine
@@ -756,7 +769,11 @@ export default function ProjectTrackerCard({
                                       {formatMessageTime(msg.createdAt)}
                                     </p>
                                   </div>
-                                )}
+                                ) : msg.attachments?.length ? (
+                                  <p className="text-[10px] text-neutral-500 dark:text-neutral-400 mt-1">
+                                    {formatMessageTime(msg.createdAt)}
+                                  </p>
+                                ) : null}
                               </div>
                             </div>
                           </div>

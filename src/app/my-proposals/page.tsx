@@ -232,7 +232,7 @@ function MyProposalsPageContent() {
   const handleStartProject = async (jobId: string) => {
     setStartingProjectId(jobId);
     try {
-      await api.post(`/jobs/projects/${jobId}/stage`, { stage: 'started' });
+      await api.patch(`/jobs/projects/${jobId}/stage`, { stage: 'started' });
 
       // Update local state
       const updateProposal = (p: Proposal) => {
