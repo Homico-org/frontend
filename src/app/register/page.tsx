@@ -167,7 +167,13 @@ function RegisterContent() {
   // Google OAuth state
   const [googleUser, setGoogleUser] = useState<GoogleUserData | null>(null);
   const [showGooglePhoneVerification, setShowGooglePhoneVerification] = useState(false);
-  const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
+  const [googleScriptLoaded, setGoogleScriptLoaded] = useState(() => {
+    // Check if script is already loaded (e.g., from cache)
+    if (typeof window !== 'undefined') {
+      return !!(window as any)?.google?.accounts?.id;
+    }
+    return false;
+  });
   const googleButtonRef = useRef<HTMLDivElement>(null);
 
   // Category icons mapping
@@ -262,6 +268,28 @@ function RegisterContent() {
       setError(locale === "ka" ? "Google-ით შესვლა ვერ მოხერხდა" : "Failed to sign in with Google");
     }
   }, [locale]);
+
+  // Check for Google script on mount (handles cached script scenario)
+  useEffect(() => {
+    if (!googleScriptLoaded) {
+      // Poll for the script to be ready (handles race conditions)
+      const checkGoogle = () => {
+        if ((window as any)?.google?.accounts?.id) {
+          setGoogleScriptLoaded(true);
+        }
+      };
+
+      // Check immediately and then poll for a short time
+      checkGoogle();
+      const interval = setInterval(checkGoogle, 100);
+      const timeout = setTimeout(() => clearInterval(interval), 3000);
+
+      return () => {
+        clearInterval(interval);
+        clearTimeout(timeout);
+      };
+    }
+  }, [googleScriptLoaded]);
 
   // Initialize Google Sign In
   useEffect(() => {

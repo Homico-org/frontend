@@ -72,7 +72,13 @@ export default function LoginModal() {
   const [isVisible, setIsVisible] = useState(false);
 
   // Google OAuth state
-  const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
+  const [googleScriptLoaded, setGoogleScriptLoaded] = useState(() => {
+    // Check if script is already loaded (e.g., from cache)
+    if (typeof window !== 'undefined') {
+      return !!(window as any)?.google?.accounts?.id;
+    }
+    return false;
+  });
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [googleButtonRendered, setGoogleButtonRendered] = useState(false);
 
@@ -98,6 +104,24 @@ export default function LoginModal() {
     if (isLoginModalOpen) document.addEventListener('keydown', handleEscKey);
     return () => document.removeEventListener('keydown', handleEscKey);
   }, [isLoginModalOpen, handleEscKey]);
+
+  // Check for Google script on mount (handles cached script scenario)
+  useEffect(() => {
+    if (!googleScriptLoaded) {
+      const checkGoogle = () => {
+        if ((window as any)?.google?.accounts?.id) {
+          setGoogleScriptLoaded(true);
+        }
+      };
+      checkGoogle();
+      const interval = setInterval(checkGoogle, 100);
+      const timeout = setTimeout(() => clearInterval(interval), 3000);
+      return () => {
+        clearInterval(interval);
+        clearTimeout(timeout);
+      };
+    }
+  }, [googleScriptLoaded]);
 
   // Close country dropdown on outside click
   useEffect(() => {
