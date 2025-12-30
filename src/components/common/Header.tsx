@@ -4,11 +4,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useMessages } from "@/contexts/MessagesContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import api from "@/lib/api";
-import { isHighLevelPro } from "@/utils/categoryHelpers";
-import { FileText, Hammer, LogIn, MessageCircle, Plus, UserPlus, X } from "lucide-react";
+import { FileText, Hammer, LogIn, Plus, UserPlus, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -24,7 +22,6 @@ export default function Header() {
   const { flatCategories } = useCategories();
   const { t, locale } = useLanguage();
   const { unreadCount } = useNotifications();
-  const { unreadCount: unreadMessagesCount } = useMessages();
   const pathname = usePathname();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -34,21 +31,11 @@ export default function Header() {
   // Check active routes for navigation highlighting
   const isMyProposalsActive = pathname === '/my-proposals';
   const isMyJobsActive = pathname === '/my-jobs';
-  const isMessagesActive = pathname === '/messages' || pathname.startsWith('/messages/');
   const isNotificationsActive = pathname === '/notifications';
 
   // Counter states for proposals/jobs badges
   const [proposalUpdatesCount, setProposalUpdatesCount] = useState(0);
   const [unviewedProposalsCount, setUnviewedProposalsCount] = useState(0);
-
-  // Check if user is a high-level pro (design/architecture) - they get messages access
-  // Admin can also see messages
-  const showMessagesIcon = useMemo(() => {
-    if (!user) return false;
-    if (user.role === 'admin') return true;
-    if (user.role !== 'pro') return false;
-    return isHighLevelPro(user.selectedCategories);
-  }, [user]);
 
   // Ref to prevent duplicate fetches (React Strict Mode)
   const countersFetchedRef = useRef(false);
@@ -280,26 +267,6 @@ export default function Header() {
             <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
           ) : isAuthenticated && user ? (
             <>
-              {/* Messages - Only for high-level pros (design/architecture) */}
-              {showMessagesIcon && (
-                <Link
-                  href="/messages"
-                  className={`relative flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-300 ${
-                    isMessagesActive
-                      ? 'bg-neutral-200 dark:bg-neutral-700 ring-2 ring-offset-1'
-                      : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700'
-                  }`}
-                  style={isMessagesActive ? { '--tw-ring-color': ACCENT_COLOR } as React.CSSProperties : {}}
-                >
-                  <MessageCircle className={`w-4 h-4 ${isMessagesActive ? '' : 'text-neutral-600 dark:text-neutral-400'}`} style={isMessagesActive ? { color: ACCENT_COLOR } : {}} />
-                  {unreadMessagesCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-white bg-red-500 rounded-full">
-                      {unreadMessagesCount > 99 ? "99+" : unreadMessagesCount}
-                    </span>
-                  )}
-                </Link>
-              )}
-
               {/* Notification Bell */}
               <Link
                 href="/notifications"
