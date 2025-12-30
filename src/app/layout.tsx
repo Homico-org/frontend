@@ -1,52 +1,66 @@
-import ClientLayout from '@/components/common/ClientLayout';
-import EnvBadge from '@/components/common/EnvBadge';
-import Providers from '@/components/common/Providers';
-import ToastContainer from '@/components/common/Toast';
-import '@/styles/globals.css';
-import * as Sentry from '@sentry/nextjs';
-import type { Metadata } from 'next';
+import ClientLayout from "@/components/common/ClientLayout";
+import EnvBadge from "@/components/common/EnvBadge";
+import Providers from "@/components/common/Providers";
+import ToastContainer from "@/components/common/Toast";
+import "@/styles/globals.css";
+import * as Sentry from "@sentry/nextjs";
+import type { Metadata } from "next";
 
 export function generateMetadata(): Metadata {
   return {
     title: {
-      default: 'Homico - იპოვე შენი იდეალური სახლის პროფესიონალი',
-      template: '%s | Homico',
+      default: "Homico - იპოვე შენი იდეალური სახლის პროფესიონალი",
+      template: "%s | Homico",
     },
-    description: 'საქართველოს პირველი პლატფორმა სახლის მომსახურების პროფესიონალების მოსაძებნად. ხელოსნები, ინტერიერის დიზაინერები, არქიტექტორები და სარემონტო პროფესიონალები თბილისში.',
-    keywords: ['ხელოსანი', 'სანტექნიკა', 'ელექტრიკოსი', 'რემონტი', 'ინტერიერი', 'დიზაინერი', 'თბილისი', 'საქართველო', 'homico', 'სახლის მომსახურება'],
-    authors: [{ name: 'Homico' }],
-    creator: 'Homico',
-    publisher: 'Homico',
-    metadataBase: new URL('https://homico.ge'),
+    description:
+      "საქართველოს პირველი პლატფორმა სახლის მომსახურების პროფესიონალების მოსაძებნად. ხელოსნები, ინტერიერის დიზაინერები, არქიტექტორები და სარემონტო პროფესიონალები თბილისში.",
+    keywords: [
+      "ხელოსანი",
+      "სანტექნიკა",
+      "ელექტრიკოსი",
+      "რემონტი",
+      "ინტერიერი",
+      "დიზაინერი",
+      "თბილისი",
+      "საქართველო",
+      "homico",
+      "სახლის მომსახურება",
+    ],
+    authors: [{ name: "Homico" }],
+    creator: "Homico",
+    publisher: "Homico",
+    metadataBase: new URL("https://homico.ge"),
     alternates: {
-      canonical: '/',
+      canonical: "/",
       languages: {
-        'ka-GE': '/ka',
-        'en-US': '/en',
+        "ka-GE": "/ka",
+        "en-US": "/en",
       },
     },
     openGraph: {
-      type: 'website',
-      locale: 'ka_GE',
-      alternateLocale: 'en_US',
-      url: 'https://homico.ge',
-      siteName: 'Homico',
-      title: 'Homico - იპოვე შენი იდეალური სახლის პროფესიონალი',
-      description: 'საქართველოს პირველი პლატფორმა სახლის მომსახურების პროფესიონალების მოსაძებნად. ხელოსნები, ინტერიერის დიზაინერები, არქიტექტორები.',
+      type: "website",
+      locale: "ka_GE",
+      alternateLocale: "en_US",
+      url: "https://homico.ge",
+      siteName: "Homico",
+      title: "Homico - იპოვე შენი იდეალური სახლის პროფესიონალი",
+      description:
+        "საქართველოს პირველი პლატფორმა სახლის მომსახურების პროფესიონალების მოსაძებნად. ხელოსნები, ინტერიერის დიზაინერები, არქიტექტორები.",
       images: [
         {
-          url: 'https://homico.ge/og-image.png',
+          url: "https://homico.ge/og-image.png",
           width: 1200,
           height: 630,
-          alt: 'Homico - სახლის პროფესიონალების პლატფორმა',
+          alt: "Homico - სახლის პროფესიონალების პლატფორმა",
         },
       ],
     },
     twitter: {
-      card: 'summary_large_image',
-      title: 'Homico - იპოვე შენი იდეალური სახლის პროფესიონალი',
-      description: 'საქართველოს პირველი პლატფორმა სახლის მომსახურების პროფესიონალების მოსაძებნად.',
-      images: ['https://homico.ge/og-image.png'],
+      card: "summary_large_image",
+      title: "Homico - იპოვე შენი იდეალური სახლის პროფესიონალი",
+      description:
+        "საქართველოს პირველი პლატფორმა სახლის მომსახურების პროფესიონალების მოსაძებნად.",
+      images: ["https://homico.ge/og-image.png"],
     },
     robots: {
       index: true,
@@ -54,25 +68,24 @@ export function generateMetadata(): Metadata {
       googleBot: {
         index: true,
         follow: true,
-        'max-video-preview': -1,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
       },
     },
     icons: {
-      icon: '/favicon.png',
-      shortcut: '/favicon.png',
-      apple: '/favicon.png',
+      icon: "/favicon.png",
+      shortcut: "/favicon.png",
+      apple: "/favicon.png",
     },
     verification: {
-      google: 'j0mOXsOhfeaKO7Z94EVIl7Rmek8eNsWj8a4fLbFcfgo',
+      google: "j0mOXsOhfeaKO7Z94EVIl7Rmek8eNsWj8a4fLbFcfgo",
     },
     other: {
       ...Sentry.getTraceData(),
     },
   };
 }
-
 
 export default function RootLayout({
   children,
@@ -83,7 +96,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* Google Analytics (gtag.js) */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-V4JH4QTFF3" />
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-V4JH4QTFF3"
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -126,14 +142,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           }}
         />
       </head>
-      <body style={{ backgroundColor: 'var(--color-bg-app)' }}>
+      <body style={{ backgroundColor: "var(--color-bg-app)" }}>
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-MM4HKK4R"
             height="0"
             width="0"
-            style={{ display: 'none', visibility: 'hidden' }}
+            style={{ display: "none", visibility: "hidden" }}
           />
         </noscript>
         {/* End Google Tag Manager (noscript) */}

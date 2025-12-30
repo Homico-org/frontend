@@ -105,29 +105,44 @@ export default function ProfessionalsPage() {
 
   // Track if initial fetch has been done to prevent double fetching
   const hasFetchedRef = useRef(false);
+  // Track previous filter key to prevent duplicate fetches
+  const prevFiltersRef = useRef<string | null>(null);
 
   // Reset and fetch when filters change
   useEffect(() => {
-    // Skip if this is the initial mount and we haven't fetched yet
-    if (!hasFetchedRef.current) {
-      hasFetchedRef.current = true;
-      setPage(1);
-      fetchProfessionals(1, true);
+    // Create a filter key to compare against previous filters
+    const filterKey = JSON.stringify({
+      selectedCategory,
+      selectedSubcategory,
+      minRating,
+      searchQuery,
+      sortBy,
+      selectedCity,
+      budgetMin,
+      budgetMax,
+    });
+
+    // Skip if filters haven't changed and we've already fetched
+    if (prevFiltersRef.current === filterKey && hasFetchedRef.current) {
       return;
     }
 
-    // Track search/filter events
-    if (searchQuery) {
-      trackEvent(AnalyticsEvent.SEARCH, { searchQuery, category: selectedCategory || undefined });
-    }
-    if (selectedCategory) {
-      trackEvent(AnalyticsEvent.CATEGORY_SELECT, { category: selectedCategory });
-    }
-    if (selectedSubcategory) {
-      trackEvent(AnalyticsEvent.SUBCATEGORY_SELECT, { category: selectedCategory || undefined, subcategory: selectedSubcategory });
+    // Track analytics events only when filters actually change (not initial mount)
+    if (hasFetchedRef.current && prevFiltersRef.current !== filterKey) {
+      if (searchQuery) {
+        trackEvent(AnalyticsEvent.SEARCH, { searchQuery, category: selectedCategory || undefined });
+      }
+      if (selectedCategory) {
+        trackEvent(AnalyticsEvent.CATEGORY_SELECT, { category: selectedCategory });
+      }
+      if (selectedSubcategory) {
+        trackEvent(AnalyticsEvent.SUBCATEGORY_SELECT, { category: selectedCategory || undefined, subcategory: selectedSubcategory });
+      }
     }
 
-    // For subsequent filter changes, reset and fetch
+    // Update refs and fetch
+    prevFiltersRef.current = filterKey;
+    hasFetchedRef.current = true;
     setPage(1);
     fetchProfessionals(1, true);
   }, [selectedCategory, selectedSubcategory, minRating, searchQuery, sortBy, selectedCity, budgetMin, budgetMax, fetchProfessionals, trackEvent]);
