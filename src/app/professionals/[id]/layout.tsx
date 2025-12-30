@@ -44,7 +44,7 @@ function getImageUrl(path: string | undefined, forOG = false): string {
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
   // For OG images, ensure we use the public API URL
-  const baseUrl = forOG ? 'https://api.homico.ge' : apiUrl;
+  const baseUrl = forOG ? 'https://api.homi.ge' : apiUrl;
   if (path.startsWith('/')) return `${baseUrl}${path}`;
   return `${baseUrl}/uploads/${path}`;
 }
@@ -60,7 +60,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const profile = await getProProfile(id);
 
-  const siteUrl = 'https://homico.ge';
+  const siteUrl = 'https://homi.ge';
   const pageUrl = `${siteUrl}/professionals/${id}`;
   const defaultImage = `${siteUrl}/og-image.png`;
 

@@ -17,7 +17,7 @@ export function generateMetadata(): Metadata {
     authors: [{ name: 'Homico' }],
     creator: 'Homico',
     publisher: 'Homico',
-    metadataBase: new URL('https://homico.ge'),
+    metadataBase: new URL('https://homi.ge'),
     alternates: {
       canonical: '/',
       languages: {
@@ -29,13 +29,13 @@ export function generateMetadata(): Metadata {
       type: 'website',
       locale: 'ka_GE',
       alternateLocale: 'en_US',
-      url: 'https://homico.ge',
+      url: 'https://homi.ge',
       siteName: 'Homico',
       title: 'Homico - იპოვე შენი იდეალური სახლის პროფესიონალი',
       description: 'საქართველოს პირველი პლატფორმა სახლის მომსახურების პროფესიონალების მოსაძებნად. ხელოსნები, ინტერიერის დიზაინერები, არქიტექტორები.',
       images: [
         {
-          url: '/og-image.png',
+          url: 'https://homi.ge/og-image.png',
           width: 1200,
           height: 630,
           alt: 'Homico - სახლის პროფესიონალების პლატფორმა',
@@ -46,7 +46,7 @@ export function generateMetadata(): Metadata {
       card: 'summary_large_image',
       title: 'Homico - იპოვე შენი იდეალური სახლის პროფესიონალი',
       description: 'საქართველოს პირველი პლატფორმა სახლის მომსახურების პროფესიონალების მოსაძებნად.',
-      images: ['/og-image.png'],
+      images: ['https://homi.ge/og-image.png'],
     },
     robots: {
       index: true,
