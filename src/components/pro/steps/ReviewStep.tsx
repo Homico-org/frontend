@@ -5,10 +5,12 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Briefcase,
   DollarSign,
+  Images,
   MapPin,
   Pencil,
   User
 } from "lucide-react";
+import { PortfolioProject } from "./ProjectsStep";
 
 interface ReviewStepProps {
   formData: {
@@ -29,6 +31,7 @@ interface ReviewStepProps {
   } | null;
   onEditStep: (step: number) => void;
   isEditMode?: boolean;
+  portfolioProjects?: PortfolioProject[];
 }
 
 export default function ReviewStep({
@@ -39,6 +42,7 @@ export default function ReviewStep({
   locationData,
   onEditStep,
   isEditMode = false,
+  portfolioProjects = [],
 }: ReviewStepProps) {
   const { locale } = useLanguage();
   const { getCategoryByKey, categories } = useCategories();
@@ -231,6 +235,60 @@ export default function ReviewStep({
           </p>
         </div>
 
+        {/* Portfolio Section */}
+        <div className="p-6 border-b border-[var(--color-border-subtle)]">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
+              <Images className="w-4 h-4 text-[#E07B4F]" />
+              <span className="text-xs font-semibold uppercase tracking-wider">
+                {locale === "ka" ? "პორტფოლიო" : "Portfolio"}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => onEditStep(3)}
+              className="flex items-center gap-1.5 text-sm text-[#E07B4F] hover:text-[#D26B3F] font-medium transition-colors"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              {locale === "ka" ? "რედაქტირება" : "Edit"}
+            </button>
+          </div>
+
+          {portfolioProjects.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {portfolioProjects.slice(0, 6).map((project, idx) => (
+                <div key={project.id || idx} className="relative aspect-[4/3] rounded-lg overflow-hidden bg-[var(--color-bg-tertiary)]">
+                  {project.images && project.images[0] ? (
+                    <img
+                      src={project.images[0]}
+                      alt={project.title || `Project ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Images className="w-8 h-8 text-[var(--color-text-muted)]" />
+                    </div>
+                  )}
+                  {project.title && (
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                      <p className="text-xs text-white font-medium truncate">{project.title}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <span className="text-[var(--color-text-muted)]">
+              {locale === "ka" ? "პროექტები არ არის დამატებული" : "No projects added"}
+            </span>
+          )}
+          {portfolioProjects.length > 6 && (
+            <p className="text-sm text-[var(--color-text-tertiary)] mt-3">
+              +{portfolioProjects.length - 6} {locale === "ka" ? "სხვა პროექტი" : "more projects"}
+            </p>
+          )}
+        </div>
+
         {/* Location Section */}
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
@@ -242,7 +300,7 @@ export default function ReviewStep({
             </div>
             <button
               type="button"
-              onClick={() => onEditStep(3)}
+              onClick={() => onEditStep(2)}
               className="flex items-center gap-1.5 text-sm text-[#E07B4F] hover:text-[#D26B3F] font-medium transition-colors"
             >
               <Pencil className="w-3.5 h-3.5" />

@@ -41,16 +41,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const shortDescription = job.description?.slice(0, 200) + (job.description?.length > 200 ? "..." : "") || "";
     const imageUrl = job.images?.[0] || job.media?.[0]?.url
       ? `${process.env.NEXT_PUBLIC_STORAGE_URL || ""}/${job.images?.[0] || job.media?.[0]?.url}`
-      : `${process.env.NEXT_PUBLIC_APP_URL || "https://homi.ge"}/og-image.png`;
+      : `${process.env.NEXT_PUBLIC_APP_URL || "https://homico.ge"}/og-image.png`;
 
     return {
-      title: `${job.title} | ${priceText} | Homi`,
+      title: `${job.title} | ${priceText} | Homico`,
       description: shortDescription,
       openGraph: {
         title: `${job.title} • ${priceText}`,
         description: descriptionWithPrice,
-        url: `${process.env.NEXT_PUBLIC_APP_URL || "https://homi.ge"}/jobs/${id}`,
-        siteName: "Homi",
+        url: `${process.env.NEXT_PUBLIC_APP_URL || "https://homico.ge"}/jobs/${id}`,
+        siteName: "Homico",
         images: [
           {
             url: imageUrl,
@@ -77,7 +77,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   } catch (error) {
     console.error("Error generating metadata:", error);
     return {
-      title: "სამუშაო | Homi",
+      title: "სამუშაო | Homico",
       description: "იპოვე სპეციალისტი შენი პროექტისთვის",
     };
   }

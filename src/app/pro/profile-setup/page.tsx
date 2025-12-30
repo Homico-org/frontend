@@ -700,6 +700,7 @@ function ProProfileSetupPageContent() {
                   goToStep(stepMap[stepIndex] || 'about');
                 }}
                 isEditMode={isEditMode}
+                portfolioProjects={portfolioProjects}
               />
             </div>
           )}
