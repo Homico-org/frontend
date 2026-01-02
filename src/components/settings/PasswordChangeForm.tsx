@@ -1,0 +1,319 @@
+'use client';
+
+import { useState } from 'react';
+import { Eye, EyeOff, Lock, Check, AlertCircle, Loader2 } from 'lucide-react';
+
+export interface PasswordChangeFormProps {
+  /** Handler for password change submission */
+  onSubmit: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
+  /** Locale for translations */
+  locale?: 'en' | 'ka';
+  /** Custom className */
+  className?: string;
+}
+
+export default function PasswordChangeForm({
+  onSubmit,
+  locale = 'en',
+  className = '',
+}: PasswordChangeFormProps) {
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isChanging, setIsChanging] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Password strength calculator
+  const getPasswordStrength = (password: string) => {
+    if (!password) return { strength: 0, label: '' };
+    let strength = 0;
+    if (password.length >= 6) strength++;
+    if (password.length >= 8) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+    const labels = locale === 'ka'
+      ? ['სუსტი', 'სუსტი', 'საშუალო', 'კარგი', 'ძლიერი']
+      : ['Weak', 'Weak', 'Medium', 'Good', 'Strong'];
+
+    return { strength, label: labels[Math.min(strength, 4)] };
+  };
+
+  const passwordStrength = getPasswordStrength(passwordData.newPassword);
+
+  const handleSubmit = async () => {
+    setMessage(null);
+
+    // Validation
+    if (!passwordData.currentPassword) {
+      setMessage({
+        type: 'error',
+        text: locale === 'ka' ? 'შეიყვანეთ მიმდინარე პაროლი' : 'Please enter your current password',
+      });
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      setMessage({
+        type: 'error',
+        text: locale === 'ka' ? 'ახალი პაროლი უნდა იყოს მინიმუმ 6 სიმბოლო' : 'New password must be at least 6 characters',
+      });
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setMessage({
+        type: 'error',
+        text: locale === 'ka' ? 'პაროლები არ ემთხვევა' : 'Passwords do not match',
+      });
+      return;
+    }
+
+    setIsChanging(true);
+
+    try {
+      const result = await onSubmit(passwordData.currentPassword, passwordData.newPassword);
+
+      if (result.success) {
+        setMessage({
+          type: 'success',
+          text: locale === 'ka' ? 'პაროლი წარმატებით შეიცვალა' : 'Password changed successfully',
+        });
+        setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      } else {
+        setMessage({
+          type: 'error',
+          text: result.error || (locale === 'ka' ? 'პაროლის შეცვლა ვერ მოხერხდა' : 'Failed to change password'),
+        });
+      }
+    } catch (error: any) {
+      setMessage({
+        type: 'error',
+        text: error.message || (locale === 'ka' ? 'პაროლის შეცვლა ვერ მოხერხდა' : 'Failed to change password'),
+      });
+    } finally {
+      setIsChanging(false);
+    }
+  };
+
+  return (
+    <div className={`space-y-6 ${className}`}>
+      <div>
+        <h2
+          className="text-base sm:text-lg font-semibold"
+          style={{ color: 'var(--color-text-primary)' }}
+        >
+          {locale === 'ka' ? 'პაროლის შეცვლა' : 'Change Password'}
+        </h2>
+        <p
+          className="mt-1 text-sm"
+          style={{ color: 'var(--color-text-secondary)' }}
+        >
+          {locale === 'ka'
+            ? 'შეიყვანეთ მიმდინარე პაროლი და აირჩიეთ ახალი'
+            : 'Enter your current password and choose a new one'}
+        </p>
+      </div>
+
+      {/* Message */}
+      {message && (
+        <div
+          className="p-3 sm:p-4 rounded-xl text-sm flex items-center gap-3"
+          style={{
+            backgroundColor: message.type === 'success'
+              ? 'rgba(34, 197, 94, 0.1)'
+              : 'rgba(239, 68, 68, 0.1)',
+            color: message.type === 'success' ? '#22c55e' : '#ef4444',
+            border: `1px solid ${message.type === 'success' ? '#22c55e' : '#ef4444'}`,
+          }}
+        >
+          {message.type === 'success' ? (
+            <Check className="w-5 h-5 flex-shrink-0" />
+          ) : (
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          )}
+          {message.text}
+        </div>
+      )}
+
+      <div className="space-y-4">
+        {/* Current Password */}
+        <div>
+          <label
+            className="block text-sm font-medium mb-1.5"
+            style={{ color: 'var(--color-text-secondary)' }}
+          >
+            {locale === 'ka' ? 'მიმდინარე პაროლი' : 'Current Password'}
+          </label>
+          <div className="relative">
+            <input
+              type={showCurrentPassword ? 'text' : 'password'}
+              value={passwordData.currentPassword}
+              onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
+              placeholder={locale === 'ka' ? 'შეიყვანეთ მიმდინარე პაროლი' : 'Enter current password'}
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-12 text-base rounded-xl transition-all duration-200"
+              style={{
+                backgroundColor: 'var(--color-bg-elevated)',
+                border: '1px solid var(--color-border)',
+                color: 'var(--color-text-primary)',
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+              style={{ color: 'var(--color-text-tertiary)' }}
+            >
+              {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+
+        {/* New Password */}
+        <div>
+          <label
+            className="block text-sm font-medium mb-1.5"
+            style={{ color: 'var(--color-text-secondary)' }}
+          >
+            {locale === 'ka' ? 'ახალი პაროლი' : 'New Password'}
+          </label>
+          <div className="relative">
+            <input
+              type={showNewPassword ? 'text' : 'password'}
+              value={passwordData.newPassword}
+              onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+              placeholder={locale === 'ka' ? 'შეიყვანეთ ახალი პაროლი' : 'Enter new password'}
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-12 text-base rounded-xl transition-all duration-200"
+              style={{
+                backgroundColor: 'var(--color-bg-elevated)',
+                border: '1px solid var(--color-border)',
+                color: 'var(--color-text-primary)',
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowNewPassword(!showNewPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+              style={{ color: 'var(--color-text-tertiary)' }}
+            >
+              {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
+          </div>
+
+          {/* Password Strength Indicator */}
+          {passwordData.newPassword && (
+            <div className="mt-2">
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-300"
+                    style={{
+                      width: `${(passwordStrength.strength / 5) * 100}%`,
+                      backgroundColor:
+                        passwordStrength.strength <= 1 ? '#ef4444' :
+                        passwordStrength.strength <= 2 ? '#f97316' :
+                        passwordStrength.strength <= 3 ? '#eab308' :
+                        '#22c55e',
+                    }}
+                  />
+                </div>
+                <span
+                  className="text-xs font-medium"
+                  style={{
+                    color:
+                      passwordStrength.strength <= 1 ? '#ef4444' :
+                      passwordStrength.strength <= 2 ? '#f97316' :
+                      passwordStrength.strength <= 3 ? '#eab308' :
+                      '#22c55e',
+                  }}
+                >
+                  {passwordStrength.label}
+                </span>
+              </div>
+              <p
+                className="text-xs mt-1"
+                style={{ color: 'var(--color-text-tertiary)' }}
+              >
+                {locale === 'ka'
+                  ? 'გამოიყენეთ მინიმუმ 6 სიმბოლო, დიდი ასოები, ციფრები და სპეციალური სიმბოლოები'
+                  : 'Use at least 6 characters, uppercase letters, numbers and special characters'}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Confirm Password */}
+        <div>
+          <label
+            className="block text-sm font-medium mb-1.5"
+            style={{ color: 'var(--color-text-secondary)' }}
+          >
+            {locale === 'ka' ? 'გაიმეორეთ ახალი პაროლი' : 'Confirm New Password'}
+          </label>
+          <div className="relative">
+            <input
+              type={showConfirmPassword ? 'text' : 'password'}
+              value={passwordData.confirmPassword}
+              onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+              placeholder={locale === 'ka' ? 'გაიმეორეთ ახალი პაროლი' : 'Confirm new password'}
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-12 text-base rounded-xl transition-all duration-200"
+              style={{
+                backgroundColor: 'var(--color-bg-elevated)',
+                border: passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword
+                  ? '1px solid #ef4444'
+                  : '1px solid var(--color-border)',
+                color: 'var(--color-text-primary)',
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+              style={{ color: 'var(--color-text-tertiary)' }}
+            >
+              {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
+          </div>
+          {passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword && (
+            <p className="text-xs mt-1 text-red-500">
+              {locale === 'ka' ? 'პაროლები არ ემთხვევა' : 'Passwords do not match'}
+            </p>
+          )}
+          {passwordData.confirmPassword && passwordData.newPassword === passwordData.confirmPassword && passwordData.newPassword.length >= 6 && (
+            <p className="text-xs mt-1 text-green-500 flex items-center gap-1">
+              <Check className="w-3 h-3" />
+              {locale === 'ka' ? 'პაროლები ემთხვევა' : 'Passwords match'}
+            </p>
+          )}
+        </div>
+
+        {/* Submit Button */}
+        <div className="flex justify-end pt-4">
+          <button
+            onClick={handleSubmit}
+            disabled={isChanging || !passwordData.currentPassword || !passwordData.newPassword || passwordData.newPassword !== passwordData.confirmPassword}
+            className="w-full sm:w-auto px-6 py-3 sm:py-2.5 bg-[#E07B4F] hover:bg-[#D26B3F] text-white rounded-xl transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 touch-manipulation"
+          >
+            {isChanging ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                {locale === 'ka' ? 'იცვლება...' : 'Changing...'}
+              </>
+            ) : (
+              <>
+                <Lock className="w-4 h-4" />
+                {locale === 'ka' ? 'პაროლის შეცვლა' : 'Change Password'}
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

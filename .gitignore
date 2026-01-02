@@ -54,3 +54,6 @@ public/workbox-*.js
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+*storybook.log
+storybook-static
