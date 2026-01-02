@@ -7,13 +7,23 @@ import { useAuth } from "@/contexts/AuthContext";
 import { BrowseProvider, useBrowseContext } from "@/contexts/BrowseContext";
 import { JobsProvider, useJobsContext } from "@/contexts/JobsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Briefcase, ChevronRight, FileText, Filter, Hammer, Images, Plus, Search, Send, Users, X } from "lucide-react";
+import {
+  Briefcase,
+  FileText,
+  Filter,
+  Hammer,
+  Images,
+  Plus,
+  Search,
+  Users,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ReactNode, Suspense, useEffect, useRef, useState } from "react";
 
 // Muted terracotta accent
-const ACCENT_COLOR = '#C4735B';
+const ACCENT_COLOR = "#C4735B";
 
 function JobsSidebar() {
   const { filters, setFilters, savedJobIds } = useJobsContext();
@@ -50,19 +60,21 @@ function JobsSearchInput() {
     <div className="relative group">
       {/* Animated gradient border */}
       <div
-        className={`absolute -inset-[1px] rounded-lg transition-opacity duration-300 ${isFocused ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute -inset-[1px] rounded-lg transition-opacity duration-300 ${isFocused ? "opacity-100" : "opacity-0"}`}
         style={{
           background: `linear-gradient(135deg, ${ACCENT_COLOR}, #E07B4F, ${ACCENT_COLOR})`,
-          backgroundSize: '200% 200%',
-          animation: isFocused ? 'gradient-shift 3s ease infinite' : 'none',
+          backgroundSize: "200% 200%",
+          animation: isFocused ? "gradient-shift 3s ease infinite" : "none",
         }}
       />
-      <div className={`relative flex items-center bg-white dark:bg-neutral-900 rounded-lg border transition-all duration-300 ${isFocused ? 'border-transparent' : 'border-neutral-200/80 dark:border-neutral-700/50'}`}>
+      <div
+        className={`relative flex items-center bg-white dark:bg-neutral-900 rounded-lg border transition-all duration-300 ${isFocused ? "border-transparent" : "border-neutral-200/80 dark:border-neutral-700/50"}`}
+      >
         <div
-          className={`flex items-center justify-center w-9 h-9 ml-0.5 rounded-md transition-all duration-300 ${isFocused ? 'scale-105' : ''}`}
+          className={`flex items-center justify-center w-9 h-9 ml-0.5 rounded-md transition-all duration-300 ${isFocused ? "scale-105" : ""}`}
           style={{
-            backgroundColor: isFocused ? `${ACCENT_COLOR}15` : 'transparent',
-            color: isFocused ? ACCENT_COLOR : '#9ca3af'
+            backgroundColor: isFocused ? `${ACCENT_COLOR}15` : "transparent",
+            color: isFocused ? ACCENT_COLOR : "#9ca3af",
           }}
         >
           <Search className="w-[18px] h-[18px]" />
@@ -73,14 +85,17 @@ function JobsSearchInput() {
           onChange={(e) => handleSearchChange(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          placeholder={locale === 'ka' ? 'სამუშაოს ძებნა...' : 'Search jobs...'}
+          placeholder={locale === "ka" ? "სამუშაოს ძებნა..." : "Search jobs..."}
           className="flex-1 h-10 pr-9 bg-transparent text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none"
         />
         {localSearch ? (
           <button
-            onClick={() => handleSearchChange('')}
+            onClick={() => handleSearchChange("")}
             className="absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center transition-all duration-200 hover:scale-105"
-            style={{ backgroundColor: `${ACCENT_COLOR}15`, color: ACCENT_COLOR }}
+            style={{
+              backgroundColor: `${ACCENT_COLOR}15`,
+              color: ACCENT_COLOR,
+            }}
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -117,19 +132,21 @@ function BrowseSearchInput({ placeholder }: { placeholder: string }) {
     <div className="relative group">
       {/* Animated gradient border */}
       <div
-        className={`absolute -inset-[1px] rounded-lg transition-opacity duration-300 ${isFocused ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute -inset-[1px] rounded-lg transition-opacity duration-300 ${isFocused ? "opacity-100" : "opacity-0"}`}
         style={{
           background: `linear-gradient(135deg, ${ACCENT_COLOR}, #E07B4F, ${ACCENT_COLOR})`,
-          backgroundSize: '200% 200%',
-          animation: isFocused ? 'gradient-shift 3s ease infinite' : 'none',
+          backgroundSize: "200% 200%",
+          animation: isFocused ? "gradient-shift 3s ease infinite" : "none",
         }}
       />
-      <div className={`relative flex items-center bg-white dark:bg-neutral-900 rounded-lg border transition-all duration-300 ${isFocused ? 'border-transparent' : 'border-neutral-200/80 dark:border-neutral-700/50'}`}>
+      <div
+        className={`relative flex items-center bg-white dark:bg-neutral-900 rounded-lg border transition-all duration-300 ${isFocused ? "border-transparent" : "border-neutral-200/80 dark:border-neutral-700/50"}`}
+      >
         <div
-          className={`flex items-center justify-center w-9 h-9 ml-0.5 rounded-md transition-all duration-300 ${isFocused ? 'scale-105' : ''}`}
+          className={`flex items-center justify-center w-9 h-9 ml-0.5 rounded-md transition-all duration-300 ${isFocused ? "scale-105" : ""}`}
           style={{
-            backgroundColor: isFocused ? `${ACCENT_COLOR}15` : 'transparent',
-            color: isFocused ? ACCENT_COLOR : '#9ca3af'
+            backgroundColor: isFocused ? `${ACCENT_COLOR}15` : "transparent",
+            color: isFocused ? ACCENT_COLOR : "#9ca3af",
           }}
         >
           <Search className="w-[18px] h-[18px]" />
@@ -145,9 +162,12 @@ function BrowseSearchInput({ placeholder }: { placeholder: string }) {
         />
         {localSearch ? (
           <button
-            onClick={() => handleSearchChange('')}
+            onClick={() => handleSearchChange("")}
             className="absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center transition-all duration-200 hover:scale-105"
-            style={{ backgroundColor: `${ACCENT_COLOR}15`, color: ACCENT_COLOR }}
+            style={{
+              backgroundColor: `${ACCENT_COLOR}15`,
+              color: ACCENT_COLOR,
+            }}
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -164,28 +184,28 @@ function BrowseSearchInput({ placeholder }: { placeholder: string }) {
 // Tab configuration
 const TABS = [
   {
-    key: 'jobs',
-    route: '/browse/jobs',
-    label: 'Jobs',
-    labelKa: 'სამუშაო',
+    key: "jobs",
+    route: "/browse/jobs",
+    label: "Jobs",
+    labelKa: "სამუშაო",
     icon: Briefcase,
-    showFor: 'pro' as const,
+    showFor: "pro" as const,
   },
   {
-    key: 'portfolio',
-    route: '/browse/portfolio',
-    label: 'Portfolio',
-    labelKa: 'ნამუშევრები',
+    key: "portfolio",
+    route: "/browse/portfolio",
+    label: "Portfolio",
+    labelKa: "ნამუშევრები",
     icon: Images,
-    showFor: 'all' as const,
+    showFor: "all" as const,
   },
   {
-    key: 'professionals',
-    route: '/browse/professionals',
-    label: 'Professionals',
-    labelKa: 'სპეციალისტები',
+    key: "professionals",
+    route: "/browse/professionals",
+    label: "Professionals",
+    labelKa: "სპეციალისტები",
     icon: Users,
-    showFor: 'all' as const,
+    showFor: "all" as const,
   },
 ];
 
@@ -202,10 +222,16 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
   const isProfessionalsPage = pathname.includes("/browse/professionals");
 
   // Determine active tab
-  const activeTab = isJobsPage ? 'jobs' : pathname.includes('/browse/portfolio') ? 'portfolio' : 'professionals';
+  const activeTab = isJobsPage
+    ? "jobs"
+    : pathname.includes("/browse/portfolio")
+      ? "portfolio"
+      : "professionals";
 
   // Get visible tabs based on user role
-  const visibleTabs = TABS.filter(tab => tab.showFor === 'all' || (tab.showFor === 'pro' && isPro));
+  const visibleTabs = TABS.filter(
+    (tab) => tab.showFor === "all" || (tab.showFor === "pro" && isPro)
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -240,21 +266,23 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
               style={{ backgroundColor: ACCENT_COLOR }}
             >
               <Plus className="w-4 h-4" />
-              <span>{locale === 'ka' ? 'განცხადების დამატება' : 'Post a Job'}</span>
+              <span>
+                {locale === "ka" ? "განცხადების დამატება" : "Post a Job"}
+              </span>
             </Link>
           </div>
 
           {/* BROWSE Label */}
           <div className="px-5 pt-3 pb-2">
             <span className="text-xs font-semibold tracking-wider text-neutral-400 uppercase">
-              {locale === 'ka' ? 'დათვალიერება' : 'Browse'}
+              {locale === "ka" ? "დათვალიერება" : "Browse"}
             </span>
           </div>
 
           {/* Navigation Tabs */}
           <div className="px-3 pb-4">
             <nav className="space-y-1">
-              {visibleTabs.map(tab => {
+              {visibleTabs.map((tab) => {
                 const isActive = activeTab === tab.key;
                 const Icon = tab.icon;
                 return (
@@ -263,13 +291,20 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                     href={tab.route}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                       isActive
-                        ? ''
-                        : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800'
+                        ? ""
+                        : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
                     }`}
-                    style={isActive ? { backgroundColor: `${ACCENT_COLOR}15`, color: ACCENT_COLOR } : {}}
+                    style={
+                      isActive
+                        ? {
+                            backgroundColor: `${ACCENT_COLOR}15`,
+                            color: ACCENT_COLOR,
+                          }
+                        : {}
+                    }
                   >
                     <Icon className="w-5 h-5" />
-                    <span>{locale === 'ka' ? tab.labelKa : tab.label}</span>
+                    <span>{locale === "ka" ? tab.labelKa : tab.label}</span>
                   </Link>
                 );
               })}
@@ -293,58 +328,33 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
         {/* Scrollable Content */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 bg-white dark:bg-neutral-950">
           <div className="p-3 sm:p-4 lg:p-6">
-            <div className={`max-w-[1600px] mx-auto ${mounted ? 'animate-fade-in' : 'opacity-0'}`}>
+            <div
+              className={`max-w-[1600px] mx-auto ${mounted ? "animate-fade-in" : "opacity-0"}`}
+            >
               {/* Search Bar - Compact & Distinctive */}
               <div className="mb-4 sm:mb-5">
                 <div className="max-w-xl">
                   {isJobsPage ? (
                     <JobsSearchInput />
                   ) : isProfessionalsPage ? (
-                    <BrowseSearchInput placeholder={locale === 'ka' ? 'სპეციალისტის ძებნა...' : 'Search professionals...'} />
+                    <BrowseSearchInput
+                      placeholder={
+                        locale === "ka"
+                          ? "სპეციალისტის ძებნა..."
+                          : "Search professionals..."
+                      }
+                    />
                   ) : (
-                    <BrowseSearchInput placeholder={locale === 'ka' ? 'ნამუშევრის ძებნა...' : 'Search portfolio...'} />
+                    <BrowseSearchInput
+                      placeholder={
+                        locale === "ka"
+                          ? "ნამუშევრის ძებნა..."
+                          : "Search portfolio..."
+                      }
+                    />
                   )}
                 </div>
               </div>
-
-              {/* Mobile Quick Access for Pro Users - My Jobs & My Proposals */}
-              {isPro && isJobsPage && (
-                <div className="lg:hidden mb-4 grid grid-cols-2 gap-2">
-                  <Link
-                    href="/my-jobs"
-                    className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-[#C4735B]/10 to-[#C4735B]/5 border border-[#C4735B]/20 active:scale-[0.98] transition-all"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-[#C4735B]/20 flex items-center justify-center">
-                        <Hammer className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
-                      </div>
-                      <div>
-                        <span className="text-xs font-semibold text-neutral-900 dark:text-white block">
-                          {locale === 'ka' ? 'სამუშაოები' : 'My Jobs'}
-                        </span>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
-                  </Link>
-                  <Link
-                    href="/my-proposals"
-                    className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-[#C4735B]/10 to-[#C4735B]/5 border border-[#C4735B]/20 active:scale-[0.98] transition-all"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-[#C4735B]/20 flex items-center justify-center">
-                        <Send className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
-                      </div>
-                      <div>
-                        <span className="text-xs font-semibold text-neutral-900 dark:text-white block">
-                          {locale === 'ka' ? 'შეთავაზებები' : 'Proposals'}
-                        </span>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
-                  </Link>
-                </div>
-              )}
-
               {children}
             </div>
           </div>
@@ -354,7 +364,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
       {/* Mobile Bottom Tab Bar */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#0a0a0a] border-t border-neutral-200 dark:border-neutral-800 safe-area-bottom">
         <div className="flex items-center justify-around h-14 px-1">
-          {visibleTabs.map(tab => {
+          {visibleTabs.map((tab) => {
             const isActive = activeTab === tab.key;
             const Icon = tab.icon;
             return (
@@ -362,13 +372,13 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                 key={tab.key}
                 href={tab.route}
                 className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 transition-colors ${
-                  isActive ? '' : 'text-neutral-400 dark:text-neutral-500'
+                  isActive ? "" : "text-neutral-400 dark:text-neutral-500"
                 }`}
                 style={isActive ? { color: ACCENT_COLOR } : {}}
               >
                 <Icon className="w-[18px] h-[18px]" />
                 <span className="text-[9px] font-medium">
-                  {locale === 'ka' ? tab.labelKa : tab.label}
+                  {locale === "ka" ? tab.labelKa : tab.label}
                 </span>
               </Link>
             );
@@ -380,7 +390,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
           >
             <Filter className="w-[18px] h-[18px]" />
             <span className="text-[9px] font-medium">
-              {locale === 'ka' ? 'ფილტრი' : 'Filter'}
+              {locale === "ka" ? "ფილტრი" : "Filter"}
             </span>
           </button>
         </div>
@@ -401,7 +411,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
           <div className="absolute left-0 top-0 bottom-0 w-72 max-w-[80vw] bg-white dark:bg-[#0a0a0a] shadow-2xl animate-slide-in-left">
             <div className="flex items-center justify-between p-3 border-b border-neutral-200 dark:border-neutral-800">
               <h3 className="font-semibold text-sm text-neutral-900 dark:text-white">
-                {locale === 'ka' ? 'ძებნა და ფილტრები' : 'Search & Filters'}
+                {locale === "ka" ? "ძებნა და ფილტრები" : "Search & Filters"}
               </h3>
               <button
                 onClick={() => setShowMobileFilters(false)}
@@ -419,7 +429,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                   className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-all bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
                 >
                   <FileText className="w-3.5 h-3.5" />
-                  <span>{locale === 'ka' ? 'შეთავაზებები' : 'Proposals'}</span>
+                  <span>{locale === "ka" ? "შეთავაზებები" : "Proposals"}</span>
                 </Link>
                 <Link
                   href="/my-jobs"
@@ -427,7 +437,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                   className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-all bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
                 >
                   <Hammer className="w-3.5 h-3.5" />
-                  <span>{locale === 'ka' ? 'სამუშაოები' : 'Jobs'}</span>
+                  <span>{locale === "ka" ? "სამუშაოები" : "Jobs"}</span>
                 </Link>
               </div>
             )}
@@ -436,9 +446,21 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
               {isJobsPage ? (
                 <JobsSearchInput />
               ) : isProfessionalsPage ? (
-                <BrowseSearchInput placeholder={locale === 'ka' ? 'სპეციალისტის ძებნა...' : 'Search professionals...'} />
+                <BrowseSearchInput
+                  placeholder={
+                    locale === "ka"
+                      ? "სპეციალისტის ძებნა..."
+                      : "Search professionals..."
+                  }
+                />
               ) : (
-                <BrowseSearchInput placeholder={locale === 'ka' ? 'ნამუშევრის ძებნა...' : 'Search portfolio...'} />
+                <BrowseSearchInput
+                  placeholder={
+                    locale === "ka"
+                      ? "ნამუშევრის ძებნა..."
+                      : "Search portfolio..."
+                  }
+                />
               )}
             </div>
             <div className="overflow-y-auto h-[calc(100%-100px)]">
@@ -483,11 +505,16 @@ function BrowseLayoutWithParams({ children }: { children: ReactNode }) {
 
 export default function BrowseLayout({ children }: { children: ReactNode }) {
   return (
-    <Suspense fallback={
-      <div className="h-screen flex items-center justify-center bg-[#fafafa] dark:bg-[#0a0a0a]">
-        <div className="animate-spin rounded-full h-6 w-6 border-2 border-t-transparent" style={{ borderColor: ACCENT_COLOR, borderTopColor: 'transparent' }} />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="h-screen flex items-center justify-center bg-[#fafafa] dark:bg-[#0a0a0a]">
+          <div
+            className="animate-spin rounded-full h-6 w-6 border-2 border-t-transparent"
+            style={{ borderColor: ACCENT_COLOR, borderTopColor: "transparent" }}
+          />
+        </div>
+      }
+    >
       <BrowseLayoutWithParams>{children}</BrowseLayoutWithParams>
     </Suspense>
   );
