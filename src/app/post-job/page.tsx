@@ -25,6 +25,9 @@ import {
   X,
   Image as ImageIcon,
 } from "lucide-react";
+import PropertyTypeSelector, { PropertyType } from "@/components/post-job/PropertyTypeSelector";
+import BudgetSelector, { BudgetType } from "@/components/post-job/BudgetSelector";
+import TimingSelector, { Timing } from "@/components/post-job/TimingSelector";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 
@@ -137,11 +140,11 @@ function PostJobPageContent() {
     title: "",
     description: "",
     location: "",
-    propertyType: "apartment" as "apartment" | "office" | "building" | "house" | "other",
-    budgetType: "fixed" as "fixed" | "range" | "negotiable",
+    propertyType: "apartment" as PropertyType,
+    budgetType: "fixed" as BudgetType,
     budgetMin: "",
     budgetMax: "",
-    timing: "flexible" as "asap" | "this_week" | "this_month" | "flexible",
+    timing: "flexible" as Timing,
     // Category-specific fields
     cadastralId: "",
     areaSize: "",
@@ -538,57 +541,11 @@ function PostJobPageContent() {
                   <label className="block text-xs font-medium text-neutral-600 mb-2">
                     {locale === "ka" ? "ობიექტის ტიპი" : "Property Type"} <span className="text-[#C4735B]">*</span>
                   </label>
-                  <div className="grid grid-cols-5 gap-2">
-                    {[
-                      { value: "apartment", labelEn: "Apartment", labelKa: "ბინა", icon: (
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                          <rect x="4" y="4" width="16" height="16" rx="2" />
-                          <path d="M9 4v16M15 4v16M4 9h16M4 15h16" />
-                        </svg>
-                      )},
-                      { value: "house", labelEn: "House", labelKa: "სახლი", icon: (
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                          <path d="M3 10.5L12 4l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V10.5z" />
-                          <path d="M9 21V14h6v7" />
-                        </svg>
-                      )},
-                      { value: "office", labelEn: "Office", labelKa: "ოფისი", icon: (
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                          <rect x="3" y="7" width="18" height="14" rx="1" />
-                          <path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2" />
-                          <path d="M12 12v4M8 12h8" />
-                        </svg>
-                      )},
-                      { value: "building", labelEn: "Building", labelKa: "შენობა", icon: (
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                          <rect x="5" y="3" width="14" height="18" rx="1" />
-                          <path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2" />
-                          <path d="M10 21v-3h4v3" />
-                        </svg>
-                      )},
-                      { value: "other", labelEn: "Other", labelKa: "სხვა", icon: (
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                          <circle cx="12" cy="12" r="9" />
-                          <path d="M12 8v4M12 16h.01" />
-                        </svg>
-                      )},
-                    ].map((type) => (
-                      <button
-                        key={type.value}
-                        onClick={() => updateFormData("propertyType", type.value)}
-                        className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 transition-all ${
-                          formData.propertyType === type.value
-                            ? "border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B]"
-                            : "border-neutral-200 text-neutral-500 hover:border-neutral-300"
-                        }`}
-                      >
-                        {type.icon}
-                        <span className="text-[10px] font-medium">
-                          {locale === "ka" ? type.labelKa : type.labelEn}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
+                  <PropertyTypeSelector
+                    value={formData.propertyType}
+                    onChange={(value) => updateFormData("propertyType", value)}
+                    locale={locale as "en" | "ka"}
+                  />
                 </div>
 
                 {/* Category Cards - Horizontal compact layout */}
@@ -808,115 +765,39 @@ function PostJobPageContent() {
                     />
                   </div>
 
-                  {/* Budget Type Selection */}
+                  {/* Budget Type Selection and Inputs */}
                   <div>
                     <label className="block text-xs font-medium text-neutral-600 mb-2">
-                      {locale === "ka" ? "ბიუჯეტის ტიპი" : "Budget Type"} <span className="text-[#C4735B]">*</span>
+                      {locale === "ka" ? "ბიუჯეტი" : "Budget"} <span className="text-[#C4735B]">*</span>
                     </label>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          updateFormData("budgetType", "fixed");
-                          updateFormData("budgetMax", "");
-                        }}
-                        className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium border-2 transition-all ${
-                          formData.budgetType === "fixed"
-                            ? "border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B]"
-                            : "border-neutral-200 text-neutral-600 hover:border-neutral-300"
-                        }`}
-                      >
-                        {locale === "ka" ? "ფიქსირებული" : "Fixed"}
-                      </button>
-                      <button
-                        onClick={() => updateFormData("budgetType", "range")}
-                        className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium border-2 transition-all ${
-                          formData.budgetType === "range"
-                            ? "border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B]"
-                            : "border-neutral-200 text-neutral-600 hover:border-neutral-300"
-                        }`}
-                      >
-                        {locale === "ka" ? "დიაპაზონი" : "Range"}
-                      </button>
-                      <button
-                        onClick={() => {
-                          updateFormData("budgetType", "negotiable");
+                    <BudgetSelector
+                      budgetType={formData.budgetType}
+                      onBudgetTypeChange={(value) => {
+                        updateFormData("budgetType", value);
+                        if (value === "fixed") updateFormData("budgetMax", "");
+                        if (value === "negotiable") {
                           updateFormData("budgetMin", "0");
                           updateFormData("budgetMax", "");
-                        }}
-                        className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium border-2 transition-all ${
-                          formData.budgetType === "negotiable"
-                            ? "border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B]"
-                            : "border-neutral-200 text-neutral-600 hover:border-neutral-300"
-                        }`}
-                      >
-                        {locale === "ka" ? "შეთანხმებით" : "Negotiable"}
-                      </button>
-                    </div>
+                        }
+                      }}
+                      budgetMin={formData.budgetMin}
+                      onBudgetMinChange={(value) => updateFormData("budgetMin", value)}
+                      budgetMax={formData.budgetMax}
+                      onBudgetMaxChange={(value) => updateFormData("budgetMax", value)}
+                      locale={locale as "en" | "ka"}
+                    />
                   </div>
-
-                  {/* Budget Inputs - Only show for fixed and range */}
-                  {formData.budgetType !== "negotiable" && (
-                    <div>
-                      <label className="block text-xs font-medium text-neutral-600 mb-1.5">
-                        {formData.budgetType === "fixed"
-                          ? (locale === "ka" ? "თანხა (GEL)" : "Amount (GEL)")
-                          : (locale === "ka" ? "დიაპაზონი (GEL)" : "Range (GEL)")} <span className="text-[#C4735B]">*</span>
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <div className="relative flex-1">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">₾</span>
-                          <input
-                            type="number"
-                            value={formData.budgetMin}
-                            onChange={(e) => updateFormData("budgetMin", e.target.value)}
-                            placeholder={formData.budgetType === "fixed" ? "100" : "50"}
-                            className="w-full pl-7 pr-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]"
-                          />
-                        </div>
-                        {formData.budgetType === "range" && (
-                          <>
-                            <span className="text-neutral-300">—</span>
-                            <div className="relative flex-1">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">₾</span>
-                              <input
-                                type="number"
-                                value={formData.budgetMax}
-                                onChange={(e) => updateFormData("budgetMax", e.target.value)}
-                                placeholder="150"
-                                className="w-full pl-7 pr-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]"
-                              />
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  )}
 
                   {/* Timing Selection */}
                   <div>
                     <label className="block text-xs font-medium text-neutral-600 mb-2">
                       {locale === "ka" ? "როდის გჭირდება?" : "When do you need it?"} <span className="text-[#C4735B]">*</span>
                     </label>
-                    <div className="grid grid-cols-4 gap-2">
-                      {[
-                        { value: "flexible", labelEn: "Flexible", labelKa: "მოქნილი" },
-                        { value: "asap", labelEn: "ASAP", labelKa: "სასწრაფოდ" },
-                        { value: "this_week", labelEn: "This week", labelKa: "ამ კვირაში" },
-                        { value: "this_month", labelEn: "This month", labelKa: "ამ თვეში" },
-                      ].map((option) => (
-                        <button
-                          key={option.value}
-                          onClick={() => updateFormData("timing", option.value)}
-                          className={`px-2 py-2 rounded-lg text-xs font-medium border-2 transition-all ${
-                            formData.timing === option.value
-                              ? "border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B]"
-                              : "border-neutral-200 text-neutral-600 hover:border-neutral-300"
-                          }`}
-                        >
-                          {locale === "ka" ? option.labelKa : option.labelEn}
-                        </button>
-                      ))}
-                    </div>
+                    <TimingSelector
+                      value={formData.timing}
+                      onChange={(value) => updateFormData("timing", value)}
+                      locale={locale as "en" | "ka"}
+                    />
                   </div>
                 </div>
               </div>

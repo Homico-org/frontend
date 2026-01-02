@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs';
-import { ProStatus } from '@/types';
+import { ProProfile, ProStatus, AccountType, UserRole } from '@/types';
 import ProCard from './ProCard';
 
 const meta: Meta<typeof ProCard> = {
@@ -27,10 +27,10 @@ const meta: Meta<typeof ProCard> = {
 export default meta;
 type Story = StoryObj<typeof ProCard>;
 
-const baseProfile = {
+// Create a complete mock profile for stories
+const baseProfile: ProProfile = {
   _id: '1',
   name: 'Giorgi Kapanadze',
-  title: 'Interior Designer',
   avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop',
   status: ProStatus.ACTIVE,
   avgRating: 4.9,
@@ -42,8 +42,37 @@ const baseProfile = {
   selectedSubcategories: ['interior', 'residential', 'commercial'],
   categories: ['design'],
   subcategories: ['interior', 'residential', 'commercial'],
-  verificationStatus: 'verified' as const,
+  verificationStatus: 'verified',
   isPremium: false,
+  // Required fields with defaults
+  accountType: AccountType.INDIVIDUAL,
+  availability: ['weekdays'],
+  cadastralVerified: false,
+  certifications: [],
+  city: 'Tbilisi',
+  companies: [],
+  createdAt: new Date(),
+  designStyles: [],
+  email: 'giorgi@example.com',
+  isActive: true,
+  isAvailable: true,
+  isEmailVerified: true,
+  isPhoneVerified: true,
+  languages: ['ka', 'en'],
+  lastLoginAt: new Date(),
+  paymentMethods: [],
+  phone: '+995555123456',
+  pinterestLinks: [],
+  portfolioImages: [],
+  portfolioProjects: [],
+  premiumTier: '',
+  profileType: 'individual',
+  role: UserRole.PRO,
+  serviceAreas: ['Tbilisi'],
+  statusAutoSuggested: false,
+  telegram: '',
+  whatsapp: '',
+  __v: 0,
 };
 
 export const Default: Story = {
@@ -105,7 +134,7 @@ export const NoAvatar: Story = {
   args: {
     profile: {
       ...baseProfile,
-      avatar: undefined,
+      avatar: '',
     },
   },
 };

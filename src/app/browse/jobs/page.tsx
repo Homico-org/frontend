@@ -3,13 +3,12 @@
 import JobCard from "@/components/common/JobCard";
 import EmptyState from "@/components/common/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
-import { useCategories } from "@/contexts/CategoriesContext";
 import { useJobsContext } from "@/contexts/JobsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAnalytics, AnalyticsEvent } from "@/hooks/useAnalytics";
 import { Briefcase, Bookmark } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 // Terracotta accent
 const ACCENT_COLOR = '#C4735B';
@@ -56,18 +55,11 @@ interface Job {
 export default function JobsPage() {
   const { locale } = useLanguage();
   const { user, isLoading: isAuthLoading } = useAuth();
-  const { categories } = useCategories();
   const { trackEvent } = useAnalytics();
   const router = useRouter();
   const { filters, savedJobIds, handleSaveJob, appliedJobIds } = useJobsContext();
 
   const isPro = user?.role === "pro" || user?.role === "admin";
-
-  // Get valid top-level category keys to filter user's selectedCategories
-  const validCategoryKeys = useMemo(() =>
-    new Set(categories.map(c => c.key)),
-    [categories]
-  );
 
   // Redirect non-pro users to portfolio page
   useEffect(() => {
@@ -87,7 +79,7 @@ export default function JobsPage() {
   const displayedJobs = jobs;
 
 
-  // Fetch jobs with filters - filtered by pro's selected categories/subcategories
+  // Fetch jobs with filters - filtered by pro's selected subcategories
   const fetchJobs = useCallback(
     async (pageNum: number, reset = false) => {
       if (!isPro) return;
@@ -104,16 +96,7 @@ export default function JobsPage() {
         params.append("limit", "12");
         params.append("status", "open");
 
-        // Filter by pro's selected categories (only valid top-level categories)
-        if (user?.selectedCategories && user.selectedCategories.length > 0) {
-          user.selectedCategories
-            .filter(cat => validCategoryKeys.has(cat))
-            .forEach(cat => {
-              params.append("categories", cat);
-            });
-        }
-
-        // Filter by pro's selected subcategories
+        // Filter by pro's selected subcategories only
         if (user?.selectedSubcategories && user.selectedSubcategories.length > 0) {
           user.selectedSubcategories.forEach(sub => {
             params.append("subcategories", sub);
@@ -186,7 +169,7 @@ export default function JobsPage() {
         setIsLoadingMore(false);
       }
     },
-    [isPro, user?.selectedCategories, user?.selectedSubcategories, validCategoryKeys, filters.category, filters.budgetMin, filters.budgetMax, filters.propertyType, filters.location, filters.searchQuery, filters.deadline, filters.showFavoritesOnly]
+    [isPro, user?.selectedSubcategories, filters.category, filters.budgetMin, filters.budgetMax, filters.propertyType, filters.location, filters.searchQuery, filters.deadline, filters.showFavoritesOnly]
   );
 
   // Track if initial fetch has been done

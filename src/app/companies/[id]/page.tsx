@@ -14,8 +14,6 @@ import {
   Building2,
   Calendar,
   CheckCircle,
-  ChevronLeft,
-  ChevronRight,
   Clock,
   ExternalLink,
   Globe,
@@ -28,6 +26,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import MediaLightbox, { MediaItem } from "@/components/common/MediaLightbox";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
@@ -305,8 +304,8 @@ export default function CompanyProfilePage() {
   };
 
   // Get all portfolio images
-  const getAllPortfolioImages = useCallback(() => {
-    const images: { url: string; title?: string; description?: string }[] = [];
+  const getAllPortfolioImages = useCallback((): MediaItem[] => {
+    const images: MediaItem[] = [];
     profile?.portfolioProjects?.forEach((project) => {
       project.images.forEach((img, idx) => {
         images.push({
@@ -323,34 +322,11 @@ export default function CompanyProfilePage() {
   const openLightbox = (index: number) => {
     setLightboxIndex(index);
     setLightboxOpen(true);
-    document.body.style.overflow = "hidden";
   };
 
   const closeLightbox = () => {
     setLightboxOpen(false);
-    document.body.style.overflow = "";
   };
-
-  const nextImage = () => {
-    const images = getAllPortfolioImages();
-    setLightboxIndex((prev) => (prev + 1) % images.length);
-  };
-
-  const prevImage = () => {
-    const images = getAllPortfolioImages();
-    setLightboxIndex((prev) => (prev - 1 + images.length) % images.length);
-  };
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!lightboxOpen) return;
-      if (e.key === "Escape") closeLightbox();
-      if (e.key === "ArrowRight") nextImage();
-      if (e.key === "ArrowLeft") prevImage();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [lightboxOpen]);
 
   // Loading state
   if (isLoading) {
@@ -1241,78 +1217,16 @@ export default function CompanyProfilePage() {
       </main>
 
       {/* Lightbox Modal */}
-      {lightboxOpen && portfolioImages.length > 0 && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center"
-          onClick={closeLightbox}
-        >
-          {/* Close button */}
-          <button
-            onClick={closeLightbox}
-            className="absolute top-4 right-4 sm:top-6 sm:right-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10 border border-white/10"
-          >
-            <X className="w-6 h-6 text-white" />
-          </button>
-
-          {/* Navigation arrows */}
-          {portfolioImages.length > 1 && (
-            <>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  prevImage();
-                }}
-                className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10 border border-white/10"
-              >
-                <ChevronLeft className="w-6 h-6 text-white" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  nextImage();
-                }}
-                className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10 border border-white/10"
-              >
-                <ChevronRight className="w-6 h-6 text-white" />
-              </button>
-            </>
-          )}
-
-          {/* Image container */}
-          <div
-            className="max-w-6xl max-h-[85vh] mx-4 sm:mx-8"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src={getImageUrl(portfolioImages[lightboxIndex].url)}
-              alt={portfolioImages[lightboxIndex].title || ""}
-              className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl"
-            />
-
-            {/* Caption */}
-            {(portfolioImages[lightboxIndex].title ||
-              portfolioImages[lightboxIndex].description) && (
-              <div className="mt-6 text-center">
-                {portfolioImages[lightboxIndex].title && (
-                  <h3 className="text-white font-bold text-xl">
-                    {portfolioImages[lightboxIndex].title}
-                  </h3>
-                )}
-                {portfolioImages[lightboxIndex].description && (
-                  <p className="text-white/70 text-sm mt-2 max-w-2xl mx-auto">
-                    {portfolioImages[lightboxIndex].description}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Image counter */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm font-medium border border-white/10">
-              {lightboxIndex + 1} / {portfolioImages.length}
-            </div>
-          </div>
-        </div>
-      )}
+      <MediaLightbox
+        items={portfolioImages}
+        currentIndex={lightboxIndex}
+        isOpen={lightboxOpen}
+        onClose={closeLightbox}
+        onIndexChange={setLightboxIndex}
+        getImageUrl={getImageUrl}
+        locale={locale as "en" | "ka"}
+        showThumbnails={false}
+      />
 
       {/* Contact Modal */}
       {showContactModal && (

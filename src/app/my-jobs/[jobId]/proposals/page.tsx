@@ -4,6 +4,7 @@ import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import HiringChoiceModal from '@/components/proposals/HiringChoiceModal';
+import { ConfirmModal } from '@/components/ui/Modal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useCategoryLabels } from '@/hooks/useCategoryLabels';
@@ -408,37 +409,21 @@ function ProposalsPageContent() {
       />
 
       {/* Reject Confirmation Modal */}
-      {showRejectConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowRejectConfirm(null)} />
-          <div className="relative bg-white dark:bg-neutral-900 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
-            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
-              {locale === 'ka' ? 'შეთავაზების უარყოფა' : 'Reject Proposal?'}
-            </h3>
-            <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6">
-              {locale === 'ka'
-                ? 'ეს მოქმედება ვერ გაუქმდება.'
-                : 'This action cannot be undone.'}
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowRejectConfirm(null)}
-                disabled={isProcessing}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
-              >
-                {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
-              </button>
-              <button
-                onClick={() => handleReject(showRejectConfirm)}
-                disabled={isProcessing}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
-              >
-                {isProcessing ? '...' : locale === 'ka' ? 'უარყოფა' : 'Reject'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={!!showRejectConfirm}
+        onClose={() => setShowRejectConfirm(null)}
+        onConfirm={() => showRejectConfirm && handleReject(showRejectConfirm)}
+        title={locale === 'ka' ? 'შეთავაზების უარყოფა' : 'Reject Proposal?'}
+        description={locale === 'ka'
+          ? 'ეს მოქმედება ვერ გაუქმდება.'
+          : 'This action cannot be undone.'}
+        icon={<X className="w-6 h-6 text-red-500" />}
+        variant="danger"
+        cancelLabel={locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+        confirmLabel={locale === 'ka' ? 'უარყოფა' : 'Reject'}
+        isLoading={isProcessing}
+        loadingLabel="..."
+      />
     </div>
   );
 }

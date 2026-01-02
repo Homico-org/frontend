@@ -35,6 +35,7 @@ import {
   X,
   XCircle
 } from 'lucide-react';
+import { ConfirmModal } from '@/components/ui/Modal';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -856,52 +857,21 @@ function MyProposalsPageContent() {
       </main>
 
       {/* Withdraw Modal */}
-      {withdrawModalId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setWithdrawModalId(null)}
-          />
-
-          <div className="relative w-full max-w-md bg-[var(--color-bg-elevated)] rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6">
-              <div className="flex items-start gap-4 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center flex-shrink-0">
-                  <AlertTriangle className="w-6 h-6 text-red-500" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
-                    {language === 'ka' ? 'შეთავაზების გაუქმება' : 'Withdraw Proposal'}
-                  </h3>
-                  <p className="text-sm text-[var(--color-text-secondary)] mt-1">
-                    {language === 'ka'
-                      ? 'დარწმუნებული ხარ? ეს მოქმედება ვერ გაუქმდება.'
-                      : 'Are you sure? This action cannot be undone.'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setWithdrawModalId(null)}
-                  className="flex-1 px-4 py-3 rounded-xl text-sm font-medium bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-muted)] transition-all"
-                >
-                  {language === 'ka' ? 'გაუქმება' : 'Cancel'}
-                </button>
-                <button
-                  onClick={handleWithdraw}
-                  disabled={isWithdrawing}
-                  className="flex-1 px-4 py-3 rounded-xl text-sm font-medium bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 transition-all"
-                >
-                  {isWithdrawing
-                    ? (language === 'ka' ? 'მიმდინარეობს...' : 'Withdrawing...')
-                    : (language === 'ka' ? 'დადასტურება' : 'Confirm')}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={!!withdrawModalId}
+        onClose={() => setWithdrawModalId(null)}
+        onConfirm={handleWithdraw}
+        title={language === 'ka' ? 'შეთავაზების გაუქმება' : 'Withdraw Proposal'}
+        description={language === 'ka'
+          ? 'დარწმუნებული ხარ? ეს მოქმედება ვერ გაუქმდება.'
+          : 'Are you sure? This action cannot be undone.'}
+        icon={<AlertTriangle className="w-6 h-6 text-red-500" />}
+        variant="danger"
+        cancelLabel={language === 'ka' ? 'გაუქმება' : 'Cancel'}
+        confirmLabel={language === 'ka' ? 'დადასტურება' : 'Confirm'}
+        isLoading={isWithdrawing}
+        loadingLabel={language === 'ka' ? 'მიმდინარეობს...' : 'Withdrawing...'}
+      />
     </div>
   );
 }

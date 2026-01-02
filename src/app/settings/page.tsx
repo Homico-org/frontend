@@ -5,26 +5,14 @@ import Avatar from '@/components/common/Avatar';
 import AvatarCropper from '@/components/common/AvatarCropper';
 import BackButton from '@/components/common/BackButton';
 import Header, { HeaderSpacer } from '@/components/common/Header';
+import PasswordChangeForm from '@/components/settings/PasswordChangeForm';
+import PaymentMethodCard, { EmptyPaymentMethods, type PaymentMethod } from '@/components/settings/PaymentMethodCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage, countries } from '@/contexts/LanguageContext';
 import { AlertCircle, AlertTriangle, BadgeCheck, Bell, BriefcaseBusiness, Calendar, Camera, Check, CheckCircle2, ChevronDown, ChevronRight, CreditCard, Eye, EyeOff, Facebook, FileText, Globe, Instagram, Linkedin, Loader2, Lock, Mail, MapPin, Megaphone, MessageCircle, MessageSquare, RefreshCw, Send, Shield, Smartphone, Trash2, Upload, User, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
-
-// Types for payment methods
-interface PaymentMethod {
-  id: string;
-  type: 'card' | 'bank';
-  cardLast4?: string;
-  cardBrand?: string;
-  cardExpiry?: string;
-  cardholderName?: string;
-  bankName?: string;
-  maskedIban?: string;
-  isDefault: boolean;
-  createdAt: string;
-}
 
 // Types for notification preferences
 interface NotificationPreferences {
@@ -76,18 +64,6 @@ function SettingsPageContent() {
     avatar: '',
   });
 
-  // Password change state
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  });
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [passwordMessage, setPasswordMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-
   // Notification preferences state
   const [notificationData, setNotificationData] = useState<NotificationSettingsData | null>(null);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
@@ -116,7 +92,6 @@ function SettingsPageContent() {
     setAsDefault: false,
   });
   const [paymentMessage, setPaymentMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
 
   // Verification state (for pro users)
   const [verificationData, setVerificationData] = useState({
@@ -420,7 +395,6 @@ function SettingsPageContent() {
   };
 
   const handleDeleteCard = async (cardId: string) => {
-    setDeletingCardId(cardId);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
       const token = localStorage.getItem('access_token');
@@ -442,8 +416,6 @@ function SettingsPageContent() {
         type: 'error',
         text: locale === 'ka' ? 'წაშლა ვერ მოხერხდა' : 'Failed to delete'
       });
-    } finally {
-      setDeletingCardId(null);
     }
   };
 
@@ -471,98 +443,6 @@ function SettingsPageContent() {
       console.error('Error setting default card:', error);
     }
   };
-
-  const handleChangePassword = async () => {
-    setPasswordMessage(null);
-
-    // Validate passwords
-    if (!passwordData.currentPassword) {
-      setPasswordMessage({
-        type: 'error',
-        text: locale === 'ka' ? 'შეიყვანეთ მიმდინარე პაროლი' : 'Please enter your current password',
-      });
-      return;
-    }
-
-    if (passwordData.newPassword.length < 6) {
-      setPasswordMessage({
-        type: 'error',
-        text: locale === 'ka' ? 'ახალი პაროლი უნდა იყოს მინიმუმ 6 სიმბოლო' : 'New password must be at least 6 characters',
-      });
-      return;
-    }
-
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordMessage({
-        type: 'error',
-        text: locale === 'ka' ? 'პაროლები არ ემთხვევა' : 'Passwords do not match',
-      });
-      return;
-    }
-
-    setIsChangingPassword(true);
-
-    try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const token = localStorage.getItem('access_token');
-
-      const res = await fetch(`${API_URL}/users/change-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          currentPassword: passwordData.currentPassword,
-          newPassword: passwordData.newPassword,
-        }),
-      });
-
-      if (res.ok) {
-        setPasswordMessage({
-          type: 'success',
-          text: locale === 'ka' ? 'პაროლი წარმატებით შეიცვალა' : 'Password changed successfully',
-        });
-        setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      } else {
-        const data = await res.json();
-        if (res.status === 409) {
-          setPasswordMessage({
-            type: 'error',
-            text: locale === 'ka' ? 'მიმდინარე პაროლი არასწორია' : 'Current password is incorrect',
-          });
-        } else {
-          throw new Error(data.message || 'Failed to change password');
-        }
-      }
-    } catch (error: any) {
-      setPasswordMessage({
-        type: 'error',
-        text: error.message || (locale === 'ka' ? 'პაროლის შეცვლა ვერ მოხერხდა' : 'Failed to change password'),
-      });
-    } finally {
-      setIsChangingPassword(false);
-    }
-  };
-
-  // Password strength indicator
-  const getPasswordStrength = (password: string) => {
-    if (!password) return { strength: 0, label: '' };
-    let strength = 0;
-    if (password.length >= 6) strength++;
-    if (password.length >= 8) strength++;
-    if (/[A-Z]/.test(password)) strength++;
-    if (/[0-9]/.test(password)) strength++;
-    if (/[^A-Za-z0-9]/.test(password)) strength++;
-
-    const labels = locale === 'ka'
-      ? ['სუსტი', 'სუსტი', 'საშუალო', 'კარგი', 'ძლიერი']
-      : ['Weak', 'Weak', 'Medium', 'Good', 'Strong'];
-
-    return { strength, label: labels[Math.min(strength, 4)] };
-  };
-
-  const passwordStrength = getPasswordStrength(passwordData.newPassword);
 
   // Fetch notification preferences
   const fetchNotificationPreferences = useCallback(async () => {
@@ -1827,218 +1707,36 @@ function SettingsPageContent() {
             )}
 
             {activeTab === 'security' && (
-              <div className="space-y-6">
-                <div>
-                  <h2
-                    className="text-base sm:text-lg font-semibold"
-                    style={{ color: 'var(--color-text-primary)' }}
-                  >
-                    {locale === 'ka' ? 'პაროლის შეცვლა' : 'Change Password'}
-                  </h2>
-                  <p
-                    className="mt-1 text-sm"
-                    style={{ color: 'var(--color-text-secondary)' }}
-                  >
-                    {locale === 'ka'
-                      ? 'შეიყვანეთ მიმდინარე პაროლი და აირჩიეთ ახალი'
-                      : 'Enter your current password and choose a new one'}
-                  </p>
-                </div>
+              <PasswordChangeForm
+                locale={locale as 'en' | 'ka'}
+                onSubmit={async (currentPassword, newPassword) => {
+                  try {
+                    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+                    const token = localStorage.getItem('access_token');
 
-                {passwordMessage && (
-                  <div
-                    className="p-3 sm:p-4 rounded-xl text-sm flex items-center gap-3"
-                    style={{
-                      backgroundColor: passwordMessage.type === 'success'
-                        ? 'rgba(34, 197, 94, 0.1)'
-                        : 'rgba(239, 68, 68, 0.1)',
-                      color: passwordMessage.type === 'success'
-                        ? '#22c55e'
-                        : '#ef4444',
-                      border: `1px solid ${passwordMessage.type === 'success' ? '#22c55e' : '#ef4444'}`,
-                    }}
-                  >
-                    {passwordMessage.type === 'success' ? (
-                      <Check className="w-5 h-5 flex-shrink-0" />
-                    ) : (
-                      <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                    )}
-                    {passwordMessage.text}
-                  </div>
-                )}
+                    const res = await fetch(`${API_URL}/users/change-password`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                      },
+                      body: JSON.stringify({ currentPassword, newPassword }),
+                    });
 
-                <div className="space-y-4">
-                  {/* Current Password */}
-                  <div>
-                    <label
-                      className="block text-sm font-medium mb-1.5"
-                      style={{ color: 'var(--color-text-secondary)' }}
-                    >
-                      {locale === 'ka' ? 'მიმდინარე პაროლი' : 'Current Password'}
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showCurrentPassword ? 'text' : 'password'}
-                        value={passwordData.currentPassword}
-                        onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
-                        placeholder={locale === 'ka' ? 'შეიყვანეთ მიმდინარე პაროლი' : 'Enter current password'}
-                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-12 text-base rounded-xl transition-all duration-200"
-                        style={{
-                          backgroundColor: 'var(--color-bg-elevated)',
-                          border: '1px solid var(--color-border)',
-                          color: 'var(--color-text-primary)',
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                        style={{ color: 'var(--color-text-tertiary)' }}
-                      >
-                        {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* New Password */}
-                  <div>
-                    <label
-                      className="block text-sm font-medium mb-1.5"
-                      style={{ color: 'var(--color-text-secondary)' }}
-                    >
-                      {locale === 'ka' ? 'ახალი პაროლი' : 'New Password'}
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showNewPassword ? 'text' : 'password'}
-                        value={passwordData.newPassword}
-                        onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-                        placeholder={locale === 'ka' ? 'შეიყვანეთ ახალი პაროლი' : 'Enter new password'}
-                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-12 text-base rounded-xl transition-all duration-200"
-                        style={{
-                          backgroundColor: 'var(--color-bg-elevated)',
-                          border: '1px solid var(--color-border)',
-                          color: 'var(--color-text-primary)',
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowNewPassword(!showNewPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                        style={{ color: 'var(--color-text-tertiary)' }}
-                      >
-                        {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                      </button>
-                    </div>
-
-                    {/* Password Strength Indicator */}
-                    {passwordData.newPassword && (
-                      <div className="mt-2">
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
-                            <div
-                              className="h-full rounded-full transition-all duration-300"
-                              style={{
-                                width: `${(passwordStrength.strength / 5) * 100}%`,
-                                backgroundColor:
-                                  passwordStrength.strength <= 1 ? '#ef4444' :
-                                  passwordStrength.strength <= 2 ? '#f97316' :
-                                  passwordStrength.strength <= 3 ? '#eab308' :
-                                  '#22c55e',
-                              }}
-                            />
-                          </div>
-                          <span
-                            className="text-xs font-medium"
-                            style={{
-                              color:
-                                passwordStrength.strength <= 1 ? '#ef4444' :
-                                passwordStrength.strength <= 2 ? '#f97316' :
-                                passwordStrength.strength <= 3 ? '#eab308' :
-                                '#22c55e',
-                            }}
-                          >
-                            {passwordStrength.label}
-                          </span>
-                        </div>
-                        <p
-                          className="text-xs mt-1"
-                          style={{ color: 'var(--color-text-tertiary)' }}
-                        >
-                          {locale === 'ka'
-                            ? 'გამოიყენეთ მინიმუმ 6 სიმბოლო, დიდი ასოები, ციფრები და სპეციალური სიმბოლოები'
-                            : 'Use at least 6 characters, uppercase letters, numbers and special characters'}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Confirm Password */}
-                  <div>
-                    <label
-                      className="block text-sm font-medium mb-1.5"
-                      style={{ color: 'var(--color-text-secondary)' }}
-                    >
-                      {locale === 'ka' ? 'გაიმეორეთ ახალი პაროლი' : 'Confirm New Password'}
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        value={passwordData.confirmPassword}
-                        onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                        placeholder={locale === 'ka' ? 'გაიმეორეთ ახალი პაროლი' : 'Confirm new password'}
-                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-12 text-base rounded-xl transition-all duration-200"
-                        style={{
-                          backgroundColor: 'var(--color-bg-elevated)',
-                          border: passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword
-                            ? '1px solid #ef4444'
-                            : '1px solid var(--color-border)',
-                          color: 'var(--color-text-primary)',
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                        style={{ color: 'var(--color-text-tertiary)' }}
-                      >
-                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                      </button>
-                    </div>
-                    {passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword && (
-                      <p className="text-xs mt-1 text-red-500">
-                        {locale === 'ka' ? 'პაროლები არ ემთხვევა' : 'Passwords do not match'}
-                      </p>
-                    )}
-                    {passwordData.confirmPassword && passwordData.newPassword === passwordData.confirmPassword && passwordData.newPassword.length >= 6 && (
-                      <p className="text-xs mt-1 text-green-500 flex items-center gap-1">
-                        <Check className="w-3 h-3" />
-                        {locale === 'ka' ? 'პაროლები ემთხვევა' : 'Passwords match'}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex justify-end pt-4">
-                    <button
-                      onClick={handleChangePassword}
-                      disabled={isChangingPassword || !passwordData.currentPassword || !passwordData.newPassword || passwordData.newPassword !== passwordData.confirmPassword}
-                      className="w-full sm:w-auto px-6 py-3 sm:py-2.5 bg-[#E07B4F] hover:bg-[#D26B3F] text-white rounded-xl transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 touch-manipulation"
-                    >
-                      {isChangingPassword ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          {locale === 'ka' ? 'იცვლება...' : 'Changing...'}
-                        </>
-                      ) : (
-                        <>
-                          <Lock className="w-4 h-4" />
-                          {locale === 'ka' ? 'პაროლის შეცვლა' : 'Change Password'}
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
+                    if (res.ok) {
+                      return { success: true };
+                    } else {
+                      const data = await res.json();
+                      if (res.status === 409) {
+                        return { success: false, error: locale === 'ka' ? 'მიმდინარე პაროლი არასწორია' : 'Current password is incorrect' };
+                      }
+                      return { success: false, error: data.message };
+                    }
+                  } catch (error: any) {
+                    return { success: false, error: error.message };
+                  }
+                }}
+              />
             )}
 
             {activeTab === 'payments' && process.env.NODE_ENV === 'development' && (
@@ -2086,103 +1784,20 @@ function SettingsPageContent() {
                     </span>
                   </div>
                 ) : paymentMethods.length === 0 ? (
-                  <div className="text-center py-10 sm:py-12">
-                    <div className="w-16 h-16 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4">
-                      <CreditCard
-                        className="h-8 w-8"
-                        style={{ color: 'var(--color-text-tertiary)' }}
-                      />
-                    </div>
-                    <p
-                      className="text-sm sm:text-base font-medium"
-                      style={{ color: 'var(--color-text-primary)' }}
-                    >
-                      {locale === 'ka' ? 'ბარათები არ არის დამატებული' : 'No cards added yet'}
-                    </p>
-                    <p
-                      className="text-sm mt-1"
-                      style={{ color: 'var(--color-text-secondary)' }}
-                    >
-                      {locale === 'ka' ? 'დაამატეთ ბარათი სწრაფი გადახდისთვის' : 'Add a card for faster checkout'}
-                    </p>
-                    <button
-                      onClick={() => setShowAddCardModal(true)}
-                      className="mt-4 px-6 py-3 bg-[#E07B4F] hover:bg-[#D26B3F] text-white rounded-xl transition-all flex items-center gap-2 mx-auto"
-                    >
-                      <CreditCard className="w-4 h-4" />
-                      {locale === 'ka' ? 'ბარათის დამატება' : 'Add Card'}
-                    </button>
-                  </div>
+                  <EmptyPaymentMethods
+                    locale={locale as 'en' | 'ka'}
+                    onAddCard={() => setShowAddCardModal(true)}
+                  />
                 ) : (
                   <div className="space-y-3">
                     {paymentMethods.map((method) => (
-                      <div
+                      <PaymentMethodCard
                         key={method.id}
-                        className="p-4 rounded-2xl flex items-center justify-between group hover:shadow-md transition-all"
-                        style={{
-                          backgroundColor: 'var(--color-bg-elevated)',
-                          border: method.isDefault ? '2px solid #E07B4F' : '1px solid var(--color-border)',
-                        }}
-                      >
-                        <div className="flex items-center gap-4">
-                          {/* Card Brand Icon */}
-                          <div
-                            className="w-12 h-8 rounded-lg flex items-center justify-center text-xs font-bold"
-                            style={{
-                              backgroundColor: method.cardBrand === 'Visa' ? '#1A1F71' :
-                                method.cardBrand === 'Mastercard' ? '#EB001B' :
-                                method.cardBrand === 'Amex' ? '#006FCF' : '#6B7280',
-                              color: 'white',
-                            }}
-                          >
-                            {method.cardBrand === 'Visa' ? 'VISA' :
-                              method.cardBrand === 'Mastercard' ? 'MC' :
-                              method.cardBrand === 'Amex' ? 'AMEX' : 'CARD'}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                                •••• {method.cardLast4}
-                              </span>
-                              {method.isDefault && (
-                                <span className="text-[10px] font-medium text-[#E07B4F] bg-[#E07B4F]/10 px-2 py-0.5 rounded-full">
-                                  {locale === 'ka' ? 'მთავარი' : 'Default'}
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-3 mt-0.5">
-                              <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                                {method.cardholderName}
-                              </span>
-                              <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                                {locale === 'ka' ? 'ვადა' : 'Exp'}: {method.cardExpiry}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {!method.isDefault && (
-                            <button
-                              onClick={() => handleSetDefaultCard(method.id)}
-                              className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                              style={{ color: 'var(--color-text-secondary)' }}
-                            >
-                              {locale === 'ka' ? 'მთავარად დაყენება' : 'Set Default'}
-                            </button>
-                          )}
-                          <button
-                            onClick={() => handleDeleteCard(method.id)}
-                            disabled={deletingCardId === method.id}
-                            className="p-2 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all disabled:opacity-50"
-                          >
-                            {deletingCardId === method.id ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <X className="w-4 h-4" />
-                            )}
-                          </button>
-                        </div>
-                      </div>
+                        method={method}
+                        locale={locale as 'en' | 'ka'}
+                        onSetDefault={handleSetDefaultCard}
+                        onDelete={handleDeleteCard}
+                      />
                     ))}
                   </div>
                 )}

@@ -2,6 +2,10 @@
 
 import Avatar from "@/components/common/Avatar";
 import Header, { HeaderSpacer } from "@/components/common/Header";
+import MediaLightbox, { MediaItem as LightboxMediaItem } from "@/components/common/MediaLightbox";
+import SpecCard from "@/components/jobs/SpecCard";
+import RequirementBadge from "@/components/jobs/RequirementBadge";
+import { ConfirmModal } from "@/components/ui/Modal";
 import { useAuth } from "@/contexts/AuthContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
@@ -14,7 +18,6 @@ import {
   Calendar,
   Check,
   CheckCircle2,
-  ChevronLeft,
   ChevronRight,
   Clock,
   Copy,
@@ -1414,7 +1417,7 @@ export default function JobDetailClient() {
                   </h2>
                   <div className="grid sm:grid-cols-2 gap-3">
                     {job.furnitureIncluded && (
-                      <RequirementItem
+                      <RequirementBadge
                         icon={<Armchair className="w-4 h-4" />}
                         text={
                           locale === "ka"
@@ -1424,7 +1427,7 @@ export default function JobDetailClient() {
                       />
                     )}
                     {job.visualizationNeeded && (
-                      <RequirementItem
+                      <RequirementBadge
                         icon={<Sparkles className="w-4 h-4" />}
                         text={
                           locale === "ka"
@@ -1434,7 +1437,7 @@ export default function JobDetailClient() {
                       />
                     )}
                     {job.materialsProvided && (
-                      <RequirementItem
+                      <RequirementBadge
                         icon={<Package className="w-4 h-4" />}
                         text={
                           locale === "ka"
@@ -1444,7 +1447,7 @@ export default function JobDetailClient() {
                       />
                     )}
                     {job.occupiedDuringWork && (
-                      <RequirementItem
+                      <RequirementBadge
                         icon={<Users className="w-4 h-4" />}
                         text={
                           locale === "ka"
@@ -1926,50 +1929,30 @@ export default function JobDetailClient() {
       )}
 
       {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => {
-              setShowDeleteConfirm(false);
-              setDeleteError("");
-            }}
-          />
-          <div className="relative bg-white dark:bg-neutral-900 rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-scale-in">
-            <h3 className="font-display text-xl font-semibold text-neutral-900 dark:text-white mb-2">
-              {locale === "ka" ? "წაშლის დადასტურება" : "Delete this job?"}
-            </h3>
-            <p className="font-body text-neutral-500 dark:text-neutral-400 mb-4 text-sm">
-              {locale === "ka"
-                ? "ეს მოქმედება ვერ გაუქმდება."
-                : "This action cannot be undone."}
-            </p>
-            {deleteError && (
-              <div className="px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-body text-sm mb-4">
-                {deleteError}
-              </div>
-            )}
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowDeleteConfirm(false);
-                  setDeleteError("");
-                }}
-                className="flex-1 px-4 py-2.5 rounded-xl font-body text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-              >
-                {locale === "ka" ? "გაუქმება" : "Cancel"}
-              </button>
-              <button
-                onClick={handleDeleteJob}
-                disabled={isDeleting}
-                className="flex-1 px-4 py-2.5 rounded-xl font-body text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
-              >
-                {isDeleting ? "..." : locale === "ka" ? "წაშლა" : "Delete"}
-              </button>
-            </div>
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          setDeleteError("");
+        }}
+        onConfirm={handleDeleteJob}
+        title={locale === "ka" ? "წაშლის დადასტურება" : "Delete this job?"}
+        description={locale === "ka"
+          ? "ეს მოქმედება ვერ გაუქმდება."
+          : "This action cannot be undone."}
+        icon={<Trash2 className="w-6 h-6 text-red-500" />}
+        variant="danger"
+        cancelLabel={locale === "ka" ? "გაუქმება" : "Cancel"}
+        confirmLabel={locale === "ka" ? "წაშლა" : "Delete"}
+        isLoading={isDeleting}
+        loadingLabel="..."
+      >
+        {deleteError && (
+          <div className="px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-body text-sm mb-4">
+            {deleteError}
           </div>
-        </div>
-      )}
+        )}
+      </ConfirmModal>
 
       {/* Success Toast */}
       {success && (
@@ -2000,66 +1983,17 @@ export default function JobDetailClient() {
       )}
 
       {/* Lightbox */}
-      {selectedMediaIndex !== null && allMedia[selectedMediaIndex] && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95"
-          onClick={() => setSelectedMediaIndex(null)}
-        >
-          <button
-            onClick={() => setSelectedMediaIndex(null)}
-            className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
-          >
-            <X className="w-6 h-6 text-white" />
-          </button>
-
-          {allMedia[selectedMediaIndex].type === "video" ? (
-            <video
-              src={storage.getFileUrl(allMedia[selectedMediaIndex].url)}
-              className="max-w-[90vw] max-h-[90vh] rounded-xl"
-              controls
-              autoPlay
-              onClick={(e) => e.stopPropagation()}
-            />
-          ) : (
-            <img
-              src={storage.getFileUrl(allMedia[selectedMediaIndex].url)}
-              alt=""
-              className="max-w-[90vw] max-h-[90vh] object-contain rounded-xl"
-              onClick={(e) => e.stopPropagation()}
-            />
-          )}
-
-          {allMedia.length > 1 && (
-            <>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedMediaIndex(
-                    (selectedMediaIndex - 1 + allMedia.length) % allMedia.length
-                  );
-                }}
-                className="absolute left-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
-              >
-                <ChevronLeft className="w-6 h-6 text-white" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedMediaIndex(
-                    (selectedMediaIndex + 1) % allMedia.length
-                  );
-                }}
-                className="absolute right-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
-              >
-                <ChevronRight className="w-6 h-6 text-white" />
-              </button>
-              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-white/10 text-white font-body text-sm">
-                {selectedMediaIndex + 1} / {allMedia.length}
-              </div>
-            </>
-          )}
-        </div>
-      )}
+      <MediaLightbox
+        items={allMedia.map((m) => ({ url: m.url, type: m.type }))}
+        currentIndex={selectedMediaIndex ?? 0}
+        isOpen={selectedMediaIndex !== null}
+        onClose={() => setSelectedMediaIndex(null)}
+        onIndexChange={setSelectedMediaIndex}
+        getImageUrl={(url) => storage.getFileUrl(url)}
+        locale={locale as "en" | "ka"}
+        showThumbnails={false}
+        showInfo={false}
+      />
 
       {/* Animations */}
       <style jsx>{`
@@ -2118,47 +2052,3 @@ export default function JobDetailClient() {
   );
 }
 
-// Spec Card Component
-function SpecCard({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="group p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50 hover:border-neutral-200 dark:hover:border-neutral-600 transition-all">
-      <div className="flex items-center gap-2 mb-2 text-neutral-400 dark:text-neutral-500">
-        {icon}
-        <span className="font-body text-xs font-medium uppercase tracking-wider">
-          {label}
-        </span>
-      </div>
-      <p className="font-display text-lg font-semibold text-neutral-900 dark:text-white">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-// Requirement Item Component
-function RequirementItem({
-  icon,
-  text,
-}: {
-  icon: React.ReactNode;
-  text: string;
-}) {
-  return (
-    <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/30">
-      <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-        {icon}
-      </div>
-      <span className="font-body text-sm text-neutral-700 dark:text-neutral-300">
-        {text}
-      </span>
-    </div>
-  );
-}

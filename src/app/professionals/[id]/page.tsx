@@ -1,6 +1,7 @@
 "use client";
 
 import Header, { HeaderSpacer } from "@/components/common/Header";
+import ContactModal from "@/components/professionals/ContactModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useCategories } from "@/contexts/CategoriesContext";
@@ -144,8 +145,6 @@ export default function ProfessionalDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
-  const [message, setMessage] = useState("");
-  const [isSending, setIsSending] = useState(false);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
 
@@ -265,41 +264,6 @@ export default function ProfessionalDetailPage() {
     }
 
     router.push(`/messages?recipient=${profile?._id}`);
-  };
-
-  const handleSendMessage = async () => {
-    if (!message.trim() || !user) return;
-    setIsSending(true);
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/conversations/start`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-          body: JSON.stringify({ proId: profile?._id, message }),
-        }
-      );
-      if (response.ok) {
-        setShowContactModal(false);
-        setMessage("");
-        toast.success(
-          locale === "ka" ? "შეტყობინება გაგზავნილია!" : "Message sent!"
-        );
-        trackEvent(AnalyticsEvent.CONVERSATION_START, {
-          proId: profile?._id,
-          proName: profile?.name,
-        });
-      } else {
-        throw new Error("Failed to send message");
-      }
-    } catch (err) {
-      toast.error(locale === "ka" ? "შეცდომა" : "Error");
-    } finally {
-      setIsSending(false);
-    }
   };
 
   // Share functions
@@ -1391,65 +1355,40 @@ export default function ProfessionalDetailPage() {
       )}
 
       {/* ========== CONTACT MODAL ========== */}
-      {showContactModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
-          onClick={() => setShowContactModal(false)}
-        >
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-          <div
-            className="relative w-full sm:max-w-md bg-white dark:bg-neutral-900 rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="sm:hidden w-10 h-1 bg-neutral-300 rounded-full mx-auto mb-4" />
-            <div className="flex items-center gap-3 mb-4">
-              {avatarUrl ? (
-                <img
-                  src={getImageUrl(avatarUrl)}
-                  alt=""
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#C4735B] to-[#A65D47] flex items-center justify-center text-white text-lg font-bold">
-                  {profile.name.charAt(0)}
-                </div>
-              )}
-              <div>
-                <p className="font-semibold text-neutral-900 dark:text-white">
-                  {profile.name}
-                </p>
-                <p className="text-sm text-neutral-500">{profile.title}</p>
-              </div>
-            </div>
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder={
-                locale === "ka"
-                  ? "დაწერეთ შეტყობინება..."
-                  : "Write a message..."
-              }
-              className="w-full px-4 py-3 text-sm rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 resize-none focus:outline-none focus:ring-2 focus:ring-[#C4735B]"
-              rows={3}
-            />
-            <div className="flex gap-2 mt-4">
-              <button
-                onClick={() => setShowContactModal(false)}
-                className="flex-1 py-3 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400"
-              >
-                {locale === "ka" ? "გაუქმება" : "Cancel"}
-              </button>
-              <button
-                onClick={handleSendMessage}
-                disabled={isSending || !message.trim()}
-                className="flex-1 py-3 rounded-xl text-sm font-semibold text-white bg-[#C4735B] disabled:opacity-50"
-              >
-                {isSending ? "..." : locale === "ka" ? "გაგზავნა" : "Send"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ContactModal
+        isOpen={showContactModal}
+        onClose={() => setShowContactModal(false)}
+        onSend={async (msg: string) => {
+          if (!user) return;
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/conversations/start`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+              },
+              body: JSON.stringify({ proId: profile?._id, message: msg }),
+            }
+          );
+          if (response.ok) {
+            setShowContactModal(false);
+            toast.success(
+              locale === "ka" ? "შეტყობინება გაგზავნილია!" : "Message sent!"
+            );
+            trackEvent(AnalyticsEvent.CONVERSATION_START, {
+              proId: profile?._id,
+              proName: profile?.name,
+            });
+          } else {
+            throw new Error("Failed to send message");
+          }
+        }}
+        name={profile?.name || ""}
+        title={profile?.title || ""}
+        avatar={avatarUrl}
+        locale={locale as "en" | "ka"}
+      />
     </div>
   );
 }

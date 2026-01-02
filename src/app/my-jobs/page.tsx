@@ -25,6 +25,7 @@ import {
   Users,
   X,
 } from 'lucide-react';
+import { ConfirmModal } from '@/components/ui/Modal';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useState } from 'react';
@@ -706,84 +707,34 @@ function MyJobsPageContent() {
       </main>
 
       {/* ==================== DELETE CONFIRMATION MODAL ==================== */}
-      {deleteModalJob && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => !deletingJobId && setDeleteModalJob(null)}
-          />
-
-          {/* Modal */}
-          <div className="relative bg-white dark:bg-neutral-900 rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-neutral-100 dark:border-neutral-800">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                  <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
-                </div>
-                <h3 className="text-base sm:text-lg font-display font-semibold text-neutral-900 dark:text-white">
-                  {locale === 'ka' ? 'პროექტის წაშლა' : 'Delete Job'}
-                </h3>
-              </div>
-              <button
-                onClick={() => !deletingJobId && setDeleteModalJob(null)}
-                disabled={!!deletingJobId}
-                className="p-2 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="p-4 sm:p-5">
-              <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 mb-4">
-                {locale === 'ka'
-                  ? 'ნამდვილად გსურთ ამ პროექტის წაშლა? ეს მოქმედება შეუქცევადია.'
-                  : 'Are you sure you want to delete this job? This action cannot be undone.'}
-              </p>
-
-              {/* Job preview */}
-              <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-xl p-3 sm:p-4">
-                <p className="font-medium text-neutral-900 dark:text-white text-sm">
-                  {deleteModalJob.title}
-                </p>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">
-                  {deleteModalJob.description}
-                </p>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-3 p-4 sm:p-5 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/30">
-              <button
-                onClick={() => setDeleteModalJob(null)}
-                disabled={!!deletingJobId}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
-              >
-                {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
-              </button>
-              <button
-                onClick={handleDeleteJob}
-                disabled={!!deletingJobId}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {deletingJobId ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    {locale === 'ka' ? 'იშლება...' : 'Deleting...'}
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="w-4 h-4" />
-                    {locale === 'ka' ? 'წაშლა' : 'Delete'}
-                  </>
-                )}
-              </button>
-            </div>
+      <ConfirmModal
+        isOpen={!!deleteModalJob}
+        onClose={() => !deletingJobId && setDeleteModalJob(null)}
+        onConfirm={handleDeleteJob}
+        title={locale === 'ka' ? 'პროექტის წაშლა' : 'Delete Job'}
+        description={locale === 'ka'
+          ? 'ნამდვილად გსურთ ამ პროექტის წაშლა? ეს მოქმედება შეუქცევადია.'
+          : 'Are you sure you want to delete this job? This action cannot be undone.'}
+        icon={<AlertTriangle className="w-6 h-6 text-red-500" />}
+        variant="danger"
+        cancelLabel={locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+        confirmLabel={locale === 'ka' ? 'წაშლა' : 'Delete'}
+        isLoading={!!deletingJobId}
+        loadingLabel={locale === 'ka' ? 'იშლება...' : 'Deleting...'}
+        confirmIcon={<Trash2 className="w-4 h-4" />}
+      >
+        {/* Job preview */}
+        {deleteModalJob && (
+          <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-xl p-3 sm:p-4 mb-4">
+            <p className="font-medium text-neutral-900 dark:text-white text-sm">
+              {deleteModalJob.title}
+            </p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">
+              {deleteModalJob.description}
+            </p>
           </div>
-        </div>
-      )}
+        )}
+      </ConfirmModal>
 
       {/* Hide scrollbar utility */}
       <style jsx>{`
