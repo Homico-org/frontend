@@ -6,6 +6,7 @@ import MediaLightbox, { MediaItem as LightboxMediaItem } from "@/components/comm
 import SpecCard from "@/components/jobs/SpecCard";
 import RequirementBadge from "@/components/jobs/RequirementBadge";
 import PollsTab from "@/components/polls/PollsTab";
+import ProjectWorkspace from "@/components/projects/ProjectWorkspace";
 import { ConfirmModal } from "@/components/ui/Modal";
 import { useAuth } from "@/contexts/AuthContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
@@ -1754,6 +1755,15 @@ export default function JobDetailClient() {
                       </div>
                     )}
                   </div>
+                )}
+
+                {/* Project Resources Section - visible for hired jobs */}
+                {isHired && (
+                  <ProjectWorkspace
+                    jobId={job._id}
+                    locale={locale}
+                    isClient={true}
+                  />
                 )}
 
                 {/* Share */}
