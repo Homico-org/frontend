@@ -5,6 +5,7 @@ import Avatar from '@/components/common/Avatar';
 import EmptyState from '@/components/common/EmptyState';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import ProjectTrackerCard, { ProjectStage } from '@/components/projects/ProjectTrackerCard';
+import { ConfirmModal } from '@/components/ui/Modal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useCategoryLabels } from '@/hooks/useCategoryLabels';
@@ -18,14 +19,11 @@ import {
   Clock,
   Edit3,
   FileText,
-  MessageSquare,
   RefreshCw,
   Send,
   Trash2,
-  Users,
-  X,
+  Users
 } from 'lucide-react';
-import { ConfirmModal } from '@/components/ui/Modal';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useState } from 'react';
@@ -664,16 +662,6 @@ function MyJobsPageContent() {
                             >
                               {locale === 'ka' ? 'შეთავაზებების ნახვა' : 'View Proposals'}
                               <ChevronRight className="w-4 h-4" />
-                            </Link>
-                          )}
-                          {isHired && job.hiredPro?.userId?._id && (
-                            <Link
-                              href={`/messages?conversation=${job.hiredPro.userId._id}`}
-                              onClick={(e) => e.stopPropagation()}
-                              className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
-                            >
-                              <MessageSquare className="w-4 h-4" />
-                              {locale === 'ka' ? 'მესიჯი' : 'Message'}
                             </Link>
                           )}
                           {isExpired && (

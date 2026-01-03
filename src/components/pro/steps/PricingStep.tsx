@@ -254,7 +254,12 @@ export default function PricingStep({
                 type="number"
                 min="1"
                 value={formData.basePrice}
-                onChange={(e) => onFormChange({ basePrice: e.target.value })}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || parseFloat(value) >= 0) {
+                    onFormChange({ basePrice: value });
+                  }
+                }}
                 className={`
                   w-full pl-10 pr-4 py-3.5 rounded-xl text-lg font-semibold
                   bg-[var(--color-bg-tertiary)] border-2
@@ -290,7 +295,12 @@ export default function PricingStep({
                 type="number"
                 min="1"
                 value={formData.maxPrice}
-                onChange={(e) => onFormChange({ maxPrice: e.target.value })}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || parseFloat(value) >= 0) {
+                    onFormChange({ maxPrice: value });
+                  }
+                }}
                 className="
                   w-full pl-10 pr-4 py-3.5 rounded-xl text-lg font-semibold
                   bg-[var(--color-bg-tertiary)] border-2 border-transparent

@@ -1,5 +1,6 @@
 "use client";
 
+import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Check, DollarSign, Globe, MapPin } from "lucide-react";
 
@@ -136,33 +137,39 @@ export default function PricingAreasStep({
           {/* Price Range Inputs - Horizontal */}
           <div className="flex items-center gap-3">
             <div className="flex-1">
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">
-                  ₾
-                </span>
-                <input
-                  type="number"
-                  value={formData.priceRange.min || ""}
-                  onChange={(e) => handlePriceChange("min", e.target.value)}
-                  placeholder={locale === "ka" ? "მინ" : "Min"}
-                  className="w-full pl-8 pr-3 py-2.5 rounded-xl border border-neutral-200 bg-neutral-50 text-sm font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]/50 focus:bg-white transition-all"
-                />
-              </div>
+              <Input
+                type="number"
+                min={0}
+                value={formData.priceRange.min || ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || parseFloat(value) >= 0) {
+                    handlePriceChange("min", value);
+                  }
+                }}
+                placeholder={locale === "ka" ? "მინ" : "Min"}
+                variant="filled"
+                inputSize="default"
+                leftIcon={<span className="text-sm">₾</span>}
+              />
             </div>
             <span className="text-neutral-400 text-sm font-medium">—</span>
             <div className="flex-1">
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">
-                  ₾
-                </span>
-                <input
-                  type="number"
-                  value={formData.priceRange.max || ""}
-                  onChange={(e) => handlePriceChange("max", e.target.value)}
-                  placeholder={locale === "ka" ? "მაქს" : "Max"}
-                  className="w-full pl-8 pr-3 py-2.5 rounded-xl border border-neutral-200 bg-neutral-50 text-sm font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]/50 focus:bg-white transition-all"
-                />
-              </div>
+              <Input
+                type="number"
+                min={0}
+                value={formData.priceRange.max || ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || parseFloat(value) >= 0) {
+                    handlePriceChange("max", value);
+                  }
+                }}
+                placeholder={locale === "ka" ? "მაქს" : "Max"}
+                variant="filled"
+                inputSize="default"
+                leftIcon={<span className="text-sm">₾</span>}
+              />
             </div>
           </div>
         </div>

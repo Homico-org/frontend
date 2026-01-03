@@ -700,8 +700,14 @@ function PostJobPageContent() {
                     <div className="relative">
                       <input
                         type="number"
+                        min="0"
                         value={formData.landArea}
-                        onChange={(e) => updateFormData("landArea", e.target.value)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === '' || parseFloat(value) >= 0) {
+                            updateFormData("landArea", value);
+                          }
+                        }}
                         placeholder={locale === "ka" ? "500" : "500"}
                         className="w-full px-3 py-2.5 pr-12 rounded-lg border border-neutral-200 bg-white text-sm placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]"
                       />

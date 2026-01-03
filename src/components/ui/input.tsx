@@ -43,6 +43,9 @@ export interface InputProps
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, variant, inputSize, leftIcon, rightIcon, error, success, ...props }, ref) => {
+    // Hide number spinners when rightIcon is present to prevent overlap
+    const hideSpinners = type === 'number' && rightIcon;
+
     return (
       <div className="relative">
         {leftIcon && (
@@ -55,16 +58,17 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           className={cn(
             inputVariants({ variant, inputSize }),
             leftIcon && "pl-10",
-            rightIcon && "pr-10",
+            rightIcon && "pr-12",
             error && "border-red-500 focus:border-red-500 focus:ring-red-500/15",
             success && "border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500/15",
+            hideSpinners && "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
             className
           )}
           ref={ref}
           {...props}
         />
         {rightIcon && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]">
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]">
             {rightIcon}
           </div>
         )}

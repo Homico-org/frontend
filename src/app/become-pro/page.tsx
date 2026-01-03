@@ -449,7 +449,13 @@ export default function BecomeProPage() {
                       min={0}
                       max={50}
                       value={yearsExperience}
-                      onChange={(e) => setYearsExperience(parseInt(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const parsed = parseInt(value);
+                        if (value === '' || (parsed >= 0 && parsed <= 50)) {
+                          setYearsExperience(parsed || 0);
+                        }
+                      }}
                       variant="default"
                     />
                   </FormGroup>

@@ -1,5 +1,6 @@
 "use client";
 
+import { Input } from "@/components/ui/input";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
@@ -227,7 +228,7 @@ export default function CategoriesStep({
           {/* Add new service input */}
           {customServices.length < 5 && (
             <div className="flex gap-2">
-              <input
+              <Input
                 type="text"
                 value={newCustomService}
                 onChange={(e) => setNewCustomService(e.target.value)}
@@ -238,7 +239,8 @@ export default function CategoriesStep({
                   }
                 }}
                 placeholder={locale === "ka" ? "მაგ: ინტერიერის დიზაინი" : "e.g: Interior design"}
-                className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
+                inputSize="sm"
+                className="flex-1"
               />
               <button
                 type="button"

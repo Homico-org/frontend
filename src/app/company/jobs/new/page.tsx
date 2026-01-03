@@ -515,8 +515,14 @@ export default function CreateCompanyJobPage() {
                 <div className="flex gap-2">
                   <input
                     type="number"
+                    min="0"
                     value={formData.quotedPrice}
-                    onChange={(e) => setFormData({ ...formData, quotedPrice: e.target.value })}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '' || parseFloat(value) >= 0) {
+                        setFormData({ ...formData, quotedPrice: value });
+                      }
+                    }}
                     placeholder="0.00"
                     className="flex-1 px-4 py-2.5 border border-neutral-300 dark:border-dark-border dark:bg-dark-300 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />

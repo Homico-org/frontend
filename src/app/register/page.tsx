@@ -11,38 +11,12 @@ import {
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import AvatarCropper from "@/components/common/AvatarCropper";
 import UserTypeCard from "@/components/register/UserTypeCard";
+import GoogleSignInButton, { GoogleUserData } from "@/components/auth/GoogleSignInButton";
+import { Tabs } from "@/components/ui/Tabs";
 import Image from "next/image";
 import Link from "next/link";
-import Script from "next/script";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
-
-// Google OAuth types - using type assertion to avoid conflicts with google maps types
-interface GoogleAccountsId {
-  initialize: (config: {
-    client_id: string;
-    callback: (response: { credential: string }) => void;
-    auto_select?: boolean;
-  }) => void;
-  prompt: () => void;
-  renderButton: (
-    element: HTMLElement,
-    options: {
-      theme?: 'outline' | 'filled_blue' | 'filled_black';
-      size?: 'large' | 'medium' | 'small';
-      text?: 'signin_with' | 'signup_with' | 'continue_with' | 'signin';
-      shape?: 'rectangular' | 'pill' | 'circle' | 'square';
-      width?: number;
-    }
-  ) => void;
-}
-
-interface GoogleUserData {
-  email: string;
-  name: string;
-  picture?: string;
-  googleId: string;
-}
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 // Step configuration
 type RegistrationStep = 'account' | 'category' | 'services' | 'review';
@@ -108,6 +82,13 @@ function RegisterContent() {
   const [currentStep, setCurrentStep] = useState<RegistrationStep>('account');
   const [userType, setUserType] = useState<'client' | 'pro'>(isProRegistration ? 'pro' : 'client');
   const [showTypeSelection, setShowTypeSelection] = useState(!isProRegistration);
+
+  // Auth method state (Google | Mobile | Email)
+  type AuthMethod = 'google' | 'mobile' | 'email';
+  const [authMethod, setAuthMethod] = useState<AuthMethod>('mobile');
+
+  // Phone verification state for email auth
+  const [isPhoneVerifiedState, setIsPhoneVerifiedState] = useState(false);
 
   // Form data
   const [formData, setFormData] = useState({
@@ -231,14 +212,6 @@ function RegisterContent() {
   // Google OAuth state
   const [googleUser, setGoogleUser] = useState<GoogleUserData | null>(null);
   const [showGooglePhoneVerification, setShowGooglePhoneVerification] = useState(false);
-  const [googleScriptLoaded, setGoogleScriptLoaded] = useState(() => {
-    // Check if script is already loaded (e.g., from cache)
-    if (typeof window !== 'undefined') {
-      return !!(window as any)?.google?.accounts?.id;
-    }
-    return false;
-  });
-  const googleButtonRef = useRef<HTMLDivElement>(null);
 
   // Category icons mapping
   const categoryIcons: Record<string, React.ReactNode> = {
@@ -294,93 +267,23 @@ function RegisterContent() {
     }
   }, [showVerification]);
 
-  // Decode JWT token to get user info
-  const decodeJwt = (token: string): { email: string; name: string; picture?: string; sub: string } | null => {
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join('')
-      );
-      return JSON.parse(jsonPayload);
-    } catch {
-      return null;
-    }
-  };
+  // Handle Google Sign In success from GoogleSignInButton component
+  const handleGoogleSuccess = useCallback((userData: GoogleUserData) => {
+    setGoogleUser(userData);
+    setFormData(prev => ({
+      ...prev,
+      fullName: userData.name,
+      email: userData.email,
+    }));
+    setAgreedToTerms(true);
+    setShowGooglePhoneVerification(true);
+  }, []);
 
-  // Handle Google Sign In callback
-  const handleGoogleCallback = useCallback((response: { credential: string }) => {
-    const decoded = decodeJwt(response.credential);
-    if (decoded) {
-      setGoogleUser({
-        email: decoded.email,
-        name: decoded.name,
-        picture: decoded.picture,
-        googleId: decoded.sub,
-      });
-      setFormData(prev => ({
-        ...prev,
-        fullName: decoded.name,
-        email: decoded.email,
-      }));
-      setAgreedToTerms(true);
-      setShowGooglePhoneVerification(true);
-    } else {
-      setError(locale === "ka" ? "Google-ით შესვლა ვერ მოხერხდა" : "Failed to sign in with Google");
-    }
+  // Handle Google Sign In error
+  const handleGoogleError = useCallback((errorMsg: string) => {
+    console.error('Google Sign In Error:', errorMsg);
+    setError(locale === "ka" ? "Google-ით შესვლა ვერ მოხერხდა" : "Failed to sign in with Google");
   }, [locale]);
-
-  // Check for Google script on mount (handles cached script scenario)
-  useEffect(() => {
-    if (!googleScriptLoaded) {
-      // Poll for the script to be ready (handles race conditions)
-      const checkGoogle = () => {
-        if ((window as any)?.google?.accounts?.id) {
-          setGoogleScriptLoaded(true);
-        }
-      };
-
-      // Check immediately and then poll for a short time
-      checkGoogle();
-      const interval = setInterval(checkGoogle, 100);
-      const timeout = setTimeout(() => clearInterval(interval), 3000);
-
-      return () => {
-        clearInterval(interval);
-        clearTimeout(timeout);
-      };
-    }
-  }, [googleScriptLoaded]);
-
-  // Initialize Google Sign In
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const googleAccounts = (window as any)?.google?.accounts?.id as GoogleAccountsId | undefined;
-
-    if (googleScriptLoaded && googleAccounts && googleButtonRef.current) {
-      const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-      if (!clientId) {
-        console.warn('Google Client ID not configured');
-        return;
-      }
-
-      googleAccounts.initialize({
-        client_id: clientId,
-        callback: handleGoogleCallback,
-      });
-
-      googleAccounts.renderButton(googleButtonRef.current, {
-        theme: 'outline',
-        size: 'large',
-        text: 'signup_with',
-        shape: 'rectangular',
-        width: 300,
-      });
-    }
-  }, [googleScriptLoaded, handleGoogleCallback]);
 
   // Handle Google OAuth registration completion
   const submitGoogleRegistration = async () => {
@@ -430,6 +333,10 @@ function RegisterContent() {
         data.user.role === 'pro' ? AnalyticsEvent.REGISTER_PRO : AnalyticsEvent.REGISTER_CLIENT,
         { userRole: data.user.role, authMethod: 'google' }
       );
+
+      // Store auth method in localStorage for login indicator
+      localStorage.setItem('homi_last_auth_method', 'google');
+      localStorage.setItem('homi_last_auth_identifier', googleUser.email);
 
       if (data.user.role === "pro") {
         sessionStorage.setItem(
@@ -751,13 +658,54 @@ function RegisterContent() {
     }));
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (userType === 'client') {
       handleSubmit();
       return;
     }
 
     const currentIndex = getCurrentStepIndex();
+
+    // For email auth on pro registration, verify phone on account step before proceeding
+    if (authMethod === 'email' && currentStep === 'account' && !isPhoneVerifiedState) {
+      // Trigger phone verification (same as mobile auth flow)
+      setError("");
+      setIsLoading(true);
+
+      try {
+        // Check if phone exists
+        const phoneCheck = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/check-exists?field=phone&value=${encodeURIComponent(countries[phoneCountry].phonePrefix + formData.phone)}`
+        ).then((r) => r.json());
+
+        if (phoneCheck.exists) {
+          setError(locale === "ka" ? "ეს ტელეფონის ნომერი უკვე რეგისტრირებულია" : "This phone number is already registered");
+          setIsLoading(false);
+          return;
+        }
+
+        // Also check if email exists for email auth
+        const emailCheck = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/check-exists?field=email&value=${encodeURIComponent(formData.email)}`
+        ).then((r) => r.json());
+
+        if (emailCheck.exists) {
+          setError(locale === "ka" ? "ეს ელ-ფოსტა უკვე რეგისტრირებულია" : "This email is already registered");
+          setIsLoading(false);
+          return;
+        }
+
+        // Show verification modal and send OTP
+        setShowVerification(true);
+        await sendOtp(verificationChannel);
+      } catch (err) {
+        setError(locale === "ka" ? "შეცდომა. სცადეთ თავიდან." : "Error. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
     if (currentIndex < PRO_STEPS.length - 1) {
       setCurrentStep(PRO_STEPS[currentIndex + 1].id);
     } else {
@@ -826,6 +774,15 @@ function RegisterContent() {
       if (!response.ok) throw new Error(data.message || "Invalid verification code");
 
       setShowVerification(false);
+      setIsPhoneVerifiedState(true);
+
+      // For email auth on pro registration, after phone verification on account step,
+      // move to the next step instead of submitting
+      if (userType === 'pro' && authMethod === 'email' && currentStep === 'account') {
+        setCurrentStep('category');
+        return;
+      }
+
       await submitRegistration();
     } catch (err: any) {
       setError(err.message || "Verification failed");
@@ -936,6 +893,10 @@ function RegisterContent() {
         data.user.role === 'pro' ? AnalyticsEvent.REGISTER_PRO : AnalyticsEvent.REGISTER_CLIENT,
         { userRole: data.user.role }
       );
+
+      // Store auth method in localStorage for login indicator
+      localStorage.setItem('homi_last_auth_method', authMethod);
+      localStorage.setItem('homi_last_auth_identifier', authMethod === 'email' ? formData.email : formData.phone);
 
       if (data.user.role === "pro") {
         sessionStorage.setItem(
@@ -1076,12 +1037,7 @@ function RegisterContent() {
   // GOOGLE PHONE VERIFICATION - Shown after Google sign in
   if (showGooglePhoneVerification && googleUser) {
     return (
-      <>
-        <Script
-          src="https://accounts.google.com/gsi/client"
-          onLoad={() => setGoogleScriptLoaded(true)}
-        />
-        <div className="min-h-screen bg-[#FAFAF9] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#FAFAF9] flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-neutral-100 p-6">
             {/* Back button */}
             <button
@@ -1352,8 +1308,7 @@ function RegisterContent() {
               </>
             )}
           </div>
-        </div>
-      </>
+      </div>
     );
   }
 
@@ -1454,11 +1409,6 @@ function RegisterContent() {
   // CLIENT REGISTRATION - Redesigned two-column layout with avatar on left
   if (userType === 'client' && currentStep === 'account') {
     return (
-      <>
-      <Script
-        src="https://accounts.google.com/gsi/client"
-        onLoad={() => setGoogleScriptLoaded(true)}
-      />
       <div className="min-h-screen bg-gradient-to-br from-[#FDFCFB] via-[#FAF8F6] to-[#F5F0EC]">
         {/* Minimal floating header */}
         <header className="fixed top-0 left-0 right-0 z-50">
@@ -1594,38 +1544,53 @@ function RegisterContent() {
 
                 {/* Right column - Form */}
                 <div className="flex-1 p-6 lg:p-8">
-                  {/* Google Sign In */}
+                  {/* Auth Method Tabs */}
                   <div className="mb-4">
-                    <div
-                      ref={googleButtonRef}
-                      className="flex justify-center [&>div]:!rounded-full [&>div>div]:!rounded-full [&_iframe]:!rounded-full"
+                    <Tabs
+                      tabs={[
+                        {
+                          id: 'google',
+                          label: 'Google',
+                          icon: (
+                            <svg className="w-4 h-4" viewBox="0 0 24 24">
+                              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                          ),
+                        },
+                        {
+                          id: 'mobile',
+                          label: locale === "ka" ? "მობილური" : "Mobile",
+                          icon: (
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                          ),
+                        },
+                        {
+                          id: 'email',
+                          label: locale === "ka" ? "ელ-ფოსტა" : "Email",
+                          icon: (
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                          ),
+                        },
+                      ]}
+                      activeTab={authMethod}
+                      onChange={(tabId) => setAuthMethod(tabId as AuthMethod)}
+                      variant="pills"
+                      size="sm"
+                      fullWidth
                     />
-                    {!googleScriptLoaded && (
-                      <button
-                        disabled
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border border-neutral-200 bg-white text-neutral-400"
-                      >
-                        <svg className="w-5 h-5" viewBox="0 0 24 24">
-                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                        </svg>
-                        <span className="text-sm font-medium">{locale === "ka" ? "იტვირთება..." : "Loading..."}</span>
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Divider */}
-                  <div className="relative my-4">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-neutral-200" />
-                    </div>
-                    <div className="relative flex justify-center">
-                      <span className="bg-white px-3 text-neutral-400 text-xs">
-                        {locale === "ka" ? "ან" : "or"}
-                      </span>
-                    </div>
+                    {/* Info message */}
+                    <p className="text-center text-[10px] text-neutral-400 mt-2">
+                      {locale === "ka"
+                        ? "შემდეგ შესვლისას გამოიყენე იგივე მეთოდი"
+                        : "Use the same method when logging in later"}
+                    </p>
                   </div>
 
                   {error && (
@@ -1634,7 +1599,182 @@ function RegisterContent() {
                     </div>
                   )}
 
-                  {/* Compact form */}
+                  {/* Google Auth Tab Content */}
+                  {authMethod === 'google' && (
+                    <div className="space-y-4">
+                      <GoogleSignInButton
+                        buttonKey="client-register"
+                        text="signup_with"
+                        onSuccess={handleGoogleSuccess}
+                        onError={handleGoogleError}
+                        isActive={authMethod === 'google'}
+                        loadingText={locale === "ka" ? "იტვირთება..." : "Loading..."}
+                      />
+                      <p className="text-center text-xs text-neutral-500">
+                        {locale === "ka"
+                          ? "დააჭირე Google-ით გასაგრძელებლად"
+                          : "Click to continue with Google"}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Email Auth Tab Content */}
+                  {authMethod === 'email' && (
+                    <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-3">
+                      {/* Name field */}
+                      <div>
+                        <label className="block text-xs font-medium text-neutral-600 mb-1">
+                          {locale === "ka" ? "სრული სახელი" : "Full Name"} <span className="text-[#C4735B]">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.fullName}
+                          onChange={(e) => handleInputChange("fullName", e.target.value)}
+                          placeholder={locale === "ka" ? "გიორგი ბერიძე" : "Giorgi Beridze"}
+                          className="w-full px-3 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                          required
+                        />
+                      </div>
+
+                      {/* Email field (required for email auth) */}
+                      <div>
+                        <label className="block text-xs font-medium text-neutral-600 mb-1">
+                          {locale === "ka" ? "ელ-ფოსტა" : "Email"} <span className="text-[#C4735B]">*</span>
+                        </label>
+                        <input
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => handleInputChange("email", e.target.value)}
+                          placeholder="name@example.com"
+                          className="w-full px-3 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                          required
+                        />
+                      </div>
+
+                      {/* Password fields */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-neutral-600 mb-1">
+                            {locale === "ka" ? "პაროლი" : "Password"} <span className="text-[#C4735B]">*</span>
+                          </label>
+                          <div className="relative">
+                            <input
+                              type={showPassword ? "text" : "password"}
+                              value={formData.password}
+                              onChange={(e) => handleInputChange("password", e.target.value)}
+                              placeholder={locale === "ka" ? "მინ. 6 სიმბოლო" : "Min. 6 chars"}
+                              className="w-full px-3 py-2.5 pr-10 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 outline-none transition-all"
+                              required
+                              minLength={6}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                {showPassword ? (
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                                ) : (
+                                  <>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                  </>
+                                )}
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-neutral-600 mb-1">
+                            {locale === "ka" ? "გაიმეორე პაროლი" : "Repeat Password"} <span className="text-[#C4735B]">*</span>
+                          </label>
+                          <div className="relative">
+                            <input
+                              type={showRepeatPassword ? "text" : "password"}
+                              value={repeatPassword}
+                              onChange={(e) => setRepeatPassword(e.target.value)}
+                              placeholder={locale === "ka" ? "გაიმეორე" : "Repeat"}
+                              className={`w-full px-3 py-2.5 pr-10 rounded-xl border bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:ring-2 outline-none transition-all ${
+                                repeatPassword && formData.password !== repeatPassword
+                                  ? 'border-red-300 focus:border-red-400 focus:ring-red-100'
+                                  : repeatPassword && formData.password === repeatPassword
+                                    ? 'border-emerald-300 focus:border-emerald-400 focus:ring-emerald-100'
+                                    : 'border-neutral-200 focus:border-[#C4735B] focus:ring-[#C4735B]/10'
+                              }`}
+                              required
+                              minLength={6}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowRepeatPassword(!showRepeatPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                {showRepeatPassword ? (
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                                ) : (
+                                  <>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                  </>
+                                )}
+                              </svg>
+                            </button>
+                          </div>
+                          {repeatPassword && formData.password !== repeatPassword && (
+                            <p className="mt-1 text-xs text-red-500">
+                              {locale === "ka" ? "პაროლები არ ემთხვევა" : "Passwords don't match"}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Terms */}
+                      <label className="flex items-start gap-2.5 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={agreedToTerms}
+                          onChange={(e) => setAgreedToTerms(e.target.checked)}
+                          className="mt-0.5 w-4 h-4 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
+                        />
+                        <span className="text-xs text-neutral-600 leading-relaxed">
+                          {locale === "ka" ? (
+                            <>ვეთანხმები <Link href="/terms" className="text-[#C4735B] hover:underline">პირობებს</Link> და <Link href="/privacy" className="text-[#C4735B] hover:underline">კონფიდენციალურობას</Link></>
+                          ) : (
+                            <>I agree to <Link href="/terms" className="text-[#C4735B] hover:underline">Terms</Link> & <Link href="/privacy" className="text-[#C4735B] hover:underline">Privacy</Link></>
+                          )}
+                        </span>
+                      </label>
+
+                      {/* Submit */}
+                      <button
+                        type="submit"
+                        disabled={isLoading || !formData.fullName || !formData.email || !formData.password || formData.password !== repeatPassword || !agreedToTerms}
+                        className="w-full py-3 rounded-xl bg-gradient-to-r from-[#C4735B] to-[#B8694F] hover:from-[#B8694F] hover:to-[#A85D47] disabled:from-neutral-200 disabled:to-neutral-200 disabled:cursor-not-allowed text-white text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#C4735B]/20 disabled:shadow-none"
+                      >
+                        {isLoading ? (
+                          <>
+                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                            <span>{locale === "ka" ? "მიმდინარეობს..." : "Processing..."}</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>{locale === "ka" ? "ანგარიშის შექმნა" : "Create Account"}</span>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                            </svg>
+                          </>
+                        )}
+                      </button>
+                    </form>
+                  )}
+
+                  {/* Mobile Auth Tab Content */}
+                  {authMethod === 'mobile' && (
                   <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-3">
                     {/* Name and Email in row on desktop */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1868,6 +2008,7 @@ function RegisterContent() {
                       )}
                     </button>
                   </form>
+                  )}
 
                   {/* Footer links */}
                   <div className="mt-4 pt-4 border-t border-neutral-100 flex items-center justify-between">
@@ -1890,7 +2031,6 @@ function RegisterContent() {
           </div>
         </main>
       </div>
-      </>
     );
   }
 
@@ -1959,6 +2099,76 @@ function RegisterContent() {
                 </p>
               </div>
 
+              {/* Auth Method Tabs for Pro */}
+              <div className="bg-white rounded-xl border border-neutral-200 p-3">
+                <Tabs
+                  tabs={[
+                    {
+                      id: 'google',
+                      label: 'Google',
+                      icon: (
+                        <svg className="w-4 h-4" viewBox="0 0 24 24">
+                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                      ),
+                    },
+                    {
+                      id: 'mobile',
+                      label: locale === "ka" ? "მობილური" : "Mobile",
+                      icon: (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                      ),
+                    },
+                    {
+                      id: 'email',
+                      label: locale === "ka" ? "ელ-ფოსტა" : "Email",
+                      icon: (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      ),
+                    },
+                  ]}
+                  activeTab={authMethod}
+                  onChange={(tabId) => setAuthMethod(tabId as AuthMethod)}
+                  variant="pills"
+                  size="sm"
+                  fullWidth
+                />
+                <p className="text-center text-[10px] text-neutral-400 mt-2">
+                  {locale === "ka"
+                    ? "შემდეგ შესვლისას გამოიყენე იგივე მეთოდი"
+                    : "Use the same method when logging in later"}
+                </p>
+              </div>
+
+              {/* Google Auth Content for Pro */}
+              {authMethod === 'google' && (
+                <div className="bg-white rounded-xl border border-neutral-200 p-6 space-y-4">
+                  <GoogleSignInButton
+                    buttonKey="pro-register"
+                    text="signup_with"
+                    onSuccess={handleGoogleSuccess}
+                    onError={handleGoogleError}
+                    isActive={authMethod === 'google'}
+                    loadingText={locale === "ka" ? "იტვირთება..." : "Loading..."}
+                  />
+                  <p className="text-center text-xs text-neutral-500">
+                    {locale === "ka"
+                      ? "Google-ით რეგისტრაციის შემდეგ დაგჭირდებათ ტელეფონის ვერიფიკაცია"
+                      : "After Google sign-up, you'll need to verify your phone number"}
+                  </p>
+                </div>
+              )}
+
+              {/* Email Auth Content for Pro */}
+              {authMethod === 'email' && (
+                <>
               {/* Avatar Upload - REQUIRED */}
               <div className={`flex items-center gap-4 p-4 bg-white rounded-xl border-2 transition-all ${
                 uploadedAvatarUrl
@@ -2177,6 +2387,292 @@ function RegisterContent() {
                 <div className="space-y-3">
                   <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">
+                      {locale === "ka" ? "ელ-ფოსტა" : "Email"} <span className="text-[#C4735B]">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      placeholder="name@example.com"
+                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
+                      {locale === "ka" ? "ქალაქი" : "City"} <span className="text-neutral-400 font-normal text-[10px]">({locale === "ka" ? "არასავალდებულო" : "optional"})</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.city}
+                      onChange={(e) => handleInputChange("city", e.target.value)}
+                      placeholder={locale === "ka" ? "თბილისი" : "Tbilisi"}
+                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
+                      WhatsApp <span className="text-neutral-400 font-normal text-[10px]">({locale === "ka" ? "არასავალდებულო" : "optional"})</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.whatsapp}
+                      onChange={(e) => handleInputChange("whatsapp", e.target.value)}
+                      placeholder="+995 555 123 456"
+                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
+                      Telegram <span className="text-neutral-400 font-normal text-[10px]">({locale === "ka" ? "არასავალდებულო" : "optional"})</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.telegram}
+                      onChange={(e) => handleInputChange("telegram", e.target.value)}
+                      placeholder="@username"
+                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Terms checkbox */}
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  className="mt-0.5 w-3.5 h-3.5 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
+                />
+                <span className="text-xs text-neutral-600">
+                  {locale === "ka" ? (
+                    <>ვეთანხმები <Link href="/terms" className="text-[#C4735B] hover:underline">პირობებს</Link> და <Link href="/privacy" className="text-[#C4735B] hover:underline">კონფიდენციალურობას</Link>.</>
+                  ) : (
+                    <>I agree to <Link href="/terms" className="text-[#C4735B] hover:underline">Terms</Link> and <Link href="/privacy" className="text-[#C4735B] hover:underline">Privacy Policy</Link>.</>
+                  )}
+                </span>
+              </label>
+              </>
+              )}
+
+              {/* Mobile Auth Content - same form as email, just uses phone as primary identifier */}
+              {authMethod === 'mobile' && (
+              <>
+              {/* Avatar Upload - REQUIRED */}
+              <div className={`flex items-center gap-4 p-4 bg-white rounded-xl border-2 transition-all ${
+                uploadedAvatarUrl
+                  ? 'border-emerald-500/50'
+                  : 'border-[#C4735B] ring-4 ring-[#C4735B]/10'
+              }`}>
+                <div className="relative">
+                  <div
+                    onClick={() => avatarInputRef.current?.click()}
+                    className={`w-20 h-20 rounded-full overflow-hidden cursor-pointer border-2 border-dashed transition-all ${
+                      avatarPreview
+                        ? 'border-transparent'
+                        : 'border-[#C4735B] hover:border-[#A85D47]'
+                    }`}
+                  >
+                    {avatarPreview ? (
+                      <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-[#C4735B]/10 flex items-center justify-center">
+                        <svg className="w-8 h-8 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  {avatarUploading && (
+                    <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center">
+                      <svg className="animate-spin h-6 w-6 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                    </div>
+                  )}
+                  {avatarPreview && !avatarUploading && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); removeAvatar(); }}
+                      className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-sm transition-colors"
+                    >
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-sm font-medium text-neutral-900">
+                      {locale === "ka" ? "პროფილის ფოტო" : "Profile Photo"}
+                      <span className="text-red-500 ml-1">*</span>
+                    </h3>
+                    {uploadedAvatarUrl ? (
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-medium">
+                        {locale === "ka" ? "ატვირთულია" : "Uploaded"}
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full bg-[#C4735B]/10 text-[#C4735B] text-[10px] font-medium">
+                        {locale === "ka" ? "სავალდებულო" : "Required"}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-neutral-500">
+                    {locale === "ka" ? "კლიენტები უფრო ენდობიან ფოტოიან პროფილებს" : "Clients trust profiles with photos more"}
+                  </p>
+                  {!avatarPreview && (
+                    <button
+                      onClick={() => avatarInputRef.current?.click()}
+                      className="mt-2 px-3 py-1.5 rounded-lg bg-[#C4735B] text-white text-xs font-medium hover:bg-[#A85D47] transition-colors"
+                    >
+                      {locale === "ka" ? "ფოტოს ატვირთვა" : "Upload photo"}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid lg:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
+                      {locale === "ka" ? "სრული სახელი" : "Full Name"} <span className="text-[#C4735B]">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.fullName}
+                      onChange={(e) => handleInputChange("fullName", e.target.value)}
+                      placeholder={locale === "ka" ? "გიორგი ბერიძე" : "Giorgi Beridze"}
+                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
+                      {locale === "ka"
+                        ? `${verificationChannel === 'whatsapp' ? 'WhatsApp' : 'SMS'} ნომერი`
+                        : `${verificationChannel === 'whatsapp' ? 'WhatsApp' : 'SMS'} Number`} <span className="text-[#C4735B]">*</span>
+                    </label>
+
+                    {/* Channel selection toggle */}
+                    <div className="flex gap-2 mb-2">
+                      <button
+                        type="button"
+                        onClick={() => setVerificationChannel('sms')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg border-2 transition-all text-xs font-medium ${
+                          verificationChannel === 'sms'
+                            ? 'border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B]'
+                            : 'border-neutral-200 bg-white text-neutral-500 hover:border-neutral-300'
+                        }`}
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        SMS
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setVerificationChannel('whatsapp')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg border-2 transition-all text-xs font-medium ${
+                          verificationChannel === 'whatsapp'
+                            ? 'border-[#25D366] bg-[#25D366]/5 text-[#25D366]'
+                            : 'border-neutral-200 bg-white text-neutral-500 hover:border-neutral-300'
+                        }`}
+                      >
+                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        WhatsApp
+                      </button>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <div className="relative" data-country-dropdown>
+                        <button
+                          type="button"
+                          onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                          className="flex items-center gap-1.5 px-2 py-2 rounded-lg border border-neutral-200 bg-neutral-50 hover:bg-neutral-100 transition-colors flex-shrink-0"
+                        >
+                          <span className="text-sm">{countries[phoneCountry].flag}</span>
+                          <span className="text-xs text-neutral-600">{countries[phoneCountry].phonePrefix}</span>
+                          <svg className="w-3 h-3 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                        {showCountryDropdown && (
+                          <div className="absolute top-full left-0 mt-1 bg-white border border-neutral-200 rounded-lg shadow-lg z-50 min-w-[180px] max-h-[200px] overflow-y-auto">
+                            {(Object.keys(countries) as CountryCode[]).map((code) => (
+                              <button
+                                key={code}
+                                type="button"
+                                onClick={() => {
+                                  setPhoneCountry(code);
+                                  setShowCountryDropdown(false);
+                                }}
+                                className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-neutral-50 transition-colors ${phoneCountry === code ? 'bg-neutral-100' : ''}`}
+                              >
+                                <span className="text-sm">{countries[code].flag}</span>
+                                <span className="text-xs text-neutral-600">{countries[code].phonePrefix}</span>
+                                <span className="text-xs text-neutral-500">{countries[code].name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => handleInputChange("phone", e.target.value.replace(/\D/g, ""))}
+                        placeholder={verificationChannel === 'whatsapp' ? "WhatsApp 555 123 456" : "555 123 456"}
+                        className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
+                      {locale === "ka" ? "პაროლი" : "Password"} <span className="text-[#C4735B]">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={formData.password}
+                        onChange={(e) => handleInputChange("password", e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full px-3 py-2 pr-10 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
+                        required
+                        minLength={6}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          {showPassword ? (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                          ) : (
+                            <>
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </>
+                          )}
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
                       {locale === "ka" ? "ელ-ფოსტა" : "Email"} <span className="text-neutral-400 font-normal text-[10px]">({locale === "ka" ? "არასავალდებულო" : "optional"})</span>
                     </label>
                     <input
@@ -2200,6 +2696,32 @@ function RegisterContent() {
                       className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
                     />
                   </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
+                      WhatsApp <span className="text-neutral-400 font-normal text-[10px]">({locale === "ka" ? "არასავალდებულო" : "optional"})</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.whatsapp}
+                      onChange={(e) => handleInputChange("whatsapp", e.target.value)}
+                      placeholder="+995 555 123 456"
+                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">
+                      Telegram <span className="text-neutral-400 font-normal text-[10px]">({locale === "ka" ? "არასავალდებულო" : "optional"})</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.telegram}
+                      onChange={(e) => handleInputChange("telegram", e.target.value)}
+                      placeholder="@username"
+                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm text-neutral-900 placeholder-neutral-400 focus:border-[#C4735B] focus:ring-1 focus:ring-[#C4735B]/10 outline-none transition-all"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -2219,6 +2741,8 @@ function RegisterContent() {
                   )}
                 </span>
               </label>
+              </>
+              )}
 
               {/* Switch to client */}
               <div className="pt-3 border-t border-neutral-100">

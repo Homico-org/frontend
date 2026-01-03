@@ -668,10 +668,16 @@ function SettingsPageContent() {
     }
   };
 
-  // Add email flow
+  // Add/Change email flow
   const handleAddEmail = async () => {
     if (!newEmail || !newEmail.includes('@')) {
       setAddEmailError(locale === 'ka' ? 'შეიყვანეთ სწორი ელ-ფოსტა' : 'Please enter a valid email');
+      return;
+    }
+
+    // Prevent setting the same email
+    if (newEmail.toLowerCase() === formData.email?.toLowerCase()) {
+      setAddEmailError(locale === 'ka' ? 'ეს იგივე ელ-ფოსტაა' : 'This is the same email');
       return;
     }
 
@@ -711,7 +717,7 @@ function SettingsPageContent() {
         throw new Error('Failed to send verification code');
       }
     } catch (error: any) {
-      setAddEmailError(error.message || (locale === 'ka' ? 'ელ-ფოსტის დამატება ვერ მოხერხდა' : 'Failed to add email'));
+      setAddEmailError(error.message || (locale === 'ka' ? 'ელ-ფოსტის განახლება ვერ მოხერხდა' : 'Failed to update email'));
     } finally {
       setIsAddingEmail(false);
       setIsSendingOtp(false);
@@ -756,6 +762,8 @@ function SettingsPageContent() {
         setEmailOtpStep('success');
         // Refresh notification data
         await fetchNotificationPreferences();
+        // Update local formData
+        setFormData(prev => ({ ...prev, email: newEmail }));
         // Update user context
         if (user) {
           updateUser({ ...user, email: newEmail });
@@ -1155,65 +1163,67 @@ function SettingsPageContent() {
                   </div>
                 )}
 
-                {/* Avatar Upload */}
-                <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-                  <div className="relative group">
-                    <Avatar
-                      src={formData.avatar}
-                      name={formData.name}
-                      size="2xl"
-                      className="ring-4 ring-neutral-200 dark:ring-neutral-700"
-                    />
-                    {isUploadingAvatar && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full">
-                        <Loader2 className="w-8 h-8 text-white animate-spin" />
-                      </div>
-                    )}
-                    {!isUploadingAvatar && (
+                {/* Avatar Upload - Only for clients (not pro or company) */}
+                {user?.role === 'client' && (
+                  <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                    <div className="relative group">
+                      <Avatar
+                        src={formData.avatar}
+                        name={formData.name}
+                        size="2xl"
+                        className="ring-4 ring-neutral-200 dark:ring-neutral-700"
+                      />
+                      {isUploadingAvatar && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full">
+                          <Loader2 className="w-8 h-8 text-white animate-spin" />
+                        </div>
+                      )}
+                      {!isUploadingAvatar && (
+                        <label
+                          htmlFor="avatar-upload"
+                          className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 active:opacity-100 transition-all duration-200 ease-out cursor-pointer touch-manipulation"
+                        >
+                          <Camera className="w-6 sm:w-8 h-6 sm:h-8 text-white" />
+                        </label>
+                      )}
+                      <input
+                        id="avatar-upload"
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                        disabled={isUploadingAvatar}
+                      />
+                    </div>
+                    <div className="text-center sm:text-left">
+                      <h3
+                        className="font-medium"
+                        style={{ color: 'var(--color-text-primary)' }}
+                      >
+                        {t('settings.profile.profilePhoto')}
+                      </h3>
+                      <p
+                        className="text-sm mt-1"
+                        style={{ color: 'var(--color-text-secondary)' }}
+                      >
+                        {t('settings.profile.photoHint')}
+                      </p>
                       <label
                         htmlFor="avatar-upload"
-                        className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 active:opacity-100 transition-all duration-200 ease-out cursor-pointer touch-manipulation"
+                        className={`mt-2 text-sm font-medium transition-all duration-200 ease-out touch-manipulation cursor-pointer inline-block ${
+                          isUploadingAvatar
+                            ? 'text-neutral-400 cursor-not-allowed'
+                            : 'text-[#E07B4F] hover:text-[#D26B3F]'
+                        }`}
                       >
-                        <Camera className="w-6 sm:w-8 h-6 sm:h-8 text-white" />
+                        {isUploadingAvatar
+                          ? (locale === 'ka' ? 'იტვირთება...' : 'Uploading...')
+                          : t('settings.profile.uploadPhoto')}
                       </label>
-                    )}
-                    <input
-                      id="avatar-upload"
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="hidden"
-                      disabled={isUploadingAvatar}
-                    />
+                    </div>
                   </div>
-                  <div className="text-center sm:text-left">
-                    <h3
-                      className="font-medium"
-                      style={{ color: 'var(--color-text-primary)' }}
-                    >
-                      {t('settings.profile.profilePhoto')}
-                    </h3>
-                    <p
-                      className="text-sm mt-1"
-                      style={{ color: 'var(--color-text-secondary)' }}
-                    >
-                      {t('settings.profile.photoHint')}
-                    </p>
-                    <label
-                      htmlFor="avatar-upload"
-                      className={`mt-2 text-sm font-medium transition-all duration-200 ease-out touch-manipulation cursor-pointer inline-block ${
-                        isUploadingAvatar
-                          ? 'text-neutral-400 cursor-not-allowed'
-                          : 'text-[#E07B4F] hover:text-[#D26B3F]'
-                      }`}
-                    >
-                      {isUploadingAvatar
-                        ? (locale === 'ka' ? 'იტვირთება...' : 'Uploading...')
-                        : t('settings.profile.uploadPhoto')}
-                    </label>
-                  </div>
-                </div>
+                )}
 
                 <div
                   className="border-t pt-5 sm:pt-6"
@@ -1246,22 +1256,56 @@ function SettingsPageContent() {
                       >
                         {t('settings.profile.email')}
                       </label>
-                      <input
-                        type="email"
-                        value={formData.email}
-                        disabled
-                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-base rounded-xl cursor-not-allowed opacity-60"
-                        style={{
-                          backgroundColor: 'var(--color-bg-elevated)',
-                          border: '1px solid var(--color-border)',
-                          color: 'var(--color-text-secondary)',
-                        }}
-                      />
+                      <div className="flex gap-2">
+                        <div className="flex-1 relative">
+                          <input
+                            type="email"
+                            value={formData.email}
+                            disabled
+                            placeholder={locale === 'ka' ? 'ელ-ფოსტა არ არის დამატებული' : 'No email added'}
+                            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-base rounded-xl transition-all duration-200 cursor-not-allowed opacity-70"
+                            style={{
+                              backgroundColor: 'var(--color-bg-elevated)',
+                              border: '1px solid var(--color-border)',
+                              color: 'var(--color-text-primary)',
+                            }}
+                          />
+                          {formData.email && (
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30">
+                                <Check className="w-3 h-3 text-green-600 dark:text-green-400" />
+                                <span className="text-[10px] font-medium text-green-600 dark:text-green-400">
+                                  {locale === 'ka' ? 'დადასტურებული' : 'Verified'}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNewEmail(''); // Clear the field so user enters new email
+                            setAddEmailError('');
+                            setEmailOtpStep('email');
+                            setOtpCode('');
+                            setShowAddEmailModal(true);
+                          }}
+                          className="px-4 py-2.5 text-sm font-medium rounded-xl transition-all hover:bg-[#E07B4F]/10"
+                          style={{
+                            border: '1px solid #E07B4F',
+                            color: '#E07B4F',
+                          }}
+                        >
+                          {formData.email
+                            ? (locale === 'ka' ? 'შეცვლა' : 'Change')
+                            : (locale === 'ka' ? 'დამატება' : 'Add')}
+                        </button>
+                      </div>
                       <p
                         className="mt-1 text-xs"
                         style={{ color: 'var(--color-text-tertiary)' }}
                       >
-                        {t('settings.profile.emailHint')}
+                        {locale === 'ka' ? 'ელ-ფოსტის შეცვლა მოითხოვს ვერიფიკაციას' : 'Changing your email requires verification'}
                       </p>
                     </div>
                     <div>
@@ -2350,10 +2394,12 @@ function SettingsPageContent() {
                   <div>
                     <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                       {emailOtpStep === 'success'
-                        ? (locale === 'ka' ? 'წარმატებით დაემატა!' : 'Successfully Added!')
+                        ? (locale === 'ka' ? 'წარმატებით შეიცვალა!' : 'Successfully Updated!')
                         : emailOtpStep === 'otp'
                           ? (locale === 'ka' ? 'დაადასტურე ელ-ფოსტა' : 'Verify Email')
-                          : (locale === 'ka' ? 'ელ-ფოსტის დამატება' : 'Add Email')}
+                          : formData.email
+                            ? (locale === 'ka' ? 'ელ-ფოსტის შეცვლა' : 'Change Email')
+                            : (locale === 'ka' ? 'ელ-ფოსტის დამატება' : 'Add Email')}
                     </h3>
                     {emailOtpStep === 'otp' && (
                       <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
@@ -2388,8 +2434,8 @@ function SettingsPageContent() {
                   </div>
                   <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                     {locale === 'ka'
-                      ? 'თქვენი ელ-ფოსტა წარმატებით დადასტურდა'
-                      : 'Your email has been verified successfully'}
+                      ? 'თქვენი ელ-ფოსტა წარმატებით განახლდა'
+                      : 'Your email has been updated successfully'}
                   </p>
                 </div>
               ) : emailOtpStep === 'otp' ? (
@@ -2487,10 +2533,29 @@ function SettingsPageContent() {
               ) : (
                 <div className="space-y-4">
                   <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                    {locale === 'ka'
-                      ? 'დაამატე ელ-ფოსტა რომ მიიღო შეტყობინებები ელ-ფოსტით'
-                      : 'Add your email to receive notifications via email'}
+                    {formData.email
+                      ? (locale === 'ka'
+                        ? 'შეიყვანე ახალი ელ-ფოსტა. ვერიფიკაციის კოდი გაიგზავნება ახალ მისამართზე.'
+                        : 'Enter your new email. A verification code will be sent to the new address.')
+                      : (locale === 'ka'
+                        ? 'დაამატე ელ-ფოსტა რომ მიიღო შეტყობინებები ელ-ფოსტით'
+                        : 'Add your email to receive notifications via email')}
                   </p>
+
+                  {/* Show current email when changing */}
+                  {formData.email && (
+                    <div className="p-3 rounded-xl flex items-center gap-2" style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }}>
+                      <Mail className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--color-text-tertiary)' }} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                          {locale === 'ka' ? 'მიმდინარე ელ-ფოსტა' : 'Current email'}
+                        </p>
+                        <p className="text-sm truncate" style={{ color: 'var(--color-text-primary)' }}>
+                          {formData.email}
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
                   {addEmailError && (
                     <div className="p-3 rounded-xl text-sm flex items-center gap-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800">
@@ -2501,7 +2566,9 @@ function SettingsPageContent() {
 
                   <div>
                     <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
-                      {locale === 'ka' ? 'ელ-ფოსტა' : 'Email address'}
+                      {formData.email
+                        ? (locale === 'ka' ? 'ახალი ელ-ფოსტა' : 'New email address')
+                        : (locale === 'ka' ? 'ელ-ფოსტა' : 'Email address')}
                     </label>
                     <input
                       type="email"

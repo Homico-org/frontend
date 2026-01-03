@@ -1,8 +1,9 @@
 'use client';
 
 import AvatarCropper from '@/components/common/AvatarCropper';
+import { Input, Textarea } from '@/components/ui/input';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { AlertCircle, Camera, CheckCircle2, Clock, FileText } from 'lucide-react';
+import { AlertCircle, Camera, CheckCircle2, Clock, FileText, Globe, Instagram, Facebook, Linkedin, MessageCircle, Send } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 interface AboutStepProps {
@@ -10,6 +11,12 @@ interface AboutStepProps {
     bio: string;
     yearsExperience: string;
     avatar: string;
+    whatsapp?: string;
+    telegram?: string;
+    instagram?: string;
+    facebook?: string;
+    linkedin?: string;
+    website?: string;
   };
   avatarPreview: string | null;
   onFormChange: (updates: Partial<AboutStepProps['formData']>) => void;
@@ -211,30 +218,25 @@ export default function AboutStep({
               </span>
             )}
           </div>
-          <div className="relative">
-            <input
-              type="number"
-              min="0"
-              max="50"
-              value={formData.yearsExperience}
-              onChange={(e) => onFormChange({ yearsExperience: e.target.value })}
-              className={`
-                w-full px-4 py-3.5 rounded-xl
-                bg-[var(--color-bg-tertiary)] border-2
-                text-[var(--color-text-primary)] text-lg font-medium
-                placeholder-[var(--color-text-muted)]
-                focus:outline-none transition-all duration-200
-                ${validation.experience
-                  ? 'border-emerald-500/30 focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10'
-                  : 'border-transparent focus:border-[#C4735B]/50 focus:ring-4 focus:ring-[#C4735B]/10'
-                }
-              `}
-              placeholder="0"
-            />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]">
-              {locale === 'ka' ? 'წელი' : 'years'}
-            </span>
-          </div>
+          <Input
+            type="number"
+            min={0}
+            max={50}
+            value={formData.yearsExperience}
+            onChange={(e) => {
+              const value = e.target.value;
+              const parsed = parseInt(value);
+              if (value === '' || (parsed >= 0 && parsed <= 50)) {
+                onFormChange({ yearsExperience: value });
+              }
+            }}
+            variant="filled"
+            inputSize="lg"
+            success={validation.experience}
+            placeholder="0"
+            rightIcon={<span className="text-sm">{locale === 'ka' ? 'წელი' : 'years'}</span>}
+            className="text-lg font-medium"
+          />
           <p className="text-xs text-[var(--color-text-muted)] mt-2">
             {locale === 'ka' ? 'რამდენი წელია მუშაობ ამ სფეროში?' : 'How many years have you been working in this field?'}
           </p>
@@ -267,21 +269,13 @@ export default function AboutStep({
               </span>
             )}
           </div>
-          <textarea
+          <Textarea
             rows={5}
             value={formData.bio}
             onChange={(e) => onFormChange({ bio: e.target.value })}
-            className={`
-              w-full px-4 py-3.5 rounded-xl
-              bg-[var(--color-bg-tertiary)] border-2
-              text-[var(--color-text-primary)]
-              placeholder-[var(--color-text-muted)]
-              focus:outline-none transition-all duration-200 resize-none
-              ${validation.bio
-                ? 'border-emerald-500/30 focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10'
-                : 'border-transparent focus:border-[#C4735B]/50 focus:ring-4 focus:ring-[#C4735B]/10'
-              }
-            `}
+            variant="filled"
+            textareaSize="lg"
+            success={validation.bio}
             placeholder={locale === 'ka' ? 'მოკლედ აღწერე შენი გამოცდილება და უნარები...' : 'Briefly describe your experience and skills...'}
           />
           <div className="flex justify-between items-center mt-2">
@@ -291,6 +285,128 @@ export default function AboutStep({
             <span className={`text-xs font-medium ${formData.bio.length >= 50 ? 'text-emerald-600' : formData.bio.length > 0 ? 'text-amber-600' : 'text-[var(--color-text-muted)]'}`}>
               {formData.bio.length}/500
             </span>
+          </div>
+        </div>
+
+        {/* Contact & Social Media - OPTIONAL */}
+        <div className="bg-[var(--color-bg-elevated)] rounded-2xl p-6 shadow-sm border-2 border-[var(--color-border-subtle)]">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-[#C4735B]" />
+              <span className="font-semibold text-[var(--color-text-primary)]">
+                {locale === 'ka' ? 'კონტაქტი და სოციალური ქსელები' : 'Contact & Social Media'}
+              </span>
+            </div>
+            <span className="text-xs font-medium text-[var(--color-text-muted)] bg-[var(--color-bg-tertiary)] px-2.5 py-1 rounded-full">
+              {locale === 'ka' ? 'არასავალდებულო' : 'Optional'}
+            </span>
+          </div>
+          <p className="text-sm text-[var(--color-text-secondary)] mb-4">
+            {locale === 'ka'
+              ? 'დაამატე კონტაქტები რომ კლიენტებმა ადვილად დაგიკავშირდნენ'
+              : 'Add contact info so clients can easily reach you'}
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* WhatsApp */}
+            <div>
+              <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
+                WhatsApp
+              </label>
+              <Input
+                type="tel"
+                value={formData.whatsapp || ''}
+                onChange={(e) => onFormChange({ whatsapp: e.target.value })}
+                variant="filled"
+                inputSize="default"
+                placeholder="+995 5XX XXX XXX"
+                leftIcon={
+                  <svg className="w-4 h-4 text-[#25D366]" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                  </svg>
+                }
+              />
+            </div>
+
+            {/* Telegram */}
+            <div>
+              <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
+                Telegram
+              </label>
+              <Input
+                type="text"
+                value={formData.telegram || ''}
+                onChange={(e) => onFormChange({ telegram: e.target.value })}
+                variant="filled"
+                inputSize="default"
+                placeholder="@username"
+                leftIcon={<Send className="w-4 h-4 text-[#0088cc]" />}
+              />
+            </div>
+
+            {/* Instagram */}
+            <div>
+              <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
+                Instagram
+              </label>
+              <Input
+                type="text"
+                value={formData.instagram || ''}
+                onChange={(e) => onFormChange({ instagram: e.target.value })}
+                variant="filled"
+                inputSize="default"
+                placeholder="@username"
+                leftIcon={<Instagram className="w-4 h-4 text-[#E4405F]" />}
+              />
+            </div>
+
+            {/* Facebook */}
+            <div>
+              <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
+                Facebook
+              </label>
+              <Input
+                type="text"
+                value={formData.facebook || ''}
+                onChange={(e) => onFormChange({ facebook: e.target.value })}
+                variant="filled"
+                inputSize="default"
+                placeholder="facebook.com/username"
+                leftIcon={<Facebook className="w-4 h-4 text-[#1877F2]" />}
+              />
+            </div>
+
+            {/* LinkedIn */}
+            <div>
+              <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
+                LinkedIn
+              </label>
+              <Input
+                type="text"
+                value={formData.linkedin || ''}
+                onChange={(e) => onFormChange({ linkedin: e.target.value })}
+                variant="filled"
+                inputSize="default"
+                placeholder="linkedin.com/in/username"
+                leftIcon={<Linkedin className="w-4 h-4 text-[#0A66C2]" />}
+              />
+            </div>
+
+            {/* Website */}
+            <div>
+              <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
+                {locale === 'ka' ? 'ვებსაიტი' : 'Website'}
+              </label>
+              <Input
+                type="url"
+                value={formData.website || ''}
+                onChange={(e) => onFormChange({ website: e.target.value })}
+                variant="filled"
+                inputSize="default"
+                placeholder="https://example.com"
+                leftIcon={<Globe className="w-4 h-4 text-[var(--color-text-tertiary)]" />}
+              />
+            </div>
           </div>
         </div>
       </div>

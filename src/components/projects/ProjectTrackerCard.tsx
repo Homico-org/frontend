@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import Avatar from '@/components/common/Avatar';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/contexts/ToastContext';
-import { api } from '@/lib/api';
-import { storage } from '@/services/storage';
+import Avatar from "@/components/common/Avatar";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/contexts/ToastContext";
+import { api } from "@/lib/api";
+import { storage } from "@/services/storage";
 import {
   Calendar,
   Check,
@@ -13,30 +13,34 @@ import {
   Clock,
   Eye,
   FileText,
-  Image as ImageIcon,
   MessageSquare,
   Paperclip,
   Play,
   Send,
   X
-} from 'lucide-react';
-import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
+} from "lucide-react";
+import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { io, Socket } from "socket.io-client";
 
 // Terracotta palette
-const ACCENT = '#C4735B';
-const ACCENT_LIGHT = '#D4897A';
-const ACCENT_DARK = '#A85D4A';
+const ACCENT = "#C4735B";
+const ACCENT_LIGHT = "#D4897A";
+const ACCENT_DARK = "#A85D4A";
 
-export type ProjectStage = 'hired' | 'started' | 'in_progress' | 'review' | 'completed';
+export type ProjectStage =
+  | "hired"
+  | "started"
+  | "in_progress"
+  | "review"
+  | "completed";
 
 interface ProjectMessage {
   _id?: string;
   senderId: string | { _id: string; name: string; avatar?: string };
   senderName?: string;
   senderAvatar?: string;
-  senderRole?: 'client' | 'pro';
+  senderRole?: "client" | "pro";
   content: string;
   attachments?: string[];
   createdAt: string;
@@ -47,7 +51,7 @@ interface ProjectComment {
   userId: string;
   userName: string;
   userAvatar?: string;
-  userRole: 'client' | 'pro';
+  userRole: "client" | "pro";
   content: string;
   createdAt: string;
 }
@@ -67,7 +71,13 @@ interface ProjectTracking {
   _id: string;
   jobId: string;
   clientId: { _id: string; name: string; avatar?: string };
-  proId: { _id: string; name: string; avatar?: string; phone?: string; title?: string };
+  proId: {
+    _id: string;
+    name: string;
+    avatar?: string;
+    phone?: string;
+    title?: string;
+  };
   currentStage: ProjectStage;
   progress: number;
   hiredAt: string;
@@ -103,23 +113,53 @@ interface ProjectTrackerCardProps {
   onRefresh?: () => void;
 }
 
-const STAGES: { key: ProjectStage; label: string; labelKa: string; icon: React.ReactNode }[] = [
-  { key: 'hired', label: 'Hired', labelKa: 'დაქირავებული', icon: <Check className="w-3.5 h-3.5" /> },
-  { key: 'started', label: 'Started', labelKa: 'დაწყებული', icon: <Play className="w-3.5 h-3.5" /> },
-  { key: 'in_progress', label: 'In Progress', labelKa: 'მიმდინარე', icon: <Clock className="w-3.5 h-3.5" /> },
-  { key: 'review', label: 'Review', labelKa: 'შემოწმება', icon: <Eye className="w-3.5 h-3.5" /> },
-  { key: 'completed', label: 'Completed', labelKa: 'დასრულებული', icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
+const STAGES: {
+  key: ProjectStage;
+  label: string;
+  labelKa: string;
+  icon: React.ReactNode;
+}[] = [
+  {
+    key: "hired",
+    label: "Hired",
+    labelKa: "დაქირავებული",
+    icon: <Check className="w-3.5 h-3.5" />,
+  },
+  {
+    key: "started",
+    label: "Started",
+    labelKa: "დაწყებული",
+    icon: <Play className="w-3.5 h-3.5" />,
+  },
+  {
+    key: "in_progress",
+    label: "In Progress",
+    labelKa: "მიმდინარე",
+    icon: <Clock className="w-3.5 h-3.5" />,
+  },
+  {
+    key: "review",
+    label: "Review",
+    labelKa: "შემოწმება",
+    icon: <Eye className="w-3.5 h-3.5" />,
+  },
+  {
+    key: "completed",
+    label: "Completed",
+    labelKa: "დასრულებული",
+    icon: <CheckCircle2 className="w-3.5 h-3.5" />,
+  },
 ];
 
 function getStageIndex(stage: ProjectStage): number {
-  return STAGES.findIndex(s => s.key === stage);
+  return STAGES.findIndex((s) => s.key === stage);
 }
 
 function formatDate(dateStr: string, locale: string): string {
   const date = new Date(dateStr);
-  return date.toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', {
-    month: 'short',
-    day: 'numeric',
+  return date.toLocaleDateString(locale === "ka" ? "ka-GE" : "en-US", {
+    month: "short",
+    day: "numeric",
   });
 }
 
@@ -131,7 +171,7 @@ function formatRelativeTime(dateStr: string, locale: string): string {
   const diffHours = Math.floor(diffMins / 60);
   const diffDays = Math.floor(diffHours / 24);
 
-  if (locale === 'ka') {
+  if (locale === "ka") {
     if (diffMins < 60) return `${diffMins} წუთის წინ`;
     if (diffHours < 24) return `${diffHours} საათის წინ`;
     return `${diffDays} დღის წინ`;
@@ -144,11 +184,11 @@ function formatRelativeTime(dateStr: string, locale: string): string {
 
 function formatMessageTime(dateStr: string): string {
   const date = new Date(dateStr);
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
 function getSenderId(senderId: string | { _id: string }): string {
-  if (typeof senderId === 'string') return senderId;
+  if (typeof senderId === "string") return senderId;
   return senderId._id;
 }
 
@@ -162,7 +202,7 @@ export default function ProjectTrackerCard({
   const { user } = useAuth();
   const toast = useToast();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showStageModal, setShowStageModal] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -182,7 +222,9 @@ export default function ProjectTrackerCard({
   const messagesLoadedRef = useRef(false);
 
   // Local state for optimistic updates
-  const [localStage, setLocalStage] = useState<ProjectStage>(project.currentStage);
+  const [localStage, setLocalStage] = useState<ProjectStage>(
+    project.currentStage
+  );
   const [localProgress, setLocalProgress] = useState(project.progress);
 
   const currentStageIndex = getStageIndex(localStage);
@@ -202,28 +244,28 @@ export default function ProjectTrackerCard({
   useEffect(() => {
     if (!isExpanded || !user) return;
 
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem("access_token");
     if (!token) return;
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    const backendUrl = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    const backendUrl = apiUrl.endsWith("/api") ? apiUrl.slice(0, -4) : apiUrl;
 
     socketRef.current = io(`${backendUrl}/chat`, {
       auth: { token },
-      transports: ['websocket', 'polling'],
+      transports: ["websocket", "polling"],
       reconnection: true,
     });
 
-    socketRef.current.on('connect', () => {
-      console.log('[ProjectChat] Connected to WebSocket');
-      socketRef.current?.emit('joinProjectChat', job._id);
+    socketRef.current.on("connect", () => {
+      console.log("[ProjectChat] Connected to WebSocket");
+      socketRef.current?.emit("joinProjectChat", job._id);
     });
 
-    socketRef.current.on('projectMessage', handleNewMessage);
-    socketRef.current.on('projectTyping', handleTyping);
+    socketRef.current.on("projectMessage", handleNewMessage);
+    socketRef.current.on("projectTyping", handleTyping);
 
     return () => {
-      socketRef.current?.emit('leaveProjectChat', job._id);
+      socketRef.current?.emit("leaveProjectChat", job._id);
       socketRef.current?.disconnect();
       socketRef.current = null;
     };
@@ -246,18 +288,20 @@ export default function ProjectTrackerCard({
       setMessages(response.data.messages || []);
       messagesLoadedRef.current = true;
     } catch (error) {
-      console.error('Failed to fetch messages:', error);
+      console.error("Failed to fetch messages:", error);
       // Fallback to comments if messages endpoint doesn't exist
       if (project.comments?.length) {
-        const legacyMessages: ProjectMessage[] = project.comments.map((c, idx) => ({
-          _id: `legacy-${idx}`,
-          senderId: c.userId,
-          senderName: c.userName,
-          senderAvatar: c.userAvatar,
-          senderRole: c.userRole,
-          content: c.content,
-          createdAt: c.createdAt,
-        }));
+        const legacyMessages: ProjectMessage[] = project.comments.map(
+          (c, idx) => ({
+            _id: `legacy-${idx}`,
+            senderId: c.userId,
+            senderName: c.userName,
+            senderAvatar: c.userAvatar,
+            senderRole: c.userRole,
+            content: c.content,
+            createdAt: c.createdAt,
+          })
+        );
         setMessages(legacyMessages);
       }
     } finally {
@@ -265,28 +309,37 @@ export default function ProjectTrackerCard({
     }
   };
 
-  const handleNewMessage = useCallback((message: ProjectMessage) => {
-    const senderId = getSenderId(message.senderId);
-    if (senderId === user?.id) return; // Skip own messages
+  const handleNewMessage = useCallback(
+    (message: ProjectMessage) => {
+      const senderId = getSenderId(message.senderId);
+      if (senderId === user?.id) return; // Skip own messages
 
-    setMessages(prev => {
-      if (prev.some(m => m._id === message._id)) return prev;
-      return [...prev, message];
-    });
-  }, [user?.id]);
+      setMessages((prev) => {
+        if (prev.some((m) => m._id === message._id)) return prev;
+        return [...prev, message];
+      });
+    },
+    [user?.id]
+  );
 
-  const handleTyping = useCallback(({ userId, isTyping: typing }: { userId: string; isTyping: boolean }) => {
-    if (userId !== user?.id) {
-      setOtherUserTyping(typing);
-    }
-  }, [user?.id]);
+  const handleTyping = useCallback(
+    ({ userId, isTyping: typing }: { userId: string; isTyping: boolean }) => {
+      if (userId !== user?.id) {
+        setOtherUserTyping(typing);
+      }
+    },
+    [user?.id]
+  );
 
   const emitTyping = useCallback(() => {
     if (!socketRef.current) return;
 
     if (!isTyping) {
       setIsTyping(true);
-      socketRef.current.emit('projectTyping', { jobId: job._id, isTyping: true });
+      socketRef.current.emit("projectTyping", {
+        jobId: job._id,
+        isTyping: true,
+      });
     }
 
     if (typingTimeoutRef.current) {
@@ -295,7 +348,10 @@ export default function ProjectTrackerCard({
 
     typingTimeoutRef.current = setTimeout(() => {
       setIsTyping(false);
-      socketRef.current?.emit('projectTyping', { jobId: job._id, isTyping: false });
+      socketRef.current?.emit("projectTyping", {
+        jobId: job._id,
+        isTyping: false,
+      });
     }, 2000);
   }, [job._id, isTyping]);
 
@@ -314,33 +370,35 @@ export default function ProjectTrackerCard({
       senderId: user.id,
       senderName: user.name,
       senderAvatar: user.avatar,
-      senderRole: isClient ? 'client' : 'pro',
+      senderRole: isClient ? "client" : "pro",
       content: messageContent,
       attachments,
       createdAt: new Date().toISOString(),
     };
 
-    setMessages(prev => [...prev, optimisticMessage]);
-    setNewMessage('');
+    setMessages((prev) => [...prev, optimisticMessage]);
+    setNewMessage("");
 
     try {
       setIsSubmitting(true);
       const response = await api.post(`/jobs/projects/${job._id}/messages`, {
-        content: messageContent || '',
+        content: messageContent || "",
         attachments: hasAttachments ? attachments : undefined,
       });
 
       // Replace temp message with real one
       if (response.data?.message) {
-        setMessages(prev => prev.map(m => m._id === tempId ? response.data.message : m));
+        setMessages((prev) =>
+          prev.map((m) => (m._id === tempId ? response.data.message : m))
+        );
       }
     } catch (err) {
       // Rollback on error
-      setMessages(prev => prev.filter(m => m._id !== tempId));
+      setMessages((prev) => prev.filter((m) => m._id !== tempId));
       setNewMessage(messageContent);
       toast.error(
-        locale === 'ka' ? 'შეცდომა' : 'Error',
-        locale === 'ka' ? 'შეტყობინება ვერ გაიგზავნა' : 'Failed to send message'
+        locale === "ka" ? "შეცდომა" : "Error",
+        locale === "ka" ? "შეტყობინება ვერ გაიგზავნა" : "Failed to send message"
       );
     } finally {
       setIsSubmitting(false);
@@ -355,20 +413,20 @@ export default function ProjectTrackerCard({
     try {
       setIsUploading(true);
       const formData = new FormData();
-      formData.append('file', file);
-      const uploadResponse = await api.post('/upload', formData);
+      formData.append("file", file);
+      const uploadResponse = await api.post("/upload", formData);
       const fileUrl = uploadResponse.data.url || uploadResponse.data.filename;
 
       // Send message with attachment
       await handleSendMessage([fileUrl]);
     } catch (err) {
       toast.error(
-        locale === 'ka' ? 'შეცდომა' : 'Error',
-        locale === 'ka' ? 'ფაილი ვერ აიტვირთა' : 'Failed to upload file'
+        locale === "ka" ? "შეცდომა" : "Error",
+        locale === "ka" ? "ფაილი ვერ აიტვირთა" : "Failed to upload file"
       );
     } finally {
       setIsUploading(false);
-      e.target.value = '';
+      e.target.value = "";
     }
   };
 
@@ -378,11 +436,11 @@ export default function ProjectTrackerCard({
 
     // Calculate new progress based on stage
     const stageProgress: Record<ProjectStage, number> = {
-      'hired': 10,
-      'started': 25,
-      'in_progress': 50,
-      'review': 75,
-      'completed': 100,
+      hired: 10,
+      started: 25,
+      in_progress: 50,
+      review: 75,
+      completed: 100,
     };
 
     // Optimistic update
@@ -394,16 +452,16 @@ export default function ProjectTrackerCard({
       setIsSubmitting(true);
       await api.patch(`/jobs/projects/${job._id}/stage`, { stage: newStage });
       toast.success(
-        locale === 'ka' ? 'წარმატება' : 'Success',
-        locale === 'ka' ? 'სტატუსი განახლდა' : 'Stage updated'
+        locale === "ka" ? "წარმატება" : "Success",
+        locale === "ka" ? "სტატუსი განახლდა" : "Stage updated"
       );
     } catch (err) {
       // Rollback on error
       setLocalStage(previousStage);
       setLocalProgress(previousProgress);
       toast.error(
-        locale === 'ka' ? 'შეცდომა' : 'Error',
-        locale === 'ka' ? 'სტატუსი ვერ განახლდა' : 'Failed to update stage'
+        locale === "ka" ? "შეცდომა" : "Error",
+        locale === "ka" ? "სტატუსი ვერ განახლდა" : "Failed to update stage"
       );
     } finally {
       setIsSubmitting(false);
@@ -413,23 +471,33 @@ export default function ProjectTrackerCard({
   return (
     <>
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700&display=swap');
+        @import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700&display=swap");
 
         .project-card {
-          font-family: 'Outfit', system-ui, sans-serif;
+          font-family: "Outfit", system-ui, sans-serif;
         }
         .project-card .font-mono {
-          font-family: 'Space Mono', monospace;
+          font-family: "Space Mono", monospace;
         }
 
         @keyframes progress-shine {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(200%); }
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(200%);
+          }
         }
 
         @keyframes pulse-ring {
-          0% { transform: scale(1); opacity: 1; }
-          100% { transform: scale(1.5); opacity: 0; }
+          0% {
+            transform: scale(1);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(1.5);
+            opacity: 0;
+          }
         }
 
         .progress-bar-shine {
@@ -437,7 +505,7 @@ export default function ProjectTrackerCard({
         }
 
         .stage-active::before {
-          content: '';
+          content: "";
           position: absolute;
           inset: -4px;
           border-radius: 50%;
@@ -478,7 +546,7 @@ export default function ProjectTrackerCard({
               <div
                 className="w-full h-full"
                 style={{
-                  background: `linear-gradient(135deg, ${ACCENT} 0%, ${ACCENT_DARK} 100%)`
+                  background: `linear-gradient(135deg, ${ACCENT} 0%, ${ACCENT_DARK} 100%)`,
                 }}
               />
             )}
@@ -495,7 +563,7 @@ export default function ProjectTrackerCard({
                     className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-white"
                     style={{ backgroundColor: ACCENT }}
                   >
-                    {locale === 'ka' ? 'აქტიური პროექტი' : 'Active Project'}
+                    {locale === "ka" ? "აქტიური პროექტი" : "Active Project"}
                   </span>
                   <span className="text-white/60 text-xs font-mono">
                     #{job._id.slice(-6).toUpperCase()}
@@ -508,11 +576,17 @@ export default function ProjectTrackerCard({
 
               {/* Assigned Pro/Client Info */}
               <Link
-                href={isClient ? `/professionals/${project.proId?._id}` : `/users/${project.clientId?._id}`}
+                href={
+                  isClient
+                    ? `/professionals/${project.proId?._id}`
+                    : `/users/${project.clientId?._id}`
+                }
                 className="flex-shrink-0 flex items-center gap-3 bg-black/30 backdrop-blur-sm rounded-xl px-3 py-2 hover:bg-black/40 transition-colors"
               >
                 <Avatar
-                  src={isClient ? project.proId?.avatar : project.clientId?.avatar}
+                  src={
+                    isClient ? project.proId?.avatar : project.clientId?.avatar
+                  }
                   name={isClient ? project.proId?.name : project.clientId?.name}
                   size="md"
                   className="w-10 h-10 ring-2 ring-white/30"
@@ -520,8 +594,12 @@ export default function ProjectTrackerCard({
                 <div className="text-right">
                   <p className="text-[10px] text-white/60 uppercase tracking-wider">
                     {isClient
-                      ? (locale === 'ka' ? 'სპეციალისტი' : 'Assigned Pro')
-                      : (locale === 'ka' ? 'კლიენტი' : 'Client')}
+                      ? locale === "ka"
+                        ? "სპეციალისტი"
+                        : "Assigned Pro"
+                      : locale === "ka"
+                        ? "კლიენტი"
+                        : "Client"}
                   </p>
                   <p className="text-sm font-semibold text-white">
                     {isClient ? project.proId?.name : project.clientId?.name}
@@ -542,12 +620,10 @@ export default function ProjectTrackerCard({
               className="absolute top-3.5 left-0 h-0.5 transition-all duration-500 overflow-hidden"
               style={{
                 width: `${(currentStageIndex / (STAGES.length - 1)) * 100}%`,
-                backgroundColor: ACCENT
+                backgroundColor: ACCENT,
               }}
             >
-              <div
-                className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-white/40 to-transparent progress-bar-shine"
-              />
+              <div className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-white/40 to-transparent progress-bar-shine" />
             </div>
 
             {/* Stage Dots */}
@@ -562,27 +638,32 @@ export default function ProjectTrackerCard({
                     key={stage.key}
                     onClick={() => !isClient && setShowStageModal(true)}
                     disabled={isClient}
-                    className={`timeline-dot flex flex-col items-center gap-1.5 ${!isClient ? 'cursor-pointer' : 'cursor-default'}`}
+                    className={`timeline-dot flex flex-col items-center gap-1.5 ${!isClient ? "cursor-pointer" : "cursor-default"}`}
                   >
                     <div
                       className={`relative w-7 h-7 rounded-full flex items-center justify-center transition-all duration-300 ${
                         isCompleted
-                          ? 'text-white'
+                          ? "text-white"
                           : isCurrent
-                          ? 'text-white stage-active'
-                          : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400'
+                            ? "text-white stage-active"
+                            : "bg-neutral-200 dark:bg-neutral-700 text-neutral-400"
                       }`}
                       style={{
-                        backgroundColor: isCompleted || isCurrent ? ACCENT : undefined,
+                        backgroundColor:
+                          isCompleted || isCurrent ? ACCENT : undefined,
                         color: isCurrent ? ACCENT : undefined,
                       }}
                     >
                       {stage.icon}
                     </div>
-                    <span className={`text-[10px] font-medium hidden sm:block ${
-                      isCurrent ? 'text-neutral-900 dark:text-white' : 'text-neutral-400'
-                    }`}>
-                      {locale === 'ka' ? stage.labelKa : stage.label}
+                    <span
+                      className={`text-[10px] font-medium hidden sm:block ${
+                        isCurrent
+                          ? "text-neutral-900 dark:text-white"
+                          : "text-neutral-400"
+                      }`}
+                    >
+                      {locale === "ka" ? stage.labelKa : stage.label}
                     </span>
                   </button>
                 );
@@ -600,7 +681,10 @@ export default function ProjectTrackerCard({
                 <div className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-white/30 to-transparent progress-bar-shine" />
               </div>
             </div>
-            <span className="font-mono text-sm font-bold" style={{ color: ACCENT }}>
+            <span
+              className="font-mono text-sm font-bold"
+              style={{ color: ACCENT }}
+            >
               {localProgress}%
             </span>
           </div>
@@ -613,11 +697,13 @@ export default function ProjectTrackerCard({
             <div className="flex items-center justify-center gap-1.5 text-neutral-400 mb-1">
               <Calendar className="w-3.5 h-3.5" />
               <span className="text-[10px] uppercase tracking-wider font-medium">
-                {locale === 'ka' ? 'დაწყება' : 'Started'}
+                {locale === "ka" ? "დაწყება" : "Started"}
               </span>
             </div>
             <span className="font-mono text-sm font-semibold text-neutral-900 dark:text-white">
-              {project.startedAt ? formatDate(project.startedAt, locale) : formatDate(project.hiredAt, locale)}
+              {project.startedAt
+                ? formatDate(project.startedAt, locale)
+                : formatDate(project.hiredAt, locale)}
             </span>
           </div>
 
@@ -626,15 +712,15 @@ export default function ProjectTrackerCard({
             <div className="flex items-center justify-center gap-1.5 text-neutral-400 mb-1">
               <Clock className="w-3.5 h-3.5" />
               <span className="text-[10px] uppercase tracking-wider font-medium">
-                {locale === 'ka' ? 'დასრულება' : 'Due'}
+                {locale === "ka" ? "დასრულება" : "Due"}
               </span>
             </div>
             <span className="font-mono text-sm font-semibold text-neutral-900 dark:text-white">
               {project.expectedEndDate
                 ? formatDate(project.expectedEndDate, locale)
                 : project.estimatedDuration
-                  ? `${project.estimatedDuration} ${project.estimatedDurationUnit || 'days'}`
-                  : '—'}
+                  ? `${project.estimatedDuration} ${project.estimatedDurationUnit || "days"}`
+                  : "—"}
             </span>
           </div>
 
@@ -642,17 +728,22 @@ export default function ProjectTrackerCard({
           <div className="px-4 py-3 text-center">
             <div className="flex items-center justify-center gap-1.5 text-neutral-400 mb-1">
               <span className="text-[10px] uppercase tracking-wider font-medium">
-                {locale === 'ka' ? 'თანხა' : 'Budget'}
+                {locale === "ka" ? "თანხა" : "Budget"}
               </span>
             </div>
-            <span className="font-mono text-sm font-semibold" style={{ color: ACCENT }}>
+            <span
+              className="font-mono text-sm font-semibold"
+              style={{ color: ACCENT }}
+            >
               {project.agreedPrice
                 ? `₾${project.agreedPrice.toLocaleString()}`
                 : job.budgetAmount
                   ? `₾${job.budgetAmount.toLocaleString()}`
                   : job.budgetMin && job.budgetMax
                     ? `₾${job.budgetMin.toLocaleString()}-${job.budgetMax.toLocaleString()}`
-                    : locale === 'ka' ? 'შეთანხმებით' : 'TBD'}
+                    : locale === "ka"
+                      ? "შეთანხმებით"
+                      : "TBD"}
             </span>
           </div>
         </div>
@@ -664,25 +755,38 @@ export default function ProjectTrackerCard({
             className="w-full flex items-center justify-between group"
           >
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ backgroundColor: `${ACCENT}15` }}>
+              <div
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full"
+                style={{ backgroundColor: `${ACCENT}15` }}
+              >
                 <MessageSquare className="w-4 h-4" style={{ color: ACCENT }} />
-                <span className="text-sm font-semibold" style={{ color: ACCENT }}>
-                  {locale === 'ka' ? 'ჩატი' : 'Chat'}
+                <span
+                  className="text-sm font-semibold"
+                  style={{ color: ACCENT }}
+                >
+                  {locale === "ka" ? "ჩატი" : "Chat"}
                 </span>
                 {messages.length > 0 && (
-                  <span className="w-5 h-5 rounded-full text-[10px] font-bold text-white flex items-center justify-center" style={{ backgroundColor: ACCENT }}>
+                  <span
+                    className="w-5 h-5 rounded-full text-[10px] font-bold text-white flex items-center justify-center"
+                    style={{ backgroundColor: ACCENT }}
+                  >
                     {messages.length}
                   </span>
                 )}
               </div>
               {messages.length > 0 && (
                 <span className="text-xs text-neutral-400 hidden sm:inline">
-                  {locale === 'ka' ? 'ბოლო:' : 'Last:'} {formatRelativeTime(messages[messages.length - 1].createdAt, locale)}
+                  {locale === "ka" ? "ბოლო:" : "Last:"}{" "}
+                  {formatRelativeTime(
+                    messages[messages.length - 1].createdAt,
+                    locale
+                  )}
                 </span>
               )}
             </div>
             <ChevronRight
-              className={`w-5 h-5 text-neutral-400 transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`}
+              className={`w-5 h-5 text-neutral-400 transition-transform duration-300 ${isExpanded ? "rotate-90" : ""}`}
             />
           </button>
 
@@ -695,25 +799,52 @@ export default function ProjectTrackerCard({
                 <div className="h-64 sm:h-80 overflow-y-auto p-4 space-y-3">
                   {isLoadingMessages ? (
                     <div className="flex items-center justify-center h-full">
-                      <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: ACCENT, borderTopColor: 'transparent' }} />
+                      <div
+                        className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin"
+                        style={{
+                          borderColor: ACCENT,
+                          borderTopColor: "transparent",
+                        }}
+                      />
                     </div>
                   ) : messages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-neutral-400">
                       <MessageSquare className="w-10 h-10 mb-2 opacity-50" />
-                      <p className="text-sm">{locale === 'ka' ? 'ჯერ არ არის შეტყობინება' : 'No messages yet'}</p>
-                      <p className="text-xs mt-1">{locale === 'ka' ? 'დაიწყე საუბარი' : 'Start the conversation'}</p>
+                      <p className="text-sm">
+                        {locale === "ka"
+                          ? "ჯერ არ არის შეტყობინება"
+                          : "No messages yet"}
+                      </p>
+                      <p className="text-xs mt-1">
+                        {locale === "ka"
+                          ? "დაიწყე საუბარი"
+                          : "Start the conversation"}
+                      </p>
                     </div>
                   ) : (
                     <>
                       {messages.map((msg, idx) => {
                         const senderId = getSenderId(msg.senderId);
                         const isMine = senderId === user?.id;
-                        const senderName = msg.senderName || (typeof msg.senderId === 'object' ? msg.senderId.name : '');
-                        const senderAvatar = msg.senderAvatar || (typeof msg.senderId === 'object' ? msg.senderId.avatar : undefined);
+                        const senderName =
+                          msg.senderName ||
+                          (typeof msg.senderId === "object"
+                            ? msg.senderId.name
+                            : "");
+                        const senderAvatar =
+                          msg.senderAvatar ||
+                          (typeof msg.senderId === "object"
+                            ? msg.senderId.avatar
+                            : undefined);
 
                         return (
-                          <div key={msg._id || idx} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`flex items-end gap-2 max-w-[80%] ${isMine ? 'flex-row-reverse' : ''}`}>
+                          <div
+                            key={msg._id || idx}
+                            className={`flex ${isMine ? "justify-end" : "justify-start"}`}
+                          >
+                            <div
+                              className={`flex items-end gap-2 max-w-[80%] ${isMine ? "flex-row-reverse" : ""}`}
+                            >
                               {!isMine && (
                                 <Avatar
                                   src={senderAvatar}
@@ -726,46 +857,62 @@ export default function ProjectTrackerCard({
                                 {/* Attachments */}
                                 {msg.attachments?.map((attachment, aIdx) => {
                                   // Check if it's an image (handle both file extensions and Cloudinary URLs)
-                                  const isImage = attachment.match(/\.(jpg|jpeg|png|gif|webp)$/i) ||
-                                    attachment.includes('/image/upload/') ||
-                                    attachment.includes('cloudinary') && !attachment.includes('/raw/');
+                                  const isImage =
+                                    attachment.match(
+                                      /\.(jpg|jpeg|png|gif|webp)$/i
+                                    ) ||
+                                    attachment.includes("/image/upload/") ||
+                                    (attachment.includes("cloudinary") &&
+                                      !attachment.includes("/raw/"));
 
                                   return (
-                                  <div key={aIdx} className="mb-1">
-                                    {isImage ? (
-                                      <a href={storage.getFileUrl(attachment)} target="_blank" rel="noopener noreferrer">
-                                        <img
-                                          src={storage.getFileUrl(attachment)}
-                                          alt=""
-                                          className="max-w-[200px] rounded-xl border border-neutral-200 dark:border-neutral-700"
-                                        />
-                                      </a>
-                                    ) : (
-                                      <a
-                                        href={storage.getFileUrl(attachment)}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-neutral-700 rounded-xl border border-neutral-200 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-600 transition-colors"
-                                      >
-                                        <FileText className="w-4 h-4 text-neutral-500" />
-                                        <span className="text-xs truncate max-w-[120px]">{attachment.split('/').pop()}</span>
-                                      </a>
-                                    )}
-                                  </div>
-                                );
+                                    <div key={aIdx} className="mb-1">
+                                      {isImage ? (
+                                        <a
+                                          href={storage.getFileUrl(attachment)}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                        >
+                                          <img
+                                            src={storage.getFileUrl(attachment)}
+                                            alt=""
+                                            className="max-w-[200px] rounded-xl border border-neutral-200 dark:border-neutral-700"
+                                          />
+                                        </a>
+                                      ) : (
+                                        <a
+                                          href={storage.getFileUrl(attachment)}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-neutral-700 rounded-xl border border-neutral-200 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-600 transition-colors"
+                                        >
+                                          <FileText className="w-4 h-4 text-neutral-500" />
+                                          <span className="text-xs truncate max-w-[120px]">
+                                            {attachment.split("/").pop()}
+                                          </span>
+                                        </a>
+                                      )}
+                                    </div>
+                                  );
                                 })}
                                 {/* Message Content */}
                                 {msg.content ? (
                                   <div
                                     className={`px-3.5 py-2 rounded-2xl ${
                                       isMine
-                                        ? 'rounded-br-md text-white'
-                                        : 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white rounded-bl-md border border-neutral-200 dark:border-neutral-600'
+                                        ? "rounded-br-md text-white"
+                                        : "bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white rounded-bl-md border border-neutral-200 dark:border-neutral-600"
                                     }`}
-                                    style={isMine ? { backgroundColor: ACCENT } : {}}
+                                    style={
+                                      isMine ? { backgroundColor: ACCENT } : {}
+                                    }
                                   >
-                                    <p className="text-sm leading-relaxed">{msg.content}</p>
-                                    <p className={`text-[10px] mt-1 ${isMine ? 'text-white/60' : 'text-neutral-400'}`}>
+                                    <p className="text-sm leading-relaxed">
+                                      {msg.content}
+                                    </p>
+                                    <p
+                                      className={`text-[10px] mt-1 ${isMine ? "text-white/60" : "text-neutral-400"}`}
+                                    >
                                       {formatMessageTime(msg.createdAt)}
                                     </p>
                                   </div>
@@ -783,9 +930,18 @@ export default function ProjectTrackerCard({
                       {otherUserTyping && (
                         <div className="flex items-center gap-2">
                           <div className="flex gap-1 px-3 py-2 bg-white dark:bg-neutral-700 rounded-2xl rounded-bl-md border border-neutral-200 dark:border-neutral-600">
-                            <span className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                            <span className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                            <span className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                            <span
+                              className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce"
+                              style={{ animationDelay: "0ms" }}
+                            />
+                            <span
+                              className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce"
+                              style={{ animationDelay: "150ms" }}
+                            />
+                            <span
+                              className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce"
+                              style={{ animationDelay: "300ms" }}
+                            />
                           </div>
                         </div>
                       )}
@@ -826,10 +982,16 @@ export default function ProjectTrackerCard({
                         setNewMessage(e.target.value);
                         emitTyping();
                       }}
-                      onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                      placeholder={locale === 'ka' ? 'დაწერე შეტყობინება...' : 'Type a message...'}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && !e.shiftKey && handleSendMessage()
+                      }
+                      placeholder={
+                        locale === "ka"
+                          ? "დაწერე შეტყობინება..."
+                          : "Type a message..."
+                      }
                       className="flex-1 px-4 py-2 text-sm bg-neutral-50 dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-1"
-                      style={{ '--tw-ring-color': ACCENT } as any}
+                      style={{ "--tw-ring-color": ACCENT } as any}
                     />
 
                     {/* Send Button */}
@@ -855,7 +1017,7 @@ export default function ProjectTrackerCard({
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-800 transition-colors"
           >
             <MessageSquare className="w-4 h-4" />
-            {locale === 'ka' ? 'მესიჯი' : 'Message'}
+            {locale === "ka" ? "მესიჯი" : "Message"}
           </Link>
 
           <Link
@@ -863,7 +1025,7 @@ export default function ProjectTrackerCard({
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90"
             style={{ backgroundColor: ACCENT }}
           >
-            {locale === 'ka' ? 'დეტალები' : 'View Details'}
+            {locale === "ka" ? "დეტალები" : "View Details"}
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
@@ -879,7 +1041,7 @@ export default function ProjectTrackerCard({
           <div className="relative bg-white dark:bg-neutral-900 rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-4 border-b border-neutral-100 dark:border-neutral-800">
               <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
-                {locale === 'ka' ? 'სტატუსის განახლება' : 'Update Stage'}
+                {locale === "ka" ? "სტატუსის განახლება" : "Update Stage"}
               </h3>
               <button
                 onClick={() => setShowStageModal(false)}
@@ -901,32 +1063,45 @@ export default function ProjectTrackerCard({
                     disabled={!canSelect || isSubmitting}
                     className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
                       isCurrent
-                        ? 'ring-2'
+                        ? "ring-2"
                         : canSelect
-                        ? 'hover:bg-neutral-50 dark:hover:bg-neutral-800'
-                        : 'opacity-50 cursor-not-allowed'
+                          ? "hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                          : "opacity-50 cursor-not-allowed"
                     }`}
                     style={{
                       backgroundColor: isCurrent ? `${ACCENT}10` : undefined,
-                      ['--tw-ring-color' as any]: ACCENT,
+                      ["--tw-ring-color" as any]: ACCENT,
                     }}
                   >
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        isCompleted || isCurrent ? 'text-white' : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400'
+                        isCompleted || isCurrent
+                          ? "text-white"
+                          : "bg-neutral-200 dark:bg-neutral-700 text-neutral-400"
                       }`}
-                      style={{ backgroundColor: isCompleted || isCurrent ? ACCENT : undefined }}
+                      style={{
+                        backgroundColor:
+                          isCompleted || isCurrent ? ACCENT : undefined,
+                      }}
                     >
                       {stage.icon}
                     </div>
-                    <span className={`font-medium ${
-                      isCurrent ? '' : 'text-neutral-600 dark:text-neutral-400'
-                    }`} style={{ color: isCurrent ? ACCENT : undefined }}>
-                      {locale === 'ka' ? stage.labelKa : stage.label}
+                    <span
+                      className={`font-medium ${
+                        isCurrent
+                          ? ""
+                          : "text-neutral-600 dark:text-neutral-400"
+                      }`}
+                      style={{ color: isCurrent ? ACCENT : undefined }}
+                    >
+                      {locale === "ka" ? stage.labelKa : stage.label}
                     </span>
                     {isCurrent && (
-                      <span className="ml-auto text-xs px-2 py-1 rounded-full text-white" style={{ backgroundColor: ACCENT }}>
-                        {locale === 'ka' ? 'მიმდინარე' : 'Current'}
+                      <span
+                        className="ml-auto text-xs px-2 py-1 rounded-full text-white"
+                        style={{ backgroundColor: ACCENT }}
+                      >
+                        {locale === "ka" ? "მიმდინარე" : "Current"}
                       </span>
                     )}
                   </button>

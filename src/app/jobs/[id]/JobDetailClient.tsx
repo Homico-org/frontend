@@ -1863,12 +1863,15 @@ export default function JobDetailClient() {
                     type="number"
                     min="1"
                     value={proposalData.estimatedDuration}
-                    onChange={(e) =>
-                      setProposalData({
-                        ...proposalData,
-                        estimatedDuration: e.target.value,
-                      })
-                    }
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '' || parseInt(value) >= 1) {
+                        setProposalData({
+                          ...proposalData,
+                          estimatedDuration: value,
+                        });
+                      }
+                    }}
                     className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-body focus:outline-none focus:ring-2 transition-all"
                     style={{ "--tw-ring-color": ACCENT } as any}
                     placeholder="0"

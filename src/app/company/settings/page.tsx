@@ -349,7 +349,13 @@ export default function CompanySettingsPage() {
                     <input
                       type="number"
                       value={settings.foundedYear || ''}
-                      onChange={(e) => setSettings({ ...settings, foundedYear: parseInt(e.target.value) || undefined })}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const parsed = parseInt(value);
+                        if (value === '' || (parsed >= 1900 && parsed <= new Date().getFullYear())) {
+                          setSettings({ ...settings, foundedYear: parsed || undefined });
+                        }
+                      }}
                       min="1900"
                       max={new Date().getFullYear()}
                       className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[#E07B4F] transition-colors"

@@ -1,6 +1,7 @@
 "use client";
 
 import AddressPicker from "@/components/common/AddressPicker";
+import { Input, Textarea } from "@/components/ui/input";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useRef, useState } from "react";
 
@@ -896,7 +897,7 @@ export default function ProjectsStep({
                 {locale === "ka" ? "პროექტის სახელი" : "Project Title"}{" "}
                 <span className="text-red-500">*</span>
               </label>
-              <input
+              <Input
                 type="text"
                 value={currentProject.title}
                 onChange={(e) =>
@@ -910,7 +911,7 @@ export default function ProjectsStep({
                     ? "მაგ: აპარტამენტის რემონტი ვაკეში"
                     : "e.g., Apartment Renovation"
                 }
-                className="w-full px-4 py-3 rounded-xl border-2 border-neutral-200 bg-white text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]/50 transition-all"
+                inputSize="lg"
               />
             </div>
 
@@ -932,7 +933,7 @@ export default function ProjectsStep({
               <label className="block text-sm font-medium text-neutral-700 mb-2">
                 {locale === "ka" ? "აღწერა" : "Description"}
               </label>
-              <textarea
+              <Textarea
                 value={currentProject.description}
                 onChange={(e) =>
                   setCurrentProject((prev) => ({
@@ -946,7 +947,7 @@ export default function ProjectsStep({
                     : "Briefly describe what you did..."
                 }
                 rows={2}
-                className="w-full px-4 py-3 rounded-xl border-2 border-neutral-200 bg-white text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]/50 transition-all resize-none"
+                textareaSize="sm"
               />
             </div>
 

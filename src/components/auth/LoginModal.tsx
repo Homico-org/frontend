@@ -4,47 +4,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage, countries, CountryCode } from '@/contexts/LanguageContext';
 import { AnalyticsEvent, useAnalytics } from '@/hooks/useAnalytics';
+import GoogleSignInButton, { GoogleUserData } from './GoogleSignInButton';
+import { Tabs, Tab } from '@/components/ui/Tabs';
 import Link from 'next/link';
-import Script from 'next/script';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-// Google OAuth types
-interface GoogleAccountsId {
-  initialize: (config: {
-    client_id: string;
-    callback: (response: { credential: string }) => void;
-    auto_select?: boolean;
-  }) => void;
-  prompt: () => void;
-  renderButton: (
-    parent: HTMLElement,
-    options: {
-      theme?: 'outline' | 'filled_blue' | 'filled_black';
-      size?: 'large' | 'medium' | 'small';
-      text?: 'signin_with' | 'signup_with' | 'continue_with' | 'signin';
-      shape?: 'rectangular' | 'pill' | 'circle' | 'square';
-      logo_alignment?: 'left' | 'center';
-      width?: number;
-      locale?: string;
-    }
-  ) => void;
-}
 
-// JWT decode helper
-function decodeJwt(token: string): { email: string; name: string; picture?: string; sub: string } | null {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
-      '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-    ).join(''));
-    return JSON.parse(jsonPayload);
-  } catch {
-    return null;
-  }
-}
-
+// Auth method types
+type AuthMethod = 'google' | 'mobile' | 'email';
 
 export default function LoginModal() {
   const router = useRouter();
@@ -53,10 +21,31 @@ export default function LoginModal() {
   const { t, locale } = useLanguage();
   const { trackEvent } = useAnalytics();
 
+  // Auth method tab state - initialize from saved registration method if available
+  const [activeTab, setActiveTab] = useState<AuthMethod>(() => {
+    if (typeof window !== 'undefined') {
+      const savedMethod = localStorage.getItem('homi_last_auth_method') as AuthMethod | null;
+      if (savedMethod && ['google', 'mobile', 'email'].includes(savedMethod)) {
+        return savedMethod;
+      }
+    }
+    return 'google';
+  });
+
+  // Saved registration info for indicator
+  const [savedAuthMethod, setSavedAuthMethod] = useState<AuthMethod | null>(null);
+  const [savedAuthIdentifier, setSavedAuthIdentifier] = useState<string | null>(null);
+
   // Form state - initialize from localStorage for returning users
   const [phone, setPhone] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('lastLoginPhone') || '';
+    }
+    return '';
+  });
+  const [email, setEmail] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('lastLoginEmail') || '';
     }
     return '';
   });
@@ -75,18 +64,9 @@ export default function LoginModal() {
   const [isVisible, setIsVisible] = useState(false);
 
   // Google OAuth state
-  const [googleScriptLoaded, setGoogleScriptLoaded] = useState(() => {
-    // Check if script is already loaded (e.g., from cache)
-    if (typeof window !== 'undefined') {
-      return !!(window as any)?.google?.accounts?.id;
-    }
-    return false;
-  });
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [googleButtonRendered, setGoogleButtonRendered] = useState(false);
 
   const countryDropdownRef = useRef<HTMLDivElement>(null);
-  const googleButtonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isLoginModalOpen) {
@@ -108,24 +88,6 @@ export default function LoginModal() {
     return () => document.removeEventListener('keydown', handleEscKey);
   }, [isLoginModalOpen, handleEscKey]);
 
-  // Check for Google script on mount (handles cached script scenario)
-  useEffect(() => {
-    if (!googleScriptLoaded) {
-      const checkGoogle = () => {
-        if ((window as any)?.google?.accounts?.id) {
-          setGoogleScriptLoaded(true);
-        }
-      };
-      checkGoogle();
-      const interval = setInterval(checkGoogle, 100);
-      const timeout = setTimeout(() => clearInterval(interval), 3000);
-      return () => {
-        clearInterval(interval);
-        clearTimeout(timeout);
-      };
-    }
-  }, [googleScriptLoaded]);
-
   // Close country dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -139,22 +101,25 @@ export default function LoginModal() {
 
   useEffect(() => {
     if (!isLoginModalOpen) {
-      // Don't clear phone/country - keep them for next login
+      // Don't clear phone/email/country - keep them for next login
       setPassword('');
       setError('');
       setShowPassword(false);
-      setGoogleButtonRendered(false);
     }
   }, [isLoginModalOpen]);
 
-  // Handle Google Sign In callback
-  const handleGoogleCallback = useCallback(async (response: { credential: string }) => {
-    const decoded = decodeJwt(response.credential);
-    if (!decoded) {
-      setError(locale === 'ka' ? 'Google-ით შესვლა ვერ მოხერხდა' : 'Failed to sign in with Google');
-      return;
+  // Load saved auth method from localStorage on mount
+  useEffect(() => {
+    const method = localStorage.getItem('homi_last_auth_method') as AuthMethod | null;
+    const identifier = localStorage.getItem('homi_last_auth_identifier');
+    if (method && ['google', 'mobile', 'email'].includes(method)) {
+      setSavedAuthMethod(method);
+      setSavedAuthIdentifier(identifier);
     }
+  }, []);
 
+  // Handle Google Sign In success from GoogleSignInButton component
+  const handleGoogleSuccess = useCallback(async (userData: GoogleUserData) => {
     setIsGoogleLoading(true);
     setError('');
 
@@ -164,10 +129,10 @@ export default function LoginModal() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          googleId: decoded.sub,
-          email: decoded.email,
-          name: decoded.name,
-          picture: decoded.picture,
+          googleId: userData.googleId,
+          email: userData.email,
+          name: userData.name,
+          picture: userData.picture,
           // For login, we don't need phone - backend will check if user exists
         }),
       });
@@ -212,66 +177,45 @@ export default function LoginModal() {
     }
   }, [locale, login, trackEvent, closeLoginModal, redirectPath, router, clearRedirectPath]);
 
-  // Initialize Google Sign In
-  useEffect(() => {
-    if (!googleScriptLoaded || !isLoginModalOpen || !googleButtonRef.current) return;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const googleAccounts = (window as any)?.google?.accounts?.id as GoogleAccountsId | undefined;
-    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-
-    if (googleAccounts && clientId) {
-      googleAccounts.initialize({
-        client_id: clientId,
-        callback: handleGoogleCallback,
-      });
-
-      // Clear any existing content before rendering
-      if (googleButtonRef.current) {
-        googleButtonRef.current.innerHTML = '';
-      }
-
-      // Render the Google button
-      googleAccounts.renderButton(googleButtonRef.current, {
-        theme: 'outline',
-        size: 'large',
-        text: 'continue_with',
-        shape: 'rectangular',
-        logo_alignment: 'left',
-        width: 332,
-      });
-
-      setGoogleButtonRendered(true);
-    }
-  }, [googleScriptLoaded, isLoginModalOpen, handleGoogleCallback]);
+  // Handle Google Sign In error
+  const handleGoogleError = useCallback((errorMsg: string) => {
+    console.error('Google Sign In Error:', errorMsg);
+    setError(locale === 'ka' ? 'Google-ით შესვლა ვერ მოხერხდა' : 'Failed to sign in with Google');
+  }, [locale]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
-    // Build phone number with prefix
-    const fullPhone = `${countries[phoneCountry].phonePrefix}${phone.replace(/\s/g, '')}`;
+    // Build identifier based on active tab
+    const identifier = activeTab === 'email'
+      ? email
+      : `${countries[phoneCountry].phonePrefix}${phone.replace(/\s/g, '')}`;
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier: fullPhone, password }),
+        body: JSON.stringify({ identifier, password }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Login failed');
 
-      // Save phone credentials for next login
+      // Save credentials for next login
       try {
-        localStorage.setItem('lastLoginPhone', phone);
-        localStorage.setItem('lastLoginCountry', phoneCountry);
+        if (activeTab === 'email') {
+          localStorage.setItem('lastLoginEmail', email);
+        } else {
+          localStorage.setItem('lastLoginPhone', phone);
+          localStorage.setItem('lastLoginCountry', phoneCountry);
+        }
       } catch {
         // Ignore localStorage errors
       }
 
       login(data.access_token, data.user);
-      trackEvent(AnalyticsEvent.LOGIN, { userRole: data.user.role });
+      trackEvent(AnalyticsEvent.LOGIN, { userRole: data.user.role, authMethod: activeTab });
       closeLoginModal();
 
       if (redirectPath) {
@@ -304,13 +248,6 @@ export default function LoginModal() {
   if (!isLoginModalOpen) return null;
 
   return (
-    <>
-      <Script
-        src="https://accounts.google.com/gsi/client"
-        onLoad={() => setGoogleScriptLoaded(true)}
-        strategy="lazyOnload"
-      />
-
       <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
         {/* Backdrop */}
         <div
@@ -352,9 +289,78 @@ export default function LoginModal() {
                   {locale === 'ka' ? 'შესვლა' : 'Welcome back'}
                 </h2>
                 <p className="text-sm text-neutral-500 mt-0.5">
-                  {locale === 'ka' ? 'შეიყვანეთ თქვენი მონაცემები' : 'Enter your credentials to continue'}
+                  {locale === 'ka' ? 'აირჩიეთ შესვლის მეთოდი' : 'Choose your login method'}
                 </p>
               </div>
+
+              {/* Auth Method Tabs */}
+              <Tabs
+                tabs={[
+                  {
+                    id: 'google',
+                    label: 'Google',
+                    icon: (
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                      </svg>
+                    ),
+                    badge: savedAuthMethod === 'google' ? '✓' : undefined,
+                  },
+                  {
+                    id: 'mobile',
+                    label: locale === 'ka' ? 'მობილური' : 'Mobile',
+                    icon: (
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+                      </svg>
+                    ),
+                    badge: savedAuthMethod === 'mobile' ? '✓' : undefined,
+                  },
+                  {
+                    id: 'email',
+                    label: 'Email',
+                    icon: (
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                      </svg>
+                    ),
+                    badge: savedAuthMethod === 'email' ? '✓' : undefined,
+                  },
+                ]}
+                activeTab={activeTab}
+                onChange={(tabId) => setActiveTab(tabId as AuthMethod)}
+                variant="pills"
+                size="sm"
+                fullWidth
+                className="mb-4"
+              />
+
+              {/* Saved auth method indicator */}
+              {savedAuthMethod && savedAuthIdentifier && (
+                <div className="mb-3 p-2.5 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-2">
+                  <svg className="w-4 h-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p className="text-xs text-emerald-700">
+                    {locale === 'ka'
+                      ? `დარეგისტრირებული ხართ ${savedAuthMethod === 'google' ? 'Google' : savedAuthMethod === 'mobile' ? 'მობილურით' : 'Email'}-ით`
+                      : `You registered with ${savedAuthMethod === 'google' ? 'Google' : savedAuthMethod === 'mobile' ? 'Mobile' : 'Email'}`}
+                    {savedAuthIdentifier && (
+                      <span className="font-medium"> ({savedAuthIdentifier.length > 20 ? savedAuthIdentifier.slice(0, 20) + '...' : savedAuthIdentifier})</span>
+                    )}
+                  </p>
+                </div>
+              )}
+
+              {/* Info Message */}
+              {!savedAuthMethod && (
+                <p className="text-xs text-neutral-500 text-center mb-4">
+                  {locale === 'ka' ? 'შედით იმავე მეთოდით რომლითაც დარეგისტრირდით' : 'Login with the same method you registered with'}
+                </p>
+              )}
 
               {/* Error Message */}
               {error && (
@@ -366,159 +372,224 @@ export default function LoginModal() {
                 </div>
               )}
 
-              {/* Google Sign In Button Container */}
-              <div className="flex justify-center">
-                {/* Loading placeholder - shown until Google button is rendered */}
-                {!googleButtonRendered && (
-                  <div className="w-full h-10 bg-neutral-100 rounded-lg animate-pulse flex items-center justify-center">
-                    <span className="text-xs text-neutral-400">{locale === 'ka' ? 'იტვირთება...' : 'Loading...'}</span>
-                  </div>
-                )}
-                {/* Google button container - hidden until rendered to avoid layout shift */}
-                <div
-                  ref={googleButtonRef}
-                  className={`google-signin-button flex justify-center ${!googleButtonRendered ? 'hidden' : ''}`}
-                />
-              </div>
-              {isGoogleLoading && (
-                <div className="flex justify-center mt-2">
-                  <svg className="animate-spin h-5 w-5 text-neutral-500" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                </div>
-              )}
-
-              {/* Divider */}
-              <div className="flex items-center my-4">
-                <div className="flex-1 h-px bg-neutral-200"></div>
-                <span className="px-3 text-xs text-neutral-400 font-medium">
-                  {locale === 'ka' ? 'ან' : 'or'}
-                </span>
-                <div className="flex-1 h-px bg-neutral-200"></div>
-              </div>
-
-              {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-3">
-                {/* Phone Input with Country Selector */}
-                <div>
-                  <label htmlFor="login-phone" className="block text-xs font-medium text-neutral-600 mb-1.5">
-                    {locale === 'ka' ? 'ტელეფონის ნომერი' : 'Phone Number'}
-                  </label>
-                  <div className="flex gap-2">
-                    {/* Country Selector */}
-                    <div className="relative" ref={countryDropdownRef}>
-                      <button
-                        type="button"
-                        onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-                        className="h-11 px-2.5 bg-neutral-50 border border-neutral-200 rounded-xl flex items-center gap-1.5 hover:bg-neutral-100 transition-colors"
-                      >
-                        <span className="text-base">{countries[phoneCountry].flag}</span>
-                        <span className="text-xs font-medium text-neutral-600">{countries[phoneCountry].phonePrefix}</span>
-                        <svg className="w-3 h-3 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-
-                      {showCountryDropdown && (
-                        <div className="absolute top-full left-0 mt-1 w-44 bg-white border border-neutral-200 rounded-xl shadow-lg z-20 py-1 overflow-hidden">
-                          {(Object.keys(countries) as CountryCode[]).map((code) => (
-                            <button
-                              key={code}
-                              type="button"
-                              onClick={() => {
-                                setPhoneCountry(code);
-                                setShowCountryDropdown(false);
-                              }}
-                              className={`w-full px-3 py-2 flex items-center gap-2.5 hover:bg-neutral-50 transition-colors ${phoneCountry === code ? 'bg-[#FEF6F3]' : ''}`}
-                            >
-                              <span className="text-base">{countries[code].flag}</span>
-                              <span className="text-sm font-medium text-neutral-700 flex-1 text-left">{countries[code].name}</span>
-                              <span className="text-xs text-neutral-500">{countries[code].phonePrefix}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Phone Number Input */}
-                    <input
-                      id="login-phone"
-                      type="tel"
-                      inputMode="numeric"
-                      required
-                      value={phone}
-                      onChange={(e) => handlePhoneChange(e.target.value)}
-                      className="flex-1 h-11 px-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#E07B4F]/20 focus:border-[#E07B4F]/50 transition-all text-sm"
-                      placeholder={countries[phoneCountry].placeholder}
-                    />
-                  </div>
-                </div>
-
-                {/* Password Input */}
-                <div>
-                  <label htmlFor="login-password" className="block text-xs font-medium text-neutral-600 mb-1.5">
-                    {locale === 'ka' ? 'პაროლი' : 'Password'}
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="login-password"
-                      type={showPassword ? 'text' : 'password'}
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full h-11 px-3 pr-10 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#E07B4F]/20 focus:border-[#E07B4F]/50 transition-all text-sm"
-                      placeholder={locale === 'ka' ? 'შეიყვანეთ პაროლი' : 'Enter your password'}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
-                    >
-                      {showPassword ? (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                        </svg>
-                      ) : (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Forgot Password Link */}
-                <div className="flex justify-end">
-                  <Link
-                    href="/forgot-password"
-                    onClick={closeLoginModal}
-                    className="text-xs font-medium text-[#E07B4F] hover:text-[#C4735B] transition-colors"
-                  >
-                    {locale === 'ka' ? 'დაგავიწყდა პაროლი?' : 'Forgot Password?'}
-                  </Link>
-                </div>
-
-                {/* Login Button */}
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full h-11 bg-gradient-to-r from-[#E07B4F] to-[#C4735B] hover:from-[#D06A3E] hover:to-[#B3624A] text-white font-semibold rounded-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-[#E07B4F]/20 hover:shadow-[#E07B4F]/30 text-sm"
-                >
-                  {isLoading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              {/* Google Tab Content */}
+              {activeTab === 'google' && (
+                <div className="space-y-4">
+                  <GoogleSignInButton
+                    buttonKey="login-modal"
+                    text="signin_with"
+                    onSuccess={handleGoogleSuccess}
+                    onError={handleGoogleError}
+                    isActive={activeTab === 'google' && isLoginModalOpen}
+                    loadingText={locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
+                  />
+                  {isGoogleLoading && (
+                    <div className="flex justify-center">
+                      <svg className="animate-spin h-5 w-5 text-neutral-500" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      {locale === 'ka' ? 'შესვლა...' : 'Signing in...'}
-                    </span>
-                  ) : (
-                    <span>{locale === 'ka' ? 'შესვლა' : 'Sign In'}</span>
+                    </div>
                   )}
-                </button>
-              </form>
+                </div>
+              )}
+
+              {/* Mobile Tab Content */}
+              {activeTab === 'mobile' && (
+                <form onSubmit={handleSubmit} className="space-y-3">
+                  <div>
+                    <label htmlFor="login-phone" className="block text-xs font-medium text-neutral-600 mb-1.5">
+                      {locale === 'ka' ? 'ტელეფონის ნომერი' : 'Phone Number'}
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="relative" ref={countryDropdownRef}>
+                        <button
+                          type="button"
+                          onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                          className="h-11 px-2.5 bg-neutral-50 border border-neutral-200 rounded-xl flex items-center gap-1.5 hover:bg-neutral-100 transition-colors"
+                        >
+                          <span className="text-base">{countries[phoneCountry].flag}</span>
+                          <span className="text-xs font-medium text-neutral-600">{countries[phoneCountry].phonePrefix}</span>
+                          <svg className="w-3 h-3 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                        {showCountryDropdown && (
+                          <div className="absolute top-full left-0 mt-1 w-44 bg-white border border-neutral-200 rounded-xl shadow-lg z-20 py-1 overflow-hidden">
+                            {(Object.keys(countries) as CountryCode[]).map((code) => (
+                              <button
+                                key={code}
+                                type="button"
+                                onClick={() => {
+                                  setPhoneCountry(code);
+                                  setShowCountryDropdown(false);
+                                }}
+                                className={`w-full px-3 py-2 flex items-center gap-2.5 hover:bg-neutral-50 transition-colors ${phoneCountry === code ? 'bg-[#FEF6F3]' : ''}`}
+                              >
+                                <span className="text-base">{countries[code].flag}</span>
+                                <span className="text-sm font-medium text-neutral-700 flex-1 text-left">{countries[code].name}</span>
+                                <span className="text-xs text-neutral-500">{countries[code].phonePrefix}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <input
+                        id="login-phone"
+                        type="tel"
+                        inputMode="numeric"
+                        required
+                        value={phone}
+                        onChange={(e) => handlePhoneChange(e.target.value)}
+                        className="flex-1 h-11 px-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#E07B4F]/20 focus:border-[#E07B4F]/50 transition-all text-sm"
+                        placeholder={countries[phoneCountry].placeholder}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="login-password-mobile" className="block text-xs font-medium text-neutral-600 mb-1.5">
+                      {locale === 'ka' ? 'პაროლი' : 'Password'}
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="login-password-mobile"
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full h-11 px-3 pr-10 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#E07B4F]/20 focus:border-[#E07B4F]/50 transition-all text-sm"
+                        placeholder={locale === 'ka' ? 'შეიყვანეთ პაროლი' : 'Enter your password'}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
+                      >
+                        {showPassword ? (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Link
+                      href="/forgot-password"
+                      onClick={closeLoginModal}
+                      className="text-xs font-medium text-[#E07B4F] hover:text-[#C4735B] transition-colors"
+                    >
+                      {locale === 'ka' ? 'დაგავიწყდა პაროლი?' : 'Forgot Password?'}
+                    </Link>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-11 bg-gradient-to-r from-[#E07B4F] to-[#C4735B] hover:from-[#D06A3E] hover:to-[#B3624A] text-white font-semibold rounded-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-[#E07B4F]/20 hover:shadow-[#E07B4F]/30 text-sm"
+                  >
+                    {isLoading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        {locale === 'ka' ? 'შესვლა...' : 'Signing in...'}
+                      </span>
+                    ) : (
+                      <span>{locale === 'ka' ? 'შესვლა' : 'Sign In'}</span>
+                    )}
+                  </button>
+                </form>
+              )}
+
+              {/* Email Tab Content */}
+              {activeTab === 'email' && (
+                <form onSubmit={handleSubmit} className="space-y-3">
+                  <div>
+                    <label htmlFor="login-email" className="block text-xs font-medium text-neutral-600 mb-1.5">
+                      {locale === 'ka' ? 'ელ-ფოსტა' : 'Email'}
+                    </label>
+                    <input
+                      id="login-email"
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full h-11 px-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#E07B4F]/20 focus:border-[#E07B4F]/50 transition-all text-sm"
+                      placeholder={locale === 'ka' ? 'შეიყვანეთ ელ-ფოსტა' : 'Enter your email'}
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="login-password-email" className="block text-xs font-medium text-neutral-600 mb-1.5">
+                      {locale === 'ka' ? 'პაროლი' : 'Password'}
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="login-password-email"
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full h-11 px-3 pr-10 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#E07B4F]/20 focus:border-[#E07B4F]/50 transition-all text-sm"
+                        placeholder={locale === 'ka' ? 'შეიყვანეთ პაროლი' : 'Enter your password'}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
+                      >
+                        {showPassword ? (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Link
+                      href="/forgot-password"
+                      onClick={closeLoginModal}
+                      className="text-xs font-medium text-[#E07B4F] hover:text-[#C4735B] transition-colors"
+                    >
+                      {locale === 'ka' ? 'დაგავიწყდა პაროლი?' : 'Forgot Password?'}
+                    </Link>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-11 bg-gradient-to-r from-[#E07B4F] to-[#C4735B] hover:from-[#D06A3E] hover:to-[#B3624A] text-white font-semibold rounded-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-[#E07B4F]/20 hover:shadow-[#E07B4F]/30 text-sm"
+                  >
+                    {isLoading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        {locale === 'ka' ? 'შესვლა...' : 'Signing in...'}
+                      </span>
+                    ) : (
+                      <span>{locale === 'ka' ? 'შესვლა' : 'Sign In'}</span>
+                    )}
+                  </button>
+                </form>
+              )}
 
               {/* Sign Up Link */}
               <p className="text-center text-xs text-neutral-500 mt-4">
@@ -535,6 +606,5 @@ export default function LoginModal() {
           </div>
         </div>
       </div>
-    </>
   );
 }

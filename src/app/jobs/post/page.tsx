@@ -457,7 +457,12 @@ export default function PostJobPage() {
                       min="0"
                       step="0.1"
                       value={formData.areaSize}
-                      onChange={(e) => setFormData({ ...formData, areaSize: e.target.value })}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === '' || parseFloat(value) >= 0) {
+                          setFormData({ ...formData, areaSize: value });
+                        }
+                      }}
                       className="input flex-1"
                       placeholder="85"
                     />
@@ -482,7 +487,12 @@ export default function PostJobPage() {
                     type="number"
                     min="0"
                     value={formData.roomCount}
-                    onChange={(e) => setFormData({ ...formData, roomCount: e.target.value })}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '' || parseFloat(value) >= 0) {
+                        setFormData({ ...formData, roomCount: value });
+                      }
+                    }}
                     className="input"
                     placeholder="3"
                   />
@@ -596,7 +606,12 @@ export default function PostJobPage() {
                       min="0"
                       step="1"
                       value={formData.budgetAmount}
-                      onChange={(e) => setFormData({ ...formData, budgetAmount: e.target.value })}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === '' || parseFloat(value) >= 0) {
+                          setFormData({ ...formData, budgetAmount: value });
+                        }
+                      }}
                       className="input w-full pl-14"
                       placeholder={t('postJob.totalBudgetPlaceholder')}
                     />
@@ -612,7 +627,12 @@ export default function PostJobPage() {
                         min="0"
                         step="1"
                         value={formData.budgetMin}
-                        onChange={(e) => setFormData({ ...formData, budgetMin: e.target.value })}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === '' || parseFloat(value) >= 0) {
+                            setFormData({ ...formData, budgetMin: value });
+                          }
+                        }}
                         className="input pl-14"
                         placeholder={t('postJob.minBudget')}
                       />
@@ -624,7 +644,12 @@ export default function PostJobPage() {
                         min="0"
                         step="1"
                         value={formData.budgetMax}
-                        onChange={(e) => setFormData({ ...formData, budgetMax: e.target.value })}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === '' || parseFloat(value) >= 0) {
+                            setFormData({ ...formData, budgetMax: value });
+                          }
+                        }}
                         className="input pl-14"
                         placeholder={t('postJob.maxBudget')}
                       />
@@ -641,7 +666,12 @@ export default function PostJobPage() {
                         min="0"
                         step="1"
                         value={formData.pricePerUnit}
-                        onChange={(e) => setFormData({ ...formData, pricePerUnit: e.target.value })}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === '' || parseFloat(value) >= 0) {
+                            setFormData({ ...formData, pricePerUnit: value });
+                          }
+                        }}
                         className="input w-full pl-14"
                         placeholder={t('postJob.pricePerSqmPlaceholder')}
                       />

@@ -60,6 +60,13 @@ function ProProfileSetupPageContent() {
     pricingModel: '' as 'hourly' | 'daily' | 'sqm' | 'project_based' | '',
     serviceAreas: [] as string[],
     nationwide: false,
+    // Social media
+    whatsapp: '',
+    telegram: '',
+    instagram: '',
+    facebook: '',
+    linkedin: '',
+    website: '',
   });
 
   const [portfolioProjects, setPortfolioProjects] = useState<PortfolioProject[]>([]);
@@ -569,6 +576,12 @@ function ProProfileSetupPageContent() {
                   bio: formData.bio,
                   yearsExperience: formData.yearsExperience,
                   avatar: formData.avatar,
+                  whatsapp: formData.whatsapp,
+                  telegram: formData.telegram,
+                  instagram: formData.instagram,
+                  facebook: formData.facebook,
+                  linkedin: formData.linkedin,
+                  website: formData.website,
                 }}
                 avatarPreview={avatarPreview}
                 onFormChange={handleFormChange}

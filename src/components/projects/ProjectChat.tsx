@@ -10,7 +10,9 @@ import {
   FileText,
   MessageSquare,
   Paperclip,
+  Search,
   Send,
+  X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
@@ -77,6 +79,12 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Refs
   const socketRef = useRef<Socket | null>(null);
@@ -230,6 +238,40 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
     }
   };
 
+  // Search functionality
+  const filteredMessages = searchQuery.trim()
+    ? messages.filter(msg => msg.content?.toLowerCase().includes(searchQuery.toLowerCase()))
+    : messages;
+
+  const searchResultCount = filteredMessages.length;
+
+  const handleSearchToggle = () => {
+    setIsSearchOpen(!isSearchOpen);
+    setSearchQuery('');
+    setCurrentSearchIndex(0);
+    if (!isSearchOpen) {
+      setTimeout(() => searchInputRef.current?.focus(), 100);
+    }
+  };
+
+  const navigateSearch = (direction: 'next' | 'prev') => {
+    if (searchResultCount === 0) return;
+    if (direction === 'next') {
+      setCurrentSearchIndex((prev) => (prev + 1) % searchResultCount);
+    } else {
+      setCurrentSearchIndex((prev) => (prev - 1 + searchResultCount) % searchResultCount);
+    }
+  };
+
+  // Scroll to search result
+  useEffect(() => {
+    if (searchQuery && filteredMessages.length > 0 && currentSearchIndex < filteredMessages.length) {
+      const messageId = filteredMessages[currentSearchIndex]._id;
+      const element = document.getElementById(`msg-${messageId}`);
+      element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [currentSearchIndex, searchQuery, filteredMessages]);
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -288,6 +330,78 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
         <div className="px-4 pb-4 animate-in slide-in-from-top-2 duration-200">
           {/* Messages Container */}
           <div className="bg-[var(--color-bg-tertiary)]/50 rounded-2xl overflow-hidden">
+            {/* Search Bar */}
+            <div className="px-3 py-2 border-b border-[var(--color-border)] bg-[var(--color-bg-elevated)] flex items-center gap-2">
+              {isSearchOpen ? (
+                <>
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        setCurrentSearchIndex(0);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          navigateSearch('next');
+                        } else if (e.key === 'Escape') {
+                          handleSearchToggle();
+                        }
+                      }}
+                      placeholder={locale === 'ka' ? 'ძებნა შეტყობინებებში...' : 'Search messages...'}
+                      className="w-full pl-9 pr-3 py-1.5 text-sm bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#C4735B]/30"
+                    />
+                  </div>
+                  {searchQuery && (
+                    <span className="text-xs text-[var(--color-text-tertiary)] whitespace-nowrap">
+                      {searchResultCount > 0 ? `${currentSearchIndex + 1}/${searchResultCount}` : locale === 'ka' ? '0 შედეგი' : '0 results'}
+                    </span>
+                  )}
+                  {searchQuery && searchResultCount > 0 && (
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => navigateSearch('prev')}
+                        className="w-7 h-7 rounded-md flex items-center justify-center text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                      >
+                        <ChevronRight className="w-4 h-4 rotate-180" />
+                      </button>
+                      <button
+                        onClick={() => navigateSearch('next')}
+                        className="w-7 h-7 rounded-md flex items-center justify-center text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                  <button
+                    onClick={handleSearchToggle}
+                    className="w-7 h-7 rounded-md flex items-center justify-center text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span className="flex-1 text-xs text-[var(--color-text-tertiary)]">
+                    {messages.length > 0
+                      ? (locale === 'ka' ? `${messages.length} შეტყობინება` : `${messages.length} messages`)
+                      : (locale === 'ka' ? 'დაიწყე საუბარი' : 'Start a conversation')
+                    }
+                  </span>
+                  <button
+                    onClick={handleSearchToggle}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                    title={locale === 'ka' ? 'ძებნა' : 'Search'}
+                  >
+                    <Search className="w-4 h-4" />
+                  </button>
+                </>
+              )}
+            </div>
+
             {/* Messages Area */}
             <div className="h-64 sm:h-80 overflow-y-auto p-4 space-y-3">
               {isLoadingMessages ? (
@@ -300,16 +414,43 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                   <p className="text-sm">{locale === 'ka' ? 'ჯერ არ არის შეტყობინება' : 'No messages yet'}</p>
                   <p className="text-xs mt-1">{locale === 'ka' ? 'დაიწყე საუბარი' : 'Start the conversation'}</p>
                 </div>
+              ) : searchQuery && filteredMessages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-tertiary)]">
+                  <Search className="w-10 h-10 mb-2 opacity-50" />
+                  <p className="text-sm">{locale === 'ka' ? 'შედეგი ვერ მოიძებნა' : 'No results found'}</p>
+                  <p className="text-xs mt-1">{locale === 'ka' ? 'სცადე სხვა საძიებო სიტყვა' : 'Try a different search term'}</p>
+                </div>
               ) : (
                 <>
-                  {messages.map((msg, idx) => {
+                  {(searchQuery ? filteredMessages : messages).map((msg, idx) => {
                     const senderId = getSenderId(msg.senderId);
                     const isMine = senderId === user?.id;
                     const senderName = msg.senderName || (typeof msg.senderId === 'object' ? msg.senderId.name : '');
                     const senderAvatar = msg.senderAvatar || (typeof msg.senderId === 'object' ? msg.senderId.avatar : undefined);
+                    const isHighlighted = searchQuery && filteredMessages[currentSearchIndex]?._id === msg._id;
+
+                    // Highlight search term in message content
+                    const highlightContent = (content: string) => {
+                      if (!searchQuery.trim()) return content;
+                      const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                      const parts = content.split(regex);
+                      return parts.map((part, i) =>
+                        regex.test(part) ? (
+                          <mark key={i} className="bg-yellow-300 dark:bg-yellow-500/50 text-inherit rounded px-0.5">
+                            {part}
+                          </mark>
+                        ) : (
+                          part
+                        )
+                      );
+                    };
 
                     return (
-                      <div key={msg._id || idx} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                      <div
+                        key={msg._id || idx}
+                        id={`msg-${msg._id}`}
+                        className={`flex ${isMine ? 'justify-end' : 'justify-start'} ${isHighlighted ? 'animate-pulse' : ''}`}
+                      >
                         <div className={`flex items-end gap-2 max-w-[80%] ${isMine ? 'flex-row-reverse' : ''}`}>
                           {!isMine && (
                             <Avatar
@@ -354,14 +495,14 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                             {/* Message Content */}
                             {msg.content ? (
                               <div
-                                className={`px-3.5 py-2 rounded-2xl ${
+                                className={`px-3.5 py-2 rounded-2xl transition-all ${
                                   isMine
                                     ? 'rounded-br-md text-white'
                                     : 'bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] rounded-bl-md border border-[var(--color-border)]'
-                                }`}
+                                } ${isHighlighted ? 'ring-2 ring-yellow-400 dark:ring-yellow-500' : ''}`}
                                 style={isMine ? { backgroundColor: ACCENT } : {}}
                               >
-                                <p className="text-sm leading-relaxed">{msg.content}</p>
+                                <p className="text-sm leading-relaxed">{highlightContent(msg.content)}</p>
                                 <p className={`text-[10px] mt-1 ${isMine ? 'text-white/60' : 'text-[var(--color-text-tertiary)]'}`}>
                                   {formatMessageTime(msg.createdAt)}
                                 </p>

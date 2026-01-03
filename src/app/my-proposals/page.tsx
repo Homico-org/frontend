@@ -5,6 +5,9 @@ import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
 import EmptyState from '@/components/common/EmptyState';
 import Header, { HeaderSpacer } from '@/components/common/Header';
+import ProjectChat from '@/components/projects/ProjectChat';
+import ProjectWorkspace from '@/components/projects/ProjectWorkspace';
+import { ConfirmModal } from '@/components/ui/Modal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -22,7 +25,6 @@ import {
   Clock,
   DollarSign,
   ExternalLink,
-  Inbox,
   Mail,
   MapPin,
   MessageCircle,
@@ -35,11 +37,9 @@ import {
   X,
   XCircle
 } from 'lucide-react';
-import { ConfirmModal } from '@/components/ui/Modal';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import ProjectChat from '@/components/projects/ProjectChat';
 
 type ProposalStatus = 'pending' | 'in_discussion' | 'accepted' | 'rejected' | 'withdrawn' | 'completed';
 
@@ -531,324 +531,313 @@ function MyProposalsPageContent() {
             size="md"
           />
         ) : (
-          <div className="space-y-3 sm:space-y-4">
+          <div className="space-y-4 sm:space-y-5">
             {proposals.map((proposal, index) => {
               const job = proposal.jobId;
               if (!job || typeof job === 'string') return null;
 
               const statusConfig = getStatusConfig(proposal.status);
               const StatusIcon = statusConfig.icon;
-              const allMedia = [
-                ...(job.media || []).map(m => ({ url: m.url, type: m.type })),
-                ...(job.images || []).filter(img => !job.media?.some(m => m.url === img)).map(url => ({ url, type: 'image' }))
-              ];
-              const hasMedia = allMedia.length > 0;
               const isClient = job.clientId?.accountType === 'organization';
               const hasUnread = (proposal.unreadMessageCount ?? 0) > 0;
+              const isAccepted = proposal.status === 'accepted';
+              const isCompleted = proposal.status === 'completed';
+              const isPending = proposal.status === 'pending';
 
-              return (
-                <div
-                  key={proposal._id}
-                  className="group bg-[var(--color-bg-elevated)] rounded-xl sm:rounded-2xl border border-[var(--color-border)] overflow-hidden transition-all duration-300 hover:border-[#E07B4F]/20 hover:shadow-xl hover:shadow-[#E07B4F]/5"
-                  style={{
-                    animationDelay: `${index * 50}ms`,
-                    borderLeftWidth: '3px',
-                    borderLeftColor: statusConfig.color
-                  }}
-                >
-                  <div className="flex flex-col sm:flex-row">
-                    {/* Media Thumbnail */}
-                    {hasMedia && (
-                      <div className="relative w-full sm:w-48 lg:w-56 flex-shrink-0">
-                        <div className="relative h-36 sm:h-full sm:min-h-[200px]">
-                          <img
-                            src={storage.getFileUrl(allMedia[0].url)}
-                            alt=""
-                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent sm:bg-gradient-to-t sm:from-black/50 sm:via-transparent sm:to-transparent" />
+              // For accepted proposals - show as active project workspace
+              if (isAccepted || isCompleted) {
+                return (
+                  <div
+                    key={proposal._id}
+                    className="group bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border)] overflow-hidden transition-all duration-300 hover:shadow-lg"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    {/* Compact Header with Status */}
+                    <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)]/30">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#E07B4F]/10 text-[#E07B4F]">
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        {language === 'ka' ? 'მიღებული' : 'Accepted'}
+                      </span>
+                      <span className="text-xs text-[var(--color-text-tertiary)]">
+                        {formatRelativeTime(proposal.createdAt)}
+                      </span>
+                    </div>
 
-                          {/* Job Status Badge */}
-                          <span className={`
-                            absolute top-2 left-2 sm:top-3 sm:left-3 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-[10px] sm:text-xs font-semibold backdrop-blur-sm
-                            ${job.status === 'open'
-                              ? 'bg-emerald-500/90 text-white'
-                              : 'bg-neutral-600/90 text-white'
-                            }
-                          `}>
-                            {job.status === 'open' ? (language === 'ka' ? 'ღია' : 'Open') : (language === 'ka' ? 'დახურული' : 'Closed')}
-                          </span>
+                    {/* Main Content - Two Column Layout on Desktop */}
+                    <div className="p-4 sm:p-5">
+                      <div className="flex flex-col lg:flex-row lg:gap-6">
+                        {/* Left: Job Info */}
+                        <div className="flex-1 min-w-0 mb-4 lg:mb-0">
+                          {/* Job Title */}
+                          <h3 className="text-lg sm:text-xl font-bold text-[var(--color-text-primary)] leading-snug mb-3">
+                            {job.title}
+                          </h3>
 
-                          {/* Mobile: Proposal Status on Image */}
-                          <div className="absolute bottom-2 left-2 right-2 sm:hidden">
-                            <div className="flex items-center justify-between">
-                              <span
-                                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold backdrop-blur-sm"
-                                style={{
-                                  backgroundColor: `${statusConfig.color}20`,
-                                  color: '#fff',
-                                  border: `1px solid ${statusConfig.color}40`
-                                }}
-                              >
-                                <StatusIcon className="w-3 h-3" />
-                                {language === 'ka' ? statusConfig.labelKa : statusConfig.label}
-                              </span>
-                              {hasUnread && (
-                                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold bg-blue-500 text-white shadow-lg shadow-blue-500/30 animate-pulse">
-                                  <MessageCircle className="w-3 h-3" />
-                                  {proposal.unreadMessageCount}
-                                </span>
+                          {/* Client Row */}
+                          <div className="flex items-center gap-3 mb-3">
+                            <Avatar
+                              src={job.clientId?.avatar}
+                              name={job.clientId?.name || 'Client'}
+                              size="sm"
+                            />
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-[var(--color-text-primary)] truncate">
+                                {job.clientId?.name}
+                              </p>
+                              {isClient && job.clientId?.companyName && (
+                                <p className="text-xs text-[var(--color-text-tertiary)] flex items-center gap-1">
+                                  <Building2 className="w-3 h-3" />
+                                  {job.clientId.companyName}
+                                </p>
                               )}
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    )}
 
-                    {/* Content */}
-                    <div className="flex-1 p-3 sm:p-5">
-                      {/* Status Row - Desktop Only (mobile shows on image) */}
-                      <div className="hidden sm:flex items-center gap-2 flex-wrap mb-3">
-                        <span
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
-                          style={{
-                            backgroundColor: statusConfig.bg,
-                            color: statusConfig.color,
-                            border: `1px solid ${statusConfig.border}`
-                          }}
-                        >
-                          <StatusIcon className="w-3.5 h-3.5" />
-                          {language === 'ka' ? statusConfig.labelKa : statusConfig.label}
-                        </span>
-
-                        {hasUnread && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-blue-500 text-white shadow-lg shadow-blue-500/30 animate-pulse">
-                            <MessageCircle className="w-3 h-3" />
-                            {proposal.unreadMessageCount} {language === 'ka' ? 'ახალი' : 'new'}
-                          </span>
-                        )}
-
-                        {proposal.clientRespondedAt && proposal.status === 'in_discussion' && !hasUnread && (
-                          <span className="text-xs font-medium text-blue-600">
-                            {language === 'ka' ? 'კლიენტი გიპასუხა!' : 'Client responded!'}
-                          </span>
-                        )}
-
-                        <span className="ml-auto text-xs text-[var(--color-text-tertiary)]">
-                          {formatRelativeTime(proposal.createdAt)}
-                        </span>
-                      </div>
-
-                      {/* Mobile: Show status if no media */}
-                      {!hasMedia && (
-                        <div className="flex sm:hidden items-center gap-2 flex-wrap mb-2">
-                          <span
-                            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold"
-                            style={{
-                              backgroundColor: statusConfig.bg,
-                              color: statusConfig.color,
-                              border: `1px solid ${statusConfig.border}`
-                            }}
-                          >
-                            <StatusIcon className="w-3 h-3" />
-                            {language === 'ka' ? statusConfig.labelKa : statusConfig.label}
-                          </span>
-                          {hasUnread && (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold bg-blue-500 text-white">
-                              <MessageCircle className="w-3 h-3" />
-                              {proposal.unreadMessageCount}
+                          {/* Meta: Location & Budget */}
+                          <div className="flex flex-wrap items-center gap-3 text-sm text-[var(--color-text-secondary)]">
+                            <span className="flex items-center gap-1.5">
+                              <MapPin className="w-4 h-4 opacity-60" />
+                              {job.location}
                             </span>
-                          )}
+                            <span className="flex items-center gap-1.5 font-medium text-[#E07B4F]">
+                              <DollarSign className="w-4 h-4" />
+                              {formatBudget(job)}
+                            </span>
+                          </div>
                         </div>
-                      )}
 
-                      {/* Job Title + Time */}
-                      <div className="flex items-start justify-between gap-2 mb-2 sm:mb-0">
-                        <Link href={`/jobs/${job._id}`} className="block group/title flex-1 min-w-0">
-                          <h3 className="text-sm sm:text-lg font-semibold text-[var(--color-text-primary)] leading-snug line-clamp-2 group-hover/title:text-[#E07B4F] transition-colors">
-                            {job.title}
-                          </h3>
-                        </Link>
-                        <span className="sm:hidden text-[10px] text-[var(--color-text-tertiary)] whitespace-nowrap flex-shrink-0">
-                          {formatRelativeTime(proposal.createdAt)}
-                        </span>
-                      </div>
-
-                      {/* Client Info */}
-                      <div className="flex items-center gap-2 mt-2 sm:mt-3">
-                        <Avatar
-                          src={job.clientId?.avatar}
-                          name={job.clientId?.name || 'Client'}
-                          size="xs"
-                        />
-                        <span className="text-xs sm:text-sm text-[var(--color-text-secondary)] truncate">
-                          {job.clientId?.name}
-                        </span>
-                        {isClient && job.clientId?.companyName && (
-                          <span className="hidden sm:flex items-center gap-1 text-xs px-2 py-0.5 rounded-md bg-[#E07B4F]/10 text-[#E07B4F]">
-                            <Building2 className="w-3 h-3" />
-                            {job.clientId.companyName}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Meta Row */}
-                      <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-1 sm:gap-y-2 mt-2 sm:mt-3 text-xs sm:text-sm text-[var(--color-text-secondary)]">
-                        <span className="flex items-center gap-1 sm:gap-1.5">
-                          <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E07B4F]/60" />
-                          {job.location}
-                        </span>
-                        <span className="flex items-center gap-1 sm:gap-1.5 font-semibold text-[#E07B4F]">
-                          <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                          {formatBudget(job)}
-                        </span>
-                      </div>
-
-                      {/* Your Proposal Box */}
-                      <div className="mt-3 sm:mt-4 p-3 sm:p-4 rounded-xl bg-gradient-to-br from-[#E07B4F]/5 to-transparent border border-[#E07B4F]/10">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#E07B4F]">
-                            {language === 'ka' ? 'შენი შეთავაზება' : 'Your Proposal'}
-                          </span>
-                          <span className="hidden sm:inline text-xs text-[var(--color-text-tertiary)]">
-                            {formatDate(proposal.createdAt)}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3 sm:gap-4 mb-2">
-                          <span className="text-lg sm:text-xl font-bold text-[#E07B4F]">
-                            ₾{proposal.proposedPrice?.toLocaleString()}
-                          </span>
-                          <span className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-[var(--color-text-secondary)]">
-                            <Timer className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E07B4F]/50" />
-                            {proposal.estimatedDuration} {
-                              proposal.estimatedDurationUnit === 'days' ? (language === 'ka' ? 'დღე' : 'days') :
-                              proposal.estimatedDurationUnit === 'weeks' ? (language === 'ka' ? 'კვირა' : 'weeks') :
-                              (language === 'ka' ? 'თვე' : 'months')
-                            }
-                          </span>
-                        </div>
-                        <p className="text-xs sm:text-sm text-[var(--color-text-tertiary)] line-clamp-2 italic">
-                          "{proposal.coverLetter}"
-                        </p>
-                      </div>
-
-                      {/* Rejection Note */}
-                      {proposal.status === 'rejected' && proposal.rejectionNote && (
-                        <div className="mt-2 sm:mt-3 p-2 sm:p-3 rounded-xl bg-red-500/5 border border-red-500/10">
-                          <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">
-                            <strong>{language === 'ka' ? 'მიზეზი:' : 'Reason:'}</strong> {proposal.rejectionNote}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Actions Footer */}
-                  <div className="px-3 py-3 sm:px-5 sm:py-4 bg-[var(--color-bg-tertiary)]/50 border-t border-[var(--color-border)]">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                      {/* Primary Actions Row */}
-                      <div className="flex items-center gap-2 flex-wrap flex-1">
-                        {/* Message Button */}
-                        {(proposal.status === 'in_discussion' || proposal.status === 'accepted' || proposal.status === 'completed') && proposal.conversationId && (
-                          <Link
-                            href={`/messages?conversation=${proposal.conversationId}`}
-                            className={`
-                              flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all
-                              ${hasUnread
-                                ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25 hover:bg-blue-600'
-                                : 'bg-[#E07B4F] text-white hover:bg-[#D26B3F]'
-                              }
-                            `}
-                          >
-                            <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                            {language === 'ka' ? 'მესიჯი' : 'Message'}
-                            {hasUnread && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-white/20 text-[10px] sm:text-xs font-bold">
-                                {proposal.unreadMessageCount}
+                        {/* Right: Your Proposal Summary */}
+                        <div className="lg:w-64 flex-shrink-0">
+                          <div className="rounded-xl p-4 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)] mb-2">
+                              {language === 'ka' ? 'შენი შეთავაზება' : 'Your Proposal'}
+                            </p>
+                            <div className="flex items-baseline gap-2 mb-1">
+                              <span className="text-2xl font-bold text-[#E07B4F]">
+                                ₾{proposal.proposedPrice?.toLocaleString()}
                               </span>
-                            )}
-                          </Link>
-                        )}
+                            </div>
+                            <p className="text-xs text-[var(--color-text-tertiary)] flex items-center gap-1">
+                              <Clock className="w-3.5 h-3.5" />
+                              {proposal.estimatedDuration}{' '}
+                              {proposal.estimatedDurationUnit === 'days'
+                                ? (language === 'ka' ? 'დღე' : 'days')
+                                : proposal.estimatedDurationUnit === 'weeks'
+                                ? (language === 'ka' ? 'კვირა' : 'weeks')
+                                : (language === 'ka' ? 'თვე' : 'months')}
+                            </p>
+                            <p className="text-xs text-[var(--color-text-tertiary)] mt-2 line-clamp-2 italic">
+                              &ldquo;{proposal.coverLetter}&rdquo;
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-                        {/* Start Project Button - for accepted proposals with hired stage */}
-                        {proposal.status === 'accepted' && proposal.projectTracking?.currentStage === 'hired' && (
+                    {/* Actions Bar - Communication & Project Focused */}
+                    <div className="px-4 sm:px-5 py-3 border-t border-[var(--color-border)] bg-[var(--color-bg-tertiary)]/20">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {/* Start Project */}
+                        {proposal.projectTracking?.currentStage === 'hired' && (
                           <button
                             onClick={() => handleStartProject(job._id)}
                             disabled={startingProjectId === job._id}
-                            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50 transition-all shadow-lg shadow-emerald-500/25"
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-[#E07B4F] text-white hover:bg-[#D26B3F] disabled:opacity-50 transition-all"
                           >
                             {startingProjectId === job._id ? (
-                              <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                             ) : (
-                              <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                              <Play className="w-4 h-4" />
                             )}
-                            {language === 'ka' ? 'დაწყება' : 'Start Project'}
+                            {language === 'ka' ? 'დაწყება' : 'Start'}
                           </button>
                         )}
 
-                        {/* Project Started Badge */}
-                        {proposal.status === 'accepted' && proposal.projectTracking && proposal.projectTracking.currentStage !== 'hired' && (
-                          <span className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium bg-emerald-500/10 text-emerald-600">
-                            <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        {/* Started Badge */}
+                        {proposal.projectTracking && proposal.projectTracking.currentStage !== 'hired' && (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-[#E07B4F]/10 text-[#E07B4F]">
+                            <Play className="w-3.5 h-3.5" />
                             {language === 'ka' ? 'დაწყებული' : 'Started'}
                           </span>
                         )}
 
-                        {/* Withdraw Button - only for pending */}
-                        {proposal.status === 'pending' && (
-                          <button
-                            onClick={() => setWithdrawModalId(proposal._id)}
-                            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium bg-red-500/10 text-red-600 hover:bg-red-500/20 transition-all"
-                          >
-                            <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                            {language === 'ka' ? 'გაუქმება' : 'Withdraw'}
-                          </button>
-                        )}
-
-                        {/* View Job - Mobile compact */}
+                        {/* View Job Details - Primary */}
                         <Link
                           href={`/jobs/${job._id}`}
-                          className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium bg-[var(--color-bg-muted)] text-[var(--color-text-secondary)] hover:text-[#E07B4F] transition-colors sm:ml-auto"
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-bg-muted)] text-[var(--color-text-primary)] hover:bg-[var(--color-border)] transition-all"
                         >
-                          {language === 'ka' ? 'სამუშაო' : 'View Job'}
-                          <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          <ExternalLink className="w-4 h-4" />
+                          {language === 'ka' ? 'სამუშაო' : 'Job Details'}
                         </Link>
+
+                        {/* Spacer */}
+                        <div className="flex-1" />
+
+                        {/* Contact Actions - Right Side */}
+                        {proposal.contactRevealed && job.clientId && (
+                          <div className="flex items-center gap-2">
+                            {job.clientId.phone && (
+                              <a
+                                href={`tel:${job.clientId.phone}`}
+                                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[#E07B4F] hover:text-[#E07B4F] transition-all"
+                              >
+                                <Phone className="w-4 h-4" />
+                                <span className="hidden sm:inline">{job.clientId.phone}</span>
+                              </a>
+                            )}
+                            {job.clientId.email && (
+                              <a
+                                href={`mailto:${job.clientId.email}`}
+                                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[#E07B4F] hover:text-[#E07B4F] transition-all"
+                              >
+                                <Mail className="w-4 h-4" />
+                                <span className="hidden sm:inline">{language === 'ka' ? 'ემაილი' : 'Email'}</span>
+                              </a>
+                            )}
+                          </div>
+                        )}
                       </div>
-
-                      {/* Contact Info - if accepted (full width on mobile) */}
-                      {proposal.status === 'accepted' && proposal.contactRevealed && job.clientId && (
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                          {job.clientId.phone && (
-                            <a
-                              href={`tel:${job.clientId.phone}`}
-                              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 transition-all"
-                            >
-                              <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                              <span className="truncate">{job.clientId.phone}</span>
-                            </a>
-                          )}
-                          {job.clientId.email && (
-                            <a
-                              href={`mailto:${job.clientId.email}`}
-                              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 transition-all"
-                            >
-                              <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                              {language === 'ka' ? 'ემაილი' : 'Email'}
-                            </a>
-                          )}
-                        </div>
-                      )}
                     </div>
-                  </div>
 
-                  {/* Project Chat - for accepted/completed proposals */}
-                  {(proposal.status === 'accepted' || proposal.status === 'completed') && (
+                    {/* Project Workspace - Materials & Resources */}
+                    <ProjectWorkspace
+                      jobId={job._id}
+                      locale={language}
+                      isClient={false}
+                    />
+
+                    {/* Project Chat - Expandable Section */}
                     <ProjectChat
                       jobId={job._id}
                       locale={language}
                       isClient={false}
                     />
-                  )}
+                  </div>
+                );
+              }
+
+              // For pending/rejected/other statuses - simpler card
+              return (
+                <div
+                  key={proposal._id}
+                  className="group bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border)] overflow-hidden transition-all duration-300 hover:border-[#E07B4F]/20 hover:shadow-lg"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  {/* Header */}
+                  <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)]/30">
+                    <span
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold"
+                      style={{
+                        backgroundColor: statusConfig.bg,
+                        color: statusConfig.color,
+                        border: `1px solid ${statusConfig.border}`
+                      }}
+                    >
+                      <StatusIcon className="w-3.5 h-3.5" />
+                      {language === 'ka' ? statusConfig.labelKa : statusConfig.label}
+                    </span>
+                    <span className="text-xs text-[var(--color-text-tertiary)]">
+                      {formatRelativeTime(proposal.createdAt)}
+                    </span>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-4 sm:p-5">
+                    {/* Job Title */}
+                    <Link href={`/jobs/${job._id}`} className="block group/title mb-3">
+                      <h3 className="text-lg font-bold text-[var(--color-text-primary)] leading-snug line-clamp-2 group-hover/title:text-[#E07B4F] transition-colors">
+                        {job.title}
+                      </h3>
+                    </Link>
+
+                    {/* Client + Meta */}
+                    <div className="flex flex-wrap items-center gap-3 mb-4 text-sm text-[var(--color-text-secondary)]">
+                      <div className="flex items-center gap-2">
+                        <Avatar
+                          src={job.clientId?.avatar}
+                          name={job.clientId?.name || 'Client'}
+                          size="xs"
+                        />
+                        <span>{job.clientId?.name}</span>
+                      </div>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3.5 h-3.5 opacity-60" />
+                        {job.location}
+                      </span>
+                      <span className="flex items-center gap-1 font-medium text-[#E07B4F]">
+                        <DollarSign className="w-3.5 h-3.5" />
+                        {formatBudget(job)}
+                      </span>
+                    </div>
+
+                    {/* Your Proposal */}
+                    <div className="rounded-xl p-4 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-[#E07B4F]">
+                          {language === 'ka' ? 'შენი შეთავაზება' : 'Your Proposal'}
+                        </p>
+                        <span className="text-xs text-[var(--color-text-tertiary)]">
+                          {formatDate(proposal.createdAt)}
+                        </span>
+                      </div>
+                      <div className="flex items-baseline gap-3 mb-2">
+                        <span className="text-xl font-bold text-[#E07B4F]">
+                          ₾{proposal.proposedPrice?.toLocaleString()}
+                        </span>
+                        <span className="text-sm text-[var(--color-text-tertiary)] flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5" />
+                          {proposal.estimatedDuration}{' '}
+                          {proposal.estimatedDurationUnit === 'days'
+                            ? (language === 'ka' ? 'დღე' : 'days')
+                            : proposal.estimatedDurationUnit === 'weeks'
+                            ? (language === 'ka' ? 'კვირა' : 'weeks')
+                            : (language === 'ka' ? 'თვე' : 'months')}
+                        </span>
+                      </div>
+                      <p className="text-sm text-[var(--color-text-tertiary)] line-clamp-2 italic">
+                        &ldquo;{proposal.coverLetter}&rdquo;
+                      </p>
+                    </div>
+
+                    {/* Rejection Note */}
+                    {proposal.status === 'rejected' && proposal.rejectionNote && (
+                      <div className="mt-3 p-3 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20">
+                        <p className="text-xs text-red-600 dark:text-red-400">
+                          <strong>{language === 'ka' ? 'მიზეზი:' : 'Reason:'}</strong> {proposal.rejectionNote}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="px-4 sm:px-5 py-3 border-t border-[var(--color-border)] bg-[var(--color-bg-tertiary)]/20">
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/jobs/${job._id}`}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-bg-muted)] text-[var(--color-text-primary)] hover:bg-[var(--color-border)] transition-all"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        {language === 'ka' ? 'სამუშაო' : 'View Job'}
+                      </Link>
+
+                      {isPending && (
+                        <button
+                          onClick={() => setWithdrawModalId(proposal._id)}
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
+                        >
+                          <X className="w-4 h-4" />
+                          {language === 'ka' ? 'გაუქმება' : 'Withdraw'}
+                        </button>
+                      )}
+
+                      {hasUnread && (
+                        <span className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-blue-500 text-white animate-pulse">
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          {proposal.unreadMessageCount}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               );
             })}

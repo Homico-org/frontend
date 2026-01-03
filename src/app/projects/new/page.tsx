@@ -378,8 +378,14 @@ export default function StartProjectPage() {
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400">$</span>
                     <input
                       type="number"
+                      min="0"
                       value={budget}
-                      onChange={(e) => setBudget(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === '' || parseFloat(value) >= 0) {
+                          setBudget(value);
+                        }
+                      }}
                       placeholder="0"
                       className="w-full pl-8 pr-4 py-3 border border-neutral-200 rounded-xl focus:outline-none focus:border-neutral-400 text-sm"
                     />
