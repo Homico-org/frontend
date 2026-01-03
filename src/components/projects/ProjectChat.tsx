@@ -60,6 +60,33 @@ function formatMessageTime(dateStr: string): string {
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
+function formatDateSeparator(dateStr: string, locale: string): string {
+  const date = new Date(dateStr);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const isToday = date.toDateString() === today.toDateString();
+  const isYesterday = date.toDateString() === yesterday.toDateString();
+
+  if (isToday) {
+    return locale === 'ka' ? 'დღეს' : 'Today';
+  }
+  if (isYesterday) {
+    return locale === 'ka' ? 'გუშინ' : 'Yesterday';
+  }
+
+  return date.toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+function getDateKey(dateStr: string): string {
+  return new Date(dateStr).toDateString();
+}
+
 function getSenderId(senderId: string | { _id: string } | undefined | null): string {
   if (!senderId) return '';
   if (typeof senderId === 'string') return senderId;
@@ -422,12 +449,18 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                 </div>
               ) : (
                 <>
-                  {(searchQuery ? filteredMessages : messages).map((msg, idx) => {
+                  {(searchQuery ? filteredMessages : messages).map((msg, idx, arr) => {
                     const senderId = getSenderId(msg.senderId);
                     const isMine = senderId === user?.id;
                     const senderName = msg.senderName || (typeof msg.senderId === 'object' ? msg.senderId.name : '');
                     const senderAvatar = msg.senderAvatar || (typeof msg.senderId === 'object' ? msg.senderId.avatar : undefined);
                     const isHighlighted = searchQuery && filteredMessages[currentSearchIndex]?._id === msg._id;
+
+                    // Check if we need to show date separator
+                    const currentDateKey = getDateKey(msg.createdAt);
+                    const prevMessage = idx > 0 ? arr[idx - 1] : null;
+                    const prevDateKey = prevMessage ? getDateKey(prevMessage.createdAt) : null;
+                    const showDateSeparator = !searchQuery && (!prevDateKey || currentDateKey !== prevDateKey);
 
                     // Highlight search term in message content
                     const highlightContent = (content: string) => {
@@ -446,11 +479,21 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                     };
 
                     return (
-                      <div
-                        key={msg._id || idx}
-                        id={`msg-${msg._id}`}
-                        className={`flex ${isMine ? 'justify-end' : 'justify-start'} ${isHighlighted ? 'animate-pulse' : ''}`}
-                      >
+                      <div key={msg._id || idx}>
+                        {/* Date Separator */}
+                        {showDateSeparator && (
+                          <div className="flex items-center gap-3 my-4">
+                            <div className="flex-1 h-px bg-[var(--color-border)]" />
+                            <span className="text-[10px] font-medium text-[var(--color-text-tertiary)] px-2 py-0.5 rounded-full bg-[var(--color-bg-tertiary)]">
+                              {formatDateSeparator(msg.createdAt, locale)}
+                            </span>
+                            <div className="flex-1 h-px bg-[var(--color-border)]" />
+                          </div>
+                        )}
+                        <div
+                          id={`msg-${msg._id}`}
+                          className={`flex ${isMine ? 'justify-end' : 'justify-start'} ${isHighlighted ? 'animate-pulse' : ''}`}
+                        >
                         <div className={`flex items-end gap-2 max-w-[80%] ${isMine ? 'flex-row-reverse' : ''}`}>
                           {!isMine && (
                             <Avatar
@@ -513,6 +556,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                               </p>
                             ) : null}
                           </div>
+                        </div>
                         </div>
                       </div>
                     );

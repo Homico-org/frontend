@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useCallback, ReactNode } from 'react';
-import { X, Loader2 } from 'lucide-react';
-import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { Loader2, X } from 'lucide-react';
+import { ReactNode, useCallback, useEffect } from 'react';
 
 // Modal size variants
 const modalVariants = cva(
@@ -150,7 +150,7 @@ export function Modal({
 
       {/* Modal container */}
       <div
-        className={cn(modalVariants({ size }), className)}
+        className={cn(modalVariants({ size }), 'max-h-[90vh] overflow-y-auto', className)}
         style={{ backgroundColor: 'var(--color-bg-primary)' }}
       >
         {showCloseButton && !preventClose && (

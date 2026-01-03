@@ -5,6 +5,7 @@ import Header, { HeaderSpacer } from "@/components/common/Header";
 import MediaLightbox, { MediaItem as LightboxMediaItem } from "@/components/common/MediaLightbox";
 import SpecCard from "@/components/jobs/SpecCard";
 import RequirementBadge from "@/components/jobs/RequirementBadge";
+import PollsTab from "@/components/polls/PollsTab";
 import { ConfirmModal } from "@/components/ui/Modal";
 import { useAuth } from "@/contexts/AuthContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
@@ -14,6 +15,7 @@ import { storage } from "@/services/storage";
 import {
   Armchair,
   ArrowLeft,
+  BarChart3,
   Building2,
   Calendar,
   Check,
@@ -694,6 +696,7 @@ export default function JobDetailClient() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [copyToast, setCopyToast] = useState(false);
+  const [isPollsExpanded, setIsPollsExpanded] = useState(true);
 
   const isOwner = user && job?.clientId && user.id === job.clientId._id;
   const isPro = user?.role === "pro" || user?.role === "admin";
@@ -970,7 +973,7 @@ export default function JobDetailClient() {
       <HeaderSpacer />
 
       {/* Hero Gallery Section */}
-      <section className="relative h-[55vh] md:h-[65vh] overflow-hidden bg-neutral-900">
+      <section className="relative h-[55vh] md:h-[65vh] overflow-hidden bg-[#FAFAF9]">
         {/* Background image with Ken Burns effect */}
         {allMedia.length > 0 ? (
           <>
@@ -982,10 +985,18 @@ export default function JobDetailClient() {
                 }`}
               >
                 <div
-                  className="absolute inset-0 bg-cover bg-center animate-ken-burns"
+                  className="absolute inset-0 bg-contain bg-center bg-no-repeat"
                   style={{
                     backgroundImage: `url(${storage.getFileUrl(media.url)})`,
-                    animationDelay: `${idx * 5}s`,
+                  }}
+                />
+                {/* Blurred background fill for letterboxing */}
+                <div
+                  className="absolute inset-0 -z-10 scale-110 blur-2xl opacity-50"
+                  style={{
+                    backgroundImage: `url(${storage.getFileUrl(media.url)})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
                   }}
                 />
               </div>
@@ -996,15 +1007,15 @@ export default function JobDetailClient() {
           </>
         ) : (
           <>
-            {/* Category-based illustration background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-neutral-800 to-neutral-900" />
+            {/* Category-based illustration background - light theme */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#FAFAF9] to-[#F0EDE8]" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-[300px] h-[300px] md:w-[400px] md:h-[400px] opacity-60">
+              <div className="w-[300px] h-[300px] md:w-[400px] md:h-[400px] opacity-80">
                 {getCategoryIllustration(job?.category, job?.subcategory)}
               </div>
             </div>
-            {/* Gradient overlays for text readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+            {/* Gradient overlays for text readability - light to dark at bottom */}
+            <div className="absolute inset-0 bg-gradient-to-t from-neutral-800/90 via-transparent to-transparent" />
           </>
         )}
 
@@ -1701,6 +1712,47 @@ export default function JobDetailClient() {
                         style={{ color: ACCENT }}
                       />
                     </Link>
+                  </div>
+                )}
+
+                {/* Polls Section - visible for hired jobs */}
+                {isHired && (
+                  <div
+                    className="rounded-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden"
+                    style={{ borderColor: `${ACCENT}30` }}
+                  >
+                    <button
+                      onClick={() => setIsPollsExpanded(!isPollsExpanded)}
+                      className="w-full flex items-center justify-between p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-8 h-8 rounded-lg flex items-center justify-center"
+                          style={{ backgroundColor: `${ACCENT}20` }}
+                        >
+                          <BarChart3 className="w-4 h-4" style={{ color: ACCENT }} />
+                        </div>
+                        <span className="font-body font-semibold text-neutral-900 dark:text-white">
+                          {locale === "ka" ? "გამოკითხვები" : "Polls"}
+                        </span>
+                      </div>
+                      <ChevronRight
+                        className={`w-5 h-5 text-neutral-400 transition-transform duration-300 ${
+                          isPollsExpanded ? "rotate-90" : ""
+                        }`}
+                      />
+                    </button>
+                    {isPollsExpanded && (
+                      <div className="p-4 pt-0 border-t border-neutral-100 dark:border-neutral-800">
+                        <PollsTab
+                          jobId={job._id}
+                          isPro={isPro}
+                          isClient={isOwner || false}
+                          userId={user?.id}
+                          locale={locale}
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
 

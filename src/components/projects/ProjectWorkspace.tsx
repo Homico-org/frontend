@@ -453,7 +453,7 @@ function SectionCard({
         </div>
 
         {!isClient && (
-          <div className="relative">
+          <div className="relative z-30">
             <button
               onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
               className="w-7 h-7 rounded-md flex items-center justify-center text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
@@ -462,8 +462,8 @@ function SectionCard({
             </button>
             {showMenu && (
               <>
-                <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                <div className="absolute right-0 top-full mt-1 z-20 w-36 bg-[var(--color-bg-elevated)] rounded-lg border border-[var(--color-border)] shadow-lg py-1">
+                <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
+                <div className="absolute right-0 top-full mt-1 z-50 w-36 bg-[var(--color-bg-elevated)] rounded-lg border border-[var(--color-border)] shadow-xl py-1">
                   <button
                     onClick={(e) => { e.stopPropagation(); setShowMenu(false); onEdit(); }}
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"

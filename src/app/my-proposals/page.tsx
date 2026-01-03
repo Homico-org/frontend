@@ -5,6 +5,7 @@ import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
 import EmptyState from '@/components/common/EmptyState';
 import Header, { HeaderSpacer } from '@/components/common/Header';
+import PollsTab from '@/components/polls/PollsTab';
 import ProjectChat from '@/components/projects/ProjectChat';
 import ProjectWorkspace from '@/components/projects/ProjectWorkspace';
 import { ConfirmModal } from '@/components/ui/Modal';
@@ -698,6 +699,15 @@ function MyProposalsPageContent() {
                         )}
                       </div>
                     </div>
+
+                    {/* Polls Section - Pro can create/manage polls */}
+                    <PollsTab
+                      jobId={job._id}
+                      isPro={true}
+                      isClient={false}
+                      userId={user?.id}
+                      locale={language}
+                    />
 
                     {/* Project Workspace - Materials & Resources */}
                     <ProjectWorkspace
