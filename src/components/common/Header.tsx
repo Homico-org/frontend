@@ -10,7 +10,7 @@ import { ExternalLink, FileText, Hammer, LogIn, Plus, UserPlus, X } from "lucide
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Avatar from "./Avatar";
 
 // Muted terracotta accent
@@ -445,7 +445,7 @@ export default function Header() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <span className="font-semibold block" style={{ color: ACCENT_COLOR }}>{locale === 'ka' ? 'დასაქმდი' : 'Become Pro'}</span>
-                            <span className="text-[10px] text-neutral-500">{locale === 'ka' ? 'დაიწყე შემოსავალი' : 'Start earning'}</span>
+                            <span className="text-[10px] text-neutral-500">{locale === 'ka' ? 'დაიწყე გამომუშავება' : 'Start earning'}</span>
                           </div>
                         </Link>
                       )}

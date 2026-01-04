@@ -82,16 +82,6 @@ export default function PricingAreasStep({
 }: PricingAreasStepProps) {
   const { locale } = useLanguage();
 
-  const handlePriceChange = (field: "min" | "max", value: string) => {
-    const numValue = parseInt(value) || 0;
-    onFormChange({
-      priceRange: {
-        ...formData.priceRange,
-        [field]: numValue,
-      },
-    });
-  };
-
   const toggleServiceArea = (area: string) => {
     const newAreas = formData.serviceAreas.includes(area)
       ? formData.serviceAreas.filter((a) => a !== area)
@@ -148,15 +138,19 @@ export default function PricingAreasStep({
             /* Fixed Price - Single input */
             <div className="flex-1">
               <Input
-                type="number"
-                min={0}
-                value={formData.priceRange.min || ""}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={formData.priceRange.min > 0 ? formData.priceRange.min.toString() : ""}
                 onChange={(e) => {
-                  const value = e.target.value;
-                  if (value === '' || parseFloat(value) >= 0) {
-                    handlePriceChange("min", value);
-                    handlePriceChange("max", value); // Keep max same as min for fixed
-                  }
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  const numValue = parseInt(value) || 0;
+                  onFormChange({
+                    priceRange: {
+                      min: numValue,
+                      max: numValue,
+                    },
+                  });
                 }}
                 placeholder={locale === "ka" ? "ფასი" : "Price"}
                 variant="filled"
@@ -169,14 +163,19 @@ export default function PricingAreasStep({
             <div className="flex items-center gap-3">
               <div className="flex-1">
                 <Input
-                  type="number"
-                  min={0}
-                  value={formData.priceRange.min || ""}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={formData.priceRange.min > 0 ? formData.priceRange.min.toString() : ""}
                   onChange={(e) => {
-                    const value = e.target.value;
-                    if (value === '' || parseFloat(value) >= 0) {
-                      handlePriceChange("min", value);
-                    }
+                    const value = e.target.value.replace(/[^0-9]/g, '');
+                    const numValue = parseInt(value) || 0;
+                    onFormChange({
+                      priceRange: {
+                        ...formData.priceRange,
+                        min: numValue,
+                      },
+                    });
                   }}
                   placeholder={locale === "ka" ? "მინ" : "Min"}
                   variant="filled"
@@ -187,14 +186,19 @@ export default function PricingAreasStep({
               <span className="text-neutral-400 text-sm font-medium">—</span>
               <div className="flex-1">
                 <Input
-                  type="number"
-                  min={0}
-                  value={formData.priceRange.max || ""}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={formData.priceRange.max > 0 ? formData.priceRange.max.toString() : ""}
                   onChange={(e) => {
-                    const value = e.target.value;
-                    if (value === '' || parseFloat(value) >= 0) {
-                      handlePriceChange("max", value);
-                    }
+                    const value = e.target.value.replace(/[^0-9]/g, '');
+                    const numValue = parseInt(value) || 0;
+                    onFormChange({
+                      priceRange: {
+                        ...formData.priceRange,
+                        max: numValue,
+                      },
+                    });
                   }}
                   placeholder={locale === "ka" ? "მაქს" : "Max"}
                   variant="filled"
