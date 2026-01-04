@@ -70,6 +70,7 @@ const tabVariants = cva(
 export interface Tab {
   id: string;
   label: string;
+  shortLabel?: string; // Shorter label for mobile
   icon?: ReactNode;
   badge?: number | string;
   disabled?: boolean;
@@ -83,6 +84,7 @@ export interface TabsProps extends VariantProps<typeof tabsContainerVariants> {
   tabClassName?: string;
   fullWidth?: boolean;
   scrollable?: boolean;
+  compact?: boolean; // Use shortLabel on mobile if available
 }
 
 /**
@@ -98,6 +100,7 @@ export function Tabs({
   tabClassName,
   fullWidth = false,
   scrollable = false,
+  compact = false,
 }: TabsProps) {
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [indicatorStyle, setIndicatorStyle] = useState<{
@@ -142,7 +145,14 @@ export function Tabs({
           )}
         >
           {tab.icon && <span className="flex-shrink-0">{tab.icon}</span>}
-          <span>{tab.label}</span>
+          {compact && tab.shortLabel ? (
+            <>
+              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="sm:hidden">{tab.shortLabel}</span>
+            </>
+          ) : (
+            <span>{tab.label}</span>
+          )}
           {tab.badge !== undefined && (
             <span
               className={cn(

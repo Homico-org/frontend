@@ -1357,40 +1357,84 @@ function RegisterContent() {
               </p>
             </div>
 
-            {/* Type Selection Cards */}
-            <div className="grid md:grid-cols-2 gap-6 mb-10">
-              <UserTypeCard
-                type="client"
-                title={locale === "ka" ? "კლიენტი" : "Client"}
-                description={locale === "ka"
-                  ? "იპოვე საუკეთესო პროფესიონალები შენი პროექტისთვის"
-                  : "Find the best professionals for your project"}
-                ctaText={locale === "ka" ? "დაწყება" : "Get Started"}
-                freeLabel={locale === "ka" ? "უფასო" : "Free"}
-                imageUrl="https://res.cloudinary.com/dakcvkodo/image/upload/w_600,h_450,c_pad,q_auto,f_auto/homico/avatars/client.png"
-                onClick={() => {
-                  setUserType('client');
-                  setShowTypeSelection(false);
-                }}
-                locale={locale as 'en' | 'ka'}
-              />
+            {/* Type Selection - Simple Toggle */}
+            <div className="max-w-md mx-auto mb-10">
+              {/* Segmented Control */}
+              <div className="bg-neutral-100 p-1.5 rounded-2xl mb-6">
+                <div className="grid grid-cols-2 gap-1">
+                  <button
+                    onClick={() => {
+                      setUserType('client');
+                      setShowTypeSelection(false);
+                    }}
+                    className="relative py-4 px-4 rounded-xl font-semibold text-base transition-all duration-300 flex flex-col items-center gap-1 bg-white text-neutral-900 shadow-lg"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mb-1 shadow-md">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                    <span>{locale === "ka" ? "კლიენტი" : "Client"}</span>
+                    <span className="text-xs font-normal text-neutral-500">
+                      {locale === "ka" ? "იპოვე სპეციალისტი" : "Find specialists"}
+                    </span>
+                  </button>
 
-              <UserTypeCard
-                type="pro"
-                title={locale === "ka" ? "პროფესიონალი" : "Professional"}
-                description={locale === "ka"
-                  ? "შექმენი პროფილი და იპოვე ახალი კლიენტები"
-                  : "Create your profile and find new clients"}
-                ctaText={locale === "ka" ? "გაწევრიანება" : "Join Now"}
-                badge={locale === "ka" ? "გამოიმუშავე" : "Earn Money"}
-                freeLabel={locale === "ka" ? "უფასო პროფილი" : "Free profile"}
-                imageUrl="https://res.cloudinary.com/dakcvkodo/image/upload/w_600,h_450,c_pad,q_auto,f_auto/homico/avatars/pro-plumber.png"
-                onClick={() => {
-                  setUserType('pro');
-                  setShowTypeSelection(false);
-                }}
-                locale={locale as 'en' | 'ka'}
-              />
+                  <button
+                    onClick={() => {
+                      setUserType('pro');
+                      setShowTypeSelection(false);
+                    }}
+                    className="relative py-4 px-4 rounded-xl font-semibold text-base transition-all duration-300 flex flex-col items-center gap-1 bg-white text-neutral-900 shadow-lg"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#C4735B] to-[#A85D47] flex items-center justify-center mb-1 shadow-md">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <span>{locale === "ka" ? "პროფესიონალი" : "Professional"}</span>
+                    <span className="text-xs font-normal text-neutral-500">
+                      {locale === "ka" ? "გამოიმუშავე" : "Earn money"}
+                    </span>
+                    {/* Badge */}
+                    <span className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-bold shadow-sm">
+                      {locale === "ka" ? "უფასო" : "FREE"}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Features list */}
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-neutral-600">
+                    <svg className="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{locale === "ka" ? "უფასო რეგისტრაცია" : "Free to register"}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-neutral-600">
+                    <svg className="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{locale === "ka" ? "მარტივი ძებნა" : "Easy search"}</span>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-neutral-600">
+                    <svg className="w-4 h-4 text-[#C4735B] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{locale === "ka" ? "უფასო პროფილი" : "Free profile"}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-neutral-600">
+                    <svg className="w-4 h-4 text-[#C4735B] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{locale === "ka" ? "ახალი კლიენტები" : "New clients"}</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Login link */}
@@ -1563,6 +1607,7 @@ function RegisterContent() {
                         {
                           id: 'mobile',
                           label: locale === "ka" ? "მობილური" : "Mobile",
+                          shortLabel: locale === "ka" ? "ტელ." : "Phone",
                           icon: (
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -1572,6 +1617,7 @@ function RegisterContent() {
                         {
                           id: 'email',
                           label: locale === "ka" ? "ელ-ფოსტა" : "Email",
+                          shortLabel: 'Email',
                           icon: (
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -1584,6 +1630,7 @@ function RegisterContent() {
                       variant="pills"
                       size="sm"
                       fullWidth
+                      compact
                     />
                     {/* Info message */}
                     <p className="text-center text-[10px] text-neutral-400 mt-2">
@@ -2118,6 +2165,7 @@ function RegisterContent() {
                     {
                       id: 'mobile',
                       label: locale === "ka" ? "მობილური" : "Mobile",
+                      shortLabel: locale === "ka" ? "ტელ." : "Phone",
                       icon: (
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -2127,6 +2175,7 @@ function RegisterContent() {
                     {
                       id: 'email',
                       label: locale === "ka" ? "ელ-ფოსტა" : "Email",
+                      shortLabel: 'Email',
                       icon: (
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -2139,6 +2188,7 @@ function RegisterContent() {
                   variant="pills"
                   size="sm"
                   fullWidth
+                  compact
                 />
                 <p className="text-center text-[10px] text-neutral-400 mt-2">
                   {locale === "ka"

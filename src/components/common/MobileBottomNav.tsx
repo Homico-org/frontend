@@ -15,31 +15,49 @@ type NavItem = {
   label: string;
   labelKa: string;
   icon: typeof Briefcase;
-  showFor: 'all' | 'pro' | 'client';
+  showFor: 'all' | 'pro' | 'client' | 'authenticated' | 'guest';
 };
 
 const NAV_ITEMS: NavItem[] = [
+  // Guest navigation (not logged in)
+  {
+    key: 'portfolios',
+    href: '/browse/portfolio',
+    label: 'Portfolios',
+    labelKa: 'პორტფოლიო',
+    icon: Images,
+    showFor: 'guest',
+  },
+  {
+    key: 'professionals',
+    href: '/browse/professionals',
+    label: 'Pros',
+    labelKa: 'სპეცები',
+    icon: Users,
+    showFor: 'guest',
+  },
+  // Authenticated navigation
   {
     key: 'browse',
     href: '/browse/portfolio',
     label: 'Browse',
     labelKa: 'დათვალიერება',
     icon: Search,
-    showFor: 'all',
+    showFor: 'authenticated',
   },
   {
-    key: 'jobs',
+    key: 'find-jobs',
     href: '/browse/jobs',
-    label: 'Jobs',
-    labelKa: 'სამუშაო',
+    label: 'Find Jobs',
+    labelKa: 'სამუშაოები',
     icon: Briefcase,
     showFor: 'pro',
   },
   {
-    key: 'proposals',
-    href: '/my-proposals',
-    label: 'Proposals',
-    labelKa: 'შეთავაზებები',
+    key: 'my-work',
+    href: '/my-work',
+    label: 'My Work',
+    labelKa: 'ჩემი სამუშაო',
     icon: FileText,
     showFor: 'pro',
   },
@@ -48,16 +66,8 @@ const NAV_ITEMS: NavItem[] = [
     href: '/my-jobs',
     label: 'My Jobs',
     labelKa: 'ჩემი პროექტები',
-    icon: Images,
-    showFor: 'all',
-  },
-  {
-    key: 'professionals',
-    href: '/browse/professionals',
-    label: 'Pros',
-    labelKa: 'სპეცები',
-    icon: Users,
-    showFor: 'client',
+    icon: Briefcase,
+    showFor: 'authenticated',
   },
 ];
 
@@ -71,22 +81,27 @@ export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
   const { user } = useAuth();
 
   const isPro = user?.role === 'pro' || user?.role === 'admin';
+  const isAuthenticated = !!user;
 
   // Filter items based on user role
   const visibleItems = NAV_ITEMS.filter((item) => {
     if (item.showFor === 'all') return true;
+    if (item.showFor === 'guest' && !isAuthenticated) return true;
+    if (item.showFor === 'authenticated' && isAuthenticated) return true;
     if (item.showFor === 'pro' && isPro) return true;
-    if (item.showFor === 'client' && !isPro) return true;
+    if (item.showFor === 'client' && !isPro && isAuthenticated) return true;
     return false;
   });
 
   // Determine active tab
   const getActiveKey = () => {
-    if (pathname.includes('/my-proposals')) return 'proposals';
+    if (pathname.includes('/my-work')) return 'my-work';
+    if (pathname.includes('/my-proposals')) return 'my-work'; // Redirect case
     if (pathname.includes('/my-jobs')) return 'my-jobs';
-    if (pathname.includes('/browse/jobs')) return 'jobs';
-    if (pathname.includes('/browse/professionals')) return 'professionals';
-    if (pathname.includes('/browse')) return 'browse';
+    if (pathname.includes('/browse/jobs')) return 'find-jobs';
+    if (pathname.includes('/browse/professionals')) return isAuthenticated ? 'browse' : 'professionals';
+    if (pathname.includes('/browse/portfolio')) return isAuthenticated ? 'browse' : 'portfolios';
+    if (pathname.includes('/browse')) return isAuthenticated ? 'browse' : 'portfolios';
     return '';
   };
 

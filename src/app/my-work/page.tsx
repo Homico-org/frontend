@@ -1,41 +1,40 @@
-"use client";
+'use client';
 
-import AppBackground from "@/components/common/AppBackground";
-import AuthGuard from "@/components/common/AuthGuard";
-import Avatar from "@/components/common/Avatar";
-import Button from "@/components/common/Button";
-import Card, {
-  CardBadge,
-  CardContent,
-  CardFooter,
-  CardImage,
-} from "@/components/common/Card";
-import Header, { HeaderSpacer } from "@/components/common/Header";
-import { useAuth } from "@/contexts/AuthContext";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useToast } from "@/contexts/ToastContext";
-import { api } from "@/lib/api";
-import { storage } from "@/services/storage";
+import AppBackground from '@/components/common/AppBackground';
+import AuthGuard from '@/components/common/AuthGuard';
+import Avatar from '@/components/common/Avatar';
+import EmptyState from '@/components/common/EmptyState';
+import Header, { HeaderSpacer } from '@/components/common/Header';
+import MobileBottomNav from '@/components/common/MobileBottomNav';
+import ProjectTrackerCard from '@/components/projects/ProjectTrackerCard';
+import { ConfirmModal } from '@/components/ui/Modal';
+import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/contexts/ToastContext';
+import { api } from '@/lib/api';
 import {
   AlertTriangle,
   ArrowLeft,
-  Building2,
-  Calendar,
+  Ban,
+  Briefcase,
   CheckCheck,
-  CheckCircle,
   Clock,
   DollarSign,
   ExternalLink,
-  Hammer,
-  Mail,
+  FileText,
   MapPin,
   MessageCircle,
-  Phone,
-  Trophy
-} from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+  MessageSquare,
+  Play,
+  Search,
+  X,
+  XCircle
+} from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+type TabType = 'active' | 'proposals' | 'completed';
 
 interface Job {
   _id: string;
@@ -52,6 +51,8 @@ interface Job {
   status: string;
   images: string[];
   media: { type: string; url: string }[];
+  proposalCount: number;
+  viewCount: number;
   createdAt: string;
   clientId: {
     _id: string;
@@ -65,19 +66,33 @@ interface Job {
   };
 }
 
-interface ActiveJob {
+interface ProjectTracking {
+  _id: string;
+  currentStage: 'hired' | 'started' | 'in_progress' | 'review' | 'completed';
+  progress: number;
+  startedAt?: string;
+  completedAt?: string;
+}
+
+interface Proposal {
   _id: string;
   jobId: Job;
+  coverLetter: string;
   proposedPrice: number;
   estimatedDuration: number;
   estimatedDurationUnit: string;
-  status: "accepted" | "completed";
+  status: 'pending' | 'in_discussion' | 'accepted' | 'rejected' | 'withdrawn' | 'completed';
+  contactRevealed: boolean;
   conversationId?: string;
+  clientRespondedAt?: string;
   acceptedAt?: string;
+  rejectionNote?: string;
+  unreadMessageCount?: number;
   createdAt: string;
+  projectTracking?: ProjectTracking;
 }
 
-type TabFilter = "active" | "completed";
+const TERRACOTTA = '#C4735B';
 
 function MyWorkPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -85,126 +100,206 @@ function MyWorkPageContent() {
   const toast = useToast();
   const router = useRouter();
 
-  const [activeJobs, setActiveJobs] = useState<ActiveJob[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [allProposals, setAllProposals] = useState<Proposal[]>([]);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [tabFilter, setTabFilter] = useState<TabFilter>("active");
-  const [completingJobId, setCompletingJobId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabType>('active');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [withdrawModalId, setWithdrawModalId] = useState<string | null>(null);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
 
   const hasFetched = useRef(false);
 
+  // Helper functions
+  const isProjectCompleted = (p: Proposal) =>
+    p.projectTracking?.currentStage === 'completed' || p.status === 'completed';
+
+  const isActiveProject = (p: Proposal) =>
+    p.status === 'accepted' && p.projectTracking?.currentStage !== 'completed';
+
+  const isPendingProposal = (p: Proposal) =>
+    p.status === 'pending' || p.status === 'in_discussion' || p.status === 'rejected' || p.status === 'withdrawn';
+
+  // Calculate counts
+  const counts = {
+    active: allProposals.filter(p => isActiveProject(p)).length,
+    proposals: allProposals.filter(p => isPendingProposal(p)).length,
+    completed: allProposals.filter(p => isProjectCompleted(p)).length,
+  };
+
+  // Filter proposals based on active tab and search
+  const getFilteredProposals = useCallback(() => {
+    let filtered = [...allProposals];
+
+    // Apply tab filter
+    if (activeTab === 'active') {
+      filtered = filtered.filter(p => isActiveProject(p));
+    } else if (activeTab === 'proposals') {
+      filtered = filtered.filter(p => isPendingProposal(p));
+    } else if (activeTab === 'completed') {
+      filtered = filtered.filter(p => isProjectCompleted(p));
+    }
+
+    // Apply search
+    if (searchQuery) {
+      const searchLower = searchQuery.toLowerCase();
+      filtered = filtered.filter(p => {
+        const job = p.jobId;
+        return job?.title?.toLowerCase().includes(searchLower) ||
+          job?.category?.toLowerCase().includes(searchLower) ||
+          job?.location?.toLowerCase().includes(searchLower);
+      });
+    }
+
+    return filtered;
+  }, [allProposals, activeTab, searchQuery]);
+
+  const filteredProposals = getFilteredProposals();
+
   useEffect(() => {
-    if (
-      !authLoading &&
-      (!isAuthenticated || (user?.role !== "pro" && user?.role !== "admin"))
-    ) {
-      router.push("/");
+    if (!authLoading && (!isAuthenticated || (user?.role !== 'pro' && user?.role !== 'admin'))) {
+      router.push('/');
     }
   }, [authLoading, isAuthenticated, user, router]);
 
-  const fetchActiveJobs = useCallback(async () => {
+  const fetchAllProposals = useCallback(async () => {
     try {
-      setIsLoading(true);
-      const response = await api.get("/jobs/my-active-jobs/pro");
-      setActiveJobs(Array.isArray(response.data) ? response.data : []);
+      setIsInitialLoading(true);
+      const response = await api.get('/jobs/my-proposals/list');
+      const data = Array.isArray(response.data) ? response.data : [];
+      setAllProposals(data);
       setError(null);
     } catch (err: any) {
-      console.error("Failed to fetch active jobs:", err);
-      setError(err.response?.data?.message || "Failed to load active jobs");
+      console.error('Failed to fetch proposals:', err);
+      setError(err.response?.data?.message || 'Failed to load data');
     } finally {
-      setIsLoading(false);
+      setIsInitialLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    if (
-      isAuthenticated &&
-      (user?.role === "pro" || user?.role === "admin") &&
-      !hasFetched.current
-    ) {
+    if (isAuthenticated && (user?.role === 'pro' || user?.role === 'admin') && !hasFetched.current) {
       hasFetched.current = true;
-      fetchActiveJobs();
-    }
-  }, [isAuthenticated, user, fetchActiveJobs]);
+      fetchAllProposals();
 
-  const handleCompleteJob = async (jobId: string) => {
-    setCompletingJobId(jobId);
+      api.post('/jobs/counters/mark-proposal-updates-viewed').catch(() => {});
+    }
+  }, [isAuthenticated, user, fetchAllProposals]);
+
+  const handleWithdraw = async () => {
+    if (!withdrawModalId) return;
+
+    setIsWithdrawing(true);
     try {
-      await api.post(`/jobs/${jobId}/complete`);
-      setActiveJobs((prev) =>
-        prev.map((j) =>
-          j.jobId?._id === jobId ? { ...j, status: "completed" } : j
-        )
-      );
+      await api.post(`/jobs/proposals/${withdrawModalId}/withdraw`);
+      setAllProposals(prev => prev.map(p =>
+        p._id === withdrawModalId ? { ...p, status: 'withdrawn' as const } : p
+      ));
+      setWithdrawModalId(null);
       toast.success(
-        language === "ka" ? "სამუშაო დასრულდა" : "Job completed",
-        language === "ka"
-          ? "სამუშაო წარმატებით დასრულდა"
-          : "The job has been marked as completed"
+        language === 'ka' ? 'შეთავაზება გაუქმდა' : 'Proposal withdrawn',
+        language === 'ka' ? 'თქვენი შეთავაზება წარმატებით გაუქმდა' : 'Your proposal has been withdrawn'
       );
     } catch (err: any) {
       toast.error(
-        language === "ka" ? "შეცდომა" : "Error",
-        err.response?.data?.message || "Failed to complete job"
+        language === 'ka' ? 'შეცდომა' : 'Error',
+        err.response?.data?.message || 'Failed to withdraw proposal'
       );
     } finally {
-      setCompletingJobId(null);
+      setIsWithdrawing(false);
     }
-  };
-
-  // Filter jobs
-  const filteredJobs = activeJobs.filter((job) => {
-    if (tabFilter === "active") return job.status === "accepted";
-    return job.status === "completed";
-  });
-
-  // Stats
-  const stats = {
-    active: activeJobs.filter((j) => j.status === "accepted").length,
-    completed: activeJobs.filter((j) => j.status === "completed").length,
   };
 
   const formatBudget = (job: Job) => {
-    if (job.budgetType === "fixed" && job.budgetAmount) {
+    if (job.budgetType === 'fixed' && job.budgetAmount) {
       return `₾${job.budgetAmount.toLocaleString()}`;
     }
-    if (job.budgetType === "range" && job.budgetMin && job.budgetMax) {
+    if (job.budgetType === 'range' && job.budgetMin && job.budgetMax) {
       return `₾${job.budgetMin.toLocaleString()} - ₾${job.budgetMax.toLocaleString()}`;
     }
-    return language === "ka" ? "შეთანხმებით" : "Negotiable";
+    if (job.budgetType === 'per_sqm' && job.pricePerUnit) {
+      return `₾${job.pricePerUnit}/მ²`;
+    }
+    return language === 'ka' ? 'შეთანხმებით' : 'Negotiable';
   };
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString(
-      language === "ka" ? "ka-GE" : "en-US",
-      {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
+    return new Date(date).toLocaleDateString(language === 'ka' ? 'ka-GE' : 'en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const formatRelativeTime = (date: string) => {
+    const now = new Date();
+    const then = new Date(date);
+    const diffMs = now.getTime() - then.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return language === 'ka' ? 'დღეს' : 'Today';
+    if (diffDays === 1) return language === 'ka' ? 'გუშინ' : 'Yesterday';
+    if (diffDays < 7) return language === 'ka' ? `${diffDays} დღის წინ` : `${diffDays}d ago`;
+    if (diffDays < 30) return language === 'ka' ? `${Math.floor(diffDays / 7)} კვირის წინ` : `${Math.floor(diffDays / 7)}w ago`;
+    return formatDate(date);
+  };
+
+  const getStatusConfig = (status: string) => {
+    const configs: Record<string, { label: string; labelKa: string; icon: any; color: string; bg: string; border: string }> = {
+      pending: {
+        label: 'Pending',
+        labelKa: 'მოლოდინში',
+        icon: Clock,
+        color: '#D97706',
+        bg: 'rgba(245, 158, 11, 0.1)',
+        border: 'rgba(245, 158, 11, 0.2)'
+      },
+      in_discussion: {
+        label: 'In Discussion',
+        labelKa: 'მიმოწერაში',
+        icon: MessageSquare,
+        color: '#2563EB',
+        bg: 'rgba(59, 130, 246, 0.1)',
+        border: 'rgba(59, 130, 246, 0.2)'
+      },
+      rejected: {
+        label: 'Rejected',
+        labelKa: 'უარყოფილი',
+        icon: XCircle,
+        color: '#DC2626',
+        bg: 'rgba(239, 68, 68, 0.1)',
+        border: 'rgba(239, 68, 68, 0.2)'
+      },
+      withdrawn: {
+        label: 'Withdrawn',
+        labelKa: 'გაუქმებული',
+        icon: Ban,
+        color: '#6B7280',
+        bg: 'rgba(107, 114, 128, 0.1)',
+        border: 'rgba(107, 114, 128, 0.2)'
       }
-    );
+    };
+    return configs[status] || configs.pending;
   };
 
   // Loading State
-  if (authLoading || isLoading) {
+  if (authLoading || isInitialLoading) {
     return (
-      <div className="min-h-screen relative">
+      <div className="min-h-screen bg-[var(--color-bg-primary)]">
         <AppBackground />
         <Header />
         <HeaderSpacer />
-        <div className="relative z-20 flex items-center justify-center min-h-[60vh]">
-          <div className="flex flex-col items-center gap-4">
-            <div className="relative">
-              <div className="w-16 h-16 rounded-2xl bg-[var(--color-accent)]/10 flex items-center justify-center">
-                <Hammer className="w-8 h-8 text-[var(--color-accent)] animate-pulse" />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="relative w-16 h-16 mx-auto mb-4">
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#C4735B] to-[#A85D48] opacity-20 animate-pulse" />
+              <div className="absolute inset-2 rounded-xl bg-[var(--color-bg-elevated)] flex items-center justify-center">
+                <Briefcase className="w-6 h-6 text-[#C4735B] animate-pulse" />
               </div>
-              <div className="absolute inset-0 w-16 h-16 rounded-2xl border-2 border-[var(--color-accent)]/20 border-t-[var(--color-accent)] animate-spin" />
+              <div className="absolute inset-0 rounded-2xl border-2 border-[#C4735B]/30 animate-spin" style={{ animationDuration: '3s' }} />
             </div>
-            <p
-              className="text-sm font-medium"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              {language === "ka" ? "იტვირთება..." : "Loading your work..."}
+            <p className="text-[var(--color-text-secondary)] font-medium">
+              {language === 'ka' ? 'იტვირთება...' : 'Loading...'}
             </p>
           </div>
         </div>
@@ -215,404 +310,357 @@ function MyWorkPageContent() {
   // Error State
   if (error) {
     return (
-      <div className="min-h-screen relative">
+      <div className="min-h-screen bg-[var(--color-bg-primary)]">
         <AppBackground />
         <Header />
         <HeaderSpacer />
-        <div className="relative z-20 flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <div className="w-16 h-16 rounded-2xl bg-red-500/10 mx-auto mb-4 flex items-center justify-center">
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center max-w-md mx-auto px-4">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-red-500/10 flex items-center justify-center">
               <AlertTriangle className="w-8 h-8 text-red-500" />
             </div>
-            <h3
-              className="text-lg font-semibold mb-2"
-              style={{ color: "var(--color-text-primary)" }}
-            >
-              {language === "ka" ? "შეცდომა" : "Error"}
+            <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-2">
+              {language === 'ka' ? 'შეცდომა' : 'Error'}
             </h3>
-            <p
-              className="text-sm mb-4"
-              style={{ color: "var(--color-text-secondary)" }}
+            <p className="text-[var(--color-text-secondary)] mb-6">{error}</p>
+            <button
+              onClick={fetchAllProposals}
+              className="px-6 py-3 rounded-xl bg-[#C4735B] text-white font-medium hover:bg-[#A85D48] transition-all"
             >
-              {error}
-            </p>
-            <Button onClick={fetchActiveJobs}>
-              {language === "ka" ? "ხელახლა ცდა" : "Try Again"}
-            </Button>
+              {language === 'ka' ? 'ხელახლა ცდა' : 'Try Again'}
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
+  const tabs = [
+    {
+      key: 'active' as TabType,
+      label: language === 'ka' ? 'აქტიური' : 'Active',
+      count: counts.active,
+      icon: Play,
+      emptyTitle: language === 'ka' ? 'აქტიური პროექტები არ არის' : 'No active projects',
+      emptyDesc: language === 'ka' ? 'როცა კლიენტი მიიღებს შენს შეთავაზებას, პროექტი აქ გამოჩნდება' : 'When a client accepts your proposal, the project will appear here',
+    },
+    {
+      key: 'proposals' as TabType,
+      label: language === 'ka' ? 'შეთავაზებები' : 'Proposals',
+      count: counts.proposals,
+      icon: FileText,
+      emptyTitle: language === 'ka' ? 'შეთავაზებები არ არის' : 'No proposals',
+      emptyDesc: language === 'ka' ? 'მოძებნე სამუშაო და გააგზავნე შეთავაზება' : 'Find jobs and submit proposals to get started',
+    },
+    {
+      key: 'completed' as TabType,
+      label: language === 'ka' ? 'დასრულებული' : 'Completed',
+      count: counts.completed,
+      icon: CheckCheck,
+      emptyTitle: language === 'ka' ? 'დასრულებული პროექტები არ არის' : 'No completed projects',
+      emptyDesc: language === 'ka' ? 'დასრულებული პროექტები აქ გამოჩნდება' : 'Your completed projects will appear here',
+    },
+  ];
+
+  const currentTab = tabs.find(t => t.key === activeTab)!;
+
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen bg-[var(--color-bg-primary)]">
       <AppBackground />
       <Header />
       <HeaderSpacer />
 
-      <main className="relative z-20 max-w-5xl mx-auto px-4 pt-6 pb-20">
+      <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-24">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.back()}
-            className="!p-2"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div className="flex-1">
-            <h1
-              className="text-2xl font-bold"
-              style={{ color: "var(--color-text-primary)" }}
+        <div className="mb-6">
+          <div className="flex items-start gap-3 sm:gap-4 mb-4">
+            <button
+              onClick={() => router.back()}
+              className="mt-0.5 w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-[#C4735B]/30 hover:bg-[#C4735B]/5 transition-all group"
             >
-              {language === "ka" ? "ჩემი სამუშაოები" : "My Work"}
-            </h1>
-            <p
-              className="text-sm mt-0.5"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              {language === "ka"
-                ? "აქტიური და დასრულებული პროექტები"
-                : "Active and completed projects"}
-            </p>
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--color-text-secondary)] group-hover:text-[#C4735B] transition-colors" />
+            </button>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-3xl font-bold text-[var(--color-text-primary)] tracking-tight">
+                {language === 'ka' ? 'ჩემი სამუშაო' : 'My Work'}
+              </h1>
+              <p className="text-sm text-[var(--color-text-secondary)] mt-0.5 hidden sm:block">
+                {language === 'ka'
+                  ? 'აქტიური პროექტები და შეთავაზებები'
+                  : 'Your active projects and proposals'}
+              </p>
+            </div>
           </div>
-          <Button href="/my-proposals" variant="outline" size="sm">
-            {language === "ka" ? "შეთავაზებები" : "Proposals"}
-          </Button>
         </div>
 
         {/* Tabs */}
-        <div
-          className="mb-6 p-4 rounded-2xl border"
-          style={{
-            backgroundColor: "var(--color-bg-elevated)",
-            borderColor: "var(--color-border)",
-          }}
-        >
-          <div className="flex gap-2">
-            <button
-              onClick={() => setTabFilter("active")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                tabFilter === "active"
-                  ? "bg-[#E07B4F] text-white"
-                  : "bg-[#E07B4F]/5 text-[var(--color-text-secondary)] hover:bg-[#E07B4F]/10"
-              }`}
-            >
-              <Hammer className="w-4 h-4" />
-              {language === "ka" ? "მიმდინარე" : "Active"}
-              <span
-                className={`px-1.5 py-0.5 rounded text-xs font-bold ${
-                  tabFilter === "active"
-                    ? "bg-white/20"
-                    : "bg-[#E07B4F]/10 text-[#E07B4F]"
-                }`}
-              >
-                {stats.active}
-              </span>
-            </button>
-            <button
-              onClick={() => setTabFilter("completed")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                tabFilter === "completed"
-                  ? "bg-[#E07B4F] text-white"
-                  : "bg-[#E07B4F]/5 text-[var(--color-text-secondary)] hover:bg-[#E07B4F]/10"
-              }`}
-            >
-              <Trophy className="w-4 h-4" />
-              {language === "ka" ? "დასრულებული" : "Completed"}
-              <span
-                className={`px-1.5 py-0.5 rounded text-xs font-bold ${
-                  tabFilter === "completed"
-                    ? "bg-white/20"
-                    : "bg-[#E07B4F]/10 text-[#E07B4F]"
-                }`}
-              >
-                {stats.completed}
-              </span>
-            </button>
+        <div className="mb-6">
+          <div className="flex gap-1 p-1 bg-[var(--color-bg-elevated)] rounded-xl border border-[var(--color-border)]">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`
+                    flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
+                    ${isActive
+                      ? 'bg-[#C4735B] text-white shadow-sm'
+                      : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
+                    }
+                  `}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span className="hidden sm:inline">{tab.label}</span>
+                  <span className={`
+                    px-1.5 py-0.5 rounded-md text-xs font-bold
+                    ${isActive ? 'bg-white/20 text-white' : 'bg-[var(--color-bg-muted)] text-[var(--color-text-tertiary)]'}
+                  `}>
+                    {tab.count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Jobs List */}
-        {filteredJobs.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-20 h-20 rounded-2xl bg-[var(--color-accent)]/10 mx-auto mb-5 flex items-center justify-center">
-              {tabFilter === "active" ? (
-                <Hammer className="w-10 h-10 text-[var(--color-accent)]" />
-              ) : (
-                <Trophy className="w-10 h-10 text-[var(--color-accent)]" />
-              )}
+        {/* Search (for proposals tab) */}
+        {activeTab === 'proposals' && counts.proposals > 0 && (
+          <div className="mb-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
+              <input
+                type="text"
+                placeholder={language === 'ka' ? 'ძებნა...' : 'Search proposals...'}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm bg-[var(--color-bg-elevated)] border border-[var(--color-border)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#C4735B]/30 focus:ring-2 focus:ring-[#C4735B]/10 transition-all"
+              />
             </div>
-            <h3
-              className="text-lg font-semibold mb-2"
-              style={{ color: "var(--color-text-primary)" }}
-            >
-              {tabFilter === "active"
-                ? language === "ka"
-                  ? "მიმდინარე სამუშაოები არ გაქვს"
-                  : "No active jobs"
-                : language === "ka"
-                  ? "დასრულებული სამუშაოები არ გაქვს"
-                  : "No completed jobs"}
-            </h3>
-            <p
-              className="max-w-sm mx-auto text-sm mb-6"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              {tabFilter === "active"
-                ? language === "ka"
-                  ? "როცა კლიენტი მიიღებს შენს შეთავაზებას, სამუშაო აქ გამოჩნდება"
-                  : "When a client accepts your proposal, the job will appear here"
-                : language === "ka"
-                  ? "დასრულებული პროექტები აქ გამოჩნდება"
-                  : "Your completed projects will appear here"}
-            </p>
-            {tabFilter === "active" && (
-              <Button href="/browse/jobs">
-                {language === "ka" ? "სამუშაოების ნახვა" : "Browse Jobs"}
-              </Button>
-            )}
           </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredJobs.map((activeJob) => {
-              const job = activeJob.jobId;
-              if (!job) return null;
+        )}
 
-              const allMedia = [
-                ...(job.media || []).map((m) => ({ url: m.url, type: m.type })),
-                ...(job.images || [])
-                  .filter((img) => !job.media?.some((m) => m.url === img))
-                  .map((url) => ({ url, type: "image" })),
-              ];
-              const hasMedia = allMedia.length > 0;
-              const isOrg = job.clientId?.accountType === "organization";
-              const isCompleting = completingJobId === job._id;
+        {/* Content */}
+        {filteredProposals.length === 0 ? (
+          <EmptyState
+            icon={currentTab.icon}
+            title={currentTab.emptyTitle}
+            titleKa={currentTab.emptyTitle}
+            description={currentTab.emptyDesc}
+            descriptionKa={currentTab.emptyDesc}
+            actionLabel={activeTab === 'proposals' ? (language === 'ka' ? 'სამუშაოების ნახვა' : 'Browse Jobs') : undefined}
+            actionLabelKa={activeTab === 'proposals' ? 'სამუშაოების ნახვა' : undefined}
+            actionHref={activeTab === 'proposals' ? '/browse/jobs' : undefined}
+            variant="illustrated"
+            size="md"
+          />
+        ) : (
+          <div className="space-y-4 sm:space-y-5">
+            {filteredProposals.map((proposal, index) => {
+              const job = proposal.jobId;
+              if (!job || typeof job === 'string') return null;
+
+              // For active or completed projects - use ProjectTrackerCard
+              if (isActiveProject(proposal) || isProjectCompleted(proposal)) {
+                const projectData = {
+                  _id: proposal.projectTracking?._id || proposal._id,
+                  jobId: job._id,
+                  clientId: {
+                    _id: job.clientId?._id || '',
+                    name: job.clientId?.name || '',
+                    avatar: job.clientId?.avatar,
+                  },
+                  proId: {
+                    _id: user?.id || '',
+                    name: user?.name || '',
+                    avatar: user?.avatar,
+                    phone: user?.phone,
+                    title: (user as any)?.title,
+                  },
+                  currentStage: proposal.projectTracking?.currentStage || 'hired',
+                  progress: proposal.projectTracking?.progress || 10,
+                  hiredAt: proposal.acceptedAt || proposal.createdAt,
+                  startedAt: proposal.projectTracking?.startedAt,
+                  completedAt: proposal.projectTracking?.completedAt,
+                  comments: [],
+                  attachments: [],
+                  agreedPrice: proposal.proposedPrice,
+                  estimatedDuration: proposal.estimatedDuration,
+                  estimatedDurationUnit: proposal.estimatedDurationUnit,
+                };
+
+                return (
+                  <ProjectTrackerCard
+                    key={proposal._id}
+                    job={job}
+                    project={projectData}
+                    isClient={false}
+                    locale={language}
+                    onRefresh={fetchAllProposals}
+                  />
+                );
+              }
+
+              // For pending/rejected proposals - simpler card
+              const statusConfig = getStatusConfig(proposal.status);
+              const StatusIcon = statusConfig.icon;
+              const hasUnread = (proposal.unreadMessageCount ?? 0) > 0;
+              const isPending = proposal.status === 'pending';
 
               return (
-                <Card
-                  key={activeJob._id}
-                  variant="elevated"
-                  hover="lift"
-                  className={`group ${
-                    activeJob.status === "accepted"
-                      ? "ring-2 ring-emerald-500/30 ring-offset-1 ring-offset-[#FFFDF9] dark:ring-offset-[#1c1917]"
-                      : ""
-                  }`}
+                <div
+                  key={proposal._id}
+                  className="group bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border)] overflow-hidden transition-all duration-300 hover:border-[#C4735B]/20 hover:shadow-lg"
+                  style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div
-                    className={`flex flex-col ${hasMedia ? "lg:flex-row" : ""}`}
-                  >
-                    {/* Media Section */}
-                    {hasMedia && (
-                      <div className="relative w-full lg:w-64 flex-shrink-0 overflow-hidden rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none">
-                        <CardImage
-                          aspectRatio="16/10"
-                          overlay="gradient"
-                          className="h-40 lg:h-full lg:min-h-[200px]"
-                        >
-                          <img
-                            src={storage.getFileUrl(allMedia[0].url)}
-                            alt=""
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
-                          <CardBadge
-                            position="top-left"
-                            variant="solid"
-                            color={
-                              activeJob.status === "accepted"
-                                ? "success"
-                                : "primary"
-                            }
-                          >
-                            {activeJob.status === "accepted"
-                              ? language === "ka"
-                                ? "მიმდინარე"
-                                : "Active"
-                              : language === "ka"
-                                ? "დასრულებული"
-                                : "Completed"}
-                          </CardBadge>
-                        </CardImage>
-                      </div>
-                    )}
-
-                    {/* Content Section */}
-                    <CardContent spacing="normal" className="flex-1">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 min-w-0">
-                          {/* Status Badge - if no media */}
-                          {!hasMedia && (
-                            <div className="mb-2">
-                              <span
-                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${
-                                  activeJob.status === "accepted"
-                                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
-                                    : "bg-[#E07B4F]/15 text-[#E07B4F]"
-                                }`}
-                              >
-                                {activeJob.status === "accepted" ? (
-                                  <Clock className="w-3 h-3" />
-                                ) : (
-                                  <CheckCheck className="w-3 h-3" />
-                                )}
-                                {activeJob.status === "accepted"
-                                  ? language === "ka"
-                                    ? "მიმდინარე"
-                                    : "Active"
-                                  : language === "ka"
-                                    ? "დასრულებული"
-                                    : "Completed"}
-                              </span>
-                            </div>
-                          )}
-
-                          {/* Job Title */}
-                          <Link
-                            href={`/jobs/${job._id}`}
-                            className="block group/title"
-                          >
-                            <h3 className="text-lg font-semibold leading-snug line-clamp-2 transition-colors text-[var(--color-text-primary)] group-hover/title:text-[#E07B4F]">
-                              {job.title}
-                            </h3>
-                          </Link>
-
-                          {/* Client Info */}
-                          <div className="flex items-center gap-2 mt-2">
-                            <Avatar
-                              src={job.clientId?.avatar}
-                              name={job.clientId?.name || "Client"}
-                              size="xs"
-                            />
-                            <span className="text-sm text-[var(--color-text-secondary)]">
-                              {job.clientId?.name}
-                            </span>
-                            {isOrg && job.clientId?.companyName && (
-                              <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-[#E07B4F]/10 text-[#E07B4F]">
-                                <Building2 className="w-3 h-3" />
-                                {job.clientId.companyName}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Job Meta */}
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2.5 text-sm text-[var(--color-text-secondary)]">
-                            <span className="flex items-center gap-1.5">
-                              <MapPin className="w-3.5 h-3.5 text-[#E07B4F]/60" />
-                              {job.location}
-                            </span>
-                            <span className="flex items-center gap-1.5 font-semibold text-[#E07B4F]">
-                              <DollarSign className="w-3.5 h-3.5" />₾
-                              {activeJob.proposedPrice?.toLocaleString()}
-                            </span>
-                            {activeJob.acceptedAt && (
-                              <span className="flex items-center gap-1.5 text-xs">
-                                <Calendar className="w-3.5 h-3.5" />
-                                {language === "ka"
-                                  ? "დაიწყო:"
-                                  : "Started:"}{" "}
-                                {formatDate(activeJob.acceptedAt)}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Client Contact */}
-                          {job.clientId && (
-                            <div className="mt-3 p-3 rounded-lg bg-[#E07B4F]/5 border border-[#E8D5C4]/40 dark:border-[#3d2f24]/40">
-                              <p className="text-xs font-semibold text-[#E07B4F] mb-2">
-                                {language === "ka"
-                                  ? "კლიენტის კონტაქტი"
-                                  : "Client Contact"}
-                              </p>
-                              <div className="flex flex-wrap items-center gap-3 text-sm">
-                                {job.clientId.phone && (
-                                  <a
-                                    href={`tel:${job.clientId.phone}`}
-                                    className="flex items-center gap-1.5 text-[#E07B4F] hover:underline"
-                                  >
-                                    <Phone className="w-3.5 h-3.5" />
-                                    {job.clientId.phone}
-                                  </a>
-                                )}
-                                {job.clientId.email && (
-                                  <a
-                                    href={`mailto:${job.clientId.email}`}
-                                    className="flex items-center gap-1.5 text-[#E07B4F] hover:underline"
-                                  >
-                                    <Mail className="w-3.5 h-3.5" />
-                                    {job.clientId.email}
-                                  </a>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
+                  {/* Header */}
+                  <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)]/30">
+                    <span
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold"
+                      style={{
+                        backgroundColor: statusConfig.bg,
+                        color: statusConfig.color,
+                        border: `1px solid ${statusConfig.border}`
+                      }}
+                    >
+                      <StatusIcon className="w-3.5 h-3.5" />
+                      {language === 'ka' ? statusConfig.labelKa : statusConfig.label}
+                    </span>
+                    <span className="text-xs text-[var(--color-text-tertiary)]">
+                      {formatRelativeTime(proposal.createdAt)}
+                    </span>
                   </div>
 
-                  {/* Actions Footer */}
-                  <CardFooter className="flex flex-wrap items-center gap-3">
-                    {/* Message Button */}
-                    <Button
-                      href={
-                        activeJob.conversationId
-                          ? `/messages?conversation=${activeJob.conversationId}`
-                          : `/messages`
-                      }
-                      size="sm"
-                      variant="outline"
-                      icon={<MessageCircle className="w-4 h-4" />}
-                    >
-                      {language === "ka" ? "მესიჯი" : "Message"}
-                    </Button>
-
-                    {/* Mark Complete - for active jobs */}
-                    {activeJob.status === "accepted" && (
-                      <Button
-                        onClick={() => handleCompleteJob(job._id)}
-                        disabled={isCompleting}
-                        size="sm"
-                        icon={
-                          isCompleting ? undefined : (
-                            <CheckCircle className="w-4 h-4" />
-                          )
-                        }
-                        className="!bg-emerald-500 hover:!bg-emerald-600"
-                      >
-                        {isCompleting
-                          ? language === "ka"
-                            ? "მიმდინარეობს..."
-                            : "Completing..."
-                          : language === "ka"
-                            ? "დასრულება"
-                            : "Mark Complete"}
-                      </Button>
-                    )}
-
-                    <Link
-                      href={`/jobs/${job._id}`}
-                      className="ml-auto flex items-center gap-1.5 text-sm font-medium text-[#E07B4F] hover:underline"
-                    >
-                      {language === "ka" ? "დეტალები" : "View Details"}
-                      <ExternalLink className="w-3.5 h-3.5" />
+                  {/* Content */}
+                  <div className="p-4 sm:p-5">
+                    {/* Job Title */}
+                    <Link href={`/jobs/${job._id}`} className="block group/title mb-3">
+                      <h3 className="text-lg font-bold text-[var(--color-text-primary)] leading-snug line-clamp-2 group-hover/title:text-[#C4735B] transition-colors">
+                        {job.title}
+                      </h3>
                     </Link>
-                  </CardFooter>
-                </Card>
+
+                    {/* Client + Meta */}
+                    <div className="flex flex-wrap items-center gap-3 mb-4 text-sm text-[var(--color-text-secondary)]">
+                      <div className="flex items-center gap-2">
+                        <Avatar
+                          src={job.clientId?.avatar}
+                          name={job.clientId?.name || 'Client'}
+                          size="xs"
+                        />
+                        <span>{job.clientId?.name}</span>
+                      </div>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3.5 h-3.5 opacity-60" />
+                        {job.location}
+                      </span>
+                      <span className="flex items-center gap-1 font-medium text-[#C4735B]">
+                        <DollarSign className="w-3.5 h-3.5" />
+                        {formatBudget(job)}
+                      </span>
+                    </div>
+
+                    {/* Your Proposal */}
+                    <div className="rounded-xl p-4 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-[#C4735B]">
+                          {language === 'ka' ? 'შენი შეთავაზება' : 'Your Proposal'}
+                        </p>
+                        <span className="text-xs text-[var(--color-text-tertiary)]">
+                          {formatDate(proposal.createdAt)}
+                        </span>
+                      </div>
+                      <div className="flex items-baseline gap-3 mb-2">
+                        <span className="text-xl font-bold text-[#C4735B]">
+                          ₾{proposal.proposedPrice?.toLocaleString()}
+                        </span>
+                        <span className="text-sm text-[var(--color-text-tertiary)] flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5" />
+                          {proposal.estimatedDuration}{' '}
+                          {proposal.estimatedDurationUnit === 'days'
+                            ? (language === 'ka' ? 'დღე' : 'days')
+                            : proposal.estimatedDurationUnit === 'weeks'
+                            ? (language === 'ka' ? 'კვირა' : 'weeks')
+                            : (language === 'ka' ? 'თვე' : 'months')}
+                        </span>
+                      </div>
+                      <p className="text-sm text-[var(--color-text-tertiary)] line-clamp-2 italic">
+                        &ldquo;{proposal.coverLetter}&rdquo;
+                      </p>
+                    </div>
+
+                    {/* Rejection Note */}
+                    {proposal.status === 'rejected' && proposal.rejectionNote && (
+                      <div className="mt-3 p-3 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20">
+                        <p className="text-xs text-red-600 dark:text-red-400">
+                          <strong>{language === 'ka' ? 'მიზეზი:' : 'Reason:'}</strong> {proposal.rejectionNote}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="px-4 sm:px-5 py-3 border-t border-[var(--color-border)] bg-[var(--color-bg-tertiary)]/20">
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/jobs/${job._id}`}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-bg-muted)] text-[var(--color-text-primary)] hover:bg-[var(--color-border)] transition-all"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        {language === 'ka' ? 'სამუშაო' : 'View Job'}
+                      </Link>
+
+                      {isPending && (
+                        <button
+                          onClick={() => setWithdrawModalId(proposal._id)}
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
+                        >
+                          <X className="w-4 h-4" />
+                          {language === 'ka' ? 'გაუქმება' : 'Withdraw'}
+                        </button>
+                      )}
+
+                      {hasUnread && (
+                        <span className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-blue-500 text-white animate-pulse">
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          {proposal.unreadMessageCount}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
               );
             })}
           </div>
         )}
       </main>
+
+      {/* Withdraw Modal */}
+      <ConfirmModal
+        isOpen={!!withdrawModalId}
+        onClose={() => setWithdrawModalId(null)}
+        onConfirm={handleWithdraw}
+        title={language === 'ka' ? 'შეთავაზების გაუქმება' : 'Withdraw Proposal'}
+        description={language === 'ka'
+          ? 'დარწმუნებული ხარ? ეს მოქმედება ვერ გაუქმდება.'
+          : 'Are you sure? This action cannot be undone.'}
+        icon={<AlertTriangle className="w-6 h-6 text-red-500" />}
+        variant="danger"
+        cancelLabel={language === 'ka' ? 'გაუქმება' : 'Cancel'}
+        confirmLabel={language === 'ka' ? 'დადასტურება' : 'Confirm'}
+        isLoading={isWithdrawing}
+        loadingLabel={language === 'ka' ? 'მიმდინარეობს...' : 'Withdrawing...'}
+      />
+
+      <MobileBottomNav />
     </div>
   );
 }
 
 export default function MyWorkPage() {
   return (
-    <AuthGuard allowedRoles={["pro", "admin"]}>
+    <AuthGuard allowedRoles={['pro', 'admin']}>
       <MyWorkPageContent />
     </AuthGuard>
   );

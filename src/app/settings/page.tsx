@@ -726,8 +726,8 @@ function SettingsPageContent() {
   };
 
   const handleVerifyOtp = async () => {
-    if (otpCode.length !== 6) {
-      setAddEmailError(locale === 'ka' ? 'შეიყვანეთ 6-ნიშნა კოდი' : 'Please enter 6-digit code');
+    if (otpCode.length !== 4) {
+      setAddEmailError(locale === 'ka' ? 'შეიყვანეთ 4-ნიშნა კოდი' : 'Please enter 4-digit code');
       return;
     }
 
@@ -857,8 +857,8 @@ function SettingsPageContent() {
   };
 
   const handleVerifyPhoneOtp = async () => {
-    if (phoneOtpCode.length !== 6) {
-      setPhoneChangeError(locale === 'ka' ? 'შეიყვანეთ 6-ნიშნა კოდი' : 'Please enter 6-digit code');
+    if (phoneOtpCode.length !== 4) {
+      setPhoneChangeError(locale === 'ka' ? 'შეიყვანეთ 4-ნიშნა კოდი' : 'Please enter 4-digit code');
       return;
     }
 
@@ -2850,7 +2850,7 @@ function SettingsPageContent() {
 
                   <button
                     onClick={handleVerifyOtp}
-                    disabled={isVerifyingOtp || otpCode.length !== 6}
+                    disabled={isVerifyingOtp || otpCode.length !== 4}
                     className="w-full py-3 bg-[#E07B4F] hover:bg-[#D26B3F] text-white rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {isVerifyingOtp ? (
@@ -3273,7 +3273,7 @@ function SettingsPageContent() {
 
                   <button
                     onClick={handleVerifyPhoneOtp}
-                    disabled={isVerifyingPhoneOtp || phoneOtpCode.length !== 6}
+                    disabled={isVerifyingPhoneOtp || phoneOtpCode.length !== 4}
                     className="w-full py-3 bg-[#E07B4F] hover:bg-[#D26B3F] text-white rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {isVerifyingPhoneOtp ? (

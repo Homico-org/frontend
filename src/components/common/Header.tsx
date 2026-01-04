@@ -29,7 +29,7 @@ export default function Header() {
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   // Check active routes for navigation highlighting
-  const isMyProposalsActive = pathname === '/my-proposals';
+  const isMyWorkActive = pathname === '/my-work' || pathname === '/my-proposals';
   const isMyJobsActive = pathname === '/my-jobs';
   const isNotificationsActive = pathname === '/notifications';
 
@@ -148,23 +148,23 @@ export default function Header() {
 
         {/* Right side - Actions + Profile */}
         <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3">
-          {/* My Proposals & My Jobs buttons - large screens */}
+          {/* My Work & My Jobs buttons - large screens */}
           {isAuthenticated && user && (
             <div className="hidden lg:flex items-center gap-1 p-1 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700/50">
-              {/* My Proposals - only for pro/admin */}
+              {/* My Work - only for pro/admin */}
               {(user.role === "pro" || user.role === "admin") && (
                 <>
                   <Link
-                    href="/my-proposals"
+                    href="/my-work"
                     className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                      isMyProposalsActive
+                      isMyWorkActive
                         ? 'bg-white dark:bg-neutral-700 shadow-sm'
                         : 'hover:bg-white dark:hover:bg-neutral-700'
                     }`}
                     style={{ color: ACCENT_COLOR }}
                   >
                     <FileText className="w-4 h-4" />
-                    <span>{locale === 'ka' ? 'ჩემი შეთავაზებები' : 'My Proposals'}</span>
+                    <span>{locale === 'ka' ? 'ჩემი სამუშაო' : 'My Work'}</span>
                     {proposalUpdatesCount > 0 && (
                       <span
                         className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white rounded-full shadow-sm"
@@ -180,7 +180,7 @@ export default function Header() {
                   <div className="w-px h-4 bg-neutral-300 dark:bg-neutral-600" />
                 </>
               )}
-              {/* My Jobs - for all authenticated users */}
+              {/* My Jobs - for everyone (pros can also post jobs) */}
               <Link
                 href="/my-jobs"
                 className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
@@ -207,20 +207,20 @@ export default function Header() {
             </div>
           )}
 
-          {/* My Proposals & My Jobs buttons - tablet (icon only) */}
+          {/* My Work & My Jobs buttons - tablet (icon only) */}
           {isAuthenticated && user && (
             <div className="hidden sm:flex lg:hidden items-center gap-1">
-              {/* My Proposals - only for pro/admin */}
+              {/* My Work - only for pro/admin */}
               {(user.role === "pro" || user.role === "admin") && (
                 <Link
-                  href="/my-proposals"
+                  href="/my-work"
                   className={`relative flex items-center justify-center w-9 h-9 rounded-xl transition-all ${
-                    isMyProposalsActive
+                    isMyWorkActive
                       ? 'bg-neutral-200 dark:bg-neutral-700 ring-2 ring-offset-1'
                       : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                   }`}
-                  style={isMyProposalsActive ? { '--tw-ring-color': ACCENT_COLOR } as React.CSSProperties : {}}
-                  title={locale === 'ka' ? 'ჩემი შეთავაზებები' : 'My Proposals'}
+                  style={isMyWorkActive ? { '--tw-ring-color': ACCENT_COLOR } as React.CSSProperties : {}}
+                  title={locale === 'ka' ? 'ჩემი სამუშაო' : 'My Work'}
                 >
                   <FileText className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
                   {proposalUpdatesCount > 0 && (
@@ -236,7 +236,7 @@ export default function Header() {
                   )}
                 </Link>
               )}
-              {/* My Jobs - for all authenticated users */}
+              {/* My Jobs - for everyone (pros can also post jobs) */}
               <Link
                 href="/my-jobs"
                 className={`relative flex items-center justify-center w-9 h-9 rounded-xl transition-all ${
