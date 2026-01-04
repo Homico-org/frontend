@@ -205,12 +205,6 @@ export default function BecomeProPage() {
     }
   }, [authLoading, isAuthenticated, user, router, openLoginModal]);
 
-  // Initialize with user's phone if available
-  useEffect(() => {
-    if (user?.phone && !whatsapp) {
-      setWhatsapp(user.phone);
-    }
-  }, [user?.phone]);
 
   // Get current step index
   const getCurrentStepIndex = () =>
@@ -223,7 +217,6 @@ export default function BecomeProPage() {
     avatar: !!avatarPreview,
     bio: bio.trim().length >= 20,
     experience: !!yearsExperience && parseInt(yearsExperience) >= 0,
-    contact: !!whatsapp || !!telegram,
   };
 
   const canProceed = () => {
@@ -235,7 +228,7 @@ export default function BecomeProPage() {
       case "about":
         return validation.avatar && validation.bio && validation.experience;
       case "contact":
-        return validation.contact;
+        return true; // Contact is optional
       case "projects":
         return true; // Projects are optional
       case "review":
@@ -1242,16 +1235,15 @@ export default function BecomeProPage() {
 
                     <p className="text-sm text-[var(--color-text-secondary)] mb-6">
                       {locale === "ka"
-                        ? "მინიმუმ ერთი საკონტაქტო ნომერი სავალდებულოა (WhatsApp ან Telegram)"
-                        : "At least one contact number is required (WhatsApp or Telegram)"}
+                        ? "დაამატე სოციალური ქსელები კლიენტებთან კომუნიკაციისთვის"
+                        : "Add social links for client communication"}
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* WhatsApp */}
                       <div>
                         <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
-                          WhatsApp{" "}
-                          <span style={{ color: TERRACOTTA.primary }}>*</span>
+                          WhatsApp
                         </label>
                         <Input
                           type="tel"
@@ -1458,17 +1450,25 @@ export default function BecomeProPage() {
                         </p>
                         <div className="flex flex-wrap gap-2">
                           {selectedSubcategories.map((subKey) => {
-                            const subcategory = availableSubcategories.find(
-                              (s) => s.key === subKey
-                            );
+                            // Search through all categories' subcategories
+                            let subcategory = null;
+                            for (const cat of categories) {
+                              const found = cat.subcategories.find(
+                                (s) => s.key === subKey
+                              );
+                              if (found) {
+                                subcategory = found;
+                                break;
+                              }
+                            }
                             return (
                               <span
                                 key={subKey}
                                 className="px-3 py-1.5 rounded-full text-sm bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]"
                               >
                                 {locale === "ka"
-                                  ? subcategory?.nameKa
-                                  : subcategory?.name}
+                                  ? subcategory?.nameKa || subKey
+                                  : subcategory?.name || subKey}
                               </span>
                             );
                           })}

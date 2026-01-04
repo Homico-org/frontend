@@ -1,11 +1,12 @@
 "use client";
 
+import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
 import { ProProfile, ProStatus } from "@/types";
 import { BadgeCheck } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 const STATUS_CONFIG = {
   [ProStatus.ACTIVE]: {
@@ -37,8 +38,27 @@ export default function ProCard({
 }: ProCardProps) {
   const { locale } = useLanguage();
   const { getCategoryLabel } = useCategoryLabels();
+  const { getSubcategoriesForCategory } = useCategories();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+
+  // Get the user's categories and subcategories
+  const userCategories = useMemo(() =>
+    (profile.selectedCategories?.length ? profile.selectedCategories : profile.categories) || [],
+    [profile.selectedCategories, profile.categories]
+  );
+
+  const userSubcategories = useMemo(() =>
+    (profile.selectedSubcategories?.length ? profile.selectedSubcategories : profile.subcategories) || [],
+    [profile.selectedSubcategories, profile.subcategories]
+  );
+
+  // Filter subcategories that belong to a specific category
+  const getSubcatsForCategory = useMemo(() => (categoryKey: string) => {
+    const categorySubcats = getSubcategoriesForCategory(categoryKey);
+    const categorySubcatKeys = categorySubcats.map(s => s.key);
+    return userSubcategories.filter(subKey => categorySubcatKeys.includes(subKey));
+  }, [getSubcategoriesForCategory, userSubcategories]);
 
   const currentStatus =
     STATUS_CONFIG[profile.status || ProStatus.AWAY] ||
@@ -219,19 +239,19 @@ export default function ProCard({
 
           {/* Categories with Subcategories */}
           <div className="space-y-2">
-            {(profile.selectedCategories || profile.categories || []).slice(0, 2).map((cat, i) => {
-              // Get subcategories for this category
-              const subcats = (profile.selectedSubcategories || profile.subcategories || [])
-                .slice(0, 3);
+            {userCategories.slice(0, 2).map((cat, i) => {
+              // Get subcategories that belong to THIS category only
+              const subcatsForThisCat = getSubcatsForCategory(cat);
+              const displaySubcats = subcatsForThisCat.slice(0, 3);
 
               return (
                 <div key={i} className="text-center">
                   <span className="text-[11px] font-medium text-neutral-700 dark:text-neutral-300">
                     {getCategoryLabel(cat)}
                   </span>
-                  {i === 0 && subcats.length > 0 && (
+                  {displaySubcats.length > 0 && (
                     <div className="flex flex-wrap justify-center gap-1 mt-1">
-                      {subcats.map((subcat, j) => (
+                      {displaySubcats.map((subcat, j) => (
                         <span
                           key={j}
                           className="px-2 py-0.5 text-[10px] text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 rounded"
@@ -239,9 +259,9 @@ export default function ProCard({
                           {getCategoryLabel(subcat)}
                         </span>
                       ))}
-                      {(profile.selectedSubcategories || profile.subcategories || []).length > 3 && (
+                      {subcatsForThisCat.length > 3 && (
                         <span className="text-[10px] text-neutral-400 px-1">
-                          +{(profile.selectedSubcategories || profile.subcategories || []).length - 3}
+                          +{subcatsForThisCat.length - 3}
                         </span>
                       )}
                     </div>
@@ -307,7 +327,7 @@ export default function ProCard({
                 )}
               </div>
               <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate mb-1">
-                {getCategoryLabel(profile.selectedCategories[0])}
+                {getCategoryLabel(userCategories[0])}
               </p>
               <div className="flex items-center gap-2 text-[11px]">
                 {(profile.totalReviews || 0) > 0 ? (
