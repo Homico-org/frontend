@@ -23,9 +23,16 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  const hasMultipleImages = item.images.length > 1;
-  const isBeforeAfter = item.type === FeedItemType.BEFORE_AFTER && item.beforeImage && item.afterImage;
-  const totalImages = item.images.length;
+  const hasVideos = item.videos && item.videos.length > 0;
+  const hasMultipleImages = item.images.length > 1 || hasVideos;
+  // Support both direct beforeImage/afterImage and beforeAfterPairs array
+  const firstBeforeAfterPair = item.beforeAfterPairs?.[0];
+  const beforeImage = item.beforeImage || firstBeforeAfterPair?.beforeImage;
+  const afterImage = item.afterImage || firstBeforeAfterPair?.afterImage;
+  const isBeforeAfter = item.type === FeedItemType.BEFORE_AFTER && beforeImage && afterImage;
+  // Combine images and videos for navigation
+  const allMedia = [...item.images, ...(item.videos || [])];
+  const totalImages = allMedia.length;
 
   // Check if this is a new item (created within last 14 days and no rating)
   const isNew = useMemo(() => {
@@ -115,9 +122,9 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
               onTouchEnd={() => setIsDragging(false)}
               onTouchMove={handleSliderMove}
             >
-              <img src={storage.getFeedCardImageUrl(item.afterImage)} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+              <img src={storage.getFeedCardImageUrl(afterImage)} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
               <div className="absolute inset-0 overflow-hidden" style={{ width: `${sliderPosition}%` }}>
-                <img src={storage.getFeedCardImageUrl(item.beforeImage)} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" style={{ width: `${100 / (sliderPosition / 100)}%`, maxWidth: 'none' }} />
+                <img src={storage.getFeedCardImageUrl(beforeImage)} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" style={{ width: `${100 / (sliderPosition / 100)}%`, maxWidth: 'none' }} />
               </div>
 
               {/* Slider handle */}
@@ -140,17 +147,48 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
             </div>
           ) : (
             <div className="relative aspect-[4/3] bg-neutral-100 dark:bg-neutral-800 rounded-xl overflow-hidden">
-              {/* Main Image */}
-              {!imageError && item.images.length > 0 && item.images[currentImageIndex] ? (
-                <img
-                  src={storage.getFeedCardImageUrl(item.images[currentImageIndex])}
-                  alt={item.title}
-                  loading="lazy"
-                  decoding="async"
-                  className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-                  onLoad={() => setImageLoaded(true)}
-                  onError={() => setImageError(true)}
-                />
+              {/* Main Image or Video */}
+              {!imageError && allMedia.length > 0 && allMedia[currentImageIndex] ? (
+                (() => {
+                  const currentMedia = allMedia[currentImageIndex];
+                  const isVideo = currentMedia.includes('.mp4') || currentMedia.includes('.mov') || currentMedia.includes('.webm') || currentMedia.startsWith('data:video');
+
+                  if (isVideo) {
+                    return (
+                      <>
+                        <video
+                          src={storage.getFeedCardImageUrl(currentMedia)}
+                          className="w-full h-full object-cover"
+                          muted
+                          playsInline
+                          loop
+                          onMouseEnter={(e) => e.currentTarget.play()}
+                          onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
+                        />
+                        {/* Video play icon overlay */}
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover:opacity-0 transition-opacity">
+                          <div className="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center">
+                            <svg className="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  }
+
+                  return (
+                    <img
+                      src={storage.getFeedCardImageUrl(currentMedia)}
+                      alt={item.title}
+                      loading="lazy"
+                      decoding="async"
+                      className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                      onLoad={() => setImageLoaded(true)}
+                      onError={() => setImageError(true)}
+                    />
+                  );
+                })()
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <svg className="w-12 h-12 text-neutral-300 dark:text-neutral-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1">
@@ -160,7 +198,7 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
               )}
 
               {/* Loading placeholder */}
-              {!imageLoaded && !imageError && item.images.length > 0 && (
+              {!imageLoaded && !imageError && allMedia.length > 0 && (
                 <div className="absolute inset-0 bg-neutral-200 dark:bg-neutral-700 animate-pulse" />
               )}
 
@@ -186,7 +224,7 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
 
                   {/* Image dots indicator */}
                   <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                    {item.images.slice(0, 5).map((_, idx) => (
+                    {allMedia.slice(0, 5).map((_, idx) => (
                       <div
                         key={idx}
                         className={`w-1.5 h-1.5 rounded-full transition-colors ${

@@ -3,6 +3,9 @@
 import AvatarCropper from "@/components/common/AvatarCropper";
 import BackButton from "@/components/common/BackButton";
 import Header, { HeaderSpacer } from "@/components/common/Header";
+import ProjectsStep, {
+  PortfolioProject,
+} from "@/components/pro/steps/ProjectsStep";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,6 +24,7 @@ import {
   Facebook,
   FileText,
   Globe,
+  Images,
   Instagram,
   Linkedin,
   MessageCircle,
@@ -40,7 +44,7 @@ const TERRACOTTA = {
   accent: "#D98B74",
 };
 
-type Step = "intro" | "category" | "about" | "contact" | "review";
+type Step = "intro" | "category" | "about" | "contact" | "projects" | "review";
 
 const STEPS: {
   id: Step;
@@ -61,6 +65,11 @@ const STEPS: {
     id: "contact",
     title: { en: "Contact", ka: "შეავსე შენს საკონტაქტო ინფორმაცია" },
     icon: <MessageCircle className="w-4 h-4" />,
+  },
+  {
+    id: "projects",
+    title: { en: "Portfolio", ka: "დაამატე შენი ნამუშევრები" },
+    icon: <Images className="w-4 h-4" />,
   },
   {
     id: "review",
@@ -178,6 +187,9 @@ export default function BecomeProPage() {
   const [linkedin, setLinkedin] = useState("");
   const [website, setWebsite] = useState("");
 
+  // Projects state
+  const [portfolioProjects, setPortfolioProjects] = useState<PortfolioProject[]>([]);
+
   useEffect(() => {
     setIsVisible(true);
   }, []);
@@ -224,6 +236,8 @@ export default function BecomeProPage() {
         return validation.avatar && validation.bio && validation.experience;
       case "contact":
         return validation.contact;
+      case "projects":
+        return true; // Projects are optional
       case "review":
         return true;
       default:
@@ -357,6 +371,7 @@ export default function BecomeProPage() {
           facebook,
           linkedin,
           website,
+          portfolioProjects,
         })
       );
 
@@ -380,6 +395,7 @@ export default function BecomeProPage() {
             facebook,
             linkedin,
             website,
+            portfolioProjects,
           }),
         }
       );
@@ -1350,6 +1366,30 @@ export default function BecomeProPage() {
                 </div>
               )}
 
+              {/* Projects Step */}
+              {currentStep === "projects" && (
+                <div className="space-y-6">
+                  <div className="bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 border border-[var(--color-border-subtle)]">
+                    <ProjectsStep
+                      projects={portfolioProjects}
+                      onChange={setPortfolioProjects}
+                      maxProjects={10}
+                      maxVisibleInBrowse={6}
+                    />
+                  </div>
+
+                  {portfolioProjects.length === 0 && (
+                    <div className="bg-[var(--color-bg-tertiary)] rounded-xl p-4 text-center">
+                      <p className="text-sm text-[var(--color-text-secondary)]">
+                        {locale === "ka"
+                          ? "პროექტების დამატება არ არის სავალდებულო. შეგიძლია მოგვიანებით დაამატო."
+                          : "Adding projects is optional. You can add them later."}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Review Step */}
               {currentStep === "review" && (
                 <div className="space-y-6">
@@ -1496,6 +1536,49 @@ export default function BecomeProPage() {
                         )}
                       </div>
                     </div>
+
+                    {/* Portfolio Projects */}
+                    {portfolioProjects.length > 0 && (
+                      <div className="mt-6 pt-6 border-t border-[var(--color-border-subtle)]">
+                        <p className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-3">
+                          {locale === "ka" ? "პორტფოლიო" : "Portfolio"}
+                        </p>
+                        <div className="grid grid-cols-3 gap-2">
+                          {portfolioProjects.slice(0, 6).map((project) => {
+                            const coverImage =
+                              project.beforeAfterPairs.length > 0
+                                ? project.beforeAfterPairs[0].afterImage
+                                : project.images[0] || "";
+                            return (
+                              <div
+                                key={project.id}
+                                className="relative aspect-square rounded-lg overflow-hidden bg-[var(--color-bg-tertiary)]"
+                              >
+                                {coverImage && (
+                                  <img
+                                    src={coverImage}
+                                    alt={project.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                                <div className="absolute bottom-1 left-1 right-1">
+                                  <p className="text-[10px] text-white font-medium truncate">
+                                    {project.title}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {portfolioProjects.length > 6 && (
+                          <p className="text-xs text-[var(--color-text-muted)] mt-2 text-center">
+                            +{portfolioProjects.length - 6}{" "}
+                            {locale === "ka" ? "სხვა პროექტი" : "more projects"}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Error */}

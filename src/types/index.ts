@@ -144,8 +144,10 @@ export interface FeedItem {
   title: string;
   description?: string;
   images: string[];
+  videos?: string[];
   beforeImage?: string;
   afterImage?: string;
+  beforeAfterPairs?: { id?: string; beforeImage: string; afterImage: string }[];
   category: string;
   tags?: string[];
   pro: {
