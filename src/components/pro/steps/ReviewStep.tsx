@@ -39,6 +39,7 @@ interface ReviewStepProps {
   };
   selectedCategories: string[];
   selectedSubcategories: string[];
+  customServices?: string[];
   avatarPreview: string | null;
   locationData: {
     nationwide: string;
@@ -52,6 +53,7 @@ export default function ReviewStep({
   formData,
   selectedCategories,
   selectedSubcategories,
+  customServices = [],
   avatarPreview,
   locationData,
   onEditStep,
@@ -259,6 +261,31 @@ export default function ReviewStep({
                 {selectedSubcategories.length > 6 && (
                   <span className="px-3 py-1.5 rounded-lg bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] text-sm">
                     +{selectedSubcategories.length - 6}{" "}
+                    {locale === "ka" ? "სხვა" : "more"}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Custom Services (Skills) */}
+          {customServices.length > 0 && (
+            <div className="mt-4">
+              <p className="text-xs text-[var(--color-text-tertiary)] mb-2">
+                {locale === "ka" ? "დამატებითი უნარები" : "Custom Skills"}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {customServices.slice(0, 6).map((skill, index) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-sm"
+                  >
+                    {skill}
+                  </span>
+                ))}
+                {customServices.length > 6 && (
+                  <span className="px-3 py-1.5 rounded-lg bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] text-sm">
+                    +{customServices.length - 6}{" "}
                     {locale === "ka" ? "სხვა" : "more"}
                   </span>
                 )}

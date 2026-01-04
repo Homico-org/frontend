@@ -729,6 +729,7 @@ function ProProfileSetupPageContent() {
                 formData={formData}
                 selectedCategories={selectedCategories}
                 selectedSubcategories={selectedSubcategories}
+                customServices={customServices}
                 avatarPreview={avatarPreview}
                 locationData={locationData}
                 onEditStep={(stepIndex) => {
