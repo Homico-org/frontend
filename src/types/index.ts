@@ -112,6 +112,12 @@ export interface ProProfile {
   verificationStatus?: 'pending' | 'submitted' | 'verified' | 'rejected';
   whatsapp: string;
   yearsExperience: number;
+  // Pricing
+  pricingModel?: 'hourly' | 'daily' | 'sqm' | 'project_based' | 'from';
+  basePrice?: number;
+  maxPrice?: number;
+  // Custom services
+  customServices?: string[];
   // Social links
   facebookUrl?: string;
   instagramUrl?: string;

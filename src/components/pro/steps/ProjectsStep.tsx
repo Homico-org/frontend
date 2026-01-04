@@ -17,6 +17,7 @@ export interface PortfolioProject {
   description: string;
   location?: string;
   images: string[];
+  videos: string[];
   beforeAfterPairs: BeforeAfterPair[];
   source?: "external" | "homico";
   clientName?: string;
@@ -166,11 +167,12 @@ export default function ProjectsStep({
   const { locale } = useLanguage();
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const beforeAfterInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const [isAddingProject, setIsAddingProject] = useState(false);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [uploadingType, setUploadingType] = useState<
-    "gallery" | "beforeAfter" | null
+    "gallery" | "beforeAfter" | "video" | null
   >(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [draggedProject, setDraggedProject] = useState<string | null>(null);
@@ -182,6 +184,7 @@ export default function ProjectsStep({
     description: "",
     location: "",
     images: [],
+    videos: [],
     beforeAfterPairs: [],
     source: "external",
     isVisible: true,
@@ -203,6 +206,7 @@ export default function ProjectsStep({
       description: "",
       location: "",
       images: [],
+      videos: [],
       beforeAfterPairs: [],
       source: "external",
       isVisible: true,
@@ -218,6 +222,7 @@ export default function ProjectsStep({
       description: "",
       location: "",
       images: [],
+      videos: [],
       beforeAfterPairs: [],
       source: "external",
       isVisible: true,
@@ -443,16 +448,90 @@ export default function ProjectsStep({
     }));
   };
 
+  const handleVideoUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const maxSize = 100 * 1024 * 1024; // 100MB per video
+    const allowedTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo'];
+
+    setUploadingType("video");
+    setUploadProgress(0);
+
+    const uploadedUrls: string[] = [];
+    const totalFiles = files.length;
+
+    for (let i = 0; i < totalFiles; i++) {
+      const file = files[i];
+
+      if (!allowedTypes.includes(file.type)) {
+        console.error('Invalid video type:', file.type);
+        continue;
+      }
+
+      if (file.size > maxSize) {
+        console.error('Video too large:', file.size);
+        continue;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/upload/public`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data?.url) {
+            const url = data.url.startsWith("http") || data.url.startsWith("data:")
+              ? data.url
+              : `${process.env.NEXT_PUBLIC_API_URL}${data.url}`;
+            uploadedUrls.push(url);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to upload video:", error);
+      }
+
+      setUploadProgress(Math.round(((i + 1) / totalFiles) * 100));
+    }
+
+    setCurrentProject((prev) => ({
+      ...prev,
+      videos: [...prev.videos, ...uploadedUrls],
+    }));
+
+    setUploadingType(null);
+    setUploadProgress(0);
+    if (videoInputRef.current) videoInputRef.current.value = "";
+  };
+
+  const handleRemoveVideo = (index: number) => {
+    setCurrentProject((prev) => ({
+      ...prev,
+      videos: prev.videos.filter((_, i) => i !== index),
+    }));
+  };
+
   const canSave = () => {
     if (!currentProject.title.trim()) return false;
     return (
       currentProject.images.length > 0 ||
+      currentProject.videos.length > 0 ||
       currentProject.beforeAfterPairs.length > 0
     );
   };
 
   const totalMedia =
-    currentProject.images.length + currentProject.beforeAfterPairs.length;
+    currentProject.images.length + currentProject.videos.length + currentProject.beforeAfterPairs.length;
   const visibleProjects = projects.filter((p) => p.isVisible !== false);
   const homicoProjects = projects.filter((p) => p.source === "homico");
   const externalProjects = projects.filter((p) => p.source !== "homico");
@@ -772,8 +851,28 @@ export default function ProjectsStep({
                           </div>
                         </div>
                       ))}
+                      {project.videos
+                        ?.slice(0, Math.max(0, 2 - (project.beforeAfterPairs?.length || 0)))
+                        .map((url, idx) => (
+                          <div
+                            key={`video-${idx}`}
+                            className="relative aspect-square rounded-lg overflow-hidden bg-neutral-900"
+                          >
+                            <video
+                              src={url}
+                              className="w-full h-full object-cover"
+                              muted
+                              playsInline
+                            />
+                            <div className="absolute top-1 left-1 px-1 py-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded text-[8px] font-bold text-white flex items-center gap-0.5">
+                              <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z" />
+                              </svg>
+                            </div>
+                          </div>
+                        ))}
                       {project.images
-                        ?.slice(0, 5 - (project.beforeAfterPairs?.length || 0))
+                        ?.slice(0, 5 - (project.beforeAfterPairs?.length || 0) - (project.videos?.slice(0, 2).length || 0))
                         .map((url, idx) => (
                           <div
                             key={idx}
@@ -787,12 +886,14 @@ export default function ProjectsStep({
                           </div>
                         ))}
                       {(project.images?.length || 0) +
+                        (project.videos?.length || 0) +
                         (project.beforeAfterPairs?.length || 0) >
                         5 && (
                         <div className="aspect-square rounded-lg bg-neutral-900 flex items-center justify-center">
                           <span className="text-white text-sm font-bold">
                             +
                             {(project.images?.length || 0) +
+                              (project.videos?.length || 0) +
                               (project.beforeAfterPairs?.length || 0) -
                               5}
                           </span>
@@ -967,6 +1068,7 @@ export default function ProjectsStep({
 
               {/* Current Media Preview */}
               {(currentProject.images.length > 0 ||
+                currentProject.videos.length > 0 ||
                 currentProject.beforeAfterPairs.length > 0) && (
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                   {currentProject.beforeAfterPairs.map((pair) => (
@@ -982,6 +1084,49 @@ export default function ProjectsStep({
                       <button
                         type="button"
                         onClick={() => handleRemoveBeforeAfterPair(pair.id)}
+                        className="absolute top-1 right-1 p-1 bg-red-500 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                      >
+                        <svg
+                          className="w-3 h-3"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                  {currentProject.videos.map((url, idx) => (
+                    <div
+                      key={`video-${idx}`}
+                      className="relative aspect-square rounded-lg overflow-hidden group bg-neutral-900"
+                    >
+                      <video
+                        src={url}
+                        className="w-full h-full object-cover"
+                        muted
+                        playsInline
+                        onMouseEnter={(e) => e.currentTarget.play()}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.pause();
+                          e.currentTarget.currentTime = 0;
+                        }}
+                      />
+                      <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded text-[8px] font-bold text-white shadow flex items-center gap-0.5">
+                        <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                        Video
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveVideo(idx)}
                         className="absolute top-1 right-1 p-1 bg-red-500 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                       >
                         <svg
@@ -1030,7 +1175,8 @@ export default function ProjectsStep({
                         </svg>
                       </button>
                       {idx === 0 &&
-                        currentProject.beforeAfterPairs.length === 0 && (
+                        currentProject.beforeAfterPairs.length === 0 &&
+                        currentProject.videos.length === 0 && (
                           <div className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-[#C4735B] rounded text-[8px] font-bold text-white">
                             Cover
                           </div>
@@ -1041,7 +1187,7 @@ export default function ProjectsStep({
               )}
 
               {/* Upload Options */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <input
                   ref={galleryInputRef}
                   type="file"
@@ -1101,6 +1247,70 @@ export default function ProjectsStep({
                       </span>
                       <span className="text-[10px] text-neutral-400">
                         {locale === "ka" ? "რამდენიმე ფოტო" : "Multiple photos"}
+                      </span>
+                    </>
+                  )}
+                </button>
+
+                <input
+                  ref={videoInputRef}
+                  type="file"
+                  accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
+                  multiple
+                  onChange={handleVideoUpload}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => videoInputRef.current?.click()}
+                  disabled={uploadingType === "video"}
+                  className="w-full p-4 rounded-xl border-2 border-dashed border-neutral-200 hover:border-indigo-400/40 bg-neutral-50 transition-all duration-200 flex flex-col items-center gap-2 text-neutral-600 hover:text-indigo-600 group"
+                >
+                  {uploadingType === "video" ? (
+                    <>
+                      <svg
+                        className="animate-spin w-6 h-6 text-indigo-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      <span className="text-sm">{uploadProgress}%</span>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 group-hover:from-indigo-500/20 group-hover:to-purple-500/20 flex items-center justify-center transition-colors">
+                        <svg
+                          className="w-5 h-5 text-indigo-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                          />
+                        </svg>
+                      </div>
+                      <span className="text-sm font-medium">
+                        {locale === "ka" ? "ვიდეოები" : "Videos"}
+                      </span>
+                      <span className="text-[10px] text-neutral-400">
+                        {locale === "ka" ? "მაქს. 100MB" : "Max 100MB each"}
                       </span>
                     </>
                   )}

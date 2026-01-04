@@ -151,6 +151,7 @@ export default function ProfessionalDetailPage() {
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [selectedProject, setSelectedProject] = useState<{
     images: string[];
+    videos: string[];
     title: string;
     currentIndex: number;
   } | null>(null);
@@ -370,6 +371,7 @@ export default function ProfessionalDetailPage() {
     description?: string;
     location?: string;
     images: string[];
+    videos: string[];
     date?: string;
   }
 
@@ -398,6 +400,7 @@ export default function ProfessionalDetailPage() {
           description: item.description,
           location: item.location,
           images,
+          videos: [],
           date: item.completedDate || item.projectDate,
         });
       }
@@ -409,13 +412,15 @@ export default function ProfessionalDetailPage() {
       if (seenTitles.has(titleKey)) return;
       seenTitles.add(titleKey);
 
-      if (project.images && project.images.length > 0) {
+      const hasMedia = (project.images && project.images.length > 0) || (project.videos && project.videos.length > 0);
+      if (hasMedia) {
         projects.push({
           id: project.id || `embedded-${idx}`,
           title: project.title,
           description: project.description,
           location: project.location,
-          images: project.images,
+          images: project.images || [],
+          videos: project.videos || [],
         });
       }
     });
@@ -993,30 +998,54 @@ export default function ProfessionalDetailPage() {
                       key={project.id}
                       className="group bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden shadow-sm border border-neutral-100 dark:border-neutral-800 hover:shadow-xl hover:border-[#C4735B]/20 transition-all duration-300"
                     >
-                      {/* Main Image */}
+                      {/* Main Image or Video */}
                       <button
                         onClick={() =>
                           setSelectedProject({
                             images: project.images,
+                            videos: project.videos || [],
                             title: project.title,
                             currentIndex: 0,
                           })
                         }
                         className="relative w-full aspect-[4/3] overflow-hidden"
                       >
-                        <img
-                          src={getImageUrl(project.images[0])}
-                          alt={project.title}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
+                        {project.images.length > 0 ? (
+                          <img
+                            src={getImageUrl(project.images[0])}
+                            alt={project.title}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        ) : project.videos && project.videos.length > 0 ? (
+                          <>
+                            <video
+                              src={getImageUrl(project.videos[0])}
+                              className="w-full h-full object-cover"
+                              muted
+                              playsInline
+                            />
+                            {/* Play icon overlay for video */}
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                              <div className="w-12 h-12 rounded-full bg-indigo-500/80 flex items-center justify-center">
+                                <svg className="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M8 5v14l11-7z" />
+                                </svg>
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="w-full h-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                            <Camera className="w-8 h-8 text-neutral-300" />
+                          </div>
+                        )}
                         {/* Hover overlay */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                        {/* Image count badge */}
-                        {project.images.length > 1 && (
+                        {/* Media count badge */}
+                        {(project.images.length + (project.videos?.length || 0)) > 1 && (
                           <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-xs font-medium flex items-center gap-1.5">
                             <Camera className="w-3 h-3" />
-                            {project.images.length}
+                            {project.images.length + (project.videos?.length || 0)}
                           </div>
                         )}
 
@@ -1031,15 +1060,17 @@ export default function ProfessionalDetailPage() {
                         </div>
                       </button>
 
-                      {/* Thumbnail Strip - show if more than 1 image */}
-                      {project.images.length > 1 && (
+                      {/* Thumbnail Strip - show if more than 1 media item */}
+                      {(project.images.length + (project.videos?.length || 0)) > 1 && (
                         <div className="flex gap-1 p-2 bg-neutral-50 dark:bg-neutral-800/50">
+                          {/* Images first */}
                           {project.images.slice(0, 4).map((img, imgIdx) => (
                             <button
-                              key={imgIdx}
+                              key={`img-${imgIdx}`}
                               onClick={() =>
                                 setSelectedProject({
                                   images: project.images,
+                                  videos: project.videos || [],
                                   title: project.title,
                                   currentIndex: imgIdx,
                                 })
@@ -1051,11 +1082,47 @@ export default function ProfessionalDetailPage() {
                                 alt=""
                                 className="w-full h-full object-cover"
                               />
-                              {/* Show +N overlay on last thumbnail if more images */}
-                              {imgIdx === 3 && project.images.length > 4 && (
+                              {/* Show +N overlay on last thumbnail if more media */}
+                              {imgIdx === 3 && (project.images.length + (project.videos?.length || 0)) > 4 && (
                                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                                   <span className="text-white text-sm font-bold">
-                                    +{project.images.length - 4}
+                                    +{(project.images.length + (project.videos?.length || 0)) - 4}
+                                  </span>
+                                </div>
+                              )}
+                            </button>
+                          ))}
+                          {/* Videos after images (if room) */}
+                          {project.images.length < 4 && project.videos?.slice(0, 4 - project.images.length).map((vid, vidIdx) => (
+                            <button
+                              key={`vid-${vidIdx}`}
+                              onClick={() =>
+                                setSelectedProject({
+                                  images: project.images,
+                                  videos: project.videos || [],
+                                  title: project.title,
+                                  currentIndex: project.images.length + vidIdx,
+                                })
+                              }
+                              className="relative flex-1 aspect-square rounded-lg overflow-hidden hover:ring-2 hover:ring-indigo-400 transition-all"
+                            >
+                              <video
+                                src={getImageUrl(vid)}
+                                className="w-full h-full object-cover"
+                                muted
+                                playsInline
+                              />
+                              {/* Play icon badge */}
+                              <div className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-indigo-500/80 flex items-center justify-center pointer-events-none">
+                                <svg className="w-2 h-2 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M8 5v14l11-7z" />
+                                </svg>
+                              </div>
+                              {/* Show +N overlay on last thumbnail if more media */}
+                              {(project.images.length + vidIdx) === 3 && (project.images.length + (project.videos?.length || 0)) > 4 && (
+                                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                  <span className="text-white text-sm font-bold">
+                                    +{(project.images.length + (project.videos?.length || 0)) - 4}
                                   </span>
                                 </div>
                               )}
@@ -1319,113 +1386,157 @@ export default function ProfessionalDetailPage() {
       </div>
 
       {/* ========== PROJECT LIGHTBOX ========== */}
-      {selectedProject && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/95 flex flex-col"
-          onClick={() => setSelectedProject(null)}
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between p-4">
-            <h3 className="text-white font-semibold text-lg truncate max-w-[70%]">
-              {selectedProject.title}
-            </h3>
-            <button
-              onClick={() => setSelectedProject(null)}
-              className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+      {selectedProject && (() => {
+        const allMedia = [...selectedProject.images, ...selectedProject.videos];
+        const totalMedia = allMedia.length;
+        const currentItem = allMedia[selectedProject.currentIndex];
+        const isVideo = selectedProject.currentIndex >= selectedProject.images.length;
 
-          {/* Main Image */}
+        return (
           <div
-            className="flex-1 flex items-center justify-center relative px-4"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[100] bg-black/95 flex flex-col"
+            onClick={() => setSelectedProject(null)}
           >
-            {selectedProject.images.length > 1 && (
-              <>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedProject((prev) =>
-                      prev
-                        ? {
-                            ...prev,
-                            currentIndex:
-                              (prev.currentIndex - 1 + prev.images.length) %
-                              prev.images.length,
-                          }
-                        : null
-                    );
-                  }}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
-                >
-                  <ChevronLeft className="w-6 h-6" />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedProject((prev) =>
-                      prev
-                        ? {
-                            ...prev,
-                            currentIndex:
-                              (prev.currentIndex + 1) % prev.images.length,
-                          }
-                        : null
-                    );
-                  }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
-                >
-                  <ChevronRight className="w-6 h-6" />
-                </button>
-              </>
-            )}
-            <img
-              src={getImageUrl(
-                selectedProject.images[selectedProject.currentIndex]
-              )}
-              alt=""
-              className="max-w-full max-h-[70vh] object-contain rounded-lg"
-            />
-          </div>
-
-          {/* Thumbnail Strip */}
-          {selectedProject.images.length > 1 && (
-            <div className="p-4" onClick={(e) => e.stopPropagation()}>
-              <div className="flex justify-center gap-2 overflow-x-auto pb-2">
-                {selectedProject.images.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() =>
-                      setSelectedProject((prev) =>
-                        prev ? { ...prev, currentIndex: idx } : null
-                      )
-                    }
-                    className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 transition-all ${
-                      idx === selectedProject.currentIndex
-                        ? "ring-2 ring-[#C4735B] ring-offset-2 ring-offset-black"
-                        : "opacity-60 hover:opacity-100"
-                    }`}
-                  >
-                    <img
-                      src={getImageUrl(img)}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-              <div className="text-center mt-2">
-                <span className="text-white/60 text-sm">
-                  {selectedProject.currentIndex + 1} /{" "}
-                  {selectedProject.images.length}
-                </span>
-              </div>
+            {/* Header */}
+            <div className="flex items-center justify-between p-4">
+              <h3 className="text-white font-semibold text-lg truncate max-w-[70%]">
+                {selectedProject.title}
+              </h3>
+              <button
+                onClick={() => setSelectedProject(null)}
+                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-          )}
-        </div>
-      )}
+
+            {/* Main Media */}
+            <div
+              className="flex-1 flex items-center justify-center relative px-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {totalMedia > 1 && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedProject((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              currentIndex:
+                                (prev.currentIndex - 1 + totalMedia) % totalMedia,
+                            }
+                          : null
+                      );
+                    }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedProject((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              currentIndex: (prev.currentIndex + 1) % totalMedia,
+                            }
+                          : null
+                      );
+                    }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                </>
+              )}
+              {isVideo ? (
+                <video
+                  src={getImageUrl(currentItem)}
+                  controls
+                  autoPlay
+                  className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                />
+              ) : (
+                <img
+                  src={getImageUrl(currentItem)}
+                  alt=""
+                  className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                />
+              )}
+            </div>
+
+            {/* Thumbnail Strip */}
+            {totalMedia > 1 && (
+              <div className="p-4" onClick={(e) => e.stopPropagation()}>
+                <div className="flex justify-center gap-2 overflow-x-auto pb-2">
+                  {/* Image thumbnails */}
+                  {selectedProject.images.map((img, idx) => (
+                    <button
+                      key={`img-${idx}`}
+                      onClick={() =>
+                        setSelectedProject((prev) =>
+                          prev ? { ...prev, currentIndex: idx } : null
+                        )
+                      }
+                      className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 transition-all ${
+                        idx === selectedProject.currentIndex
+                          ? "ring-2 ring-[#C4735B] ring-offset-2 ring-offset-black"
+                          : "opacity-60 hover:opacity-100"
+                      }`}
+                    >
+                      <img
+                        src={getImageUrl(img)}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                  {/* Video thumbnails */}
+                  {selectedProject.videos.map((vid, idx) => {
+                    const mediaIdx = selectedProject.images.length + idx;
+                    return (
+                      <button
+                        key={`vid-${idx}`}
+                        onClick={() =>
+                          setSelectedProject((prev) =>
+                            prev ? { ...prev, currentIndex: mediaIdx } : null
+                          )
+                        }
+                        className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 transition-all ${
+                          mediaIdx === selectedProject.currentIndex
+                            ? "ring-2 ring-indigo-500 ring-offset-2 ring-offset-black"
+                            : "opacity-60 hover:opacity-100"
+                        }`}
+                      >
+                        <video
+                          src={getImageUrl(vid)}
+                          className="w-full h-full object-cover"
+                          muted
+                          playsInline
+                        />
+                        {/* Play icon badge */}
+                        <div className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-indigo-500/80 flex items-center justify-center pointer-events-none">
+                          <svg className="w-2.5 h-2.5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="text-center mt-2">
+                  <span className="text-white/60 text-sm">
+                    {selectedProject.currentIndex + 1} / {totalMedia}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* ========== CONTACT MODAL ========== */}
       <ContactModal

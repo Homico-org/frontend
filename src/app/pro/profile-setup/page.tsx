@@ -57,7 +57,7 @@ function ProProfileSetupPageContent() {
     availability: [] as string[],
     basePrice: '',
     maxPrice: '',
-    pricingModel: '' as 'hourly' | 'daily' | 'sqm' | 'project_based' | '',
+    pricingModel: '' as 'hourly' | 'daily' | 'sqm' | 'project_based' | 'from' | '',
     serviceAreas: [] as string[],
     nationwide: false,
     // Social media
@@ -159,6 +159,7 @@ function ProProfileSetupPageContent() {
               title: p.title || '',
               description: p.description || '',
               images: p.images || [],
+              videos: p.videos || [],
               location: p.location,
               beforeAfterPairs: p.beforeAfterPairs || [],
             }));
@@ -214,6 +215,13 @@ function ProProfileSetupPageContent() {
             pricingModel: profile.pricingModel || '',
             serviceAreas: (profile.serviceAreas?.includes('Countrywide') || profile.serviceAreas?.includes('საქართველოს მასშტაბით')) ? [] : (profile.serviceAreas || []),
             nationwide: profile.serviceAreas?.includes('Countrywide') || profile.serviceAreas?.includes('საქართველოს მასშტაბით') || false,
+            // Social links
+            whatsapp: profile.whatsapp || '',
+            telegram: profile.telegram || '',
+            instagram: profile.instagramUrl || '',
+            facebook: profile.facebookUrl || '',
+            linkedin: profile.linkedinUrl || '',
+            website: profile.websiteUrl || '',
           }));
 
           // Set avatar preview
@@ -256,6 +264,7 @@ function ProProfileSetupPageContent() {
               title: p.title || '',
               description: p.description || '',
               images: p.images || [],
+              videos: p.videos || [],
               location: p.location || '',
               beforeAfterPairs: p.beforeAfterPairs || [],
             }));
@@ -271,6 +280,7 @@ function ProProfileSetupPageContent() {
                   title: p.title || '',
                   description: p.description || '',
                   images: p.images || [p.imageUrl].filter(Boolean),
+                  videos: p.videos || [],
                   location: p.location || '',
                   beforeAfterPairs: p.beforeAfterPairs || [],
                 }));
@@ -446,6 +456,7 @@ function ProProfileSetupPageContent() {
         title: p.title,
         description: p.description,
         images: p.images,
+        videos: p.videos || [],
         location: p.location,
         beforeAfterPairs: p.beforeAfterPairs || [],
       }));
@@ -469,6 +480,13 @@ function ProProfileSetupPageContent() {
         architectLicenseNumber: selectedCategories.includes('architecture') ? formData.licenseNumber : undefined,
         cadastralId: selectedCategories.includes('architecture') ? formData.cadastralId : undefined,
         availability: selectedCategories.includes('home-care') ? formData.availability : undefined,
+        // Social links
+        whatsapp: formData.whatsapp || undefined,
+        telegram: formData.telegram || undefined,
+        instagramUrl: formData.instagram || undefined,
+        facebookUrl: formData.facebook || undefined,
+        linkedinUrl: formData.linkedin || undefined,
+        websiteUrl: formData.website || undefined,
       };
 
       const url = `${process.env.NEXT_PUBLIC_API_URL}/users/me/pro-profile`;
@@ -641,9 +659,8 @@ function ProProfileSetupPageContent() {
                   },
                   priceType: (
                     formData.pricingModel === 'hourly' ? 'hourly' :
-                    formData.pricingModel === 'sqm' || formData.pricingModel === 'daily' ? 'fixed' :
                     formData.pricingModel === 'project_based' ? 'project' :
-                    'fixed' // Default to fixed
+                    'fixed' // Default to fixed (covers 'from', 'sqm', 'daily', etc.)
                   ) as 'hourly' | 'fixed' | 'project',
                   serviceAreas: formData.serviceAreas,
                   nationwide: formData.nationwide,
@@ -659,10 +676,10 @@ function ProProfileSetupPageContent() {
                   if ('priceType' in updates && updates.priceType) {
                     const typeMap: Record<string, typeof formData.pricingModel> = {
                       'hourly': 'hourly',  // By agreement
-                      'fixed': 'sqm',      // Fixed price
+                      'fixed': 'from',     // Fixed price (from X amount)
                       'project': 'project_based',  // Per project (range)
                     };
-                    handleFormChange({ pricingModel: typeMap[updates.priceType] || 'sqm' });
+                    handleFormChange({ pricingModel: typeMap[updates.priceType] || 'from' });
                   }
                   if ('serviceAreas' in updates) {
                     handleFormChange({ serviceAreas: updates.serviceAreas });

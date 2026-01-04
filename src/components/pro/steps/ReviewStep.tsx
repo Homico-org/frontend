@@ -5,9 +5,16 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Briefcase,
   DollarSign,
+  Facebook,
+  Globe,
   Images,
+  Instagram,
+  Linkedin,
+  Link2,
   MapPin,
+  MessageCircle,
   Pencil,
+  Phone,
   User
 } from "lucide-react";
 import { PortfolioProject } from "./ProjectsStep";
@@ -22,6 +29,13 @@ interface ReviewStepProps {
     pricingModel: string;
     serviceAreas: string[];
     nationwide: boolean;
+    // Social links
+    whatsapp?: string;
+    telegram?: string;
+    instagram?: string;
+    facebook?: string;
+    linkedin?: string;
+    website?: string;
   };
   selectedCategories: string[];
   selectedSubcategories: string[];
@@ -64,6 +78,8 @@ export default function ReviewStep({
         return locale === "ka" ? "₾/დღე" : "₾/day";
       case "sqm":
         return "₾/m²";
+      case "from":
+        return "₾";
       default:
         return "₾";
     }
@@ -77,6 +93,8 @@ export default function ReviewStep({
         return locale === "ka" ? "დღიური" : "Daily";
       case "sqm":
         return locale === "ka" ? "კვადრატულ მეტრზე" : "Per square meter";
+      case "from":
+        return locale === "ka" ? "ფიქსირებული" : "Fixed price";
       case "project_based":
         return locale === "ka" ? "პროექტზე" : "Per project";
       default:
@@ -132,6 +150,53 @@ export default function ReviewStep({
               </p>
             </div>
           </div>
+
+          {/* Social Links (if any) */}
+          {(formData.whatsapp || formData.telegram || formData.instagram || formData.facebook || formData.linkedin || formData.website) && (
+            <div className="mt-4 pt-4 border-t border-[var(--color-border-subtle)]">
+              <p className="text-xs text-[var(--color-text-tertiary)] mb-2">
+                {locale === "ka" ? "სოციალური ბმულები" : "Social Links"}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {formData.whatsapp && (
+                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-green-50 text-green-600 text-xs">
+                    <Phone className="w-3 h-3" />
+                    WhatsApp
+                  </span>
+                )}
+                {formData.telegram && (
+                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-500 text-xs">
+                    <MessageCircle className="w-3 h-3" />
+                    Telegram
+                  </span>
+                )}
+                {formData.instagram && (
+                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-pink-50 text-pink-500 text-xs">
+                    <Instagram className="w-3 h-3" />
+                    Instagram
+                  </span>
+                )}
+                {formData.facebook && (
+                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-600 text-xs">
+                    <Facebook className="w-3 h-3" />
+                    Facebook
+                  </span>
+                )}
+                {formData.linkedin && (
+                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs">
+                    <Linkedin className="w-3 h-3" />
+                    LinkedIn
+                  </span>
+                )}
+                {formData.website && (
+                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-600 text-xs">
+                    <Globe className="w-3 h-3" />
+                    {locale === "ka" ? "ვებსაიტი" : "Website"}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Services Section */}
@@ -256,26 +321,79 @@ export default function ReviewStep({
 
           {portfolioProjects.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {portfolioProjects.slice(0, 6).map((project, idx) => (
-                <div key={project.id || idx} className="relative aspect-[4/3] rounded-lg overflow-hidden bg-[var(--color-bg-tertiary)]">
-                  {project.images && project.images[0] ? (
-                    <img
-                      src={project.images[0]}
-                      alt={project.title || `Project ${idx + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Images className="w-8 h-8 text-[var(--color-text-muted)]" />
-                    </div>
-                  )}
-                  {project.title && (
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
-                      <p className="text-xs text-white font-medium truncate">{project.title}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
+              {portfolioProjects.slice(0, 6).map((project, idx) => {
+                const hasImages = project.images && project.images.length > 0;
+                const hasVideos = project.videos && project.videos.length > 0;
+                const hasBeforeAfter = project.beforeAfterPairs && project.beforeAfterPairs.length > 0;
+                const totalMedia = (project.images?.length || 0) + (project.videos?.length || 0) + (project.beforeAfterPairs?.length || 0);
+
+                return (
+                  <div key={project.id || idx} className="relative aspect-[4/3] rounded-lg overflow-hidden bg-[var(--color-bg-tertiary)]">
+                    {hasImages ? (
+                      <img
+                        src={project.images[0]}
+                        alt={project.title || `Project ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : hasVideos ? (
+                      <>
+                        <video
+                          src={project.videos![0]}
+                          className="w-full h-full object-cover"
+                          muted
+                          playsInline
+                        />
+                        {/* Play icon overlay */}
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="w-10 h-10 rounded-full bg-indigo-500/80 flex items-center justify-center">
+                            <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                          </div>
+                        </div>
+                      </>
+                    ) : hasBeforeAfter ? (
+                      <div className="w-full h-full flex">
+                        <div className="w-1/2 h-full relative">
+                          <img
+                            src={project.beforeAfterPairs![0].beforeImage}
+                            alt="Before"
+                            className="w-full h-full object-cover"
+                          />
+                          <span className="absolute bottom-1 left-1 px-1.5 py-0.5 text-[10px] font-medium bg-black/60 text-white rounded">
+                            {locale === "ka" ? "მანამდე" : "Before"}
+                          </span>
+                        </div>
+                        <div className="w-1/2 h-full relative">
+                          <img
+                            src={project.beforeAfterPairs![0].afterImage}
+                            alt="After"
+                            className="w-full h-full object-cover"
+                          />
+                          <span className="absolute bottom-1 right-1 px-1.5 py-0.5 text-[10px] font-medium bg-emerald-500/80 text-white rounded">
+                            {locale === "ka" ? "შემდეგ" : "After"}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Images className="w-8 h-8 text-[var(--color-text-muted)]" />
+                      </div>
+                    )}
+                    {/* Media count badge */}
+                    {totalMedia > 1 && (
+                      <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm text-white text-[10px] font-medium">
+                        {totalMedia}
+                      </div>
+                    )}
+                    {project.title && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                        <p className="text-xs text-white font-medium truncate">{project.title}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <span className="text-[var(--color-text-muted)]">

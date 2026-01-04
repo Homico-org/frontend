@@ -27,6 +27,7 @@ const CUSTOM_LAYOUT_PATHS = [
   '/companies/',
   '/users/',
   '/pro/premium',
+  '/pro/profile-setup',
   '/company/',
   '/projects/new',
 ];

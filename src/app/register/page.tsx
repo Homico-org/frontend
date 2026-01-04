@@ -188,6 +188,8 @@ function RegisterContent() {
     title: string;
     description: string;
     images: string[];
+    videos: string[];
+    beforeAfterPairs: Array<{ id: string; beforeImage: string; afterImage: string }>;
   }>>([]);
   const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -298,10 +300,12 @@ function RegisterContent() {
         selectedCategories: formData.selectedCategories,
         selectedSubcategories: formData.selectedSubcategories,
         customServices: customServices.length > 0 ? customServices : undefined,
-        portfolioProjects: portfolioProjects.filter(p => p.images.length > 0).map(p => ({
+        portfolioProjects: portfolioProjects.filter(p => p.images.length > 0 || p.videos.length > 0 || p.beforeAfterPairs.length > 0).map(p => ({
           title: p.title,
           description: p.description,
           images: p.images,
+          videos: p.videos,
+          beforeAfterPairs: p.beforeAfterPairs,
         })),
       } : {};
 
@@ -345,7 +349,7 @@ function RegisterContent() {
             categories: formData.selectedCategories,
             subcategories: formData.selectedSubcategories,
             customServices: customServices.length > 0 ? customServices : undefined,
-            portfolioProjects: portfolioProjects.filter(p => p.images.length > 0),
+            portfolioProjects: portfolioProjects.filter(p => p.images.length > 0 || p.videos.length > 0 || p.beforeAfterPairs.length > 0),
             services: services.length > 0 ? services : undefined,
             tags: selectedTags.length > 0 ? selectedTags : undefined,
           })
@@ -539,7 +543,7 @@ function RegisterContent() {
 
   const canProceedFromServices = () => {
     // Require at least 1 project with at least 1 image
-    return portfolioProjects.length > 0 && portfolioProjects.some(p => p.images.length > 0);
+    return portfolioProjects.length > 0 && portfolioProjects.some(p => p.images.length > 0 || p.videos.length > 0 || p.beforeAfterPairs.length > 0);
   };
 
   const handleCategoryToggle = (categoryKey: string) => {
@@ -607,7 +611,9 @@ function RegisterContent() {
       id: `project-${Date.now()}`,
       title: '',
       description: '',
-      images: []
+      images: [],
+      videos: [],
+      beforeAfterPairs: []
     }]);
   };
 
@@ -656,6 +662,110 @@ function RegisterContent() {
       }
       return p;
     }));
+  };
+
+  const handleProjectVideoUpload = (projectId: string, files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    const maxSize = 100 * 1024 * 1024; // 100MB
+    const allowedTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo'];
+
+    Array.from(files).forEach(file => {
+      if (!allowedTypes.includes(file.type)) {
+        setError(locale === "ka" ? "მხოლოდ MP4, WebM ან MOV ფორმატი" : "Only MP4, WebM or MOV allowed");
+        return;
+      }
+      if (file.size > maxSize) {
+        setError(locale === "ka" ? "ვიდეო ძალიან დიდია (მაქს. 100MB)" : "Video too large (max 100MB)");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64 = e.target?.result as string;
+        setPortfolioProjects(prev => prev.map(p => {
+          if (p.id === projectId) {
+            return { ...p, videos: [...p.videos, base64] };
+          }
+          return p;
+        }));
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeProjectVideo = (projectId: string, videoIndex: number) => {
+    setPortfolioProjects(prev => prev.map(p => {
+      if (p.id === projectId) {
+        return { ...p, videos: p.videos.filter((_, i) => i !== videoIndex) };
+      }
+      return p;
+    }));
+  };
+
+  // Before/After pair handlers
+  const [beforeAfterUploadState, setBeforeAfterUploadState] = useState<{
+    projectId: string;
+    beforeImage: string | null;
+  } | null>(null);
+
+  const handleBeforeAfterUpload = (projectId: string, type: 'before' | 'after', files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const file = files[0];
+
+    // Validate file
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (!allowedTypes.includes(file.type)) {
+      setError(locale === "ka" ? "მხოლოდ JPG, PNG, WebP ფორმატები" : "Only JPG, PNG, WebP allowed");
+      return;
+    }
+    if (file.size > maxSize) {
+      setError(locale === "ka" ? "ფაილი ზედმეტად დიდია (მაქს 5MB)" : "File too large (max 5MB)");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target?.result as string;
+
+      if (type === 'before') {
+        // Store the before image temporarily
+        setBeforeAfterUploadState({ projectId, beforeImage: base64 });
+      } else if (type === 'after' && beforeAfterUploadState?.projectId === projectId && beforeAfterUploadState.beforeImage) {
+        // We have both before and after, create the pair
+        const newPair = {
+          id: `ba-${Date.now()}`,
+          beforeImage: beforeAfterUploadState.beforeImage,
+          afterImage: base64
+        };
+
+        setPortfolioProjects(prev => prev.map(p => {
+          if (p.id === projectId) {
+            return { ...p, beforeAfterPairs: [...p.beforeAfterPairs, newPair] };
+          }
+          return p;
+        }));
+
+        // Clear the temporary state
+        setBeforeAfterUploadState(null);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeBeforeAfterPair = (projectId: string, pairId: string) => {
+    setPortfolioProjects(prev => prev.map(p => {
+      if (p.id === projectId) {
+        return { ...p, beforeAfterPairs: p.beforeAfterPairs.filter(pair => pair.id !== pairId) };
+      }
+      return p;
+    }));
+  };
+
+  const cancelBeforeAfterUpload = () => {
+    setBeforeAfterUploadState(null);
   };
 
   const handleNext = async () => {
@@ -852,10 +962,12 @@ function RegisterContent() {
         selectedCategories: formData.selectedCategories,
         selectedSubcategories: formData.selectedSubcategories,
         customServices: customServices.length > 0 ? customServices : undefined,
-        portfolioProjects: portfolioProjects.filter(p => p.images.length > 0).map(p => ({
+        portfolioProjects: portfolioProjects.filter(p => p.images.length > 0 || p.videos.length > 0 || p.beforeAfterPairs.length > 0).map(p => ({
           title: p.title,
           description: p.description,
           images: p.images,
+          videos: p.videos,
+          beforeAfterPairs: p.beforeAfterPairs,
         })),
       } : {};
 
@@ -905,7 +1017,7 @@ function RegisterContent() {
             categories: formData.selectedCategories,
             subcategories: formData.selectedSubcategories,
             customServices: customServices.length > 0 ? customServices : undefined,
-            portfolioProjects: portfolioProjects.filter(p => p.images.length > 0),
+            portfolioProjects: portfolioProjects.filter(p => p.images.length > 0 || p.videos.length > 0 || p.beforeAfterPairs.length > 0),
             services: services.length > 0 ? services : undefined,
             tags: selectedTags.length > 0 ? selectedTags : undefined,
           })
@@ -3022,7 +3134,7 @@ function RegisterContent() {
 
               {/* Portfolio Projects Section */}
               <div className={`p-4 rounded-xl bg-white border-2 transition-all ${
-                portfolioProjects.length > 0 && portfolioProjects.some(p => p.images.length > 0)
+                portfolioProjects.length > 0 && portfolioProjects.some(p => p.images.length > 0 || p.videos.length > 0 || p.beforeAfterPairs.length > 0)
                   ? 'border-emerald-500/50'
                   : 'border-[#C4735B] ring-4 ring-[#C4735B]/10'
               }`}>
@@ -3037,7 +3149,7 @@ function RegisterContent() {
                       {locale === "ka" ? "პროექტები" : "Projects"}
                       <span className="text-[#C4735B]">*</span>
                     </h2>
-                    {portfolioProjects.length > 0 && portfolioProjects.some(p => p.images.length > 0) ? (
+                    {portfolioProjects.length > 0 && portfolioProjects.some(p => p.images.length > 0 || p.videos.length > 0 || p.beforeAfterPairs.length > 0) ? (
                       <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-medium">
                         {locale === "ka" ? "შევსებულია" : "Completed"}
                       </span>
@@ -3106,11 +3218,12 @@ function RegisterContent() {
                           className="w-full px-2.5 py-1.5 rounded-lg border border-[#C4735B]/20 bg-white text-xs resize-none focus:border-[#C4735B] outline-none mb-2"
                         />
 
-                        {/* Uploaded images preview */}
-                        {project.images.length > 0 && (
+                        {/* Uploaded media preview (images + videos) */}
+                        {(project.images.length > 0 || project.videos.length > 0) && (
                           <div className="flex flex-wrap gap-2 mb-2">
+                            {/* Images */}
                             {project.images.map((img, imgIndex) => (
-                              <div key={imgIndex} className="relative group">
+                              <div key={`img-${imgIndex}`} className="relative group">
                                 <img
                                   src={img}
                                   alt={`Project ${index + 1} image ${imgIndex + 1}`}
@@ -3126,28 +3239,160 @@ function RegisterContent() {
                                 </button>
                               </div>
                             ))}
+                            {/* Videos */}
+                            {project.videos.map((vid, vidIndex) => (
+                              <div key={`vid-${vidIndex}`} className="relative group">
+                                <div className="w-16 h-16 rounded-lg border border-indigo-300 bg-indigo-50 overflow-hidden">
+                                  <video
+                                    src={vid}
+                                    className="w-full h-full object-cover"
+                                    muted
+                                    playsInline
+                                    onMouseEnter={(e) => (e.target as HTMLVideoElement).play()}
+                                    onMouseLeave={(e) => {
+                                      const video = e.target as HTMLVideoElement;
+                                      video.pause();
+                                      video.currentTime = 0;
+                                    }}
+                                  />
+                                  {/* Play icon badge */}
+                                  <div className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-indigo-500/80 flex items-center justify-center pointer-events-none">
+                                    <svg className="w-2 h-2 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                      <path d="M8 5v14l11-7z" />
+                                    </svg>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => removeProjectVideo(project.id, vidIndex)}
+                                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                                >
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+                            ))}
                           </div>
                         )}
 
-                        {/* Upload area */}
-                        <label className="block border-2 border-dashed border-[#C4735B]/20 rounded-lg p-3 text-center hover:border-[#C4735B]/40 hover:bg-[#C4735B]/5 transition-colors cursor-pointer">
-                          <input
-                            type="file"
-                            accept="image/jpeg,image/png,image/webp"
-                            multiple
-                            onChange={(e) => handleProjectImageUpload(project.id, e.target.files)}
-                            className="hidden"
-                          />
-                          <svg className="w-5 h-5 text-[#C4735B]/50 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                          </svg>
-                          <p className="text-[10px] text-neutral-500">
-                            {project.images.length > 0
-                              ? (locale === "ka" ? "დაამატე მეტი ფოტო" : "Add more photos")
-                              : (locale === "ka" ? "ატვირთე ფოტოები" : "Upload photos")}
-                          </p>
-                          <p className="text-[9px] text-neutral-400 mt-0.5">JPG, PNG, WebP · 5MB</p>
-                        </label>
+                        {/* Before/After pairs preview */}
+                        {project.beforeAfterPairs.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {project.beforeAfterPairs.map((pair) => (
+                              <div key={pair.id} className="relative group">
+                                <div className="w-24 h-12 rounded-lg border border-emerald-300 overflow-hidden flex">
+                                  <div className="w-1/2 h-full relative">
+                                    <img src={pair.beforeImage} alt="Before" className="w-full h-full object-cover" />
+                                    <span className="absolute bottom-0 left-0 text-[8px] bg-black/60 text-white px-1">
+                                      {locale === "ka" ? "მანამდე" : "Before"}
+                                    </span>
+                                  </div>
+                                  <div className="w-1/2 h-full relative">
+                                    <img src={pair.afterImage} alt="After" className="w-full h-full object-cover" />
+                                    <span className="absolute bottom-0 right-0 text-[8px] bg-emerald-500/80 text-white px-1">
+                                      {locale === "ka" ? "შემდეგ" : "After"}
+                                    </span>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => removeBeforeAfterPair(project.id, pair.id)}
+                                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                                >
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Before/After upload in progress indicator */}
+                        {beforeAfterUploadState?.projectId === project.id && beforeAfterUploadState.beforeImage && (
+                          <div className="mb-2 p-2 rounded-lg bg-emerald-50 border border-emerald-200">
+                            <div className="flex items-center gap-2">
+                              <img src={beforeAfterUploadState.beforeImage} alt="Before" className="w-10 h-10 rounded object-cover" />
+                              <div className="flex-1">
+                                <p className="text-xs text-emerald-700 font-medium">
+                                  {locale === "ka" ? "ახლა ატვირთე 'შემდეგ' ფოტო" : "Now upload 'After' photo"}
+                                </p>
+                                <label className="inline-flex items-center gap-1 mt-1 px-2 py-1 rounded bg-emerald-500 text-white text-[10px] font-medium cursor-pointer hover:bg-emerald-600 transition-colors">
+                                  <input
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    onChange={(e) => handleBeforeAfterUpload(project.id, 'after', e.target.files)}
+                                    className="hidden"
+                                  />
+                                  {locale === "ka" ? "შემდეგ" : "After"}
+                                </label>
+                                <button
+                                  onClick={cancelBeforeAfterUpload}
+                                  className="ml-2 text-[10px] text-emerald-600 hover:text-emerald-800"
+                                >
+                                  {locale === "ka" ? "გაუქმება" : "Cancel"}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Upload buttons row */}
+                        <div className="grid grid-cols-3 gap-2">
+                          {/* Image upload */}
+                          <label className="block border-2 border-dashed border-[#C4735B]/20 rounded-lg p-2 text-center hover:border-[#C4735B]/40 hover:bg-[#C4735B]/5 transition-colors cursor-pointer">
+                            <input
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp"
+                              multiple
+                              onChange={(e) => handleProjectImageUpload(project.id, e.target.files)}
+                              className="hidden"
+                            />
+                            <svg className="w-4 h-4 text-[#C4735B]/50 mx-auto mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <p className="text-[9px] text-neutral-500">
+                              {locale === "ka" ? "ფოტო" : "Photo"}
+                            </p>
+                          </label>
+
+                          {/* Video upload */}
+                          <label className="block border-2 border-dashed border-indigo-300/40 rounded-lg p-2 text-center hover:border-indigo-400 hover:bg-indigo-50/50 transition-colors cursor-pointer">
+                            <input
+                              type="file"
+                              accept="video/mp4,video/webm,video/quicktime"
+                              multiple
+                              onChange={(e) => handleProjectVideoUpload(project.id, e.target.files)}
+                              className="hidden"
+                            />
+                            <svg className="w-4 h-4 text-indigo-400 mx-auto mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                            <p className="text-[9px] text-neutral-500">
+                              {locale === "ka" ? "ვიდეო" : "Video"}
+                            </p>
+                          </label>
+
+                          {/* Before/After upload */}
+                          <label className={`block border-2 border-dashed rounded-lg p-2 text-center transition-colors cursor-pointer ${
+                            beforeAfterUploadState?.projectId === project.id
+                              ? 'border-emerald-400 bg-emerald-50'
+                              : 'border-emerald-300/40 hover:border-emerald-400 hover:bg-emerald-50/50'
+                          }`}>
+                            <input
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp"
+                              onChange={(e) => handleBeforeAfterUpload(project.id, 'before', e.target.files)}
+                              className="hidden"
+                              disabled={beforeAfterUploadState?.projectId === project.id}
+                            />
+                            <svg className="w-4 h-4 text-emerald-500 mx-auto mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                            </svg>
+                            <p className="text-[9px] text-neutral-500">
+                              {locale === "ka" ? "მანამდე/შემდეგ" : "Before/After"}
+                            </p>
+                          </label>
+                        </div>
                       </div>
                     ))}
 
@@ -3250,7 +3495,7 @@ function RegisterContent() {
                   {/* Stats row - show projects and services/skills count */}
                   <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-[#C4735B]/10">
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-neutral-900">{portfolioProjects.filter(p => p.images.length > 0).length}</p>
+                      <p className="text-2xl font-bold text-neutral-900">{portfolioProjects.filter(p => p.images.length > 0 || p.videos.length > 0).length}</p>
                       <p className="text-[11px] text-neutral-500 uppercase tracking-wider">
                         {locale === "ka" ? "პროექტი" : "Projects"}
                       </p>
@@ -3284,47 +3529,86 @@ function RegisterContent() {
 
                   {/* Projects Grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {portfolioProjects.map((project) => (
-                      <div key={project.id} className="group relative">
-                        {project.images.length > 0 ? (
-                          <div className="aspect-[4/3] rounded-xl overflow-hidden bg-neutral-100">
-                            <img
-                              src={project.images[0]}
-                              alt={project.title || 'Project'}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-                            {/* Overlay on hover */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                              <div className="absolute bottom-0 left-0 right-0 p-3">
-                                <p className="text-white text-sm font-medium truncate">
-                                  {project.title || (locale === "ka" ? "უსათაურო" : "Untitled")}
-                                </p>
-                                {project.images.length > 1 && (
-                                  <p className="text-white/60 text-xs mt-0.5">
-                                    +{project.images.length - 1} {locale === "ka" ? "ფოტო" : "more"}
+                    {portfolioProjects.map((project) => {
+                      const totalMedia = project.images.length + project.videos.length;
+                      return (
+                        <div key={project.id} className="group relative">
+                          {project.images.length > 0 ? (
+                            <div className="aspect-[4/3] rounded-xl overflow-hidden bg-neutral-100">
+                              <img
+                                src={project.images[0]}
+                                alt={project.title || 'Project'}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              />
+                              {/* Overlay on hover */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <div className="absolute bottom-0 left-0 right-0 p-3">
+                                  <p className="text-white text-sm font-medium truncate">
+                                    {project.title || (locale === "ka" ? "უსათაურო" : "Untitled")}
                                   </p>
-                                )}
+                                  {totalMedia > 1 && (
+                                    <p className="text-white/60 text-xs mt-0.5">
+                                      +{totalMedia - 1} {locale === "ka" ? "მედია" : "more"}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              {/* Media count badge */}
+                              {totalMedia > 1 && (
+                                <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm text-white text-[10px] font-medium">
+                                  {totalMedia}
+                                </div>
+                              )}
+                            </div>
+                          ) : project.videos.length > 0 ? (
+                            <div className="aspect-[4/3] rounded-xl overflow-hidden bg-indigo-50 relative">
+                              <video
+                                src={project.videos[0]}
+                                className="w-full h-full object-cover"
+                                muted
+                                playsInline
+                              />
+                              {/* Play icon overlay */}
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <div className="w-10 h-10 rounded-full bg-indigo-500/80 flex items-center justify-center">
+                                  <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z" />
+                                  </svg>
+                                </div>
+                              </div>
+                              {/* Title overlay on hover */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <div className="absolute bottom-0 left-0 right-0 p-3">
+                                  <p className="text-white text-sm font-medium truncate">
+                                    {project.title || (locale === "ka" ? "უსათაურო" : "Untitled")}
+                                  </p>
+                                  {project.videos.length > 1 && (
+                                    <p className="text-white/60 text-xs mt-0.5">
+                                      +{project.videos.length - 1} {locale === "ka" ? "ვიდეო" : "videos"}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              {/* Video count badge */}
+                              {project.videos.length > 1 && (
+                                <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-indigo-500/70 backdrop-blur-sm text-white text-[10px] font-medium">
+                                  {project.videos.length}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="aspect-[4/3] rounded-xl bg-neutral-100 flex items-center justify-center">
+                              <div className="text-center">
+                                <svg className="w-8 h-8 text-neutral-300 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <p className="text-xs text-neutral-400">{locale === "ka" ? "მედია არ არის" : "No media"}</p>
                               </div>
                             </div>
-                            {/* Image count badge */}
-                            {project.images.length > 1 && (
-                              <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm text-white text-[10px] font-medium">
-                                {project.images.length}
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="aspect-[4/3] rounded-xl bg-neutral-100 flex items-center justify-center">
-                            <div className="text-center">
-                              <svg className="w-8 h-8 text-neutral-300 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
-                              <p className="text-xs text-neutral-400">{locale === "ka" ? "ფოტო არ არის" : "No image"}</p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
