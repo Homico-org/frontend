@@ -146,10 +146,7 @@ export function Tabs({
         >
           {tab.icon && <span className="flex-shrink-0">{tab.icon}</span>}
           {compact && tab.shortLabel ? (
-            <>
-              <span className="hidden sm:inline">{tab.label}</span>
-              <span className="sm:hidden">{tab.shortLabel}</span>
-            </>
+            <span>{tab.shortLabel}</span>
           ) : (
             <span>{tab.label}</span>
           )}

@@ -639,7 +639,12 @@ function ProProfileSetupPageContent() {
                     min: parseInt(formData.basePrice) || 0,
                     max: parseInt(formData.maxPrice) || 0,
                   },
-                  priceType: (formData.pricingModel === 'hourly' ? 'hourly' : formData.pricingModel === 'sqm' ? 'fixed' : 'project') as 'hourly' | 'fixed' | 'project',
+                  priceType: (
+                    formData.pricingModel === 'hourly' ? 'hourly' :
+                    formData.pricingModel === 'sqm' || formData.pricingModel === 'daily' ? 'fixed' :
+                    formData.pricingModel === 'project_based' ? 'project' :
+                    'fixed' // Default to fixed
+                  ) as 'hourly' | 'fixed' | 'project',
                   serviceAreas: formData.serviceAreas,
                   nationwide: formData.nationwide,
                 }}
@@ -653,11 +658,11 @@ function ProProfileSetupPageContent() {
                   }
                   if ('priceType' in updates && updates.priceType) {
                     const typeMap: Record<string, typeof formData.pricingModel> = {
-                      'hourly': 'hourly',
-                      'fixed': 'sqm',
-                      'project': 'project_based',
+                      'hourly': 'hourly',  // By agreement
+                      'fixed': 'sqm',      // Fixed price
+                      'project': 'project_based',  // Per project (range)
                     };
-                    handleFormChange({ pricingModel: typeMap[updates.priceType] || 'project_based' });
+                    handleFormChange({ pricingModel: typeMap[updates.priceType] || 'sqm' });
                   }
                   if ('serviceAreas' in updates) {
                     handleFormChange({ serviceAreas: updates.serviceAreas });

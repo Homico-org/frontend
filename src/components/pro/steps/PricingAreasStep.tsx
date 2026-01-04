@@ -35,11 +35,6 @@ function PriceTypeSelector({
 }) {
   const types = [
     {
-      id: "hourly" as const,
-      label: locale === "ka" ? "საათობრივი" : "Hourly",
-      icon: "⏱",
-    },
-    {
       id: "fixed" as const,
       label: locale === "ka" ? "ფიქსირებული" : "Fixed",
       icon: "📋",
@@ -48,6 +43,11 @@ function PriceTypeSelector({
       id: "project" as const,
       label: locale === "ka" ? "პროექტით" : "Per Project",
       icon: "📦",
+    },
+    {
+      id: "hourly" as const,
+      label: locale === "ka" ? "შეთანხმებით" : "By Agreement",
+      icon: "🤝",
     },
   ];
 
@@ -134,8 +134,18 @@ export default function PricingAreasStep({
             locale={locale}
           />
 
-          {/* Price Range Inputs - Horizontal */}
-          <div className="flex items-center gap-3">
+          {/* Price Inputs - Conditional based on price type */}
+          {formData.priceType === "hourly" ? (
+            /* By Agreement - No price input needed */
+            <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200 text-center">
+              <p className="text-sm text-neutral-600">
+                {locale === "ka"
+                  ? "ფასი განისაზღვრება კლიენტთან შეთანხმებით"
+                  : "Price will be determined by agreement with client"}
+              </p>
+            </div>
+          ) : formData.priceType === "fixed" ? (
+            /* Fixed Price - Single input */
             <div className="flex-1">
               <Input
                 type="number"
@@ -145,33 +155,55 @@ export default function PricingAreasStep({
                   const value = e.target.value;
                   if (value === '' || parseFloat(value) >= 0) {
                     handlePriceChange("min", value);
+                    handlePriceChange("max", value); // Keep max same as min for fixed
                   }
                 }}
-                placeholder={locale === "ka" ? "მინ" : "Min"}
+                placeholder={locale === "ka" ? "ფასი" : "Price"}
                 variant="filled"
                 inputSize="default"
                 leftIcon={<span className="text-sm">₾</span>}
               />
             </div>
-            <span className="text-neutral-400 text-sm font-medium">—</span>
-            <div className="flex-1">
-              <Input
-                type="number"
-                min={0}
-                value={formData.priceRange.max || ""}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value === '' || parseFloat(value) >= 0) {
-                    handlePriceChange("max", value);
-                  }
-                }}
-                placeholder={locale === "ka" ? "მაქს" : "Max"}
-                variant="filled"
-                inputSize="default"
-                leftIcon={<span className="text-sm">₾</span>}
-              />
+          ) : (
+            /* Per Project - Range inputs */
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <Input
+                  type="number"
+                  min={0}
+                  value={formData.priceRange.min || ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '' || parseFloat(value) >= 0) {
+                      handlePriceChange("min", value);
+                    }
+                  }}
+                  placeholder={locale === "ka" ? "მინ" : "Min"}
+                  variant="filled"
+                  inputSize="default"
+                  leftIcon={<span className="text-sm">₾</span>}
+                />
+              </div>
+              <span className="text-neutral-400 text-sm font-medium">—</span>
+              <div className="flex-1">
+                <Input
+                  type="number"
+                  min={0}
+                  value={formData.priceRange.max || ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '' || parseFloat(value) >= 0) {
+                      handlePriceChange("max", value);
+                    }
+                  }}
+                  placeholder={locale === "ka" ? "მაქს" : "Max"}
+                  variant="filled"
+                  inputSize="default"
+                  leftIcon={<span className="text-sm">₾</span>}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 

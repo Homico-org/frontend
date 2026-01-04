@@ -6,7 +6,7 @@ import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import api from "@/lib/api";
-import { FileText, Hammer, LogIn, Plus, UserPlus, X } from "lucide-react";
+import { ExternalLink, FileText, Hammer, LogIn, Plus, UserPlus, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -320,46 +320,73 @@ export default function Header() {
                     }}
                   >
                     {/* User Info Header */}
-                    <div
-                      className="px-4 py-3 relative overflow-hidden"
-                      style={{ background: `linear-gradient(135deg, ${ACCENT_COLOR} 0%, #B86349 100%)` }}
-                    >
-                      <div className="flex items-center gap-3 relative z-10">
-                        <Avatar
-                          src={user.avatar}
-                          name={user.name}
-                          size="md"
-                          rounded="xl"
-                          className="w-11 h-11"
-                          style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)' }}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-white truncate">{user.name}</p>
-                          <p className="text-xs text-white/80 truncate">{user.email}</p>
-                          {user.role === "pro" && user.selectedSubcategories && user.selectedSubcategories.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1.5">
-                              {user.selectedSubcategories.slice(0, 2).map((subKey) => (
-                                <span
-                                  key={subKey}
-                                  className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium"
-                                  style={{ background: 'rgba(255, 255, 255, 0.9)', color: ACCENT_COLOR }}
-                                >
-                                  {getSubcategoryDisplayName(subKey)}
-                                </span>
-                              ))}
-                              {user.selectedSubcategories.length > 2 && (
-                                <span
-                                  className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium"
-                                  style={{ background: 'rgba(255, 255, 255, 0.7)', color: ACCENT_COLOR }}
-                                >
-                                  +{user.selectedSubcategories.length - 2}
-                                </span>
-                              )}
+                    {user.role === "pro" ? (
+                      <Link
+                        href={`/professionals/${user.id}`}
+                        className="block px-4 py-3 relative overflow-hidden hover:opacity-90 transition-opacity"
+                        style={{ background: `linear-gradient(135deg, ${ACCENT_COLOR} 0%, #B86349 100%)` }}
+                        onClick={() => setShowDropdown(false)}
+                      >
+                        <div className="flex items-center gap-3 relative z-10">
+                          <Avatar
+                            src={user.avatar}
+                            name={user.name}
+                            size="md"
+                            rounded="xl"
+                            className="w-11 h-11"
+                            style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)' }}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <p className="text-sm font-semibold text-white truncate">{user.name}</p>
+                              <ExternalLink className="w-3 h-3 text-white/70" />
                             </div>
-                          )}
+                            <p className="text-xs text-white/80 truncate">{user.email}</p>
+                            {user.selectedSubcategories && user.selectedSubcategories.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1.5">
+                                {user.selectedSubcategories.slice(0, 2).map((subKey) => (
+                                  <span
+                                    key={subKey}
+                                    className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium"
+                                    style={{ background: 'rgba(255, 255, 255, 0.9)', color: ACCENT_COLOR }}
+                                  >
+                                    {getSubcategoryDisplayName(subKey)}
+                                  </span>
+                                ))}
+                                {user.selectedSubcategories.length > 2 && (
+                                  <span
+                                    className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium"
+                                    style={{ background: 'rgba(255, 255, 255, 0.7)', color: ACCENT_COLOR }}
+                                  >
+                                    +{user.selectedSubcategories.length - 2}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                    ) : (
+                      <div
+                        className="px-4 py-3 relative overflow-hidden"
+                        style={{ background: `linear-gradient(135deg, ${ACCENT_COLOR} 0%, #B86349 100%)` }}
+                      >
+                        <div className="flex items-center gap-3 relative z-10">
+                          <Avatar
+                            src={user.avatar}
+                            name={user.name}
+                            size="md"
+                            rounded="xl"
+                            className="w-11 h-11"
+                            style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)' }}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-white truncate">{user.name}</p>
+                            <p className="text-xs text-white/80 truncate">{user.email}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* Menu Items */}
                     <div className="py-2">

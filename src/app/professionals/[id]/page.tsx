@@ -25,9 +25,8 @@ import {
   MessageSquare,
   Phone,
   Share2,
-  Shield,
   Star,
-  X,
+  X
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -150,7 +149,11 @@ export default function ProfessionalDetailPage() {
 
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-  const [selectedProject, setSelectedProject] = useState<{ images: string[]; title: string; currentIndex: number } | null>(null);
+  const [selectedProject, setSelectedProject] = useState<{
+    images: string[];
+    title: string;
+    currentIndex: number;
+  } | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<"about" | "portfolio" | "reviews">(
     "about"
@@ -268,27 +271,31 @@ export default function ProfessionalDetailPage() {
 
   // Share functions
   const getShareUrl = () => {
-    if (typeof window === 'undefined') return '';
+    if (typeof window === "undefined") return "";
     return window.location.href;
   };
 
   const getShareText = () => {
-    if (!profile) return '';
-    return locale === 'ka'
+    if (!profile) return "";
+    return locale === "ka"
       ? `${profile.name} - ${profile.title} | Homico`
       : `${profile.name} - ${profile.title} | Homico`;
   };
 
   const handleShareFacebook = () => {
     const url = encodeURIComponent(getShareUrl());
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'width=600,height=400');
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+      "_blank",
+      "width=600,height=400"
+    );
     setShowShareMenu(false);
   };
 
   const handleShareWhatsApp = () => {
     const url = encodeURIComponent(getShareUrl());
     const text = encodeURIComponent(getShareText());
-    window.open(`https://wa.me/?text=${text}%20${url}`, '_blank');
+    window.open(`https://wa.me/?text=${text}%20${url}`, "_blank");
     setShowShareMenu(false);
   };
 
@@ -296,11 +303,11 @@ export default function ProfessionalDetailPage() {
     try {
       await navigator.clipboard.writeText(getShareUrl());
       setCopySuccess(true);
-      toast.success(locale === 'ka' ? 'ლინკი დაკოპირდა!' : 'Link copied!');
+      toast.success(locale === "ka" ? "ლინკი დაკოპირდა!" : "Link copied!");
       setTimeout(() => setCopySuccess(false), 2000);
       setShowShareMenu(false);
     } catch {
-      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error');
+      toast.error(locale === "ka" ? "შეცდომა" : "Error");
     }
   };
 
@@ -514,16 +521,26 @@ export default function ProfessionalDetailPage() {
       if (selectedProject) {
         if (e.key === "Escape") setSelectedProject(null);
         if (e.key === "ArrowRight") {
-          setSelectedProject(prev => prev ? {
-            ...prev,
-            currentIndex: (prev.currentIndex + 1) % prev.images.length
-          } : null);
+          setSelectedProject((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  currentIndex: (prev.currentIndex + 1) % prev.images.length,
+                }
+              : null
+          );
         }
         if (e.key === "ArrowLeft") {
-          setSelectedProject(prev => prev ? {
-            ...prev,
-            currentIndex: (prev.currentIndex - 1 + prev.images.length) % prev.images.length
-          } : null);
+          setSelectedProject((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  currentIndex:
+                    (prev.currentIndex - 1 + prev.images.length) %
+                    prev.images.length,
+                }
+              : null
+          );
         }
         return;
       }
@@ -585,40 +602,10 @@ export default function ProfessionalDetailPage() {
   const portfolioImages = getAllPortfolioImages();
   const groupedServices = getGroupedServices();
 
-  // Check if current user is viewing their own profile and is not verified
-  const isOwnProfile = user?.id === profile._id || user?.uid === profile.uid;
-  const needsVerification = isOwnProfile && profile.verificationStatus !== 'verified' && profile.verificationStatus !== 'submitted';
-
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0A0A0A]">
       <Header />
       <HeaderSpacer />
-
-      {/* ========== VERIFICATION BANNER ========== */}
-      {needsVerification && (
-        <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-800/50 flex items-center justify-center flex-shrink-0">
-                  <Shield className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                </div>
-                <p className="text-sm text-amber-800 dark:text-amber-200">
-                  {locale === 'ka'
-                    ? 'გაიარე ვერიფიკაცია მეტი ნდობისთვის'
-                    : 'Get verified to build more trust'}
-                </p>
-              </div>
-              <button
-                onClick={() => router.push('/settings?tab=verification')}
-                className="px-4 py-1.5 text-sm font-medium rounded-full bg-amber-600 hover:bg-amber-700 text-white transition-colors flex-shrink-0"
-              >
-                {locale === 'ka' ? 'გაიარე ვერიფიკაცია' : 'Get Verified'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ========== HERO SECTION ========== */}
       <section
@@ -715,7 +702,9 @@ export default function ProfessionalDetailPage() {
                 <div className="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400">
                   <span className="text-neutral-400">•</span>
                   <span>
-                    {locale === "ka" ? "წევრი" : "Member"} {new Date(profile.createdAt).getFullYear()}-{locale === "ka" ? "დან" : ""}
+                    {locale === "ka" ? "წევრი" : "Member"}{" "}
+                    {new Date(profile.createdAt).getFullYear()}-
+                    {locale === "ka" ? "დან" : ""}
                   </span>
                 </div>
               )}
@@ -725,17 +714,24 @@ export default function ProfessionalDetailPage() {
             {profile.basePrice > 0 && (
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-lg font-bold text-neutral-900 dark:text-white">
-                  {profile.pricingModel === "from" && (locale === "ka" ? "" : "from ")}
+                  {profile.pricingModel === "from" &&
+                    (locale === "ka" ? "" : "from ")}
                   {profile.basePrice}₾
-                  {profile.pricingModel === "from" && (locale === "ka" ? "-დან" : "")}
+                  {profile.pricingModel === "from" &&
+                    (locale === "ka" ? "-დან" : "")}
                   {getPricingLabel()}
                 </span>
                 <span className="px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs text-neutral-600 dark:text-neutral-400">
-                  {profile.pricingModel === "hourly" && (locale === "ka" ? "საათობრივი" : "Hourly")}
-                  {profile.pricingModel === "daily" && (locale === "ka" ? "დღიური" : "Daily")}
-                  {profile.pricingModel === "project_based" && (locale === "ka" ? "პროექტით" : "Per Project")}
-                  {profile.pricingModel === "from" && (locale === "ka" ? "საწყისი ფასი" : "Starting Price")}
-                  {profile.pricingModel === "sqm" && (locale === "ka" ? "კვ.მ" : "Per sqm")}
+                  {profile.pricingModel === "hourly" &&
+                    (locale === "ka" ? "საათობრივი" : "Hourly")}
+                  {profile.pricingModel === "daily" &&
+                    (locale === "ka" ? "დღიური" : "Daily")}
+                  {profile.pricingModel === "project_based" &&
+                    (locale === "ka" ? "პროექტით" : "Per Project")}
+                  {profile.pricingModel === "from" &&
+                    (locale === "ka" ? "საწყისი ფასი" : "Starting Price")}
+                  {profile.pricingModel === "sqm" &&
+                    (locale === "ka" ? "კვ.მ" : "Per sqm")}
                 </span>
               </div>
             )}
@@ -893,85 +889,95 @@ export default function ProfessionalDetailPage() {
 
             {/* Contact & Social Links */}
             {(profile.whatsapp ||
-                profile.telegram ||
-                profile.facebookUrl ||
-                profile.instagramUrl ||
-                profile.linkedinUrl ||
-                profile.websiteUrl) && (
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl p-5 shadow-sm border border-neutral-100 dark:border-neutral-800">
-                  <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-3">
-                    {locale === "ka" ? "კონტაქტი და სოციალური" : "Contact & Social"}
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {profile.whatsapp && (
-                      <a
-                        href={`https://wa.me/${profile.whatsapp.replace(/[^0-9+]/g, '')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="h-10 px-3 rounded-full bg-[#25D366]/10 flex items-center justify-center gap-2 text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
+              profile.telegram ||
+              profile.facebookUrl ||
+              profile.instagramUrl ||
+              profile.linkedinUrl ||
+              profile.websiteUrl) && (
+              <div className="bg-white dark:bg-neutral-900 rounded-2xl p-5 shadow-sm border border-neutral-100 dark:border-neutral-800">
+                <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-3">
+                  {locale === "ka"
+                    ? "კონტაქტი და სოციალური"
+                    : "Contact & Social"}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {profile.whatsapp && (
+                    <a
+                      href={`https://wa.me/${profile.whatsapp.replace(/[^0-9+]/g, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="h-10 px-3 rounded-full bg-[#25D366]/10 flex items-center justify-center gap-2 text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
                       >
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                        </svg>
-                        <span className="text-sm font-medium">WhatsApp</span>
-                      </a>
-                    )}
-                    {profile.telegram && (
-                      <a
-                        href={`https://t.me/${profile.telegram.replace('@', '')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="h-10 px-3 rounded-full bg-[#0088cc]/10 flex items-center justify-center gap-2 text-[#0088cc] hover:bg-[#0088cc]/20 transition-colors"
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                      </svg>
+                      <span className="text-sm font-medium">WhatsApp</span>
+                    </a>
+                  )}
+                  {profile.telegram && (
+                    <a
+                      href={`https://t.me/${profile.telegram.replace("@", "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="h-10 px-3 rounded-full bg-[#0088cc]/10 flex items-center justify-center gap-2 text-[#0088cc] hover:bg-[#0088cc]/20 transition-colors"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
                       >
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-                        </svg>
-                        <span className="text-sm font-medium">Telegram</span>
-                      </a>
-                    )}
-                    {profile.facebookUrl && (
-                      <a
-                        href={profile.facebookUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-10 h-10 rounded-full bg-[#1877F2]/10 flex items-center justify-center text-[#1877F2] hover:bg-[#1877F2]/20 transition-colors"
-                      >
-                        <Facebook className="w-4 h-4" />
-                      </a>
-                    )}
-                    {profile.instagramUrl && (
-                      <a
-                        href={profile.instagramUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-10 h-10 rounded-full bg-[#E4405F]/10 flex items-center justify-center text-[#E4405F] hover:bg-[#E4405F]/20 transition-colors"
-                      >
-                        <Instagram className="w-4 h-4" />
-                      </a>
-                    )}
-                    {profile.linkedinUrl && (
-                      <a
-                        href={profile.linkedinUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-10 h-10 rounded-full bg-[#0A66C2]/10 flex items-center justify-center text-[#0A66C2] hover:bg-[#0A66C2]/20 transition-colors"
-                      >
-                        <Linkedin className="w-4 h-4" />
-                      </a>
-                    )}
-                    {profile.websiteUrl && (
-                      <a
-                        href={profile.websiteUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                      >
-                        <Globe className="w-4 h-4" />
-                      </a>
-                    )}
-                  </div>
+                        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                      </svg>
+                      <span className="text-sm font-medium">Telegram</span>
+                    </a>
+                  )}
+                  {profile.facebookUrl && (
+                    <a
+                      href={profile.facebookUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 rounded-full bg-[#1877F2]/10 flex items-center justify-center text-[#1877F2] hover:bg-[#1877F2]/20 transition-colors"
+                    >
+                      <Facebook className="w-4 h-4" />
+                    </a>
+                  )}
+                  {profile.instagramUrl && (
+                    <a
+                      href={profile.instagramUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 rounded-full bg-[#E4405F]/10 flex items-center justify-center text-[#E4405F] hover:bg-[#E4405F]/20 transition-colors"
+                    >
+                      <Instagram className="w-4 h-4" />
+                    </a>
+                  )}
+                  {profile.linkedinUrl && (
+                    <a
+                      href={profile.linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 rounded-full bg-[#0A66C2]/10 flex items-center justify-center text-[#0A66C2] hover:bg-[#0A66C2]/20 transition-colors"
+                    >
+                      <Linkedin className="w-4 h-4" />
+                    </a>
+                  )}
+                  {profile.websiteUrl && (
+                    <a
+                      href={profile.websiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                    >
+                      <Globe className="w-4 h-4" />
+                    </a>
+                  )}
                 </div>
-              )}
+              </div>
+            )}
           </div>
         )}
 
@@ -989,7 +995,13 @@ export default function ProfessionalDetailPage() {
                     >
                       {/* Main Image */}
                       <button
-                        onClick={() => setSelectedProject({ images: project.images, title: project.title, currentIndex: 0 })}
+                        onClick={() =>
+                          setSelectedProject({
+                            images: project.images,
+                            title: project.title,
+                            currentIndex: 0,
+                          })
+                        }
                         className="relative w-full aspect-[4/3] overflow-hidden"
                       >
                         <img
@@ -1025,7 +1037,13 @@ export default function ProfessionalDetailPage() {
                           {project.images.slice(0, 4).map((img, imgIdx) => (
                             <button
                               key={imgIdx}
-                              onClick={() => setSelectedProject({ images: project.images, title: project.title, currentIndex: imgIdx })}
+                              onClick={() =>
+                                setSelectedProject({
+                                  images: project.images,
+                                  title: project.title,
+                                  currentIndex: imgIdx,
+                                })
+                              }
                               className="relative flex-1 aspect-square rounded-lg overflow-hidden hover:ring-2 hover:ring-[#C4735B] transition-all"
                             >
                               <img
@@ -1036,7 +1054,9 @@ export default function ProfessionalDetailPage() {
                               {/* Show +N overlay on last thumbnail if more images */}
                               {imgIdx === 3 && project.images.length > 4 && (
                                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                                  <span className="text-white text-sm font-bold">+{project.images.length - 4}</span>
+                                  <span className="text-white text-sm font-bold">
+                                    +{project.images.length - 4}
+                                  </span>
                                 </div>
                               )}
                             </button>
@@ -1205,8 +1225,12 @@ export default function ProfessionalDetailPage() {
                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
               >
                 <div className="w-8 h-8 rounded-full bg-[#25D366] flex items-center justify-center">
-                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                  <svg
+                    className="w-4 h-4 text-white"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                   </svg>
                 </div>
                 <span>WhatsApp</span>
@@ -1222,7 +1246,7 @@ export default function ProfessionalDetailPage() {
                     <Link2 className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
                   )}
                 </div>
-                <span>{locale === 'ka' ? 'ლინკის კოპირება' : 'Copy Link'}</span>
+                <span>{locale === "ka" ? "ლინკის კოპირება" : "Copy Link"}</span>
               </button>
             </div>
           )}
@@ -1232,8 +1256,8 @@ export default function ProfessionalDetailPage() {
             onClick={() => setShowShareMenu(!showShareMenu)}
             className={`w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all ${
               showShareMenu
-                ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rotate-45'
-                : 'bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700'
+                ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rotate-45"
+                : "bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700"
             }`}
           >
             {showShareMenu ? (
@@ -1314,16 +1338,25 @@ export default function ProfessionalDetailPage() {
           </div>
 
           {/* Main Image */}
-          <div className="flex-1 flex items-center justify-center relative px-4" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="flex-1 flex items-center justify-center relative px-4"
+            onClick={(e) => e.stopPropagation()}
+          >
             {selectedProject.images.length > 1 && (
               <>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setSelectedProject(prev => prev ? {
-                      ...prev,
-                      currentIndex: (prev.currentIndex - 1 + prev.images.length) % prev.images.length
-                    } : null);
+                    setSelectedProject((prev) =>
+                      prev
+                        ? {
+                            ...prev,
+                            currentIndex:
+                              (prev.currentIndex - 1 + prev.images.length) %
+                              prev.images.length,
+                          }
+                        : null
+                    );
                   }}
                   className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
                 >
@@ -1332,10 +1365,15 @@ export default function ProfessionalDetailPage() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setSelectedProject(prev => prev ? {
-                      ...prev,
-                      currentIndex: (prev.currentIndex + 1) % prev.images.length
-                    } : null);
+                    setSelectedProject((prev) =>
+                      prev
+                        ? {
+                            ...prev,
+                            currentIndex:
+                              (prev.currentIndex + 1) % prev.images.length,
+                          }
+                        : null
+                    );
                   }}
                   className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
                 >
@@ -1344,7 +1382,9 @@ export default function ProfessionalDetailPage() {
               </>
             )}
             <img
-              src={getImageUrl(selectedProject.images[selectedProject.currentIndex])}
+              src={getImageUrl(
+                selectedProject.images[selectedProject.currentIndex]
+              )}
               alt=""
               className="max-w-full max-h-[70vh] object-contain rounded-lg"
             />
@@ -1357,11 +1397,15 @@ export default function ProfessionalDetailPage() {
                 {selectedProject.images.map((img, idx) => (
                   <button
                     key={idx}
-                    onClick={() => setSelectedProject(prev => prev ? { ...prev, currentIndex: idx } : null)}
+                    onClick={() =>
+                      setSelectedProject((prev) =>
+                        prev ? { ...prev, currentIndex: idx } : null
+                      )
+                    }
                     className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 transition-all ${
                       idx === selectedProject.currentIndex
-                        ? 'ring-2 ring-[#C4735B] ring-offset-2 ring-offset-black'
-                        : 'opacity-60 hover:opacity-100'
+                        ? "ring-2 ring-[#C4735B] ring-offset-2 ring-offset-black"
+                        : "opacity-60 hover:opacity-100"
                     }`}
                   >
                     <img
@@ -1374,7 +1418,8 @@ export default function ProfessionalDetailPage() {
               </div>
               <div className="text-center mt-2">
                 <span className="text-white/60 text-sm">
-                  {selectedProject.currentIndex + 1} / {selectedProject.images.length}
+                  {selectedProject.currentIndex + 1} /{" "}
+                  {selectedProject.images.length}
                 </span>
               </div>
             </div>
