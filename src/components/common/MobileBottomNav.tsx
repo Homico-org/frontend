@@ -49,7 +49,7 @@ const NAV_ITEMS: NavItem[] = [
     key: 'find-jobs',
     href: '/browse/jobs',
     label: 'Jobs',
-    labelKa: 'სამუშაო',
+    labelKa: 'დასაქმება',
     icon: Briefcase,
     showFor: 'pro',
   },

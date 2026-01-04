@@ -619,24 +619,30 @@ function MyJobsPageContent() {
                             <>
                               {/* Stacked Avatars */}
                               <div className="flex -space-x-2">
-                                {[...Array(Math.min(job.proposalCount, 3))].map((_, i) => (
-                                  <div
-                                    key={i}
-                                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-neutral-200 dark:bg-neutral-700 border-2 border-white dark:border-neutral-900 overflow-hidden"
-                                  >
-                                    {job.recentProposals?.[i]?.proId?.avatar ? (
-                                      <img
-                                        src={storage.getFileUrl(job.recentProposals[i].proId.avatar!)}
-                                        alt=""
-                                        className="w-full h-full object-cover"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center text-xs font-medium text-neutral-500">
-                                        {i + 1}
-                                      </div>
-                                    )}
-                                  </div>
-                                ))}
+                                {[...Array(Math.min(job.proposalCount, 3))].map((_, i) => {
+                                  const proposal = job.recentProposals?.[i];
+                                  const proName = proposal?.proId?.name || '';
+                                  const initial = proName.charAt(0).toUpperCase();
+
+                                  return (
+                                    <div
+                                      key={i}
+                                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-neutral-200 dark:bg-neutral-700 border-2 border-white dark:border-neutral-900 overflow-hidden"
+                                    >
+                                      {proposal?.proId?.avatar ? (
+                                        <img
+                                          src={storage.getFileUrl(proposal.proId.avatar)}
+                                          alt=""
+                                          className="w-full h-full object-cover"
+                                        />
+                                      ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-xs font-medium text-neutral-500">
+                                          {initial || '?'}
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
                               </div>
                               <span style={{ color: ACCENT_COLOR }} className="text-xs sm:text-sm font-medium">
                                 {job.proposalCount} {locale === 'ka' ? 'შეთავაზება' : 'Proposals'}

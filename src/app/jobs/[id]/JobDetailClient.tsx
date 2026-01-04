@@ -28,6 +28,7 @@ import {
   Edit3,
   ExternalLink,
   Facebook,
+  Hammer,
   Home,
   Layers,
   Map,
@@ -86,6 +87,7 @@ interface Job {
   skills: string[];
   location: string;
   propertyType?: "apartment" | "office" | "building" | "house" | "other";
+  currentCondition?: "shell" | "black-frame" | "needs-renovation" | "partial-renovation" | "good";
   areaSize?: number;
   sizeUnit?: "sqm" | "room" | "unit" | "floor" | "item";
   roomCount?: number;
@@ -137,6 +139,14 @@ const propertyTypeLabels: Record<string, { en: string; ka: string }> = {
   office: { en: "Office", ka: "ოფისი" },
   building: { en: "Building", ka: "შენობა" },
   other: { en: "Other", ka: "სხვა" },
+};
+
+const conditionLabels: Record<string, { en: string; ka: string }> = {
+  "shell": { en: "Shell / White Frame", ka: "თეთრი კარკასი" },
+  "black-frame": { en: "Black Frame", ka: "შავი კარკასი" },
+  "needs-renovation": { en: "Needs Full Renovation", ka: "სრული რემონტი სჭირდება" },
+  "partial-renovation": { en: "Partial Renovation", ka: "ნაწილობრივი რემონტი" },
+  "good": { en: "Good Condition", ka: "კარგ მდგომარეობაში" },
 };
 
 const workTypeLabels: Record<string, { en: string; ka: string }> = {
@@ -920,6 +930,11 @@ export default function JobDetailClient() {
     return label ? label[locale as "en" | "ka"] : type;
   };
 
+  const getConditionLabel = (condition: string) => {
+    const label = conditionLabels[condition];
+    return label ? label[locale as "en" | "ka"] : condition;
+  };
+
   const getWorkTypeLabel = (type: string) => {
     const label = workTypeLabels[type];
     return label ? label[locale as "en" | "ka"] : type;
@@ -1302,6 +1317,7 @@ export default function JobDetailClient() {
 
               {/* Property Specs */}
               {(job.propertyType ||
+                job.currentCondition ||
                 job.areaSize ||
                 job.roomCount ||
                 job.floorCount ||
@@ -1325,6 +1341,13 @@ export default function JobDetailClient() {
                         icon={<Home className="w-5 h-5" />}
                         label={locale === "ka" ? "ტიპი" : "Type"}
                         value={getPropertyTypeLabel(job.propertyType)}
+                      />
+                    )}
+                    {job.currentCondition && (
+                      <SpecCard
+                        icon={<Hammer className="w-5 h-5" />}
+                        label={locale === "ka" ? "მდგომარეობა" : "Condition"}
+                        value={getConditionLabel(job.currentCondition)}
                       />
                     )}
                     {job.areaSize && (

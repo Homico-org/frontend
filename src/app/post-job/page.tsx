@@ -27,6 +27,7 @@ import {
 import PropertyTypeSelector, { PropertyType } from "@/components/post-job/PropertyTypeSelector";
 import BudgetSelector, { BudgetType } from "@/components/post-job/BudgetSelector";
 import TimingSelector, { Timing } from "@/components/post-job/TimingSelector";
+import ConditionSelector, { PropertyCondition, categoriesNeedingCondition } from "@/components/post-job/ConditionSelector";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 
@@ -140,6 +141,7 @@ function PostJobPageContent() {
     description: "",
     location: "",
     propertyType: "apartment" as PropertyType,
+    propertyCondition: "" as PropertyCondition | "",
     budgetType: "fixed" as BudgetType,
     budgetMin: "",
     budgetMax: "",
@@ -293,6 +295,7 @@ function PostJobPageContent() {
           description: job.description || "",
           location: job.location || "",
           propertyType: job.propertyType || "apartment",
+          propertyCondition: job.currentCondition || "",
           budgetType: job.budgetType || "fixed",
           budgetMin: job.budgetMin?.toString() || job.budgetAmount?.toString() || "",
           budgetMax: job.budgetMax?.toString() || "",
@@ -404,6 +407,28 @@ function PostJobPageContent() {
         });
       }
 
+      // Calculate deadline based on timing selection
+      const getDeadlineFromTiming = (timing: string): string | null => {
+        const now = new Date();
+        switch (timing) {
+          case 'asap':
+            // 3 days from now for urgent/ASAP
+            return new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
+          case 'this_week':
+            // 7 days from now
+            return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+          case 'this_month':
+            // 30 days from now
+            return new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+          case 'flexible':
+          default:
+            // No deadline for flexible
+            return null;
+        }
+      };
+
+      const deadline = getDeadlineFromTiming(formData.timing);
+
       const jobData: Record<string, unknown> = {
         title: formData.title,
         description: formData.description,
@@ -416,12 +441,18 @@ function PostJobPageContent() {
         budgetMax: formData.budgetType === "negotiable" ? 0 : (formData.budgetMax ? Number(formData.budgetMax) : Number(formData.budgetMin)),
       };
 
+      // Add deadline if not flexible
+      if (deadline) {
+        jobData.deadline = deadline;
+      }
+
       // Add category-specific fields if they have values
       if (formData.cadastralId) jobData.cadastralId = formData.cadastralId;
       if (formData.areaSize) jobData.areaSize = Number(formData.areaSize);
       if (formData.pointsCount) jobData.pointsCount = Number(formData.pointsCount);
       if (formData.roomCount) jobData.roomCount = Number(formData.roomCount);
       if (formData.landArea) jobData.landArea = Number(formData.landArea);
+      if (formData.propertyCondition) jobData.currentCondition = formData.propertyCondition;
 
       const allMedia = [...existingMedia, ...uploadedMedia];
       if (allMedia.length > 0) {
@@ -480,7 +511,7 @@ function PostJobPageContent() {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col min-h-screen pb-28 lg:pb-14">
       {/* Progress Header - Compact */}
       <div className="bg-white border-b border-neutral-100 sticky top-14 z-40">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-2.5">
@@ -711,6 +742,26 @@ function PostJobPageContent() {
                       {locale === "ka"
                         ? "მიუთითე მიწის ნაკვეთის ფართობი კვადრატულ მეტრებში."
                         : "Specify the land plot area in square meters."}
+                    </p>
+                  </div>
+                )}
+
+                {/* Property Condition Selector - For relevant categories */}
+                {selectedCategory && categoriesNeedingCondition.includes(selectedCategory) && (
+                  <div className="bg-white rounded-xl border border-neutral-200 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <label className="block text-sm font-medium text-neutral-900 mb-3">
+                      {locale === "ka" ? "ობიექტის მდგომარეობა" : "Property Condition"}
+                    </label>
+                    <ConditionSelector
+                      value={formData.propertyCondition}
+                      onChange={(value) => updateFormData("propertyCondition", value)}
+                      locale={locale as "en" | "ka"}
+                      category={selectedCategory}
+                    />
+                    <p className="mt-3 text-[11px] text-neutral-500 leading-relaxed">
+                      {locale === "ka"
+                        ? "ობიექტის მდგომარეობა დაგვეხმარება ზუსტი შეფასების მომზადებაში."
+                        : "Property condition helps professionals provide accurate estimates."}
                     </p>
                   </div>
                 )}
@@ -1027,13 +1078,24 @@ function PostJobPageContent() {
                     </button>
                   </div>
                   <p className="text-xs font-medium text-neutral-900 line-clamp-1">{formData.location}</p>
-                  <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-neutral-100 text-neutral-700">
-                    {formData.propertyType === "apartment" && (locale === "ka" ? "ბინა" : "Apartment")}
-                    {formData.propertyType === "house" && (locale === "ka" ? "სახლი" : "House")}
-                    {formData.propertyType === "office" && (locale === "ka" ? "ოფისი" : "Office")}
-                    {formData.propertyType === "building" && (locale === "ka" ? "შენობა" : "Building")}
-                    {formData.propertyType === "other" && (locale === "ka" ? "სხვა" : "Other")}
-                  </span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-neutral-100 text-neutral-700">
+                      {formData.propertyType === "apartment" && (locale === "ka" ? "ბინა" : "Apartment")}
+                      {formData.propertyType === "house" && (locale === "ka" ? "სახლი" : "House")}
+                      {formData.propertyType === "office" && (locale === "ka" ? "ოფისი" : "Office")}
+                      {formData.propertyType === "building" && (locale === "ka" ? "შენობა" : "Building")}
+                      {formData.propertyType === "other" && (locale === "ka" ? "სხვა" : "Other")}
+                    </span>
+                    {formData.propertyCondition && (
+                      <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#C4735B]/10 text-[#C4735B]">
+                        {formData.propertyCondition === "shell" && (locale === "ka" ? "თეთრი კარკასი" : "Shell")}
+                        {formData.propertyCondition === "black-frame" && (locale === "ka" ? "შავი კარკასი" : "Black Frame")}
+                        {formData.propertyCondition === "needs-renovation" && (locale === "ka" ? "სრული რემონტი" : "Full Renovation")}
+                        {formData.propertyCondition === "partial-renovation" && (locale === "ka" ? "ნაწილობრივი" : "Partial")}
+                        {formData.propertyCondition === "good" && (locale === "ka" ? "კარგი" : "Good")}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="bg-white rounded-xl border border-neutral-200 p-3">
@@ -1135,7 +1197,7 @@ function PostJobPageContent() {
       </main>
 
       {/* Footer Navigation - Compact */}
-      <footer className="sticky bottom-0 bg-white border-t border-neutral-100 z-40">
+      <footer className="fixed bottom-14 lg:bottom-0 left-0 right-0 bg-white border-t border-neutral-100 z-40">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-2.5">
           <div className="flex items-center justify-between">
             <button

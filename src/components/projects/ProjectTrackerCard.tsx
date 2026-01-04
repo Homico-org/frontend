@@ -21,17 +21,21 @@ import {
   Paperclip,
   Phone,
   Play,
+  RotateCcw,
   Send,
   Vote,
   Package,
   Star,
   AlertCircle,
+  BadgeCheck,
+  X,
 } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import PollsTab from "@/components/polls/PollsTab";
 import ProjectWorkspace from "@/components/projects/ProjectWorkspace";
+import MediaLightbox, { MediaItem } from "@/components/common/MediaLightbox";
 
 // Homico Terracotta Color Palette - Light & Fresh
 const TERRACOTTA = {
@@ -97,6 +101,7 @@ interface ProjectTracking {
   startedAt?: string;
   expectedEndDate?: string;
   completedAt?: string;
+  clientConfirmedAt?: string;
   comments: ProjectComment[];
   attachments: ProjectAttachment[];
   agreedPrice?: number;
@@ -219,15 +224,28 @@ function InlineStageStepper({
   isPro,
   isUpdating,
   onStageChange,
+  onClientConfirm,
+  onClientRequestChanges,
+  isClientConfirmed,
+  hasReview,
+  onLeaveReview,
 }: {
   currentStage: ProjectStage;
   locale: string;
   isPro: boolean;
   isUpdating: boolean;
   onStageChange: (stage: ProjectStage) => void;
+  onClientConfirm?: () => void;
+  onClientRequestChanges?: () => void;
+  isClientConfirmed?: boolean;
+  hasReview?: boolean;
+  onLeaveReview?: () => void;
 }) {
   const currentIndex = getStageIndex(currentStage);
   const progress = STAGES[currentIndex]?.progress || 0;
+  const isClient = !isPro;
+  const isProjectCompleted = currentStage === "completed";
+  const showLeaveReviewButton = isClient && isProjectCompleted && isClientConfirmed && !hasReview;
 
   return (
     <div className="p-4">
@@ -255,10 +273,63 @@ function InlineStageStepper({
         </div>
       </div>
 
+      {/* Client Actions when project is completed but not yet confirmed */}
+      {isClient && isProjectCompleted && !isClientConfirmed && (
+        <div className="mb-4 p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+          <p className="text-sm font-medium text-green-800 dark:text-green-300 mb-3">
+            {locale === "ka"
+              ? "სპეციალისტმა დაასრულა სამუშაო. გთხოვთ გადაამოწმოთ და დაადასტუროთ."
+              : "The professional has marked the work as complete. Please review and confirm."}
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={onClientConfirm}
+              disabled={isUpdating}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90 disabled:opacity-50"
+              style={{ backgroundColor: "#10B981" }}
+            >
+              {isUpdating ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <BadgeCheck className="w-4 h-4" />
+              )}
+              {locale === "ka" ? "დადასტურება და დახურვა" : "Confirm & Close"}
+            </button>
+            <button
+              onClick={onClientRequestChanges}
+              disabled={isUpdating}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-all disabled:opacity-50"
+            >
+              <RotateCcw className="w-4 h-4" />
+              {locale === "ka" ? "ცვლილებები" : "Request Changes"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Leave Review button when project is confirmed but no review yet */}
+      {showLeaveReviewButton && (
+        <div className="mb-4 p-3 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
+          <p className="text-sm font-medium text-yellow-800 dark:text-yellow-300 mb-3">
+            {locale === "ka"
+              ? "პროექტი დასრულებულია. დატოვეთ შეფასება სპეციალისტზე."
+              : "Project is complete. Leave a review for the professional."}
+          </p>
+          <button
+            onClick={onLeaveReview}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90 w-full"
+            style={{ backgroundColor: TERRACOTTA.primary }}
+          >
+            <Star className="w-4 h-4" />
+            {locale === "ka" ? "შეფასების დატოვება" : "Leave a Review"}
+          </button>
+        </div>
+      )}
+
       {/* Stage Pills - Scrollable on mobile */}
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
         {STAGES.map((stage, index) => {
-          const isCompleted = index < currentIndex;
+          const isStageCompleted = index < currentIndex;
           const isCurrent = index === currentIndex;
           const isNext = index === currentIndex + 1;
           const canAdvance = isPro && isNext && !isUpdating;
@@ -271,7 +342,7 @@ function InlineStageStepper({
               className={`
                 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium
                 whitespace-nowrap transition-all duration-200 flex-shrink-0
-                ${isCompleted
+                ${isStageCompleted
                   ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
                   : isCurrent
                     ? 'text-white shadow-sm'
@@ -287,7 +358,7 @@ function InlineStageStepper({
             >
               {isUpdating && isCurrent ? (
                 <Loader2 className="w-3 h-3 animate-spin" />
-              ) : isCompleted ? (
+              ) : isStageCompleted ? (
                 <Check className="w-3 h-3" />
               ) : (
                 stage.icon
@@ -311,28 +382,36 @@ function TabButton({
   icon,
   label,
   badge,
+  disabled,
+  disabledTooltip,
 }: {
   active: boolean;
   onClick: () => void;
   icon: React.ReactNode;
   label: string;
   badge?: number;
+  disabled?: boolean;
+  disabledTooltip?: string;
 }) {
   return (
     <button
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      title={disabled ? disabledTooltip : undefined}
       className={`
         relative flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-all duration-200
-        ${active
-          ? ''
-          : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300'
+        ${disabled
+          ? 'text-neutral-300 dark:text-neutral-600 cursor-not-allowed opacity-50'
+          : active
+            ? ''
+            : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300'
         }
       `}
-      style={{ color: active ? TERRACOTTA.primary : undefined }}
+      style={{ color: active && !disabled ? TERRACOTTA.primary : undefined }}
     >
       {icon}
       <span className="hidden sm:inline">{label}</span>
-      {badge !== undefined && badge > 0 && (
+      {badge !== undefined && badge > 0 && !disabled && (
         <span
           className="min-w-[18px] h-[18px] rounded-full text-[10px] font-bold text-white flex items-center justify-center px-1"
           style={{ backgroundColor: TERRACOTTA.primary }}
@@ -341,7 +420,7 @@ function TabButton({
         </span>
       )}
       {/* Active indicator */}
-      {active && (
+      {active && !disabled && (
         <div
           className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full"
           style={{ backgroundColor: TERRACOTTA.primary }}
@@ -372,6 +451,9 @@ export default function ProjectTrackerCard({
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadPollsCount, setUnreadPollsCount] = useState(0);
+  const [unreadMaterialsCount, setUnreadMaterialsCount] = useState(0);
 
   // Refs
   const socketRef = useRef<Socket | null>(null);
@@ -391,6 +473,17 @@ export default function ProjectTrackerCard({
   const [historyFilter, setHistoryFilter] = useState<"all" | "client" | "pro">("all");
   const historyLoadedRef = useRef(false);
 
+  // Lightbox state for image preview
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  // Review modal state
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewText, setReviewText] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [hasSubmittedReview, setHasSubmittedReview] = useState(false);
+
   const currentStageIndex = getStageIndex(localStage);
   const firstImage = job.media?.[0]?.url || job.images?.[0];
   const partnerName = isClient ? project.proId?.name : project.clientId?.name;
@@ -398,23 +491,128 @@ export default function ProjectTrackerCard({
   const partnerTitle = isClient ? project.proId?.title : undefined;
   const partnerPhone = isClient ? project.proId?.phone : undefined;
 
-  // Fetch messages when chat tab is active
+  // Check if project has been started (not just hired)
+  const isProjectStarted = localStage !== "hired";
+  const notStartedTooltip = locale === "ka"
+    ? "პროექტი ჯერ არ დაწყებულა"
+    : "Project not started yet";
+
+  // Helper to check if attachment is an image
+  const isImageAttachment = useCallback((attachment: string): boolean => {
+    return !!(
+      attachment.match(/\.(jpg|jpeg|png|gif|webp)$/i) ||
+      attachment.includes("/image/upload/") ||
+      (attachment.includes("cloudinary") && !attachment.includes("/raw/"))
+    );
+  }, []);
+
+  // Collect all image attachments from messages for lightbox
+  const allImageAttachments = useMemo((): MediaItem[] => {
+    const images: MediaItem[] = [];
+    messages.forEach((msg) => {
+      msg.attachments?.forEach((attachment) => {
+        if (isImageAttachment(attachment)) {
+          images.push({
+            url: storage.getFileUrl(attachment),
+            type: "image",
+          });
+        }
+      });
+    });
+    return images;
+  }, [messages, isImageAttachment]);
+
+  // Open lightbox for a specific image
+  const openLightbox = useCallback((imageUrl: string) => {
+    const index = allImageAttachments.findIndex((img) => img.url === imageUrl);
+    if (index !== -1) {
+      setLightboxIndex(index);
+      setLightboxOpen(true);
+    }
+  }, [allImageAttachments]);
+
+  // Check if client has already submitted a review for this job
   useEffect(() => {
-    if (activeTab === 'chat' && !messagesLoadedRef.current) {
+    if (!isClient || !user) return;
+
+    const checkReview = async () => {
+      try {
+        const response = await api.get(`/reviews/check/job/${job._id}`);
+        if (response.data?.hasReview) {
+          setHasSubmittedReview(true);
+        }
+      } catch {
+        // Ignore errors - just means we couldn't check
+      }
+    };
+
+    checkReview();
+  }, [isClient, user, job._id]);
+
+  // Fetch messages when chat tab is active or when project starts
+  useEffect(() => {
+    if (isProjectStarted && !messagesLoadedRef.current) {
       fetchMessages();
     }
-  }, [activeTab]);
+  }, [isProjectStarted]);
+
+  // Also fetch when switching to chat tab if not loaded
+  useEffect(() => {
+    if (activeTab === 'chat' && !messagesLoadedRef.current && isProjectStarted) {
+      fetchMessages();
+    }
+  }, [activeTab, isProjectStarted]);
+
+  // Clear unread count and mark messages as read when chat tab is opened
+  useEffect(() => {
+    if (activeTab === 'chat' && unreadCount > 0) {
+      setUnreadCount(0);
+      // Mark messages as read on backend
+      api.post(`/jobs/projects/${job._id}/messages/read`).catch(() => {
+        // Silently fail - not critical
+      });
+    }
+  }, [activeTab, unreadCount, job._id]);
+
+  // Clear polls unread count when polls tab is opened
+  useEffect(() => {
+    if (activeTab === 'polls' && unreadPollsCount > 0) {
+      setUnreadPollsCount(0);
+      api.post(`/jobs/projects/${job._id}/polls/viewed`).catch(() => {});
+    }
+  }, [activeTab, unreadPollsCount, job._id]);
+
+  // Clear materials unread count when materials tab is opened
+  useEffect(() => {
+    if (activeTab === 'materials' && unreadMaterialsCount > 0) {
+      setUnreadMaterialsCount(0);
+      api.post(`/jobs/projects/${job._id}/materials/viewed`).catch(() => {});
+    }
+  }, [activeTab, unreadMaterialsCount, job._id]);
+
+  // Fetch unread counts on mount
+  useEffect(() => {
+    if (isProjectStarted) {
+      api.get(`/jobs/projects/${job._id}/unread-counts`)
+        .then((response) => {
+          setUnreadCount(response.data.chat || 0);
+          setUnreadPollsCount(response.data.polls || 0);
+          setUnreadMaterialsCount(response.data.materials || 0);
+        })
+        .catch(() => {});
+    }
+  }, [isProjectStarted, job._id]);
 
   // Fetch history when history tab is active
   useEffect(() => {
-    if (activeTab === 'history' && !historyLoadedRef.current) {
+    if (activeTab === 'history' && !historyLoadedRef.current && isProjectStarted) {
       fetchHistory();
     }
-  }, [activeTab]);
+  }, [activeTab, isProjectStarted]);
 
-  // WebSocket connection for chat
+  // WebSocket connection for chat - Keep connected regardless of active tab (as long as project is started)
   useEffect(() => {
-    if (activeTab !== 'chat' || !user) return;
+    if (!isProjectStarted || !user) return;
 
     const token = localStorage.getItem("access_token");
     if (!token) return;
@@ -435,12 +633,26 @@ export default function ProjectTrackerCard({
     socketRef.current.on("projectMessage", handleNewMessage);
     socketRef.current.on("projectTyping", handleTyping);
 
+    // Handle poll updates
+    socketRef.current.on("projectPollUpdate", (data: { type: string; poll: any }) => {
+      if (activeTab !== 'polls') {
+        setUnreadPollsCount((prev) => prev + 1);
+      }
+    });
+
+    // Handle materials updates
+    socketRef.current.on("projectMaterialsUpdate", (data: { type: string }) => {
+      if (activeTab !== 'materials') {
+        setUnreadMaterialsCount((prev) => prev + 1);
+      }
+    });
+
     return () => {
       socketRef.current?.emit("leaveProjectChat", job._id);
       socketRef.current?.disconnect();
       socketRef.current = null;
     };
-  }, [activeTab, user, job._id]);
+  }, [isProjectStarted, user, job._id, activeTab]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -456,7 +668,14 @@ export default function ProjectTrackerCard({
     try {
       setIsLoadingMessages(true);
       const response = await api.get(`/jobs/projects/${job._id}/messages`);
-      setMessages(response.data.messages || []);
+      const fetchedMessages = response.data.messages || [];
+      setMessages(fetchedMessages);
+
+      // Use unread count from API response
+      if (response.data.unreadCount !== undefined) {
+        setUnreadCount(response.data.unreadCount);
+      }
+
       messagesLoadedRef.current = true;
     } catch (error) {
       if (project.comments?.length) {
@@ -497,7 +716,12 @@ export default function ProjectTrackerCard({
       if (prev.some((m) => m._id === message._id)) return prev;
       return [...prev, message];
     });
-  }, [user?.id]);
+
+    // Increment unread count if not on chat tab
+    if (activeTab !== 'chat') {
+      setUnreadCount((prev) => prev + 1);
+    }
+  }, [user?.id, activeTab]);
 
   const handleTyping = useCallback(({ userId, isTyping: typing }: { userId: string; isTyping: boolean }) => {
     if (userId !== user?.id) {
@@ -613,9 +837,123 @@ export default function ProjectTrackerCard({
     }
   };
 
+  // Client confirms completion and closes job (triggers payment)
+  const handleClientConfirm = async () => {
+    setIsUpdatingStage(true);
+    try {
+      await api.post(`/jobs/projects/${job._id}/confirm-completion`);
+      toast.success(
+        locale === "ka" ? "წარმატება" : "Success",
+        locale === "ka" ? "პროექტი დაიხურა. გადახდა მოხდება მალე." : "Project closed. Payment will be processed shortly."
+      );
+      // Show review modal after successful confirmation
+      setShowReviewModal(true);
+      onRefresh?.();
+    } catch (err) {
+      toast.error(
+        locale === "ka" ? "შეცდომა" : "Error",
+        locale === "ka" ? "პროექტი ვერ დაიხურა" : "Failed to close project"
+      );
+    } finally {
+      setIsUpdatingStage(false);
+    }
+  };
+
+  // Submit review for the pro
+  const handleSubmitReview = async () => {
+    if (reviewRating < 1 || reviewRating > 5) return;
+
+    setIsSubmittingReview(true);
+    try {
+      await api.post("/reviews", {
+        jobId: job._id,
+        proId: project.proId._id,
+        rating: reviewRating,
+        text: reviewText.trim() || undefined,
+      });
+      toast.success(
+        locale === "ka" ? "წარმატება" : "Success",
+        locale === "ka" ? "შეფასება გაიგზავნა" : "Review submitted successfully"
+      );
+      setShowReviewModal(false);
+      setHasSubmittedReview(true);
+      onRefresh?.();
+    } catch (err: any) {
+      const message = err?.response?.data?.message;
+      if (message === "Review already exists for this project") {
+        toast.error(
+          locale === "ka" ? "შეცდომა" : "Error",
+          locale === "ka" ? "თქვენ უკვე დატოვეთ შეფასება" : "You have already submitted a review"
+        );
+        setShowReviewModal(false);
+        setHasSubmittedReview(true);
+      } else {
+        toast.error(
+          locale === "ka" ? "შეცდომა" : "Error",
+          locale === "ka" ? "შეფასება ვერ გაიგზავნა" : "Failed to submit review"
+        );
+      }
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
+  // Client requests changes - moves project back to review stage
+  const handleClientRequestChanges = async () => {
+    const previousStage = localStage;
+    setLocalStage("review");
+    setIsUpdatingStage(true);
+
+    try {
+      await api.patch(`/jobs/projects/${job._id}/stage`, { stage: "review" });
+      toast.success(
+        locale === "ka" ? "წარმატება" : "Success",
+        locale === "ka" ? "პროექტი გადატანილია შემოწმებაზე" : "Project moved back for review"
+      );
+    } catch (err) {
+      setLocalStage(previousStage);
+      toast.error(
+        locale === "ka" ? "შეცდომა" : "Error",
+        locale === "ka" ? "სტატუსი ვერ განახლდა" : "Failed to update stage"
+      );
+    } finally {
+      setIsUpdatingStage(false);
+    }
+  };
+
   // Tab content renderers
   const renderOverviewTab = () => (
     <div className="p-4 sm:p-5 space-y-4">
+      {/* Not Started Notice */}
+      {!isProjectStarted && (
+        <div
+          className="flex items-center gap-3 p-4 rounded-xl border-2 border-dashed"
+          style={{ borderColor: TERRACOTTA.light, backgroundColor: TERRACOTTA.bg }}
+        >
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: TERRACOTTA.warm }}
+          >
+            <Play className="w-5 h-5" style={{ color: TERRACOTTA.primary }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-neutral-900 dark:text-white">
+              {locale === "ka" ? "პროექტი ჯერ არ დაწყებულა" : "Project not started yet"}
+            </p>
+            <p className="text-xs text-neutral-500 mt-0.5">
+              {isClient
+                ? (locale === "ka"
+                  ? "დაელოდეთ სპეციალისტს პროექტის დასაწყებად"
+                  : "Wait for the professional to start the project")
+                : (locale === "ka"
+                  ? "დააჭირეთ 'დაწყებული' ღილაკს პროექტის დასაწყებად"
+                  : "Click 'Started' button above to begin the project")
+              }
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Project Info Grid */}
       <div className="grid grid-cols-2 gap-3">
         {/* Started */}
@@ -650,7 +988,7 @@ export default function ProjectTrackerCard({
       </div>
 
       {/* Budget - Clean with terracotta accent */}
-      {(project.agreedPrice || job.budgetAmount || (job.budgetMin && job.budgetMax)) && (
+      {((project.agreedPrice && project.agreedPrice > 0) || (job.budgetAmount && job.budgetAmount > 0) || (job.budgetMin && job.budgetMin > 0 && job.budgetMax && job.budgetMax > 0)) && (
         <div
           className="rounded-xl p-4 border-2"
           style={{
@@ -666,9 +1004,9 @@ export default function ProjectTrackerCard({
               className="text-xl font-bold"
               style={{ color: TERRACOTTA.primary }}
             >
-              {project.agreedPrice
+              {project.agreedPrice && project.agreedPrice > 0
                 ? `₾${project.agreedPrice.toLocaleString()}`
-                : job.budgetAmount
+                : job.budgetAmount && job.budgetAmount > 0
                   ? `₾${job.budgetAmount.toLocaleString()}`
                   : `₾${job.budgetMin?.toLocaleString()}-${job.budgetMax?.toLocaleString()}`
               }
@@ -717,23 +1055,25 @@ export default function ProjectTrackerCard({
                     <div>
                       {/* Attachments */}
                       {msg.attachments?.map((attachment, aIdx) => {
-                        const isImage = attachment.match(/\.(jpg|jpeg|png|gif|webp)$/i) ||
-                          attachment.includes("/image/upload/") ||
-                          (attachment.includes("cloudinary") && !attachment.includes("/raw/"));
+                        const isImage = isImageAttachment(attachment);
+                        const fileUrl = storage.getFileUrl(attachment);
 
                         return (
                           <div key={aIdx} className="mb-1">
                             {isImage ? (
-                              <a href={storage.getFileUrl(attachment)} target="_blank" rel="noopener noreferrer">
+                              <button
+                                onClick={() => openLightbox(fileUrl)}
+                                className="block cursor-zoom-in hover:opacity-90 transition-opacity"
+                              >
                                 <img
-                                  src={storage.getFileUrl(attachment)}
+                                  src={fileUrl}
                                   alt=""
                                   className="max-w-[200px] rounded-xl border border-neutral-200 dark:border-neutral-700"
                                 />
-                              </a>
+                              </button>
                             ) : (
                               <a
-                                href={storage.getFileUrl(attachment)}
+                                href={fileUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-neutral-700 rounded-xl border border-neutral-200 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-600 transition-colors"
@@ -1070,6 +1410,11 @@ export default function ProjectTrackerCard({
           isPro={!isClient}
           isUpdating={isUpdatingStage}
           onStageChange={handleStageChange}
+          onClientConfirm={handleClientConfirm}
+          onClientRequestChanges={handleClientRequestChanges}
+          isClientConfirmed={!!project.clientConfirmedAt}
+          hasReview={hasSubmittedReview}
+          onLeaveReview={() => setShowReviewModal(true)}
         />
       </div>
 
@@ -1086,25 +1431,35 @@ export default function ProjectTrackerCard({
           onClick={() => setActiveTab("chat")}
           icon={<MessageCircle className="w-4 h-4" />}
           label={locale === "ka" ? "ჩატი" : "Chat"}
-          badge={messages.length}
+          badge={unreadCount}
+          disabled={!isProjectStarted}
+          disabledTooltip={notStartedTooltip}
         />
         <TabButton
           active={activeTab === "polls"}
           onClick={() => setActiveTab("polls")}
           icon={<BarChart3 className="w-4 h-4" />}
           label={locale === "ka" ? "გამოკითხვები" : "Polls"}
+          badge={unreadPollsCount}
+          disabled={!isProjectStarted}
+          disabledTooltip={notStartedTooltip}
         />
         <TabButton
           active={activeTab === "materials"}
           onClick={() => setActiveTab("materials")}
           icon={<FolderOpen className="w-4 h-4" />}
           label={locale === "ka" ? "მასალები" : "Materials"}
+          badge={unreadMaterialsCount}
+          disabled={!isProjectStarted}
+          disabledTooltip={notStartedTooltip}
         />
         <TabButton
           active={activeTab === "history"}
           onClick={() => setActiveTab("history")}
           icon={<History className="w-4 h-4" />}
           label={locale === "ka" ? "ისტორია" : "History"}
+          disabled={!isProjectStarted}
+          disabledTooltip={notStartedTooltip}
         />
       </div>
 
@@ -1166,6 +1521,122 @@ export default function ProjectTrackerCard({
           </div>
         </div>
       </div>
+
+      {/* Image Lightbox */}
+      <MediaLightbox
+        items={allImageAttachments}
+        currentIndex={lightboxIndex}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        onIndexChange={setLightboxIndex}
+        showThumbnails={allImageAttachments.length > 1}
+        showCounter={allImageAttachments.length > 1}
+        showInfo={false}
+        getImageUrl={(url) => url}
+        locale={locale as "en" | "ka"}
+      />
+
+      {/* Review Modal */}
+      {showReviewModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                {locale === "ka" ? "შეაფასეთ სპეციალისტი" : "Rate the Professional"}
+              </h3>
+              <button
+                onClick={() => setShowReviewModal(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              >
+                <X className="w-5 h-5 text-neutral-500" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-5 space-y-5">
+              {/* Pro Info */}
+              <div className="flex items-center gap-3">
+                <Avatar
+                  src={partnerAvatar}
+                  name={partnerName}
+                  size="md"
+                  className="w-12 h-12 ring-2 ring-neutral-100 dark:ring-neutral-700"
+                />
+                <div>
+                  <p className="font-semibold text-neutral-900 dark:text-white">{partnerName}</p>
+                  <p className="text-sm text-neutral-500">{partnerTitle}</p>
+                </div>
+              </div>
+
+              {/* Star Rating */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  {locale === "ka" ? "თქვენი შეფასება" : "Your Rating"}
+                </label>
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setReviewRating(star)}
+                      className="p-1 transition-transform hover:scale-110"
+                    >
+                      <Star
+                        className={`w-8 h-8 ${
+                          star <= reviewRating
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "fill-neutral-200 text-neutral-200 dark:fill-neutral-700 dark:text-neutral-700"
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Review Text */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  {locale === "ka" ? "თქვენი კომენტარი (არასავალდებულო)" : "Your Comment (Optional)"}
+                </label>
+                <textarea
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  placeholder={locale === "ka" ? "დაწერეთ თქვენი გამოცდილება..." : "Share your experience..."}
+                  className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-offset-1 resize-none"
+                  style={{ focusRing: TERRACOTTA.primary } as any}
+                  rows={4}
+                />
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center gap-3 px-5 py-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50">
+              <button
+                onClick={() => setShowReviewModal(false)}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors"
+              >
+                {locale === "ka" ? "მოგვიანებით" : "Later"}
+              </button>
+              <button
+                onClick={handleSubmitReview}
+                disabled={isSubmittingReview || reviewRating < 1}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                style={{ backgroundColor: TERRACOTTA.primary }}
+              >
+                {isSubmittingReview ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <Star className="w-4 h-4" />
+                    {locale === "ka" ? "გაგზავნა" : "Submit"}
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
