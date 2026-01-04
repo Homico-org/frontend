@@ -103,16 +103,35 @@ export default function PollsTab({
     <>
       {/* Toolbar */}
       <div className={cn(
-        "flex items-center justify-between gap-2",
+        "flex flex-col gap-3",
         embedded ? "pb-3 mb-3 border-b border-[var(--color-border)]" : "px-4 py-3 border-b border-[var(--color-border)] bg-[var(--color-bg-elevated)]"
       )}>
+        {/* Top row: Title + Create button */}
+        {isPro && (
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-[var(--color-text-secondary)]">
+              {polls.length > 0
+                ? (locale === 'ka' ? `${polls.length} გამოკითხვა` : `${polls.length} poll${polls.length > 1 ? 's' : ''}`)
+                : (locale === 'ka' ? 'გამოკითხვები არ არის' : 'No polls yet')}
+            </span>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90"
+              style={{ backgroundColor: ACCENT }}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              {locale === 'ka' ? 'ახალი' : 'New'}
+            </button>
+          </div>
+        )}
+
         {/* Filter tabs */}
-        {polls.length > 0 ? (
-          <div className="flex gap-1.5 flex-1 overflow-x-auto">
+        {polls.length > 0 && (
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
             <button
               onClick={() => setFilter('all')}
               className={cn(
-                'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors whitespace-nowrap',
+                'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap',
                 filter === 'all'
                   ? 'bg-[#C4735B]/10 text-[#C4735B]'
                   : 'text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)]'
@@ -123,7 +142,7 @@ export default function PollsTab({
             <button
               onClick={() => setFilter('active')}
               className={cn(
-                'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 whitespace-nowrap',
+                'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 whitespace-nowrap',
                 filter === 'active'
                   ? 'bg-[#C4735B]/10 text-[#C4735B]'
                   : 'text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)]'
@@ -135,7 +154,7 @@ export default function PollsTab({
             <button
               onClick={() => setFilter('approved')}
               className={cn(
-                'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 whitespace-nowrap',
+                'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 whitespace-nowrap',
                 filter === 'approved'
                   ? 'bg-emerald-500/10 text-emerald-600'
                   : 'text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)]'
@@ -145,21 +164,6 @@ export default function PollsTab({
               {locale === 'ka' ? 'დამტკიცებული' : 'Approved'} ({approvedPollsCount})
             </button>
           </div>
-        ) : (
-          <span className="text-xs text-[var(--color-text-tertiary)]">
-            {locale === 'ka' ? 'გამოკითხვები არ არის' : 'No polls yet'}
-          </span>
-        )}
-
-        {isPro && (
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90 flex-shrink-0"
-            style={{ backgroundColor: ACCENT }}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{locale === 'ka' ? 'ახალი' : 'New'}</span>
-          </button>
         )}
       </div>
 

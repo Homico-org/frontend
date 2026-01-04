@@ -394,6 +394,8 @@ function ProProfileSetupPageContent() {
   const handleAvatarCropped = (croppedDataUrl: string) => {
     setAvatarPreview(croppedDataUrl);
     setFormData(prev => ({ ...prev, avatar: croppedDataUrl }));
+    // Update AuthContext immediately so avatar reflects everywhere (header, etc.)
+    updateUser({ avatar: croppedDataUrl });
   };
 
   const handleFormChange = (updates: Partial<typeof formData>) => {

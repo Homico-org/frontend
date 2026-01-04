@@ -15,12 +15,17 @@ import {
   Eye,
   FileText,
   FolderOpen,
+  History,
   Loader2,
   MessageCircle,
   Paperclip,
   Phone,
   Play,
   Send,
+  Vote,
+  Package,
+  Star,
+  AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -113,6 +118,54 @@ interface Job {
   budgetMax?: number;
 }
 
+// History event types
+type HistoryEventType =
+  | "stage_changed"
+  | "poll_created"
+  | "poll_voted"
+  | "poll_closed"
+  | "poll_option_selected"
+  | "resource_added"
+  | "resource_removed"
+  | "resource_edited"
+  | "resource_item_added"
+  | "resource_item_removed"
+  | "resource_item_edited"
+  | "resource_reaction"
+  | "attachment_added"
+  | "attachment_removed"
+  | "message_sent"
+  | "project_created"
+  | "project_completed"
+  | "price_updated"
+  | "deadline_updated";
+
+interface HistoryEvent {
+  eventType: HistoryEventType;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  userRole: "client" | "pro" | "system";
+  metadata?: {
+    fromStage?: string;
+    toStage?: string;
+    pollId?: string;
+    pollTitle?: string;
+    optionText?: string;
+    resourceId?: string;
+    resourceName?: string;
+    itemId?: string;
+    itemName?: string;
+    reactionType?: string;
+    fileName?: string;
+    fileUrl?: string;
+    oldValue?: string | number;
+    newValue?: string | number;
+    description?: string;
+  };
+  createdAt: string;
+}
+
 interface ProjectTrackerCardProps {
   job: Job;
   project: ProjectTracking;
@@ -135,7 +188,7 @@ const STAGES: {
   { key: "completed", label: "Done", labelKa: "დასრულებული", icon: <CheckCircle2 className="w-3.5 h-3.5" />, progress: 100 },
 ];
 
-type TabKey = "overview" | "chat" | "polls" | "materials";
+type TabKey = "overview" | "chat" | "polls" | "materials" | "history";
 
 function getStageIndex(stage: ProjectStage): number {
   return STAGES.findIndex((s) => s.key === stage);
@@ -332,6 +385,12 @@ export default function ProjectTrackerCard({
   const [localStage, setLocalStage] = useState<ProjectStage>(project.currentStage);
   const [isUpdatingStage, setIsUpdatingStage] = useState(false);
 
+  // History state
+  const [historyEvents, setHistoryEvents] = useState<HistoryEvent[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [historyFilter, setHistoryFilter] = useState<"all" | "client" | "pro">("all");
+  const historyLoadedRef = useRef(false);
+
   const currentStageIndex = getStageIndex(localStage);
   const firstImage = job.media?.[0]?.url || job.images?.[0];
   const partnerName = isClient ? project.proId?.name : project.clientId?.name;
@@ -343,6 +402,13 @@ export default function ProjectTrackerCard({
   useEffect(() => {
     if (activeTab === 'chat' && !messagesLoadedRef.current) {
       fetchMessages();
+    }
+  }, [activeTab]);
+
+  // Fetch history when history tab is active
+  useEffect(() => {
+    if (activeTab === 'history' && !historyLoadedRef.current) {
+      fetchHistory();
     }
   }, [activeTab]);
 
@@ -407,6 +473,19 @@ export default function ProjectTrackerCard({
       }
     } finally {
       setIsLoadingMessages(false);
+    }
+  };
+
+  const fetchHistory = async () => {
+    try {
+      setIsLoadingHistory(true);
+      const response = await api.get(`/jobs/projects/${job._id}/history`);
+      setHistoryEvents(response.data.history || []);
+      historyLoadedRef.current = true;
+    } catch (error) {
+      console.error("Failed to fetch history:", error);
+    } finally {
+      setIsLoadingHistory(false);
     }
   };
 
@@ -780,6 +859,181 @@ export default function ProjectTrackerCard({
     </div>
   );
 
+  // Helper to get event icon and color
+  const getEventConfig = (eventType: HistoryEventType) => {
+    const configs: Record<HistoryEventType, { icon: React.ReactNode; color: string; bgColor: string; label: string; labelKa: string }> = {
+      stage_changed: { icon: <Play className="w-3.5 h-3.5" />, color: "#3B82F6", bgColor: "rgba(59, 130, 246, 0.1)", label: "Stage Changed", labelKa: "სტატუსი შეიცვალა" },
+      poll_created: { icon: <Vote className="w-3.5 h-3.5" />, color: "#8B5CF6", bgColor: "rgba(139, 92, 246, 0.1)", label: "Poll Created", labelKa: "გამოკითხვა შეიქმნა" },
+      poll_voted: { icon: <Vote className="w-3.5 h-3.5" />, color: "#8B5CF6", bgColor: "rgba(139, 92, 246, 0.1)", label: "Voted", labelKa: "ხმა მისცა" },
+      poll_closed: { icon: <Vote className="w-3.5 h-3.5" />, color: "#6B7280", bgColor: "rgba(107, 114, 128, 0.1)", label: "Poll Closed", labelKa: "გამოკითხვა დაიხურა" },
+      poll_option_selected: { icon: <Check className="w-3.5 h-3.5" />, color: "#10B981", bgColor: "rgba(16, 185, 129, 0.1)", label: "Option Selected", labelKa: "ვარიანტი აირჩიეს" },
+      resource_added: { icon: <Package className="w-3.5 h-3.5" />, color: "#10B981", bgColor: "rgba(16, 185, 129, 0.1)", label: "Resource Added", labelKa: "რესურსი დაემატა" },
+      resource_removed: { icon: <Package className="w-3.5 h-3.5" />, color: "#EF4444", bgColor: "rgba(239, 68, 68, 0.1)", label: "Resource Removed", labelKa: "რესურსი წაიშალა" },
+      resource_edited: { icon: <Package className="w-3.5 h-3.5" />, color: "#F59E0B", bgColor: "rgba(245, 158, 11, 0.1)", label: "Resource Edited", labelKa: "რესურსი რედაქტირდა" },
+      resource_item_added: { icon: <Package className="w-3.5 h-3.5" />, color: "#10B981", bgColor: "rgba(16, 185, 129, 0.1)", label: "Item Added", labelKa: "ელემენტი დაემატა" },
+      resource_item_removed: { icon: <Package className="w-3.5 h-3.5" />, color: "#EF4444", bgColor: "rgba(239, 68, 68, 0.1)", label: "Item Removed", labelKa: "ელემენტი წაიშალა" },
+      resource_item_edited: { icon: <Package className="w-3.5 h-3.5" />, color: "#F59E0B", bgColor: "rgba(245, 158, 11, 0.1)", label: "Item Edited", labelKa: "ელემენტი რედაქტირდა" },
+      resource_reaction: { icon: <Star className="w-3.5 h-3.5" />, color: "#F59E0B", bgColor: "rgba(245, 158, 11, 0.1)", label: "Reaction", labelKa: "რეაქცია" },
+      attachment_added: { icon: <FileText className="w-3.5 h-3.5" />, color: "#06B6D4", bgColor: "rgba(6, 182, 212, 0.1)", label: "File Uploaded", labelKa: "ფაილი აიტვირთა" },
+      attachment_removed: { icon: <FileText className="w-3.5 h-3.5" />, color: "#EF4444", bgColor: "rgba(239, 68, 68, 0.1)", label: "File Removed", labelKa: "ფაილი წაიშალა" },
+      message_sent: { icon: <MessageCircle className="w-3.5 h-3.5" />, color: "#8B5CF6", bgColor: "rgba(139, 92, 246, 0.1)", label: "Message Sent", labelKa: "შეტყობინება გაიგზავნა" },
+      project_created: { icon: <CheckCircle2 className="w-3.5 h-3.5" />, color: "#10B981", bgColor: "rgba(16, 185, 129, 0.1)", label: "Project Created", labelKa: "პროექტი შეიქმნა" },
+      project_completed: { icon: <CheckCircle2 className="w-3.5 h-3.5" />, color: "#10B981", bgColor: "rgba(16, 185, 129, 0.1)", label: "Project Completed", labelKa: "პროექტი დასრულდა" },
+      price_updated: { icon: <AlertCircle className="w-3.5 h-3.5" />, color: "#F59E0B", bgColor: "rgba(245, 158, 11, 0.1)", label: "Price Updated", labelKa: "ფასი განახლდა" },
+      deadline_updated: { icon: <Calendar className="w-3.5 h-3.5" />, color: "#F59E0B", bgColor: "rgba(245, 158, 11, 0.1)", label: "Deadline Updated", labelKa: "ვადა განახლდა" },
+    };
+    return configs[eventType] || { icon: <History className="w-3.5 h-3.5" />, color: "#6B7280", bgColor: "rgba(107, 114, 128, 0.1)", label: eventType, labelKa: eventType };
+  };
+
+  // Generate event description
+  const getEventDescription = (event: HistoryEvent): string => {
+    const meta = event.metadata;
+    switch (event.eventType) {
+      case "stage_changed":
+        const fromLabel = STAGES.find(s => s.key === meta?.fromStage);
+        const toLabel = STAGES.find(s => s.key === meta?.toStage);
+        return locale === "ka"
+          ? `${fromLabel?.labelKa || meta?.fromStage || "—"} → ${toLabel?.labelKa || meta?.toStage}`
+          : `${fromLabel?.label || meta?.fromStage || "—"} → ${toLabel?.label || meta?.toStage}`;
+      case "poll_created":
+        return `"${meta?.pollTitle}"`;
+      case "poll_voted":
+      case "poll_option_selected":
+        return `"${meta?.pollTitle}" - ${meta?.optionText}`;
+      case "resource_added":
+      case "resource_removed":
+      case "resource_edited":
+        return meta?.resourceName || "";
+      case "resource_item_added":
+      case "resource_item_removed":
+      case "resource_item_edited":
+        return `${meta?.itemName} (${meta?.resourceName})`;
+      case "resource_reaction":
+        return `${meta?.reactionType} - ${meta?.itemName}`;
+      case "attachment_added":
+      case "attachment_removed":
+        return meta?.fileName || "";
+      default:
+        return meta?.description || "";
+    }
+  };
+
+  // Format history time
+  const formatHistoryTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return locale === "ka" ? "ახლახანს" : "Just now";
+    if (diffMins < 60) return locale === "ka" ? `${diffMins} წთ წინ` : `${diffMins}m ago`;
+    if (diffHours < 24) return locale === "ka" ? `${diffHours} სთ წინ` : `${diffHours}h ago`;
+    if (diffDays < 7) return locale === "ka" ? `${diffDays} დღე წინ` : `${diffDays}d ago`;
+    return date.toLocaleDateString(locale === "ka" ? "ka-GE" : "en-US", { month: "short", day: "numeric" });
+  };
+
+  const filteredHistory = historyFilter === "all"
+    ? historyEvents
+    : historyEvents.filter(e => e.userRole === historyFilter);
+
+  const renderHistoryTab = () => (
+    <div className="flex flex-col h-[380px] sm:h-[420px]">
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-1 px-4 py-2 border-b border-neutral-100 dark:border-neutral-800">
+        {[
+          { key: "all", label: "All", labelKa: "ყველა" },
+          { key: "client", label: "Client", labelKa: "კლიენტი" },
+          { key: "pro", label: "Pro", labelKa: "სპეციალისტი" },
+        ].map(f => (
+          <button
+            key={f.key}
+            onClick={() => setHistoryFilter(f.key as typeof historyFilter)}
+            className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+              historyFilter === f.key
+                ? "text-white"
+                : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+            }`}
+            style={historyFilter === f.key ? { backgroundColor: TERRACOTTA.primary } : {}}
+          >
+            {locale === "ka" ? f.labelKa : f.label}
+          </button>
+        ))}
+      </div>
+
+      {/* History Timeline */}
+      <div className="flex-1 overflow-y-auto p-4">
+        {isLoadingHistory ? (
+          <div className="flex items-center justify-center h-full">
+            <Loader2 className="w-6 h-6 animate-spin" style={{ color: TERRACOTTA.primary }} />
+          </div>
+        ) : filteredHistory.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-neutral-400">
+            <History className="w-12 h-12 mb-3 opacity-40" />
+            <p className="text-sm font-medium">
+              {locale === "ka" ? "ისტორია ცარიელია" : "No history yet"}
+            </p>
+          </div>
+        ) : (
+          <div className="relative">
+            {/* Timeline Line */}
+            <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-neutral-200 dark:bg-neutral-700" />
+
+            {/* Events */}
+            <div className="space-y-4">
+              {filteredHistory.map((event, idx) => {
+                const config = getEventConfig(event.eventType);
+                const description = getEventDescription(event);
+
+                return (
+                  <div key={idx} className="relative flex items-start gap-3 pl-1">
+                    {/* Icon */}
+                    <div
+                      className="relative z-10 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white dark:ring-neutral-900"
+                      style={{ backgroundColor: config.bgColor, color: config.color }}
+                    >
+                      {config.icon}
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0 pt-0.5">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium text-neutral-900 dark:text-white">
+                          {event.userName}
+                        </span>
+                        <span
+                          className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
+                            event.userRole === "client"
+                              ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                              : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+                          }`}
+                        >
+                          {event.userRole === "client"
+                            ? (locale === "ka" ? "კლიენტი" : "Client")
+                            : (locale === "ka" ? "სპეც." : "Pro")}
+                        </span>
+                      </div>
+                      <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
+                        {locale === "ka" ? config.labelKa : config.label}
+                        {description && (
+                          <span className="text-neutral-500"> · {description}</span>
+                        )}
+                      </p>
+                      <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-1">
+                        {formatHistoryTime(event.createdAt)}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-100 dark:border-neutral-800 shadow-sm hover:shadow-lg transition-shadow duration-300">
       {/* Header with Hero */}
@@ -846,6 +1100,12 @@ export default function ProjectTrackerCard({
           icon={<FolderOpen className="w-4 h-4" />}
           label={locale === "ka" ? "მასალები" : "Materials"}
         />
+        <TabButton
+          active={activeTab === "history"}
+          onClick={() => setActiveTab("history")}
+          icon={<History className="w-4 h-4" />}
+          label={locale === "ka" ? "ისტორია" : "History"}
+        />
       </div>
 
       {/* Tab Content */}
@@ -854,6 +1114,7 @@ export default function ProjectTrackerCard({
         {activeTab === "chat" && renderChatTab()}
         {activeTab === "polls" && renderPollsTab()}
         {activeTab === "materials" && renderMaterialsTab()}
+        {activeTab === "history" && renderHistoryTab()}
       </div>
 
       {/* Bottom Action Bar - Partner Info + Actions */}

@@ -2,7 +2,6 @@
 
 import AddressPicker from "@/components/common/AddressPicker";
 import AuthGuard from "@/components/common/AuthGuard";
-import Header, { HeaderSpacer } from "@/components/common/Header";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useCategories } from "@/contexts/CategoriesContext";
@@ -474,23 +473,16 @@ function PostJobPageContent() {
   // Loading State
   if (authLoading || isLoadingJob) {
     return (
-      <div className="min-h-screen bg-[#FAFAF9] flex flex-col">
-        <Header />
-        <HeaderSpacer />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-12 h-12 rounded-full border-2 border-[#C4735B]/20 border-t-[#C4735B] animate-spin" />
-        </div>
+      <div className="flex-1 flex items-center justify-center">
+        <div className="w-12 h-12 rounded-full border-2 border-[#C4735B]/20 border-t-[#C4735B] animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAF9] flex flex-col">
-      <Header />
-      <HeaderSpacer />
-
+    <div className="flex flex-col">
       {/* Progress Header - Compact */}
-      <div className="bg-white border-b border-neutral-100 sticky top-[60px] z-40">
+      <div className="bg-white border-b border-neutral-100 sticky top-14 z-40">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-2.5">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 text-xs text-neutral-500">

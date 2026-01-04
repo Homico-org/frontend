@@ -208,6 +208,70 @@ const TABS = [
   },
 ];
 
+// Helper to count active filters for Jobs
+function useJobsFilterCount() {
+  const { filters } = useJobsContext();
+  let count = 0;
+  if (filters.category) count++;
+  if (filters.subcategory) count++;
+  if (filters.budgetMin !== null) count++;
+  if (filters.budgetMax !== null) count++;
+  if (filters.propertyType && filters.propertyType !== 'all') count++;
+  if (filters.location && filters.location !== 'all') count++;
+  if (filters.deadline && filters.deadline !== 'all') count++;
+  if (filters.showFavoritesOnly) count++;
+  return count;
+}
+
+// Helper to count active filters for Browse (Portfolio/Professionals)
+function useBrowseFilterCount() {
+  const { selectedCategory, selectedSubcategory, minRating, budgetMin, budgetMax, selectedCity, selectedBudget } = useBrowseContext();
+  let count = 0;
+  // Count category/subcategory as one filter (subcategory implies category)
+  if (selectedSubcategory) {
+    count++;
+  } else if (selectedCategory) {
+    count++;
+  }
+  if (minRating > 0) count++;
+  if (budgetMin !== null || budgetMax !== null) count++; // Count budget range as one filter
+  if (selectedCity && selectedCity !== 'tbilisi') count++;
+  if (selectedBudget && selectedBudget !== 'all') count++;
+  return count;
+}
+
+// Filter button with badge
+function FilterButton({ onClick, filterCount }: { onClick: () => void; filterCount: number }) {
+  return (
+    <button
+      onClick={onClick}
+      className="lg:hidden relative flex items-center justify-center w-10 h-10 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
+      style={filterCount > 0 ? { borderColor: ACCENT_COLOR, color: ACCENT_COLOR } : {}}
+    >
+      <Filter className="w-5 h-5" />
+      {filterCount > 0 && (
+        <span
+          className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white rounded-full"
+          style={{ backgroundColor: ACCENT_COLOR }}
+        >
+          {filterCount}
+        </span>
+      )}
+    </button>
+  );
+}
+
+// Wrapper components to access context for filter count
+function JobsFilterButton({ onClick }: { onClick: () => void }) {
+  const filterCount = useJobsFilterCount();
+  return <FilterButton onClick={onClick} filterCount={filterCount} />;
+}
+
+function BrowseFilterButton({ onClick }: { onClick: () => void }) {
+  const filterCount = useBrowseFilterCount();
+  return <FilterButton onClick={onClick} filterCount={filterCount} />;
+}
+
 function BrowseLayoutContent({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -326,12 +390,45 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
 
         {/* Scrollable Content */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 bg-white dark:bg-neutral-950">
+          {/* Mobile Sticky Search Bar */}
+          <div className="lg:hidden sticky top-0 z-20 bg-white dark:bg-neutral-950 border-b border-neutral-100 dark:border-neutral-800 px-3 py-2">
+            <div className="flex items-center gap-2">
+              <div className="flex-1">
+                {isJobsPage ? (
+                  <JobsSearchInput />
+                ) : isProfessionalsPage ? (
+                  <BrowseSearchInput
+                    placeholder={
+                      locale === "ka"
+                        ? "სპეციალისტის ძებნა..."
+                        : "Search professionals..."
+                    }
+                  />
+                ) : (
+                  <BrowseSearchInput
+                    placeholder={
+                      locale === "ka"
+                        ? "ნამუშევრის ძებნა..."
+                        : "Search portfolio..."
+                    }
+                  />
+                )}
+              </div>
+              {/* Mobile Filter Button with Badge */}
+              {isJobsPage ? (
+                <JobsFilterButton onClick={() => setShowMobileFilters(true)} />
+              ) : (
+                <BrowseFilterButton onClick={() => setShowMobileFilters(true)} />
+              )}
+            </div>
+          </div>
+
           <div className="p-3 sm:p-4 lg:p-6">
             <div
               className={`max-w-[1600px] mx-auto ${mounted ? "animate-fade-in" : "opacity-0"}`}
             >
-              {/* Search Bar & Filter - Compact & Distinctive */}
-              <div className="mb-4 sm:mb-5">
+              {/* Desktop Search Bar - not sticky */}
+              <div className="hidden lg:block mb-4 sm:mb-5">
                 <div className="flex items-center gap-2">
                   <div className="flex-1 max-w-xl">
                     {isJobsPage ? (
@@ -354,13 +451,6 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                       />
                     )}
                   </div>
-                  {/* Mobile Filter Button */}
-                  <button
-                    onClick={() => setShowMobileFilters(true)}
-                    className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
-                  >
-                    <Filter className="w-5 h-5" />
-                  </button>
                 </div>
               </div>
               {children}
@@ -384,7 +474,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
           <div className="absolute left-0 top-0 bottom-0 w-72 max-w-[80vw] bg-white dark:bg-[#0a0a0a] shadow-2xl animate-slide-in-left">
             <div className="flex items-center justify-between p-3 border-b border-neutral-200 dark:border-neutral-800">
               <h3 className="font-semibold text-sm text-neutral-900 dark:text-white">
-                {locale === "ka" ? "ძებნა და ფილტრები" : "Search & Filters"}
+                {locale === "ka" ? "ფილტრები" : "Filters"}
               </h3>
               <button
                 onClick={() => setShowMobileFilters(false)}
@@ -393,29 +483,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                 <X className="w-4 h-4 text-neutral-500" />
               </button>
             </div>
-            {/* Mobile Search Input */}
-            <div className="p-3 border-b border-neutral-200 dark:border-neutral-800">
-              {isJobsPage ? (
-                <JobsSearchInput />
-              ) : isProfessionalsPage ? (
-                <BrowseSearchInput
-                  placeholder={
-                    locale === "ka"
-                      ? "სპეციალისტის ძებნა..."
-                      : "Search professionals..."
-                  }
-                />
-              ) : (
-                <BrowseSearchInput
-                  placeholder={
-                    locale === "ka"
-                      ? "ნამუშევრის ძებნა..."
-                      : "Search portfolio..."
-                  }
-                />
-              )}
-            </div>
-            <div className="overflow-y-auto h-[calc(100%-100px)]">
+            <div className="overflow-y-auto h-[calc(100%-52px)]">
               {isJobsPage ? (
                 <JobsSidebar />
               ) : (

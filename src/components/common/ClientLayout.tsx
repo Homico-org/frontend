@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import AppBackground from './AppBackground';
+import AppLayout from './AppLayout';
 import ProProfileGuard from './ProProfileGuard';
 
 // Dynamically import LoginModal to reduce initial bundle size
@@ -18,7 +19,9 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
     <>
       <AppBackground />
       <ProProfileGuard>
-        {children}
+        <AppLayout>
+          {children}
+        </AppLayout>
       </ProProfileGuard>
       <LoginModal />
     </>

@@ -108,9 +108,17 @@ function CollapsibleSection({
   defaultOpen?: boolean;
   activeCount?: number;
 }) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+  // Auto-open if there are active filters, otherwise use defaultOpen
+  const [isOpen, setIsOpen] = useState(defaultOpen || activeCount > 0);
   const contentRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number | undefined>(undefined);
+
+  // Auto-open when filters become active
+  useEffect(() => {
+    if (activeCount > 0 && !isOpen) {
+      setIsOpen(true);
+    }
+  }, [activeCount, isOpen]);
 
   useEffect(() => {
     if (contentRef.current) {
@@ -215,44 +223,21 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
     filters.deadline !== 'all' ||
     filters.showFavoritesOnly;
 
-  const activeFilterCount = [
-    (filters.budgetMin !== null || filters.budgetMax !== null) ? 1 : 0,
-    filters.propertyType !== 'all' ? 1 : 0,
-    filters.deadline !== 'all' ? 1 : 0,
-    filters.showFavoritesOnly ? 1 : 0,
-  ].reduce((a, b) => a + b, 0);
-
   return (
     <aside className="w-full h-full overflow-y-auto overflow-x-hidden">
       <div className="px-4 py-3">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
-              {locale === 'ka' ? 'ფილტრები' : 'Filters'}
-            </h3>
-            {activeFilterCount > 0 && (
-              <span
-                className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
-                style={{ backgroundColor: ACCENT }}
-              >
-                {activeFilterCount}
-              </span>
-            )}
-          </div>
-          {hasActiveFilters && (
+        {/* Clear filters button */}
+        {hasActiveFilters && (
+          <div className="flex items-center justify-end mb-2">
             <button
               onClick={clearAllFilters}
               className="flex items-center gap-1 text-[11px] font-medium text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
             >
               <RotateCcw className="w-3 h-3" />
-              {locale === 'ka' ? 'გასუფთავება' : 'Clear'}
+              {locale === 'ka' ? 'გასუფთავება' : 'Clear all'}
             </button>
-          )}
-        </div>
-
-        {/* Divider */}
-        <div className="h-px bg-neutral-100 dark:bg-neutral-800 my-3" />
+          </div>
+        )}
 
         {/* Saved Jobs Toggle */}
         <label

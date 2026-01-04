@@ -1751,6 +1751,7 @@ export default function JobDetailClient() {
                           isClient={isOwner || false}
                           userId={user?.id}
                           locale={locale}
+                          embedded={true}
                         />
                       </div>
                     )}

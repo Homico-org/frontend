@@ -3,8 +3,6 @@
 import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
 import EmptyState from '@/components/common/EmptyState';
-import Header, { HeaderSpacer } from '@/components/common/Header';
-import MobileBottomNav from '@/components/common/MobileBottomNav';
 import ProjectTrackerCard, { ProjectStage } from '@/components/projects/ProjectTrackerCard';
 import { ConfirmModal } from '@/components/ui/Modal';
 import { useAuth } from '@/contexts/AuthContext';
@@ -266,29 +264,25 @@ function MyJobsPageContent() {
   // Initial loading skeleton
   if (authLoading || isInitialLoading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-neutral-950">
-        <Header />
-        <HeaderSpacer />
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-          <div className="w-32 h-8 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse mb-2" />
-          <div className="w-64 h-5 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse mb-6" />
-          <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="w-20 h-9 bg-neutral-100 dark:bg-neutral-800 rounded-full animate-pulse flex-shrink-0" />
-            ))}
-          </div>
-          <div className="space-y-4">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-56 sm:h-44 bg-neutral-50 dark:bg-neutral-900 rounded-2xl animate-pulse border border-neutral-100 dark:border-neutral-800" />
-            ))}
-          </div>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+        <div className="w-32 h-8 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse mb-2" />
+        <div className="w-64 h-5 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse mb-6" />
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="w-20 h-9 bg-neutral-100 dark:bg-neutral-800 rounded-full animate-pulse flex-shrink-0" />
+          ))}
+        </div>
+        <div className="space-y-4">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-56 sm:h-44 bg-neutral-50 dark:bg-neutral-900 rounded-2xl animate-pulse border border-neutral-100 dark:border-neutral-800" />
+          ))}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-neutral-950 flex flex-col font-body">
+    <div className="flex flex-col font-body">
       {/* Font imports */}
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
@@ -300,10 +294,6 @@ function MyJobsPageContent() {
           font-family: 'DM Sans', system-ui, sans-serif;
         }
       `}</style>
-
-      {/* ==================== HEADER ==================== */}
-      <Header />
-      <HeaderSpacer />
 
       {/* ==================== MAIN CONTENT ==================== */}
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-6">
@@ -771,9 +761,6 @@ function MyJobsPageContent() {
           scrollbar-width: none;
         }
       `}</style>
-
-      {/* Mobile Bottom Navigation */}
-      <MobileBottomNav />
     </div>
   );
 }

@@ -1,11 +1,8 @@
 'use client';
 
-import AppBackground from '@/components/common/AppBackground';
 import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
 import EmptyState from '@/components/common/EmptyState';
-import Header, { HeaderSpacer } from '@/components/common/Header';
-import MobileBottomNav from '@/components/common/MobileBottomNav';
 import ProjectTrackerCard from '@/components/projects/ProjectTrackerCard';
 import { ConfirmModal } from '@/components/ui/Modal';
 import { useAuth } from '@/contexts/AuthContext';
@@ -285,23 +282,18 @@ function MyWorkPageContent() {
   // Loading State
   if (authLoading || isInitialLoading) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-primary)]">
-        <AppBackground />
-        <Header />
-        <HeaderSpacer />
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <div className="relative w-16 h-16 mx-auto mb-4">
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#C4735B] to-[#A85D48] opacity-20 animate-pulse" />
-              <div className="absolute inset-2 rounded-xl bg-[var(--color-bg-elevated)] flex items-center justify-center">
-                <Briefcase className="w-6 h-6 text-[#C4735B] animate-pulse" />
-              </div>
-              <div className="absolute inset-0 rounded-2xl border-2 border-[#C4735B]/30 animate-spin" style={{ animationDuration: '3s' }} />
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="relative w-16 h-16 mx-auto mb-4">
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#C4735B] to-[#A85D48] opacity-20 animate-pulse" />
+            <div className="absolute inset-2 rounded-xl bg-[var(--color-bg-elevated)] flex items-center justify-center">
+              <Briefcase className="w-6 h-6 text-[#C4735B] animate-pulse" />
             </div>
-            <p className="text-[var(--color-text-secondary)] font-medium">
-              {language === 'ka' ? 'იტვირთება...' : 'Loading...'}
-            </p>
+            <div className="absolute inset-0 rounded-2xl border-2 border-[#C4735B]/30 animate-spin" style={{ animationDuration: '3s' }} />
           </div>
+          <p className="text-[var(--color-text-secondary)] font-medium">
+            {language === 'ka' ? 'იტვირთება...' : 'Loading...'}
+          </p>
         </div>
       </div>
     );
@@ -310,26 +302,21 @@ function MyWorkPageContent() {
   // Error State
   if (error) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-primary)]">
-        <AppBackground />
-        <Header />
-        <HeaderSpacer />
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center max-w-md mx-auto px-4">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-red-500/10 flex items-center justify-center">
-              <AlertTriangle className="w-8 h-8 text-red-500" />
-            </div>
-            <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-2">
-              {language === 'ka' ? 'შეცდომა' : 'Error'}
-            </h3>
-            <p className="text-[var(--color-text-secondary)] mb-6">{error}</p>
-            <button
-              onClick={fetchAllProposals}
-              className="px-6 py-3 rounded-xl bg-[#C4735B] text-white font-medium hover:bg-[#A85D48] transition-all"
-            >
-              {language === 'ka' ? 'ხელახლა ცდა' : 'Try Again'}
-            </button>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-red-500/10 flex items-center justify-center">
+            <AlertTriangle className="w-8 h-8 text-red-500" />
           </div>
+          <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-2">
+            {language === 'ka' ? 'შეცდომა' : 'Error'}
+          </h3>
+          <p className="text-[var(--color-text-secondary)] mb-6">{error}</p>
+          <button
+            onClick={fetchAllProposals}
+            className="px-6 py-3 rounded-xl bg-[#C4735B] text-white font-medium hover:bg-[#A85D48] transition-all"
+          >
+            {language === 'ka' ? 'ხელახლა ცდა' : 'Try Again'}
+          </button>
         </div>
       </div>
     );
@@ -365,11 +352,7 @@ function MyWorkPageContent() {
   const currentTab = tabs.find(t => t.key === activeTab)!;
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-primary)]">
-      <AppBackground />
-      <Header />
-      <HeaderSpacer />
-
+    <div>
       <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-24">
         {/* Header */}
         <div className="mb-6">
@@ -652,8 +635,6 @@ function MyWorkPageContent() {
         isLoading={isWithdrawing}
         loadingLabel={language === 'ka' ? 'მიმდინარეობს...' : 'Withdrawing...'}
       />
-
-      <MobileBottomNav />
     </div>
   );
 }

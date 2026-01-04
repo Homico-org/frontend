@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/common/AuthGuard';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,9 +8,7 @@ import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNotifications, Notification, NotificationType } from '@/contexts/NotificationContext';
 import Header, { HeaderSpacer } from '@/components/common/Header';
-import AppBackground from '@/components/common/AppBackground';
 import {
-  ArrowLeft,
   Bell,
   Check,
   Trash2,
@@ -22,67 +20,230 @@ import {
   CheckCheck,
   Clock,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Filter,
+  X
 } from 'lucide-react';
 
-// Notification type configurations with theme-aware colors
-const notificationConfig: Record<NotificationType, { icon: any; colorClass: string; bgClass: string }> = {
+// Notification type configurations
+const notificationConfig: Record<NotificationType, { icon: any; color: string; bgColor: string }> = {
   new_proposal: {
     icon: Briefcase,
-    colorClass: 'text-blue-600 dark:text-blue-400',
-    bgClass: 'bg-blue-100 dark:bg-blue-500/15',
+    color: '#3B82F6',
+    bgColor: 'rgba(59, 130, 246, 0.1)',
   },
   proposal_accepted: {
     icon: CheckCheck,
-    colorClass: 'text-[#E07B4F] dark:text-[#E8956A]',
-    bgClass: 'bg-[#E07B4F]/10 dark:bg-[#E07B4F]/15',
+    color: '#10B981',
+    bgColor: 'rgba(16, 185, 129, 0.1)',
   },
   proposal_rejected: {
     icon: Briefcase,
-    colorClass: 'text-red-600 dark:text-red-400',
-    bgClass: 'bg-red-100 dark:bg-red-500/15',
+    color: '#EF4444',
+    bgColor: 'rgba(239, 68, 68, 0.1)',
   },
   job_completed: {
     icon: CheckCheck,
-    colorClass: 'text-[#E07B4F] dark:text-[#E8956A]',
-    bgClass: 'bg-[#E07B4F]/10 dark:bg-[#E07B4F]/15',
+    color: '#10B981',
+    bgColor: 'rgba(16, 185, 129, 0.1)',
   },
   job_cancelled: {
     icon: Briefcase,
-    colorClass: 'text-gray-600 dark:text-neutral-400',
-    bgClass: 'bg-gray-100 dark:bg-neutral-500/15',
+    color: '#6B7280',
+    bgColor: 'rgba(107, 114, 128, 0.1)',
   },
   new_message: {
     icon: MessageSquare,
-    colorClass: 'text-violet-600 dark:text-violet-400',
-    bgClass: 'bg-violet-100 dark:bg-violet-500/15',
+    color: '#8B5CF6',
+    bgColor: 'rgba(139, 92, 246, 0.1)',
   },
   new_review: {
     icon: Star,
-    colorClass: 'text-amber-600 dark:text-amber-400',
-    bgClass: 'bg-amber-100 dark:bg-amber-500/15',
+    color: '#F59E0B',
+    bgColor: 'rgba(245, 158, 11, 0.1)',
   },
   account_verified: {
     icon: Shield,
-    colorClass: 'text-[#E07B4F] dark:text-[#E8956A]',
-    bgClass: 'bg-[#E07B4F]/10 dark:bg-[#E07B4F]/15',
+    color: '#10B981',
+    bgColor: 'rgba(16, 185, 129, 0.1)',
   },
   profile_update: {
     icon: Sparkles,
-    colorClass: 'text-cyan-600 dark:text-cyan-400',
-    bgClass: 'bg-cyan-100 dark:bg-cyan-500/15',
+    color: '#06B6D4',
+    bgColor: 'rgba(6, 182, 212, 0.1)',
   },
   system_announcement: {
     icon: Megaphone,
-    colorClass: 'text-orange-600 dark:text-orange-400',
-    bgClass: 'bg-orange-100 dark:bg-orange-500/15',
+    color: '#F97316',
+    bgColor: 'rgba(249, 115, 22, 0.1)',
   },
 };
 
 type FilterKey = 'all' | 'unread' | 'jobs' | 'messages' | 'reviews';
 
+// Swipeable notification card component
+function SwipeableNotificationCard({
+  notification,
+  onDelete,
+  onClick,
+  formatTimeAgo,
+  locale,
+}: {
+  notification: Notification;
+  onDelete: () => void;
+  onClick: () => void;
+  formatTimeAgo: (date: string) => string;
+  locale: string;
+}) {
+  const [translateX, setTranslateX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const startXRef = useRef(0);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const config = notificationConfig[notification.type] || notificationConfig.system_announcement;
+  const Icon = config.icon;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    startXRef.current = e.touches[0].clientX;
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    const currentX = e.touches[0].clientX;
+    const diff = currentX - startXRef.current;
+    // Only allow left swipe (negative values)
+    if (diff < 0) {
+      setTranslateX(Math.max(diff, -100));
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    if (translateX < -60) {
+      // Trigger delete
+      setTranslateX(-100);
+      setTimeout(onDelete, 200);
+    } else {
+      setTranslateX(0);
+    }
+  };
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl">
+      {/* Delete background */}
+      <div
+        className="absolute inset-y-0 right-0 w-24 flex items-center justify-center bg-red-500"
+        style={{ opacity: Math.min(Math.abs(translateX) / 60, 1) }}
+      >
+        <Trash2 className="w-5 h-5 text-white" />
+      </div>
+
+      {/* Card content */}
+      <div
+        ref={cardRef}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onClick={() => translateX === 0 && onClick()}
+        className="relative bg-white dark:bg-neutral-900 transition-transform cursor-pointer active:bg-neutral-50 dark:active:bg-neutral-800"
+        style={{
+          transform: `translateX(${translateX}px)`,
+          transition: isDragging ? 'none' : 'transform 0.2s ease-out',
+        }}
+      >
+        <div className="p-4 flex items-start gap-3">
+          {/* Icon */}
+          <div
+            className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{ backgroundColor: config.bgColor }}
+          >
+            <Icon className="w-5 h-5" style={{ color: config.color }} />
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <h4
+                className={`text-sm font-medium leading-snug ${
+                  !notification.isRead ? 'text-neutral-900 dark:text-white' : 'text-neutral-600 dark:text-neutral-400'
+                }`}
+              >
+                {notification.title}
+              </h4>
+              {!notification.isRead && (
+                <div className="w-2 h-2 rounded-full bg-[#C4735B] flex-shrink-0 mt-1.5" />
+              )}
+            </div>
+            <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-500 line-clamp-2">
+              {notification.message}
+            </p>
+            <div className="mt-2 flex items-center justify-between">
+              <span className="text-[11px] text-neutral-400 dark:text-neutral-600">
+                {formatTimeAgo(notification.createdAt)}
+              </span>
+              {notification.link && (
+                <span className="text-[11px] text-[#C4735B] flex items-center gap-0.5">
+                  {locale === 'ka' ? 'ნახვა' : 'View'}
+                  <ChevronRight className="w-3 h-3" />
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Group notifications by date
+function groupNotificationsByDate(notifications: Notification[], locale: string) {
+  const groups: { label: string; notifications: Notification[] }[] = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const thisWeek = new Date(today);
+  thisWeek.setDate(thisWeek.getDate() - 7);
+
+  const todayGroup: Notification[] = [];
+  const yesterdayGroup: Notification[] = [];
+  const thisWeekGroup: Notification[] = [];
+  const olderGroup: Notification[] = [];
+
+  notifications.forEach((n) => {
+    const date = new Date(n.createdAt);
+    date.setHours(0, 0, 0, 0);
+
+    if (date.getTime() === today.getTime()) {
+      todayGroup.push(n);
+    } else if (date.getTime() === yesterday.getTime()) {
+      yesterdayGroup.push(n);
+    } else if (date >= thisWeek) {
+      thisWeekGroup.push(n);
+    } else {
+      olderGroup.push(n);
+    }
+  });
+
+  if (todayGroup.length > 0) {
+    groups.push({ label: locale === 'ka' ? 'დღეს' : 'Today', notifications: todayGroup });
+  }
+  if (yesterdayGroup.length > 0) {
+    groups.push({ label: locale === 'ka' ? 'გუშინ' : 'Yesterday', notifications: yesterdayGroup });
+  }
+  if (thisWeekGroup.length > 0) {
+    groups.push({ label: locale === 'ka' ? 'ამ კვირაში' : 'This Week', notifications: thisWeekGroup });
+  }
+  if (olderGroup.length > 0) {
+    groups.push({ label: locale === 'ka' ? 'ძველი' : 'Older', notifications: olderGroup });
+  }
+
+  return groups;
+}
+
 function NotificationsPageContent() {
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { openLoginModal } = useAuthModal();
   const { locale } = useLanguage();
   const router = useRouter();
@@ -98,7 +259,7 @@ function NotificationsPageContent() {
   } = useNotifications();
 
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -112,9 +273,10 @@ function NotificationsPageContent() {
     }
   }, [isAuthenticated, fetchNotifications]);
 
-  const filters: { key: FilterKey; label: string; labelKa: string }[] = [
+  const filters: { key: FilterKey; label: string; labelKa: string; count?: number }[] = [
     { key: 'all', label: 'All', labelKa: 'ყველა' },
-    { key: 'unread', label: 'Unread', labelKa: 'წაუკითხავი' },
+    { key: 'unread', label: 'Unread', labelKa: 'წაუკითხავი', count: unreadCount },
+    { key: 'jobs', label: 'Jobs', labelKa: 'სამუშაოები' },
     { key: 'reviews', label: 'Reviews', labelKa: 'შეფასებები' },
   ];
 
@@ -133,7 +295,9 @@ function NotificationsPageContent() {
     }
   });
 
-  const formatTimeAgo = (dateString: string) => {
+  const groupedNotifications = groupNotificationsByDate(filteredNotifications, locale);
+
+  const formatTimeAgo = useCallback((dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
@@ -141,15 +305,15 @@ function NotificationsPageContent() {
     if (diffInSeconds < 60) return locale === 'ka' ? 'ახლახანს' : 'Just now';
     if (diffInSeconds < 3600) {
       const mins = Math.floor(diffInSeconds / 60);
-      return locale === 'ka' ? `${mins} წუთის წინ` : `${mins}m ago`;
+      return locale === 'ka' ? `${mins} წთ წინ` : `${mins}m`;
     }
     if (diffInSeconds < 86400) {
       const hours = Math.floor(diffInSeconds / 3600);
-      return locale === 'ka' ? `${hours} საათის წინ` : `${hours}h ago`;
+      return locale === 'ka' ? `${hours} სთ წინ` : `${hours}h`;
     }
     const days = Math.floor(diffInSeconds / 86400);
-    return locale === 'ka' ? `${days} დღის წინ` : `${days}d ago`;
-  };
+    return locale === 'ka' ? `${days} დღე` : `${days}d`;
+  }, [locale]);
 
   const handleNotificationClick = async (notification: Notification) => {
     if (!notification.isRead) {
@@ -165,288 +329,248 @@ function NotificationsPageContent() {
   };
 
   const handleDeleteAll = async () => {
-    setIsDeleting(true);
     await deleteAllNotifications();
-    setIsDeleting(false);
   };
+
+  const currentFilter = filters.find(f => f.key === activeFilter);
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
         <div className="relative">
-          <div className="w-16 h-16 rounded-full border-2 border-[#E07B4F]/20 dark:border-[#E07B4F]/20 border-t-[#E07B4F] dark:border-t-[#E07B4F] animate-spin" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Bell className="w-6 h-6 text-[#E07B4F] dark:text-[#E8956A] animate-pulse" />
-          </div>
+          <div className="w-12 h-12 rounded-full border-2 border-[#C4735B]/20 border-t-[#C4735B] animate-spin" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pb-20 relative overflow-hidden" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
-      {/* Background with decorative objects */}
-      <AppBackground />
-
-      {/* Main Header */}
+    <div className="min-h-screen bg-neutral-100 dark:bg-neutral-950">
       <Header />
       <HeaderSpacer />
 
-      {/* Page Header Section */}
-      <div
-        className="relative border-b backdrop-blur-xl"
-        style={{
-          backgroundColor: 'rgba(var(--color-bg-secondary-rgb), 0.8)',
-          borderColor: 'var(--color-border)'
-        }}
-      >
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          {/* Back Button */}
-          <button
-            onClick={() => router.back()}
-            className="group inline-flex items-center gap-2 text-sm transition-all duration-300 mb-6"
-            style={{ color: 'var(--color-text-secondary)' }}
-          >
-            <div
-              className="w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-105"
-              style={{
-                background: 'rgba(210, 105, 30, 0.08)',
-                border: '1px solid rgba(210, 105, 30, 0.12)',
-              }}
-            >
-              <ArrowLeft className="h-4 w-4 text-[#E07B4F] dark:text-[#E8956A] group-hover:-translate-x-0.5 transition-transform duration-300" />
+      {/* Sticky Header */}
+      <div className="sticky top-14 z-40 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
+        <div className="max-w-2xl mx-auto">
+          {/* Title Row */}
+          <div className="px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h1 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                {locale === 'ka' ? 'შეტყობინებები' : 'Notifications'}
+              </h1>
+              {unreadCount > 0 && (
+                <span className="px-2 py-0.5 text-xs font-medium bg-[#C4735B] text-white rounded-full">
+                  {unreadCount}
+                </span>
+              )}
             </div>
-            <span className="group-hover:text-[#E07B4F] dark:group-hover:text-[#E8956A] transition-colors">
-              {locale === 'ka' ? 'უკან' : 'Back'}
-            </span>
-          </button>
 
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-4">
-              {/* Animated Bell Icon */}
-              <div className="relative">
-                <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center bg-[#E07B4F]/10 dark:bg-[#E07B4F]/15"
+            {/* Actions */}
+            <div className="flex items-center gap-1">
+              {unreadCount > 0 && (
+                <button
+                  onClick={handleMarkAllRead}
+                  className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  title={locale === 'ka' ? 'ყველას წაკითხვა' : 'Mark all read'}
                 >
-                  <Bell className="w-6 h-6 text-[#E07B4F] dark:text-[#E8956A]" />
-                </div>
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[22px] h-[22px] px-1.5 text-xs font-bold text-white bg-gradient-to-r from-red-500 to-rose-500 rounded-full shadow-lg shadow-red-500/30">
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </span>
-                )}
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                  {locale === 'ka' ? 'შეტყობინებები' : 'Notifications'}
-                </h1>
-                <p className="mt-1 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                  {unreadCount > 0
-                    ? locale === 'ka'
-                      ? `${unreadCount} წაუკითხავი შეტყობინება`
-                      : `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}`
-                    : locale === 'ka'
-                    ? 'ყველა შეტყობინება წაკითხულია'
-                    : 'All caught up'}
-                </p>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-2">
-              <button
-                onClick={handleMarkAllRead}
-                disabled={unreadCount === 0}
-                className="group inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed bg-[#E07B4F]/5 dark:bg-[#E07B4F]/10 border border-[#E07B4F]/20 dark:border-[#E07B4F]/20 text-[#E07B4F] dark:text-[#E8956A] hover:bg-[#E07B4F]/10 dark:hover:bg-[#E07B4F]/20"
-              >
-                <Check className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-                <span className="hidden sm:inline">{locale === 'ka' ? 'ყველას წაკითხვა' : 'Mark all read'}</span>
-              </button>
-              <button
-                onClick={handleDeleteAll}
-                disabled={notifications.length === 0 || isDeleting}
-                className="group inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20"
-              >
-                <Trash2 className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-                <span className="hidden sm:inline">{locale === 'ka' ? 'ყველას წაშლა' : 'Clear all'}</span>
-              </button>
+                  <CheckCheck className="w-5 h-5 text-[#C4735B]" />
+                </button>
+              )}
+              {notifications.length > 0 && (
+                <button
+                  onClick={handleDeleteAll}
+                  className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  title={locale === 'ka' ? 'ყველას წაშლა' : 'Clear all'}
+                >
+                  <Trash2 className="w-5 h-5 text-neutral-400 hover:text-red-500 transition-colors" />
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Filter Pills */}
-          <div className="flex gap-2 mt-6 overflow-x-auto pb-2 scrollbar-hide">
+          {/* Filter Tabs - Desktop */}
+          <div className="hidden sm:flex px-4 pb-3 gap-2">
             {filters.map((filter) => (
               <button
                 key={filter.key}
                 onClick={() => setActiveFilter(filter.key)}
-                className={`relative px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap transition-all duration-300 border ${
+                className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${
                   activeFilter === filter.key
-                    ? 'bg-[#E07B4F] text-white border-[#E07B4F]'
-                    : 'bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-600 dark:text-neutral-400 hover:bg-gray-200 dark:hover:bg-white/10'
+                    ? 'bg-[#C4735B] text-white'
+                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                 }`}
               >
                 {locale === 'ka' ? filter.labelKa : filter.label}
-                {filter.key === 'unread' && unreadCount > 0 && (
-                  <span className={`ml-1.5 px-1.5 py-0.5 text-xs rounded-full ${activeFilter === filter.key ? 'bg-white/20' : 'bg-[#E07B4F]/10 dark:bg-[#E07B4F]/20 text-[#E07B4F] dark:text-[#E8956A]'}`}>
-                    {unreadCount}
+                {filter.count !== undefined && filter.count > 0 && (
+                  <span className={`ml-1.5 px-1.5 py-0.5 text-xs rounded-full ${
+                    activeFilter === filter.key ? 'bg-white/20' : 'bg-[#C4735B]/10 text-[#C4735B]'
+                  }`}>
+                    {filter.count}
                   </span>
                 )}
               </button>
             ))}
           </div>
+
+          {/* Filter Button - Mobile */}
+          <div className="sm:hidden px-4 pb-3">
+            <button
+              onClick={() => setShowFilterMenu(true)}
+              className="flex items-center gap-2 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-lg text-sm font-medium text-neutral-700 dark:text-neutral-300"
+            >
+              <Filter className="w-4 h-4" />
+              <span>{locale === 'ka' ? currentFilter?.labelKa : currentFilter?.label}</span>
+              {activeFilter === 'unread' && unreadCount > 0 && (
+                <span className="px-1.5 py-0.5 text-xs bg-[#C4735B] text-white rounded-full">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
+      {/* Mobile Filter Bottom Sheet */}
+      {showFilterMenu && (
+        <div className="fixed inset-0 z-50 sm:hidden">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowFilterMenu(false)}
+          />
+          <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-neutral-900 rounded-t-2xl animate-slide-up">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                  {locale === 'ka' ? 'ფილტრი' : 'Filter'}
+                </h3>
+                <button
+                  onClick={() => setShowFilterMenu(false)}
+                  className="p-2 -mr-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                >
+                  <X className="w-5 h-5 text-neutral-500" />
+                </button>
+              </div>
+              <div className="space-y-1">
+                {filters.map((filter) => (
+                  <button
+                    key={filter.key}
+                    onClick={() => {
+                      setActiveFilter(filter.key);
+                      setShowFilterMenu(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${
+                      activeFilter === filter.key
+                        ? 'bg-[#C4735B]/10 text-[#C4735B]'
+                        : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                    }`}
+                  >
+                    <span className="font-medium">{locale === 'ka' ? filter.labelKa : filter.label}</span>
+                    <div className="flex items-center gap-2">
+                      {filter.count !== undefined && filter.count > 0 && (
+                        <span className="px-2 py-0.5 text-xs bg-[#C4735B] text-white rounded-full">
+                          {filter.count}
+                        </span>
+                      )}
+                      {activeFilter === filter.key && (
+                        <Check className="w-5 h-5" />
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* Safe area padding */}
+            <div className="h-8" />
+          </div>
+        </div>
+      )}
+
       {/* Notifications List */}
-      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-2xl mx-auto pb-20">
         {isLoading ? (
-          <div className="space-y-4">
+          <div className="p-4 space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div
-                key={i}
-                className="rounded-2xl p-5 animate-pulse backdrop-blur-md"
-                style={{
-                  background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.15) 100%)',
-                  border: '1px solid rgba(210, 105, 30, 0.1)',
-                  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.4)',
-                }}
-              >
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#E07B4F]/8" />
-                  <div className="flex-1 space-y-3">
-                    <div className="h-4 w-3/4 rounded bg-[#E07B4F]/8" />
-                    <div className="h-3 w-1/2 rounded bg-[#E07B4F]/5" />
+              <div key={i} className="bg-white dark:bg-neutral-900 rounded-2xl p-4 animate-pulse">
+                <div className="flex gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-neutral-200 dark:bg-neutral-800" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-3/4 rounded bg-neutral-200 dark:bg-neutral-800" />
+                    <div className="h-3 w-1/2 rounded bg-neutral-100 dark:bg-neutral-800/50" />
                   </div>
                 </div>
               </div>
             ))}
           </div>
         ) : filteredNotifications.length === 0 ? (
-          /* Empty State - Glassmorphic transparent card */
-          <div
-            className="rounded-3xl p-12 text-center backdrop-blur-xl"
-            style={{
-              background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 100%)',
-              border: '1px solid rgba(210, 105, 30, 0.15)',
-              boxShadow: '0 8px 32px rgba(210, 105, 30, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
-            }}
-          >
-            <div
-              className="w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-6"
-              style={{
-                background: 'linear-gradient(135deg, rgba(210, 105, 30, 0.12) 0%, rgba(210, 105, 30, 0.06) 100%)',
-                border: '1px solid rgba(210, 105, 30, 0.1)',
-              }}
-            >
-              <Bell className="h-10 w-10 text-[#E07B4F]/50" />
+          /* Empty State */
+          <div className="px-4 py-16 text-center">
+            <div className="w-20 h-20 mx-auto rounded-2xl bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center mb-4">
+              <Bell className="w-8 h-8 text-neutral-400 dark:text-neutral-600" />
             </div>
-            <h3 className="text-xl font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+            <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-2">
               {activeFilter === 'unread'
-                ? locale === 'ka' ? 'წაუკითხავი შეტყობინებები არ არის' : 'No unread notifications'
-                : locale === 'ka' ? 'შეტყობინებები არ არის' : 'No notifications yet'}
+                ? locale === 'ka' ? 'წაუკითხავი არ არის' : 'All caught up!'
+                : locale === 'ka' ? 'შეტყობინებები არ არის' : 'No notifications'}
             </h3>
-            <p style={{ color: 'var(--color-text-tertiary)' }} className="max-w-sm mx-auto">
-              {locale === 'ka'
-                ? 'როდესაც მიიღებთ შეტყობინებას, ის აქ გამოჩნდება'
-                : "When you receive notifications, they'll appear here"}
+            <p className="text-sm text-neutral-500 dark:text-neutral-500 max-w-xs mx-auto">
+              {activeFilter === 'unread'
+                ? locale === 'ka' ? 'ყველა შეტყობინება წაკითხულია' : "You've read all your notifications"
+                : locale === 'ka' ? 'ახალი შეტყობინებები აქ გამოჩნდება' : "New notifications will appear here"}
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {filteredNotifications.map((notification, index) => {
-              const config = notificationConfig[notification.type] || notificationConfig.system_announcement;
-              const Icon = config.icon;
-
-              return (
-                <div
-                  key={notification._id}
-                  onClick={() => handleNotificationClick(notification)}
-                  className="group relative rounded-2xl p-5 cursor-pointer transition-all duration-300 hover:-translate-y-0.5 backdrop-blur-md"
-                  style={{
-                    background: !notification.isRead
-                      ? 'linear-gradient(145deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.25) 100%)'
-                      : 'linear-gradient(145deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.15) 100%)',
-                    border: !notification.isRead
-                      ? '1px solid rgba(210, 105, 30, 0.2)'
-                      : '1px solid rgba(210, 105, 30, 0.1)',
-                    boxShadow: !notification.isRead
-                      ? '0 4px 20px rgba(210, 105, 30, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6)'
-                      : 'inset 0 1px 0 rgba(255, 255, 255, 0.4)',
-                  }}
-                >
-                  {/* Unread indicator glow */}
-                  {!notification.isRead && (
-                    <div
-                      className="absolute inset-0 rounded-2xl pointer-events-none"
-                      style={{
-                        background: 'linear-gradient(135deg, rgba(210, 105, 30, 0.05) 0%, transparent 50%)',
-                      }}
-                    />
-                  )}
-
-                  <div className="relative flex items-start gap-4">
-                    {/* Icon */}
-                    <div
-                      className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ${config.bgClass}`}
-                    >
-                      <Icon className={`w-5 h-5 ${config.colorClass}`} />
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <h4
-                            className="font-medium text-sm sm:text-base"
-                            style={{ color: !notification.isRead ? 'var(--color-text-primary)' : 'var(--color-text-secondary)' }}
-                          >
-                            {notification.title}
-                          </h4>
-                          <p className="mt-1 text-sm line-clamp-2" style={{ color: 'var(--color-text-tertiary)' }}>
-                            {notification.message}
-                          </p>
-                        </div>
-
-                        {/* Time & Actions */}
-                        <div className="flex items-center gap-3 flex-shrink-0">
-                          <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>{formatTimeAgo(notification.createdAt)}</span>
-                          </div>
-
-                          {/* Delete button */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteNotification(notification._id);
-                            }}
-                            className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-500/10 text-gray-400 dark:text-neutral-500 hover:text-red-500 dark:hover:text-red-400 transition-all duration-300"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Link indicator */}
-                      {notification.link && (
-                        <div className="mt-3 flex items-center gap-1.5 text-xs text-[#E07B4F] dark:text-[#E8956A] group-hover:text-[#D26B3F] dark:group-hover:text-[#E8956A] transition-colors duration-300">
-                          <span>{locale === 'ka' ? 'დეტალების ნახვა' : 'View details'}</span>
-                          <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform duration-300" />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Unread dot */}
-                    {!notification.isRead && (
-                      <div className="absolute top-5 right-5 w-2.5 h-2.5 rounded-full bg-[#E07B4F] dark:bg-[#E8956A] shadow-lg shadow-[#E07B4F]/50 dark:shadow-[#E8956A]/50" />
-                    )}
-                  </div>
+          <div className="py-2">
+            {groupedNotifications.map((group) => (
+              <div key={group.label}>
+                {/* Date Label */}
+                <div className="px-4 py-2 sticky top-[116px] sm:top-[140px] z-10">
+                  <span className="text-xs font-medium text-neutral-500 dark:text-neutral-500 uppercase tracking-wide">
+                    {group.label}
+                  </span>
                 </div>
-              );
-            })}
+
+                {/* Notifications */}
+                <div className="px-4 space-y-2">
+                  {group.notifications.map((notification) => (
+                    <SwipeableNotificationCard
+                      key={notification._id}
+                      notification={notification}
+                      onDelete={() => deleteNotification(notification._id)}
+                      onClick={() => handleNotificationClick(notification)}
+                      formatTimeAgo={formatTimeAgo}
+                      locale={locale}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Swipe hint for mobile */}
+        {filteredNotifications.length > 0 && (
+          <div className="sm:hidden px-4 py-6 text-center">
+            <p className="text-xs text-neutral-400 dark:text-neutral-600">
+              {locale === 'ka' ? 'გადაასრიალე მარცხნივ წასაშლელად' : 'Swipe left to delete'}
+            </p>
           </div>
         )}
       </div>
+
+      {/* Animation styles */}
+      <style jsx>{`
+        @keyframes slide-up {
+          from {
+            transform: translateY(100%);
+          }
+          to {
+            transform: translateY(0);
+          }
+        }
+        .animate-slide-up {
+          animation: slide-up 0.3s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 }

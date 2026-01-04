@@ -163,9 +163,17 @@ function CollapsibleCard({
   defaultOpen?: boolean;
   activeCount?: number;
 }) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+  // Auto-open if there are active filters, otherwise use defaultOpen
+  const [isOpen, setIsOpen] = useState(defaultOpen || activeCount > 0);
   const contentRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number>(0);
+
+  // Auto-open when filters become active
+  useEffect(() => {
+    if (activeCount > 0 && !isOpen) {
+      setIsOpen(true);
+    }
+  }, [activeCount, isOpen]);
 
   useEffect(() => {
     if (contentRef.current) {
@@ -250,6 +258,16 @@ export default function BrowseFiltersSidebar({
   // Track which category accordions are expanded
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
 
+  // Auto-expand parent category when a subcategory is selected
+  useEffect(() => {
+    if (selectedCategory && !expandedCategories[selectedCategory]) {
+      setExpandedCategories(prev => ({
+        ...prev,
+        [selectedCategory]: true,
+      }));
+    }
+  }, [selectedCategory]);
+
   // Local state for price inputs
   const [localMinPrice, setLocalMinPrice] = useState<string>(budgetMin?.toString() || '');
   const [localMaxPrice, setLocalMaxPrice] = useState<string>(budgetMax?.toString() || '');
@@ -311,12 +329,9 @@ export default function BrowseFiltersSidebar({
     <aside className="w-full h-full overflow-y-auto overflow-x-hidden bg-[#FAF9F8]">
       <div className="p-3 space-y-2.5">
 
-        {/* Header Zone */}
-        <div className="flex items-center justify-between mb-1">
-          <h2 className="text-sm font-semibold text-neutral-900">
-            {locale === 'ka' ? 'ფილტრები' : 'Filters'}
-          </h2>
-          {hasActiveFilters && (
+        {/* Clear filters button */}
+        {hasActiveFilters && (
+          <div className="flex items-center justify-end mb-1">
             <button
               onClick={clearAllFilters}
               className="text-xs font-medium transition-colors hover:opacity-80"
@@ -324,8 +339,8 @@ export default function BrowseFiltersSidebar({
             >
               {locale === 'ka' ? 'გასუფთავება' : 'Clear All'}
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Category Accordions Zone */}
         <div className="space-y-2">

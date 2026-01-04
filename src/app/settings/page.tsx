@@ -244,6 +244,8 @@ function SettingsPageContent() {
       const data = await response.json();
       // Update with the actual URL from server
       setFormData(prev => ({ ...prev, avatar: data.url }));
+      // Update AuthContext immediately so avatar reflects everywhere (header, etc.)
+      updateUser({ avatar: data.url });
       setMessage({ type: 'success', text: locale === 'ka' ? 'სურათი აიტვირთა' : 'Image uploaded successfully' });
     } catch {
       setMessage({ type: 'error', text: locale === 'ka' ? 'სურათის ატვირთვა ვერ მოხერხდა' : 'Failed to upload image' });
