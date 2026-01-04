@@ -85,13 +85,14 @@ interface ProjectWorkspaceProps {
   jobId: string;
   locale: string;
   isClient: boolean;
+  embedded?: boolean; // When true, shows content directly without accordion
 }
 
-export default function ProjectWorkspace({ jobId, locale, isClient }: ProjectWorkspaceProps) {
+export default function ProjectWorkspace({ jobId, locale, isClient, embedded = false }: ProjectWorkspaceProps) {
   const { user } = useAuth();
   const toast = useToast();
 
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(embedded); // Auto-expand if embedded
   const [sections, setSections] = useState<WorkspaceSection[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -124,14 +125,19 @@ export default function ProjectWorkspace({ jobId, locale, isClient }: ProjectWor
   }, [jobId]);
 
   useEffect(() => {
-    if (isExpanded && !hasLoaded) {
+    if ((isExpanded || embedded) && !hasLoaded) {
       fetchWorkspace();
     }
-  }, [isExpanded, hasLoaded, fetchWorkspace]);
+  }, [isExpanded, embedded, hasLoaded, fetchWorkspace]);
 
   // Section CRUD
+  const [isSavingSection, setIsSavingSection] = useState(false);
+
   const handleCreateSection = async (title: string, description?: string, attachments?: SectionAttachment[]) => {
+    if (isSavingSection) return; // Prevent double submission
+
     try {
+      setIsSavingSection(true);
       const response = await api.post(`/jobs/projects/${jobId}/workspace/sections`, {
         title,
         description,
@@ -148,6 +154,8 @@ export default function ProjectWorkspace({ jobId, locale, isClient }: ProjectWor
         locale === 'ka' ? 'შეცდომა' : 'Error',
         locale === 'ka' ? 'სექციის შექმნა ვერ მოხერხდა' : 'Failed to create section'
       );
+    } finally {
+      setIsSavingSection(false);
     }
   };
 
@@ -261,6 +269,113 @@ export default function ProjectWorkspace({ jobId, locale, isClient }: ProjectWor
 
   const totalItems = sections.reduce((acc, s) => acc + s.items.length, 0);
 
+  // Render content section (shared between accordion and embedded modes)
+  const renderContent = () => (
+    <>
+      {/* Toolbar */}
+      {!isClient && (
+        <div className={embedded ? "pb-3 mb-3 border-b border-[var(--color-border)]" : "px-4 py-3 border-b border-[var(--color-border)] bg-[var(--color-bg-elevated)]"}>
+          <button
+            onClick={() => setShowSectionModal(true)}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90"
+            style={{ backgroundColor: ACCENT }}
+          >
+            <Plus className="w-4 h-4" />
+            {locale === 'ka' ? 'სექციის დამატება' : 'Add Section'}
+          </button>
+        </div>
+      )}
+
+      {/* Content */}
+      <div className={embedded ? "" : "p-4"}>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: ACCENT, borderTopColor: 'transparent' }} />
+          </div>
+        ) : sections.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-[var(--color-text-tertiary)]">
+            <FolderPlus className="w-12 h-12 mb-3 opacity-40" />
+            <p className="text-sm font-medium">{locale === 'ka' ? 'ჯერ არ არის მასალები' : 'No materials yet'}</p>
+            <p className="text-xs mt-1">
+              {isClient
+                ? (locale === 'ka' ? 'პროფესიონალი დაამატებს მასალებს' : 'Professional will add materials here')
+                : (locale === 'ka' ? 'დაამატე სექციები პროექტის მასალებისთვის' : 'Add sections to organize project materials')
+              }
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {sections.map((section) => (
+              <SectionCard
+                key={section._id}
+                section={section}
+                locale={locale}
+                isClient={isClient}
+                user={user}
+                onToggle={() => toggleSection(section._id)}
+                onEdit={() => setEditingSection(section)}
+                onDelete={() => handleDeleteSection(section._id)}
+                onAddItem={() => setShowItemModal(section._id)}
+                onDeleteItem={(itemId) => handleDeleteItem(section._id, itemId)}
+                onReaction={(itemId, type) => handleReaction(section._id, itemId, type)}
+                activeCommentItem={activeCommentItem}
+                setActiveCommentItem={setActiveCommentItem}
+                commentText={commentText}
+                setCommentText={setCommentText}
+                onAddComment={(itemId) => handleAddComment(section._id, itemId)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  );
+
+  // Render modals (shared between both modes)
+  const renderModals = () => (
+    <>
+      {/* Section Modal */}
+      {(showSectionModal || editingSection) && (
+        <SectionModal
+          locale={locale}
+          section={editingSection}
+          isSaving={isSavingSection}
+          onClose={() => {
+            setShowSectionModal(false);
+            setEditingSection(null);
+          }}
+          onSave={(title, description, attachments) => {
+            if (editingSection) {
+              handleUpdateSection(editingSection._id, title, description, attachments);
+            } else {
+              handleCreateSection(title, description, attachments);
+            }
+          }}
+        />
+      )}
+
+      {/* Item Modal */}
+      {showItemModal && (
+        <ItemModal
+          locale={locale}
+          onClose={() => setShowItemModal(null)}
+          onSave={(itemData) => handleCreateItem(showItemModal!, itemData)}
+        />
+      )}
+    </>
+  );
+
+  // Embedded mode: show content directly
+  if (embedded) {
+    return (
+      <div>
+        {renderContent()}
+        {renderModals()}
+      </div>
+    );
+  }
+
+  // Accordion mode (default)
   return (
     <div className="border-t border-[var(--color-border)]">
       {/* Header Toggle */}
@@ -295,93 +410,12 @@ export default function ProjectWorkspace({ jobId, locale, isClient }: ProjectWor
       {isExpanded && (
         <div className="px-4 pb-4 animate-in slide-in-from-top-2 duration-200">
           <div className="bg-[var(--color-bg-tertiary)]/30 rounded-2xl border border-[var(--color-border)] overflow-hidden">
-            {/* Toolbar */}
-            {!isClient && (
-              <div className="px-4 py-3 border-b border-[var(--color-border)] bg-[var(--color-bg-elevated)]">
-                <button
-                  onClick={() => setShowSectionModal(true)}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90"
-                  style={{ backgroundColor: ACCENT }}
-                >
-                  <Plus className="w-4 h-4" />
-                  {locale === 'ka' ? 'სექციის დამატება' : 'Add Section'}
-                </button>
-              </div>
-            )}
-
-            {/* Content */}
-            <div className="p-4">
-              {isLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: ACCENT, borderTopColor: 'transparent' }} />
-                </div>
-              ) : sections.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-[var(--color-text-tertiary)]">
-                  <FolderPlus className="w-12 h-12 mb-3 opacity-40" />
-                  <p className="text-sm font-medium">{locale === 'ka' ? 'ჯერ არ არის მასალები' : 'No materials yet'}</p>
-                  <p className="text-xs mt-1">
-                    {isClient
-                      ? (locale === 'ka' ? 'პროფესიონალი დაამატებს მასალებს' : 'Professional will add materials here')
-                      : (locale === 'ka' ? 'დაამატე სექციები პროექტის მასალებისთვის' : 'Add sections to organize project materials')
-                    }
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {sections.map((section) => (
-                    <SectionCard
-                      key={section._id}
-                      section={section}
-                      locale={locale}
-                      isClient={isClient}
-                      user={user}
-                      onToggle={() => toggleSection(section._id)}
-                      onEdit={() => setEditingSection(section)}
-                      onDelete={() => handleDeleteSection(section._id)}
-                      onAddItem={() => setShowItemModal(section._id)}
-                      onDeleteItem={(itemId) => handleDeleteItem(section._id, itemId)}
-                      onReaction={(itemId, type) => handleReaction(section._id, itemId, type)}
-                      activeCommentItem={activeCommentItem}
-                      setActiveCommentItem={setActiveCommentItem}
-                      commentText={commentText}
-                      setCommentText={setCommentText}
-                      onAddComment={(itemId) => handleAddComment(section._id, itemId)}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+            {renderContent()}
           </div>
         </div>
       )}
 
-      {/* Section Modal */}
-      {(showSectionModal || editingSection) && (
-        <SectionModal
-          locale={locale}
-          section={editingSection}
-          onClose={() => {
-            setShowSectionModal(false);
-            setEditingSection(null);
-          }}
-          onSave={(title, description, attachments) => {
-            if (editingSection) {
-              handleUpdateSection(editingSection._id, title, description, attachments);
-            } else {
-              handleCreateSection(title, description, attachments);
-            }
-          }}
-        />
-      )}
-
-      {/* Item Modal */}
-      {showItemModal && (
-        <ItemModal
-          locale={locale}
-          onClose={() => setShowItemModal(null)}
-          onSave={(itemData) => handleCreateItem(showItemModal!, itemData)}
-        />
-      )}
+      {renderModals()}
     </div>
   );
 }
@@ -421,6 +455,20 @@ function SectionCard({
   onAddComment: (itemId: string) => void;
 }) {
   const [showMenu, setShowMenu] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  const handleMenuClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (menuButtonRef.current) {
+      const rect = menuButtonRef.current.getBoundingClientRect();
+      setMenuPosition({
+        top: rect.bottom + 4,
+        left: rect.right - 144, // 144 = menu width (w-36 = 9rem = 144px)
+      });
+    }
+    setShowMenu(!showMenu);
+  };
 
   return (
     <div className="bg-[var(--color-bg-elevated)] rounded-xl border border-[var(--color-border)] overflow-hidden">
@@ -453,17 +501,21 @@ function SectionCard({
         </div>
 
         {!isClient && (
-          <div className="relative z-30">
+          <>
             <button
-              onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
+              ref={menuButtonRef}
+              onClick={handleMenuClick}
               className="w-7 h-7 rounded-md flex items-center justify-center text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
             >
               <MoreHorizontal className="w-4 h-4" />
             </button>
             {showMenu && (
               <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-                <div className="absolute right-0 top-full mt-1 z-50 w-36 bg-[var(--color-bg-elevated)] rounded-lg border border-[var(--color-border)] shadow-xl py-1">
+                <div className="fixed inset-0 z-[9998]" onClick={(e) => { e.stopPropagation(); setShowMenu(false); }} />
+                <div
+                  className="fixed z-[9999] w-36 bg-[var(--color-bg-elevated)] rounded-lg border border-[var(--color-border)] shadow-xl py-1"
+                  style={{ top: menuPosition.top, left: menuPosition.left }}
+                >
                   <button
                     onClick={(e) => { e.stopPropagation(); setShowMenu(false); onEdit(); }}
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
@@ -481,7 +533,7 @@ function SectionCard({
                 </div>
               </>
             )}
-          </div>
+          </>
         )}
       </div>
 
@@ -814,11 +866,13 @@ function ItemRow({
 function SectionModal({
   locale,
   section,
+  isSaving,
   onClose,
   onSave,
 }: {
   locale: string;
   section: WorkspaceSection | null;
+  isSaving?: boolean;
   onClose: () => void;
   onSave: (title: string, description?: string, attachments?: SectionAttachment[]) => void;
 }) {
@@ -1000,16 +1054,20 @@ function SectionModal({
         <div className="flex justify-end gap-2 mt-6">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-sm font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
+            disabled={isSaving}
+            className="px-4 py-2 rounded-xl text-sm font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors disabled:opacity-50"
           >
             {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
           </button>
           <button
-            onClick={() => title.trim() && onSave(title.trim(), description.trim() || undefined, attachments.length > 0 ? attachments : undefined)}
-            disabled={!title.trim()}
-            className="px-4 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-50 transition-colors"
+            onClick={() => title.trim() && !isSaving && onSave(title.trim(), description.trim() || undefined, attachments.length > 0 ? attachments : undefined)}
+            disabled={!title.trim() || isSaving}
+            className="px-4 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-50 transition-colors flex items-center gap-2"
             style={{ backgroundColor: ACCENT }}
           >
+            {isSaving && (
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            )}
             {locale === 'ka' ? 'შენახვა' : 'Save'}
           </button>
         </div>

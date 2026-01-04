@@ -4,6 +4,7 @@ import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
 import EmptyState from '@/components/common/EmptyState';
 import Header, { HeaderSpacer } from '@/components/common/Header';
+import MobileBottomNav from '@/components/common/MobileBottomNav';
 import ProjectTrackerCard, { ProjectStage } from '@/components/projects/ProjectTrackerCard';
 import { ConfirmModal } from '@/components/ui/Modal';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,6 +16,8 @@ import {
   AlertTriangle,
   ArrowLeft,
   Briefcase,
+  Check,
+  ChevronDown,
   ChevronRight,
   Clock,
   Edit3,
@@ -139,6 +142,7 @@ function MyJobsPageContent() {
   const [deletingJobId, setDeletingJobId] = useState<string | null>(null);
   const [deleteModalJob, setDeleteModalJob] = useState<Job | null>(null);
   const [renewingJobId, setRenewingJobId] = useState<string | null>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -324,54 +328,87 @@ function MyJobsPageContent() {
             </div>
           </div>
 
-          {/* Quick Links for Mobile - My Proposals */}
-          {(user?.role === 'pro' || user?.role === 'admin') && (
-            <Link
-              href="/my-proposals"
-              className="sm:hidden flex items-center justify-between p-3 mb-4 rounded-xl bg-gradient-to-r from-[#C4735B]/10 to-[#C4735B]/5 border border-[#C4735B]/20"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: ACCENT_COLOR }}>
-                  <Send className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <span className="text-sm font-semibold text-neutral-900 dark:text-white block">
-                    {locale === 'ka' ? 'ჩემი შეთავაზებები' : 'My Proposals'}
-                  </span>
-                  <span className="text-xs text-neutral-500">
-                    {locale === 'ka' ? 'გაგზავნილი შეთავაზებები' : 'Sent proposals'}
-                  </span>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-neutral-400" />
-            </Link>
-          )}
         </div>
 
-        {/* ==================== TABS FILTER ZONE - Scrollable on mobile ==================== */}
-        <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
-          {[
+        {/* ==================== TABS FILTER ZONE ==================== */}
+        {(() => {
+          const tabs = [
             { key: 'all' as StatusFilter, label: locale === 'ka' ? 'ყველა' : 'All' },
             { key: 'open' as StatusFilter, label: locale === 'ka' ? 'აქტიური' : 'Active' },
             { key: 'hired' as StatusFilter, label: locale === 'ka' ? 'დაქირავებული' : 'Hired' },
             { key: 'closed' as StatusFilter, label: locale === 'ka' ? 'დახურული' : 'Closed' },
             { key: 'expired' as StatusFilter, label: locale === 'ka' ? 'ვადაგასული' : 'Expired' },
-          ].map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setStatusFilter(tab.key)}
-              disabled={isFilterLoading}
-              className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all disabled:opacity-50 ${
-                statusFilter === tab.key
-                  ? 'text-white shadow-sm'
-                  : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700'
-              }`}
-              style={statusFilter === tab.key ? { backgroundColor: ACCENT_COLOR } : {}}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+          ];
+          const activeTab = tabs.find(t => t.key === statusFilter) || tabs[0];
+
+          return (
+            <>
+              {/* Mobile: Collapsible Accordion */}
+              <div className="sm:hidden mb-4">
+                <button
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  disabled={isFilterLoading}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 disabled:opacity-50"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-neutral-500 dark:text-neutral-400">
+                      {locale === 'ka' ? 'ფილტრი:' : 'Filter:'}
+                    </span>
+                    <span
+                      className="text-sm font-medium px-2.5 py-0.5 rounded-full text-white"
+                      style={{ backgroundColor: ACCENT_COLOR }}
+                    >
+                      {activeTab.label}
+                    </span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-neutral-500 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isFilterOpen && (
+                  <div className="mt-2 p-2 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-1">
+                    {tabs.map(tab => (
+                      <button
+                        key={tab.key}
+                        onClick={() => {
+                          setStatusFilter(tab.key);
+                          setIsFilterOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                          statusFilter === tab.key
+                            ? 'text-white'
+                            : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                        }`}
+                        style={statusFilter === tab.key ? { backgroundColor: ACCENT_COLOR } : {}}
+                      >
+                        {tab.label}
+                        {statusFilter === tab.key && <Check className="w-4 h-4" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Desktop: Pill Tabs */}
+              <div className="hidden sm:flex items-center gap-2 mb-6">
+                {tabs.map(tab => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setStatusFilter(tab.key)}
+                    disabled={isFilterLoading}
+                    className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all disabled:opacity-50 ${
+                      statusFilter === tab.key
+                        ? 'text-white shadow-sm'
+                        : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700'
+                    }`}
+                    style={statusFilter === tab.key ? { backgroundColor: ACCENT_COLOR } : {}}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </>
+          );
+        })()}
 
         {/* ==================== JOB CARDS ZONE ==================== */}
         {isFilterLoading ? (
@@ -734,6 +771,9 @@ function MyJobsPageContent() {
           scrollbar-width: none;
         }
       `}</style>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </div>
   );
 }

@@ -52,6 +52,7 @@ function SettingsPageContent() {
   const searchParams = useSearchParams();
   const initialTab = searchParams.get('tab') || 'profile';
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [isTabsOpen, setIsTabsOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -1113,23 +1114,24 @@ function SettingsPageContent() {
           </p>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
-          {/* Sidebar - Horizontal tabs on mobile */}
+        {/* Desktop: Sidebar + Content layout */}
+        <div className="hidden sm:flex flex-col md:flex-row gap-4 sm:gap-6">
+          {/* Sidebar - Vertical tabs */}
           <div className="md:w-56 flex-shrink-0">
-            <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible pb-2 md:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
+            <nav className="flex md:flex-col gap-1">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ease-out whitespace-nowrap touch-manipulation ${
+                  className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ease-out whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'bg-[#E07B4F] text-white'
                       : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                   }`}
                 >
                   <tab.icon className="h-4 w-4 flex-shrink-0" />
-                  <span className="hidden sm:inline md:hidden lg:inline">{tab.label}</span>
-                  <span className="sm:hidden md:inline lg:hidden">{tab.label.split(' ')[0]}</span>
+                  <span className="md:hidden lg:inline">{tab.label}</span>
+                  <span className="hidden md:inline lg:hidden">{tab.label.split(' ')[0]}</span>
                 </button>
               ))}
             </nav>
@@ -2029,6 +2031,340 @@ function SettingsPageContent() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Mobile: Accordion Layout */}
+        <div className="sm:hidden space-y-3">
+          {tabs.map((tab) => {
+            const isOpen = activeTab === tab.id;
+            return (
+              <div
+                key={tab.id}
+                className="rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden bg-white dark:bg-neutral-900"
+              >
+                <button
+                  onClick={() => setActiveTab(isOpen ? '' : tab.id)}
+                  className="w-full flex items-center justify-between px-4 py-3.5 text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isOpen ? 'bg-[#E07B4F]' : 'bg-neutral-100 dark:bg-neutral-800'}`}>
+                      <tab.icon className={`h-4 w-4 ${isOpen ? 'text-white' : 'text-neutral-600 dark:text-neutral-400'}`} />
+                    </div>
+                    <span className={`text-sm font-medium ${isOpen ? 'text-[#E07B4F]' : 'text-neutral-900 dark:text-white'}`}>
+                      {tab.label}
+                    </span>
+                  </div>
+                  <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isOpen && (
+                  <div className="px-4 pb-4 border-t border-neutral-100 dark:border-neutral-800">
+                    <div className="pt-4">
+                      {tab.id === 'profile' && (
+                        <div className="space-y-6">
+                          {message && (
+                            <div
+                              className="p-3 rounded-xl text-sm"
+                              style={{
+                                backgroundColor: message.type === 'success'
+                                  ? 'rgba(34, 197, 94, 0.1)'
+                                  : 'rgba(239, 68, 68, 0.1)',
+                                border: `1px solid ${message.type === 'success' ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+                                color: message.type === 'success' ? 'rgb(22, 163, 74)' : 'rgb(220, 38, 38)',
+                              }}
+                            >
+                              {message.text}
+                            </div>
+                          )}
+
+                          {/* Avatar */}
+                          <div className="flex flex-col items-center">
+                            <div className="relative">
+                              <Avatar
+                                src={formData.avatar}
+                                name={formData.name}
+                                size="2xl"
+                                className="ring-2 ring-offset-2 ring-neutral-200 dark:ring-neutral-700"
+                              />
+                              <button
+                                onClick={() => fileInputRef.current?.click()}
+                                className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110"
+                                style={{ backgroundColor: '#E07B4F' }}
+                              >
+                                <Camera className="w-4 h-4 text-white" />
+                              </button>
+                              <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileChange}
+                                className="hidden"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Name */}
+                          <div>
+                            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                              {t('settings.profile.name')}
+                            </label>
+                            <input
+                              type="text"
+                              value={formData.name}
+                              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                              className="w-full px-4 py-3 rounded-xl text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F]/30"
+                              style={{
+                                backgroundColor: 'var(--color-bg-elevated)',
+                                border: '1px solid var(--color-border)',
+                                color: 'var(--color-text-primary)',
+                              }}
+                            />
+                          </div>
+
+                          {/* City */}
+                          <div>
+                            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                              {t('settings.profile.city')}
+                            </label>
+                            <input
+                              type="text"
+                              value={formData.city}
+                              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                              className="w-full px-4 py-3 rounded-xl text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F]/30"
+                              style={{
+                                backgroundColor: 'var(--color-bg-elevated)',
+                                border: '1px solid var(--color-border)',
+                                color: 'var(--color-text-primary)',
+                              }}
+                            />
+                          </div>
+
+                          {/* Save Button */}
+                          <button
+                            onClick={handleSaveProfile}
+                            disabled={isSaving}
+                            className="w-full py-3 rounded-xl font-medium text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                            style={{ backgroundColor: '#E07B4F' }}
+                          >
+                            {isSaving ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                {locale === 'ka' ? 'ინახება...' : 'Saving...'}
+                              </>
+                            ) : (
+                              locale === 'ka' ? 'შენახვა' : 'Save Changes'
+                            )}
+                          </button>
+                        </div>
+                      )}
+
+                      {tab.id === 'notifications' && (
+                        <div className="space-y-4">
+                          {isLoadingNotifications || !notificationData ? (
+                            <div className="py-8 flex justify-center">
+                              <Loader2 className="w-6 h-6 animate-spin text-neutral-400" />
+                            </div>
+                          ) : (
+                            <>
+                              {/* Email Notifications */}
+                              <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
+                                <div className="p-3 flex items-center justify-between" style={{ backgroundColor: 'var(--color-bg-elevated)' }}>
+                                  <div className="flex items-center gap-2">
+                                    <Mail className="w-4 h-4 text-[#E07B4F]" />
+                                    <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                                      {locale === 'ka' ? 'ელ-ფოსტა' : 'Email'}
+                                    </span>
+                                    {notificationData.email && (
+                                      <span className="text-xs px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
+                                        {notificationData.isEmailVerified ? (locale === 'ka' ? 'დადასტურებული' : 'Verified') : (locale === 'ka' ? 'დასადასტურებელი' : 'Unverified')}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {notificationData.email ? (
+                                    <label className="relative inline-flex items-center cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        checked={notificationData.preferences.email.enabled}
+                                        onChange={(e) => updateNotificationPreference('email', 'enabled', e.target.checked)}
+                                      />
+                                      <div className="w-9 h-5 bg-neutral-300 dark:bg-neutral-600 rounded-full peer peer-checked:bg-[#E07B4F] peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" />
+                                    </label>
+                                  ) : (
+                                    <button
+                                      onClick={() => setShowAddEmailModal(true)}
+                                      className="text-xs font-medium text-[#E07B4F]"
+                                    >
+                                      {locale === 'ka' ? 'დამატება' : 'Add'}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Push Notifications */}
+                              <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
+                                <div className="p-3 flex items-center justify-between" style={{ backgroundColor: 'var(--color-bg-elevated)' }}>
+                                  <div className="flex items-center gap-2">
+                                    <Bell className="w-4 h-4 text-violet-500" />
+                                    <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                                      {locale === 'ka' ? 'Push შეტყობინებები' : 'Push Notifications'}
+                                    </span>
+                                  </div>
+                                  <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      className="sr-only peer"
+                                      checked={notificationData.preferences.push.enabled}
+                                      onChange={(e) => updateNotificationPreference('push', 'enabled', e.target.checked)}
+                                    />
+                                    <div className="w-9 h-5 bg-neutral-300 dark:bg-neutral-600 rounded-full peer peer-checked:bg-[#E07B4F] peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" />
+                                  </label>
+                                </div>
+                              </div>
+
+                              {/* SMS Notifications */}
+                              <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
+                                <div className="p-3 flex items-center justify-between" style={{ backgroundColor: 'var(--color-bg-elevated)' }}>
+                                  <div className="flex items-center gap-2">
+                                    <Smartphone className="w-4 h-4 text-green-500" />
+                                    <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                                      {locale === 'ka' ? 'SMS შეტყობინებები' : 'SMS Notifications'}
+                                    </span>
+                                  </div>
+                                  <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      className="sr-only peer"
+                                      checked={notificationData.preferences.sms.enabled}
+                                      onChange={(e) => updateNotificationPreference('sms', 'enabled', e.target.checked)}
+                                    />
+                                    <div className="w-9 h-5 bg-neutral-300 dark:bg-neutral-600 rounded-full peer peer-checked:bg-[#E07B4F] peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" />
+                                  </label>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
+
+                      {tab.id === 'payments' && process.env.NODE_ENV === 'development' && (
+                        <div className="space-y-4">
+                          {isLoadingPayments ? (
+                            <div className="py-8 flex justify-center">
+                              <Loader2 className="w-6 h-6 animate-spin text-neutral-400" />
+                            </div>
+                          ) : paymentMethods.length === 0 ? (
+                            <div className="text-center py-6">
+                              <CreditCard className="w-10 h-10 mx-auto text-neutral-300 dark:text-neutral-600 mb-3" />
+                              <p className="text-sm text-neutral-500 mb-4">
+                                {locale === 'ka' ? 'ბარათები არ არის დამატებული' : 'No cards added yet'}
+                              </p>
+                              <button
+                                onClick={() => setShowAddCardModal(true)}
+                                className="px-4 py-2 bg-[#E07B4F] hover:bg-[#D26B3F] text-white text-sm font-medium rounded-xl transition-all inline-flex items-center gap-2"
+                              >
+                                <CreditCard className="w-4 h-4" />
+                                {locale === 'ka' ? 'ბარათის დამატება' : 'Add Card'}
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="space-y-2">
+                                {paymentMethods.map((method) => (
+                                  <PaymentMethodCard
+                                    key={method.id}
+                                    method={method}
+                                    locale={locale as 'en' | 'ka'}
+                                    onSetDefault={handleSetDefaultCard}
+                                    onDelete={handleDeleteCard}
+                                  />
+                                ))}
+                              </div>
+                              <button
+                                onClick={() => setShowAddCardModal(true)}
+                                className="w-full px-4 py-2.5 border border-dashed border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 text-sm font-medium rounded-xl transition-all hover:border-[#E07B4F] hover:text-[#E07B4F] flex items-center justify-center gap-2"
+                              >
+                                <CreditCard className="w-4 h-4" />
+                                {locale === 'ka' ? 'ახალი ბარათის დამატება' : 'Add New Card'}
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      )}
+
+                      {tab.id === 'security' && (
+                        <PasswordChangeForm
+                          locale={locale as 'en' | 'ka'}
+                          onSubmit={async (currentPassword, newPassword) => {
+                            try {
+                              const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+                              const token = localStorage.getItem('access_token');
+
+                              const res = await fetch(`${API_URL}/users/change-password`, {
+                                method: 'POST',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  Authorization: `Bearer ${token}`,
+                                },
+                                body: JSON.stringify({ currentPassword, newPassword }),
+                              });
+
+                              if (res.ok) {
+                                return { success: true };
+                              } else {
+                                const data = await res.json();
+                                if (res.status === 409) {
+                                  return { success: false, error: locale === 'ka' ? 'მიმდინარე პაროლი არასწორია' : 'Current password is incorrect' };
+                                }
+                                return { success: false, error: data.message };
+                              }
+                            } catch (error: any) {
+                              return { success: false, error: error.message };
+                            }
+                          }}
+                        />
+                      )}
+
+                      {tab.id === 'account' && (
+                        <div className="space-y-4">
+                          {/* Account Info */}
+                          <div
+                            className="p-4 rounded-xl flex items-start gap-3"
+                            style={{
+                              backgroundColor: 'var(--color-bg-elevated)',
+                              border: '1px solid var(--color-border)',
+                            }}
+                          >
+                            <User className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'var(--color-text-tertiary)' }} />
+                            <div>
+                              <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                                {user?.name}
+                              </p>
+                              <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
+                                {user?.email || user?.phone}
+                              </p>
+                              <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
+                                {locale === 'ka' ? 'ანგარიშის ID:' : 'Account ID:'} #{user?.uid || 'N/A'}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Delete Account Button */}
+                          <button
+                            onClick={() => setShowDeleteModal(true)}
+                            className="w-full px-4 py-3 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-xl transition-all flex items-center justify-center gap-2"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            {locale === 'ka' ? 'ანგარიშის წაშლა' : 'Delete Account'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

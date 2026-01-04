@@ -101,7 +101,7 @@ export default function AboutStep({
 
         {/* Avatar Upload Card - REQUIRED */}
         <div className={`
-          bg-[var(--color-bg-elevated)] rounded-2xl p-6 shadow-sm transition-all
+          bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm transition-all
           ${hasAvatar
             ? 'border-2 border-emerald-500/30'
             : 'border-2 border-[#C4735B]/50 ring-4 ring-[#C4735B]/10'
@@ -129,7 +129,7 @@ export default function AboutStep({
             )}
           </div>
 
-          <div className="flex items-center gap-5">
+          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-5">
             {!avatarPreview ? (
               <button
                 type="button"
@@ -193,7 +193,7 @@ export default function AboutStep({
 
         {/* Years of Experience - REQUIRED */}
         <div className={`
-          bg-[var(--color-bg-elevated)] rounded-2xl p-6 shadow-sm transition-all
+          bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm transition-all
           ${validation.experience
             ? 'border-2 border-emerald-500/30'
             : 'border-2 border-[var(--color-border-subtle)]'
@@ -244,7 +244,7 @@ export default function AboutStep({
 
         {/* Bio / About - REQUIRED */}
         <div className={`
-          bg-[var(--color-bg-elevated)] rounded-2xl p-6 shadow-sm transition-all
+          bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm transition-all
           ${validation.bio
             ? 'border-2 border-emerald-500/30'
             : 'border-2 border-[var(--color-border-subtle)]'
@@ -289,7 +289,7 @@ export default function AboutStep({
         </div>
 
         {/* Contact & Social Media - OPTIONAL */}
-        <div className="bg-[var(--color-bg-elevated)] rounded-2xl p-6 shadow-sm border-2 border-[var(--color-border-subtle)]">
+        <div className="bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm border-2 border-[var(--color-border-subtle)]">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <MessageCircle className="w-5 h-5 text-[#C4735B]" />

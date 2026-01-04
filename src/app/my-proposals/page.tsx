@@ -5,36 +5,29 @@ import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
 import EmptyState from '@/components/common/EmptyState';
 import Header, { HeaderSpacer } from '@/components/common/Header';
-import PollsTab from '@/components/polls/PollsTab';
-import ProjectChat from '@/components/projects/ProjectChat';
-import ProjectWorkspace from '@/components/projects/ProjectWorkspace';
+import MobileBottomNav from '@/components/common/MobileBottomNav';
+import ProjectTrackerCard from '@/components/projects/ProjectTrackerCard';
 import { ConfirmModal } from '@/components/ui/Modal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
-import { storage } from '@/services/storage';
 import {
   AlertTriangle,
   ArrowLeft,
   Ban,
-  Briefcase,
-  Building2,
+  Check,
   CheckCheck,
   CheckCircle,
-  ChevronRight,
+  ChevronDown,
   Clock,
   DollarSign,
   ExternalLink,
-  Mail,
   MapPin,
   MessageCircle,
   MessageSquare,
-  Phone,
-  Play,
   Search,
   Send,
-  Timer,
   X,
   XCircle
 } from 'lucide-react';
@@ -116,16 +109,25 @@ function MyProposalsPageContent() {
   const [withdrawModalId, setWithdrawModalId] = useState<string | null>(null);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [startingProjectId, setStartingProjectId] = useState<string | null>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const hasFetched = useRef(false);
   const debounceRef = useRef<NodeJS.Timeout>();
+
+  // Helper to check if a proposal's project is completed
+  const isProjectCompleted = (p: Proposal) =>
+    p.projectTracking?.currentStage === 'completed' || p.status === 'completed';
+
+  // Helper to check if a proposal is accepted but NOT completed
+  const isActivelyAccepted = (p: Proposal) =>
+    p.status === 'accepted' && p.projectTracking?.currentStage !== 'completed';
 
   const stats = {
     total: allProposals.length,
     pending: allProposals.filter(p => p.status === 'pending').length,
     inDiscussion: allProposals.filter(p => p.status === 'in_discussion').length,
-    accepted: allProposals.filter(p => p.status === 'accepted').length,
-    completed: allProposals.filter(p => p.status === 'completed').length,
+    accepted: allProposals.filter(p => isActivelyAccepted(p)).length,
+    completed: allProposals.filter(p => isProjectCompleted(p)).length,
     rejected: allProposals.filter(p => p.status === 'rejected').length,
     withdrawn: allProposals.filter(p => p.status === 'withdrawn').length,
   };
@@ -176,7 +178,14 @@ function MyProposalsPageContent() {
 
       let filtered = [...allProposals];
 
-      filtered = filtered.filter(p => p.status === statusFilter);
+      // Apply status filter with special handling for accepted/completed
+      if (statusFilter === 'accepted') {
+        filtered = filtered.filter(p => isActivelyAccepted(p));
+      } else if (statusFilter === 'completed') {
+        filtered = filtered.filter(p => isProjectCompleted(p));
+      } else {
+        filtered = filtered.filter(p => p.status === statusFilter);
+      }
 
       if (searchQuery) {
         const searchLower = searchQuery.toLowerCase();
@@ -442,34 +451,77 @@ function MyProposalsPageContent() {
             </div>
           </div>
 
-          {/* Quick Link to My Jobs - Mobile Only */}
-          <Link
-            href="/my-jobs"
-            className="sm:hidden flex items-center justify-between p-3 mb-4 rounded-xl bg-gradient-to-r from-[#E07B4F]/10 to-[#E07B4F]/5 border border-[#E07B4F]/20 active:scale-[0.98] transition-all"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-[#E07B4F]/20 flex items-center justify-center">
-                <Briefcase className="w-4 h-4 text-[#E07B4F]" />
-              </div>
-              <div>
-                <span className="text-sm font-semibold text-[var(--color-text-primary)]">
-                  {language === 'ka' ? 'ჩემი სამუშაოები' : 'My Jobs'}
-                </span>
-                <p className="text-xs text-[var(--color-text-secondary)]">
-                  {language === 'ka' ? 'განთავსებული განცხადებები' : 'Your posted jobs'}
-                </p>
-              </div>
-            </div>
-            <ChevronRight className="w-5 h-5 text-[#E07B4F]" />
-          </Link>
         </div>
 
         {/* Filters Bar */}
-        <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border)] p-3 sm:p-4 mb-4 sm:mb-6 shadow-sm">
-          <div className="flex flex-col lg:flex-row lg:items-center gap-3 sm:gap-4">
-            {/* Filter Tabs - Horizontally Scrollable on Mobile */}
-            <div className="flex-1 overflow-x-auto scrollbar-hide -mx-1 px-1">
-              <div className="flex gap-2 min-w-max pb-1 sm:pb-0 sm:flex-wrap">
+        <div className="mb-4 sm:mb-6">
+          {/* Mobile: Collapsible Accordion + Search */}
+          <div className="sm:hidden space-y-2">
+            <button
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-[var(--color-bg-elevated)] border border-[var(--color-border)]"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-[var(--color-text-secondary)]">
+                  {language === 'ka' ? 'ფილტრი:' : 'Filter:'}
+                </span>
+                <span className="text-sm font-medium px-2.5 py-0.5 rounded-full text-white bg-[#E07B4F]">
+                  {filterTabs.find(t => t.key === statusFilter)?.label} ({filterTabs.find(t => t.key === statusFilter)?.count})
+                </span>
+              </div>
+              <ChevronDown className={`w-4 h-4 text-[var(--color-text-tertiary)] transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isFilterOpen && (
+              <div className="p-2 rounded-xl bg-[var(--color-bg-elevated)] border border-[var(--color-border)] space-y-1">
+                {filterTabs.map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = statusFilter === tab.key;
+                  return (
+                    <button
+                      key={tab.key}
+                      onClick={() => {
+                        setStatusFilter(tab.key as ProposalStatus);
+                        setIsFilterOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                        isActive
+                          ? 'bg-[#E07B4F] text-white'
+                          : 'text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Icon className="w-4 h-4" />
+                        <span>{tab.label}</span>
+                        <span className={`px-1.5 py-0.5 rounded-md text-xs font-bold ${
+                          isActive ? 'bg-white/20 text-white' : 'bg-[var(--color-bg-muted)] text-[var(--color-text-tertiary)]'
+                        }`}>
+                          {tab.count}
+                        </span>
+                      </div>
+                      {isActive && <Check className="w-4 h-4" />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
+              <input
+                type="text"
+                placeholder={language === 'ka' ? 'ძებნა...' : 'Search...'}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm bg-[var(--color-bg-elevated)] border border-[var(--color-border)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E07B4F]/30 focus:ring-2 focus:ring-[#E07B4F]/10 transition-all"
+              />
+            </div>
+          </div>
+
+          {/* Desktop: Full filter bar */}
+          <div className="hidden sm:block bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border)] p-4 shadow-sm">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+              <div className="flex-1 flex flex-wrap gap-2">
                 {filterTabs.map((tab) => {
                   const Icon = tab.icon;
                   const isActive = statusFilter === tab.key;
@@ -478,17 +530,17 @@ function MyProposalsPageContent() {
                       key={tab.key}
                       onClick={() => setStatusFilter(tab.key as ProposalStatus)}
                       className={`
-                        inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0
+                        inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 whitespace-nowrap
                         ${isActive
                           ? 'bg-[#E07B4F] text-white shadow-lg shadow-[#E07B4F]/25'
                           : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[#E07B4F]/10 hover:text-[#E07B4F]'
                         }
                       `}
                     >
-                      <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <Icon className="w-4 h-4" />
                       <span>{tab.label}</span>
                       <span className={`
-                        px-1.5 py-0.5 rounded-md text-[10px] sm:text-xs font-bold
+                        px-1.5 py-0.5 rounded-md text-xs font-bold
                         ${isActive ? 'bg-white/20 text-white' : 'bg-[var(--color-bg-muted)] text-[var(--color-text-tertiary)]'}
                       `}>
                         {tab.count}
@@ -497,18 +549,17 @@ function MyProposalsPageContent() {
                   );
                 })}
               </div>
-            </div>
 
-            {/* Search */}
-            <div className="relative lg:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
-              <input
-                type="text"
-                placeholder={language === 'ka' ? 'ძებნა...' : 'Search proposals...'}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 sm:py-2.5 rounded-xl text-sm bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E07B4F]/30 focus:ring-2 focus:ring-[#E07B4F]/10 transition-all"
-              />
+              <div className="relative lg:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
+                <input
+                  type="text"
+                  placeholder={language === 'ka' ? 'ძებნა...' : 'Search proposals...'}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E07B4F]/30 focus:ring-2 focus:ring-[#E07B4F]/10 transition-all"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -539,190 +590,50 @@ function MyProposalsPageContent() {
 
               const statusConfig = getStatusConfig(proposal.status);
               const StatusIcon = statusConfig.icon;
-              const isClient = job.clientId?.accountType === 'organization';
               const hasUnread = (proposal.unreadMessageCount ?? 0) > 0;
-              const isAccepted = proposal.status === 'accepted';
-              const isCompleted = proposal.status === 'completed';
+              const isAccepted = isActivelyAccepted(proposal);
+              const isCompleted = isProjectCompleted(proposal);
               const isPending = proposal.status === 'pending';
 
-              // For accepted proposals - show as active project workspace
+              // For accepted or completed proposals - use ProjectTrackerCard
               if (isAccepted || isCompleted) {
+                // Build project tracking object for ProjectTrackerCard
+                const projectData = {
+                  _id: proposal.projectTracking?._id || proposal._id,
+                  jobId: job._id,
+                  clientId: {
+                    _id: job.clientId?._id || '',
+                    name: job.clientId?.name || '',
+                    avatar: job.clientId?.avatar,
+                  },
+                  proId: {
+                    _id: user?.id || '',
+                    name: user?.name || '',
+                    avatar: user?.avatar,
+                    phone: user?.phone,
+                    title: (user as any)?.title,
+                  },
+                  currentStage: proposal.projectTracking?.currentStage || 'hired',
+                  progress: proposal.projectTracking?.progress || 10,
+                  hiredAt: proposal.acceptedAt || proposal.createdAt,
+                  startedAt: proposal.projectTracking?.startedAt,
+                  completedAt: proposal.projectTracking?.completedAt,
+                  comments: [],
+                  attachments: [],
+                  agreedPrice: proposal.proposedPrice,
+                  estimatedDuration: proposal.estimatedDuration,
+                  estimatedDurationUnit: proposal.estimatedDurationUnit,
+                };
+
                 return (
-                  <div
+                  <ProjectTrackerCard
                     key={proposal._id}
-                    className="group bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border)] overflow-hidden transition-all duration-300 hover:shadow-lg"
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    {/* Compact Header with Status */}
-                    <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)]/30">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#E07B4F]/10 text-[#E07B4F]">
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        {language === 'ka' ? 'მიღებული' : 'Accepted'}
-                      </span>
-                      <span className="text-xs text-[var(--color-text-tertiary)]">
-                        {formatRelativeTime(proposal.createdAt)}
-                      </span>
-                    </div>
-
-                    {/* Main Content - Two Column Layout on Desktop */}
-                    <div className="p-4 sm:p-5">
-                      <div className="flex flex-col lg:flex-row lg:gap-6">
-                        {/* Left: Job Info */}
-                        <div className="flex-1 min-w-0 mb-4 lg:mb-0">
-                          {/* Job Title */}
-                          <h3 className="text-lg sm:text-xl font-bold text-[var(--color-text-primary)] leading-snug mb-3">
-                            {job.title}
-                          </h3>
-
-                          {/* Client Row */}
-                          <div className="flex items-center gap-3 mb-3">
-                            <Avatar
-                              src={job.clientId?.avatar}
-                              name={job.clientId?.name || 'Client'}
-                              size="sm"
-                            />
-                            <div className="min-w-0">
-                              <p className="text-sm font-medium text-[var(--color-text-primary)] truncate">
-                                {job.clientId?.name}
-                              </p>
-                              {isClient && job.clientId?.companyName && (
-                                <p className="text-xs text-[var(--color-text-tertiary)] flex items-center gap-1">
-                                  <Building2 className="w-3 h-3" />
-                                  {job.clientId.companyName}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Meta: Location & Budget */}
-                          <div className="flex flex-wrap items-center gap-3 text-sm text-[var(--color-text-secondary)]">
-                            <span className="flex items-center gap-1.5">
-                              <MapPin className="w-4 h-4 opacity-60" />
-                              {job.location}
-                            </span>
-                            <span className="flex items-center gap-1.5 font-medium text-[#E07B4F]">
-                              <DollarSign className="w-4 h-4" />
-                              {formatBudget(job)}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Right: Your Proposal Summary */}
-                        <div className="lg:w-64 flex-shrink-0">
-                          <div className="rounded-xl p-4 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)] mb-2">
-                              {language === 'ka' ? 'შენი შეთავაზება' : 'Your Proposal'}
-                            </p>
-                            <div className="flex items-baseline gap-2 mb-1">
-                              <span className="text-2xl font-bold text-[#E07B4F]">
-                                ₾{proposal.proposedPrice?.toLocaleString()}
-                              </span>
-                            </div>
-                            <p className="text-xs text-[var(--color-text-tertiary)] flex items-center gap-1">
-                              <Clock className="w-3.5 h-3.5" />
-                              {proposal.estimatedDuration}{' '}
-                              {proposal.estimatedDurationUnit === 'days'
-                                ? (language === 'ka' ? 'დღე' : 'days')
-                                : proposal.estimatedDurationUnit === 'weeks'
-                                ? (language === 'ka' ? 'კვირა' : 'weeks')
-                                : (language === 'ka' ? 'თვე' : 'months')}
-                            </p>
-                            <p className="text-xs text-[var(--color-text-tertiary)] mt-2 line-clamp-2 italic">
-                              &ldquo;{proposal.coverLetter}&rdquo;
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Actions Bar - Communication & Project Focused */}
-                    <div className="px-4 sm:px-5 py-3 border-t border-[var(--color-border)] bg-[var(--color-bg-tertiary)]/20">
-                      <div className="flex flex-wrap items-center gap-2">
-                        {/* Start Project */}
-                        {proposal.projectTracking?.currentStage === 'hired' && (
-                          <button
-                            onClick={() => handleStartProject(job._id)}
-                            disabled={startingProjectId === job._id}
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-[#E07B4F] text-white hover:bg-[#D26B3F] disabled:opacity-50 transition-all"
-                          >
-                            {startingProjectId === job._id ? (
-                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            ) : (
-                              <Play className="w-4 h-4" />
-                            )}
-                            {language === 'ka' ? 'დაწყება' : 'Start'}
-                          </button>
-                        )}
-
-                        {/* Started Badge */}
-                        {proposal.projectTracking && proposal.projectTracking.currentStage !== 'hired' && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-[#E07B4F]/10 text-[#E07B4F]">
-                            <Play className="w-3.5 h-3.5" />
-                            {language === 'ka' ? 'დაწყებული' : 'Started'}
-                          </span>
-                        )}
-
-                        {/* View Job Details - Primary */}
-                        <Link
-                          href={`/jobs/${job._id}`}
-                          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-bg-muted)] text-[var(--color-text-primary)] hover:bg-[var(--color-border)] transition-all"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                          {language === 'ka' ? 'სამუშაო' : 'Job Details'}
-                        </Link>
-
-                        {/* Spacer */}
-                        <div className="flex-1" />
-
-                        {/* Contact Actions - Right Side */}
-                        {proposal.contactRevealed && job.clientId && (
-                          <div className="flex items-center gap-2">
-                            {job.clientId.phone && (
-                              <a
-                                href={`tel:${job.clientId.phone}`}
-                                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[#E07B4F] hover:text-[#E07B4F] transition-all"
-                              >
-                                <Phone className="w-4 h-4" />
-                                <span className="hidden sm:inline">{job.clientId.phone}</span>
-                              </a>
-                            )}
-                            {job.clientId.email && (
-                              <a
-                                href={`mailto:${job.clientId.email}`}
-                                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[#E07B4F] hover:text-[#E07B4F] transition-all"
-                              >
-                                <Mail className="w-4 h-4" />
-                                <span className="hidden sm:inline">{language === 'ka' ? 'ემაილი' : 'Email'}</span>
-                              </a>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Polls Section - Pro can create/manage polls */}
-                    <PollsTab
-                      jobId={job._id}
-                      isPro={true}
-                      isClient={false}
-                      userId={user?.id}
-                      locale={language}
-                    />
-
-                    {/* Project Workspace - Materials & Resources */}
-                    <ProjectWorkspace
-                      jobId={job._id}
-                      locale={language}
-                      isClient={false}
-                    />
-
-                    {/* Project Chat - Expandable Section */}
-                    <ProjectChat
-                      jobId={job._id}
-                      locale={language}
-                      isClient={false}
-                    />
-                  </div>
+                    job={job}
+                    project={projectData}
+                    isClient={false}
+                    locale={language}
+                    onRefresh={fetchAllProposals}
+                  />
                 );
               }
 
@@ -871,6 +782,9 @@ function MyProposalsPageContent() {
         isLoading={isWithdrawing}
         loadingLabel={language === 'ka' ? 'მიმდინარეობს...' : 'Withdrawing...'}
       />
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </div>
   );
 }

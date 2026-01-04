@@ -9,15 +9,14 @@ import { JobsProvider, useJobsContext } from "@/contexts/JobsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Briefcase,
-  FileText,
   Filter,
-  Hammer,
   Images,
   Plus,
   Search,
   Users,
   X,
 } from "lucide-react";
+import MobileBottomNav from "@/components/common/MobileBottomNav";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ReactNode, Suspense, useEffect, useRef, useState } from "react";
@@ -331,28 +330,37 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
             <div
               className={`max-w-[1600px] mx-auto ${mounted ? "animate-fade-in" : "opacity-0"}`}
             >
-              {/* Search Bar - Compact & Distinctive */}
+              {/* Search Bar & Filter - Compact & Distinctive */}
               <div className="mb-4 sm:mb-5">
-                <div className="max-w-xl">
-                  {isJobsPage ? (
-                    <JobsSearchInput />
-                  ) : isProfessionalsPage ? (
-                    <BrowseSearchInput
-                      placeholder={
-                        locale === "ka"
-                          ? "სპეციალისტის ძებნა..."
-                          : "Search professionals..."
-                      }
-                    />
-                  ) : (
-                    <BrowseSearchInput
-                      placeholder={
-                        locale === "ka"
-                          ? "ნამუშევრის ძებნა..."
-                          : "Search portfolio..."
-                      }
-                    />
-                  )}
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 max-w-xl">
+                    {isJobsPage ? (
+                      <JobsSearchInput />
+                    ) : isProfessionalsPage ? (
+                      <BrowseSearchInput
+                        placeholder={
+                          locale === "ka"
+                            ? "სპეციალისტის ძებნა..."
+                            : "Search professionals..."
+                        }
+                      />
+                    ) : (
+                      <BrowseSearchInput
+                        placeholder={
+                          locale === "ka"
+                            ? "ნამუშევრის ძებნა..."
+                            : "Search portfolio..."
+                        }
+                      />
+                    )}
+                  </div>
+                  {/* Mobile Filter Button */}
+                  <button
+                    onClick={() => setShowMobileFilters(true)}
+                    className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
+                  >
+                    <Filter className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
               {children}
@@ -361,43 +369,8 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
         </main>
       </div>
 
-      {/* Mobile Bottom Tab Bar */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#0a0a0a] border-t border-neutral-200 dark:border-neutral-800 safe-area-bottom">
-        <div className="flex items-center justify-around h-14 px-1">
-          {visibleTabs.map((tab) => {
-            const isActive = activeTab === tab.key;
-            const Icon = tab.icon;
-            return (
-              <Link
-                key={tab.key}
-                href={tab.route}
-                className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 transition-colors ${
-                  isActive ? "" : "text-neutral-400 dark:text-neutral-500"
-                }`}
-                style={isActive ? { color: ACCENT_COLOR } : {}}
-              >
-                <Icon className="w-[18px] h-[18px]" />
-                <span className="text-[9px] font-medium">
-                  {locale === "ka" ? tab.labelKa : tab.label}
-                </span>
-              </Link>
-            );
-          })}
-          {/* Filter button for mobile */}
-          <button
-            onClick={() => setShowMobileFilters(true)}
-            className="flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 text-neutral-400 dark:text-neutral-500"
-          >
-            <Filter className="w-[18px] h-[18px]" />
-            <span className="text-[9px] font-medium">
-              {locale === "ka" ? "ფილტრი" : "Filter"}
-            </span>
-          </button>
-        </div>
-      </nav>
-
-      {/* Mobile content padding for bottom bar */}
-      <div className="lg:hidden h-14" />
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
 
       {/* Mobile Filters Drawer */}
       {showMobileFilters && (
@@ -420,27 +393,6 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                 <X className="w-4 h-4 text-neutral-500" />
               </button>
             </div>
-            {/* Mobile Pro Quick Actions */}
-            {isPro && (
-              <div className="p-3 border-b border-neutral-200 dark:border-neutral-800 flex gap-2">
-                <Link
-                  href="/my-proposals"
-                  onClick={() => setShowMobileFilters(false)}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-all bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
-                >
-                  <FileText className="w-3.5 h-3.5" />
-                  <span>{locale === "ka" ? "შეთავაზებები" : "Proposals"}</span>
-                </Link>
-                <Link
-                  href="/my-jobs"
-                  onClick={() => setShowMobileFilters(false)}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-all bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
-                >
-                  <Hammer className="w-3.5 h-3.5" />
-                  <span>{locale === "ka" ? "სამუშაოები" : "Jobs"}</span>
-                </Link>
-              </div>
-            )}
             {/* Mobile Search Input */}
             <div className="p-3 border-b border-neutral-200 dark:border-neutral-800">
               {isJobsPage ? (

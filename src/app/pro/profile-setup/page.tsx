@@ -512,35 +512,35 @@ function ProProfileSetupPageContent() {
 
   if (authLoading || profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAFAF9]">
+      <div className="min-h-screen flex items-center justify-center bg-[#FAFAF9] dark:bg-neutral-950">
         <div className="w-12 h-12 rounded-full border-2 border-[#C4735B]/20 border-t-[#C4735B] animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAF9] flex flex-col pb-20">
+    <div className="min-h-screen bg-[#FAFAF9] dark:bg-neutral-950 flex flex-col pb-24 sm:pb-20">
       {/* Header with progress - matches register page */}
-      <header className="sticky top-0 z-50 bg-white border-b border-neutral-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="h-12 flex items-center justify-between">
+      <header className="sticky top-0 z-50 bg-white dark:bg-neutral-900 border-b border-neutral-100 dark:border-neutral-800">
+        <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="h-14 sm:h-12 flex items-center justify-between">
             <Logo />
-            <Link href="/help" className="text-xs text-neutral-600 hover:text-neutral-900 transition-colors">
+            <Link href="/help" className="text-xs text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors">
               {locale === "ka" ? "დახმარება" : "Help"}
             </Link>
           </div>
 
           {/* Progress bar */}
           <div className="pb-3">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] font-medium text-neutral-500 uppercase tracking-wider">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[10px] sm:text-[10px] font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                 {locale === "ka" ? `${getCurrentStepIndex() + 1}/${STEPS.length}` : `STEP ${getCurrentStepIndex() + 1}/${STEPS.length}`}
               </span>
-              <span className="text-[10px] font-medium text-[#C4735B]">
+              <span className="text-[10px] sm:text-[10px] font-medium text-[#C4735B]">
                 {STEPS[getCurrentStepIndex()].title[locale === "ka" ? "ka" : "en"]}
               </span>
             </div>
-            <div className="h-1 bg-neutral-100 rounded-full overflow-hidden">
+            <div className="h-1.5 sm:h-1 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-[#C4735B] to-[#D4896B] rounded-full transition-all duration-500"
                 style={{ width: `${getProgressPercentage()}%` }}
@@ -551,8 +551,8 @@ function ProProfileSetupPageContent() {
       </header>
 
       {/* Main content */}
-      <main className="flex-1 py-4 lg:py-6">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="flex-1 py-3 sm:py-4 lg:py-6">
+        <div className="max-w-3xl mx-auto px-3 sm:px-6 lg:px-8">
           {error && (
             <div className="mb-4 p-2 rounded-lg bg-red-50 border border-red-100">
               <p className="text-xs text-red-600">{error}</p>
@@ -563,10 +563,10 @@ function ProProfileSetupPageContent() {
           {currentStep === 'about' && (
             <div className="space-y-4">
               <div>
-                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
+                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
                   {locale === "ka" ? "შენს შესახებ" : "About You"}
                 </h1>
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   {locale === "ka" ? "შეავსე ძირითადი ინფორმაცია" : "Fill in your basic information"}
                 </p>
               </div>
@@ -600,10 +600,10 @@ function ProProfileSetupPageContent() {
           {currentStep === 'categories' && (
             <div className="space-y-4">
               <div>
-                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
+                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
                   {locale === "ka" ? "რა სერვისებს გთავაზობთ?" : "What services do you provide?"}
                 </h1>
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   {locale === "ka" ? "აირჩიეთ კატეგორია და უნარები" : "Select your profession and skills"}
                 </p>
               </div>
@@ -623,10 +623,10 @@ function ProProfileSetupPageContent() {
           {currentStep === 'pricing-areas' && (
             <div className="space-y-4">
               <div>
-                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
+                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
                   {locale === "ka" ? "ფასები და ზონები" : "Pricing & Areas"}
                 </h1>
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   {locale === "ka" ? "განსაზღვრე ტარიფები და სამუშაო ზონები" : "Set your rates and work areas"}
                 </p>
               </div>
@@ -672,10 +672,10 @@ function ProProfileSetupPageContent() {
           {currentStep === 'projects' && (
             <div className="space-y-4">
               <div>
-                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
+                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
                   {locale === "ka" ? "პორტფოლიო" : "Portfolio"}
                 </h1>
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   {locale === "ka" ? "აჩვენე შენი ნამუშევრები" : "Showcase your work"}
                 </p>
               </div>
@@ -693,10 +693,10 @@ function ProProfileSetupPageContent() {
           {currentStep === 'review' && (
             <div className="space-y-4">
               <div>
-                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
+                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
                   {locale === "ka" ? "გადახედვა" : "Review"}
                 </h1>
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   {locale === "ka" ? "გადახედე შენს პროფილს" : "Review your profile"}
                 </p>
               </div>
@@ -721,18 +721,18 @@ function ProProfileSetupPageContent() {
       </main>
 
       {/* Fixed Footer with navigation */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-100 shadow-lg shadow-black/5 z-50">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center justify-between">
+      <footer className="fixed bottom-0 left-0 right-0 bg-white dark:bg-neutral-900 border-t border-neutral-100 dark:border-neutral-800 shadow-lg shadow-black/5 z-50 safe-area-bottom">
+        <div className="max-w-3xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-3">
+          <div className="flex items-center justify-between gap-3">
             {getCurrentStepIndex() > 0 ? (
               <button
                 onClick={handleBack}
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium text-neutral-700 hover:bg-neutral-100 transition-all active:scale-[0.98]"
+                className="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2.5 rounded-xl text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all active:scale-[0.98]"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
-                {locale === "ka" ? "უკან" : "Back"}
+                <span className="hidden sm:inline">{locale === "ka" ? "უკან" : "Back"}</span>
               </button>
             ) : (
               <div />
@@ -741,7 +741,7 @@ function ProProfileSetupPageContent() {
             <button
               onClick={handleNext}
               disabled={isLoading || !canProceedToNextStep}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#C4735B] hover:bg-[#A85D47] disabled:bg-neutral-200 disabled:cursor-not-allowed text-white text-sm font-semibold transition-all shadow-lg shadow-[#C4735B]/25 disabled:shadow-none active:scale-[0.98]"
+              className="flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2.5 sm:py-2.5 rounded-xl bg-[#C4735B] hover:bg-[#A85D47] disabled:bg-neutral-200 dark:disabled:bg-neutral-700 disabled:cursor-not-allowed text-white text-sm font-semibold transition-all shadow-lg shadow-[#C4735B]/25 disabled:shadow-none active:scale-[0.98]"
             >
               {isLoading ? (
                 <>

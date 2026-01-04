@@ -14,21 +14,28 @@ import {
   Clock,
   Eye,
   FileText,
-  MessageSquare,
+  FolderOpen,
+  Loader2,
+  MessageCircle,
   Paperclip,
+  Phone,
   Play,
   Send,
-  X
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import PollsTab from "@/components/polls/PollsTab";
+import ProjectWorkspace from "@/components/projects/ProjectWorkspace";
 
-// Terracotta palette
-const ACCENT = "#C4735B";
-const ACCENT_LIGHT = "#D4897A";
-const ACCENT_DARK = "#A85D4A";
+// Homico Terracotta Color Palette - Light & Fresh
+const TERRACOTTA = {
+  primary: "#C4735B",                    // Main terracotta
+  light: "#E8A593",                      // Soft peachy light
+  warm: "#F5DCD4",                       // Very soft warm pink
+  bg: "#FDF8F6",                         // Nearly white with warm tint
+  accent: "#D98B74",                     // Slightly brighter accent
+};
 
 export type ProjectStage =
   | "hired"
@@ -48,7 +55,6 @@ interface ProjectMessage {
   createdAt: string;
 }
 
-// Legacy comment interface for backwards compatibility
 interface ProjectComment {
   userId: string;
   userName: string;
@@ -120,38 +126,16 @@ const STAGES: {
   label: string;
   labelKa: string;
   icon: React.ReactNode;
+  progress: number;
 }[] = [
-  {
-    key: "hired",
-    label: "Hired",
-    labelKa: "დაქირავებული",
-    icon: <Check className="w-3.5 h-3.5" />,
-  },
-  {
-    key: "started",
-    label: "Started",
-    labelKa: "დაწყებული",
-    icon: <Play className="w-3.5 h-3.5" />,
-  },
-  {
-    key: "in_progress",
-    label: "In Progress",
-    labelKa: "მიმდინარე",
-    icon: <Clock className="w-3.5 h-3.5" />,
-  },
-  {
-    key: "review",
-    label: "Review",
-    labelKa: "შემოწმება",
-    icon: <Eye className="w-3.5 h-3.5" />,
-  },
-  {
-    key: "completed",
-    label: "Completed",
-    labelKa: "დასრულებული",
-    icon: <CheckCircle2 className="w-3.5 h-3.5" />,
-  },
+  { key: "hired", label: "Hired", labelKa: "დაქირავებული", icon: <Check className="w-3.5 h-3.5" />, progress: 10 },
+  { key: "started", label: "Started", labelKa: "დაწყებული", icon: <Play className="w-3.5 h-3.5" />, progress: 25 },
+  { key: "in_progress", label: "In Progress", labelKa: "მიმდინარე", icon: <Clock className="w-3.5 h-3.5" />, progress: 50 },
+  { key: "review", label: "Review", labelKa: "შემოწმება", icon: <Eye className="w-3.5 h-3.5" />, progress: 75 },
+  { key: "completed", label: "Done", labelKa: "დასრულებული", icon: <CheckCircle2 className="w-3.5 h-3.5" />, progress: 100 },
 ];
+
+type TabKey = "overview" | "chat" | "polls" | "materials";
 
 function getStageIndex(stage: ProjectStage): number {
   return STAGES.findIndex((s) => s.key === stage);
@@ -165,25 +149,6 @@ function formatDate(dateStr: string, locale: string): string {
   });
 }
 
-function formatRelativeTime(dateStr: string, locale: string): string {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMins / 60);
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (locale === "ka") {
-    if (diffMins < 60) return `${diffMins} წუთის წინ`;
-    if (diffHours < 24) return `${diffHours} საათის წინ`;
-    return `${diffDays} დღის წინ`;
-  }
-
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  return `${diffDays}d ago`;
-}
-
 function formatMessageTime(dateStr: string): string {
   const date = new Date(dateStr);
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -192,6 +157,145 @@ function formatMessageTime(dateStr: string): string {
 function getSenderId(senderId: string | { _id: string }): string {
   if (typeof senderId === "string") return senderId;
   return senderId._id;
+}
+
+// Inline Stage Stepper Component - Clean & Intuitive
+function InlineStageStepper({
+  currentStage,
+  locale,
+  isPro,
+  isUpdating,
+  onStageChange,
+}: {
+  currentStage: ProjectStage;
+  locale: string;
+  isPro: boolean;
+  isUpdating: boolean;
+  onStageChange: (stage: ProjectStage) => void;
+}) {
+  const currentIndex = getStageIndex(currentStage);
+  const progress = STAGES[currentIndex]?.progress || 0;
+
+  return (
+    <div className="p-4">
+      {/* Progress Bar - Clean and prominent */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
+            {locale === "ka" ? STAGES[currentIndex]?.labelKa : STAGES[currentIndex]?.label}
+          </span>
+          <span
+            className="text-sm font-bold"
+            style={{ color: TERRACOTTA.primary }}
+          >
+            {progress}%
+          </span>
+        </div>
+        <div className="h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-500 ease-out"
+            style={{
+              width: `${progress}%`,
+              backgroundColor: TERRACOTTA.primary,
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Stage Pills - Scrollable on mobile */}
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        {STAGES.map((stage, index) => {
+          const isCompleted = index < currentIndex;
+          const isCurrent = index === currentIndex;
+          const isNext = index === currentIndex + 1;
+          const canAdvance = isPro && isNext && !isUpdating;
+
+          return (
+            <button
+              key={stage.key}
+              onClick={() => canAdvance && onStageChange(stage.key)}
+              disabled={!canAdvance}
+              className={`
+                flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium
+                whitespace-nowrap transition-all duration-200 flex-shrink-0
+                ${isCompleted
+                  ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
+                  : isCurrent
+                    ? 'text-white shadow-sm'
+                    : canAdvance
+                      ? 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border-2 border-dashed hover:border-solid cursor-pointer'
+                      : 'bg-neutral-50 dark:bg-neutral-800/50 text-neutral-400 dark:text-neutral-500'
+                }
+              `}
+              style={{
+                backgroundColor: isCurrent ? TERRACOTTA.primary : undefined,
+                borderColor: canAdvance ? TERRACOTTA.light : undefined,
+              }}
+            >
+              {isUpdating && isCurrent ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : isCompleted ? (
+                <Check className="w-3 h-3" />
+              ) : (
+                stage.icon
+              )}
+              <span>{locale === "ka" ? stage.labelKa : stage.label}</span>
+              {canAdvance && (
+                <ChevronRight className="w-3 h-3 ml-0.5" style={{ color: TERRACOTTA.primary }} />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Tab Button Component
+function TabButton({
+  active,
+  onClick,
+  icon,
+  label,
+  badge,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  badge?: number;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        relative flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-all duration-200
+        ${active
+          ? ''
+          : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300'
+        }
+      `}
+      style={{ color: active ? TERRACOTTA.primary : undefined }}
+    >
+      {icon}
+      <span className="hidden sm:inline">{label}</span>
+      {badge !== undefined && badge > 0 && (
+        <span
+          className="min-w-[18px] h-[18px] rounded-full text-[10px] font-bold text-white flex items-center justify-center px-1"
+          style={{ backgroundColor: TERRACOTTA.primary }}
+        >
+          {badge > 99 ? '99+' : badge}
+        </span>
+      )}
+      {/* Active indicator */}
+      {active && (
+        <div
+          className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full"
+          style={{ backgroundColor: TERRACOTTA.primary }}
+        />
+      )}
+    </button>
+  );
 }
 
 export default function ProjectTrackerCard({
@@ -203,14 +307,14 @@ export default function ProjectTrackerCard({
 }: ProjectTrackerCardProps) {
   const { user } = useAuth();
   const toast = useToast();
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isPollsExpanded, setIsPollsExpanded] = useState(false);
-  const [newMessage, setNewMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showStageModal, setShowStageModal] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState<TabKey>("overview");
 
   // Chat state
+  const [newMessage, setNewMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [messages, setMessages] = useState<ProjectMessage[]>([]);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
@@ -225,27 +329,26 @@ export default function ProjectTrackerCard({
   const messagesLoadedRef = useRef(false);
 
   // Local state for optimistic updates
-  const [localStage, setLocalStage] = useState<ProjectStage>(
-    project.currentStage
-  );
-  const [localProgress, setLocalProgress] = useState(project.progress);
+  const [localStage, setLocalStage] = useState<ProjectStage>(project.currentStage);
+  const [isUpdatingStage, setIsUpdatingStage] = useState(false);
 
   const currentStageIndex = getStageIndex(localStage);
   const firstImage = job.media?.[0]?.url || job.images?.[0];
+  const partnerName = isClient ? project.proId?.name : project.clientId?.name;
+  const partnerAvatar = isClient ? project.proId?.avatar : project.clientId?.avatar;
+  const partnerTitle = isClient ? project.proId?.title : undefined;
+  const partnerPhone = isClient ? project.proId?.phone : undefined;
 
-  // Get conversation partner ID
-  const partnerId = isClient ? project.proId?._id : project.clientId?._id;
-
-  // Fetch messages when expanded
+  // Fetch messages when chat tab is active
   useEffect(() => {
-    if (isExpanded && !messagesLoadedRef.current) {
+    if (activeTab === 'chat' && !messagesLoadedRef.current) {
       fetchMessages();
     }
-  }, [isExpanded]);
+  }, [activeTab]);
 
-  // WebSocket connection
+  // WebSocket connection for chat
   useEffect(() => {
-    if (!isExpanded || !user) return;
+    if (activeTab !== 'chat' || !user) return;
 
     const token = localStorage.getItem("access_token");
     if (!token) return;
@@ -260,7 +363,6 @@ export default function ProjectTrackerCard({
     });
 
     socketRef.current.on("connect", () => {
-      console.log("[ProjectChat] Connected to WebSocket");
       socketRef.current?.emit("joinProjectChat", job._id);
     });
 
@@ -272,17 +374,17 @@ export default function ProjectTrackerCard({
       socketRef.current?.disconnect();
       socketRef.current = null;
     };
-  }, [isExpanded, user, job._id]);
+  }, [activeTab, user, job._id]);
 
-  // Scroll to bottom when messages change - only scroll within chat container
+  // Scroll to bottom when messages change
   useEffect(() => {
-    if (isExpanded && messagesEndRef.current) {
+    if (activeTab === 'chat' && messagesEndRef.current) {
       const container = messagesEndRef.current.parentElement;
       if (container) {
         container.scrollTop = container.scrollHeight;
       }
     }
-  }, [messages, isExpanded]);
+  }, [messages, activeTab]);
 
   const fetchMessages = async () => {
     try {
@@ -291,20 +393,16 @@ export default function ProjectTrackerCard({
       setMessages(response.data.messages || []);
       messagesLoadedRef.current = true;
     } catch (error) {
-      console.error("Failed to fetch messages:", error);
-      // Fallback to comments if messages endpoint doesn't exist
       if (project.comments?.length) {
-        const legacyMessages: ProjectMessage[] = project.comments.map(
-          (c, idx) => ({
-            _id: `legacy-${idx}`,
-            senderId: c.userId,
-            senderName: c.userName,
-            senderAvatar: c.userAvatar,
-            senderRole: c.userRole,
-            content: c.content,
-            createdAt: c.createdAt,
-          })
-        );
+        const legacyMessages: ProjectMessage[] = project.comments.map((c, idx) => ({
+          _id: `legacy-${idx}`,
+          senderId: c.userId,
+          senderName: c.userName,
+          senderAvatar: c.userAvatar,
+          senderRole: c.userRole,
+          content: c.content,
+          createdAt: c.createdAt,
+        }));
         setMessages(legacyMessages);
       }
     } finally {
@@ -312,37 +410,28 @@ export default function ProjectTrackerCard({
     }
   };
 
-  const handleNewMessage = useCallback(
-    (message: ProjectMessage) => {
-      const senderId = getSenderId(message.senderId);
-      if (senderId === user?.id) return; // Skip own messages
+  const handleNewMessage = useCallback((message: ProjectMessage) => {
+    const senderId = getSenderId(message.senderId);
+    if (senderId === user?.id) return;
 
-      setMessages((prev) => {
-        if (prev.some((m) => m._id === message._id)) return prev;
-        return [...prev, message];
-      });
-    },
-    [user?.id]
-  );
+    setMessages((prev) => {
+      if (prev.some((m) => m._id === message._id)) return prev;
+      return [...prev, message];
+    });
+  }, [user?.id]);
 
-  const handleTyping = useCallback(
-    ({ userId, isTyping: typing }: { userId: string; isTyping: boolean }) => {
-      if (userId !== user?.id) {
-        setOtherUserTyping(typing);
-      }
-    },
-    [user?.id]
-  );
+  const handleTyping = useCallback(({ userId, isTyping: typing }: { userId: string; isTyping: boolean }) => {
+    if (userId !== user?.id) {
+      setOtherUserTyping(typing);
+    }
+  }, [user?.id]);
 
   const emitTyping = useCallback(() => {
     if (!socketRef.current) return;
 
     if (!isTyping) {
       setIsTyping(true);
-      socketRef.current.emit("projectTyping", {
-        jobId: job._id,
-        isTyping: true,
-      });
+      socketRef.current.emit("projectTyping", { jobId: job._id, isTyping: true });
     }
 
     if (typingTimeoutRef.current) {
@@ -351,10 +440,7 @@ export default function ProjectTrackerCard({
 
     typingTimeoutRef.current = setTimeout(() => {
       setIsTyping(false);
-      socketRef.current?.emit("projectTyping", {
-        jobId: job._id,
-        isTyping: false,
-      });
+      socketRef.current?.emit("projectTyping", { jobId: job._id, isTyping: false });
     }, 2000);
   }, [job._id, isTyping]);
 
@@ -366,8 +452,6 @@ export default function ProjectTrackerCard({
     if ((!hasContent && !hasAttachments) || isSubmitting || !user) return;
 
     const tempId = `temp-${Date.now()}`;
-
-    // Optimistic update
     const optimisticMessage: ProjectMessage = {
       _id: tempId,
       senderId: user.id,
@@ -389,14 +473,10 @@ export default function ProjectTrackerCard({
         attachments: hasAttachments ? attachments : undefined,
       });
 
-      // Replace temp message with real one
       if (response.data?.message) {
-        setMessages((prev) =>
-          prev.map((m) => (m._id === tempId ? response.data.message : m))
-        );
+        setMessages((prev) => prev.map((m) => (m._id === tempId ? response.data.message : m)));
       }
     } catch (err) {
-      // Rollback on error
       setMessages((prev) => prev.filter((m) => m._id !== tempId));
       setNewMessage(messageContent);
       toast.error(
@@ -419,8 +499,6 @@ export default function ProjectTrackerCard({
       formData.append("file", file);
       const uploadResponse = await api.post("/upload", formData);
       const fileUrl = uploadResponse.data.url || uploadResponse.data.filename;
-
-      // Send message with attachment
       await handleSendMessage([fileUrl]);
     } catch (err) {
       toast.error(
@@ -435,724 +513,398 @@ export default function ProjectTrackerCard({
 
   const handleStageChange = async (newStage: ProjectStage) => {
     const previousStage = localStage;
-    const previousProgress = localProgress;
 
-    // Calculate new progress based on stage
-    const stageProgress: Record<ProjectStage, number> = {
-      hired: 10,
-      started: 25,
-      in_progress: 50,
-      review: 75,
-      completed: 100,
-    };
-
-    // Optimistic update
     setLocalStage(newStage);
-    setLocalProgress(stageProgress[newStage]);
-    setShowStageModal(false);
+    setIsUpdatingStage(true);
 
     try {
-      setIsSubmitting(true);
       await api.patch(`/jobs/projects/${job._id}/stage`, { stage: newStage });
       toast.success(
         locale === "ka" ? "წარმატება" : "Success",
         locale === "ka" ? "სტატუსი განახლდა" : "Stage updated"
       );
     } catch (err) {
-      // Rollback on error
       setLocalStage(previousStage);
-      setLocalProgress(previousProgress);
       toast.error(
         locale === "ka" ? "შეცდომა" : "Error",
         locale === "ka" ? "სტატუსი ვერ განახლდა" : "Failed to update stage"
       );
     } finally {
-      setIsSubmitting(false);
+      setIsUpdatingStage(false);
     }
   };
 
-  return (
-    <>
-      <style jsx global>{`
-        @import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700&display=swap");
-
-        .project-card {
-          font-family: "Outfit", system-ui, sans-serif;
-        }
-        .project-card .font-mono {
-          font-family: "Space Mono", monospace;
-        }
-
-        @keyframes progress-shine {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(200%);
-          }
-        }
-
-        @keyframes pulse-ring {
-          0% {
-            transform: scale(1);
-            opacity: 1;
-          }
-          100% {
-            transform: scale(1.5);
-            opacity: 0;
-          }
-        }
-
-        .progress-bar-shine {
-          animation: progress-shine 2s ease-in-out infinite;
-        }
-
-        .stage-active::before {
-          content: "";
-          position: absolute;
-          inset: -4px;
-          border-radius: 50%;
-          border: 2px solid currentColor;
-          animation: pulse-ring 1.5s ease-out infinite;
-        }
-
-        .card-gradient {
-          background: linear-gradient(
-            135deg,
-            rgba(196, 115, 91, 0.03) 0%,
-            rgba(255, 255, 255, 0) 50%,
-            rgba(196, 115, 91, 0.05) 100%
-          );
-        }
-
-        .timeline-dot {
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .timeline-dot:hover {
-          transform: scale(1.2);
-        }
-      `}</style>
-
-      <div className="project-card bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-100 dark:border-neutral-800 transition-all duration-300 hover:shadow-xl hover:shadow-neutral-200/50 dark:hover:shadow-neutral-900/50">
-        {/* Header Section with Gradient Overlay */}
-        <div className="relative">
-          {/* Background Image or Color */}
-          <div className="h-32 sm:h-40 relative overflow-hidden">
-            {firstImage ? (
-              <img
-                src={storage.getFileUrl(firstImage)}
-                alt=""
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div
-                className="w-full h-full"
-                style={{
-                  background: `linear-gradient(135deg, ${ACCENT} 0%, ${ACCENT_DARK} 100%)`,
-                }}
-              />
-            )}
-            {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+  // Tab content renderers
+  const renderOverviewTab = () => (
+    <div className="p-4 sm:p-5 space-y-4">
+      {/* Project Info Grid */}
+      <div className="grid grid-cols-2 gap-3">
+        {/* Started */}
+        <div className="rounded-xl p-4 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700">
+          <div className="flex items-center gap-2 mb-2 text-neutral-500 dark:text-neutral-400">
+            <Calendar className="w-4 h-4" />
+            <span className="text-xs uppercase tracking-wider font-medium">
+              {locale === "ka" ? "დაწყება" : "Started"}
+            </span>
           </div>
-
-          {/* Content Overlay */}
-          <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
-            <div className="flex items-end justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <span
-                    className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-white"
-                    style={{ backgroundColor: ACCENT }}
-                  >
-                    {locale === "ka" ? "აქტიური პროექტი" : "Active Project"}
-                  </span>
-                  <span className="text-white/60 text-xs font-mono">
-                    #{job._id.slice(-6).toUpperCase()}
-                  </span>
-                </div>
-                <h3 className="text-lg sm:text-xl font-semibold text-white line-clamp-1">
-                  {job.title}
-                </h3>
-              </div>
-
-              {/* Assigned Pro/Client Info */}
-              <Link
-                href={
-                  isClient
-                    ? `/professionals/${project.proId?._id}`
-                    : `/users/${project.clientId?._id}`
-                }
-                className="flex-shrink-0 flex items-center gap-3 bg-black/30 backdrop-blur-sm rounded-xl px-3 py-2 hover:bg-black/40 transition-colors"
-              >
-                <Avatar
-                  src={
-                    isClient ? project.proId?.avatar : project.clientId?.avatar
-                  }
-                  name={isClient ? project.proId?.name : project.clientId?.name}
-                  size="md"
-                  className="w-10 h-10 ring-2 ring-white/30"
-                />
-                <div className="text-right">
-                  <p className="text-[10px] text-white/60 uppercase tracking-wider">
-                    {isClient
-                      ? locale === "ka"
-                        ? "სპეციალისტი"
-                        : "Assigned Pro"
-                      : locale === "ka"
-                        ? "კლიენტი"
-                        : "Client"}
-                  </p>
-                  <p className="text-sm font-semibold text-white">
-                    {isClient ? project.proId?.name : project.clientId?.name}
-                  </p>
-                </div>
-              </Link>
-            </div>
-          </div>
+          <span className="text-lg font-semibold text-neutral-900 dark:text-white">
+            {project.startedAt ? formatDate(project.startedAt, locale) : formatDate(project.hiredAt, locale)}
+          </span>
         </div>
 
-        {/* Progress Section */}
-        <div className="px-4 sm:px-5 py-4 border-b border-neutral-100 dark:border-neutral-800 card-gradient">
-          {/* Stage Timeline */}
-          <div className="relative mb-4">
-            {/* Progress Line */}
-            <div className="absolute top-3.5 left-0 right-0 h-0.5 bg-neutral-200 dark:bg-neutral-700" />
-            <div
-              className="absolute top-3.5 left-0 h-0.5 transition-all duration-500 overflow-hidden"
-              style={{
-                width: `${(currentStageIndex / (STAGES.length - 1)) * 100}%`,
-                backgroundColor: ACCENT,
-              }}
-            >
-              <div className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-white/40 to-transparent progress-bar-shine" />
-            </div>
-
-            {/* Stage Dots */}
-            <div className="relative flex justify-between">
-              {STAGES.map((stage, index) => {
-                const isCompleted = index < currentStageIndex;
-                const isCurrent = index === currentStageIndex;
-                const isPending = index > currentStageIndex;
-
-                return (
-                  <button
-                    key={stage.key}
-                    onClick={() => !isClient && setShowStageModal(true)}
-                    disabled={isClient}
-                    className={`timeline-dot flex flex-col items-center gap-1.5 ${!isClient ? "cursor-pointer" : "cursor-default"}`}
-                  >
-                    <div
-                      className={`relative w-7 h-7 rounded-full flex items-center justify-center transition-all duration-300 ${
-                        isCompleted
-                          ? "text-white"
-                          : isCurrent
-                            ? "text-white stage-active"
-                            : "bg-neutral-200 dark:bg-neutral-700 text-neutral-400"
-                      }`}
-                      style={{
-                        backgroundColor:
-                          isCompleted || isCurrent ? ACCENT : undefined,
-                        color: isCurrent ? ACCENT : undefined,
-                      }}
-                    >
-                      {stage.icon}
-                    </div>
-                    <span
-                      className={`text-[10px] font-medium hidden sm:block ${
-                        isCurrent
-                          ? "text-neutral-900 dark:text-white"
-                          : "text-neutral-400"
-                      }`}
-                    >
-                      {locale === "ka" ? stage.labelKa : stage.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all duration-500 relative overflow-hidden"
-                style={{ width: `${localProgress}%`, backgroundColor: ACCENT }}
-              >
-                <div className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-white/30 to-transparent progress-bar-shine" />
-              </div>
-            </div>
-            <span
-              className="font-mono text-sm font-bold"
-              style={{ color: ACCENT }}
-            >
-              {localProgress}%
+        {/* Due Date */}
+        <div className="rounded-xl p-4 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700">
+          <div className="flex items-center gap-2 mb-2 text-neutral-500 dark:text-neutral-400">
+            <Clock className="w-4 h-4" />
+            <span className="text-xs uppercase tracking-wider font-medium">
+              {locale === "ka" ? "ვადა" : "Due"}
             </span>
           </div>
+          <span className="text-lg font-semibold text-neutral-900 dark:text-white">
+            {project.expectedEndDate
+              ? formatDate(project.expectedEndDate, locale)
+              : project.estimatedDuration
+                ? `${project.estimatedDuration} ${project.estimatedDurationUnit || "days"}`
+                : "—"}
+          </span>
         </div>
+      </div>
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-3 divide-x divide-neutral-100 dark:divide-neutral-800 border-b border-neutral-100 dark:border-neutral-800">
-          {/* Started Date */}
-          <div className="px-4 py-3 text-center">
-            <div className="flex items-center justify-center gap-1.5 text-neutral-400 mb-1">
-              <Calendar className="w-3.5 h-3.5" />
-              <span className="text-[10px] uppercase tracking-wider font-medium">
-                {locale === "ka" ? "დაწყება" : "Started"}
-              </span>
-            </div>
-            <span className="font-mono text-sm font-semibold text-neutral-900 dark:text-white">
-              {project.startedAt
-                ? formatDate(project.startedAt, locale)
-                : formatDate(project.hiredAt, locale)}
+      {/* Budget - Clean with terracotta accent */}
+      {(project.agreedPrice || job.budgetAmount || (job.budgetMin && job.budgetMax)) && (
+        <div
+          className="rounded-xl p-4 border-2"
+          style={{
+            borderColor: TERRACOTTA.warm,
+            backgroundColor: TERRACOTTA.bg,
+          }}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
+              {locale === "ka" ? "შეთანხმებული თანხა" : "Agreed Budget"}
             </span>
-          </div>
-
-          {/* Expected End */}
-          <div className="px-4 py-3 text-center">
-            <div className="flex items-center justify-center gap-1.5 text-neutral-400 mb-1">
-              <Clock className="w-3.5 h-3.5" />
-              <span className="text-[10px] uppercase tracking-wider font-medium">
-                {locale === "ka" ? "დასრულება" : "Due"}
-              </span>
-            </div>
-            <span className="font-mono text-sm font-semibold text-neutral-900 dark:text-white">
-              {project.expectedEndDate
-                ? formatDate(project.expectedEndDate, locale)
-                : project.estimatedDuration
-                  ? `${project.estimatedDuration} ${project.estimatedDurationUnit || "days"}`
-                  : "—"}
-            </span>
-          </div>
-
-          {/* Agreed Price */}
-          <div className="px-4 py-3 text-center">
-            <div className="flex items-center justify-center gap-1.5 text-neutral-400 mb-1">
-              <span className="text-[10px] uppercase tracking-wider font-medium">
-                {locale === "ka" ? "თანხა" : "Budget"}
-              </span>
-            </div>
             <span
-              className="font-mono text-sm font-semibold"
-              style={{ color: ACCENT }}
+              className="text-xl font-bold"
+              style={{ color: TERRACOTTA.primary }}
             >
               {project.agreedPrice
                 ? `₾${project.agreedPrice.toLocaleString()}`
                 : job.budgetAmount
                   ? `₾${job.budgetAmount.toLocaleString()}`
-                  : job.budgetMin && job.budgetMax
-                    ? `₾${job.budgetMin.toLocaleString()}-${job.budgetMax.toLocaleString()}`
-                    : locale === "ka"
-                      ? "შეთანხმებით"
-                      : "TBD"}
+                  : `₾${job.budgetMin?.toLocaleString()}-${job.budgetMax?.toLocaleString()}`
+              }
             </span>
           </div>
         </div>
+      )}
+    </div>
+  );
 
-        {/* Chat Section */}
-        <div className="px-4 sm:px-5 py-4">
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="w-full flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3">
-              <div
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full"
-                style={{ backgroundColor: `${ACCENT}15` }}
-              >
-                <MessageSquare className="w-4 h-4" style={{ color: ACCENT }} />
-                <span
-                  className="text-sm font-semibold"
-                  style={{ color: ACCENT }}
-                >
-                  {locale === "ka" ? "ჩატი" : "Chat"}
-                </span>
-                {messages.length > 0 && (
-                  <span
-                    className="w-5 h-5 rounded-full text-[10px] font-bold text-white flex items-center justify-center"
-                    style={{ backgroundColor: ACCENT }}
-                  >
-                    {messages.length}
-                  </span>
-                )}
-              </div>
-              {messages.length > 0 && (
-                <span className="text-xs text-neutral-400 hidden sm:inline">
-                  {locale === "ka" ? "ბოლო:" : "Last:"}{" "}
-                  {formatRelativeTime(
-                    messages[messages.length - 1].createdAt,
-                    locale
-                  )}
-                </span>
-              )}
-            </div>
-            <ChevronRight
-              className={`w-5 h-5 text-neutral-400 transition-transform duration-300 ${isExpanded ? "rotate-90" : ""}`}
+  const renderChatTab = () => (
+    <div className="flex flex-col h-[380px] sm:h-[420px]">
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-neutral-50 dark:bg-neutral-800/30">
+        {isLoadingMessages ? (
+          <div className="flex items-center justify-center h-full">
+            <Loader2
+              className="w-6 h-6 animate-spin"
+              style={{ color: TERRACOTTA.primary }}
             />
-          </button>
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-neutral-400">
+            <MessageCircle className="w-12 h-12 mb-3 opacity-40" />
+            <p className="text-sm font-medium">
+              {locale === "ka" ? "ჯერ არ არის შეტყობინება" : "No messages yet"}
+            </p>
+            <p className="text-xs mt-1">
+              {locale === "ka" ? "დაიწყე საუბარი" : "Start the conversation"}
+            </p>
+          </div>
+        ) : (
+          <>
+            {messages.map((msg, idx) => {
+              const senderId = getSenderId(msg.senderId);
+              const isMine = senderId === user?.id;
+              const senderName = msg.senderName || (typeof msg.senderId === "object" ? msg.senderId.name : "");
+              const senderAvatar = msg.senderAvatar || (typeof msg.senderId === "object" ? msg.senderId.avatar : undefined);
 
-          {/* Expanded Chat */}
-          {isExpanded && (
-            <div className="mt-4 animate-in slide-in-from-top-2 duration-200">
-              {/* Messages Container */}
-              <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl overflow-hidden">
-                {/* Messages Area */}
-                <div className="h-64 sm:h-80 overflow-y-auto p-4 space-y-3">
-                  {isLoadingMessages ? (
-                    <div className="flex items-center justify-center h-full">
-                      <div
-                        className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin"
-                        style={{
-                          borderColor: ACCENT,
-                          borderTopColor: "transparent",
-                        }}
-                      />
-                    </div>
-                  ) : messages.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-neutral-400">
-                      <MessageSquare className="w-10 h-10 mb-2 opacity-50" />
-                      <p className="text-sm">
-                        {locale === "ka"
-                          ? "ჯერ არ არის შეტყობინება"
-                          : "No messages yet"}
-                      </p>
-                      <p className="text-xs mt-1">
-                        {locale === "ka"
-                          ? "დაიწყე საუბარი"
-                          : "Start the conversation"}
-                      </p>
-                    </div>
-                  ) : (
-                    <>
-                      {messages.map((msg, idx) => {
-                        const senderId = getSenderId(msg.senderId);
-                        const isMine = senderId === user?.id;
-                        const senderName =
-                          msg.senderName ||
-                          (typeof msg.senderId === "object"
-                            ? msg.senderId.name
-                            : "");
-                        const senderAvatar =
-                          msg.senderAvatar ||
-                          (typeof msg.senderId === "object"
-                            ? msg.senderId.avatar
-                            : undefined);
+              return (
+                <div key={msg._id || idx} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+                  <div className={`flex items-end gap-2 max-w-[80%] ${isMine ? "flex-row-reverse" : ""}`}>
+                    {!isMine && (
+                      <Avatar src={senderAvatar} name={senderName} size="sm" className="w-7 h-7 flex-shrink-0" />
+                    )}
+                    <div>
+                      {/* Attachments */}
+                      {msg.attachments?.map((attachment, aIdx) => {
+                        const isImage = attachment.match(/\.(jpg|jpeg|png|gif|webp)$/i) ||
+                          attachment.includes("/image/upload/") ||
+                          (attachment.includes("cloudinary") && !attachment.includes("/raw/"));
 
                         return (
-                          <div
-                            key={msg._id || idx}
-                            className={`flex ${isMine ? "justify-end" : "justify-start"}`}
-                          >
-                            <div
-                              className={`flex items-end gap-2 max-w-[80%] ${isMine ? "flex-row-reverse" : ""}`}
-                            >
-                              {!isMine && (
-                                <Avatar
-                                  src={senderAvatar}
-                                  name={senderName}
-                                  size="sm"
-                                  className="w-7 h-7 flex-shrink-0"
+                          <div key={aIdx} className="mb-1">
+                            {isImage ? (
+                              <a href={storage.getFileUrl(attachment)} target="_blank" rel="noopener noreferrer">
+                                <img
+                                  src={storage.getFileUrl(attachment)}
+                                  alt=""
+                                  className="max-w-[200px] rounded-xl border border-neutral-200 dark:border-neutral-700"
                                 />
-                              )}
-                              <div>
-                                {/* Attachments */}
-                                {msg.attachments?.map((attachment, aIdx) => {
-                                  // Check if it's an image (handle both file extensions and Cloudinary URLs)
-                                  const isImage =
-                                    attachment.match(
-                                      /\.(jpg|jpeg|png|gif|webp)$/i
-                                    ) ||
-                                    attachment.includes("/image/upload/") ||
-                                    (attachment.includes("cloudinary") &&
-                                      !attachment.includes("/raw/"));
-
-                                  return (
-                                    <div key={aIdx} className="mb-1">
-                                      {isImage ? (
-                                        <a
-                                          href={storage.getFileUrl(attachment)}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                        >
-                                          <img
-                                            src={storage.getFileUrl(attachment)}
-                                            alt=""
-                                            className="max-w-[200px] rounded-xl border border-neutral-200 dark:border-neutral-700"
-                                          />
-                                        </a>
-                                      ) : (
-                                        <a
-                                          href={storage.getFileUrl(attachment)}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-neutral-700 rounded-xl border border-neutral-200 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-600 transition-colors"
-                                        >
-                                          <FileText className="w-4 h-4 text-neutral-500" />
-                                          <span className="text-xs truncate max-w-[120px]">
-                                            {attachment.split("/").pop()}
-                                          </span>
-                                        </a>
-                                      )}
-                                    </div>
-                                  );
-                                })}
-                                {/* Message Content */}
-                                {msg.content ? (
-                                  <div
-                                    className={`px-3.5 py-2 rounded-2xl ${
-                                      isMine
-                                        ? "rounded-br-md text-white"
-                                        : "bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white rounded-bl-md border border-neutral-200 dark:border-neutral-600"
-                                    }`}
-                                    style={
-                                      isMine ? { backgroundColor: ACCENT } : {}
-                                    }
-                                  >
-                                    <p className="text-sm leading-relaxed">
-                                      {msg.content}
-                                    </p>
-                                    <p
-                                      className={`text-[10px] mt-1 ${isMine ? "text-white/60" : "text-neutral-400"}`}
-                                    >
-                                      {formatMessageTime(msg.createdAt)}
-                                    </p>
-                                  </div>
-                                ) : msg.attachments?.length ? (
-                                  <p className="text-[10px] text-neutral-500 dark:text-neutral-400 mt-1">
-                                    {formatMessageTime(msg.createdAt)}
-                                  </p>
-                                ) : null}
-                              </div>
-                            </div>
+                              </a>
+                            ) : (
+                              <a
+                                href={storage.getFileUrl(attachment)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-neutral-700 rounded-xl border border-neutral-200 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-600 transition-colors"
+                              >
+                                <FileText className="w-4 h-4 text-neutral-500" />
+                                <span className="text-xs truncate max-w-[120px]">{attachment.split("/").pop()}</span>
+                              </a>
+                            )}
                           </div>
                         );
                       })}
-                      {/* Typing indicator */}
-                      {otherUserTyping && (
-                        <div className="flex items-center gap-2">
-                          <div className="flex gap-1 px-3 py-2 bg-white dark:bg-neutral-700 rounded-2xl rounded-bl-md border border-neutral-200 dark:border-neutral-600">
-                            <span
-                              className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce"
-                              style={{ animationDelay: "0ms" }}
-                            />
-                            <span
-                              className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce"
-                              style={{ animationDelay: "150ms" }}
-                            />
-                            <span
-                              className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce"
-                              style={{ animationDelay: "300ms" }}
-                            />
-                          </div>
+
+                      {/* Message bubble */}
+                      {msg.content && (
+                        <div
+                          className={`
+                            px-4 py-2.5 rounded-2xl
+                            ${isMine
+                              ? "rounded-br-md text-white"
+                              : "bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white rounded-bl-md shadow-sm"
+                            }
+                          `}
+                          style={isMine ? { backgroundColor: TERRACOTTA.primary } : {}}
+                        >
+                          <p className="text-sm leading-relaxed">{msg.content}</p>
+                          <p className={`text-[10px] mt-1 ${isMine ? "text-white/60" : "text-neutral-400"}`}>
+                            {formatMessageTime(msg.createdAt)}
+                          </p>
                         </div>
                       )}
-                      <div ref={messagesEndRef} />
-                    </>
-                  )}
-                </div>
-
-                {/* Input Area */}
-                <div className="p-3 border-t border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800">
-                  <div className="flex items-center gap-2">
-                    {/* File Upload Button */}
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={isUploading}
-                      className="w-9 h-9 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50"
-                    >
-                      {isUploading ? (
-                        <div className="w-4 h-4 border-2 border-neutral-400 border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <Paperclip className="w-5 h-5" />
-                      )}
-                    </button>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                    />
-
-                    {/* Text Input */}
-                    <input
-                      ref={inputRef}
-                      type="text"
-                      value={newMessage}
-                      onChange={(e) => {
-                        setNewMessage(e.target.value);
-                        emitTyping();
-                      }}
-                      onKeyDown={(e) =>
-                        e.key === "Enter" && !e.shiftKey && handleSendMessage()
-                      }
-                      placeholder={
-                        locale === "ka"
-                          ? "დაწერე შეტყობინება..."
-                          : "Type a message..."
-                      }
-                      className="flex-1 px-4 py-2 text-sm bg-neutral-50 dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-1"
-                      style={{ "--tw-ring-color": ACCENT } as any}
-                    />
-
-                    {/* Send Button */}
-                    <button
-                      onClick={() => handleSendMessage()}
-                      disabled={!newMessage.trim() || isSubmitting}
-                      className="w-9 h-9 rounded-full flex items-center justify-center text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
-                      style={{ backgroundColor: ACCENT }}
-                    >
-                      <Send className="w-4 h-4" />
-                    </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          )}
-        </div>
+              );
+            })}
 
-        {/* Polls Section */}
-        <div className="px-4 sm:px-5 py-4 border-t border-neutral-100 dark:border-neutral-800">
+            {/* Typing indicator */}
+            {otherUserTyping && (
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1 px-3 py-2 bg-white dark:bg-neutral-700 rounded-2xl rounded-bl-md shadow-sm">
+                  <span className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: TERRACOTTA.primary, animationDelay: "0ms" }} />
+                  <span className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: TERRACOTTA.primary, animationDelay: "150ms" }} />
+                  <span className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: TERRACOTTA.primary, animationDelay: "300ms" }} />
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </>
+        )}
+      </div>
+
+      {/* Input Area */}
+      <div className="p-3 border-t border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => setIsPollsExpanded(!isPollsExpanded)}
-            className="w-full flex items-center justify-between group"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="w-10 h-10 rounded-full flex items-center justify-center text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
+            style={{ color: isUploading ? undefined : TERRACOTTA.primary }}
           >
-            <div className="flex items-center gap-3">
-              <div
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full"
-                style={{ backgroundColor: `${ACCENT}15` }}
-              >
-                <BarChart3 className="w-4 h-4" style={{ color: ACCENT }} />
-                <span
-                  className="text-sm font-semibold"
-                  style={{ color: ACCENT }}
-                >
-                  {locale === "ka" ? "გამოკითხვები" : "Polls"}
-                </span>
-              </div>
-            </div>
-            <ChevronRight
-              className={`w-5 h-5 text-neutral-400 transition-transform duration-300 ${isPollsExpanded ? "rotate-90" : ""}`}
-            />
+            {isUploading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Paperclip className="w-5 h-5" />
+            )}
           </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
 
-          {/* Expanded Polls */}
-          {isPollsExpanded && (
-            <div className="mt-4 animate-in slide-in-from-top-2 duration-200">
-              <PollsTab
-                jobId={job._id}
-                isPro={!isClient}
-                isClient={isClient}
-                userId={user?.id}
-                locale={locale}
-              />
-            </div>
+          <input
+            ref={inputRef}
+            type="text"
+            value={newMessage}
+            onChange={(e) => {
+              setNewMessage(e.target.value);
+              emitTyping();
+            }}
+            onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
+            placeholder={locale === "ka" ? "დაწერე შეტყობინება..." : "Type a message..."}
+            className="flex-1 px-4 py-2.5 text-sm bg-neutral-100 dark:bg-neutral-800 border-0 rounded-full focus:outline-none focus:ring-2 text-neutral-900 dark:text-white placeholder:text-neutral-400"
+            style={{ "--tw-ring-color": TERRACOTTA.primary } as React.CSSProperties}
+          />
+
+          <button
+            onClick={() => handleSendMessage()}
+            disabled={!newMessage.trim() || isSubmitting}
+            className="w-10 h-10 rounded-full flex items-center justify-center text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
+            style={{ backgroundColor: TERRACOTTA.primary }}
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderPollsTab = () => (
+    <div className="p-4">
+      <PollsTab
+        jobId={job._id}
+        isPro={!isClient}
+        isClient={isClient}
+        userId={user?.id}
+        locale={locale}
+        embedded
+      />
+    </div>
+  );
+
+  const renderMaterialsTab = () => (
+    <div className="p-4">
+      <ProjectWorkspace
+        jobId={job._id}
+        locale={locale}
+        isClient={isClient}
+        embedded
+      />
+    </div>
+  );
+
+  return (
+    <div className="bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-100 dark:border-neutral-800 shadow-sm hover:shadow-lg transition-shadow duration-300">
+      {/* Header with Hero */}
+      <div className="relative">
+        {/* Background Image */}
+        <div className="h-20 sm:h-24 relative overflow-hidden">
+          {firstImage ? (
+            <img src={storage.getFileUrl(firstImage)} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <div
+              className="w-full h-full"
+              style={{ background: `linear-gradient(135deg, ${TERRACOTTA.primary} 0%, ${TERRACOTTA.light} 100%)` }}
+            />
           )}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60" />
         </div>
 
-        {/* Actions Footer */}
-        <div className="px-4 sm:px-5 py-3 bg-neutral-50 dark:bg-neutral-800/50 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-3">
-          <Link
-            href={`/messages?conversation=${isClient ? project.proId?._id : project.clientId?._id}`}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-800 transition-colors"
-          >
-            <MessageSquare className="w-4 h-4" />
-            {locale === "ka" ? "მესიჯი" : "Message"}
-          </Link>
-
-          <Link
-            href={`/jobs/${job._id}`}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90"
-            style={{ backgroundColor: ACCENT }}
-          >
-            {locale === "ka" ? "დეტალები" : "View Details"}
-            <ChevronRight className="w-4 h-4" />
-          </Link>
+        {/* Title Overlay */}
+        <div className="absolute inset-x-0 bottom-0 p-4">
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-white/60">
+              #{job._id.slice(-6).toUpperCase()}
+            </span>
+          </div>
+          <h3 className="text-base font-semibold text-white line-clamp-1">{job.title}</h3>
         </div>
       </div>
 
-      {/* Stage Change Modal */}
-      {showStageModal && !isClient && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setShowStageModal(false)}
-          />
-          <div className="relative bg-white dark:bg-neutral-900 rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between p-4 border-b border-neutral-100 dark:border-neutral-800">
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
-                {locale === "ka" ? "სტატუსის განახლება" : "Update Stage"}
-              </h3>
-              <button
-                onClick={() => setShowStageModal(false)}
-                className="p-2 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-4 space-y-2">
-              {STAGES.map((stage, index) => {
-                const isCompleted = index < currentStageIndex;
-                const isCurrent = index === currentStageIndex;
-                const canSelect = index > currentStageIndex || isCurrent;
+      {/* Inline Stage Stepper - Clean design */}
+      <div className="border-b border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+        <InlineStageStepper
+          currentStage={localStage}
+          locale={locale}
+          isPro={!isClient}
+          isUpdating={isUpdatingStage}
+          onStageChange={handleStageChange}
+        />
+      </div>
 
-                return (
-                  <button
-                    key={stage.key}
-                    onClick={() => canSelect && handleStageChange(stage.key)}
-                    disabled={!canSelect || isSubmitting}
-                    className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
-                      isCurrent
-                        ? "ring-2"
-                        : canSelect
-                          ? "hover:bg-neutral-50 dark:hover:bg-neutral-800"
-                          : "opacity-50 cursor-not-allowed"
-                    }`}
-                    style={{
-                      backgroundColor: isCurrent ? `${ACCENT}10` : undefined,
-                      ["--tw-ring-color" as any]: ACCENT,
-                    }}
-                  >
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        isCompleted || isCurrent
-                          ? "text-white"
-                          : "bg-neutral-200 dark:bg-neutral-700 text-neutral-400"
-                      }`}
-                      style={{
-                        backgroundColor:
-                          isCompleted || isCurrent ? ACCENT : undefined,
-                      }}
-                    >
-                      {stage.icon}
-                    </div>
-                    <span
-                      className={`font-medium ${
-                        isCurrent
-                          ? ""
-                          : "text-neutral-600 dark:text-neutral-400"
-                      }`}
-                      style={{ color: isCurrent ? ACCENT : undefined }}
-                    >
-                      {locale === "ka" ? stage.labelKa : stage.label}
-                    </span>
-                    {isCurrent && (
-                      <span
-                        className="ml-auto text-xs px-2 py-1 rounded-full text-white"
-                        style={{ backgroundColor: ACCENT }}
-                      >
-                        {locale === "ka" ? "მიმდინარე" : "Current"}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+      {/* Tab Navigation */}
+      <div className="flex items-center justify-around border-b border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+        <TabButton
+          active={activeTab === "overview"}
+          onClick={() => setActiveTab("overview")}
+          icon={<Eye className="w-4 h-4" />}
+          label={locale === "ka" ? "მიმოხილვა" : "Overview"}
+        />
+        <TabButton
+          active={activeTab === "chat"}
+          onClick={() => setActiveTab("chat")}
+          icon={<MessageCircle className="w-4 h-4" />}
+          label={locale === "ka" ? "ჩატი" : "Chat"}
+          badge={messages.length}
+        />
+        <TabButton
+          active={activeTab === "polls"}
+          onClick={() => setActiveTab("polls")}
+          icon={<BarChart3 className="w-4 h-4" />}
+          label={locale === "ka" ? "გამოკითხვები" : "Polls"}
+        />
+        <TabButton
+          active={activeTab === "materials"}
+          onClick={() => setActiveTab("materials")}
+          icon={<FolderOpen className="w-4 h-4" />}
+          label={locale === "ka" ? "მასალები" : "Materials"}
+        />
+      </div>
+
+      {/* Tab Content */}
+      <div className="min-h-[180px]">
+        {activeTab === "overview" && renderOverviewTab()}
+        {activeTab === "chat" && renderChatTab()}
+        {activeTab === "polls" && renderPollsTab()}
+        {activeTab === "materials" && renderMaterialsTab()}
+      </div>
+
+      {/* Bottom Action Bar - Partner Info + Actions */}
+      <div className="sticky bottom-0 bg-white dark:bg-neutral-900 border-t border-neutral-100 dark:border-neutral-800 px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
+          {/* Partner Info */}
+          <Link
+            href={isClient ? `/professionals/${project.proId?._id}` : `/users/${project.clientId?._id}`}
+            className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
+          >
+            <Avatar
+              src={partnerAvatar}
+              name={partnerName}
+              size="md"
+              className="w-10 h-10 ring-2 ring-neutral-100 dark:ring-neutral-700"
+            />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-neutral-900 dark:text-white truncate">
+                {partnerName}
+              </p>
+              <p className="text-xs text-neutral-400 truncate">
+                {isClient
+                  ? (partnerTitle || (locale === 'ka' ? 'სპეციალისტი' : 'Professional'))
+                  : (locale === 'ka' ? 'კლიენტი' : 'Client')
+                }
+              </p>
             </div>
+          </Link>
+
+          {/* Quick Actions */}
+          <div className="flex items-center gap-2">
+            {isClient && partnerPhone && (
+              <a
+                href={`tel:${partnerPhone}`}
+                className="w-10 h-10 rounded-full flex items-center justify-center border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                style={{ color: TERRACOTTA.primary }}
+              >
+                <Phone className="w-4 h-4" />
+              </a>
+            )}
+            <Link
+              href={`/jobs/${job._id}`}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90"
+              style={{ backgroundColor: TERRACOTTA.primary }}
+            >
+              {locale === "ka" ? "დეტალები" : "Details"}
+              <ChevronRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
-      )}
-    </>
+      </div>
+    </div>
   );
 }
