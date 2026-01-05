@@ -1,15 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { BarChart3, CheckCircle, ChevronRight, Clock, Loader2, Plus } from 'lucide-react';
+import { BarChart3, ChevronRight, Loader2, Plus } from 'lucide-react';
 import PollCard, { Poll } from './PollCard';
 import CreatePollModal from './CreatePollModal';
 import { api } from '@/lib/api';
-import { cn } from '@/lib/utils';
 
 const ACCENT = '#C4735B';
-
-type FilterType = 'all' | 'active' | 'approved';
 
 interface PollsTabProps {
   jobId: string;
@@ -30,7 +27,6 @@ export default function PollsTab({
 }: PollsTabProps) {
   const [polls, setPolls] = useState<Poll[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [filter, setFilter] = useState<FilterType>('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [error, setError] = useState('');
   const [isExpanded, setIsExpanded] = useState(embedded); // Auto-expand if embedded
@@ -88,84 +84,11 @@ export default function PollsTab({
     setPolls(polls.filter(p => p._id !== pollId));
   };
 
-  const filteredPolls = polls.filter(poll => {
-    if (filter === 'all') return true;
-    if (filter === 'active') return poll.status === 'active';
-    if (filter === 'approved') return poll.status === 'approved';
-    return true;
-  });
-
   const activePollsCount = polls.filter(p => p.status === 'active').length;
-  const approvedPollsCount = polls.filter(p => p.status === 'approved').length;
 
   // Render content section (shared between accordion and embedded modes)
   const renderContent = () => (
     <>
-      {/* Toolbar */}
-      <div className={cn(
-        "flex flex-col gap-3",
-        embedded ? "pb-3 mb-3 border-b border-[var(--color-border)]" : "px-4 py-3 border-b border-[var(--color-border)] bg-[var(--color-bg-elevated)]"
-      )}>
-        {/* Top row: Title + Create button */}
-        {isPro && (
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-[var(--color-text-secondary)]">
-              {polls.length > 0
-                ? (locale === 'ka' ? `${polls.length} გამოკითხვა` : `${polls.length} poll${polls.length > 1 ? 's' : ''}`)
-                : (locale === 'ka' ? 'გამოკითხვები არ არის' : 'No polls yet')}
-            </span>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90"
-              style={{ backgroundColor: ACCENT }}
-            >
-              <Plus className="w-3.5 h-3.5" />
-              {locale === 'ka' ? 'ახალი' : 'New'}
-            </button>
-          </div>
-        )}
-
-        {/* Filter tabs */}
-        {polls.length > 0 && (
-          <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
-            <button
-              onClick={() => setFilter('all')}
-              className={cn(
-                'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap',
-                filter === 'all'
-                  ? 'bg-[#C4735B]/10 text-[#C4735B]'
-                  : 'text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)]'
-              )}
-            >
-              {locale === 'ka' ? 'ყველა' : 'All'} ({polls.length})
-            </button>
-            <button
-              onClick={() => setFilter('active')}
-              className={cn(
-                'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 whitespace-nowrap',
-                filter === 'active'
-                  ? 'bg-[#C4735B]/10 text-[#C4735B]'
-                  : 'text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)]'
-              )}
-            >
-              <Clock className="w-3 h-3" />
-              {locale === 'ka' ? 'აქტიური' : 'Active'} ({activePollsCount})
-            </button>
-            <button
-              onClick={() => setFilter('approved')}
-              className={cn(
-                'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 whitespace-nowrap',
-                filter === 'approved'
-                  ? 'bg-emerald-500/10 text-emerald-600'
-                  : 'text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)]'
-              )}
-            >
-              <CheckCircle className="w-3 h-3" />
-              {locale === 'ka' ? 'დამტკიცებული' : 'Approved'} ({approvedPollsCount})
-            </button>
-          </div>
-        )}
-      </div>
 
       {/* Content */}
       <div className={embedded ? "" : "p-4"}>
@@ -177,9 +100,9 @@ export default function PollsTab({
           <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm">
             {error}
           </div>
-        ) : filteredPolls.length > 0 ? (
+        ) : polls.length > 0 ? (
           <div className="space-y-4">
-            {filteredPolls.map((poll) => (
+            {polls.map((poll) => (
               <PollCard
                 key={poll._id}
                 poll={poll}
@@ -195,28 +118,24 @@ export default function PollsTab({
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-12 text-[var(--color-text-tertiary)]">
-            <BarChart3 className="w-12 h-12 mb-3 opacity-40" />
+          <div className="flex flex-col items-center justify-center py-8 text-[var(--color-text-tertiary)]">
+            <BarChart3 className="w-10 h-10 mb-2 opacity-40" />
             <p className="text-sm font-medium">
-              {filter === 'all'
-                ? (locale === 'ka' ? 'გამოკითხვები არ არის' : 'No polls yet')
-                : filter === 'active'
-                  ? (locale === 'ka' ? 'აქტიური გამოკითხვები არ არის' : 'No active polls')
-                  : (locale === 'ka' ? 'დამტკიცებული გამოკითხვები არ არის' : 'No approved polls')}
+              {locale === 'ka' ? 'გამოკითხვები არ არის' : 'No polls yet'}
             </p>
             <p className="text-xs mt-1">
               {isPro
                 ? (locale === 'ka' ? 'შექმენით გამოკითხვა კლიენტის არჩევანისთვის' : 'Create a poll for client to choose from')
-                : (locale === 'ka' ? 'დიზაინერი შექმნის გამოკითხვას' : 'Designer will create polls for your decisions')}
+                : (locale === 'ka' ? 'პროფესიონალი შექმნის გამოკითხვას' : 'Professional will create polls for your decisions')}
             </p>
-            {isPro && filter === 'all' && (
+            {isPro && (
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white text-sm font-medium transition-colors hover:opacity-90"
+                className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white text-sm font-medium transition-colors hover:opacity-90"
                 style={{ backgroundColor: ACCENT }}
               >
                 <Plus className="w-4 h-4" />
-                {locale === 'ka' ? 'პირველი გამოკითხვა' : 'Create First Poll'}
+                {locale === 'ka' ? 'შექმნა' : 'Create Poll'}
               </button>
             )}
           </div>

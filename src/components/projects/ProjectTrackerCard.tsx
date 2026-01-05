@@ -16,13 +16,16 @@ import {
   FileText,
   FolderOpen,
   History,
+  Image,
   Loader2,
   MessageCircle,
   Paperclip,
   Phone,
   Play,
+  Plus,
   RotateCcw,
   Send,
+  Upload,
   Vote,
   Package,
   Star,
@@ -484,6 +487,12 @@ export default function ProjectTrackerCard({
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [hasSubmittedReview, setHasSubmittedReview] = useState(false);
 
+  // Portfolio completion modal state (for pro completing job)
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
+  const [isUploadingPortfolio, setIsUploadingPortfolio] = useState(false);
+  const portfolioInputRef = useRef<HTMLInputElement>(null);
+
   const currentStageIndex = getStageIndex(localStage);
   const firstImage = job.media?.[0]?.url || job.images?.[0];
   const partnerName = isClient ? project.proId?.name : project.clientId?.name;
@@ -815,6 +824,12 @@ export default function ProjectTrackerCard({
   };
 
   const handleStageChange = async (newStage: ProjectStage) => {
+    // If pro is moving to completed stage, show completion modal to upload portfolio images
+    if (newStage === "completed" && !isClient) {
+      setShowCompletionModal(true);
+      return;
+    }
+
     const previousStage = localStage;
 
     setLocalStage(newStage);
@@ -837,6 +852,69 @@ export default function ProjectTrackerCard({
     }
   };
 
+  // Handle portfolio image upload for completion
+  const handlePortfolioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploadingPortfolio(true);
+    const newImages: string[] = [];
+
+    try {
+      for (const file of Array.from(files)) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const uploadResponse = await api.post("/upload", formData);
+        const url = uploadResponse.data.url || uploadResponse.data.filename;
+        newImages.push(url);
+      }
+      setPortfolioImages((prev) => [...prev, ...newImages]);
+    } catch (err) {
+      toast.error(
+        locale === "ka" ? "შეცდომა" : "Error",
+        locale === "ka" ? "სურათის ატვირთვა ვერ მოხერხდა" : "Failed to upload image"
+      );
+    } finally {
+      setIsUploadingPortfolio(false);
+      if (portfolioInputRef.current) {
+        portfolioInputRef.current.value = "";
+      }
+    }
+  };
+
+  // Remove portfolio image
+  const removePortfolioImage = (index: number) => {
+    setPortfolioImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Complete job with portfolio images
+  const handleCompleteWithPortfolio = async () => {
+    const previousStage = localStage;
+    setLocalStage("completed");
+    setIsUpdatingStage(true);
+
+    try {
+      await api.patch(`/jobs/projects/${job._id}/stage`, {
+        stage: "completed",
+        portfolioImages: portfolioImages.length > 0 ? portfolioImages : undefined,
+      });
+      toast.success(
+        locale === "ka" ? "წარმატება" : "Success",
+        locale === "ka" ? "პროექტი დასრულდა" : "Project completed"
+      );
+      setShowCompletionModal(false);
+      setPortfolioImages([]);
+    } catch (err) {
+      setLocalStage(previousStage);
+      toast.error(
+        locale === "ka" ? "შეცდომა" : "Error",
+        locale === "ka" ? "პროექტი ვერ დასრულდა" : "Failed to complete project"
+      );
+    } finally {
+      setIsUpdatingStage(false);
+    }
+  };
+
   // Client confirms completion and closes job (triggers payment)
   const handleClientConfirm = async () => {
     setIsUpdatingStage(true);
@@ -847,8 +925,8 @@ export default function ProjectTrackerCard({
         locale === "ka" ? "პროექტი დაიხურა. გადახდა მოხდება მალე." : "Project closed. Payment will be processed shortly."
       );
       // Show review modal after successful confirmation
+      // Don't call onRefresh yet - we'll call it after review is submitted or dismissed
       setShowReviewModal(true);
-      onRefresh?.();
     } catch (err) {
       toast.error(
         locale === "ka" ? "შეცდომა" : "Error",
@@ -1546,7 +1624,10 @@ export default function ProjectTrackerCard({
                 {locale === "ka" ? "შეაფასეთ სპეციალისტი" : "Rate the Professional"}
               </h3>
               <button
-                onClick={() => setShowReviewModal(false)}
+                onClick={() => {
+                  setShowReviewModal(false);
+                  onRefresh?.();
+                }}
                 className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
               >
                 <X className="w-5 h-5 text-neutral-500" />
@@ -1613,7 +1694,10 @@ export default function ProjectTrackerCard({
             {/* Modal Footer */}
             <div className="flex items-center gap-3 px-5 py-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50">
               <button
-                onClick={() => setShowReviewModal(false)}
+                onClick={() => {
+                  setShowReviewModal(false);
+                  onRefresh?.();
+                }}
                 className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors"
               >
                 {locale === "ka" ? "მოგვიანებით" : "Later"}
@@ -1630,6 +1714,128 @@ export default function ProjectTrackerCard({
                   <>
                     <Star className="w-4 h-4" />
                     {locale === "ka" ? "გაგზავნა" : "Submit"}
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Portfolio Completion Modal (Pro completing job) */}
+      {showCompletionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                {locale === "ka" ? "პროექტის დასრულება" : "Complete Project"}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowCompletionModal(false);
+                  setPortfolioImages([]);
+                }}
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              >
+                <X className="w-5 h-5 text-neutral-500" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-5 space-y-5 overflow-y-auto flex-1">
+              {/* Info text */}
+              <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                <p className="text-sm text-blue-800 dark:text-blue-300">
+                  {locale === "ka"
+                    ? "ატვირთეთ დასრულებული პროექტის ფოტოები თქვენს პორტფოლიოში დასამატებლად. ეს სურათები გამოჩნდება თქვენს პროფილზე და ხელს შეუწყობს ახალი კლიენტების მოზიდვას."
+                    : "Upload photos of the completed project to add to your portfolio. These images will appear on your profile and help attract new clients."}
+                </p>
+              </div>
+
+              {/* Hidden file input */}
+              <input
+                ref={portfolioInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handlePortfolioUpload}
+                className="hidden"
+              />
+
+              {/* Upload area */}
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  {locale === "ka" ? "პორტფოლიოს სურათები" : "Portfolio Images"}
+                  <span className="text-neutral-400 font-normal ml-1">
+                    ({locale === "ka" ? "არასავალდებულო" : "optional"})
+                  </span>
+                </label>
+
+                {/* Uploaded images grid */}
+                {portfolioImages.length > 0 && (
+                  <div className="grid grid-cols-3 gap-3">
+                    {portfolioImages.map((url, index) => (
+                      <div key={index} className="relative aspect-square rounded-xl overflow-hidden group">
+                        <img
+                          src={storage.getFileUrl(url)}
+                          alt={`Portfolio ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          onClick={() => removePortfolioImage(index)}
+                          className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Upload button */}
+                <button
+                  onClick={() => portfolioInputRef.current?.click()}
+                  disabled={isUploadingPortfolio}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-8 rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-600 text-neutral-500 dark:text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+                >
+                  {isUploadingPortfolio ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      <Upload className="w-5 h-5" />
+                      <span className="text-sm font-medium">
+                        {locale === "ka" ? "სურათების ატვირთვა" : "Upload Images"}
+                      </span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center gap-3 px-5 py-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50">
+              <button
+                onClick={() => {
+                  setShowCompletionModal(false);
+                  setPortfolioImages([]);
+                }}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors"
+              >
+                {locale === "ka" ? "გაუქმება" : "Cancel"}
+              </button>
+              <button
+                onClick={handleCompleteWithPortfolio}
+                disabled={isUpdatingStage}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                style={{ backgroundColor: TERRACOTTA.primary }}
+              >
+                {isUpdatingStage ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    {locale === "ka" ? "დასრულება" : "Complete"}
                   </>
                 )}
               </button>

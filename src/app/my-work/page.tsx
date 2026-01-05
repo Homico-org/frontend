@@ -30,6 +30,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { io, Socket } from 'socket.io-client';
 
 type TabType = 'active' | 'proposals' | 'completed';
 
@@ -106,6 +107,7 @@ function MyWorkPageContent() {
   const [isWithdrawing, setIsWithdrawing] = useState(false);
 
   const hasFetched = useRef(false);
+  const socketRef = useRef<Socket | null>(null);
 
   // Helper functions
   const isProjectCompleted = (p: Proposal) =>
@@ -182,6 +184,55 @@ function MyWorkPageContent() {
       api.post('/jobs/counters/mark-proposal-updates-viewed').catch(() => {});
     }
   }, [isAuthenticated, user, fetchAllProposals]);
+
+  // WebSocket connection for real-time project stage updates
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    const wsUrl = apiUrl.replace(/^http/, "ws");
+
+    socketRef.current = io(`${wsUrl}/chat`, {
+      auth: { token },
+      transports: ["websocket"],
+    });
+
+    socketRef.current.on("connect", () => {
+      console.log("[MyWork] WebSocket connected");
+    });
+
+    // Listen for project stage updates
+    socketRef.current.on("projectStageUpdate", (data: { jobId: string; stage: string; progress: number; project: any }) => {
+      console.log("[MyWork] Project stage update:", data);
+      // Update the proposal's project tracking data in state
+      setAllProposals((prevProposals) =>
+        prevProposals.map((proposal) => {
+          if (proposal.jobId._id === data.jobId) {
+            return {
+              ...proposal,
+              projectTracking: {
+                ...proposal.projectTracking,
+                _id: proposal.projectTracking?._id || '',
+                currentStage: data.stage as ProjectTracking['currentStage'],
+                progress: data.progress,
+                startedAt: data.project?.startedAt,
+                completedAt: data.project?.completedAt,
+              },
+            };
+          }
+          return proposal;
+        })
+      );
+    });
+
+    return () => {
+      socketRef.current?.disconnect();
+      socketRef.current = null;
+    };
+  }, [isAuthenticated, user]);
 
   const handleWithdraw = async () => {
     if (!withdrawModalId) return;

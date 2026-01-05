@@ -6,9 +6,11 @@ import MediaLightbox, { MediaItem as LightboxMediaItem } from "@/components/comm
 import SpecCard from "@/components/jobs/SpecCard";
 import RequirementBadge from "@/components/jobs/RequirementBadge";
 import PollsTab from "@/components/polls/PollsTab";
+import ProjectChat from "@/components/projects/ProjectChat";
 import ProjectWorkspace from "@/components/projects/ProjectWorkspace";
 import { ConfirmModal } from "@/components/ui/Modal";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/contexts/ToastContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
 import api from "@/lib/api";
@@ -16,6 +18,7 @@ import { storage } from "@/services/storage";
 import {
   Armchair,
   ArrowLeft,
+  BadgeCheck,
   BarChart3,
   Building2,
   Calendar,
@@ -27,19 +30,24 @@ import {
   DoorOpen,
   Edit3,
   ExternalLink,
+  Eye,
   Facebook,
   Hammer,
   Home,
   Layers,
+  Loader2,
   Map,
   MapPin,
   Maximize2,
   Mountain,
   Package,
+  Play,
+  RotateCcw,
   Ruler,
   Send,
   Share2,
   Sparkles,
+  Star,
   Trash2,
   Users,
   X,
@@ -47,12 +55,34 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { io, Socket } from "socket.io-client";
 
 // Design tokens
 const ACCENT = "#C4735B";
 const ACCENT_LIGHT = "#D4897A";
 const ACCENT_DARK = "#A85D4A";
+
+// Project stage types and constants
+type ProjectStage = "hired" | "started" | "in_progress" | "review" | "completed";
+
+const STAGES: {
+  key: ProjectStage;
+  label: string;
+  labelKa: string;
+  icon: React.ReactNode;
+  progress: number;
+}[] = [
+  { key: "hired", label: "Hired", labelKa: "დაქირავებული", icon: <Check className="w-3.5 h-3.5" />, progress: 10 },
+  { key: "started", label: "Started", labelKa: "დაწყებული", icon: <Play className="w-3.5 h-3.5" />, progress: 25 },
+  { key: "in_progress", label: "In Progress", labelKa: "მიმდინარე", icon: <Clock className="w-3.5 h-3.5" />, progress: 50 },
+  { key: "review", label: "Review", labelKa: "შემოწმება", icon: <Eye className="w-3.5 h-3.5" />, progress: 75 },
+  { key: "completed", label: "Done", labelKa: "დასრულებული", icon: <CheckCircle2 className="w-3.5 h-3.5" />, progress: 100 },
+];
+
+function getStageIndex(stage: ProjectStage): number {
+  return STAGES.findIndex((s) => s.key === stage);
+}
 
 interface MediaItem {
   type: "image" | "video";
@@ -683,6 +713,7 @@ export default function JobDetailClient() {
   const { user } = useAuth();
   const { getCategoryLabel, locale } = useCategoryLabels();
   const { trackEvent } = useAnalytics();
+  const toast = useToast();
 
   const [job, setJob] = useState<Job | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -708,9 +739,25 @@ export default function JobDetailClient() {
   const [isVisible, setIsVisible] = useState(false);
   const [copyToast, setCopyToast] = useState(false);
   const [isPollsExpanded, setIsPollsExpanded] = useState(true);
+  const [isResourcesExpanded, setIsResourcesExpanded] = useState(true);
+
+  // Review state
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewText, setReviewText] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [hasSubmittedReview, setHasSubmittedReview] = useState(false);
 
   const isOwner = user && job?.clientId && user.id === job.clientId._id;
   const isPro = user?.role === "pro" || user?.role === "admin";
+  // Check if current user is the hired pro for this job
+  const isHiredPro = isPro && job?.hiredPro && user?.id === job.hiredPro.userId?._id;
+
+  // WebSocket for real-time updates (polls, resources, stage)
+  const socketRef = useRef<Socket | null>(null);
+  const [projectStage, setProjectStage] = useState<ProjectStage>("hired");
+  const [isUpdatingStage, setIsUpdatingStage] = useState(false);
+  const [isClientConfirmed, setIsClientConfirmed] = useState(false);
 
   const allMedia: MediaItem[] = job
     ? [
@@ -724,6 +771,105 @@ export default function JobDetailClient() {
   useEffect(() => {
     setIsVisible(true);
   }, []);
+
+  // WebSocket connection for real-time updates (for hired pro or client)
+  useEffect(() => {
+    if (!job?._id || !user) return;
+
+    // Only connect if user is the owner (client) or the hired pro
+    const shouldConnect = isOwner || isHiredPro;
+    if (!shouldConnect) return;
+
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    const wsUrl = apiUrl.replace(/^http/, "ws");
+
+    socketRef.current = io(`${wsUrl}/chat`, {
+      auth: { token },
+      transports: ["websocket"],
+    });
+
+    socketRef.current.on("connect", () => {
+      console.log("[JobDetail] WebSocket connected");
+      // Join the project room for this job
+      socketRef.current?.emit("joinProjectChat", job._id);
+    });
+
+    // Listen for project stage updates
+    socketRef.current.on("projectStageUpdate", (data: { jobId: string; stage: string; progress: number }) => {
+      console.log("[JobDetail] Project stage update:", data);
+      if (data.jobId === job._id) {
+        setProjectStage(data.stage as ProjectStage);
+      }
+    });
+
+    // Listen for poll updates (will trigger re-render in PollsTab)
+    socketRef.current.on("projectPollUpdate", (data: { type: string; poll: any }) => {
+      console.log("[JobDetail] Poll update:", data);
+      // PollsTab component handles its own state, this is just for logging
+    });
+
+    // Listen for materials updates (will trigger re-render in ProjectWorkspace)
+    socketRef.current.on("projectMaterialsUpdate", (data: { type: string }) => {
+      console.log("[JobDetail] Materials update:", data);
+      // ProjectWorkspace component handles its own state, this is just for logging
+    });
+
+    return () => {
+      socketRef.current?.emit("leaveProjectChat", job._id);
+      socketRef.current?.disconnect();
+      socketRef.current = null;
+    };
+  }, [job?._id, user, isOwner, isHiredPro]);
+
+  // Check if owner has already submitted a review for this job
+  useEffect(() => {
+    if (!isOwner || !user || !job?._id || job?.status !== "completed") return;
+
+    const checkReview = async () => {
+      try {
+        const response = await api.get(`/reviews/check/job/${job._id}`);
+        if (response.data?.hasReview) {
+          setHasSubmittedReview(true);
+        }
+      } catch {
+        // Ignore errors
+      }
+    };
+
+    checkReview();
+  }, [isOwner, user, job?._id, job?.status]);
+
+  // Submit review handler
+  const handleSubmitReview = async () => {
+    if (!job || reviewRating < 1 || reviewRating > 5 || !job.hiredPro) return;
+
+    setIsSubmittingReview(true);
+    try {
+      await api.post("/reviews", {
+        jobId: job._id,
+        proId: job.hiredPro.userId._id,
+        rating: reviewRating,
+        text: reviewText.trim() || undefined,
+      });
+      setShowReviewModal(false);
+      setHasSubmittedReview(true);
+      setSuccess(locale === "ka" ? "შეფასება გაიგზავნა" : "Review submitted successfully");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err: any) {
+      const message = err?.response?.data?.message;
+      if (message === "Review already exists for this project") {
+        setHasSubmittedReview(true);
+        setShowReviewModal(false);
+      }
+      setError(locale === "ka" ? "შეფასება ვერ გაიგზავნა" : "Failed to submit review");
+      setTimeout(() => setError(""), 3000);
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -804,6 +950,101 @@ export default function JobDetailClient() {
       document.title = `${job.title} | Homi`;
     }
   }, [job]);
+
+  // Fetch project tracking data for hired jobs
+  useEffect(() => {
+    const fetchProjectTracking = async () => {
+      if (!job?._id || job.status !== "in_progress") return;
+      if (!isOwner && !isHiredPro) return;
+
+      try {
+        const token = localStorage.getItem("access_token");
+        const response = await api.get(`/jobs/projects/${job._id}`);
+        if (response.data) {
+          setProjectStage(response.data.currentStage || "hired");
+          setIsClientConfirmed(response.data.clientConfirmed || false);
+        }
+      } catch (err) {
+        console.error("Failed to fetch project tracking:", err);
+      }
+    };
+
+    fetchProjectTracking();
+  }, [job?._id, job?.status, isOwner, isHiredPro]);
+
+  // Handle stage change (for pro)
+  const handleStageChange = async (newStage: ProjectStage) => {
+    if (!job?._id || !isHiredPro) return;
+
+    const previousStage = projectStage;
+    setProjectStage(newStage);
+    setIsUpdatingStage(true);
+
+    try {
+      await api.patch(`/jobs/projects/${job._id}/stage`, { stage: newStage });
+      toast.success(
+        locale === "ka" ? "წარმატება" : "Success",
+        locale === "ka" ? "სტატუსი განახლდა" : "Stage updated"
+      );
+    } catch (err) {
+      setProjectStage(previousStage);
+      toast.error(
+        locale === "ka" ? "შეცდომა" : "Error",
+        locale === "ka" ? "სტატუსი ვერ განახლდა" : "Failed to update stage"
+      );
+    } finally {
+      setIsUpdatingStage(false);
+    }
+  };
+
+  // Handle client confirmation
+  const handleClientConfirm = async () => {
+    if (!job?._id || !isOwner) return;
+
+    setIsUpdatingStage(true);
+    try {
+      await api.post(`/jobs/projects/${job._id}/confirm-completion`);
+      toast.success(
+        locale === "ka" ? "წარმატება" : "Success",
+        locale === "ka" ? "პროექტი დაიხურა. გადახდა მოხდება მალე." : "Project closed. Payment will be processed shortly."
+      );
+      setIsClientConfirmed(true);
+      // Show review modal
+      setShowReviewModal(true);
+    } catch (err) {
+      toast.error(
+        locale === "ka" ? "შეცდომა" : "Error",
+        locale === "ka" ? "პროექტი ვერ დაიხურა" : "Failed to close project"
+      );
+    } finally {
+      setIsUpdatingStage(false);
+    }
+  };
+
+  // Handle client request changes
+  const handleClientRequestChanges = async () => {
+    if (!job?._id || !isOwner) return;
+
+    const previousStage = projectStage;
+    setProjectStage("review");
+    setIsUpdatingStage(true);
+
+    try {
+      await api.patch(`/jobs/projects/${job._id}/stage`, { stage: "review" });
+      toast.success(
+        locale === "ka" ? "წარმატება" : "Success",
+        locale === "ka" ? "მოთხოვნა გაიგზავნა" : "Request sent"
+      );
+    } catch (err) {
+      setProjectStage(previousStage);
+      toast.error(
+        locale === "ka" ? "შეცდომა" : "Error",
+        locale === "ka" ? "მოთხოვნა ვერ გაიგზავნა" : "Failed to send request"
+      );
+    } finally {
+      setIsUpdatingStage(false);
+    }
+  };
 
   const handleSubmitProposal = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -916,7 +1157,8 @@ export default function JobDetailClient() {
       if (diffMins < 60) return `${diffMins} წუთის წინ`;
       if (diffHours < 24) return `${diffHours} საათის წინ`;
       if (diffDays < 7) return `${diffDays} დღის წინ`;
-      return date.toLocaleDateString("ka-GE");
+      const months = ["იან", "თებ", "მარ", "აპრ", "მაი", "ივნ", "ივლ", "აგვ", "სექ", "ოქტ", "ნოე", "დეკ"];
+      return `${date.getDate()} ${months[date.getMonth()]}`;
     }
 
     if (diffMins < 60) return `${diffMins}m ago`;
@@ -969,7 +1211,8 @@ export default function JobDetailClient() {
 
   const budgetDisplay = formatBudget(job);
   const isOpen = job.status === "open";
-  const isHired = job.status === "in_progress";
+  const isHired = job.status === "in_progress" || job.status === "completed";
+  const isCompleted = job.status === "completed";
 
   return (
     <div className="min-h-screen bg-[#FAFAF8] dark:bg-[#0D0D0C]">
@@ -1067,14 +1310,14 @@ export default function JobDetailClient() {
           </div>
         )}
 
-        {/* Thumbnail strip */}
+        {/* Thumbnail strip - positioned at top right on mobile/tablet, bottom center on desktop */}
         {allMedia.length > 1 && (
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+          <div className="absolute bottom-32 md:bottom-40 right-4 md:right-auto md:left-1/2 md:-translate-x-1/2 z-20 flex items-center gap-2">
             {allMedia.slice(0, 5).map((media, idx) => (
               <button
                 key={idx}
                 onClick={() => setActiveImageIndex(idx)}
-                className={`relative w-16 h-12 rounded-lg overflow-hidden transition-all duration-300 ${
+                className={`relative w-12 h-9 md:w-16 md:h-12 rounded-lg overflow-hidden transition-all duration-300 ${
                   idx === activeImageIndex
                     ? "ring-2 ring-white scale-110"
                     : "opacity-60 hover:opacity-100"
@@ -1090,7 +1333,7 @@ export default function JobDetailClient() {
             {allMedia.length > 5 && (
               <button
                 onClick={() => setSelectedMediaIndex(0)}
-                className="w-16 h-12 rounded-lg bg-black/50 backdrop-blur flex items-center justify-center text-white text-sm font-medium"
+                className="w-12 h-9 md:w-16 md:h-12 rounded-lg bg-black/50 backdrop-blur flex items-center justify-center text-white text-xs md:text-sm font-medium"
               >
                 +{allMedia.length - 5}
               </button>
@@ -1099,7 +1342,7 @@ export default function JobDetailClient() {
         )}
 
         {/* Hero content */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12">
+        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-12">
           <div className="max-w-6xl mx-auto">
             {/* Status & Category */}
             <div
@@ -1174,20 +1417,20 @@ export default function JobDetailClient() {
 
             {/* Location & Time */}
             <div
-              className={`flex flex-wrap items-center gap-4 text-white/70 transition-all duration-700 delay-300 ${
+              className={`flex flex-wrap items-center gap-3 md:gap-4 text-white/70 text-sm md:text-base transition-all duration-700 delay-300 ${
                 isVisible
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 translate-y-4"
               }`}
             >
               {job.location && (
-                <span className="flex items-center gap-2 font-body">
-                  <MapPin className="w-4 h-4" />
-                  {job.location}
+                <span className="flex items-center gap-1.5 md:gap-2 font-body max-w-[200px] md:max-w-none">
+                  <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
+                  <span className="truncate">{job.location}</span>
                 </span>
               )}
-              <span className="flex items-center gap-2 font-body">
-                <Clock className="w-4 h-4" />
+              <span className="flex items-center gap-1.5 md:gap-2 font-body flex-shrink-0">
+                <Clock className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 {getTimeAgo(job.createdAt)}
               </span>
             </div>
@@ -1295,6 +1538,46 @@ export default function JobDetailClient() {
             </div>
           </div>
 
+          {/* Completed Status Banner */}
+          {isCompleted && (
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-4 md:p-6 mb-8">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-800/50 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-body text-lg font-semibold text-green-800 dark:text-green-300">
+                      {locale === "ka" ? "პროექტი დასრულებულია" : "Project Completed"}
+                    </h3>
+                    <p className="font-body text-sm text-green-700 dark:text-green-400">
+                      {locale === "ka"
+                        ? "ეს პროექტი წარმატებით დასრულდა და დაიხურა."
+                        : "This project has been successfully completed and closed."}
+                    </p>
+                  </div>
+                </div>
+                {/* Leave Review Button for owner */}
+                {isOwner && job.hiredPro && !hasSubmittedReview && (
+                  <button
+                    onClick={() => setShowReviewModal(true)}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-body text-sm font-medium text-white transition-all hover:opacity-90 flex-shrink-0"
+                    style={{ backgroundColor: ACCENT }}
+                  >
+                    <Star className="w-4 h-4" />
+                    {locale === "ka" ? "შეფასების დატოვება" : "Leave Review"}
+                  </button>
+                )}
+                {isOwner && hasSubmittedReview && (
+                  <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-body text-sm font-medium text-green-600 bg-green-100 dark:bg-green-800/30 dark:text-green-400 flex-shrink-0">
+                    <Check className="w-4 h-4" />
+                    {locale === "ka" ? "შეფასება დატოვებულია" : "Review Submitted"}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Two Column Layout */}
           <div className="grid lg:grid-cols-3 gap-8 pb-24">
             {/* Main Content */}
@@ -1396,10 +1679,14 @@ export default function JobDetailClient() {
                       <SpecCard
                         icon={<Calendar className="w-5 h-5" />}
                         label={locale === "ka" ? "ვადა" : "Deadline"}
-                        value={new Date(job.deadline).toLocaleDateString(
-                          locale === "ka" ? "ka-GE" : "en-US",
-                          { month: "short", day: "numeric" }
-                        )}
+                        value={(() => {
+                          const date = new Date(job.deadline);
+                          if (locale === "ka") {
+                            const months = ["იან", "თებ", "მარ", "აპრ", "მაი", "ივნ", "ივლ", "აგვ", "სექ", "ოქტ", "ნოე", "დეკ"];
+                            return `${date.getDate()} ${months[date.getMonth()]}`;
+                          }
+                          return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+                        })()}
                       />
                     )}
                   </div>
@@ -1636,6 +1923,150 @@ export default function JobDetailClient() {
                   )}
                 </section>
               )}
+
+              {/* Project Status Tracker - for hired pro or job owner */}
+              {(isHiredPro || isOwner) && isHired && (
+                <section className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden">
+                  <div className="p-4 border-b border-neutral-100 dark:border-neutral-800">
+                    <h3 className="font-display text-lg font-semibold text-neutral-900 dark:text-white">
+                      {locale === "ka" ? "პროექტის სტატუსი" : "Project Status"}
+                    </h3>
+                  </div>
+                  <div className="p-4">
+                    {/* Progress Bar */}
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
+                          {locale === "ka" ? STAGES[getStageIndex(projectStage)]?.labelKa : STAGES[getStageIndex(projectStage)]?.label}
+                        </span>
+                        <span className="text-sm font-bold" style={{ color: ACCENT }}>
+                          {STAGES[getStageIndex(projectStage)]?.progress || 0}%
+                        </span>
+                      </div>
+                      <div className="h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-500 ease-out"
+                          style={{
+                            width: `${STAGES[getStageIndex(projectStage)]?.progress || 0}%`,
+                            backgroundColor: ACCENT,
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Client Actions when project is completed but not yet confirmed */}
+                    {isOwner && projectStage === "completed" && !isClientConfirmed && (
+                      <div className="mb-4 p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                        <p className="text-sm font-medium text-green-800 dark:text-green-300 mb-3">
+                          {locale === "ka"
+                            ? "სპეციალისტმა დაასრულა სამუშაო. გთხოვთ გადაამოწმოთ და დაადასტუროთ."
+                            : "The professional has marked the work as complete. Please review and confirm."}
+                        </p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleClientConfirm}
+                            disabled={isUpdatingStage}
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90 disabled:opacity-50"
+                            style={{ backgroundColor: "#10B981" }}
+                          >
+                            {isUpdatingStage ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <BadgeCheck className="w-4 h-4" />
+                            )}
+                            {locale === "ka" ? "დადასტურება და დახურვა" : "Confirm & Close"}
+                          </button>
+                          <button
+                            onClick={handleClientRequestChanges}
+                            disabled={isUpdatingStage}
+                            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-all disabled:opacity-50"
+                          >
+                            <RotateCcw className="w-4 h-4" />
+                            {locale === "ka" ? "ცვლილებები" : "Request Changes"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Leave Review button when project is confirmed but no review yet */}
+                    {isOwner && projectStage === "completed" && isClientConfirmed && !hasSubmittedReview && (
+                      <div className="mb-4 p-3 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
+                        <p className="text-sm font-medium text-yellow-800 dark:text-yellow-300 mb-3">
+                          {locale === "ka"
+                            ? "პროექტი დასრულებულია. დატოვეთ შეფასება სპეციალისტზე."
+                            : "Project is complete. Leave a review for the professional."}
+                        </p>
+                        <button
+                          onClick={() => setShowReviewModal(true)}
+                          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90 w-full"
+                          style={{ backgroundColor: ACCENT }}
+                        >
+                          <Star className="w-4 h-4" />
+                          {locale === "ka" ? "შეფასების დატოვება" : "Leave a Review"}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Stage Pills */}
+                    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                      {STAGES.map((stage, index) => {
+                        const currentIndex = getStageIndex(projectStage);
+                        const isStageCompleted = index < currentIndex;
+                        const isCurrent = index === currentIndex;
+                        const isNext = index === currentIndex + 1;
+                        const canAdvance = isHiredPro && isNext && !isUpdatingStage;
+
+                        return (
+                          <button
+                            key={stage.key}
+                            onClick={() => canAdvance && handleStageChange(stage.key)}
+                            disabled={!canAdvance}
+                            className={`
+                              flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium
+                              whitespace-nowrap transition-all duration-200 flex-shrink-0
+                              ${isStageCompleted
+                                ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
+                                : isCurrent
+                                  ? 'text-white shadow-sm'
+                                  : canAdvance
+                                    ? 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border-2 border-dashed hover:border-solid cursor-pointer'
+                                    : 'bg-neutral-50 dark:bg-neutral-800/50 text-neutral-400 dark:text-neutral-500'
+                              }
+                            `}
+                            style={{
+                              backgroundColor: isCurrent ? ACCENT : undefined,
+                              borderColor: canAdvance ? ACCENT_LIGHT : undefined,
+                            }}
+                          >
+                            {isUpdatingStage && isCurrent ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : isStageCompleted ? (
+                              <Check className="w-3 h-3" />
+                            ) : (
+                              stage.icon
+                            )}
+                            <span>{locale === "ka" ? stage.labelKa : stage.label}</span>
+                            {canAdvance && (
+                              <ChevronRight className="w-3 h-3 ml-0.5" style={{ color: ACCENT }} />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {/* Project Chat - for hired pro or job owner */}
+              {(isHiredPro || isOwner) && isHired && (
+                <section className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden">
+                  <ProjectChat
+                    jobId={job._id}
+                    locale={locale}
+                    isClient={isOwner || false}
+                  />
+                </section>
+              )}
             </div>
 
             {/* Sidebar */}
@@ -1739,68 +2170,126 @@ export default function JobDetailClient() {
                   </div>
                 )}
 
-                {/* Polls Section - visible for hired jobs */}
-                {isHired && (
-                  <div
-                    className="rounded-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden"
-                    style={{ borderColor: `${ACCENT}30` }}
-                  >
+                {/* Polls Section - visible for hired jobs (client or hired pro) */}
+                {(isHired || isHiredPro) && (
+                  <div className="group rounded-2xl bg-gradient-to-br from-white to-neutral-50/80 dark:from-neutral-900 dark:to-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
                     <button
                       onClick={() => setIsPollsExpanded(!isPollsExpanded)}
-                      className="w-full flex items-center justify-between p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
+                      className="w-full flex items-center justify-between p-4 hover:bg-white/50 dark:hover:bg-neutral-800/50 transition-colors"
                     >
                       <div className="flex items-center gap-3">
                         <div
-                          className="w-8 h-8 rounded-lg flex items-center justify-center"
-                          style={{ backgroundColor: `${ACCENT}20` }}
+                          className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
+                          style={{
+                            background: `linear-gradient(135deg, ${ACCENT}15 0%, ${ACCENT}25 100%)`,
+                            border: `1px solid ${ACCENT}20`
+                          }}
                         >
-                          <BarChart3 className="w-4 h-4" style={{ color: ACCENT }} />
+                          <BarChart3 className="w-5 h-5" style={{ color: ACCENT }} />
                         </div>
-                        <span className="font-body font-semibold text-neutral-900 dark:text-white">
-                          {locale === "ka" ? "გამოკითხვები" : "Polls"}
-                        </span>
+                        <div className="text-left">
+                          <span className="font-body font-semibold text-neutral-900 dark:text-white block">
+                            {locale === "ka" ? "გამოკითხვები" : "Polls"}
+                          </span>
+                          <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                            {locale === "ka" ? "არჩევანები და გადაწყვეტილებები" : "Choices & decisions"}
+                          </span>
+                        </div>
                       </div>
-                      <ChevronRight
-                        className={`w-5 h-5 text-neutral-400 transition-transform duration-300 ${
-                          isPollsExpanded ? "rotate-90" : ""
+                      <div
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
+                          isPollsExpanded ? "bg-neutral-100 dark:bg-neutral-800 rotate-90" : "group-hover:bg-neutral-100 dark:group-hover:bg-neutral-800"
                         }`}
-                      />
+                      >
+                        <ChevronRight className="w-4 h-4 text-neutral-400" />
+                      </div>
                     </button>
-                    {isPollsExpanded && (
+                    <div className={`transition-all duration-300 overflow-hidden ${isPollsExpanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"}`}>
                       <div className="p-4 pt-0 border-t border-neutral-100 dark:border-neutral-800">
                         <PollsTab
                           jobId={job._id}
-                          isPro={isPro}
+                          isPro={isPro || !!isHiredPro}
                           isClient={isOwner || false}
                           userId={user?.id}
                           locale={locale}
                           embedded={true}
                         />
                       </div>
-                    )}
+                    </div>
                   </div>
                 )}
 
-                {/* Project Resources Section - visible for hired jobs */}
-                {isHired && (
-                  <ProjectWorkspace
-                    jobId={job._id}
-                    locale={locale}
-                    isClient={true}
-                  />
+                {/* Project Resources Section - visible for hired jobs (client or hired pro) */}
+                {(isHired || isHiredPro) && (
+                  <div className="group rounded-2xl bg-gradient-to-br from-white to-neutral-50/80 dark:from-neutral-900 dark:to-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+                    <button
+                      onClick={() => setIsResourcesExpanded(!isResourcesExpanded)}
+                      className="w-full flex items-center justify-between p-4 hover:bg-white/50 dark:hover:bg-neutral-800/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
+                          style={{
+                            background: `linear-gradient(135deg, ${ACCENT}15 0%, ${ACCENT}25 100%)`,
+                            border: `1px solid ${ACCENT}20`
+                          }}
+                        >
+                          <Package className="w-5 h-5" style={{ color: ACCENT }} />
+                        </div>
+                        <div className="text-left">
+                          <span className="font-body font-semibold text-neutral-900 dark:text-white block">
+                            {locale === "ka" ? "მასალები" : "Resources"}
+                          </span>
+                          <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                            {locale === "ka" ? "პროექტის მასალები და ფაილები" : "Project materials & files"}
+                          </span>
+                        </div>
+                      </div>
+                      <div
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
+                          isResourcesExpanded ? "bg-neutral-100 dark:bg-neutral-800 rotate-90" : "group-hover:bg-neutral-100 dark:group-hover:bg-neutral-800"
+                        }`}
+                      >
+                        <ChevronRight className="w-4 h-4 text-neutral-400" />
+                      </div>
+                    </button>
+                    <div className={`transition-all duration-300 overflow-hidden ${isResourcesExpanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"}`}>
+                      <div className="p-4 pt-0 border-t border-neutral-100 dark:border-neutral-800">
+                        <ProjectWorkspace
+                          jobId={job._id}
+                          locale={locale}
+                          isClient={isOwner || false}
+                          embedded={true}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 )}
 
-                {/* Share */}
-                <div className="bg-neutral-100 dark:bg-neutral-800/50 rounded-2xl p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="font-body text-xs text-neutral-500 dark:text-neutral-400">
-                      {locale === "ka" ? "გაზიარება" : "Share"}
-                    </p>
-                    <p className="font-mono text-xs text-neutral-400 dark:text-neutral-500">
-                      #{job.jobNumber || job._id.slice(-6)}
-                    </p>
+                {/* Share Section - Unified design */}
+                <div className="group rounded-2xl bg-gradient-to-br from-white to-neutral-50/80 dark:from-neutral-900 dark:to-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
+                        style={{
+                          background: `linear-gradient(135deg, ${ACCENT}15 0%, ${ACCENT}25 100%)`,
+                          border: `1px solid ${ACCENT}20`
+                        }}
+                      >
+                        <Share2 className="w-5 h-5" style={{ color: ACCENT }} />
+                      </div>
+                      <div className="text-left">
+                        <span className="font-body font-semibold text-neutral-900 dark:text-white block">
+                          {locale === "ka" ? "გაზიარება" : "Share"}
+                        </span>
+                        <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                          #{job.jobNumber || job._id.slice(-6)}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                       <button
                         onClick={() => {
                           const url = `${window.location.origin}/jobs/${job._id}`;
@@ -1811,7 +2300,7 @@ export default function JobDetailClient() {
                             'width=580,height=400'
                           );
                         }}
-                        className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#1877F2] hover:bg-[#166FE5] text-white transition-colors"
+                        className="flex items-center justify-center w-11 h-11 rounded-xl bg-[#1877F2] hover:bg-[#166FE5] hover:scale-105 text-white transition-all duration-200 shadow-sm hover:shadow-md"
                         title="Share on Facebook"
                       >
                         <Facebook className="w-5 h-5" />
@@ -1835,7 +2324,7 @@ export default function JobDetailClient() {
                             setTimeout(() => setCopyToast(false), 2000);
                           }
                         }}
-                        className="flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 text-neutral-600 dark:text-neutral-300 transition-colors"
+                        className="flex items-center justify-center w-11 h-11 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:scale-105 text-neutral-600 dark:text-neutral-300 transition-all duration-200 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md"
                         title={locale === 'ka' ? 'გაზიარება' : 'Share'}
                       >
                         <Share2 className="w-5 h-5" />
@@ -1847,7 +2336,7 @@ export default function JobDetailClient() {
                           setCopyToast(true);
                           setTimeout(() => setCopyToast(false), 2000);
                         }}
-                        className="flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 text-neutral-600 dark:text-neutral-300 transition-colors"
+                        className="flex items-center justify-center w-11 h-11 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:scale-105 text-neutral-600 dark:text-neutral-300 transition-all duration-200 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md"
                         title={locale === 'ka' ? 'ლინკის კოპირება' : 'Copy link'}
                       >
                         <Copy className="w-5 h-5" />
@@ -2083,6 +2572,117 @@ export default function JobDetailClient() {
         showThumbnails={false}
         showInfo={false}
       />
+
+      {/* Review Modal */}
+      {showReviewModal && job?.hiredPro && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                {locale === "ka" ? "შეაფასეთ სპეციალისტი" : "Rate the Professional"}
+              </h3>
+              <button
+                onClick={() => setShowReviewModal(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              >
+                <X className="w-5 h-5 text-neutral-500" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-5 space-y-5">
+              {/* Pro Info */}
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                  {job.hiredPro.avatar || job.hiredPro.userId.avatar ? (
+                    <img
+                      src={storage.getFileUrl(job.hiredPro.avatar || job.hiredPro.userId.avatar || "")}
+                      alt={job.hiredPro.userId.name}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-xl font-semibold text-neutral-500">
+                      {job.hiredPro.userId.name?.charAt(0)}
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <p className="font-semibold text-neutral-900 dark:text-white">{job.hiredPro.userId.name}</p>
+                  {job.hiredPro.title && (
+                    <p className="text-sm text-neutral-500">{job.hiredPro.title}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Star Rating */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  {locale === "ka" ? "თქვენი შეფასება" : "Your Rating"}
+                </label>
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setReviewRating(star)}
+                      className="p-1 transition-transform hover:scale-110"
+                    >
+                      <Star
+                        className={`w-8 h-8 ${
+                          star <= reviewRating
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "fill-neutral-200 text-neutral-200 dark:fill-neutral-700 dark:text-neutral-700"
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Review Text */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  {locale === "ka" ? "თქვენი კომენტარი (არასავალდებულო)" : "Your Comment (Optional)"}
+                </label>
+                <textarea
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  placeholder={locale === "ka" ? "დაწერეთ თქვენი გამოცდილება..." : "Share your experience..."}
+                  className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-offset-1 resize-none"
+                  style={{ "--tw-ring-color": ACCENT } as any}
+                  rows={4}
+                />
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center gap-3 px-5 py-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50">
+              <button
+                onClick={() => setShowReviewModal(false)}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors"
+              >
+                {locale === "ka" ? "გაუქმება" : "Cancel"}
+              </button>
+              <button
+                onClick={handleSubmitReview}
+                disabled={isSubmittingReview || reviewRating < 1}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                style={{ backgroundColor: ACCENT }}
+              >
+                {isSubmittingReview ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <Star className="w-4 h-4" />
+                    {locale === "ka" ? "გაგზავნა" : "Submit"}
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Animations */}
       <style jsx>{`

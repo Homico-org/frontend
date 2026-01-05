@@ -27,7 +27,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { io, Socket } from 'socket.io-client';
 
 // Terracotta accent - matching design
 const ACCENT_COLOR = '#C4735B';
@@ -141,12 +142,60 @@ function MyJobsPageContent() {
   const [deleteModalJob, setDeleteModalJob] = useState<Job | null>(null);
   const [renewingJobId, setRenewingJobId] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       router.push('/');
     }
   }, [authLoading, isAuthenticated, router]);
+
+  // WebSocket connection for real-time project stage updates
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    const wsUrl = apiUrl.replace(/^http/, "ws");
+
+    socketRef.current = io(`${wsUrl}/chat`, {
+      auth: { token },
+      transports: ["websocket"],
+    });
+
+    socketRef.current.on("connect", () => {
+      console.log("[MyJobs] WebSocket connected");
+    });
+
+    // Listen for project stage updates
+    socketRef.current.on("projectStageUpdate", (data: { jobId: string; stage: string; progress: number; project: any }) => {
+      console.log("[MyJobs] Project stage update:", data);
+      // Update the job's project tracking data in state
+      setJobs((prevJobs) =>
+        prevJobs.map((job) => {
+          if (job._id === data.jobId) {
+            return {
+              ...job,
+              projectTracking: {
+                ...job.projectTracking,
+                ...data.project,
+                currentStage: data.stage as ProjectStage,
+                progress: data.progress,
+              },
+            };
+          }
+          return job;
+        })
+      );
+    });
+
+    return () => {
+      socketRef.current?.disconnect();
+      socketRef.current = null;
+    };
+  }, [isAuthenticated, user]);
 
   const fetchMyJobs = useCallback(async (status: StatusFilter, isInitial: boolean = false) => {
     try {
@@ -632,21 +681,28 @@ function MyJobsPageContent() {
                                       {proposal?.proId?.avatar ? (
                                         <img
                                           src={storage.getFileUrl(proposal.proId.avatar)}
-                                          alt=""
+                                          alt={proName}
                                           className="w-full h-full object-cover"
                                         />
                                       ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-xs font-medium text-neutral-500">
-                                          {initial || '?'}
+                                        <div className="w-full h-full flex items-center justify-center text-xs font-medium text-neutral-500 dark:text-neutral-400 bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-600 dark:to-neutral-700">
+                                          {initial || <Users className="w-3 h-3" />}
                                         </div>
                                       )}
                                     </div>
                                   );
                                 })}
                               </div>
-                              <span style={{ color: ACCENT_COLOR }} className="text-xs sm:text-sm font-medium">
-                                {job.proposalCount} {locale === 'ka' ? 'შეთავაზება' : 'Proposals'}
-                              </span>
+                              <div className="flex flex-col">
+                                <span style={{ color: ACCENT_COLOR }} className="text-xs sm:text-sm font-medium">
+                                  {job.proposalCount} {locale === 'ka' ? 'შეთავაზება' : (job.proposalCount === 1 ? 'Proposal' : 'Proposals')}
+                                </span>
+                                {job.proposalCount === 1 && job.recentProposals?.[0]?.proId?.name && (
+                                  <span className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400">
+                                    {locale === 'ka' ? 'შეთავაზება:' : 'from'} {job.recentProposals[0].proId.name}
+                                  </span>
+                                )}
+                              </div>
                             </>
                           )}
                           {isOpen && job.proposalCount === 0 && (

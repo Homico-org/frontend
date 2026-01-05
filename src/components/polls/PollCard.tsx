@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { Check, Clock, Loader2, MoreVertical, Trash2, X } from 'lucide-react';
 import Avatar from '@/components/common/Avatar';
-import PollOptionCard, { PollOption } from './PollOptionCard';
 import { cn } from '@/lib/utils';
+import { Check, Clock, Loader2, MoreVertical, Trash2, X } from 'lucide-react';
+import { useState } from 'react';
+import PollOptionCard, { PollOption } from './PollOptionCard';
 
 export interface Poll {
   _id: string;
@@ -142,7 +142,7 @@ export default function PollCard({
               {isApproved && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-xs font-medium">
                   <Check className="w-3 h-3" />
-                  {locale === 'ka' ? 'დამტკიცებული' : 'Approved'}
+                  {locale === 'ka' ? 'არჩეული' : 'Approved'}
                 </span>
               )}
               {isClosed && (
@@ -211,10 +211,14 @@ export default function PollCard({
       {/* Options grid */}
       <div className="p-4">
         <div className={cn(
-          'grid gap-3',
+          'grid gap-4',
           hasImages
-            ? 'grid-cols-2 sm:grid-cols-3'
-            : 'grid-cols-1'
+            ? poll.options.length <= 2
+              ? 'grid-cols-1 sm:grid-cols-2'
+              : poll.options.length === 3
+                ? 'grid-cols-1 sm:grid-cols-3'
+                : 'grid-cols-2'
+            : 'grid-cols-1 sm:grid-cols-2'
         )}>
           {poll.options.map((option) => (
             <PollOptionCard

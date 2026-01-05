@@ -106,6 +106,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -121,12 +122,33 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const messagesLoadedRef = useRef(false);
 
+  // Fetch unread count on mount
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await api.get(`/jobs/projects/${jobId}/unread-counts`);
+        setUnreadCount(response.data.chat || 0);
+      } catch (error) {
+        console.error('Failed to fetch unread count:', error);
+      }
+    };
+    fetchUnreadCount();
+  }, [jobId]);
+
   // Fetch messages when expanded
   useEffect(() => {
     if (isExpanded && !messagesLoadedRef.current) {
       fetchMessages();
     }
   }, [isExpanded]);
+
+  // Mark messages as read and clear unread count when expanded
+  useEffect(() => {
+    if (isExpanded && unreadCount > 0) {
+      api.post(`/jobs/projects/${jobId}/messages/read`).catch(() => {});
+      setUnreadCount(0);
+    }
+  }, [isExpanded, jobId, unreadCount]);
 
   // WebSocket connection
   useEffect(() => {
@@ -323,177 +345,209 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
     }
   };
 
+  // Always expanded - load messages on mount
+  useEffect(() => {
+    if (!messagesLoadedRef.current) {
+      fetchMessages();
+    }
+  }, []);
+
+  // WebSocket connection - always connect since always expanded
+  useEffect(() => {
+    if (!user) return;
+
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const backendUrl = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl;
+
+    socketRef.current = io(`${backendUrl}/chat`, {
+      auth: { token },
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+    });
+
+    socketRef.current.on('connect', () => {
+      console.log('[ProjectChat] Connected to WebSocket');
+      socketRef.current?.emit('joinProjectChat', jobId);
+    });
+
+    socketRef.current.on('projectMessage', handleNewMessage);
+    socketRef.current.on('projectTyping', handleTyping);
+
+    return () => {
+      socketRef.current?.emit('leaveProjectChat', jobId);
+      socketRef.current?.disconnect();
+      socketRef.current = null;
+    };
+  }, [user, jobId, handleNewMessage, handleTyping]);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      const container = messagesEndRef.current.parentElement;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+  }, [messages]);
+
+  // Mark messages as read on mount
+  useEffect(() => {
+    if (unreadCount > 0) {
+      api.post(`/jobs/projects/${jobId}/messages/read`).catch(() => {});
+      setUnreadCount(0);
+    }
+  }, [jobId]);
+
   return (
-    <div className="border-t border-[var(--color-border)]">
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 hover:bg-[var(--color-bg-tertiary)]/50 transition-colors"
-      >
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ backgroundColor: `${ACCENT}15` }}>
-            <MessageSquare className="w-4 h-4" style={{ color: ACCENT }} />
-            <span className="text-sm font-semibold" style={{ color: ACCENT }}>
-              {locale === 'ka' ? 'პროექტის ჩატი' : 'Project Chat'}
-            </span>
-            {messages.length > 0 && (
-              <span className="w-5 h-5 rounded-full text-[10px] font-bold text-white flex items-center justify-center" style={{ backgroundColor: ACCENT }}>
-                {messages.length}
+    <div>
+      {/* Header */}
+      <div className="p-4 border-b border-neutral-100 dark:border-neutral-800">
+        <div className="flex items-center justify-between">
+          <h3 className="font-display text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
+            <MessageSquare className="w-5 h-5" style={{ color: ACCENT }} />
+            {locale === 'ka' ? 'პროექტის ჩატი' : 'Project Chat'}
+            {unreadCount > 0 && (
+              <span className="w-5 h-5 rounded-full text-[10px] font-bold text-white flex items-center justify-center animate-pulse" style={{ backgroundColor: '#EF4444' }}>
+                {unreadCount}
               </span>
             )}
-          </div>
-          {messages.length > 0 && (
-            <span className="text-xs text-[var(--color-text-tertiary)] hidden sm:inline">
-              {locale === 'ka' ? 'ბოლო:' : 'Last:'} {formatRelativeTime(messages[messages.length - 1].createdAt, locale)}
-            </span>
-          )}
+          </h3>
+          <button
+            onClick={handleSearchToggle}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            title={locale === 'ka' ? 'ძებნა' : 'Search'}
+          >
+            <Search className="w-4 h-4" />
+          </button>
         </div>
-        <ChevronRight
-          className={`w-5 h-5 text-[var(--color-text-tertiary)] transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`}
-        />
-      </button>
+      </div>
 
-      {/* Expanded Chat */}
-      {isExpanded && (
-        <div className="px-4 pb-4 animate-in slide-in-from-top-2 duration-200">
-          {/* Messages Container */}
-          <div className="bg-[var(--color-bg-tertiary)]/50 rounded-2xl overflow-hidden">
-            {/* Search Bar */}
-            <div className="px-3 py-2 border-b border-[var(--color-border)] bg-[var(--color-bg-elevated)] flex items-center gap-2">
-              {isSearchOpen ? (
-                <>
-                  <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
-                    <input
-                      ref={searchInputRef}
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => {
-                        setSearchQuery(e.target.value);
-                        setCurrentSearchIndex(0);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          navigateSearch('next');
-                        } else if (e.key === 'Escape') {
-                          handleSearchToggle();
-                        }
-                      }}
-                      placeholder={locale === 'ka' ? 'ძებნა შეტყობინებებში...' : 'Search messages...'}
-                      className="w-full pl-9 pr-3 py-1.5 text-sm bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#C4735B]/30"
-                    />
-                  </div>
-                  {searchQuery && (
-                    <span className="text-xs text-[var(--color-text-tertiary)] whitespace-nowrap">
-                      {searchResultCount > 0 ? `${currentSearchIndex + 1}/${searchResultCount}` : locale === 'ka' ? '0 შედეგი' : '0 results'}
-                    </span>
-                  )}
-                  {searchQuery && searchResultCount > 0 && (
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => navigateSearch('prev')}
-                        className="w-7 h-7 rounded-md flex items-center justify-center text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
-                      >
-                        <ChevronRight className="w-4 h-4 rotate-180" />
-                      </button>
-                      <button
-                        onClick={() => navigateSearch('next')}
-                        className="w-7 h-7 rounded-md flex items-center justify-center text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
-                      >
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
-                  <button
-                    onClick={handleSearchToggle}
-                    className="w-7 h-7 rounded-md flex items-center justify-center text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </>
-              ) : (
-                <>
-                  <span className="flex-1 text-xs text-[var(--color-text-tertiary)]">
-                    {messages.length > 0
-                      ? (locale === 'ka' ? `${messages.length} შეტყობინება` : `${messages.length} messages`)
-                      : (locale === 'ka' ? 'დაიწყე საუბარი' : 'Start a conversation')
-                    }
-                  </span>
-                  <button
-                    onClick={handleSearchToggle}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
-                    title={locale === 'ka' ? 'ძებნა' : 'Search'}
-                  >
-                    <Search className="w-4 h-4" />
-                  </button>
-                </>
-              )}
+      {/* Chat Content */}
+      <div className="p-4">
+        {/* Search Bar (when open) */}
+        {isSearchOpen && (
+          <div className="mb-3 flex items-center gap-2">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentSearchIndex(0);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    navigateSearch('next');
+                  } else if (e.key === 'Escape') {
+                    handleSearchToggle();
+                  }
+                }}
+                placeholder={locale === 'ka' ? 'ძებნა შეტყობინებებში...' : 'Search messages...'}
+                className="w-full pl-9 pr-3 py-2 text-sm bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]/50"
+              />
             </div>
+            {searchQuery && (
+              <span className="text-xs text-neutral-500 whitespace-nowrap">
+                {searchResultCount > 0 ? `${currentSearchIndex + 1}/${searchResultCount}` : locale === 'ka' ? '0 შედეგი' : '0 results'}
+              </span>
+            )}
+            {searchQuery && searchResultCount > 0 && (
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => navigateSearch('prev')}
+                  className="w-7 h-7 rounded-md flex items-center justify-center text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4 rotate-180" />
+                </button>
+                <button
+                  onClick={() => navigateSearch('next')}
+                  className="w-7 h-7 rounded-md flex items-center justify-center text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            <button
+              onClick={handleSearchToggle}
+              className="w-7 h-7 rounded-md flex items-center justify-center text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
-            {/* Messages Area */}
-            <div className="h-64 sm:h-80 overflow-y-auto p-4 space-y-3">
-              {isLoadingMessages ? (
-                <div className="flex items-center justify-center h-full">
-                  <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: ACCENT, borderTopColor: 'transparent' }} />
-                </div>
-              ) : messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-tertiary)]">
-                  <MessageSquare className="w-10 h-10 mb-2 opacity-50" />
-                  <p className="text-sm">{locale === 'ka' ? 'ჯერ არ არის შეტყობინება' : 'No messages yet'}</p>
-                  <p className="text-xs mt-1">{locale === 'ka' ? 'დაიწყე საუბარი' : 'Start the conversation'}</p>
-                </div>
-              ) : searchQuery && filteredMessages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-tertiary)]">
-                  <Search className="w-10 h-10 mb-2 opacity-50" />
-                  <p className="text-sm">{locale === 'ka' ? 'შედეგი ვერ მოიძებნა' : 'No results found'}</p>
-                  <p className="text-xs mt-1">{locale === 'ka' ? 'სცადე სხვა საძიებო სიტყვა' : 'Try a different search term'}</p>
-                </div>
-              ) : (
-                <>
-                  {(searchQuery ? filteredMessages : messages).map((msg, idx, arr) => {
-                    const senderId = getSenderId(msg.senderId);
-                    const isMine = senderId === user?.id;
-                    const senderName = msg.senderName || (typeof msg.senderId === 'object' ? msg.senderId.name : '');
-                    const senderAvatar = msg.senderAvatar || (typeof msg.senderId === 'object' ? msg.senderId.avatar : undefined);
-                    const isHighlighted = searchQuery && filteredMessages[currentSearchIndex]?._id === msg._id;
+        {/* Messages Container */}
+        <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-xl overflow-hidden">
+          {/* Messages Area */}
+          <div className="h-72 sm:h-80 overflow-y-auto p-4 space-y-3">
+            {isLoadingMessages ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: ACCENT, borderTopColor: 'transparent' }} />
+              </div>
+            ) : messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-neutral-400">
+                <MessageSquare className="w-10 h-10 mb-2 opacity-50" />
+                <p className="text-sm">{locale === 'ka' ? 'ჯერ არ არის შეტყობინება' : 'No messages yet'}</p>
+                <p className="text-xs mt-1">{locale === 'ka' ? 'დაიწყე საუბარი' : 'Start the conversation'}</p>
+              </div>
+            ) : searchQuery && filteredMessages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-neutral-400">
+                <Search className="w-10 h-10 mb-2 opacity-50" />
+                <p className="text-sm">{locale === 'ka' ? 'შედეგი ვერ მოიძებნა' : 'No results found'}</p>
+                <p className="text-xs mt-1">{locale === 'ka' ? 'სცადე სხვა საძიებო სიტყვა' : 'Try a different search term'}</p>
+              </div>
+            ) : (
+              <>
+                {(searchQuery ? filteredMessages : messages).map((msg, idx, arr) => {
+                  const senderId = getSenderId(msg.senderId);
+                  const isMine = senderId === user?.id;
+                  const senderName = msg.senderName || (typeof msg.senderId === 'object' ? msg.senderId.name : '');
+                  const senderAvatar = msg.senderAvatar || (typeof msg.senderId === 'object' ? msg.senderId.avatar : undefined);
+                  const isHighlighted = searchQuery && filteredMessages[currentSearchIndex]?._id === msg._id;
 
-                    // Check if we need to show date separator
-                    const currentDateKey = getDateKey(msg.createdAt);
-                    const prevMessage = idx > 0 ? arr[idx - 1] : null;
-                    const prevDateKey = prevMessage ? getDateKey(prevMessage.createdAt) : null;
-                    const showDateSeparator = !searchQuery && (!prevDateKey || currentDateKey !== prevDateKey);
+                  // Check if we need to show date separator
+                  const currentDateKey = getDateKey(msg.createdAt);
+                  const prevMessage = idx > 0 ? arr[idx - 1] : null;
+                  const prevDateKey = prevMessage ? getDateKey(prevMessage.createdAt) : null;
+                  const showDateSeparator = !searchQuery && (!prevDateKey || currentDateKey !== prevDateKey);
 
-                    // Highlight search term in message content
-                    const highlightContent = (content: string) => {
-                      if (!searchQuery.trim()) return content;
-                      const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-                      const parts = content.split(regex);
-                      return parts.map((part, i) =>
-                        regex.test(part) ? (
-                          <mark key={i} className="bg-yellow-300 dark:bg-yellow-500/50 text-inherit rounded px-0.5">
-                            {part}
-                          </mark>
-                        ) : (
-                          part
-                        )
-                      );
-                    };
+                  // Highlight search term in message content
+                  const highlightContent = (content: string) => {
+                    if (!searchQuery.trim()) return content;
+                    const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                    const parts = content.split(regex);
+                    return parts.map((part, i) =>
+                      regex.test(part) ? (
+                        <mark key={i} className="bg-yellow-300 dark:bg-yellow-500/50 text-inherit rounded px-0.5">
+                          {part}
+                        </mark>
+                      ) : (
+                        part
+                      )
+                    );
+                  };
 
-                    return (
-                      <div key={msg._id || idx}>
-                        {/* Date Separator */}
-                        {showDateSeparator && (
-                          <div className="flex items-center gap-3 my-4">
-                            <div className="flex-1 h-px bg-[var(--color-border)]" />
-                            <span className="text-[10px] font-medium text-[var(--color-text-tertiary)] px-2 py-0.5 rounded-full bg-[var(--color-bg-tertiary)]">
-                              {formatDateSeparator(msg.createdAt, locale)}
-                            </span>
-                            <div className="flex-1 h-px bg-[var(--color-border)]" />
-                          </div>
-                        )}
-                        <div
-                          id={`msg-${msg._id}`}
-                          className={`flex ${isMine ? 'justify-end' : 'justify-start'} ${isHighlighted ? 'animate-pulse' : ''}`}
-                        >
+                  return (
+                    <div key={msg._id || idx}>
+                      {/* Date Separator */}
+                      {showDateSeparator && (
+                        <div className="flex items-center gap-3 my-4">
+                          <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
+                          <span className="text-[10px] font-medium text-neutral-500 px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800">
+                            {formatDateSeparator(msg.createdAt, locale)}
+                          </span>
+                          <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
+                        </div>
+                      )}
+                      <div
+                        id={`msg-${msg._id}`}
+                        className={`flex ${isMine ? 'justify-end' : 'justify-start'} ${isHighlighted ? 'animate-pulse' : ''}`}
+                      >
                         <div className={`flex items-end gap-2 max-w-[80%] ${isMine ? 'flex-row-reverse' : ''}`}>
                           {!isMine && (
                             <Avatar
@@ -506,34 +560,33 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                           <div>
                             {/* Attachments */}
                             {msg.attachments?.map((attachment, aIdx) => {
-                              // Check if it's an image (handle both file extensions and Cloudinary URLs)
                               const isImage = attachment.match(/\.(jpg|jpeg|png|gif|webp)$/i) ||
                                 attachment.includes('/image/upload/') ||
-                                attachment.includes('cloudinary') && !attachment.includes('/raw/');
+                                (attachment.includes('cloudinary') && !attachment.includes('/raw/'));
 
                               return (
-                              <div key={aIdx} className="mb-1">
-                                {isImage ? (
-                                  <a href={storage.getFileUrl(attachment)} target="_blank" rel="noopener noreferrer">
-                                    <img
-                                      src={storage.getFileUrl(attachment)}
-                                      alt=""
-                                      className="max-w-[200px] rounded-xl border border-[var(--color-border)]"
-                                    />
-                                  </a>
-                                ) : (
-                                  <a
-                                    href={storage.getFileUrl(attachment)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-2 px-3 py-2 bg-[var(--color-bg-elevated)] rounded-xl border border-[var(--color-border)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
-                                  >
-                                    <FileText className="w-4 h-4 text-[var(--color-text-tertiary)]" />
-                                    <span className="text-xs truncate max-w-[120px]">{attachment.split('/').pop()}</span>
-                                  </a>
-                                )}
-                              </div>
-                            );
+                                <div key={aIdx} className="mb-1">
+                                  {isImage ? (
+                                    <a href={storage.getFileUrl(attachment)} target="_blank" rel="noopener noreferrer">
+                                      <img
+                                        src={storage.getFileUrl(attachment)}
+                                        alt=""
+                                        className="max-w-[200px] rounded-xl border border-neutral-200 dark:border-neutral-700"
+                                      />
+                                    </a>
+                                  ) : (
+                                    <a
+                                      href={storage.getFileUrl(attachment)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+                                    >
+                                      <FileText className="w-4 h-4 text-neutral-400" />
+                                      <span className="text-xs truncate max-w-[120px]">{attachment.split('/').pop()}</span>
+                                    </a>
+                                  )}
+                                </div>
+                              );
                             })}
                             {/* Message Content */}
                             {msg.content ? (
@@ -541,101 +594,100 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                                 className={`px-3.5 py-2 rounded-2xl transition-all ${
                                   isMine
                                     ? 'rounded-br-md text-white'
-                                    : 'bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] rounded-bl-md border border-[var(--color-border)]'
+                                    : 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-bl-md border border-neutral-200 dark:border-neutral-700'
                                 } ${isHighlighted ? 'ring-2 ring-yellow-400 dark:ring-yellow-500' : ''}`}
                                 style={isMine ? { backgroundColor: ACCENT } : {}}
                               >
                                 <p className="text-sm leading-relaxed">{highlightContent(msg.content)}</p>
-                                <p className={`text-[10px] mt-1 ${isMine ? 'text-white/60' : 'text-[var(--color-text-tertiary)]'}`}>
+                                <p className={`text-[10px] mt-1 ${isMine ? 'text-white/60' : 'text-neutral-400'}`}>
                                   {formatMessageTime(msg.createdAt)}
                                 </p>
                               </div>
                             ) : msg.attachments?.length ? (
-                              <p className="text-[10px] text-[var(--color-text-tertiary)] mt-1">
+                              <p className="text-[10px] text-neutral-400 mt-1">
                                 {formatMessageTime(msg.createdAt)}
                               </p>
                             ) : null}
                           </div>
                         </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {/* Typing indicator */}
-                  {otherUserTyping && (
-                    <div className="flex items-center gap-2">
-                      <div className="flex gap-1 px-3 py-2 bg-[var(--color-bg-elevated)] rounded-2xl rounded-bl-md border border-[var(--color-border)]">
-                        <span className="w-2 h-2 bg-[var(--color-text-tertiary)] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                        <span className="w-2 h-2 bg-[var(--color-text-tertiary)] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                        <span className="w-2 h-2 bg-[var(--color-text-tertiary)] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                       </div>
                     </div>
-                  )}
-                  <div ref={messagesEndRef} />
-                </>
-              )}
-            </div>
+                  );
+                })}
+                {/* Typing indicator */}
+                {otherUserTyping && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1 px-3 py-2 bg-white dark:bg-neutral-800 rounded-2xl rounded-bl-md border border-neutral-200 dark:border-neutral-700">
+                      <span className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: ACCENT, animationDelay: '0ms' }} />
+                      <span className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: ACCENT, animationDelay: '150ms' }} />
+                      <span className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: ACCENT, animationDelay: '300ms' }} />
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </>
+            )}
+          </div>
 
-            {/* Input Area */}
-            <div className="p-3 border-t border-[var(--color-border)] bg-[var(--color-bg-elevated)]">
-              <div className="flex items-center gap-2">
-                {/* File Upload Button */}
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors disabled:opacity-50"
-                >
-                  {isUploading ? (
-                    <div className="w-4 h-4 border-2 border-[var(--color-text-tertiary)] border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Paperclip className="w-5 h-5" />
-                  )}
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
+          {/* Input Area */}
+          <div className="p-3 border-t border-neutral-100 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+            <div className="flex items-center gap-2">
+              {/* File Upload Button */}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
+              >
+                {isUploading ? (
+                  <div className="w-4 h-4 border-2 border-neutral-400 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Paperclip className="w-5 h-5" />
+                )}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
 
-                {/* Text Input */}
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => {
-                    setNewMessage(e.target.value);
-                    emitTyping();
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                  placeholder={locale === 'ka' ? 'დაწერე შეტყობინება...' : 'Type a message...'}
-                  className="flex-1 px-4 py-2 text-sm bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-full text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#C4735B]/30 focus:ring-2 focus:ring-[#C4735B]/10 transition-all"
-                />
-
-                {/* Send Button */}
-                <button
-                  type="button"
-                  onClick={(e) => {
+              {/* Text Input */}
+              <input
+                ref={inputRef}
+                type="text"
+                value={newMessage}
+                onChange={(e) => {
+                  setNewMessage(e.target.value);
+                  emitTyping();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     handleSendMessage();
-                  }}
-                  disabled={!newMessage.trim() || isSubmitting}
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
-                  style={{ backgroundColor: ACCENT }}
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </div>
+                  }
+                }}
+                placeholder={locale === 'ka' ? 'დაწერე შეტყობინება...' : 'Type a message...'}
+                className="flex-1 px-4 py-2 text-sm bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]/50 focus:ring-2 focus:ring-[#C4735B]/10 transition-all"
+              />
+
+              {/* Send Button */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSendMessage();
+                }}
+                disabled={!newMessage.trim() || isSubmitting}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
+                style={{ backgroundColor: ACCENT }}
+              >
+                <Send className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
