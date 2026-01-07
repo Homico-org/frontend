@@ -1,8 +1,11 @@
 'use client';
 
 import Avatar from '@/components/common/Avatar';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Check, Clock, Loader2, MoreVertical, Trash2, X } from 'lucide-react';
+import { formatTimeAgoCompact } from '@/utils/dateUtils';
+import { Check, Clock, MoreVertical, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import PollOptionCard, { PollOption } from './PollOptionCard';
 
@@ -34,25 +37,6 @@ interface PollCardProps {
   onApprove: (pollId: string, optionId: string) => Promise<void>;
   onClose: (pollId: string) => Promise<void>;
   onDelete: (pollId: string) => Promise<void>;
-}
-
-function getTimeAgo(dateStr: string, locale: string) {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMins / 60);
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (locale === 'ka') {
-    if (diffMins < 60) return `${diffMins} წუთის წინ`;
-    if (diffHours < 24) return `${diffHours} საათის წინ`;
-    return `${diffDays} დღის წინ`;
-  }
-
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  return `${diffDays}d ago`;
 }
 
 export default function PollCard({
@@ -140,22 +124,19 @@ export default function PollCard({
             <div className="flex items-center gap-2 mb-1">
               {/* Status badge */}
               {isApproved && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-xs font-medium">
-                  <Check className="w-3 h-3" />
+                <Badge variant="success" size="xs" icon={<Check className="w-3 h-3" />}>
                   {locale === 'ka' ? 'არჩეული' : 'Approved'}
-                </span>
+                </Badge>
               )}
               {isClosed && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 text-xs font-medium">
-                  <X className="w-3 h-3" />
+                <Badge variant="default" size="xs" icon={<X className="w-3 h-3" />}>
                   {locale === 'ka' ? 'დახურული' : 'Closed'}
-                </span>
+                </Badge>
               )}
               {isActive && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#C4735B]/10 text-[#C4735B] text-xs font-medium">
-                  <Clock className="w-3 h-3" />
+                <Badge variant="warning" size="xs" icon={<Clock className="w-3 h-3" />}>
                   {locale === 'ka' ? 'აქტიური' : 'Active'}
-                </span>
+                </Badge>
               )}
             </div>
             <h3 className="font-semibold text-neutral-900 dark:text-white truncate">
@@ -189,7 +170,7 @@ export default function PollCard({
                       disabled={isClosing}
                       className="w-full px-3 py-2 text-left text-sm text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2"
                     >
-                      {isClosing ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
+                      {isClosing ? <LoadingSpinner size="sm" color="currentColor" /> : <X className="w-4 h-4" />}
                       {locale === 'ka' ? 'დახურვა' : 'Close Poll'}
                     </button>
                     <button
@@ -197,7 +178,7 @@ export default function PollCard({
                       disabled={isDeleting}
                       className="w-full px-3 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
                     >
-                      {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                      {isDeleting ? <LoadingSpinner size="sm" color="currentColor" /> : <Trash2 className="w-4 h-4" />}
                       {locale === 'ka' ? 'წაშლა' : 'Delete'}
                     </button>
                   </div>
@@ -236,7 +217,7 @@ export default function PollCard({
         {/* Voting indicator */}
         {isVoting && (
           <div className="mt-3 flex items-center justify-center gap-2 text-sm text-neutral-500">
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <LoadingSpinner size="sm" color="currentColor" />
             {locale === 'ka' ? 'ინახება...' : 'Saving...'}
           </div>
         )}
@@ -252,7 +233,7 @@ export default function PollCard({
           >
             {isApproving ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <LoadingSpinner size="sm" color="white" />
                 {locale === 'ka' ? 'მტკიცდება...' : 'Approving...'}
               </>
             ) : (
@@ -274,7 +255,7 @@ export default function PollCard({
             size="xs"
           />
           <span className="text-xs text-neutral-500 dark:text-neutral-400">
-            {poll.createdBy.name} • {getTimeAgo(poll.createdAt, locale)}
+            {poll.createdBy.name} • {formatTimeAgoCompact(poll.createdAt, locale as 'en' | 'ka')}
           </span>
         </div>
       </div>

@@ -27,10 +27,9 @@ import {
   Settings,
   Crown
 } from 'lucide-react';
-
-// Design system colors
-const ACCENT = '#E07B4F';
-const ACCENT_HOVER = '#D26B3F';
+import { COMPANY_ACCENT as ACCENT, COMPANY_ACCENT_HOVER as ACCENT_HOVER } from '@/constants/theme';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Badge } from '@/components/ui/badge';
 
 interface DashboardStats {
   totalEmployees: number;
@@ -127,14 +126,14 @@ export default function CompanyDashboardPage() {
     }
   }, [authLoading, user, fetchDashboardData]);
 
-  const getStatusColor = (status: string) => {
+  const getStatusVariant = (status: string): 'warning' | 'info' | 'secondary' | 'success' | 'danger' | 'default' => {
     switch (status) {
-      case 'pending': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
-      case 'assigned': case 'accepted': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
-      case 'in_progress': return 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400';
-      case 'completed': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
-      case 'rejected': case 'cancelled': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
-      default: return 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-400';
+      case 'pending': return 'warning';
+      case 'assigned': case 'accepted': return 'info';
+      case 'in_progress': return 'secondary';
+      case 'completed': return 'success';
+      case 'rejected': case 'cancelled': return 'danger';
+      default: return 'default';
     }
   };
 
@@ -142,10 +141,7 @@ export default function CompanyDashboardPage() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-bg-primary)' }}>
         <div className="flex flex-col items-center gap-4">
-          <div className="relative w-12 h-12">
-            <div className="absolute inset-0 rounded-full border-2" style={{ borderColor: `${ACCENT}30` }} />
-            <div className="absolute inset-0 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: ACCENT }} />
-          </div>
+          <LoadingSpinner size="xl" variant="border" color={ACCENT} />
           <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
             {locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
           </p>
@@ -239,9 +235,9 @@ export default function CompanyDashboardPage() {
               <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(59, 130, 246, 0.1)' }}>
                 <Users className="w-5 h-5 text-blue-500" />
               </div>
-              <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+              <Badge variant="info" size="xs">
                 {stats?.activeEmployees || 0} {locale === 'ka' ? 'აქტიური' : 'active'}
-              </span>
+              </Badge>
             </div>
             <div className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
               {stats?.totalEmployees || 0}
@@ -265,9 +261,9 @@ export default function CompanyDashboardPage() {
                 <FileText className="w-5 h-5 text-amber-500" />
               </div>
               {(stats?.pendingProposals || 0) > 0 && (
-                <span className="text-xs font-medium px-2 py-1 rounded-full bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
+                <Badge variant="warning" size="xs">
                   {locale === 'ka' ? 'ახალი' : 'New'}
-                </span>
+                </Badge>
               )}
             </div>
             <div className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
@@ -291,9 +287,9 @@ export default function CompanyDashboardPage() {
               <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(16, 185, 129, 0.1)' }}>
                 <Star className="w-5 h-5 text-emerald-500" />
               </div>
-              <span className="text-xs font-medium px-2 py-1 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+              <Badge variant="success" size="xs">
                 {stats?.reviewCount || 0} {locale === 'ka' ? 'შეფასება' : 'reviews'}
-              </span>
+              </Badge>
             </div>
             <div className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
               {stats?.avgRating?.toFixed(1) || '0.0'}
@@ -485,9 +481,9 @@ export default function CompanyDashboardPage() {
                         <span className="font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
                           {job.title}
                         </span>
-                        <span className={`px-2 py-0.5 text-xs font-medium rounded-full flex-shrink-0 ${getStatusColor(job.status)}`}>
+                        <Badge variant={getStatusVariant(job.status)} size="xs" className="flex-shrink-0">
                           {job.status.replace('_', ' ')}
-                        </span>
+                        </Badge>
                       </div>
                       <div className="flex items-center gap-3 mt-1 text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
                         {job.clientName && (
@@ -564,9 +560,9 @@ export default function CompanyDashboardPage() {
                         <span className="font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
                           {proposal.jobTitle}
                         </span>
-                        <span className={`px-2 py-0.5 text-xs font-medium rounded-full flex-shrink-0 ${getStatusColor(proposal.status)}`}>
+                        <Badge variant={getStatusVariant(proposal.status)} size="xs" className="flex-shrink-0">
                           {proposal.status}
-                        </span>
+                        </Badge>
                       </div>
                       <div className="flex items-center gap-3 mt-1 text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
                         <span className="flex items-center gap-1">

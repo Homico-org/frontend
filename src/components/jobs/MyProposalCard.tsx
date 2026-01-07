@@ -1,8 +1,8 @@
 'use client';
 
 import { CheckCircle2 } from 'lucide-react';
-
-const ACCENT = '#C4735B';
+import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
+import { formatCurrency } from '@/utils/currencyUtils';
 
 export interface Proposal {
   _id: string;
@@ -105,7 +105,7 @@ export default function MyProposalCard({
                 className="font-display text-xl font-semibold"
                 style={{ color: ACCENT }}
               >
-                ₾{proposal.proposedPrice.toLocaleString()}
+                {formatCurrency(proposal.proposedPrice)}
               </p>
             </div>
           )}

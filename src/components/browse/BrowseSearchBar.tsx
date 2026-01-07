@@ -2,6 +2,7 @@
 
 import { useBrowseContext } from '@/contexts/BrowseContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useClickOutside } from '@/hooks/useClickOutside';
 import { Search, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -24,7 +25,7 @@ export default function BrowseSearchBar({ placeholder }: BrowseSearchBarProps) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useClickOutside<HTMLDivElement>(() => setShowSuggestions(false), showSuggestions);
 
   // Sync input with context
   useEffect(() => {
@@ -41,17 +42,6 @@ export default function BrowseSearchBar({ placeholder }: BrowseSearchBarProps) {
         // ignore
       }
     }
-  }, []);
-
-  // Handle click outside
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const saveToRecent = (query: string) => {

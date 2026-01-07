@@ -1,35 +1,35 @@
 'use client';
 
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { COMPANY_ACCENT as ACCENT, COMPANY_ACCENT_HOVER as ACCENT_HOVER } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { formatDateShort } from '@/utils/dateUtils';
 import {
-  Briefcase,
-  Plus,
-  Clock,
-  UserCheck,
-  PlayCircle,
-  CheckCircle2,
-  XCircle,
-  MapPin,
-  Calendar,
-  User,
-  Timer,
-  ChevronRight,
-  Search,
-  Filter,
   AlertTriangle,
   ArrowUpRight,
-  MoreHorizontal,
-  Clipboard
+  Briefcase,
+  Calendar,
+  CheckCircle2,
+  ChevronRight,
+  Clipboard,
+  Clock,
+  Filter,
+  MapPin,
+  PlayCircle,
+  Plus,
+  Search,
+  Timer,
+  User,
+  UserCheck,
+  XCircle
 } from 'lucide-react';
-
-// Terracotta accent colors
-const ACCENT = '#E07B4F';
-const ACCENT_HOVER = '#D26B3F';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 interface Employee {
   _id: string;
@@ -189,14 +189,6 @@ export default function CompanyJobsPage() {
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
   // Stats calculations
   const stats = {
     total: pagination.total || jobs.length,
@@ -218,10 +210,7 @@ export default function CompanyJobsPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-primary)]">
-        <div
-          className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-          style={{ borderColor: ACCENT, borderTopColor: 'transparent' }}
-        />
+        <LoadingSpinner size="lg" variant="border" color={ACCENT} />
       </div>
     );
   }
@@ -366,28 +355,24 @@ export default function CompanyJobsPage() {
 
             {/* Priority Filter */}
             <div className="flex items-center gap-2">
-              <button
+              <Button
+                variant={showFilters || filter.priority ? 'outline' : 'secondary'}
                 onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-200 ${
-                  showFilters || filter.priority
-                    ? 'border-[#E07B4F] bg-[#E07B4F]/5 text-[#E07B4F]'
-                    : 'border-[var(--color-border-primary)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-secondary)]'
-                }`}
+                leftIcon={<Filter className="w-4 h-4" />}
+                className={showFilters || filter.priority ? 'border-[#E07B4F] bg-[#E07B4F]/5 text-[#E07B4F]' : ''}
               >
-                <Filter className="w-4 h-4" />
-                <span className="text-sm font-medium">
-                  {locale === 'ka' ? 'ფილტრები' : 'Filters'}
-                </span>
-              </button>
+                {locale === 'ka' ? 'ფილტრები' : 'Filters'}
+              </Button>
 
               {filter.status && (
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={() => setFilter({ ...filter, status: '' })}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] text-sm text-[var(--color-text-secondary)]"
+                  leftIcon={<XCircle className="w-4 h-4" />}
                 >
-                  <XCircle className="w-4 h-4" />
                   {locale === 'ka' ? 'გაწმინდე' : 'Clear'}
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -424,10 +409,7 @@ export default function CompanyJobsPage() {
         <div className="bg-[var(--color-bg-primary)] rounded-2xl border border-[var(--color-border-primary)] overflow-hidden">
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
-              <div
-                className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-                style={{ borderColor: ACCENT, borderTopColor: 'transparent' }}
-              />
+              <LoadingSpinner size="lg" color={ACCENT} />
             </div>
           ) : displayedJobs.length > 0 ? (
             <div className="divide-y divide-[var(--color-border-primary)]">
@@ -449,15 +431,30 @@ export default function CompanyJobsPage() {
                           <h3 className="font-semibold text-[var(--color-text-primary)] truncate">
                             {job.title}
                           </h3>
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full border ${statusInfo.color}`}>
-                            <StatusIcon className="w-3 h-3" />
+                          <Badge
+                            variant={
+                              job.status === 'pending' ? 'warning' :
+                              job.status === 'assigned' ? 'info' :
+                              job.status === 'in_progress' ? 'info' :
+                              job.status === 'completed' ? 'success' :
+                              job.status === 'cancelled' ? 'danger' : 'default'
+                            }
+                            size="xs"
+                            icon={<StatusIcon className="w-3 h-3" />}
+                          >
                             {statusInfo.label}
-                          </span>
+                          </Badge>
                           {job.priority !== 'medium' && (
-                            <span className={`px-2 py-0.5 text-xs font-medium rounded-full border ${priorityInfo.color}`}>
-                              {job.priority === 'urgent' && <AlertTriangle className="w-3 h-3 inline mr-1" />}
+                            <Badge
+                              variant={
+                                job.priority === 'urgent' ? 'danger' :
+                                job.priority === 'high' ? 'warning' : 'secondary'
+                              }
+                              size="xs"
+                              icon={job.priority === 'urgent' ? <AlertTriangle className="w-3 h-3" /> : undefined}
+                            >
                               {priorityInfo.label}
-                            </span>
+                            </Badge>
                           )}
                         </div>
 
@@ -478,7 +475,7 @@ export default function CompanyJobsPage() {
                           {job.scheduledDate && (
                             <span className="flex items-center gap-1.5">
                               <Calendar className="w-4 h-4" />
-                              {formatDate(job.scheduledDate)}
+                              {formatDateShort(job.scheduledDate, locale as 'en' | 'ka')}
                               {job.scheduledTime && ` ${job.scheduledTime}`}
                             </span>
                           )}
@@ -494,17 +491,14 @@ export default function CompanyJobsPage() {
                         {job.tags && job.tags.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-2">
                             {job.tags.slice(0, 4).map((tag) => (
-                              <span
-                                key={tag}
-                                className="px-2 py-0.5 bg-[var(--color-bg-secondary)] text-[var(--color-text-tertiary)] text-xs rounded-full"
-                              >
+                              <Badge key={tag} variant="ghost" size="xs">
                                 {tag}
-                              </span>
+                              </Badge>
                             ))}
                             {job.tags.length > 4 && (
-                              <span className="px-2 py-0.5 text-[var(--color-text-tertiary)] text-xs">
+                              <Badge variant="ghost" size="xs">
                                 +{job.tags.length - 4}
-                              </span>
+                              </Badge>
                             )}
                           </div>
                         )}
@@ -590,14 +584,13 @@ export default function CompanyJobsPage() {
           {/* Pagination */}
           {pagination.hasMore && (
             <div className="p-4 border-t border-[var(--color-border-primary)] text-center">
-              <button
+              <Button
+                variant="link"
                 onClick={() => fetchJobs(pagination.page + 1)}
-                className="inline-flex items-center gap-2 px-4 py-2 font-medium transition-all duration-200 hover:opacity-80"
-                style={{ color: ACCENT }}
+                rightIcon={<ArrowUpRight className="w-4 h-4" />}
               >
                 {locale === 'ka' ? 'მეტის ჩატვირთვა' : 'Load More'}
-                <ArrowUpRight className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           )}
         </div>

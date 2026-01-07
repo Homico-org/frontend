@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useRef, useEffect, forwardRef, InputHTMLAttributes } from 'react';
-import { ChevronDown, Phone } from 'lucide-react';
+import { useState, useEffect, forwardRef, InputHTMLAttributes } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 import { countries } from '@/contexts/LanguageContext';
+import { useClickOutside } from '@/hooks/useClickOutside';
 
 export type CountryCode = keyof typeof countries;
 
@@ -73,7 +74,7 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
   ) => {
     const [selectedCountry, setSelectedCountry] = useState<CountryCode>(country);
     const [showDropdown, setShowDropdown] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
+    const dropdownRef = useClickOutside<HTMLDivElement>(() => setShowDropdown(false), showDropdown);
 
     const actualVariant = error ? 'error' : variant;
     const countryData = countries[selectedCountry];
@@ -82,20 +83,6 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
     useEffect(() => {
       setSelectedCountry(country);
     }, [country]);
-
-    // Close dropdown when clicking outside
-    useEffect(() => {
-      const handleClickOutside = (e: MouseEvent) => {
-        if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-          setShowDropdown(false);
-        }
-      };
-
-      if (showDropdown) {
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-      }
-    }, [showDropdown]);
 
     const handleCountrySelect = (code: CountryCode) => {
       setSelectedCountry(code);

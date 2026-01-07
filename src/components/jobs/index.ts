@@ -9,10 +9,14 @@ export { default as JobStatsBar } from './JobStatsBar';
 export type { JobStatsBarProps } from './JobStatsBar';
 
 export { default as ProposalForm } from './ProposalForm';
-export type { ProposalFormProps, ProposalFormData } from './ProposalForm';
+export type { ProposalFormData, ProposalFormProps } from './ProposalForm';
 
 export { default as ClientCard } from './ClientCard';
 export type { ClientCardProps, ClientInfo } from './ClientCard';
 
 export { default as MyProposalCard } from './MyProposalCard';
 export type { MyProposalCardProps, Proposal } from './MyProposalCard';
+
+export { default as ProposalFormModal } from './ProposalFormModal';
+
+export { default as ReviewModal } from './ReviewModal';

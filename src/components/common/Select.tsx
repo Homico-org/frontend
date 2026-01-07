@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useClickOutsideMultiple } from '@/hooks/useClickOutside';
 
 export interface SelectOption {
   value: string;
@@ -111,24 +112,14 @@ export default function Select({
   }, [isOpen, updatePosition]);
 
   // Close on outside click
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        triggerRef.current &&
-        !triggerRef.current.contains(event.target as Node) &&
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-        setSearchQuery('');
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [isOpen]);
+  useClickOutsideMultiple(
+    [triggerRef as React.RefObject<HTMLElement>, dropdownRef as React.RefObject<HTMLElement>],
+    () => {
+      setIsOpen(false);
+      setSearchQuery('');
+    },
+    isOpen
+  );
 
   // Focus search input when opened
   useEffect(() => {

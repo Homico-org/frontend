@@ -4,12 +4,11 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { JobFilters } from '@/contexts/JobsContext';
 import { RotateCcw, Bookmark, ChevronDown } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
+import { Badge } from '@/components/ui/badge';
 
 // Re-export JobFilters for convenience
 export type { JobFilters } from '@/contexts/JobsContext';
-
-// Warm terracotta accent
-const ACCENT = '#C4735B';
 
 // Property type options
 const PROPERTY_TYPES = [
@@ -85,12 +84,9 @@ function Checkbox({
         {label}
       </span>
       {count !== undefined && count > 0 && (
-        <span
-          className="ml-auto text-[11px] font-medium px-1.5 py-0.5 rounded-md"
-          style={{ backgroundColor: `${ACCENT}15`, color: ACCENT }}
-        >
+        <Badge variant="premium" size="xs" className="ml-auto">
           {count}
-        </span>
+        </Badge>
       )}
     </label>
   );
@@ -144,12 +140,9 @@ function CollapsibleSection({
             {title}
           </h4>
           {activeCount > 0 && (
-            <span
-              className="text-[9px] font-bold w-4 h-4 rounded-full text-white flex items-center justify-center"
-              style={{ backgroundColor: ACCENT }}
-            >
+            <Badge variant="premium" size="xs" className="!w-4 !h-4 !p-0 !rounded-full flex items-center justify-center">
               {activeCount}
-            </span>
+            </Badge>
           )}
         </div>
         <ChevronDown

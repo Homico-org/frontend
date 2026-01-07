@@ -1,6 +1,8 @@
 "use client";
 
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Badge } from "@/components/ui/badge";
+import { Check } from "lucide-react";
 
 interface PricingStepProps {
   formData: {
@@ -221,22 +223,9 @@ export default function PricingStep({
             {locale === "ka" ? "ფასის დიაპაზონი" : "Price Range"}
           </h3>
           {validation.pricing && (
-            <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-full">
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2.5}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
+            <Badge variant="success" size="xs" icon={<Check className="w-3 h-3" />}>
               {locale === "ka" ? "შევსებულია" : "Completed"}
-            </span>
+            </Badge>
           )}
         </div>
 

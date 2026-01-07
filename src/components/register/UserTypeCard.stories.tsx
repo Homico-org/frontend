@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs';
+import { useState } from 'react';
 import UserTypeCard from './UserTypeCard';
 
 const meta: Meta<typeof UserTypeCard> = {
@@ -12,6 +13,10 @@ const meta: Meta<typeof UserTypeCard> = {
     type: {
       control: 'select',
       options: ['client', 'pro'],
+    },
+    variant: {
+      control: 'select',
+      options: ['default', 'compact'],
     },
   },
   decorators: [
@@ -109,4 +114,98 @@ export const SideBySide: Story = {
     ),
   ],
   render: () => <></>,
+};
+
+// Compact variant stories
+export const CompactClientSelected: Story = {
+  args: {
+    type: 'client',
+    variant: 'compact',
+    title: 'Client',
+    description: 'Find specialists',
+    ctaText: 'Get Started',
+    imageUrl: 'https://res.cloudinary.com/dakcvkodo/image/upload/w_600,h_450,c_pad,q_auto,f_auto/homico/avatars/client.png',
+    onClick: () => {},
+    selected: true,
+  },
+};
+
+export const CompactClientUnselected: Story = {
+  args: {
+    type: 'client',
+    variant: 'compact',
+    title: 'Client',
+    description: 'Find specialists',
+    ctaText: 'Get Started',
+    imageUrl: 'https://res.cloudinary.com/dakcvkodo/image/upload/w_600,h_450,c_pad,q_auto,f_auto/homico/avatars/client.png',
+    onClick: () => {},
+    selected: false,
+  },
+};
+
+export const CompactProSelected: Story = {
+  args: {
+    type: 'pro',
+    variant: 'compact',
+    title: 'Professional',
+    description: 'Get hired',
+    ctaText: 'Join Now',
+    imageUrl: 'https://res.cloudinary.com/dakcvkodo/image/upload/w_600,h_450,c_pad,q_auto,f_auto/homico/avatars/pro-plumber.png',
+    onClick: () => {},
+    selected: true,
+  },
+};
+
+export const CompactProUnselected: Story = {
+  args: {
+    type: 'pro',
+    variant: 'compact',
+    title: 'Professional',
+    description: 'Get hired',
+    ctaText: 'Join Now',
+    imageUrl: 'https://res.cloudinary.com/dakcvkodo/image/upload/w_600,h_450,c_pad,q_auto,f_auto/homico/avatars/pro-plumber.png',
+    onClick: () => {},
+    selected: false,
+  },
+};
+
+export const CompactInteractive: Story = {
+  decorators: [
+    (Story) => (
+      <div className="p-8 bg-gradient-to-br from-[#FBF9F7] to-[#F5F0EC] min-h-[300px] flex items-center justify-center">
+        <div className="w-full max-w-md">
+          <Story />
+        </div>
+      </div>
+    ),
+  ],
+  render: () => {
+    const [selected, setSelected] = useState<'client' | 'pro'>('client');
+    return (
+      <div className="bg-neutral-100 p-1.5 rounded-2xl">
+        <div className="grid grid-cols-2 gap-1">
+          <UserTypeCard
+            type="client"
+            variant="compact"
+            title="Client"
+            description="Find specialists"
+            ctaText="Get Started"
+            imageUrl="https://res.cloudinary.com/dakcvkodo/image/upload/w_600,h_450,c_pad,q_auto,f_auto/homico/avatars/client.png"
+            onClick={() => setSelected('client')}
+            selected={selected === 'client'}
+          />
+          <UserTypeCard
+            type="pro"
+            variant="compact"
+            title="Professional"
+            description="Get hired"
+            ctaText="Join Now"
+            imageUrl="https://res.cloudinary.com/dakcvkodo/image/upload/w_600,h_450,c_pad,q_auto,f_auto/homico/avatars/pro-plumber.png"
+            onClick={() => setSelected('pro')}
+            selected={selected === 'pro'}
+          />
+        </div>
+      </div>
+    );
+  },
 };

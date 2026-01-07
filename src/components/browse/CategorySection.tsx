@@ -1,52 +1,9 @@
 'use client';
 
+import { CategoryIcon } from '@/components/categories';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useState } from 'react';
-
-// Refined architectural icons
-const CategoryIcon = ({ type, className = '' }: { type: string; className?: string }) => {
-  const iconProps = { className, viewBox: "0 0 24 24", fill: "none" };
-
-  switch (type) {
-    case 'designer':
-      return (
-        <svg {...iconProps}>
-          <path d="M20 19H4V17C4 15.9 4.9 15 6 15H18C19.1 15 20 15.9 20 17V19Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-          <path d="M18 15V13C18 11.9 17.1 11 16 11H8C6.9 11 6 11.9 6 13V15" stroke="currentColor" strokeWidth="1.5"/>
-          <path d="M12 11V8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-          <circle cx="12" cy="6" r="2" stroke="currentColor" strokeWidth="1.5"/>
-        </svg>
-      );
-    case 'architect':
-      return (
-        <svg {...iconProps}>
-          <path d="M3 20H21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-          <path d="M5 20V10L12 5L19 10V20" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-          <rect x="9" y="14" width="6" height="6" rx="0.5" stroke="currentColor" strokeWidth="1.5"/>
-          <path d="M12 14V20" stroke="currentColor" strokeWidth="1.5"/>
-        </svg>
-      );
-    case 'craftsmen':
-      return (
-        <svg {...iconProps}>
-          <path d="M14.7 6.3C14.3 5.5 13.5 5 12.6 5C11.2 5 10 6.2 10 7.6C10 8 10.1 8.4 10.3 8.7L5 14L7 16L12.3 10.7C12.6 10.9 13 11 13.4 11C14.8 11 16 9.8 16 8.4C16 8 15.9 7.6 15.7 7.3L14 9L12 7L14.7 6.3Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-          <path d="M5 14L3 19L8 17L5 14Z" fill="currentColor" stroke="currentColor" strokeWidth="1" strokeLinejoin="round"/>
-        </svg>
-      );
-    case 'homecare':
-      return (
-        <svg {...iconProps}>
-          <path d="M3 11L12 4L21 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M5 10V19C5 19.6 5.4 20 6 20H18C18.6 20 19 19.6 19 19V10" stroke="currentColor" strokeWidth="1.5"/>
-          <path d="M12 20V15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-          <circle cx="12" cy="12" r="2" stroke="currentColor" strokeWidth="1.5"/>
-        </svg>
-      );
-    default:
-      return null;
-  }
-};
 
 interface CategorySectionProps {
   selectedCategory: string | null;

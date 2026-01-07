@@ -2,6 +2,7 @@
 
 import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
@@ -19,25 +20,9 @@ import {
   XCircle,
   Inbox,
 } from 'lucide-react';
-
-// Terracotta admin theme (matching dashboard)
-const THEME = {
-  primary: '#C4735B',
-  primaryDark: '#A85D4A',
-  accent: '#D4897A',
-  surface: '#1A1A1C',
-  surfaceLight: '#232326',
-  surfaceHover: '#2A2A2E',
-  border: '#333338',
-  borderLight: '#3D3D42',
-  text: '#FAFAFA',
-  textMuted: '#A1A1AA',
-  textDim: '#71717A',
-  success: '#22C55E',
-  warning: '#F59E0B',
-  error: '#EF4444',
-  info: '#3B82F6',
-};
+import { formatDateRelative, formatMessageTime } from '@/utils/dateUtils';
+import { ADMIN_THEME as THEME } from '@/constants/theme';
+import { getAdminTicketStatusColor } from '@/utils/statusUtils';
 
 type SupportMessageStatus = 'sent' | 'delivered' | 'read';
 
@@ -420,31 +405,7 @@ function AdminSupportPageContent() {
     }
   };
 
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-    if (days === 0) return 'Today';
-    if (days === 1) return 'Yesterday';
-    return date.toLocaleDateString();
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'open': return { bg: `${THEME.warning}20`, color: THEME.warning };
-      case 'in_progress': return { bg: `${THEME.info}20`, color: THEME.info };
-      case 'resolved': return { bg: `${THEME.success}20`, color: THEME.success };
-      case 'closed': return { bg: `${THEME.textDim}20`, color: THEME.textDim };
-      default: return { bg: `${THEME.textDim}20`, color: THEME.textDim };
-    }
-  };
+  const getStatusColor = (status: string) => getAdminTicketStatusColor(status);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -626,7 +587,7 @@ function AdminSupportPageContent() {
             <div className="flex-1 overflow-y-auto">
               {isLoading ? (
                 <div className="flex items-center justify-center py-12">
-                  <div className="w-8 h-8 rounded-full animate-spin" style={{ border: `2px solid ${THEME.border}`, borderTopColor: THEME.primary }} />
+                  <LoadingSpinner size="lg" color={THEME.primary} />
                 </div>
               ) : tickets.length === 0 ? (
                 <div className="text-center py-12">
@@ -673,7 +634,7 @@ function AdminSupportPageContent() {
                                 {ticket.userId?.name}
                               </p>
                               <span className="text-[10px] flex-shrink-0" style={{ color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace" }}>
-                                {formatDate(ticket.lastMessageAt)}
+                                {formatDateRelative(ticket.lastMessageAt)}
                               </span>
                             </div>
                             <p className="text-xs truncate mb-1.5" style={{ color: THEME.textMuted }}>
@@ -803,7 +764,7 @@ function AdminSupportPageContent() {
                               fontFamily: "'JetBrains Mono', monospace",
                             }}
                           >
-                            {formatTime(msg.createdAt)}
+                            {formatMessageTime(msg.createdAt)}
                           </span>
                           {msg.isAdmin && msg.status && (
                             <span className="inline-flex items-center">

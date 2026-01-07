@@ -1,6 +1,9 @@
 'use client';
 
 import AuthGuard from '@/components/common/AuthGuard';
+import { Alert } from '@/components/ui/Alert';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Progress } from '@/components/ui/progress';
 import AboutStep from '@/components/pro/steps/AboutStep';
 import Image from 'next/image';
 import CategoriesStep from '@/components/pro/steps/CategoriesStep';
@@ -533,7 +536,7 @@ function ProProfileSetupPageContent() {
   if (authLoading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAFAF9] dark:bg-neutral-950">
-        <div className="w-12 h-12 rounded-full border-2 border-[#C4735B]/20 border-t-[#C4735B] animate-spin" />
+        <LoadingSpinner size="xl" variant="border" color="#C4735B" />
       </div>
     );
   }
@@ -560,12 +563,7 @@ function ProProfileSetupPageContent() {
                 {STEPS[getCurrentStepIndex()].title[locale === "ka" ? "ka" : "en"]}
               </span>
             </div>
-            <div className="h-1.5 sm:h-1 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-[#C4735B] to-[#D4896B] rounded-full transition-all duration-500"
-                style={{ width: `${getProgressPercentage()}%` }}
-              />
-            </div>
+            <Progress value={getProgressPercentage()} size="sm" indicatorVariant="gradient" />
           </div>
         </div>
       </header>
@@ -574,9 +572,9 @@ function ProProfileSetupPageContent() {
       <main className="flex-1 py-3 sm:py-4 lg:py-6">
         <div className="max-w-3xl mx-auto px-3 sm:px-6 lg:px-8">
           {error && (
-            <div className="mb-4 p-2 rounded-lg bg-red-50 border border-red-100">
-              <p className="text-xs text-red-600">{error}</p>
-            </div>
+            <Alert variant="error" size="sm" className="mb-4">
+              {error}
+            </Alert>
           )}
 
           {/* STEP 1: About */}
@@ -770,10 +768,7 @@ function ProProfileSetupPageContent() {
             >
               {isLoading ? (
                 <>
-                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
+                  <LoadingSpinner size="sm" color="white" />
                   <span>{locale === "ka" ? "..." : "..."}</span>
                 </>
               ) : currentStep === 'review' ? (

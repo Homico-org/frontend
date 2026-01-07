@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -61,12 +62,7 @@ export default function ProProfileGuard({ children }: ProProfileGuardProps) {
     if (user?.role === 'pro' && user?.isProfileCompleted === false) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-primary)]">
-          <div className="flex flex-col items-center gap-4">
-            <div className="relative w-12 h-12">
-              <div className="absolute inset-0 rounded-full border-2 border-[#E07B4F]/20" />
-              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#E07B4F] animate-spin" />
-            </div>
-          </div>
+          <LoadingSpinner size="xl" color="#E07B4F" />
         </div>
       );
     }

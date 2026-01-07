@@ -2,6 +2,7 @@
 
 import AvatarCropper from '@/components/common/AvatarCropper';
 import { Input, Textarea } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AlertCircle, Camera, CheckCircle2, Clock, FileText, Globe, Instagram, Facebook, Linkedin, MessageCircle, Send } from 'lucide-react';
 import { useRef, useState } from 'react';
@@ -117,15 +118,13 @@ export default function AboutStep({
               </h3>
             </div>
             {hasAvatar ? (
-              <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 rounded-full">
-                <CheckCircle2 className="w-3.5 h-3.5" />
+              <Badge variant="success" size="xs" icon={<CheckCircle2 className="w-3.5 h-3.5" />}>
                 {locale === 'ka' ? 'ატვირთულია' : 'Uploaded'}
-              </span>
+              </Badge>
             ) : (
-              <span className="flex items-center gap-1.5 text-xs font-medium text-[#C4735B] bg-[#C4735B]/10 px-2.5 py-1 rounded-full">
-                <AlertCircle className="w-3.5 h-3.5" />
+              <Badge variant="premium" size="xs" icon={<AlertCircle className="w-3.5 h-3.5" />}>
                 {locale === 'ka' ? 'სავალდებულო' : 'Required'}
-              </span>
+              </Badge>
             )}
           </div>
 
@@ -208,14 +207,13 @@ export default function AboutStep({
               </span>
             </div>
             {validation.experience ? (
-              <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 rounded-full">
-                <CheckCircle2 className="w-3.5 h-3.5" />
+              <Badge variant="success" size="xs" icon={<CheckCircle2 className="w-3.5 h-3.5" />}>
                 {locale === 'ka' ? 'შევსებულია' : 'Completed'}
-              </span>
+              </Badge>
             ) : (
-              <span className="flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-muted)] bg-[var(--color-bg-tertiary)] px-2.5 py-1 rounded-full">
+              <Badge variant="secondary" size="xs">
                 {locale === 'ka' ? 'სავალდებულო' : 'Required'}
-              </span>
+              </Badge>
             )}
           </div>
           <Input
@@ -259,14 +257,13 @@ export default function AboutStep({
               </span>
             </div>
             {validation.bio ? (
-              <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 rounded-full">
-                <CheckCircle2 className="w-3.5 h-3.5" />
+              <Badge variant="success" size="xs" icon={<CheckCircle2 className="w-3.5 h-3.5" />}>
                 {locale === 'ka' ? 'შევსებულია' : 'Completed'}
-              </span>
+              </Badge>
             ) : (
-              <span className="flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-muted)] bg-[var(--color-bg-tertiary)] px-2.5 py-1 rounded-full">
+              <Badge variant="secondary" size="xs">
                 {locale === 'ka' ? 'სავალდებულო' : 'Required'}
-              </span>
+              </Badge>
             )}
           </div>
           <Textarea

@@ -29,25 +29,8 @@ import {
   FileText,
   AlertCircle,
 } from 'lucide-react';
-
-// Terracotta admin theme (matching dashboard)
-const THEME = {
-  primary: '#C4735B',
-  primaryDark: '#A85D4A',
-  accent: '#D4897A',
-  surface: '#1A1A1C',
-  surfaceLight: '#232326',
-  surfaceHover: '#2A2A2E',
-  border: '#333338',
-  borderLight: '#3D3D42',
-  text: '#FAFAFA',
-  textMuted: '#A1A1AA',
-  textDim: '#71717A',
-  success: '#22C55E',
-  warning: '#F59E0B',
-  error: '#EF4444',
-  info: '#3B82F6',
-};
+import { formatDateTimeShort } from '@/utils/dateUtils';
+import { ADMIN_THEME as THEME } from '@/constants/theme';
 
 interface ActivityLog {
   _id: string;
@@ -169,17 +152,6 @@ function AdminActivityLogsPageContent() {
   useEffect(() => {
     setPage(1);
   }, [searchQuery, typeFilter]);
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
 
   const formatActivityType = (type: string) => {
     return type.replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -436,7 +408,7 @@ function AdminActivityLogsPageContent() {
                       className="text-sm"
                       style={{ color: THEME.textMuted, fontFamily: "'JetBrains Mono', monospace" }}
                     >
-                      {formatDate(log.timestamp || log.createdAt)}
+                      {formatDateTimeShort(log.timestamp || log.createdAt, locale as 'en' | 'ka')}
                     </p>
                   </div>
                 </div>
@@ -504,7 +476,7 @@ function AdminActivityLogsPageContent() {
                     {formatActivityType(selectedLog.type)}
                   </h3>
                   <p className="text-sm" style={{ color: THEME.textMuted }}>
-                    {formatDate(selectedLog.timestamp || selectedLog.createdAt)}
+                    {formatDateTimeShort(selectedLog.timestamp || selectedLog.createdAt, locale as 'en' | 'ka')}
                   </p>
                 </div>
               </div>

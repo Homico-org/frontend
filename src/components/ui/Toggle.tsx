@@ -15,7 +15,9 @@ const toggleVariants = cva(
       },
       variant: {
         default: 'focus-visible:ring-[#C4735B]',
+        primary: 'focus-visible:ring-[#E07B4F]',
         success: 'focus-visible:ring-green-500',
+        violet: 'focus-visible:ring-violet-500',
         danger: 'focus-visible:ring-red-500',
       },
     },
@@ -40,7 +42,9 @@ const thumbPositions = {
 
 const bgColors = {
   default: { on: 'bg-[#C4735B]', off: 'bg-neutral-200 dark:bg-neutral-700' },
-  success: { on: 'bg-green-500', off: 'bg-neutral-200 dark:bg-neutral-700' },
+  primary: { on: 'bg-[#E07B4F]', off: 'bg-neutral-300 dark:bg-neutral-600' },
+  success: { on: 'bg-green-500', off: 'bg-neutral-300 dark:bg-neutral-600' },
+  violet: { on: 'bg-violet-500', off: 'bg-neutral-300 dark:bg-neutral-600' },
   danger: { on: 'bg-red-500', off: 'bg-neutral-200 dark:bg-neutral-700' },
 };
 

@@ -3,6 +3,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export default function HomePage() {
   const router = useRouter();
@@ -10,7 +11,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (isLoading) return;
-    
+
     // Redirect based on user role
     if (user?.role === 'pro') {
       router.replace('/browse/jobs');
@@ -23,9 +24,7 @@ export default function HomePage() {
   // Show loading spinner while redirecting
   return (
     <div className="min-h-screen flex items-center justify-center bg-cream-50 dark:bg-dark-bg">
-      <div className="relative">
-        <div className="w-16 h-16 border-2 border-neutral-200 dark:border-dark-border rounded-full animate-spin border-t-forest-800 dark:border-t-primary-400" />
-      </div>
+      <LoadingSpinner size="xl" color="#C4735B" />
     </div>
   );
 }

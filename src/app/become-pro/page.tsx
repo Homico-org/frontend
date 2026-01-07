@@ -3,33 +3,35 @@
 import AvatarCropper from "@/components/common/AvatarCropper";
 import BackButton from "@/components/common/BackButton";
 import Header, { HeaderSpacer } from "@/components/common/Header";
+import AboutStep from "@/components/pro/steps/AboutStep";
+import CategoriesStep from "@/components/pro/steps/CategoriesStep";
 import ProjectsStep, {
-  PortfolioProject,
+    PortfolioProject,
 } from "@/components/pro/steps/ProjectsStep";
+import { Alert } from "@/components/ui/Alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input, Textarea } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
-  AlertCircle,
-  ArrowRight,
-  Briefcase,
-  Camera,
-  CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  Facebook,
-  FileText,
-  Globe,
-  Images,
-  Instagram,
-  Linkedin,
-  MessageCircle,
-  Send,
-  Sparkles,
+    ArrowRight,
+    Briefcase,
+    CheckCircle2,
+    ChevronLeft,
+    ChevronRight,
+    Facebook,
+    FileText,
+    Globe,
+    Images,
+    Instagram,
+    Linkedin,
+    MessageCircle,
+    Send,
+    Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -432,9 +434,7 @@ export default function BecomeProPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-primary)]">
-        <div className="relative">
-          <div className="w-12 h-12 rounded-full border-2 border-[var(--color-border)] border-t-[#C4735B] animate-spin" />
-        </div>
+        <LoadingSpinner size="xl" variant="border" color="#C4735B" />
       </div>
     );
   }
@@ -704,515 +704,43 @@ export default function BecomeProPage() {
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
               {/* Category Step */}
               {currentStep === "category" && (
-                <div className="space-y-6">
-                  {/* Main Categories */}
-                  <div className="bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 border border-[var(--color-border-subtle)]">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <Briefcase
-                          className="w-5 h-5"
-                          style={{ color: TERRACOTTA.primary }}
-                        />
-                        <h3 className="font-semibold text-[var(--color-text-primary)]">
-                          {locale === "ka"
-                            ? "აირჩიე კატეგორია"
-                            : "Select Category"}
-                          <span
-                            style={{ color: TERRACOTTA.primary }}
-                            className="ml-1"
-                          >
-                            *
-                          </span>
-                        </h3>
-                      </div>
-                      {validation.category && (
-                        <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 rounded-full">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          {selectedCategories.length}
-                        </span>
-                      )}
-                    </div>
-
-                    <p className="text-sm text-[var(--color-text-secondary)] mb-4">
-                      {locale === "ka"
-                        ? "მაქსიმუმ 4 კატეგორია"
-                        : "Maximum 4 categories"}
-                    </p>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      {categories.map((category) => {
-                        const isSelected = selectedCategories.includes(
-                          category.key
-                        );
-                        return (
-                          <button
-                            key={category.key}
-                            type="button"
-                            onClick={() => handleCategoryToggle(category.key)}
-                            className={`relative p-4 rounded-xl border-2 text-left transition-all ${
-                              isSelected
-                                ? "border-[#C4735B] bg-[#C4735B]/5"
-                                : "border-[var(--color-border-subtle)] bg-[var(--color-bg-tertiary)] hover:border-[var(--color-border)]"
-                            }`}
-                          >
-                            {isSelected && (
-                              <div
-                                className="absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center"
-                                style={{ backgroundColor: TERRACOTTA.primary }}
-                              >
-                                <svg
-                                  className="w-3 h-3 text-white"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M5 13l4 4L19 7"
-                                  />
-                                </svg>
-                              </div>
-                            )}
-                            <div
-                              className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
-                                isSelected
-                                  ? "text-white"
-                                  : "text-[var(--color-text-secondary)]"
-                              }`}
-                              style={{
-                                backgroundColor: isSelected
-                                  ? TERRACOTTA.primary
-                                  : "var(--color-bg-elevated)",
-                              }}
-                            >
-                              {categoryIcons[category.key] || (
-                                <Briefcase className="w-5 h-5" />
-                              )}
-                            </div>
-                            <h4 className="text-sm font-medium text-[var(--color-text-primary)]">
-                              {locale === "ka"
-                                ? category.nameKa
-                                : category.name}
-                            </h4>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Subcategories */}
-                  {selectedCategories.length > 0 &&
-                    availableSubcategories.length > 0 && (
-                      <div className="bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 border border-[var(--color-border-subtle)]">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-semibold text-[var(--color-text-primary)]">
-                            {locale === "ka"
-                              ? "აირჩიე უნარები"
-                              : "Select Skills"}
-                            <span
-                              style={{ color: TERRACOTTA.primary }}
-                              className="ml-1"
-                            >
-                              *
-                            </span>
-                          </h3>
-                          {selectedSubcategories.length > 0 && (
-                            <span
-                              className="text-xs font-medium"
-                              style={{ color: TERRACOTTA.primary }}
-                            >
-                              {selectedSubcategories.length}/10
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex flex-wrap gap-2">
-                          {availableSubcategories.map((subcategory) => {
-                            const isSelected = selectedSubcategories.includes(
-                              subcategory.key
-                            );
-                            return (
-                              <button
-                                key={subcategory.key}
-                                type="button"
-                                onClick={() =>
-                                  handleSubcategoryToggle(subcategory.key)
-                                }
-                                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all ${
-                                  isSelected
-                                    ? "text-white"
-                                    : "bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)]"
-                                }`}
-                                style={
-                                  isSelected
-                                    ? { backgroundColor: TERRACOTTA.primary }
-                                    : {}
-                                }
-                              >
-                                {isSelected && (
-                                  <CheckCircle2 className="w-3.5 h-3.5" />
-                                )}
-                                {locale === "ka"
-                                  ? subcategory.nameKa
-                                  : subcategory.name}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                  {/* Custom Services */}
-                  {selectedCategories.length > 0 && (
-                    <div className="bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 border border-[var(--color-border-subtle)]">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-semibold text-[var(--color-text-primary)]">
-                          {locale === "ka"
-                            ? "დამატებითი სერვისები"
-                            : "Custom Services"}
-                          <span className="text-[var(--color-text-muted)] font-normal text-xs ml-2">
-                            ({locale === "ka" ? "არასავალდებულო" : "optional"})
-                          </span>
-                        </h3>
-                        {customServices.length > 0 && (
-                          <span
-                            className="text-xs font-medium"
-                            style={{ color: TERRACOTTA.primary }}
-                          >
-                            {customServices.length}/5
-                          </span>
-                        )}
-                      </div>
-
-                      {customServices.length > 0 && (
-                        <div className="space-y-2 mb-4">
-                          {customServices.map((service, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center gap-2 p-3 rounded-xl"
-                              style={{
-                                backgroundColor: `${TERRACOTTA.primary}10`,
-                                border: `1px solid ${TERRACOTTA.primary}20`,
-                              }}
-                            >
-                              <div
-                                className="w-1.5 h-1.5 rounded-full"
-                                style={{ backgroundColor: TERRACOTTA.primary }}
-                              />
-                              <span className="flex-1 text-sm text-[var(--color-text-primary)]">
-                                {service}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveCustomService(index)}
-                                className="p-1 text-[var(--color-text-muted)] hover:text-red-500 transition-colors"
-                              >
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M6 18L18 6M6 6l12 12"
-                                  />
-                                </svg>
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {customServices.length < 5 && (
-                        <div className="flex gap-2">
-                          <Input
-                            type="text"
-                            value={newCustomService}
-                            onChange={(e) =>
-                              setNewCustomService(e.target.value)
-                            }
-                            onKeyDown={(e) => {
-                              if (
-                                e.key === "Enter" &&
-                                newCustomService.trim()
-                              ) {
-                                e.preventDefault();
-                                handleAddCustomService();
-                              }
-                            }}
-                            placeholder={
-                              locale === "ka"
-                                ? "მაგ: ინტერიერის დიზაინი"
-                                : "e.g: Interior design"
-                            }
-                            variant="filled"
-                            inputSize="default"
-                            className="flex-1"
-                          />
-                          <button
-                            type="button"
-                            onClick={handleAddCustomService}
-                            disabled={!newCustomService.trim()}
-                            className="px-4 py-2 rounded-xl text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            style={{ backgroundColor: TERRACOTTA.primary }}
-                          >
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 4v16m8-8H4"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                <CategoriesStep
+                  selectedCategories={selectedCategories}
+                  selectedSubcategories={selectedSubcategories}
+                  onCategoriesChange={setSelectedCategories}
+                  onSubcategoriesChange={setSelectedSubcategories}
+                  customServices={customServices}
+                  onCustomServicesChange={setCustomServices}
+                />
               )}
 
               {/* About Step */}
               {currentStep === "about" && (
-                <div className="space-y-6">
-                  {/* Avatar Upload */}
-                  <div
-                    className={`bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm transition-all ${
-                      validation.avatar
-                        ? "border-2 border-emerald-500/30"
-                        : "border-2 border-[#C4735B]/50 ring-4 ring-[#C4735B]/10"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <Camera
-                          className="w-5 h-5"
-                          style={{ color: TERRACOTTA.primary }}
-                        />
-                        <h3 className="font-semibold text-[var(--color-text-primary)]">
-                          {locale === "ka" ? "პროფილის ფოტო" : "Profile Photo"}
-                          <span
-                            style={{ color: TERRACOTTA.primary }}
-                            className="ml-1"
-                          >
-                            *
-                          </span>
-                        </h3>
-                      </div>
-                      {validation.avatar ? (
-                        <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 rounded-full">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          {locale === "ka" ? "ატვირთულია" : "Uploaded"}
-                        </span>
-                      ) : (
-                        <span
-                          className="flex items-center gap-1.5 text-xs font-medium bg-[#C4735B]/10 px-2.5 py-1 rounded-full"
-                          style={{ color: TERRACOTTA.primary }}
-                        >
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          {locale === "ka" ? "სავალდებულო" : "Required"}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-5">
-                      {!avatarPreview ? (
-                        <button
-                          type="button"
-                          onClick={() => avatarInputRef.current?.click()}
-                          className="relative w-28 h-28 rounded-2xl border-2 border-dashed flex items-center justify-center group transition-all hover:scale-105 overflow-hidden"
-                          style={{
-                            background: `linear-gradient(135deg, ${TERRACOTTA.primary}10 0%, ${TERRACOTTA.primary}05 100%)`,
-                            borderColor: `${TERRACOTTA.primary}40`,
-                          }}
-                        >
-                          <div className="text-center">
-                            <Camera
-                              className="w-8 h-8 mx-auto mb-1 transition-colors"
-                              style={{ color: `${TERRACOTTA.primary}60` }}
-                            />
-                            <span
-                              className="text-xs font-medium"
-                              style={{ color: `${TERRACOTTA.primary}60` }}
-                            >
-                              {locale === "ka" ? "ატვირთე" : "Upload"}
-                            </span>
-                          </div>
-                        </button>
-                      ) : (
-                        <div className="relative">
-                          <img
-                            src={avatarPreview}
-                            alt=""
-                            className="w-28 h-28 rounded-2xl object-cover shadow-lg ring-2 ring-emerald-500/30"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => avatarInputRef.current?.click()}
-                            className="absolute -bottom-2 -right-2 w-9 h-9 rounded-full flex items-center justify-center shadow-lg transition-colors text-white"
-                            style={{ backgroundColor: TERRACOTTA.primary }}
-                          >
-                            <Camera className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
-
-                      <div className="flex-1 text-center sm:text-left">
-                        <p className="text-sm text-[var(--color-text-secondary)] mb-3">
-                          {locale === "ka"
-                            ? "კლიენტები უფრო ენდობიან პროფესიონალებს ფოტოთი."
-                            : "Clients trust professionals with photos more."}
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => avatarInputRef.current?.click()}
-                          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors"
-                          style={{ backgroundColor: TERRACOTTA.primary }}
-                        >
-                          <Camera className="w-4 h-4" />
-                          {avatarPreview
-                            ? locale === "ka"
-                              ? "შეცვალე"
-                              : "Change"
-                            : locale === "ka"
-                              ? "ატვირთე"
-                              : "Upload"}
-                        </button>
-                      </div>
-                    </div>
-                    <input
-                      ref={avatarInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileSelect}
-                      className="hidden"
-                    />
-                  </div>
-
-                  {/* Years of Experience */}
-                  <div
-                    className={`bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm transition-all ${
-                      validation.experience
-                        ? "border-2 border-emerald-500/30"
-                        : "border-2 border-[var(--color-border-subtle)]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <Clock
-                          className="w-5 h-5"
-                          style={{ color: TERRACOTTA.primary }}
-                        />
-                        <span className="font-semibold text-[var(--color-text-primary)]">
-                          {locale === "ka"
-                            ? "გამოცდილება (წელი)"
-                            : "Years of Experience"}
-                          <span
-                            style={{ color: TERRACOTTA.primary }}
-                            className="ml-1"
-                          >
-                            *
-                          </span>
-                        </span>
-                      </div>
-                      {validation.experience && (
-                        <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 rounded-full">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                        </span>
-                      )}
-                    </div>
-                    <Input
-                      type="number"
-                      min={0}
-                      max={50}
-                      value={yearsExperience}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        const parsed = parseInt(value);
-                        if (value === "" || (parsed >= 0 && parsed <= 50)) {
-                          setYearsExperience(value);
-                        }
-                      }}
-                      variant="filled"
-                      inputSize="lg"
-                      success={validation.experience}
-                      placeholder="0"
-                      rightIcon={
-                        <span className="text-sm">
-                          {locale === "ka" ? "წელი" : "years"}
-                        </span>
-                      }
-                      className="text-lg font-medium"
-                    />
-                  </div>
-
-                  {/* Bio */}
-                  <div
-                    className={`bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm transition-all ${
-                      validation.bio
-                        ? "border-2 border-emerald-500/30"
-                        : "border-2 border-[var(--color-border-subtle)]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <FileText
-                          className="w-5 h-5"
-                          style={{ color: TERRACOTTA.primary }}
-                        />
-                        <span className="font-semibold text-[var(--color-text-primary)]">
-                          {locale === "ka" ? "შენს შესახებ" : "About You"}
-                          <span
-                            style={{ color: TERRACOTTA.primary }}
-                            className="ml-1"
-                          >
-                            *
-                          </span>
-                        </span>
-                      </div>
-                      {validation.bio && (
-                        <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 rounded-full">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                        </span>
-                      )}
-                    </div>
-                    <Textarea
-                      rows={4}
-                      value={bio}
-                      onChange={(e) => setBio(e.target.value)}
-                      variant="filled"
-                      textareaSize="lg"
-                      success={validation.bio}
-                      placeholder={
-                        locale === "ka"
-                          ? "მოგვიყევი შენი გამოცდილების შესახებ..."
-                          : "Tell us about your experience..."
-                      }
-                    />
-                    <div className="flex justify-between items-center mt-2">
-                      <p className="text-xs text-[var(--color-text-muted)]">
-                        {locale === "ka"
-                          ? "მინიმუმ 20 სიმბოლო"
-                          : "Minimum 20 characters"}
-                      </p>
-                      <span
-                        className={`text-xs font-medium ${bio.length >= 20 ? "text-emerald-600" : bio.length > 0 ? "text-amber-600" : "text-[var(--color-text-muted)]"}`}
-                      >
-                        {bio.length}/500
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                <AboutStep
+                  formData={{
+                    bio,
+                    yearsExperience,
+                    avatar: avatarPreview || "",
+                    whatsapp,
+                    telegram,
+                    instagram,
+                    facebook,
+                    linkedin,
+                    website,
+                  }}
+                  avatarPreview={avatarPreview}
+                  onFormChange={(updates) => {
+                    if (updates.bio !== undefined) setBio(updates.bio);
+                    if (updates.yearsExperience !== undefined) setYearsExperience(updates.yearsExperience);
+                  }}
+                  onAvatarChange={() => {}}
+                  onAvatarCropped={(croppedDataUrl) => setAvatarPreview(croppedDataUrl)}
+                  validation={{
+                    bio: validation.bio,
+                    experience: validation.experience,
+                    avatar: validation.avatar,
+                  }}
+                />
               )}
 
               {/* Contact Step */}
@@ -1462,14 +990,15 @@ export default function BecomeProPage() {
                               }
                             }
                             return (
-                              <span
+                              <Badge
                                 key={subKey}
-                                className="px-3 py-1.5 rounded-full text-sm bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]"
+                                variant="secondary"
+                                size="sm"
                               >
                                 {locale === "ka"
                                   ? subcategory?.nameKa || subKey
                                   : subcategory?.name || subKey}
-                              </span>
+                              </Badge>
                             );
                           })}
                         </div>
@@ -1583,14 +1112,9 @@ export default function BecomeProPage() {
 
                   {/* Error */}
                   {error && (
-                    <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl p-4">
-                      <div className="flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-red-600 dark:text-red-400">
-                          {error}
-                        </p>
-                      </div>
-                    </div>
+                    <Alert variant="error" size="md">
+                      {error}
+                    </Alert>
                   )}
                 </div>
               )}

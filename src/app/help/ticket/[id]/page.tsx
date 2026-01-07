@@ -1,9 +1,12 @@
 'use client';
 
 import Header, { HeaderSpacer } from '@/components/common/Header';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { formatDateLong, formatMessageTime } from '@/utils/dateUtils';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -39,7 +42,7 @@ interface SupportTicket {
 export default function TicketDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { isAuthenticated, token, user, isLoading: authLoading } = useAuth();
   const { openLoginModal } = useAuthModal();
   const [ticket, setTicket] = useState<SupportTicket | null>(null);
@@ -131,32 +134,20 @@ export default function TicketDetailPage() {
     }
   };
 
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(undefined, {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
 
-  const getStatusStyles = (status: string) => {
+  const getStatusVariant = (status: string): 'warning' | 'info' | 'premium' | 'default' => {
     switch (status) {
       case 'open':
-        return 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400';
+        return 'warning';
       case 'in_progress':
-        return 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400';
+        return 'info';
       case 'resolved':
-        return 'bg-[#E07B4F]/5 text-[#E07B4F] dark:bg-[#E07B4F]/10 dark:text-[#E8956A]';
+        return 'premium';
       case 'closed':
-        return 'bg-neutral-100 text-neutral-600 dark:bg-neutral-500/10 dark:text-neutral-400';
+        return 'default';
       default:
-        return 'bg-neutral-100 text-neutral-600';
+        return 'default';
     }
   };
 
@@ -188,7 +179,7 @@ export default function TicketDetailPage() {
         <Header />
       <HeaderSpacer />
         <div className="flex items-center justify-center py-32">
-          <div className="w-10 h-10 border-2 border-neutral-200 dark:border-dark-border border-t-forest-800 dark:border-t-primary-400 rounded-full animate-spin" />
+          <LoadingSpinner size="lg" color="#1a472a" />
         </div>
       </div>
     );
@@ -254,12 +245,12 @@ export default function TicketDetailPage() {
               <div className="flex flex-wrap items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400">
                 <span>{getCategoryLabel(ticket.category)}</span>
                 <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
-                <span>{formatDate(ticket.createdAt)}</span>
+                <span>{formatDateLong(ticket.createdAt, locale)}</span>
               </div>
             </div>
-            <span className={`px-3 py-1.5 text-xs font-medium rounded-lg flex-shrink-0 ${getStatusStyles(ticket.status)}`}>
+            <Badge variant={getStatusVariant(ticket.status)} size="sm" className="flex-shrink-0">
               {t(`helpPage.status.${ticket.status}`)}
-            </span>
+            </Badge>
           </div>
         </div>
 
@@ -273,7 +264,7 @@ export default function TicketDetailPage() {
                 <div className="flex items-center gap-4 mb-4">
                   <div className="flex-1 h-px bg-neutral-100 dark:bg-dark-border" />
                   <span className="text-xs text-neutral-400 dark:text-neutral-500 font-medium">
-                    {formatDate(group.date)}
+                    {formatDateLong(group.date, locale)}
                   </span>
                   <div className="flex-1 h-px bg-neutral-100 dark:bg-dark-border" />
                 </div>
@@ -310,7 +301,7 @@ export default function TicketDetailPage() {
                           )}
                           <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                           <p className={`text-[10px] mt-1.5 ${!msg.isAdmin ? 'text-white/60 dark:text-forest-900/60' : 'text-neutral-400 dark:text-neutral-500'}`}>
-                            {formatTime(msg.createdAt)}
+                            {formatMessageTime(msg.createdAt)}
                           </p>
                         </div>
                       </div>
@@ -347,10 +338,7 @@ export default function TicketDetailPage() {
                   className="w-12 h-12 rounded-xl bg-forest-800 hover:bg-forest-700 dark:bg-primary-400 dark:hover:bg-primary-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 flex-shrink-0"
                 >
                   {isSending ? (
-                    <svg className="w-5 h-5 text-white dark:text-forest-900 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
+                    <LoadingSpinner size="md" color="white" />
                   ) : (
                     <svg className="w-5 h-5 text-white dark:text-forest-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />

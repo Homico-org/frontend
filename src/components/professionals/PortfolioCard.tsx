@@ -1,15 +1,8 @@
 'use client';
 
 import { Camera, ExternalLink, MapPin } from 'lucide-react';
-
-const getImageUrl = (path: string | undefined): string => {
-  if (!path) return '';
-  if (path.startsWith('data:')) return path;
-  if (path.startsWith('http://') || path.startsWith('https://')) return path;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-  if (path.startsWith('/')) return `${apiUrl}${path}`;
-  return `${apiUrl}/uploads/${path}`;
-};
+import { storage } from '@/services/storage';
+import { Badge } from '@/components/ui/badge';
 
 export interface PortfolioProject {
   id: string;
@@ -49,7 +42,7 @@ export default function PortfolioCard({
         className="relative w-full aspect-[4/3] overflow-hidden"
       >
         <img
-          src={getImageUrl(project.images[0])}
+          src={storage.getFileUrl(project.images[0])}
           alt={project.title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
@@ -58,9 +51,10 @@ export default function PortfolioCard({
 
         {/* Image count badge */}
         {project.images.length > 1 && (
-          <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-xs font-medium flex items-center gap-1.5">
-            <Camera className="w-3 h-3" />
-            {project.images.length}
+          <div className="absolute top-3 right-3">
+            <Badge variant="ghost" size="sm" icon={<Camera className="w-3 h-3" />} className="bg-black/60 backdrop-blur-sm text-white">
+              {project.images.length}
+            </Badge>
           </div>
         )}
 
@@ -85,7 +79,7 @@ export default function PortfolioCard({
               className="relative flex-1 aspect-square rounded-lg overflow-hidden hover:ring-2 hover:ring-[#C4735B] transition-all"
             >
               <img
-                src={getImageUrl(img)}
+                src={storage.getFileUrl(img)}
                 alt=""
                 className="w-full h-full object-cover"
               />

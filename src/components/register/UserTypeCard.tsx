@@ -1,5 +1,6 @@
 'use client';
 
+import { Briefcase, Search } from 'lucide-react';
 import Image from 'next/image';
 
 export interface UserTypeCardProps {
@@ -23,6 +24,10 @@ export interface UserTypeCardProps {
   locale?: 'en' | 'ka';
   /** Custom className */
   className?: string;
+  /** Variant - default is full card, compact is for mobile */
+  variant?: 'default' | 'compact';
+  /** Whether this option is selected (for compact variant) */
+  selected?: boolean;
 }
 
 export default function UserTypeCard({
@@ -35,7 +40,93 @@ export default function UserTypeCard({
   imageUrl,
   onClick,
   className = '',
+  variant = 'default',
+  selected = false,
 }: UserTypeCardProps) {
+  // Compact variant for mobile - colorful card style
+  if (variant === 'compact') {
+    const isPro = type === 'pro';
+    
+    return (
+      <button
+        onClick={onClick}
+        className={`
+          relative flex flex-col items-center p-3 rounded-2xl transition-all duration-300 overflow-hidden
+          ${selected
+            ? isPro
+              ? 'bg-gradient-to-br from-[#C4735B] to-[#A85D47] text-white shadow-lg shadow-[#C4735B]/30 scale-[1.02]'
+              : 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/30 scale-[1.02]'
+            : isPro
+              ? 'bg-gradient-to-br from-[#C4735B]/10 to-[#A85D47]/5 hover:from-[#C4735B]/20 hover:to-[#A85D47]/10'
+              : 'bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100'
+          }
+          ${className}
+        `}
+      >
+        {/* Mini image */}
+        <div className={`
+          relative w-16 h-16 rounded-xl overflow-hidden mb-2 transition-all duration-300
+          ${selected
+            ? 'bg-white/20'
+            : isPro
+              ? 'bg-[#C4735B]/10'
+              : 'bg-blue-500/10'
+          }
+        `}>
+          <Image
+            src={imageUrl}
+            alt={title}
+            fill
+            className={`object-contain p-1 transition-all duration-300 ${selected ? 'scale-110' : 'scale-100'}`}
+          />
+        </div>
+        
+        {/* Title */}
+        <span className={`font-bold text-sm mb-0.5 transition-colors ${
+          selected 
+            ? 'text-white' 
+            : isPro 
+              ? 'text-[#C4735B]' 
+              : 'text-blue-600'
+        }`}>
+          {title}
+        </span>
+        
+        {/* Description */}
+        <span className={`text-[11px] font-medium transition-colors ${
+          selected 
+            ? 'text-white/80'
+            : isPro
+              ? 'text-[#C4735B]/60'
+              : 'text-blue-500/60'
+        }`}>
+          {description}
+        </span>
+        
+        {/* Selection checkmark */}
+        {selected && (
+          <div className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center bg-white shadow-sm">
+            <svg className={`w-3 h-3 ${isPro ? 'text-[#C4735B]' : 'text-blue-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+        )}
+        
+        {/* Pro badge - sparkle icon */}
+        {isPro && (
+          <div className={`absolute top-2 left-2 w-5 h-5 rounded-full flex items-center justify-center ${
+            selected ? 'bg-white/25' : 'bg-[#C4735B]/15'
+          }`}>
+            <svg className={`w-3 h-3 ${selected ? 'text-white' : 'text-[#C4735B]'}`} fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2Z" />
+            </svg>
+          </div>
+        )}
+      </button>
+    );
+  }
+
+  // Default full card variant
   if (type === 'pro') {
     return (
       <button

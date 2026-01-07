@@ -1,14 +1,22 @@
 'use client';
 
+import { Alert } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/button';
+import { IconBadge } from '@/components/ui/IconBadge';
+import { FormGroup, Input, Label } from '@/components/ui/input';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { PasswordInput } from '@/components/ui/PasswordInput';
+import { PhoneInput } from '@/components/ui/PhoneInput';
+import { Tabs } from '@/components/ui/Tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
-import { useLanguage, countries, CountryCode } from '@/contexts/LanguageContext';
+import { countries, CountryCode, useLanguage } from '@/contexts/LanguageContext';
 import { AnalyticsEvent, useAnalytics } from '@/hooks/useAnalytics';
-import GoogleSignInButton, { GoogleUserData } from './GoogleSignInButton';
-import { Tabs, Tab } from '@/components/ui/Tabs';
+import { Lock } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import GoogleSignInButton, { GoogleUserData } from './GoogleSignInButton';
 
 
 // Auth method types
@@ -57,16 +65,12 @@ export default function LoginModal() {
     }
     return 'GE';
   });
-  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
   // Google OAuth state
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-
-  const countryDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isLoginModalOpen) {
@@ -88,23 +92,11 @@ export default function LoginModal() {
     return () => document.removeEventListener('keydown', handleEscKey);
   }, [isLoginModalOpen, handleEscKey]);
 
-  // Close country dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (countryDropdownRef.current && !countryDropdownRef.current.contains(e.target as Node)) {
-        setShowCountryDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   useEffect(() => {
     if (!isLoginModalOpen) {
       // Don't clear phone/email/country - keep them for next login
       setPassword('');
       setError('');
-      setShowPassword(false);
     }
   }, [isLoginModalOpen]);
 
@@ -266,25 +258,28 @@ export default function LoginModal() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
-            <button
+            <Button
               onClick={closeLoginModal}
-              className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 rounded-full transition-all z-10"
+              variant="ghost"
+              size="icon"
+              className="absolute top-3 right-3 w-8 h-8 rounded-full z-10"
               aria-label="Close"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
-            </button>
+            </Button>
 
             {/* Content */}
             <div className="px-6 pt-8 pb-6">
               {/* Header */}
               <div className="text-center mb-5">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#E07B4F] to-[#C4735B] flex items-center justify-center mx-auto mb-3 shadow-lg shadow-[#E07B4F]/20">
-                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                  </svg>
-                </div>
+                <IconBadge
+                  icon={Lock}
+                  size="lg"
+                  variant="accent"
+                  className="mx-auto mb-3"
+                />
                 <h2 className="text-lg font-bold text-neutral-900">
                   {locale === 'ka' ? 'შესვლა' : 'Welcome back'}
                 </h2>
@@ -344,19 +339,14 @@ export default function LoginModal() {
 
               {/* Saved auth method indicator */}
               {savedAuthMethod && savedAuthIdentifier && (
-                <div className="mb-3 p-2.5 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-2">
-                  <svg className="w-4 h-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <p className="text-xs text-emerald-700">
-                    {locale === 'ka'
-                      ? `დარეგისტრირებული ხართ ${savedAuthMethod === 'google' ? 'Google' : savedAuthMethod === 'mobile' ? 'მობილურით' : 'Email'}-ით`
-                      : `You registered with ${savedAuthMethod === 'google' ? 'Google' : savedAuthMethod === 'mobile' ? 'Mobile' : 'Email'}`}
-                    {savedAuthIdentifier && (
-                      <span className="font-medium"> ({savedAuthIdentifier.length > 20 ? savedAuthIdentifier.slice(0, 20) + '...' : savedAuthIdentifier})</span>
-                    )}
-                  </p>
-                </div>
+                <Alert variant="success" size="sm" className="mb-3">
+                  {locale === 'ka'
+                    ? `დარეგისტრირებული ხართ ${savedAuthMethod === 'google' ? 'Google' : savedAuthMethod === 'mobile' ? 'მობილურით' : 'Email'}-ით`
+                    : `You registered with ${savedAuthMethod === 'google' ? 'Google' : savedAuthMethod === 'mobile' ? 'Mobile' : 'Email'}`}
+                  {savedAuthIdentifier && (
+                    <span className="font-medium"> ({savedAuthIdentifier.length > 20 ? savedAuthIdentifier.slice(0, 20) + '...' : savedAuthIdentifier})</span>
+                  )}
+                </Alert>
               )}
 
               {/* Info Message */}
@@ -368,12 +358,9 @@ export default function LoginModal() {
 
               {/* Error Message */}
               {error && (
-                <div className="mb-4 p-2.5 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2">
-                  <svg className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <p className="text-xs text-red-600">{error}</p>
-                </div>
+                <Alert variant="error" size="sm" className="mb-4">
+                  {error}
+                </Alert>
               )}
 
               {/* Google Tab Content */}
@@ -389,10 +376,7 @@ export default function LoginModal() {
                   />
                   {isGoogleLoading && (
                     <div className="flex justify-center">
-                      <svg className="animate-spin h-5 w-5 text-neutral-500" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
+                      <LoadingSpinner size="md" color="currentColor" />
                     </div>
                   )}
                 </div>
@@ -401,88 +385,31 @@ export default function LoginModal() {
               {/* Mobile Tab Content */}
               {activeTab === 'mobile' && (
                 <form onSubmit={handleSubmit} className="space-y-3">
-                  <div>
-                    <label htmlFor="login-phone" className="block text-xs font-medium text-neutral-600 mb-1.5">
+                  <FormGroup>
+                    <Label locale={locale === 'ka' ? 'ka' : 'en'}>
                       {locale === 'ka' ? 'ტელეფონის ნომერი' : 'Phone Number'}
-                    </label>
-                    <div className="flex gap-2">
-                      <div className="relative" ref={countryDropdownRef}>
-                        <button
-                          type="button"
-                          onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-                          className="h-11 px-2.5 bg-neutral-50 border border-neutral-200 rounded-xl flex items-center gap-1.5 hover:bg-neutral-100 transition-colors"
-                        >
-                          <span className="text-base">{countries[phoneCountry].flag}</span>
-                          <span className="text-xs font-medium text-neutral-600">{countries[phoneCountry].phonePrefix}</span>
-                          <svg className="w-3 h-3 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </button>
-                        {showCountryDropdown && (
-                          <div className="absolute top-full left-0 mt-1 w-44 bg-white border border-neutral-200 rounded-xl shadow-lg z-20 py-1 overflow-hidden">
-                            {(Object.keys(countries) as CountryCode[]).map((code) => (
-                              <button
-                                key={code}
-                                type="button"
-                                onClick={() => {
-                                  setPhoneCountry(code);
-                                  setShowCountryDropdown(false);
-                                }}
-                                className={`w-full px-3 py-2 flex items-center gap-2.5 hover:bg-neutral-50 transition-colors ${phoneCountry === code ? 'bg-[#FEF6F3]' : ''}`}
-                              >
-                                <span className="text-base">{countries[code].flag}</span>
-                                <span className="text-sm font-medium text-neutral-700 flex-1 text-left">{countries[code].name}</span>
-                                <span className="text-xs text-neutral-500">{countries[code].phonePrefix}</span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <input
-                        id="login-phone"
-                        type="tel"
-                        inputMode="numeric"
-                        required
-                        value={phone}
-                        onChange={(e) => handlePhoneChange(e.target.value)}
-                        className="flex-1 h-11 px-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#E07B4F]/20 focus:border-[#E07B4F]/50 transition-all text-sm"
-                        placeholder={countries[phoneCountry].placeholder}
-                      />
-                    </div>
-                  </div>
+                    </Label>
+                    <PhoneInput
+                      value={phone}
+                      onChange={setPhone}
+                      country={phoneCountry}
+                      onCountryChange={setPhoneCountry}
+                      placeholder={countries[phoneCountry].placeholder}
+                      required
+                    />
+                  </FormGroup>
 
-                  <div>
-                    <label htmlFor="login-password-mobile" className="block text-xs font-medium text-neutral-600 mb-1.5">
+                  <FormGroup>
+                    <Label locale={locale === 'ka' ? 'ka' : 'en'}>
                       {locale === 'ka' ? 'პაროლი' : 'Password'}
-                    </label>
-                    <div className="relative">
-                      <input
-                        id="login-password-mobile"
-                        type={showPassword ? 'text' : 'password'}
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full h-11 px-3 pr-10 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#E07B4F]/20 focus:border-[#E07B4F]/50 transition-all text-sm"
-                        placeholder={locale === 'ka' ? 'შეიყვანეთ პაროლი' : 'Enter your password'}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
-                      >
-                        {showPassword ? (
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                          </svg>
-                        ) : (
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                        )}
-                      </button>
-                    </div>
-                  </div>
+                    </Label>
+                    <PasswordInput
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder={locale === 'ka' ? 'შეიყვანეთ პაროლი' : 'Enter your password'}
+                      required
+                    />
+                  </FormGroup>
 
                   <div className="flex justify-end">
                     <Link
@@ -494,76 +421,44 @@ export default function LoginModal() {
                     </Link>
                   </div>
 
-                  <button
+                  <Button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full h-11 bg-gradient-to-r from-[#E07B4F] to-[#C4735B] hover:from-[#D06A3E] hover:to-[#B3624A] text-white font-semibold rounded-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-[#E07B4F]/20 hover:shadow-[#E07B4F]/30 text-sm"
+                    loading={isLoading}
+                    className="w-full"
                   >
-                    {isLoading ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        {locale === 'ka' ? 'შესვლა...' : 'Signing in...'}
-                      </span>
-                    ) : (
-                      <span>{locale === 'ka' ? 'შესვლა' : 'Sign In'}</span>
-                    )}
-                  </button>
+                    {locale === 'ka' ? 'შესვლა' : 'Sign In'}
+                  </Button>
                 </form>
               )}
 
               {/* Email Tab Content */}
               {activeTab === 'email' && (
                 <form onSubmit={handleSubmit} className="space-y-3">
-                  <div>
-                    <label htmlFor="login-email" className="block text-xs font-medium text-neutral-600 mb-1.5">
+                  <FormGroup>
+                    <Label locale={locale === 'ka' ? 'ka' : 'en'}>
                       {locale === 'ka' ? 'ელ-ფოსტა' : 'Email'}
-                    </label>
-                    <input
-                      id="login-email"
+                    </Label>
+                    <Input
                       type="email"
-                      required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full h-11 px-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#E07B4F]/20 focus:border-[#E07B4F]/50 transition-all text-sm"
                       placeholder={locale === 'ka' ? 'შეიყვანეთ ელ-ფოსტა' : 'Enter your email'}
+                      required
                     />
-                  </div>
+                  </FormGroup>
 
-                  <div>
-                    <label htmlFor="login-password-email" className="block text-xs font-medium text-neutral-600 mb-1.5">
+                  <FormGroup>
+                    <Label locale={locale === 'ka' ? 'ka' : 'en'}>
                       {locale === 'ka' ? 'პაროლი' : 'Password'}
-                    </label>
-                    <div className="relative">
-                      <input
-                        id="login-password-email"
-                        type={showPassword ? 'text' : 'password'}
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full h-11 px-3 pr-10 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#E07B4F]/20 focus:border-[#E07B4F]/50 transition-all text-sm"
-                        placeholder={locale === 'ka' ? 'შეიყვანეთ პაროლი' : 'Enter your password'}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
-                      >
-                        {showPassword ? (
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                          </svg>
-                        ) : (
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                        )}
-                      </button>
-                    </div>
-                  </div>
+                    </Label>
+                    <PasswordInput
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder={locale === 'ka' ? 'შეიყვანეთ პაროლი' : 'Enter your password'}
+                      required
+                    />
+                  </FormGroup>
 
                   <div className="flex justify-end">
                     <Link
@@ -575,23 +470,14 @@ export default function LoginModal() {
                     </Link>
                   </div>
 
-                  <button
+                  <Button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full h-11 bg-gradient-to-r from-[#E07B4F] to-[#C4735B] hover:from-[#D06A3E] hover:to-[#B3624A] text-white font-semibold rounded-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-[#E07B4F]/20 hover:shadow-[#E07B4F]/30 text-sm"
+                    loading={isLoading}
+                    className="w-full"
                   >
-                    {isLoading ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        {locale === 'ka' ? 'შესვლა...' : 'Signing in...'}
-                      </span>
-                    ) : (
-                      <span>{locale === 'ka' ? 'შესვლა' : 'Sign In'}</span>
-                    )}
-                  </button>
+                    {locale === 'ka' ? 'შესვლა' : 'Sign In'}
+                  </Button>
                 </form>
               )}
 

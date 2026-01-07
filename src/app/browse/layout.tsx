@@ -20,9 +20,8 @@ import MobileBottomNav from "@/components/common/MobileBottomNav";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ReactNode, Suspense, useEffect, useRef, useState } from "react";
-
-// Muted terracotta accent
-const ACCENT_COLOR = "#C4735B";
+import { ACCENT_COLOR } from "@/constants/theme";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 function JobsSidebar() {
   const { filters, setFilters, savedJobIds } = useJobsContext();
@@ -528,10 +527,7 @@ export default function BrowseLayout({ children }: { children: ReactNode }) {
     <Suspense
       fallback={
         <div className="h-screen flex items-center justify-center bg-[#fafafa] dark:bg-[#0a0a0a]">
-          <div
-            className="animate-spin rounded-full h-6 w-6 border-2 border-t-transparent"
-            style={{ borderColor: ACCENT_COLOR, borderTopColor: "transparent" }}
-          />
+          <LoadingSpinner size="lg" color={ACCENT_COLOR} />
         </div>
       }
     >

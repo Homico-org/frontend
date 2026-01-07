@@ -1,7 +1,12 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import Header, { HeaderSpacer } from "@/components/common/Header";
 import ContactModal from "@/components/professionals/ContactModal";
+import AboutTab from "@/components/professionals/AboutTab";
+import PortfolioTab from "@/components/professionals/PortfolioTab";
+import ReviewsTab from "@/components/professionals/ReviewsTab";
+import { Review } from "@/components/professionals/ReviewItem";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useCategories } from "@/contexts/CategoriesContext";
@@ -30,15 +35,13 @@ import {
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-
-const getImageUrl = (path: string | undefined): string => {
-  if (!path) return "";
-  if (path.startsWith("data:")) return path;
-  if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-  if (path.startsWith("/")) return `${apiUrl}${path}`;
-  return `${apiUrl}/uploads/${path}`;
-};
+import { storage } from "@/services/storage";
+import { formatTimeAgo } from "@/utils/dateUtils";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Badge } from "@/components/ui/badge";
+import { ACCENT_COLOR } from "@/constants/theme";
+import Avatar from "@/components/common/Avatar";
+import { MultiStarDisplay } from "@/components/ui/StarRating";
 
 interface PortfolioProject {
   id?: string;
@@ -347,23 +350,6 @@ export default function ProfessionalDetailPage() {
       .join(" ");
   };
 
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    const diffWeeks = Math.floor(diffDays / 7);
-    const diffMonths = Math.floor(diffDays / 30);
-    if (locale === "ka") {
-      if (diffDays < 7) return `${diffDays} დღის წინ`;
-      if (diffWeeks < 4) return `${diffWeeks} კვირის წინ`;
-      return `${diffMonths} თვის წინ`;
-    }
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffWeeks < 4) return `${diffWeeks} weeks ago`;
-    return `${diffMonths} month${diffMonths > 1 ? "s" : ""} ago`;
-  };
-
   // Unified project structure for portfolio display
   interface UnifiedProject {
     id: string;
@@ -566,12 +552,7 @@ export default function ProfessionalDetailPage() {
         <Header />
         <HeaderSpacer />
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="flex flex-col items-center gap-4">
-            <div className="relative w-12 h-12">
-              <div className="absolute inset-0 rounded-full border-2 border-[#E8E0DB] dark:border-neutral-800" />
-              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#C4735B] animate-spin" />
-            </div>
-          </div>
+          <LoadingSpinner size="xl" variant="border" color={ACCENT_COLOR} />
         </div>
       </div>
     );
@@ -591,12 +572,12 @@ export default function ProfessionalDetailPage() {
             <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
               {locale === "ka" ? "პროფილი ვერ მოიძებნა" : "Profile not found"}
             </h2>
-            <button
+            <Button
               onClick={() => router.push("/browse")}
-              className="mt-6 px-6 py-3 text-sm font-medium rounded-full text-white bg-[#C4735B] hover:bg-[#B5654D] transition-colors"
+              className="mt-6"
             >
               {locale === "ka" ? "უკან დაბრუნება" : "Go Back"}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -622,15 +603,15 @@ export default function ProfessionalDetailPage() {
 
         {/* Back button */}
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-4">
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => router.back()}
-            className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/60 dark:bg-neutral-800/60 backdrop-blur-sm hover:bg-white dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 transition-all duration-300 border border-neutral-200/50 dark:border-neutral-700/50"
+            className="rounded-full bg-white/60 dark:bg-neutral-800/60 backdrop-blur-sm"
+            leftIcon={<ChevronLeft className="w-4 h-4" />}
           >
-            <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-            <span className="text-sm font-medium">
-              {locale === "ka" ? "უკან" : "Back"}
-            </span>
-          </button>
+            {locale === "ka" ? "უკან" : "Back"}
+          </Button>
         </div>
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-4 pb-6">
@@ -640,7 +621,7 @@ export default function ProfessionalDetailPage() {
             <div className="relative mb-5">
               {avatarUrl ? (
                 <img
-                  src={getImageUrl(avatarUrl)}
+                  src={storage.getFileUrl(avatarUrl)}
                   alt={profile.name}
                   className="w-32 h-32 sm:w-36 sm:h-36 rounded-full object-cover ring-4 ring-white dark:ring-neutral-900 shadow-xl"
                 />
@@ -726,7 +707,7 @@ export default function ProfessionalDetailPage() {
                     (locale === "ka" ? "-დან" : "")}
                   {getPricingLabel()}
                 </span>
-                <span className="px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs text-neutral-600 dark:text-neutral-400">
+                <Badge variant="secondary" size="xs">
                   {profile.pricingModel === "hourly" &&
                     (locale === "ka" ? "საათობრივი" : "Hourly")}
                   {profile.pricingModel === "daily" &&
@@ -737,7 +718,7 @@ export default function ProfessionalDetailPage() {
                     (locale === "ka" ? "საწყისი ფასი" : "Starting Price")}
                   {profile.pricingModel === "sqm" &&
                     (locale === "ka" ? "კვ.მ" : "Per sqm")}
-                </span>
+                </Badge>
               </div>
             )}
 
@@ -753,25 +734,19 @@ export default function ProfessionalDetailPage() {
                 </span>
               </a>
             ) : (
-              <button
+              <Button
                 onClick={handleContact}
-                className="px-8 py-3 rounded-full text-white font-semibold text-sm bg-gradient-to-r from-[#C4735B] to-[#B5654D] hover:from-[#B5654D] hover:to-[#A65D47] transition-all shadow-lg shadow-[#C4735B]/25 hover:shadow-xl hover:shadow-[#C4735B]/30 hover:-translate-y-0.5"
+                className="rounded-full"
+                leftIcon={isBasicTier ? <Phone className="w-4 h-4" /> : <MessageSquare className="w-4 h-4" />}
               >
-                <span className="flex items-center gap-2">
-                  {isBasicTier ? (
-                    <Phone className="w-4 h-4" />
-                  ) : (
-                    <MessageSquare className="w-4 h-4" />
-                  )}
-                  {isBasicTier
-                    ? locale === "ka"
-                      ? "ტელეფონის ნახვა"
-                      : "Show Phone"
-                    : locale === "ka"
-                      ? "დაკავშირება"
-                      : "Contact"}
-                </span>
-              </button>
+                {isBasicTier
+                  ? locale === "ka"
+                    ? "ტელეფონის ნახვა"
+                    : "Show Phone"
+                  : locale === "ka"
+                    ? "დაკავშირება"
+                    : "Contact"}
+              </Button>
             )}
           </div>
         </div>
@@ -806,15 +781,12 @@ export default function ProfessionalDetailPage() {
                 <span className="flex items-center gap-1.5">
                   {tab.label}
                   {tab.count !== undefined && tab.count > 0 && (
-                    <span
-                      className={`text-xs px-1.5 py-0.5 rounded-full ${
-                        activeTab === tab.key
-                          ? "bg-[#C4735B]/10 text-[#C4735B]"
-                          : "bg-neutral-200 dark:bg-neutral-700 text-neutral-500"
-                      }`}
+                    <Badge
+                      variant={activeTab === tab.key ? "premium" : "secondary"}
+                      size="xs"
                     >
                       {tab.count}
-                    </span>
+                    </Badge>
                   )}
                 </span>
                 {activeTab === tab.key && (
@@ -830,445 +802,46 @@ export default function ProfessionalDetailPage() {
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 pb-28 lg:pb-12">
         {/* ABOUT TAB */}
         {activeTab === "about" && (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            {/* Description */}
-            {profile.description && (
-              <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-sm border border-neutral-100 dark:border-neutral-800">
-                <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
-                  {profile.description}
-                </p>
-              </div>
-            )}
-
-            {/* Services Grid */}
-            {profile.customServices && profile.customServices.length > 0 && (
-              <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-sm border border-neutral-100 dark:border-neutral-800">
-                <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-4">
-                  {locale === "ka" ? "სერვისები" : "Services"}
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {profile.customServices.map((service, idx) => (
-                    <span
-                      key={idx}
-                      className="px-4 py-2 rounded-full text-sm font-medium bg-[#F5F0ED] dark:bg-neutral-800 text-[#8B5A42] dark:text-[#D4A489]"
-                    >
-                      {service}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Skills by Category */}
-            {profile.subcategories && profile.subcategories.length > 0 && (
-              <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-sm border border-neutral-100 dark:border-neutral-800">
-                <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-4">
-                  {locale === "ka" ? "უნარები" : "Skills"}
-                </h3>
-                <div className="space-y-4">
-                  {Object.entries(groupedServices).map(
-                    ([categoryKey, subcats]) => {
-                      if (subcats.length === 0) return null;
-                      return (
-                        <div key={categoryKey}>
-                          <p className="text-xs font-medium text-neutral-400 mb-2">
-                            {getCategoryLabel(categoryKey)}
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            {subcats.map((sub, idx) => (
-                              <span
-                                key={idx}
-                                className="px-3 py-1.5 rounded-lg text-sm bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
-                              >
-                                {getSubcategoryLabel(sub)}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    }
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Contact & Social Links */}
-            {(profile.whatsapp ||
-              profile.telegram ||
-              profile.facebookUrl ||
-              profile.instagramUrl ||
-              profile.linkedinUrl ||
-              profile.websiteUrl) && (
-              <div className="bg-white dark:bg-neutral-900 rounded-2xl p-5 shadow-sm border border-neutral-100 dark:border-neutral-800">
-                <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-3">
-                  {locale === "ka"
-                    ? "კონტაქტი და სოციალური"
-                    : "Contact & Social"}
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {profile.whatsapp && (
-                    <a
-                      href={`https://wa.me/${profile.whatsapp.replace(/[^0-9+]/g, "")}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="h-10 px-3 rounded-full bg-[#25D366]/10 flex items-center justify-center gap-2 text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                      </svg>
-                      <span className="text-sm font-medium">WhatsApp</span>
-                    </a>
-                  )}
-                  {profile.telegram && (
-                    <a
-                      href={`https://t.me/${profile.telegram.replace("@", "")}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="h-10 px-3 rounded-full bg-[#0088cc]/10 flex items-center justify-center gap-2 text-[#0088cc] hover:bg-[#0088cc]/20 transition-colors"
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-                      </svg>
-                      <span className="text-sm font-medium">Telegram</span>
-                    </a>
-                  )}
-                  {profile.facebookUrl && (
-                    <a
-                      href={profile.facebookUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-10 h-10 rounded-full bg-[#1877F2]/10 flex items-center justify-center text-[#1877F2] hover:bg-[#1877F2]/20 transition-colors"
-                    >
-                      <Facebook className="w-4 h-4" />
-                    </a>
-                  )}
-                  {profile.instagramUrl && (
-                    <a
-                      href={profile.instagramUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-10 h-10 rounded-full bg-[#E4405F]/10 flex items-center justify-center text-[#E4405F] hover:bg-[#E4405F]/20 transition-colors"
-                    >
-                      <Instagram className="w-4 h-4" />
-                    </a>
-                  )}
-                  {profile.linkedinUrl && (
-                    <a
-                      href={profile.linkedinUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-10 h-10 rounded-full bg-[#0A66C2]/10 flex items-center justify-center text-[#0A66C2] hover:bg-[#0A66C2]/20 transition-colors"
-                    >
-                      <Linkedin className="w-4 h-4" />
-                    </a>
-                  )}
-                  {profile.websiteUrl && (
-                    <a
-                      href={profile.websiteUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                    >
-                      <Globe className="w-4 h-4" />
-                    </a>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+          <AboutTab
+            description={profile.description}
+            customServices={profile.customServices}
+            groupedServices={groupedServices}
+            getCategoryLabel={getCategoryLabel}
+            getSubcategoryLabel={getSubcategoryLabel}
+            whatsapp={profile.whatsapp}
+            telegram={profile.telegram}
+            facebookUrl={profile.facebookUrl}
+            instagramUrl={profile.instagramUrl}
+            linkedinUrl={profile.linkedinUrl}
+            websiteUrl={profile.websiteUrl}
+            locale={locale as 'en' | 'ka'}
+          />
         )}
 
         {/* PORTFOLIO TAB */}
         {activeTab === "portfolio" && (
-          <div className="animate-in fade-in duration-300">
-            {(() => {
-              const projects = getUnifiedProjects();
-              return projects.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {projects.map((project) => (
-                    <div
-                      key={project.id}
-                      className="group bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden shadow-sm border border-neutral-100 dark:border-neutral-800 hover:shadow-xl hover:border-[#C4735B]/20 transition-all duration-300"
-                    >
-                      {/* Main Image or Video */}
-                      <button
-                        onClick={() =>
-                          setSelectedProject({
-                            images: project.images,
-                            videos: project.videos || [],
-                            title: project.title,
-                            currentIndex: 0,
-                          })
-                        }
-                        className="relative w-full aspect-[4/3] overflow-hidden"
-                      >
-                        {project.images.length > 0 ? (
-                          <img
-                            src={getImageUrl(project.images[0])}
-                            alt={project.title}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
-                        ) : project.videos && project.videos.length > 0 ? (
-                          <>
-                            <video
-                              src={getImageUrl(project.videos[0])}
-                              className="w-full h-full object-cover"
-                              muted
-                              playsInline
-                            />
-                            {/* Play icon overlay for video */}
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                              <div className="w-12 h-12 rounded-full bg-indigo-500/80 flex items-center justify-center">
-                                <svg className="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M8 5v14l11-7z" />
-                                </svg>
-                              </div>
-                            </div>
-                          </>
-                        ) : (
-                          <div className="w-full h-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                            <Camera className="w-8 h-8 text-neutral-300" />
-                          </div>
-                        )}
-                        {/* Hover overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                        {/* Media count badge */}
-                        {(project.images.length + (project.videos?.length || 0)) > 1 && (
-                          <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-xs font-medium flex items-center gap-1.5">
-                            <Camera className="w-3 h-3" />
-                            {project.images.length + (project.videos?.length || 0)}
-                          </div>
-                        )}
-
-                        {/* View button on hover */}
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                          <div className="px-4 py-2 rounded-full bg-white/95 backdrop-blur-sm shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-300 flex items-center gap-2">
-                            <ExternalLink className="w-4 h-4 text-neutral-800" />
-                            <span className="text-sm font-medium text-neutral-800">
-                              {locale === "ka" ? "ნახვა" : "View"}
-                            </span>
-                          </div>
-                        </div>
-                      </button>
-
-                      {/* Thumbnail Strip - show if more than 1 media item */}
-                      {(project.images.length + (project.videos?.length || 0)) > 1 && (
-                        <div className="flex gap-1 p-2 bg-neutral-50 dark:bg-neutral-800/50">
-                          {/* Images first */}
-                          {project.images.slice(0, 4).map((img, imgIdx) => (
-                            <button
-                              key={`img-${imgIdx}`}
-                              onClick={() =>
-                                setSelectedProject({
-                                  images: project.images,
-                                  videos: project.videos || [],
-                                  title: project.title,
-                                  currentIndex: imgIdx,
-                                })
-                              }
-                              className="relative flex-1 aspect-square rounded-lg overflow-hidden hover:ring-2 hover:ring-[#C4735B] transition-all"
-                            >
-                              <img
-                                src={getImageUrl(img)}
-                                alt=""
-                                className="w-full h-full object-cover"
-                              />
-                              {/* Show +N overlay on last thumbnail if more media */}
-                              {imgIdx === 3 && (project.images.length + (project.videos?.length || 0)) > 4 && (
-                                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                                  <span className="text-white text-sm font-bold">
-                                    +{(project.images.length + (project.videos?.length || 0)) - 4}
-                                  </span>
-                                </div>
-                              )}
-                            </button>
-                          ))}
-                          {/* Videos after images (if room) */}
-                          {project.images.length < 4 && project.videos?.slice(0, 4 - project.images.length).map((vid, vidIdx) => (
-                            <button
-                              key={`vid-${vidIdx}`}
-                              onClick={() =>
-                                setSelectedProject({
-                                  images: project.images,
-                                  videos: project.videos || [],
-                                  title: project.title,
-                                  currentIndex: project.images.length + vidIdx,
-                                })
-                              }
-                              className="relative flex-1 aspect-square rounded-lg overflow-hidden hover:ring-2 hover:ring-indigo-400 transition-all"
-                            >
-                              <video
-                                src={getImageUrl(vid)}
-                                className="w-full h-full object-cover"
-                                muted
-                                playsInline
-                              />
-                              {/* Play icon badge */}
-                              <div className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-indigo-500/80 flex items-center justify-center pointer-events-none">
-                                <svg className="w-2 h-2 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M8 5v14l11-7z" />
-                                </svg>
-                              </div>
-                              {/* Show +N overlay on last thumbnail if more media */}
-                              {(project.images.length + vidIdx) === 3 && (project.images.length + (project.videos?.length || 0)) > 4 && (
-                                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                                  <span className="text-white text-sm font-bold">
-                                    +{(project.images.length + (project.videos?.length || 0)) - 4}
-                                  </span>
-                                </div>
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Project Info */}
-                      <div className="p-4">
-                        <h3 className="font-semibold text-neutral-900 dark:text-white text-base mb-1 line-clamp-1">
-                          {project.title}
-                        </h3>
-                        {project.description && (
-                          <p className="text-sm text-neutral-500 dark:text-neutral-400 line-clamp-2">
-                            {project.description}
-                          </p>
-                        )}
-                        {project.location && (
-                          <div className="flex items-center gap-1.5 mt-2 text-xs text-neutral-400">
-                            <MapPin className="w-3 h-3" />
-                            <span>{project.location}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-16">
-                  <Camera className="w-12 h-12 text-neutral-300 dark:text-neutral-700 mx-auto mb-4" />
-                  <p className="text-neutral-500">
-                    {locale === "ka"
-                      ? "ნამუშევრები არ არის"
-                      : "No portfolio items yet"}
-                  </p>
-                </div>
-              );
-            })()}
-          </div>
+          <PortfolioTab
+            projects={getUnifiedProjects().map(p => ({
+              id: p.id,
+              title: p.title,
+              description: p.description,
+              location: p.location,
+              images: p.images,
+              videos: p.videos,
+            }))}
+            onProjectClick={setSelectedProject}
+            locale={locale as 'en' | 'ka'}
+          />
         )}
 
         {/* REVIEWS TAB */}
         {activeTab === "reviews" && (
-          <div className="animate-in fade-in duration-300">
-            {reviews.length > 0 ? (
-              <div className="space-y-4">
-                {/* Rating Summary */}
-                {profile.avgRating > 0 && (
-                  <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-sm border border-neutral-100 dark:border-neutral-800 text-center">
-                    <div className="text-5xl font-bold text-neutral-900 dark:text-white mb-2">
-                      {profile.avgRating.toFixed(1)}
-                    </div>
-                    <div className="flex justify-center gap-1 mb-2">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                          key={star}
-                          className={`w-5 h-5 ${star <= Math.round(profile.avgRating) ? "fill-amber-400 text-amber-400" : "text-neutral-300"}`}
-                        />
-                      ))}
-                    </div>
-                    <p className="text-sm text-neutral-500">
-                      {profile.totalReviews}{" "}
-                      {locale === "ka" ? "შეფასება" : "reviews"}
-                    </p>
-                  </div>
-                )}
-
-                {/* Reviews List */}
-                {reviews.map((review) => (
-                  <div
-                    key={review._id}
-                    className="bg-white dark:bg-neutral-900 rounded-2xl p-5 shadow-sm border border-neutral-100 dark:border-neutral-800"
-                  >
-                    <div className="flex items-start gap-4">
-                      {review.clientId.avatar ? (
-                        <img
-                          src={getImageUrl(review.clientId.avatar)}
-                          alt=""
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                          <span className="text-sm font-semibold text-neutral-500">
-                            {review.isAnonymous
-                              ? "?"
-                              : review.clientId.name.charAt(0)}
-                          </span>
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="font-semibold text-neutral-900 dark:text-white text-sm">
-                            {review.isAnonymous
-                              ? locale === "ka"
-                                ? "ანონიმური"
-                                : "Anonymous"
-                              : review.clientId.name}
-                          </p>
-                          <div className="flex gap-0.5">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <Star
-                                key={star}
-                                className={`w-3.5 h-3.5 ${star <= review.rating ? "fill-amber-400 text-amber-400" : "text-neutral-200"}`}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                        <p className="text-xs text-neutral-400 mb-2">
-                          {formatTimeAgo(review.createdAt)}
-                        </p>
-                        {review.text && (
-                          <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                            {review.text}
-                          </p>
-                        )}
-                        {review.photos && review.photos.length > 0 && (
-                          <div className="flex gap-2 mt-3">
-                            {review.photos.slice(0, 3).map((photo, pIdx) => (
-                              <div
-                                key={pIdx}
-                                className="w-16 h-16 rounded-lg overflow-hidden"
-                              >
-                                <img
-                                  src={getImageUrl(photo)}
-                                  alt=""
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-16">
-                <Star className="w-12 h-12 text-neutral-300 dark:text-neutral-700 mx-auto mb-4" />
-                <p className="text-neutral-500">
-                  {locale === "ka" ? "შეფასებები არ არის" : "No reviews yet"}
-                </p>
-              </div>
-            )}
-          </div>
+          <ReviewsTab
+            reviews={reviews as Review[]}
+            avgRating={profile.avgRating}
+            totalReviews={profile.totalReviews}
+            locale={locale as 'en' | 'ka'}
+          />
         )}
       </main>
 
@@ -1319,12 +892,14 @@ export default function ProfessionalDetailPage() {
           )}
 
           {/* Share button */}
-          <button
+          <Button
+            size="icon"
+            variant="secondary"
             onClick={() => setShowShareMenu(!showShareMenu)}
-            className={`w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all ${
+            className={`w-12 h-12 rounded-full shadow-lg ${
               showShareMenu
                 ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rotate-45"
-                : "bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700"
+                : ""
             }`}
           >
             {showShareMenu ? (
@@ -1332,7 +907,7 @@ export default function ProfessionalDetailPage() {
             ) : (
               <Share2 className="w-5 h-5" />
             )}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -1363,25 +938,20 @@ export default function ProfessionalDetailPage() {
             </span>
           </a>
         ) : (
-          <button
+          <Button
             onClick={handleContact}
-            className="w-full py-4 rounded-2xl text-white font-semibold text-sm bg-gradient-to-r from-[#C4735B] to-[#B5654D] shadow-xl shadow-[#C4735B]/30"
+            size="lg"
+            className="w-full rounded-2xl"
+            leftIcon={isBasicTier ? <Phone className="w-5 h-5" /> : <MessageSquare className="w-5 h-5" />}
           >
-            <span className="flex items-center justify-center gap-2">
-              {isBasicTier ? (
-                <Phone className="w-5 h-5" />
-              ) : (
-                <MessageSquare className="w-5 h-5" />
-              )}
-              {isBasicTier
-                ? locale === "ka"
-                  ? "ტელეფონის ნახვა"
-                  : "Show Phone"
-                : locale === "ka"
-                  ? "დაკავშირება"
-                  : "Contact"}
-            </span>
-          </button>
+            {isBasicTier
+              ? locale === "ka"
+                ? "ტელეფონის ნახვა"
+                : "Show Phone"
+              : locale === "ka"
+                ? "დაკავშირება"
+                : "Contact"}
+          </Button>
         )}
       </div>
 
@@ -1402,12 +972,14 @@ export default function ProfessionalDetailPage() {
               <h3 className="text-white font-semibold text-lg truncate max-w-[70%]">
                 {selectedProject.title}
               </h3>
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setSelectedProject(null)}
-                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                className="rounded-full bg-white/10 text-white hover:bg-white/20 hover:text-white"
               >
                 <X className="w-5 h-5" />
-              </button>
+              </Button>
             </div>
 
             {/* Main Media */}
@@ -1417,7 +989,9 @@ export default function ProfessionalDetailPage() {
             >
               {totalMedia > 1 && (
                 <>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon-lg"
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedProject((prev) =>
@@ -1430,11 +1004,13 @@ export default function ProfessionalDetailPage() {
                           : null
                       );
                     }}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:text-white z-10"
                   >
                     <ChevronLeft className="w-6 h-6" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-lg"
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedProject((prev) =>
@@ -1446,22 +1022,22 @@ export default function ProfessionalDetailPage() {
                           : null
                       );
                     }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:text-white z-10"
                   >
                     <ChevronRight className="w-6 h-6" />
-                  </button>
+                  </Button>
                 </>
               )}
               {isVideo ? (
                 <video
-                  src={getImageUrl(currentItem)}
+                  src={storage.getFileUrl(currentItem)}
                   controls
                   autoPlay
                   className="max-w-full max-h-[70vh] object-contain rounded-lg"
                 />
               ) : (
                 <img
-                  src={getImageUrl(currentItem)}
+                  src={storage.getFileUrl(currentItem)}
                   alt=""
                   className="max-w-full max-h-[70vh] object-contain rounded-lg"
                 />
@@ -1488,7 +1064,7 @@ export default function ProfessionalDetailPage() {
                       }`}
                     >
                       <img
-                        src={getImageUrl(img)}
+                        src={storage.getFileUrl(img)}
                         alt=""
                         className="w-full h-full object-cover"
                       />
@@ -1512,7 +1088,7 @@ export default function ProfessionalDetailPage() {
                         }`}
                       >
                         <video
-                          src={getImageUrl(vid)}
+                          src={storage.getFileUrl(vid)}
                           className="w-full h-full object-cover"
                           muted
                           playsInline

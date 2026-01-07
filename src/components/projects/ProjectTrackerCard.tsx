@@ -1,11 +1,23 @@
 "use client";
 
 import Avatar from "@/components/common/Avatar";
+import MediaLightbox, { MediaItem } from "@/components/common/MediaLightbox";
+import ReviewModal from "@/components/jobs/ReviewModal";
+import PollsTab from "@/components/polls/PollsTab";
+import PortfolioCompletionModal from "@/components/projects/PortfolioCompletionModal";
+import ProjectWorkspace from "@/components/projects/ProjectWorkspace";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { TERRACOTTA } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
 import { api } from "@/lib/api";
 import { storage } from "@/services/storage";
+import { formatDateMonthDay, formatMessageTime } from "@/utils/dateUtils";
 import {
+  AlertCircle,
+  BadgeCheck,
   BarChart3,
   Calendar,
   Check,
@@ -16,38 +28,19 @@ import {
   FileText,
   FolderOpen,
   History,
-  Image,
-  Loader2,
   MessageCircle,
+  Package,
   Paperclip,
   Phone,
   Play,
-  Plus,
   RotateCcw,
   Send,
-  Upload,
-  Vote,
-  Package,
   Star,
-  AlertCircle,
-  BadgeCheck,
-  X,
+  Vote
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import PollsTab from "@/components/polls/PollsTab";
-import ProjectWorkspace from "@/components/projects/ProjectWorkspace";
-import MediaLightbox, { MediaItem } from "@/components/common/MediaLightbox";
-
-// Homico Terracotta Color Palette - Light & Fresh
-const TERRACOTTA = {
-  primary: "#C4735B",                    // Main terracotta
-  light: "#E8A593",                      // Soft peachy light
-  warm: "#F5DCD4",                       // Very soft warm pink
-  bg: "#FDF8F6",                         // Nearly white with warm tint
-  accent: "#D98B74",                     // Slightly brighter accent
-};
 
 export type ProjectStage =
   | "hired"
@@ -202,19 +195,6 @@ function getStageIndex(stage: ProjectStage): number {
   return STAGES.findIndex((s) => s.key === stage);
 }
 
-function formatDate(dateStr: string, locale: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString(locale === "ka" ? "ka-GE" : "en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
-
-function formatMessageTime(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
-
 function getSenderId(senderId: string | { _id: string }): string {
   if (typeof senderId === "string") return senderId;
   return senderId._id;
@@ -285,27 +265,24 @@ function InlineStageStepper({
               : "The professional has marked the work as complete. Please review and confirm."}
           </p>
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="success"
               onClick={onClientConfirm}
               disabled={isUpdating}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90 disabled:opacity-50"
-              style={{ backgroundColor: "#10B981" }}
+              loading={isUpdating}
+              leftIcon={!isUpdating ? <BadgeCheck className="w-4 h-4" /> : undefined}
+              className="flex-1"
             >
-              {isUpdating ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <BadgeCheck className="w-4 h-4" />
-              )}
               {locale === "ka" ? "დადასტურება და დახურვა" : "Confirm & Close"}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
               onClick={onClientRequestChanges}
               disabled={isUpdating}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-all disabled:opacity-50"
+              leftIcon={<RotateCcw className="w-4 h-4" />}
             >
-              <RotateCcw className="w-4 h-4" />
               {locale === "ka" ? "ცვლილებები" : "Request Changes"}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -318,14 +295,13 @@ function InlineStageStepper({
               ? "პროექტი დასრულებულია. დატოვეთ შეფასება სპეციალისტზე."
               : "Project is complete. Leave a review for the professional."}
           </p>
-          <button
+          <Button
             onClick={onLeaveReview}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90 w-full"
-            style={{ backgroundColor: TERRACOTTA.primary }}
+            leftIcon={<Star className="w-4 h-4" />}
+            className="w-full"
           >
-            <Star className="w-4 h-4" />
             {locale === "ka" ? "შეფასების დატოვება" : "Leave a Review"}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -360,7 +336,7 @@ function InlineStageStepper({
               }}
             >
               {isUpdating && isCurrent ? (
-                <Loader2 className="w-3 h-3 animate-spin" />
+                <LoadingSpinner size="xs" color="white" />
               ) : isStageCompleted ? (
                 <Check className="w-3 h-3" />
               ) : (
@@ -415,12 +391,9 @@ function TabButton({
       {icon}
       <span className="hidden sm:inline">{label}</span>
       {badge !== undefined && badge > 0 && !disabled && (
-        <span
-          className="min-w-[18px] h-[18px] rounded-full text-[10px] font-bold text-white flex items-center justify-center px-1"
-          style={{ backgroundColor: TERRACOTTA.primary }}
-        >
+        <Badge variant="danger" size="xs" className="!min-w-[18px] !h-[18px] !px-1">
           {badge > 99 ? '99+' : badge}
-        </span>
+        </Badge>
       )}
       {/* Active indicator */}
       {active && !disabled && (
@@ -882,11 +855,6 @@ export default function ProjectTrackerCard({
     }
   };
 
-  // Remove portfolio image
-  const removePortfolioImage = (index: number) => {
-    setPortfolioImages((prev) => prev.filter((_, i) => i !== index));
-  };
-
   // Complete job with portfolio images
   const handleCompleteWithPortfolio = async () => {
     const previousStage = localStage;
@@ -1043,7 +1011,7 @@ export default function ProjectTrackerCard({
             </span>
           </div>
           <span className="text-lg font-semibold text-neutral-900 dark:text-white">
-            {project.startedAt ? formatDate(project.startedAt, locale) : formatDate(project.hiredAt, locale)}
+            {project.startedAt ? formatDateMonthDay(project.startedAt, locale as 'en' | 'ka') : formatDateMonthDay(project.hiredAt, locale as 'en' | 'ka')}
           </span>
         </div>
 
@@ -1057,7 +1025,7 @@ export default function ProjectTrackerCard({
           </div>
           <span className="text-lg font-semibold text-neutral-900 dark:text-white">
             {project.expectedEndDate
-              ? formatDate(project.expectedEndDate, locale)
+              ? formatDateMonthDay(project.expectedEndDate, locale as 'en' | 'ka')
               : project.estimatedDuration
                 ? `${project.estimatedDuration} ${project.estimatedDurationUnit || "days"}`
                 : "—"}
@@ -1101,10 +1069,7 @@ export default function ProjectTrackerCard({
       <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-neutral-50 dark:bg-neutral-800/30">
         {isLoadingMessages ? (
           <div className="flex items-center justify-center h-full">
-            <Loader2
-              className="w-6 h-6 animate-spin"
-              style={{ color: TERRACOTTA.primary }}
-            />
+            <LoadingSpinner size="lg" color={TERRACOTTA.primary} />
           </div>
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-neutral-400">
@@ -1213,7 +1178,7 @@ export default function ProjectTrackerCard({
             style={{ color: isUploading ? undefined : TERRACOTTA.primary }}
           >
             {isUploading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <LoadingSpinner size="sm" color={TERRACOTTA.primary} />
             ) : (
               <Paperclip className="w-5 h-5" />
             )}
@@ -1240,14 +1205,14 @@ export default function ProjectTrackerCard({
             style={{ "--tw-ring-color": TERRACOTTA.primary } as React.CSSProperties}
           />
 
-          <button
+          <Button
+            size="icon"
             onClick={() => handleSendMessage()}
             disabled={!newMessage.trim() || isSubmitting}
-            className="w-10 h-10 rounded-full flex items-center justify-center text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
-            style={{ backgroundColor: TERRACOTTA.primary }}
+            className="rounded-full"
           >
             <Send className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -1384,7 +1349,7 @@ export default function ProjectTrackerCard({
       <div className="flex-1 overflow-y-auto p-4">
         {isLoadingHistory ? (
           <div className="flex items-center justify-center h-full">
-            <Loader2 className="w-6 h-6 animate-spin" style={{ color: TERRACOTTA.primary }} />
+            <LoadingSpinner size="lg" color={TERRACOTTA.primary} />
           </div>
         ) : filteredHistory.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-neutral-400">
@@ -1420,17 +1385,11 @@ export default function ProjectTrackerCard({
                         <span className="text-sm font-medium text-neutral-900 dark:text-white">
                           {event.userName}
                         </span>
-                        <span
-                          className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
-                            event.userRole === "client"
-                              ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-                              : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
-                          }`}
-                        >
+                        <Badge variant={event.userRole === "client" ? "info" : "success"} size="xs">
                           {event.userRole === "client"
                             ? (locale === "ka" ? "კლიენტი" : "Client")
                             : (locale === "ka" ? "სპეც." : "Pro")}
-                        </span>
+                        </Badge>
                       </div>
                       <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
                         {locale === "ka" ? config.labelKa : config.label}
@@ -1615,234 +1574,44 @@ export default function ProjectTrackerCard({
       />
 
       {/* Review Modal */}
-      {showReviewModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
-                {locale === "ka" ? "შეაფასეთ სპეციალისტი" : "Rate the Professional"}
-              </h3>
-              <button
-                onClick={() => {
-                  setShowReviewModal(false);
-                  onRefresh?.();
-                }}
-                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-              >
-                <X className="w-5 h-5 text-neutral-500" />
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="p-5 space-y-5">
-              {/* Pro Info */}
-              <div className="flex items-center gap-3">
-                <Avatar
-                  src={partnerAvatar}
-                  name={partnerName}
-                  size="md"
-                  className="w-12 h-12 ring-2 ring-neutral-100 dark:ring-neutral-700"
-                />
-                <div>
-                  <p className="font-semibold text-neutral-900 dark:text-white">{partnerName}</p>
-                  <p className="text-sm text-neutral-500">{partnerTitle}</p>
-                </div>
-              </div>
-
-              {/* Star Rating */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                  {locale === "ka" ? "თქვენი შეფასება" : "Your Rating"}
-                </label>
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setReviewRating(star)}
-                      className="p-1 transition-transform hover:scale-110"
-                    >
-                      <Star
-                        className={`w-8 h-8 ${
-                          star <= reviewRating
-                            ? "fill-yellow-400 text-yellow-400"
-                            : "fill-neutral-200 text-neutral-200 dark:fill-neutral-700 dark:text-neutral-700"
-                        }`}
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Review Text */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                  {locale === "ka" ? "თქვენი კომენტარი (არასავალდებულო)" : "Your Comment (Optional)"}
-                </label>
-                <textarea
-                  value={reviewText}
-                  onChange={(e) => setReviewText(e.target.value)}
-                  placeholder={locale === "ka" ? "დაწერეთ თქვენი გამოცდილება..." : "Share your experience..."}
-                  className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-offset-1 resize-none"
-                  style={{ focusRing: TERRACOTTA.primary } as any}
-                  rows={4}
-                />
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex items-center gap-3 px-5 py-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50">
-              <button
-                onClick={() => {
-                  setShowReviewModal(false);
-                  onRefresh?.();
-                }}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors"
-              >
-                {locale === "ka" ? "მოგვიანებით" : "Later"}
-              </button>
-              <button
-                onClick={handleSubmitReview}
-                disabled={isSubmittingReview || reviewRating < 1}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                style={{ backgroundColor: TERRACOTTA.primary }}
-              >
-                {isSubmittingReview ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <>
-                    <Star className="w-4 h-4" />
-                    {locale === "ka" ? "გაგზავნა" : "Submit"}
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ReviewModal
+        isOpen={showReviewModal}
+        onClose={() => {
+          setShowReviewModal(false);
+          onRefresh?.();
+        }}
+        onSubmit={handleSubmitReview}
+        isSubmitting={isSubmittingReview}
+        locale={locale}
+        rating={reviewRating}
+        onRatingChange={setReviewRating}
+        text={reviewText}
+        onTextChange={setReviewText}
+        pro={{
+          avatar: partnerAvatar,
+          userId: {
+            name: partnerName || "",
+            avatar: partnerAvatar,
+          },
+          title: partnerTitle,
+        }}
+      />
 
       {/* Portfolio Completion Modal (Pro completing job) */}
-      {showCompletionModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
-                {locale === "ka" ? "პროექტის დასრულება" : "Complete Project"}
-              </h3>
-              <button
-                onClick={() => {
-                  setShowCompletionModal(false);
-                  setPortfolioImages([]);
-                }}
-                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-              >
-                <X className="w-5 h-5 text-neutral-500" />
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="p-5 space-y-5 overflow-y-auto flex-1">
-              {/* Info text */}
-              <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                <p className="text-sm text-blue-800 dark:text-blue-300">
-                  {locale === "ka"
-                    ? "ატვირთეთ დასრულებული პროექტის ფოტოები თქვენს პორტფოლიოში დასამატებლად. ეს სურათები გამოჩნდება თქვენს პროფილზე და ხელს შეუწყობს ახალი კლიენტების მოზიდვას."
-                    : "Upload photos of the completed project to add to your portfolio. These images will appear on your profile and help attract new clients."}
-                </p>
-              </div>
-
-              {/* Hidden file input */}
-              <input
-                ref={portfolioInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handlePortfolioUpload}
-                className="hidden"
-              />
-
-              {/* Upload area */}
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                  {locale === "ka" ? "პორტფოლიოს სურათები" : "Portfolio Images"}
-                  <span className="text-neutral-400 font-normal ml-1">
-                    ({locale === "ka" ? "არასავალდებულო" : "optional"})
-                  </span>
-                </label>
-
-                {/* Uploaded images grid */}
-                {portfolioImages.length > 0 && (
-                  <div className="grid grid-cols-3 gap-3">
-                    {portfolioImages.map((url, index) => (
-                      <div key={index} className="relative aspect-square rounded-xl overflow-hidden group">
-                        <img
-                          src={storage.getFileUrl(url)}
-                          alt={`Portfolio ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                        <button
-                          onClick={() => removePortfolioImage(index)}
-                          className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Upload button */}
-                <button
-                  onClick={() => portfolioInputRef.current?.click()}
-                  disabled={isUploadingPortfolio}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-8 rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-600 text-neutral-500 dark:text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
-                >
-                  {isUploadingPortfolio ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <>
-                      <Upload className="w-5 h-5" />
-                      <span className="text-sm font-medium">
-                        {locale === "ka" ? "სურათების ატვირთვა" : "Upload Images"}
-                      </span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex items-center gap-3 px-5 py-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50">
-              <button
-                onClick={() => {
-                  setShowCompletionModal(false);
-                  setPortfolioImages([]);
-                }}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors"
-              >
-                {locale === "ka" ? "გაუქმება" : "Cancel"}
-              </button>
-              <button
-                onClick={handleCompleteWithPortfolio}
-                disabled={isUpdatingStage}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                style={{ backgroundColor: TERRACOTTA.primary }}
-              >
-                {isUpdatingStage ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-4 h-4" />
-                    {locale === "ka" ? "დასრულება" : "Complete"}
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <PortfolioCompletionModal
+        isOpen={showCompletionModal}
+        onClose={() => {
+          setShowCompletionModal(false);
+          setPortfolioImages([]);
+        }}
+        onComplete={handleCompleteWithPortfolio}
+        isLoading={isUpdatingStage}
+        locale={locale}
+        portfolioImages={portfolioImages}
+        onImagesChange={setPortfolioImages}
+        isUploading={isUploadingPortfolio}
+        onUpload={handlePortfolioUpload}
+      />
     </div>
   );
 }

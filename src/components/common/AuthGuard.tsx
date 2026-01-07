@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -66,12 +67,7 @@ export default function AuthGuard({
 function AuthLoadingFallback() {
   return (
     <div className="min-h-screen bg-[var(--color-bg-primary)] flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="relative w-10 h-10">
-          <div className="absolute inset-0 rounded-full border-2 border-neutral-200 dark:border-neutral-700" />
-          <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#C4735B] animate-spin" />
-        </div>
-      </div>
+      <LoadingSpinner size="lg" color="#C4735B" />
     </div>
   );
 }

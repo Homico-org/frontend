@@ -1,11 +1,14 @@
 'use client';
 
 import Header, { HeaderSpacer } from '@/components/common/Header';
+import { Alert } from '@/components/ui/Alert';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export default function InviteEmployeePage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -91,7 +94,7 @@ export default function InviteEmployeePage() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-2 border-blue-500 border-t-transparent"></div>
+        <LoadingSpinner size="xl" variant="border" color="#3B82F6" />
       </div>
     );
   }
@@ -151,9 +154,9 @@ export default function InviteEmployeePage() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-200 dark:border-dark-border p-6">
             {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+              <Alert variant="error" className="mb-6">
                 {error}
-              </div>
+              </Alert>
             )}
 
             <div className="space-y-6">
@@ -269,21 +272,15 @@ export default function InviteEmployeePage() {
                 {formData.skills.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {formData.skills.map((skill) => (
-                      <span
+                      <Badge
                         key={skill}
-                        className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"
+                        variant="info"
+                        size="sm"
+                        removable
+                        onRemove={() => removeSkill(skill)}
                       >
                         {skill}
-                        <button
-                          type="button"
-                          onClick={() => removeSkill(skill)}
-                          className="hover:text-blue-900"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </span>
+                      </Badge>
                     ))}
                   </div>
                 )}
@@ -332,7 +329,7 @@ export default function InviteEmployeePage() {
               >
                 {isSubmitting ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <LoadingSpinner size="sm" variant="border" color="white" />
                     Sending...
                   </>
                 ) : (

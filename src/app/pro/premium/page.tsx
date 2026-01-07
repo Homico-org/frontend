@@ -1,6 +1,8 @@
 "use client";
 
 import Header, { HeaderSpacer } from "@/components/common/Header";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
@@ -556,7 +558,7 @@ export default function PremiumPlansPage() {
                   )}
                   <span className="relative z-10 flex items-center gap-2">
                     {locale === "ka" ? "წლიური" : "Yearly"}
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500 text-white">-17%</span>
+                    <Badge variant="success" size="xs">-17%</Badge>
                   </span>
                 </button>
               </div>
@@ -786,14 +788,15 @@ export default function PremiumPlansPage() {
                     ? "შეუერთდი საუკეთესო პროფესიონალებს და გახსენი ახალი შესაძლებლობები"
                     : "Join the best professionals and unlock new opportunities for your business"}
                 </p>
-                <button
+                <Button
                   onClick={() => handleSelectPlan("elite")}
-                  className="px-8 py-4 rounded-xl bg-white font-semibold shadow-2xl hover:bg-neutral-50 hover:-translate-y-0.5 transition-all flex items-center gap-2 mx-auto"
-                  style={{ color: TERRACOTTA.dark }}
+                  variant="secondary"
+                  size="lg"
+                  rightIcon={<ArrowRight className="w-5 h-5" />}
+                  className="shadow-2xl mx-auto"
                 >
                   {locale === "ka" ? "დაიწყე ელიტათი" : "Start with Elite"}
-                  <ArrowRight className="w-5 h-5" />
-                </button>
+                </Button>
               </div>
             </div>
           </div>

@@ -2,6 +2,7 @@
 
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Badge } from "@/components/ui/badge";
 import {
   Briefcase,
   DollarSign,
@@ -161,40 +162,34 @@ export default function ReviewStep({
               </p>
               <div className="flex flex-wrap gap-2">
                 {formData.whatsapp && (
-                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-green-50 text-green-600 text-xs">
-                    <Phone className="w-3 h-3" />
+                  <Badge variant="success" size="sm" icon={<Phone className="w-3 h-3" />}>
                     WhatsApp
-                  </span>
+                  </Badge>
                 )}
                 {formData.telegram && (
-                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-500 text-xs">
-                    <MessageCircle className="w-3 h-3" />
+                  <Badge variant="info" size="sm" icon={<MessageCircle className="w-3 h-3" />}>
                     Telegram
-                  </span>
+                  </Badge>
                 )}
                 {formData.instagram && (
-                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-pink-50 text-pink-500 text-xs">
-                    <Instagram className="w-3 h-3" />
+                  <Badge variant="secondary" size="sm" icon={<Instagram className="w-3 h-3" />} className="!bg-pink-50 !text-pink-500 dark:!bg-pink-900/30 dark:!text-pink-400">
                     Instagram
-                  </span>
+                  </Badge>
                 )}
                 {formData.facebook && (
-                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-600 text-xs">
-                    <Facebook className="w-3 h-3" />
+                  <Badge variant="info" size="sm" icon={<Facebook className="w-3 h-3" />}>
                     Facebook
-                  </span>
+                  </Badge>
                 )}
                 {formData.linkedin && (
-                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs">
-                    <Linkedin className="w-3 h-3" />
+                  <Badge variant="info" size="sm" icon={<Linkedin className="w-3 h-3" />}>
                     LinkedIn
-                  </span>
+                  </Badge>
                 )}
                 {formData.website && (
-                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-600 text-xs">
-                    <Globe className="w-3 h-3" />
+                  <Badge variant="default" size="sm" icon={<Globe className="w-3 h-3" />}>
                     {locale === "ka" ? "ვებსაიტი" : "Website"}
-                  </span>
+                  </Badge>
                 )}
               </div>
             </div>
@@ -387,9 +382,9 @@ export default function ReviewStep({
                             alt="Before"
                             className="w-full h-full object-cover"
                           />
-                          <span className="absolute bottom-1 left-1 px-1.5 py-0.5 text-[10px] font-medium bg-black/60 text-white rounded">
+                          <Badge variant="ghost" size="xs" className="absolute bottom-1 left-1 bg-black/60 text-white">
                             {locale === "ka" ? "მანამდე" : "Before"}
-                          </span>
+                          </Badge>
                         </div>
                         <div className="w-1/2 h-full relative">
                           <img
@@ -397,9 +392,9 @@ export default function ReviewStep({
                             alt="After"
                             className="w-full h-full object-cover"
                           />
-                          <span className="absolute bottom-1 right-1 px-1.5 py-0.5 text-[10px] font-medium bg-emerald-500/80 text-white rounded">
+                          <Badge variant="success" size="xs" className="absolute bottom-1 right-1">
                             {locale === "ka" ? "შემდეგ" : "After"}
-                          </span>
+                          </Badge>
                         </div>
                       </div>
                     ) : (

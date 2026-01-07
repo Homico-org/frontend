@@ -1,7 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Eye, EyeOff, Lock, Check, AlertCircle, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Lock, Check } from 'lucide-react';
+import { getPasswordStrength, passwordsMatch } from '@/utils/validationUtils';
+import { Alert } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export interface PasswordChangeFormProps {
   /** Handler for password change submission */
@@ -28,24 +32,7 @@ export default function PasswordChangeForm({
   const [isChanging, setIsChanging] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Password strength calculator
-  const getPasswordStrength = (password: string) => {
-    if (!password) return { strength: 0, label: '' };
-    let strength = 0;
-    if (password.length >= 6) strength++;
-    if (password.length >= 8) strength++;
-    if (/[A-Z]/.test(password)) strength++;
-    if (/[0-9]/.test(password)) strength++;
-    if (/[^A-Za-z0-9]/.test(password)) strength++;
-
-    const labels = locale === 'ka'
-      ? ['სუსტი', 'სუსტი', 'საშუალო', 'კარგი', 'ძლიერი']
-      : ['Weak', 'Weak', 'Medium', 'Good', 'Strong'];
-
-    return { strength, label: labels[Math.min(strength, 4)] };
-  };
-
-  const passwordStrength = getPasswordStrength(passwordData.newPassword);
+  const passwordStrength = getPasswordStrength(passwordData.newPassword, locale);
 
   const handleSubmit = async () => {
     setMessage(null);
@@ -59,7 +46,7 @@ export default function PasswordChangeForm({
       return;
     }
 
-    if (passwordData.newPassword.length < 6) {
+    if (!passwordStrength.isValid) {
       setMessage({
         type: 'error',
         text: locale === 'ka' ? 'ახალი პაროლი უნდა იყოს მინიმუმ 6 სიმბოლო' : 'New password must be at least 6 characters',
@@ -67,10 +54,11 @@ export default function PasswordChangeForm({
       return;
     }
 
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
+    const matchResult = passwordsMatch(passwordData.newPassword, passwordData.confirmPassword, locale);
+    if (!matchResult.isValid) {
       setMessage({
         type: 'error',
-        text: locale === 'ka' ? 'პაროლები არ ემთხვევა' : 'Passwords do not match',
+        text: matchResult.error || '',
       });
       return;
     }
@@ -123,23 +111,9 @@ export default function PasswordChangeForm({
 
       {/* Message */}
       {message && (
-        <div
-          className="p-3 sm:p-4 rounded-xl text-sm flex items-center gap-3"
-          style={{
-            backgroundColor: message.type === 'success'
-              ? 'rgba(34, 197, 94, 0.1)'
-              : 'rgba(239, 68, 68, 0.1)',
-            color: message.type === 'success' ? '#22c55e' : '#ef4444',
-            border: `1px solid ${message.type === 'success' ? '#22c55e' : '#ef4444'}`,
-          }}
-        >
-          {message.type === 'success' ? (
-            <Check className="w-5 h-5 flex-shrink-0" />
-          ) : (
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-          )}
+        <Alert variant={message.type} size="sm">
           {message.text}
-        </div>
+        </Alert>
       )}
 
       <div className="space-y-4">
@@ -164,14 +138,15 @@ export default function PasswordChangeForm({
                 color: 'var(--color-text-primary)',
               }}
             />
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon-sm"
               onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-              style={{ color: 'var(--color-text-tertiary)' }}
+              className="absolute right-3 top-1/2 -translate-y-1/2"
             >
               {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -196,14 +171,15 @@ export default function PasswordChangeForm({
                 color: 'var(--color-text-primary)',
               }}
             />
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon-sm"
               onClick={() => setShowNewPassword(!showNewPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-              style={{ color: 'var(--color-text-tertiary)' }}
+              className="absolute right-3 top-1/2 -translate-y-1/2"
             >
               {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-            </button>
+            </Button>
           </div>
 
           {/* Password Strength Indicator */}
@@ -215,23 +191,13 @@ export default function PasswordChangeForm({
                     className="h-full rounded-full transition-all duration-300"
                     style={{
                       width: `${(passwordStrength.strength / 5) * 100}%`,
-                      backgroundColor:
-                        passwordStrength.strength <= 1 ? '#ef4444' :
-                        passwordStrength.strength <= 2 ? '#f97316' :
-                        passwordStrength.strength <= 3 ? '#eab308' :
-                        '#22c55e',
+                      backgroundColor: passwordStrength.color,
                     }}
                   />
                 </div>
                 <span
                   className="text-xs font-medium"
-                  style={{
-                    color:
-                      passwordStrength.strength <= 1 ? '#ef4444' :
-                      passwordStrength.strength <= 2 ? '#f97316' :
-                      passwordStrength.strength <= 3 ? '#eab308' :
-                      '#22c55e',
-                  }}
+                  style={{ color: passwordStrength.color }}
                 >
                   {passwordStrength.label}
                 </span>
@@ -271,14 +237,15 @@ export default function PasswordChangeForm({
                 color: 'var(--color-text-primary)',
               }}
             />
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon-sm"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-              style={{ color: 'var(--color-text-tertiary)' }}
+              className="absolute right-3 top-1/2 -translate-y-1/2"
             >
               {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-            </button>
+            </Button>
           </div>
           {passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword && (
             <p className="text-xs mt-1 text-red-500">
@@ -295,23 +262,17 @@ export default function PasswordChangeForm({
 
         {/* Submit Button */}
         <div className="flex justify-end pt-4">
-          <button
+          <Button
             onClick={handleSubmit}
             disabled={isChanging || !passwordData.currentPassword || !passwordData.newPassword || passwordData.newPassword !== passwordData.confirmPassword}
-            className="w-full sm:w-auto px-6 py-3 sm:py-2.5 bg-[#E07B4F] hover:bg-[#D26B3F] text-white rounded-xl transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 touch-manipulation"
+            loading={isChanging}
+            leftIcon={!isChanging ? <Lock className="w-4 h-4" /> : undefined}
+            className="w-full sm:w-auto"
           >
-            {isChanging ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                {locale === 'ka' ? 'იცვლება...' : 'Changing...'}
-              </>
-            ) : (
-              <>
-                <Lock className="w-4 h-4" />
-                {locale === 'ka' ? 'პაროლის შეცვლა' : 'Change Password'}
-              </>
-            )}
-          </button>
+            {isChanging
+              ? (locale === 'ka' ? 'იცვლება...' : 'Changing...')
+              : (locale === 'ka' ? 'პაროლის შეცვლა' : 'Change Password')}
+          </Button>
         </div>
       </div>
     </div>

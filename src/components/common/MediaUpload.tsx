@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Video } from 'lucide-react';
 
 interface MediaItem {
   id: string;
@@ -186,8 +188,10 @@ export default function MediaUpload({ value, onChange, maxFiles = 5, maxSizeMB =
 
               {/* Type badge */}
               {item.type === 'video' && (
-                <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-black/60 rounded text-xs text-white font-medium">
-                  Video
+                <div className="absolute bottom-2 left-2">
+                  <Badge variant="ghost" size="xs" icon={<Video className="w-3 h-3" />} className="bg-black/60 text-white">
+                    Video
+                  </Badge>
                 </div>
               )}
             </div>

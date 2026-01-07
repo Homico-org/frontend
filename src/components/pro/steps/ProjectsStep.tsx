@@ -1,9 +1,13 @@
 "use client";
 
 import AddressPicker from "@/components/common/AddressPicker";
+import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useRef, useState } from "react";
+import { StarRating } from "@/components/ui/StarRating";
 
 export interface BeforeAfterPair {
   id: string;
@@ -569,26 +573,17 @@ export default function ProjectsStep({
         </div>
 
         {!isAddingProject && projects.length < maxProjects && (
-          <button
+          <Button
             type="button"
             onClick={handleAddProject}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 bg-[#C4735B] text-white hover:bg-[#A85D47] shadow-lg shadow-[#C4735B]/25 hover:shadow-xl hover:shadow-[#C4735B]/30 active:scale-[0.98]"
+            leftIcon={
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            }
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
             {locale === "ka" ? "ახალი პროექტი" : "Add Project"}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -684,9 +679,9 @@ export default function ProjectsStep({
                             {project.title}
                           </h4>
                           {willShowInBrowse && (
-                            <span className="flex-shrink-0 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-medium">
+                            <Badge variant="warning" size="xs" className="flex-shrink-0">
                               {locale === "ka" ? "ხილვადი" : "Visible"}
-                            </span>
+                            </Badge>
                           )}
                         </div>
                         {project.description && (
@@ -727,16 +722,7 @@ export default function ProjectsStep({
                               {project.clientName}
                             </span>
                             {project.rating && (
-                              <span className="flex items-center gap-0.5 text-xs text-amber-600">
-                                <svg
-                                  className="w-3 h-3"
-                                  fill="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                                </svg>
-                                {project.rating}
-                              </span>
+                              <StarRating rating={project.rating} size="xs" />
                             )}
                           </div>
                         )}
@@ -1204,25 +1190,7 @@ export default function ProjectsStep({
                 >
                   {uploadingType === "gallery" ? (
                     <>
-                      <svg
-                        className="animate-spin w-6 h-6 text-[#C4735B]"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
+                      <LoadingSpinner size="md" color="#C4735B" />
                       <span className="text-sm">{uploadProgress}%</span>
                     </>
                   ) : (
@@ -1268,25 +1236,7 @@ export default function ProjectsStep({
                 >
                   {uploadingType === "video" ? (
                     <>
-                      <svg
-                        className="animate-spin w-6 h-6 text-indigo-500"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
+                      <LoadingSpinner size="md" color="#6366f1" />
                       <span className="text-sm">{uploadProgress}%</span>
                     </>
                   ) : (
@@ -1332,25 +1282,7 @@ export default function ProjectsStep({
                 >
                   {uploadingType === "beforeAfter" ? (
                     <>
-                      <svg
-                        className="animate-spin w-6 h-6 text-amber-500"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
+                      <LoadingSpinner size="md" color="#f59e0b" />
                       <span className="text-sm">{uploadProgress}%</span>
                     </>
                   ) : (
@@ -1386,22 +1318,19 @@ export default function ProjectsStep({
 
             {/* Form Actions */}
             <div className="flex gap-3 pt-2">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={resetForm}
-                className="flex-1 py-3 px-4 rounded-xl font-medium text-sm transition-all border-2 border-neutral-200 text-neutral-600 hover:bg-neutral-50"
+                className="flex-1"
               >
                 {locale === "ka" ? "გაუქმება" : "Cancel"}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={handleSaveProject}
                 disabled={!canSave()}
-                className={`flex-1 py-3 px-4 rounded-xl font-semibold text-sm transition-all ${
-                  canSave()
-                    ? "bg-[#C4735B] text-white hover:bg-[#A85D47] shadow-lg shadow-[#C4735B]/25"
-                    : "bg-neutral-100 text-neutral-400 cursor-not-allowed"
-                }`}
+                className="flex-1"
               >
                 {editingProjectId
                   ? locale === "ka"
@@ -1410,7 +1339,7 @@ export default function ProjectsStep({
                   : locale === "ka"
                     ? "პროექტის დამატება"
                     : "Add Project"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

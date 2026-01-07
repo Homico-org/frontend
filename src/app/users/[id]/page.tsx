@@ -12,6 +12,8 @@ import { useToast } from '@/contexts/ToastContext';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { ACCENT_COLOR } from '@/constants/theme';
 
 interface UserProfile {
   _id: string;
@@ -208,12 +210,7 @@ export default function UserProfilePage() {
         <Header />
       <HeaderSpacer />
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="flex flex-col items-center gap-4">
-            <div className="relative w-12 h-12">
-              <div className="absolute inset-0 rounded-full border-2 border-[var(--color-border)] opacity-20" />
-              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[var(--color-accent)] animate-spin" />
-            </div>
-          </div>
+          <LoadingSpinner size="xl" variant="border" color={ACCENT_COLOR} />
         </div>
       </div>
     );
@@ -519,7 +516,7 @@ export default function UserProfilePage() {
               className="w-full mt-4 py-3 rounded-xl bg-[var(--color-accent)] text-white font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSending ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <LoadingSpinner size="md" color="white" />
               ) : (
                 <>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">

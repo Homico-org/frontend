@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import Avatar from '@/components/common/Avatar';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import LocationPicker from '@/components/common/LocationPicker';
 import MediaUpload from '@/components/common/MediaUpload';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 interface ProProfile {
   _id: string;
@@ -178,7 +180,7 @@ export default function QuickHirePage() {
         <Header />
       <HeaderSpacer />
         <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-neutral-900 dark:border-primary-400 border-t-transparent"></div>
+          <LoadingSpinner size="lg" color="#C4735B" />
         </div>
       </div>
     );
@@ -317,7 +319,7 @@ export default function QuickHirePage() {
                       }}
                       className="mt-2 text-sm text-neutral-900 dark:text-white font-medium hover:underline"
                     >
-                      Use "{searchQuery}" as custom service
+                      Use &quot;{searchQuery}&quot; as custom service
                     </button>
                   </div>
                 )}
@@ -386,7 +388,9 @@ export default function QuickHirePage() {
 
                 {isLoadingPros ? (
                   <div className="text-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-2 border-neutral-900 dark:border-primary-400 border-t-transparent mx-auto mb-3"></div>
+                    <div className="flex justify-center mb-3">
+                      <LoadingSpinner size="lg" color="#C4735B" />
+                    </div>
                     <p className="text-sm text-neutral-500 dark:text-neutral-400">Finding available professionals...</p>
                   </div>
                 ) : suggestedPros.length > 0 ? (
@@ -413,13 +417,11 @@ export default function QuickHirePage() {
                           )}
                         </div>
 
-                        {pro.avatar ? (
-                          <img src={pro.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-600 font-medium">
-                            {pro.name?.charAt(0) || 'P'}
-                          </div>
-                        )}
+                        <Avatar
+                          src={pro.avatar}
+                          name={pro.name || 'P'}
+                          size="md"
+                        />
 
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-neutral-900 dark:text-white truncate">{pro.name}</div>
@@ -441,7 +443,7 @@ export default function QuickHirePage() {
                 ) : (
                   <div className="text-center py-12">
                     <p className="text-neutral-600 dark:text-neutral-400 mb-4">No available professionals found</p>
-                    <Link href="/jobs/post" className="text-neutral-900 dark:text-white font-medium hover:underline">
+                    <Link href="/post-job" className="text-neutral-900 dark:text-white font-medium hover:underline">
                       Post a regular job instead
                     </Link>
                   </div>
@@ -479,7 +481,7 @@ export default function QuickHirePage() {
               >
                 {isSubmitting ? (
                   <span className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <LoadingSpinner size="sm" variant="border" color="white" />
                     Sending...
                   </span>
                 ) : (

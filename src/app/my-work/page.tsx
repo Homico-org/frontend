@@ -2,16 +2,22 @@
 
 import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
+import BackButton from '@/components/common/BackButton';
 import EmptyState from '@/components/common/EmptyState';
 import ProjectTrackerCard from '@/components/projects/ProjectTrackerCard';
+import { Alert } from '@/components/ui/Alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { ConfirmModal } from '@/components/ui/Modal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
+import { formatBudget } from '@/utils/currencyUtils';
+import { formatDateShort, formatTimeAgo } from '@/utils/dateUtils';
 import {
   AlertTriangle,
-  ArrowLeft,
   Ban,
   Briefcase,
   CheckCheck,
@@ -258,40 +264,6 @@ function MyWorkPageContent() {
     }
   };
 
-  const formatBudget = (job: Job) => {
-    if (job.budgetType === 'fixed' && job.budgetAmount) {
-      return `₾${job.budgetAmount.toLocaleString()}`;
-    }
-    if (job.budgetType === 'range' && job.budgetMin && job.budgetMax) {
-      return `₾${job.budgetMin.toLocaleString()} - ₾${job.budgetMax.toLocaleString()}`;
-    }
-    if (job.budgetType === 'per_sqm' && job.pricePerUnit) {
-      return `₾${job.pricePerUnit}/მ²`;
-    }
-    return language === 'ka' ? 'შეთანხმებით' : 'Negotiable';
-  };
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString(language === 'ka' ? 'ka-GE' : 'en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
-
-  const formatRelativeTime = (date: string) => {
-    const now = new Date();
-    const then = new Date(date);
-    const diffMs = now.getTime() - then.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) return language === 'ka' ? 'დღეს' : 'Today';
-    if (diffDays === 1) return language === 'ka' ? 'გუშინ' : 'Yesterday';
-    if (diffDays < 7) return language === 'ka' ? `${diffDays} დღის წინ` : `${diffDays}d ago`;
-    if (diffDays < 30) return language === 'ka' ? `${Math.floor(diffDays / 7)} კვირის წინ` : `${Math.floor(diffDays / 7)}w ago`;
-    return formatDate(date);
-  };
-
   const getStatusConfig = (status: string) => {
     const configs: Record<string, { label: string; labelKa: string; icon: any; color: string; bg: string; border: string }> = {
       pending: {
@@ -408,12 +380,7 @@ function MyWorkPageContent() {
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-start gap-3 sm:gap-4 mb-4">
-            <button
-              onClick={() => router.back()}
-              className="mt-0.5 w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:border-[#C4735B]/30 hover:bg-[#C4735B]/5 transition-all group"
-            >
-              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--color-text-secondary)] group-hover:text-[#C4735B] transition-colors" />
-            </button>
+            <BackButton showLabel={false} className="mt-0.5" />
             <div className="flex-1 min-w-0">
               <h1 className="text-xl sm:text-3xl font-bold text-[var(--color-text-primary)] tracking-tight">
                 {language === 'ka' ? 'ჩემი სამუშაო' : 'My Work'}
@@ -447,12 +414,13 @@ function MyWorkPageContent() {
                 >
                   <Icon className="w-4 h-4" />
                   <span className="hidden sm:inline">{tab.label}</span>
-                  <span className={`
-                    px-1.5 py-0.5 rounded-md text-xs font-bold
-                    ${isActive ? 'bg-white/20 text-white' : 'bg-[var(--color-bg-muted)] text-[var(--color-text-tertiary)]'}
-                  `}>
+                  <Badge
+                    variant={isActive ? "ghost" : "secondary"}
+                    size="xs"
+                    className={isActive ? "bg-white/20 text-white" : ""}
+                  >
                     {tab.count}
-                  </span>
+                  </Badge>
                 </button>
               );
             })}
@@ -462,16 +430,13 @@ function MyWorkPageContent() {
         {/* Search (for proposals tab) */}
         {activeTab === 'proposals' && counts.proposals > 0 && (
           <div className="mb-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
-              <input
-                type="text"
-                placeholder={language === 'ka' ? 'ძებნა...' : 'Search proposals...'}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm bg-[var(--color-bg-elevated)] border border-[var(--color-border)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#C4735B]/30 focus:ring-2 focus:ring-[#C4735B]/10 transition-all"
-              />
-            </div>
+            <Input
+              type="text"
+              placeholder={language === 'ka' ? 'ძებნა...' : 'Search proposals...'}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              leftIcon={<Search className="w-4 h-4" />}
+            />
           </div>
         )}
 
@@ -562,7 +527,7 @@ function MyWorkPageContent() {
                       {language === 'ka' ? statusConfig.labelKa : statusConfig.label}
                     </span>
                     <span className="text-xs text-[var(--color-text-tertiary)]">
-                      {formatRelativeTime(proposal.createdAt)}
+                      {formatTimeAgo(proposal.createdAt, language as 'en' | 'ka')}
                     </span>
                   </div>
 
@@ -591,7 +556,7 @@ function MyWorkPageContent() {
                       </span>
                       <span className="flex items-center gap-1 font-medium text-[#C4735B]">
                         <DollarSign className="w-3.5 h-3.5" />
-                        {formatBudget(job)}
+                        {formatBudget(job, language as 'en' | 'ka') || (language === 'ka' ? 'შეთანხმებით' : 'Negotiable')}
                       </span>
                     </div>
 
@@ -602,7 +567,7 @@ function MyWorkPageContent() {
                           {language === 'ka' ? 'შენი შეთავაზება' : 'Your Proposal'}
                         </p>
                         <span className="text-xs text-[var(--color-text-tertiary)]">
-                          {formatDate(proposal.createdAt)}
+                          {formatDateShort(proposal.createdAt, language as 'en' | 'ka')}
                         </span>
                       </div>
                       <div className="flex items-baseline gap-3 mb-2">
@@ -626,40 +591,41 @@ function MyWorkPageContent() {
 
                     {/* Rejection Note */}
                     {proposal.status === 'rejected' && proposal.rejectionNote && (
-                      <div className="mt-3 p-3 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20">
-                        <p className="text-xs text-red-600 dark:text-red-400">
-                          <strong>{language === 'ka' ? 'მიზეზი:' : 'Reason:'}</strong> {proposal.rejectionNote}
-                        </p>
-                      </div>
+                      <Alert variant="error" size="sm" className="mt-3">
+                        <strong>{language === 'ka' ? 'მიზეზი:' : 'Reason:'}</strong> {proposal.rejectionNote}
+                      </Alert>
                     )}
                   </div>
 
                   {/* Actions */}
                   <div className="px-4 sm:px-5 py-3 border-t border-[var(--color-border)] bg-[var(--color-bg-tertiary)]/20">
                     <div className="flex items-center gap-2">
-                      <Link
-                        href={`/jobs/${job._id}`}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-bg-muted)] text-[var(--color-text-primary)] hover:bg-[var(--color-border)] transition-all"
+                      <Button
+                        asChild
+                        variant="secondary"
+                        size="sm"
                       >
-                        <ExternalLink className="w-4 h-4" />
-                        {language === 'ka' ? 'სამუშაო' : 'View Job'}
-                      </Link>
+                        <Link href={`/jobs/${job._id}`} className="flex items-center gap-2">
+                          <ExternalLink className="w-4 h-4" />
+                          {language === 'ka' ? 'სამუშაო' : 'View Job'}
+                        </Link>
+                      </Button>
 
                       {isPending && (
-                        <button
+                        <Button
+                          variant="destructive"
+                          size="sm"
                           onClick={() => setWithdrawModalId(proposal._id)}
-                          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
+                          leftIcon={<X className="w-4 h-4" />}
                         >
-                          <X className="w-4 h-4" />
                           {language === 'ka' ? 'გაუქმება' : 'Withdraw'}
-                        </button>
+                        </Button>
                       )}
 
                       {hasUnread && (
-                        <span className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-blue-500 text-white animate-pulse">
-                          <MessageCircle className="w-3.5 h-3.5" />
+                        <Badge variant="pulse" size="sm" icon={<MessageCircle className="w-3.5 h-3.5" />} className="ml-auto font-bold">
                           {proposal.unreadMessageCount}
-                        </span>
+                        </Badge>
                       )}
                     </div>
                   </div>

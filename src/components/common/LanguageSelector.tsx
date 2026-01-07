@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useLanguage, countries, CountryCode } from '@/contexts/LanguageContext';
+import { useClickOutside } from '@/hooks/useClickOutside';
 
 interface LanguageSelectorProps {
   variant?: 'default' | 'compact';
@@ -10,20 +11,9 @@ interface LanguageSelectorProps {
 export default function LanguageSelector({ variant = 'default' }: LanguageSelectorProps) {
   const { country, setCountry, locale } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useClickOutside<HTMLDivElement>(() => setIsOpen(false), isOpen);
 
   const currentCountry = countries[country as CountryCode] || countries.US;
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const handleSelect = (countryCode: CountryCode) => {
     setCountry(countryCode);

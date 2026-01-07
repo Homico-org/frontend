@@ -6,9 +6,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAnalytics, AnalyticsEvent } from '@/hooks/useAnalytics';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import AppBackground from '@/components/common/AppBackground';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import {
   ArrowLeft, Check, CreditCard, Shield, Lock, Sparkles, Star, Zap, Crown,
-  Loader2, ChevronDown, CheckCircle2, ShieldCheck, BadgeCheck,
+  ChevronDown, CheckCircle2, ShieldCheck, BadgeCheck,
   ArrowRight, Users, Clock, RefreshCw
 } from 'lucide-react';
 import Link from 'next/link';
@@ -310,7 +311,7 @@ function CheckoutContent() {
                       {/* Saved Cards Section */}
                       {isAuthenticated && isLoadingSavedCards ? (
                         <div className="flex items-center justify-center py-8">
-                          <Loader2 className="w-8 h-8 animate-spin" style={{ color: tier.accentColor }} />
+                          <LoadingSpinner size="lg" color={tier.accentColor} />
                         </div>
                       ) : isAuthenticated && savedCards.length > 0 && !useNewCard ? (
                         <div className="space-y-5">
@@ -577,7 +578,7 @@ function CheckoutContent() {
                       >
                         {isProcessing ? (
                           <>
-                            <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                            <LoadingSpinner size="md" color="white" />
                             <span>{locale === 'ka' ? 'მუშავდება...' : 'Processing...'}</span>
                           </>
                         ) : (
@@ -728,7 +729,7 @@ export default function CheckoutPage() {
             <div className="w-16 h-16 rounded-2xl bg-[#E07B4F] flex items-center justify-center animate-pulse shadow-lg shadow-[#E07B4F]/30">
               <Lock className="w-8 h-8 text-white" />
             </div>
-            <div className="animate-spin rounded-full h-8 w-8 border-3 border-[#E07B4F] border-t-transparent" />
+            <LoadingSpinner size="lg" color="#E07B4F" />
             <p className="text-sm text-[var(--color-text-tertiary)]">Loading checkout...</p>
           </div>
         </div>

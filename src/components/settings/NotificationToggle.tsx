@@ -1,6 +1,7 @@
 'use client';
 
 import { Bell, Mail, MessageSquare, Megaphone, Smartphone, BriefcaseBusiness, Send } from 'lucide-react';
+import { Toggle } from '@/components/ui/Toggle';
 
 export interface NotificationToggleProps {
   /** Label for the toggle */
@@ -15,6 +16,10 @@ export interface NotificationToggleProps {
   onChange: (checked: boolean) => void;
   /** Whether the toggle is disabled */
   disabled?: boolean;
+  /** Size of the toggle */
+  size?: 'sm' | 'md';
+  /** Color variant */
+  variant?: 'primary' | 'violet' | 'success';
   /** Custom className */
   className?: string;
 }
@@ -36,6 +41,8 @@ export default function NotificationToggle({
   checked,
   onChange,
   disabled = false,
+  size = 'md',
+  variant = 'primary',
   className = '',
 }: NotificationToggleProps) {
   const IconComponent = icon ? iconMap[icon] : null;
@@ -75,26 +82,13 @@ export default function NotificationToggle({
         </div>
       </div>
 
-      {/* Toggle Switch */}
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
+      <Toggle
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
         disabled={disabled}
-        onClick={() => !disabled && onChange(!checked)}
-        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#E07B4F] focus:ring-offset-2 ${
-          disabled ? 'opacity-50 cursor-not-allowed' : ''
-        }`}
-        style={{
-          backgroundColor: checked ? '#E07B4F' : 'var(--color-bg-tertiary, #d1d5db)',
-        }}
-      >
-        <span
-          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-            checked ? 'translate-x-5' : 'translate-x-0'
-          }`}
-        />
-      </button>
+        size={size}
+        variant={variant}
+      />
     </div>
   );
 }
@@ -111,6 +105,8 @@ export interface NotificationGroupProps {
   enabled: boolean;
   /** Handler for the main toggle */
   onEnabledChange: (enabled: boolean) => void;
+  /** Color variant */
+  variant?: 'primary' | 'violet' | 'success';
   /** Child toggle items */
   children: React.ReactNode;
   /** Custom className */
@@ -123,10 +119,23 @@ export function NotificationGroup({
   icon,
   enabled,
   onEnabledChange,
+  variant = 'primary',
   children,
   className = '',
 }: NotificationGroupProps) {
   const IconComponent = icon ? iconMap[icon] : Bell;
+
+  const iconColors = {
+    primary: 'text-[#E07B4F]',
+    violet: 'text-violet-500',
+    success: 'text-green-500',
+  };
+
+  const iconBgColors = {
+    primary: 'rgba(224, 123, 79, 0.1)',
+    violet: 'rgba(139, 92, 246, 0.1)',
+    success: 'rgba(34, 197, 94, 0.1)',
+  };
 
   return (
     <div
@@ -141,9 +150,9 @@ export function NotificationGroup({
         <div className="flex items-center gap-3">
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ backgroundColor: 'rgba(224, 123, 79, 0.1)' }}
+            style={{ backgroundColor: iconBgColors[variant] }}
           >
-            <IconComponent className="w-5 h-5 text-[#E07B4F]" />
+            <IconComponent className={`w-5 h-5 ${iconColors[variant]}`} />
           </div>
           <div>
             <p
@@ -163,23 +172,11 @@ export function NotificationGroup({
           </div>
         </div>
 
-        {/* Main Toggle */}
-        <button
-          type="button"
-          role="switch"
-          aria-checked={enabled}
-          onClick={() => onEnabledChange(!enabled)}
-          className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#E07B4F] focus:ring-offset-2"
-          style={{
-            backgroundColor: enabled ? '#E07B4F' : 'var(--color-bg-tertiary, #d1d5db)',
-          }}
-        >
-          <span
-            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-              enabled ? 'translate-x-5' : 'translate-x-0'
-            }`}
-          />
-        </button>
+        <Toggle
+          checked={enabled}
+          onChange={(e) => onEnabledChange(e.target.checked)}
+          variant={variant}
+        />
       </div>
 
       {/* Child Items */}

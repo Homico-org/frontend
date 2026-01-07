@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { storage } from '@/services/storage';
+import { Badge } from '@/components/ui/badge';
 import { Check, ZoomIn } from 'lucide-react';
 import { useState } from 'react';
 
@@ -87,8 +88,10 @@ export default function PollOptionCard({
 
             {/* Approved badge on image */}
             {isApproved && (
-              <div className="absolute bottom-2 left-2 px-2.5 py-1 rounded-full bg-emerald-500 text-white text-xs font-semibold shadow-lg">
-                {locale === 'ka' ? '✓ არჩეული' : '✓ Approved'}
+              <div className="absolute bottom-2 left-2">
+                <Badge variant="success" size="sm" icon={<Check className="w-3 h-3" />} className="shadow-lg">
+                  {locale === 'ka' ? 'არჩეული' : 'Approved'}
+                </Badge>
               </div>
             )}
 

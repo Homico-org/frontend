@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { CreditCard, X, Loader2 } from 'lucide-react';
+import { CreditCard, X } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Badge } from '@/components/ui/badge';
 
 export interface PaymentMethod {
   id: string;
@@ -101,9 +103,9 @@ export default function PaymentMethodCard({
               •••• {method.cardLast4}
             </span>
             {method.isDefault && (
-              <span className="text-[10px] font-medium text-[#E07B4F] bg-[#E07B4F]/10 px-2 py-0.5 rounded-full">
+              <Badge variant="premium" size="xs">
                 {locale === 'ka' ? 'მთავარი' : 'Default'}
-              </span>
+              </Badge>
             )}
           </div>
           <div className="flex items-center gap-3 mt-0.5">
@@ -137,7 +139,7 @@ export default function PaymentMethodCard({
             className="p-2 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all disabled:opacity-50"
           >
             {isDeleting ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <LoadingSpinner size="sm" color="#ef4444" />
             ) : (
               <X className="w-4 h-4" />
             )}

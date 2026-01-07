@@ -1,5 +1,8 @@
 'use client';
 
+import { CategoryIcon } from '@/components/categories';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useBrowseContext } from '@/contexts/BrowseContext';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -12,38 +15,6 @@ const ACCENT_COLOR = '#C47B65';
 // Budget range constants
 const MIN_BUDGET = 0;
 const MAX_BUDGET = 5000;
-
-// Category icons mapping
-const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-  renovation: (
-    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" />
-    </svg>
-  ),
-  design: (
-    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12a7.5 7.5 0 0015 0m-15 0a7.5 7.5 0 1115 0m-15 0H3m16.5 0H21m-1.5 0H12m-8.457 3.077l1.41-.513m14.095-5.13l1.41-.513M5.106 17.785l1.15-.964m11.49-9.642l1.149-.964M7.501 19.795l.75-1.3m7.5-12.99l.75-1.3m-6.063 16.658l.26-1.477m2.605-14.772l.26-1.477m0 17.726l-.26-1.477M10.698 4.614l-.26-1.477M16.5 19.794l-.75-1.299M7.5 4.205L12 12m6.894 5.785l-1.149-.964M6.256 7.178l-1.15-.964m15.352 8.864l-1.41-.513M4.954 9.435l-1.41-.514M12.002 12l-3.75 6.495" />
-    </svg>
-  ),
-  architecture: (
-    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
-    </svg>
-  ),
-  services: (
-    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-    </svg>
-  ),
-};
-
-// Default icon for categories not in the mapping
-const DefaultCategoryIcon = () => (
-  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
-  </svg>
-);
 
 // Category Accordion with smooth animation
 function CategoryAccordion({
@@ -199,12 +170,9 @@ function CollapsibleCard({
             {title}
           </h3>
           {activeCount > 0 && (
-            <span
-              className="text-[9px] font-bold w-4 h-4 rounded-full text-white flex items-center justify-center"
-              style={{ backgroundColor: ACCENT_COLOR }}
-            >
+            <Badge variant="premium" size="xs" className="!w-4 !h-4 !p-0 !rounded-full flex items-center justify-center">
               {activeCount}
-            </span>
+            </Badge>
           )}
         </div>
         <ChevronDown
@@ -332,13 +300,14 @@ export default function BrowseFiltersSidebar({
         {/* Clear filters button */}
         {hasActiveFilters && (
           <div className="flex items-center justify-end mb-1">
-            <button
+            <Button
+              variant="link"
+              size="sm"
               onClick={clearAllFilters}
-              className="text-xs font-medium transition-colors hover:opacity-80"
-              style={{ color: ACCENT_COLOR }}
+              className="text-xs p-0 h-auto"
             >
               {locale === 'ka' ? 'გასუფთავება' : 'Clear All'}
-            </button>
+            </Button>
           </div>
         )}
 
@@ -350,14 +319,13 @@ export default function BrowseFiltersSidebar({
             const isExpanded = expandedCategories[categoryKey] ?? false;
             const subcategories = getSubcategoriesForCategory(categoryKey);
             const categoryLabel = locale === 'ka' ? category.nameKa : category.name;
-            const CategoryIcon = CATEGORY_ICONS[categoryKey] || <DefaultCategoryIcon />;
 
             return (
               <CategoryAccordion
                 key={categoryKey}
                 categoryKey={categoryKey}
                 categoryLabel={categoryLabel}
-                categoryIcon={CategoryIcon}
+                categoryIcon={<CategoryIcon type={categoryKey} className="w-4 h-4" />}
                 isExpanded={isExpanded}
                 onToggle={() => toggleCategoryExpand(categoryKey)}
                 subcategories={subcategories}

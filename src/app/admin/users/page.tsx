@@ -38,25 +38,9 @@ import {
   Globe,
   Image,
 } from 'lucide-react';
-
-// Terracotta admin theme (matching dashboard)
-const THEME = {
-  primary: '#C4735B',
-  primaryDark: '#A85D4A',
-  accent: '#D4897A',
-  surface: '#1A1A1C',
-  surfaceLight: '#232326',
-  surfaceHover: '#2A2A2E',
-  border: '#333338',
-  borderLight: '#3D3D42',
-  text: '#FAFAFA',
-  textMuted: '#A1A1AA',
-  textDim: '#71717A',
-  success: '#22C55E',
-  warning: '#F59E0B',
-  error: '#EF4444',
-  info: '#3B82F6',
-};
+import { formatDateShort } from '@/utils/dateUtils';
+import { ADMIN_THEME as THEME } from '@/constants/theme';
+import { getAdminRoleColor, getAdminRoleLabel } from '@/utils/statusUtils';
 
 interface User {
   _id: string;
@@ -187,32 +171,8 @@ function AdminUsersPageContent() {
     setPage(1);
   }, [searchQuery, roleFilter, verificationFilter]);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'admin': return THEME.error;
-      case 'pro': return THEME.info;
-      case 'company': return '#8B5CF6';
-      default: return THEME.primary;
-    }
-  };
-
-  const getRoleLabel = (role: string) => {
-    switch (role) {
-      case 'admin': return locale === 'ka' ? 'ადმინი' : 'Admin';
-      case 'pro': return locale === 'ka' ? 'პროფესიონალი' : 'Pro';
-      case 'company': return locale === 'ka' ? 'კომპანია' : 'Company';
-      default: return locale === 'ka' ? 'კლიენტი' : 'Client';
-    }
-  };
+  const getRoleColor = (role: string) => getAdminRoleColor(role);
+  const getRoleLabel = (role: string) => getAdminRoleLabel(role, locale as 'en' | 'ka');
 
   const handleVerificationAction = async (action: 'approve' | 'reject') => {
     if (!showVerificationModal) return;
@@ -546,7 +506,7 @@ function AdminUsersPageContent() {
                     className="text-sm"
                     style={{ color: THEME.textMuted, fontFamily: "'JetBrains Mono', monospace" }}
                   >
-                    {formatDate(user.createdAt)}
+                    {formatDateShort(user.createdAt, locale as 'en' | 'ka')}
                   </p>
                 </div>
 
@@ -907,7 +867,7 @@ function AdminUsersPageContent() {
               {showVerificationModal.verificationSubmittedAt && (
                 <p className="text-xs" style={{ color: THEME.textDim }}>
                   {locale === 'ka' ? 'გაგზავნილია: ' : 'Submitted: '}
-                  {formatDate(showVerificationModal.verificationSubmittedAt)}
+                  {formatDateShort(showVerificationModal.verificationSubmittedAt, locale as 'en' | 'ka')}
                 </p>
               )}
             </div>

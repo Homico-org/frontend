@@ -3,11 +3,14 @@
 import { FeedItem, FeedItemType } from '@/types';
 import { getCategoryLabelStatic } from '@/hooks/useCategoryLabels';
 import { storage } from '@/services/storage';
+import { StarRating } from '@/components/ui/StarRating';
+import Avatar from '@/components/common/Avatar';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { StatusPill } from '@/components/ui/StatusPill';
+import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import React, { useState, useCallback, useMemo } from 'react';
-
-// Terracotta accent - matching design
-const ACCENT_COLOR = '#C4735B';
+import { ACCENT_COLOR } from '@/constants/theme';
 
 interface FeedCardProps {
   item: FeedItem;
@@ -199,7 +202,7 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
 
               {/* Loading placeholder */}
               {!imageLoaded && !imageError && allMedia.length > 0 && (
-                <div className="absolute inset-0 bg-neutral-200 dark:bg-neutral-700 animate-pulse" />
+                <Skeleton className="absolute inset-0" />
               )}
 
               {/* Image navigation arrows */}
@@ -249,23 +252,14 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
 
             {/* Rating or New badge - matching design */}
             {item.pro.rating && item.pro.rating > 0 ? (
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <svg className="w-4 h-4" style={{ color: ACCENT_COLOR }} fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-                <span className="text-sm font-medium" style={{ color: ACCENT_COLOR }}>
-                  {item.pro.rating.toFixed(1)}
-                </span>
-              </div>
+              <StarRating
+                rating={item.pro.rating}
+                size="sm"
+                starColor={ACCENT_COLOR}
+                className="flex-shrink-0 [&>span]:!text-[#C4735B]"
+              />
             ) : isNew ? (
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <svg className="w-4 h-4" style={{ color: ACCENT_COLOR }} fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-                <span className="text-sm font-medium" style={{ color: ACCENT_COLOR }}>
-                  {locale === 'ka' ? 'ახალი' : 'New'}
-                </span>
-              </div>
+              <StatusPill variant="new" size="sm" locale={locale as 'en' | 'ka'} />
             ) : null}
           </div>
 
@@ -280,15 +274,11 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5 min-w-0">
               {/* Avatar - Circle with image or initial */}
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex-shrink-0">
-                {item.pro.avatar ? (
-                  <img src={storage.getAvatarUrl(item.pro.avatar, 'sm')} alt="" loading="lazy" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-xs font-semibold text-neutral-500 dark:text-neutral-400 bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-700 dark:to-neutral-800">
-                    {item.pro.name.charAt(0).toUpperCase()}
-                  </div>
-                )}
-              </div>
+              <Avatar
+                src={item.pro.avatar}
+                name={item.pro.name}
+                size="sm"
+              />
               {/* Name */}
               <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300 truncate">
                 {item.pro.name}
@@ -296,16 +286,9 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
             </div>
 
             {/* Category Tag - Terracotta outline pill */}
-            <span
-              className="px-3 py-1 text-xs font-medium rounded-full border flex-shrink-0"
-              style={{
-                color: ACCENT_COLOR,
-                borderColor: ACCENT_COLOR,
-                backgroundColor: 'transparent'
-              }}
-            >
+            <Badge variant="outline" size="sm" className="flex-shrink-0">
               {getCategoryLabel()}
-            </span>
+            </Badge>
           </div>
         </div>
         </div>

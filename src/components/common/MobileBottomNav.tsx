@@ -2,12 +2,12 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { Briefcase, FileText, Images, Plus, Search, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
-
-const ACCENT_COLOR = '#C4735B';
+import { ACCENT_COLOR } from '@/constants/theme';
 
 type NavItem = {
   key: string;
@@ -91,16 +91,16 @@ export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
           <div className="flex items-center justify-around h-14 px-2">
             {/* Skeleton placeholders */}
             <div className="flex flex-col items-center justify-center gap-1 flex-1 py-1.5">
-              <div className="w-5 h-5 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse" />
-              <div className="w-10 h-2 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse" />
+              <Skeleton className="w-5 h-5 rounded" />
+              <Skeleton className="w-10 h-2 rounded" />
             </div>
             <div className="flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 -mt-3">
-              <div className="w-12 h-12 bg-neutral-200 dark:bg-neutral-700 rounded-full animate-pulse" />
-              <div className="w-8 h-2 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse mt-0.5" />
+              <Skeleton className="w-12 h-12 rounded-full" />
+              <Skeleton className="w-8 h-2 rounded mt-0.5" />
             </div>
             <div className="flex flex-col items-center justify-center gap-1 flex-1 py-1.5">
-              <div className="w-5 h-5 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse" />
-              <div className="w-10 h-2 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse" />
+              <Skeleton className="w-5 h-5 rounded" />
+              <Skeleton className="w-10 h-2 rounded" />
             </div>
           </div>
         </nav>

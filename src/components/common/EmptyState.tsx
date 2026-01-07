@@ -3,8 +3,7 @@
 import { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
-
-const ACCENT_COLOR = "#C4735B";
+import { ACCENT_COLOR } from "@/constants/theme";
 
 interface EmptyStateProps {
   icon: LucideIcon;

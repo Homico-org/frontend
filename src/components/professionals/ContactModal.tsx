@@ -1,17 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-
-const ACCENT = '#C4735B';
-
-const getImageUrl = (path: string | undefined): string => {
-  if (!path) return '';
-  if (path.startsWith('data:')) return path;
-  if (path.startsWith('http://') || path.startsWith('https://')) return path;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-  if (path.startsWith('/')) return `${apiUrl}${path}`;
-  return `${apiUrl}/uploads/${path}`;
-};
+import Avatar from '@/components/common/Avatar';
+import { Button } from '@/components/ui/button';
 
 export interface ContactModalProps {
   /** Whether the modal is open */
@@ -71,22 +62,7 @@ export default function ContactModal({
 
         {/* Profile header */}
         <div className="flex items-center gap-3 mb-4">
-          {avatar ? (
-            <img
-              src={getImageUrl(avatar)}
-              alt=""
-              className="w-12 h-12 rounded-full object-cover"
-            />
-          ) : (
-            <div
-              className="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold"
-              style={{
-                background: `linear-gradient(135deg, ${ACCENT} 0%, #A65D47 100%)`,
-              }}
-            >
-              {name.charAt(0)}
-            </div>
-          )}
+          <Avatar src={avatar} name={name} size="lg" />
           <div>
             <p className="font-semibold text-neutral-900 dark:text-white">
               {name}
@@ -111,20 +87,21 @@ export default function ContactModal({
 
         {/* Actions */}
         <div className="flex gap-2 mt-4">
-          <button
+          <Button
+            variant="secondary"
             onClick={onClose}
-            className="flex-1 py-3 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+            className="flex-1"
           >
             {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleSend}
             disabled={isSending || !message.trim()}
-            className="flex-1 py-3 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-colors"
-            style={{ backgroundColor: ACCENT }}
+            loading={isSending}
+            className="flex-1"
           >
-            {isSending ? '...' : locale === 'ka' ? 'გაგზავნა' : 'Send'}
-          </button>
+            {locale === 'ka' ? 'გაგზავნა' : 'Send'}
+          </Button>
         </div>
       </div>
     </div>

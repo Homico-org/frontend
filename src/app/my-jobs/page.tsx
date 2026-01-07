@@ -2,8 +2,10 @@
 
 import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
+import BackButton from '@/components/common/BackButton';
 import EmptyState from '@/components/common/EmptyState';
 import ProjectTrackerCard, { ProjectStage } from '@/components/projects/ProjectTrackerCard';
+import { Button } from '@/components/ui/button';
 import { ConfirmModal } from '@/components/ui/Modal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -28,10 +30,12 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { formatTimeAgo } from '@/utils/dateUtils';
+import { ACCENT_COLOR } from '@/constants/theme';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { io, Socket } from 'socket.io-client';
-
-// Terracotta accent - matching design
-const ACCENT_COLOR = '#C4735B';
+import { Skeleton, SkeletonCard } from '@/components/ui/Skeleton';
+import { Badge } from '@/components/ui/badge';
 
 interface ProjectTracking {
   _id: string;
@@ -103,30 +107,6 @@ interface Job {
 }
 
 type StatusFilter = 'all' | 'open' | 'hired' | 'closed' | 'expired';
-
-function getTimeAgo(dateStr: string, locale: string) {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMins / 60);
-  const diffDays = Math.floor(diffHours / 24);
-  const diffWeeks = Math.floor(diffDays / 7);
-
-  if (locale === 'ka') {
-    if (diffMins < 60) return `${diffMins} წუთის წინ`;
-    if (diffHours < 24) return `${diffHours} საათის წინ`;
-    if (diffDays < 7) return `${diffDays} დღის წინ`;
-    if (diffWeeks < 4) return `${diffWeeks} კვირის წინ`;
-    return `Posted ${diffDays} days ago`;
-  }
-
-  if (diffMins < 60) return `Posted ${diffMins} minutes ago`;
-  if (diffHours < 24) return `Posted ${diffHours} hours ago`;
-  if (diffDays < 7) return `Posted ${diffDays} days ago`;
-  if (diffWeeks < 4) return `Posted ${diffWeeks} week${diffWeeks > 1 ? 's' : ''} ago`;
-  return `Posted ${Math.floor(diffDays / 30)} month${Math.floor(diffDays / 30) > 1 ? 's' : ''} ago`;
-}
 
 function MyJobsPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -314,16 +294,16 @@ function MyJobsPageContent() {
   if (authLoading || isInitialLoading) {
     return (
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        <div className="w-32 h-8 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse mb-2" />
-        <div className="w-64 h-5 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse mb-6" />
+        <Skeleton className="w-32 h-8 mb-2" />
+        <Skeleton className="w-64 h-5 mb-6" />
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="w-20 h-9 bg-neutral-100 dark:bg-neutral-800 rounded-full animate-pulse flex-shrink-0" />
+            <Skeleton key={i} className="w-20 h-9 rounded-full flex-shrink-0" />
           ))}
         </div>
         <div className="space-y-4">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-56 sm:h-44 bg-neutral-50 dark:bg-neutral-900 rounded-2xl animate-pulse border border-neutral-100 dark:border-neutral-800" />
+            <SkeletonCard key={i} variant="horizontal" className="h-56 sm:h-44" />
           ))}
         </div>
       </div>
@@ -349,12 +329,7 @@ function MyJobsPageContent() {
         {/* ==================== PAGE HEADER WITH BACK BUTTON ==================== */}
         <div className="mb-6">
           <div className="flex items-start gap-3 mb-4">
-            <button
-              onClick={() => router.back()}
-              className="mt-0.5 w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all"
-            >
-              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-600 dark:text-neutral-400" />
-            </button>
+            <BackButton showLabel={false} className="mt-0.5" />
             <div className="flex-1 min-w-0">
               <h1 className="text-xl sm:text-2xl font-display font-semibold text-neutral-900 dark:text-white">
                 {locale === 'ka' ? 'ჩემი განცხადებები' : 'My Jobs'}
@@ -393,12 +368,9 @@ function MyJobsPageContent() {
                     <span className="text-sm text-neutral-500 dark:text-neutral-400">
                       {locale === 'ka' ? 'ფილტრი:' : 'Filter:'}
                     </span>
-                    <span
-                      className="text-sm font-medium px-2.5 py-0.5 rounded-full text-white"
-                      style={{ backgroundColor: ACCENT_COLOR }}
-                    >
+                    <Badge variant="premium" size="sm">
                       {activeTab.label}
-                    </span>
+                    </Badge>
                   </div>
                   <ChevronDown className={`w-4 h-4 text-neutral-500 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -430,19 +402,16 @@ function MyJobsPageContent() {
               {/* Desktop: Pill Tabs */}
               <div className="hidden sm:flex items-center gap-2 mb-6">
                 {tabs.map(tab => (
-                  <button
+                  <Button
                     key={tab.key}
                     onClick={() => setStatusFilter(tab.key)}
                     disabled={isFilterLoading}
-                    className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all disabled:opacity-50 ${
-                      statusFilter === tab.key
-                        ? 'text-white shadow-sm'
-                        : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700'
-                    }`}
-                    style={statusFilter === tab.key ? { backgroundColor: ACCENT_COLOR } : {}}
+                    variant={statusFilter === tab.key ? 'default' : 'outline'}
+                    size="sm"
+                    className="rounded-full"
                   >
                     {tab.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </>
@@ -453,7 +422,7 @@ function MyJobsPageContent() {
         {isFilterLoading ? (
           <div className="space-y-4">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-56 sm:h-44 bg-neutral-50 dark:bg-neutral-900 rounded-2xl animate-pulse border border-neutral-100 dark:border-neutral-800" />
+              <SkeletonCard key={i} variant="horizontal" className="h-56 sm:h-44" />
             ))}
           </div>
         ) : jobs.length === 0 ? (
@@ -520,38 +489,29 @@ function MyJobsPageContent() {
                       {/* Status Badge */}
                       <div className="absolute top-3 left-3">
                         {isOpen && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm text-green-700 dark:text-green-400 shadow-sm">
-                            <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                          <Badge variant="success" size="sm" dot dotColor="success" className="shadow-sm">
                             {locale === 'ka' ? 'ღია' : 'Open'}
-                          </span>
+                          </Badge>
                         )}
                         {isShortlisted && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100/95 dark:bg-blue-900/50 backdrop-blur-sm text-blue-700 dark:text-blue-400 shadow-sm">
-                            <Users className="w-3 h-3" />
+                          <Badge variant="info" size="sm" icon={<Users className="w-3 h-3" />} className="shadow-sm">
                             {locale === 'ka' ? 'შორტლისტი' : 'Shortlisted'} ({job.shortlistedCount})
-                          </span>
+                          </Badge>
                         )}
                         {isHired && (
-                          <span
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-white shadow-sm"
-                            style={{ backgroundColor: ACCENT_COLOR }}
-                          >
-                            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+                          <Badge variant="premium" size="sm" icon={<Check className="w-3 h-3" />} className="shadow-sm">
                             {locale === 'ka' ? 'დაქირავებული' : 'Hired'}
-                          </span>
+                          </Badge>
                         )}
                         {isClosed && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-neutral-200/95 dark:bg-neutral-700/95 backdrop-blur-sm text-neutral-600 dark:text-neutral-300 shadow-sm">
+                          <Badge variant="default" size="sm" className="shadow-sm">
                             {locale === 'ka' ? 'დახურული' : 'Closed'}
-                          </span>
+                          </Badge>
                         )}
                         {isExpired && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100/95 dark:bg-amber-900/50 backdrop-blur-sm text-amber-700 dark:text-amber-400 shadow-sm">
-                            <Clock className="w-3 h-3" />
+                          <Badge variant="warning" size="sm" icon={<Clock className="w-3 h-3" />} className="shadow-sm">
                             {locale === 'ka' ? 'ვადაგასული' : 'Expired'}
-                          </span>
+                          </Badge>
                         )}
                       </div>
 
@@ -560,34 +520,39 @@ function MyJobsPageContent() {
                         {/* Only show edit/delete when job is open (no shortlist, no pro hired) */}
                         {isOpen && (
                           <>
-                            <Link
-                              href={`/post-job?edit=${job._id}`}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              asChild
                               onClick={(e) => e.stopPropagation()}
-                              className="p-2 rounded-lg bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm text-neutral-600 hover:text-neutral-900 shadow-sm"
+                              className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm shadow-sm"
                             >
-                              <Edit3 className="w-4 h-4" />
-                            </Link>
-                            <button
+                              <Link href={`/post-job?edit=${job._id}`}>
+                                <Edit3 className="w-4 h-4" />
+                              </Link>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               onClick={(e) => { e.stopPropagation(); setDeleteModalJob(job); }}
                               disabled={deletingJobId === job._id}
-                              className="p-2 rounded-lg bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm text-neutral-400 hover:text-red-500 shadow-sm disabled:opacity-50"
+                              className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm shadow-sm text-neutral-400 hover:text-red-500"
                             >
                               <Trash2 className="w-4 h-4" />
-                            </button>
+                            </Button>
                           </>
                         )}
                         {isExpired && (
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={(e) => { e.stopPropagation(); handleRenewJob(job._id); }}
                             disabled={renewingJobId === job._id}
-                            className="p-2 rounded-lg bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm text-amber-600 hover:text-amber-700 shadow-sm disabled:opacity-50"
+                            loading={renewingJobId === job._id}
+                            className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm shadow-sm text-amber-600 hover:text-amber-700"
                           >
-                            {renewingJobId === job._id ? (
-                              <div className="w-4 h-4 border-2 border-amber-300 border-t-amber-600 rounded-full animate-spin" />
-                            ) : (
-                              <RefreshCw className="w-4 h-4" />
-                            )}
-                          </button>
+                            <RefreshCw className="w-4 h-4" />
+                          </Button>
                         )}
                       </div>
                     </div>
@@ -607,7 +572,7 @@ function MyJobsPageContent() {
                             </span>
                             <span className="flex items-center gap-1 text-[10px] sm:text-[11px] text-neutral-400">
                               <Clock className="w-3 h-3" />
-                              {getTimeAgo(job.createdAt, locale)}
+                              {formatTimeAgo(job.createdAt, locale as 'en' | 'ka')}
                             </span>
                           </div>
 
@@ -627,35 +592,39 @@ function MyJobsPageContent() {
                           {/* Only show edit/delete when job is open (no shortlist, no pro hired) */}
                           {isOpen && (
                             <>
-                              <Link
-                                href={`/post-job?edit=${job._id}`}
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                asChild
                                 onClick={(e) => e.stopPropagation()}
-                                className="p-2 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                               >
-                                <Edit3 className="w-4 h-4" />
-                              </Link>
-                              <button
+                                <Link href={`/post-job?edit=${job._id}`}>
+                                  <Edit3 className="w-4 h-4" />
+                                </Link>
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={(e) => { e.stopPropagation(); setDeleteModalJob(job); }}
                                 disabled={deletingJobId === job._id}
-                                className="p-2 rounded-lg text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
+                                className="text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
                               >
                                 <Trash2 className="w-4 h-4" />
-                              </button>
+                              </Button>
                             </>
                           )}
                           {isExpired && (
-                            <button
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               onClick={(e) => { e.stopPropagation(); handleRenewJob(job._id); }}
                               disabled={renewingJobId === job._id}
-                              className="p-2 rounded-lg text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors disabled:opacity-50"
+                              loading={renewingJobId === job._id}
+                              className="text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
                               title={locale === 'ka' ? 'განახლება' : 'Renew'}
                             >
-                              {renewingJobId === job._id ? (
-                                <div className="w-4 h-4 border-2 border-amber-300 border-t-amber-600 rounded-full animate-spin" />
-                              ) : (
-                                <RefreshCw className="w-4 h-4" />
-                              )}
-                            </button>
+                              <RefreshCw className="w-4 h-4" />
+                            </Button>
                           )}
                         </div>
                       </div>
@@ -743,34 +712,31 @@ function MyJobsPageContent() {
                         {/* Right: Action Button */}
                         <div className="flex-shrink-0">
                           {isOpen && job.proposalCount > 0 && (
-                            <Link
-                              href={`/my-jobs/${job._id}/proposals`}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              asChild
                               onClick={(e) => { e.stopPropagation(); handleViewProposals(job._id); }}
-                              className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 rounded-xl text-sm font-medium border transition-all hover:bg-neutral-50 dark:hover:bg-neutral-800"
-                              style={{ borderColor: ACCENT_COLOR, color: ACCENT_COLOR }}
                             >
-                              {locale === 'ka' ? 'შეთავაზებების ნახვა' : 'View Proposals'}
-                              <ChevronRight className="w-4 h-4" />
-                            </Link>
+                              <Link href={`/my-jobs/${job._id}/proposals`} className="flex items-center gap-1">
+                                {locale === 'ka' ? 'შეთავაზებების ნახვა' : 'View Proposals'}
+                                <ChevronRight className="w-4 h-4" />
+                              </Link>
+                            </Button>
                           )}
                           {isExpired && (
-                            <button
+                            <Button
                               onClick={(e) => { e.stopPropagation(); handleRenewJob(job._id); }}
                               disabled={renewingJobId === job._id}
-                              className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 rounded-xl text-sm font-medium bg-amber-500 hover:bg-amber-600 text-white transition-all disabled:opacity-50"
+                              loading={renewingJobId === job._id}
+                              size="sm"
+                              leftIcon={!renewingJobId || renewingJobId !== job._id ? <RefreshCw className="w-4 h-4" /> : undefined}
+                              className="bg-amber-500 hover:bg-amber-600"
                             >
-                              {renewingJobId === job._id ? (
-                                <>
-                                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                  {locale === 'ka' ? 'მიმდინარეობს...' : 'Renewing...'}
-                                </>
-                              ) : (
-                                <>
-                                  <RefreshCw className="w-4 h-4" />
-                                  {locale === 'ka' ? 'განახლება 30 დღით' : 'Renew for 30 days'}
-                                </>
-                              )}
-                            </button>
+                              {renewingJobId === job._id
+                                ? (locale === 'ka' ? 'მიმდინარეობს...' : 'Renewing...')
+                                : (locale === 'ka' ? 'განახლება 30 დღით' : 'Renew for 30 days')}
+                            </Button>
                           )}
                         </div>
                       </div>
@@ -832,7 +798,7 @@ export default function MyJobsPage() {
     <AuthGuard allowedRoles={['client', 'pro', 'company', 'admin']}>
       <Suspense fallback={
         <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2" style={{ borderColor: ACCENT_COLOR }} />
+          <LoadingSpinner size="lg" color={ACCENT_COLOR} />
         </div>
       }>
         <MyJobsPageContent />

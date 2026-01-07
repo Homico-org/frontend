@@ -1,8 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
-
-const ACCENT = '#C4735B';
+import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
 
 export interface JobStatsBarProps {
   /** Budget display string (e.g., "₾5,000" or "₾1,000 - ₾5,000") */

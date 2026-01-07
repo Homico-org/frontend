@@ -1,29 +1,34 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/common/AuthGuard';
+import Header, { HeaderSpacer } from '@/components/common/Header';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { IconBadge } from '@/components/ui/IconBadge';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useNotifications, Notification, NotificationType } from '@/contexts/NotificationContext';
-import Header, { HeaderSpacer } from '@/components/common/Header';
+import { Notification, NotificationType, useNotifications } from '@/contexts/NotificationContext';
+import { formatTimeAgoCompact } from '@/utils/dateUtils';
 import {
   Bell,
-  Check,
-  Trash2,
   Briefcase,
-  MessageSquare,
-  Star,
-  Shield,
-  Megaphone,
+  Check,
   CheckCheck,
-  Clock,
   ChevronRight,
-  Sparkles,
   Filter,
+  Megaphone,
+  MessageSquare,
+  Shield,
+  Sparkles,
+  Star,
+  Trash2,
   X
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
 // Notification type configurations
 const notificationConfig: Record<NotificationType, { icon: any; color: string; bgColor: string }> = {
@@ -86,13 +91,11 @@ function SwipeableNotificationCard({
   notification,
   onDelete,
   onClick,
-  formatTimeAgo,
   locale,
 }: {
   notification: Notification;
   onDelete: () => void;
   onClick: () => void;
-  formatTimeAgo: (date: string) => string;
   locale: string;
 }) {
   const [translateX, setTranslateX] = useState(0);
@@ -180,7 +183,7 @@ function SwipeableNotificationCard({
             </p>
             <div className="mt-2 flex items-center justify-between">
               <span className="text-[11px] text-neutral-400 dark:text-neutral-600">
-                {formatTimeAgo(notification.createdAt)}
+                {formatTimeAgoCompact(notification.createdAt, locale as 'en' | 'ka')}
               </span>
               {notification.link && (
                 <span className="text-[11px] text-[#C4735B] flex items-center gap-0.5">
@@ -297,24 +300,6 @@ function NotificationsPageContent() {
 
   const groupedNotifications = groupNotificationsByDate(filteredNotifications, locale);
 
-  const formatTimeAgo = useCallback((dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (diffInSeconds < 60) return locale === 'ka' ? 'ახლახანს' : 'Just now';
-    if (diffInSeconds < 3600) {
-      const mins = Math.floor(diffInSeconds / 60);
-      return locale === 'ka' ? `${mins} წთ წინ` : `${mins}m`;
-    }
-    if (diffInSeconds < 86400) {
-      const hours = Math.floor(diffInSeconds / 3600);
-      return locale === 'ka' ? `${hours} სთ წინ` : `${hours}h`;
-    }
-    const days = Math.floor(diffInSeconds / 86400);
-    return locale === 'ka' ? `${days} დღე` : `${days}d`;
-  }, [locale]);
-
   const handleNotificationClick = async (notification: Notification) => {
     if (!notification.isRead) {
       await markAsRead([notification._id]);
@@ -337,9 +322,7 @@ function NotificationsPageContent() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
-        <div className="relative">
-          <div className="w-12 h-12 rounded-full border-2 border-[#C4735B]/20 border-t-[#C4735B] animate-spin" />
-        </div>
+        <LoadingSpinner size="xl" variant="border" color="#C4735B" />
       </div>
     );
   }
@@ -359,31 +342,34 @@ function NotificationsPageContent() {
                 {locale === 'ka' ? 'შეტყობინებები' : 'Notifications'}
               </h1>
               {unreadCount > 0 && (
-                <span className="px-2 py-0.5 text-xs font-medium bg-[#C4735B] text-white rounded-full">
+                <Badge variant="premium" size="xs">
                   {unreadCount}
-                </span>
+                </Badge>
               )}
             </div>
 
             {/* Actions */}
             <div className="flex items-center gap-1">
               {unreadCount > 0 && (
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={handleMarkAllRead}
-                  className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                   title={locale === 'ka' ? 'ყველას წაკითხვა' : 'Mark all read'}
                 >
                   <CheckCheck className="w-5 h-5 text-[#C4735B]" />
-                </button>
+                </Button>
               )}
               {notifications.length > 0 && (
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={handleDeleteAll}
-                  className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                   title={locale === 'ka' ? 'ყველას წაშლა' : 'Clear all'}
+                  className="hover:text-red-500"
                 >
-                  <Trash2 className="w-5 h-5 text-neutral-400 hover:text-red-500 transition-colors" />
-                </button>
+                  <Trash2 className="w-5 h-5 text-neutral-400" />
+                </Button>
               )}
             </div>
           </div>
@@ -402,11 +388,13 @@ function NotificationsPageContent() {
               >
                 {locale === 'ka' ? filter.labelKa : filter.label}
                 {filter.count !== undefined && filter.count > 0 && (
-                  <span className={`ml-1.5 px-1.5 py-0.5 text-xs rounded-full ${
-                    activeFilter === filter.key ? 'bg-white/20' : 'bg-[#C4735B]/10 text-[#C4735B]'
-                  }`}>
+                  <Badge
+                    variant={activeFilter === filter.key ? "ghost" : "premium"}
+                    size="xs"
+                    className={activeFilter === filter.key ? "bg-white/20 text-white" : ""}
+                  >
                     {filter.count}
-                  </span>
+                  </Badge>
                 )}
               </button>
             ))}
@@ -421,9 +409,9 @@ function NotificationsPageContent() {
               <Filter className="w-4 h-4" />
               <span>{locale === 'ka' ? currentFilter?.labelKa : currentFilter?.label}</span>
               {activeFilter === 'unread' && unreadCount > 0 && (
-                <span className="px-1.5 py-0.5 text-xs bg-[#C4735B] text-white rounded-full">
+                <Badge variant="premium" size="xs">
                   {unreadCount}
-                </span>
+                </Badge>
               )}
             </button>
           </div>
@@ -467,9 +455,9 @@ function NotificationsPageContent() {
                     <span className="font-medium">{locale === 'ka' ? filter.labelKa : filter.label}</span>
                     <div className="flex items-center gap-2">
                       {filter.count !== undefined && filter.count > 0 && (
-                        <span className="px-2 py-0.5 text-xs bg-[#C4735B] text-white rounded-full">
+                        <Badge variant="premium" size="xs">
                           {filter.count}
-                        </span>
+                        </Badge>
                       )}
                       {activeFilter === filter.key && (
                         <Check className="w-5 h-5" />
@@ -490,12 +478,12 @@ function NotificationsPageContent() {
         {isLoading ? (
           <div className="p-4 space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="bg-white dark:bg-neutral-900 rounded-2xl p-4 animate-pulse">
+              <div key={i} className="bg-white dark:bg-neutral-900 rounded-2xl p-4">
                 <div className="flex gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-neutral-200 dark:bg-neutral-800" />
+                  <Skeleton className="w-10 h-10 rounded-xl" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 w-3/4 rounded bg-neutral-200 dark:bg-neutral-800" />
-                    <div className="h-3 w-1/2 rounded bg-neutral-100 dark:bg-neutral-800/50" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
                   </div>
                 </div>
               </div>
@@ -504,8 +492,8 @@ function NotificationsPageContent() {
         ) : filteredNotifications.length === 0 ? (
           /* Empty State */
           <div className="px-4 py-16 text-center">
-            <div className="w-20 h-20 mx-auto rounded-2xl bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center mb-4">
-              <Bell className="w-8 h-8 text-neutral-400 dark:text-neutral-600" />
+            <div className="flex justify-center mb-4">
+              <IconBadge icon={Bell} variant="neutral" size="xl" />
             </div>
             <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-2">
               {activeFilter === 'unread'
@@ -537,7 +525,6 @@ function NotificationsPageContent() {
                       notification={notification}
                       onDelete={() => deleteNotification(notification._id)}
                       onClick={() => handleNotificationClick(notification)}
-                      formatTimeAgo={formatTimeAgo}
                       locale={locale}
                     />
                   ))}

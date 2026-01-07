@@ -2,6 +2,7 @@
 
 import AppBackground from "@/components/common/AppBackground";
 import Header, { HeaderSpacer } from "@/components/common/Header";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useCategories } from "@/contexts/CategoriesContext";
@@ -29,20 +30,12 @@ import {
 import MediaLightbox, { MediaItem } from "@/components/common/MediaLightbox";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-
-// Terracotta accent colors
-const ACCENT = "#E07B4F";
-const ACCENT_HOVER = "#D26B3F";
-
-// Helper function to get proper image URL
-const getImageUrl = (path: string | undefined): string => {
-  if (!path) return "";
-  if (path.startsWith("data:")) return path;
-  if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-  if (path.startsWith("/")) return `${apiUrl}${path}`;
-  return `${apiUrl}/uploads/${path}`;
-};
+import { storage } from "@/services/storage";
+import { formatTimeAgo } from "@/utils/dateUtils";
+import { COMPANY_ACCENT as ACCENT, COMPANY_ACCENT_HOVER as ACCENT_HOVER } from "@/constants/theme";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { MultiStarDisplay } from "@/components/ui/StarRating";
+import { Badge } from "@/components/ui/badge";
 
 interface TeamMember {
   _id: string;
@@ -265,24 +258,6 @@ export default function CompanyProfilePage() {
       .join(" ");
   };
 
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    const diffWeeks = Math.floor(diffDays / 7);
-    const diffMonths = Math.floor(diffDays / 30);
-
-    if (locale === "ka") {
-      if (diffDays < 7) return `${diffDays} დღის წინ`;
-      if (diffWeeks < 4) return `${diffWeeks} კვირის წინ`;
-      return `${diffMonths} თვის წინ`;
-    }
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffWeeks < 4) return `${diffWeeks} weeks ago`;
-    return `${diffMonths} month${diffMonths > 1 ? "s" : ""} ago`;
-  };
-
   const cityTranslations: Record<string, string> = {
     tbilisi: "თბილისი",
     rustavi: "რუსთავი",
@@ -336,10 +311,7 @@ export default function CompanyProfilePage() {
         <HeaderSpacer />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="flex flex-col items-center gap-4">
-            <div className="relative w-16 h-16">
-              <div className="absolute inset-0 rounded-full border-3 border-[#E07B4F]/20" />
-              <div className="absolute inset-0 rounded-full border-3 border-transparent border-t-[#E07B4F] animate-spin" />
-            </div>
+            <LoadingSpinner size="xl" color={ACCENT} />
             <p className="text-sm text-[var(--color-text-tertiary)]">
               {locale === "ka" ? "იტვირთება..." : "Loading..."}
             </p>
@@ -368,13 +340,12 @@ export default function CompanyProfilePage() {
                 ? "სამწუხაროდ, ეს კომპანია არ არსებობს"
                 : "Sorry, this company doesn't exist"}
             </p>
-            <button
+            <Button
               onClick={() => router.push("/browse")}
-              className="px-8 py-4 text-sm font-bold rounded-2xl text-white transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-              style={{ backgroundColor: ACCENT }}
+              size="lg"
             >
               {locale === "ka" ? "კომპანიების ნახვა" : "Browse Companies"}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -413,7 +384,7 @@ export default function CompanyProfilePage() {
         {profile.coverImage && (
           <div className="relative h-48 sm:h-64 lg:h-80 overflow-hidden">
             <img
-              src={getImageUrl(profile.coverImage)}
+              src={storage.getFileUrl(profile.coverImage)}
               alt=""
               className="w-full h-full object-cover"
             />
@@ -433,7 +404,7 @@ export default function CompanyProfilePage() {
                   <div className="relative flex-shrink-0 self-start">
                     {logoUrl ? (
                       <img
-                        src={getImageUrl(logoUrl)}
+                        src={storage.getFileUrl(logoUrl)}
                         alt={profile.name}
                         className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl object-cover border-4 border-[var(--color-bg-elevated)] shadow-xl ring-4 ring-white/50 dark:ring-white/10"
                       />
@@ -464,12 +435,9 @@ export default function CompanyProfilePage() {
                         {profile.name}
                       </h1>
                       {profile.isVerified && (
-                        <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                          <BadgeCheck className="w-4 h-4" />
-                          <span className="text-xs font-semibold">
-                            {locale === "ka" ? "დადასტურებული" : "Verified"}
-                          </span>
-                        </div>
+                        <Badge variant="info" size="sm" icon={<BadgeCheck className="w-3.5 h-3.5" />}>
+                          {locale === "ka" ? "დადასტურებული" : "Verified"}
+                        </Badge>
                       )}
                     </div>
 
@@ -551,14 +519,13 @@ export default function CompanyProfilePage() {
 
                 {/* Mobile Actions */}
                 <div className="flex sm:hidden items-center gap-3 mt-6 pt-6 border-t border-[var(--color-border-subtle)]">
-                  <button
+                  <Button
                     onClick={handleContact}
-                    className="flex-1 py-3.5 rounded-xl text-white font-semibold text-sm transition-all shadow-lg flex items-center justify-center gap-2"
-                    style={{ backgroundColor: ACCENT }}
+                    className="flex-1"
+                    leftIcon={<MessageSquare className="w-4 h-4" />}
                   >
-                    <MessageSquare className="w-4 h-4" />
                     {locale === "ka" ? "შეტყობინება" : "Message"}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -665,7 +632,7 @@ export default function CompanyProfilePage() {
                     >
                       {member.avatar ? (
                         <img
-                          src={getImageUrl(member.avatar)}
+                          src={storage.getFileUrl(member.avatar)}
                           alt={member.name}
                           className="w-16 h-16 rounded-xl object-cover mx-auto mb-3"
                         />
@@ -692,11 +659,14 @@ export default function CompanyProfilePage() {
                 </div>
 
                 {profile.teamMembers.length > 8 && (
-                  <button className="w-full mt-4 py-3 text-sm font-semibold rounded-xl border border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors">
+                  <Button
+                    variant="secondary"
+                    className="w-full mt-4"
+                  >
                     {locale === "ka"
                       ? `ყველას ნახვა (${profile.teamMembers.length})`
                       : `View All (${profile.teamMembers.length})`}
-                  </button>
+                  </Button>
                 )}
               </section>
             )}
@@ -749,7 +719,7 @@ export default function CompanyProfilePage() {
                       }`}
                     >
                       <img
-                        src={getImageUrl(img.url)}
+                        src={storage.getFileUrl(img.url)}
                         alt={img.title || ""}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
@@ -809,14 +779,7 @@ export default function CompanyProfilePage() {
                   {/* Rating Summary */}
                   {profile.avgRating > 0 && (
                     <div className="hidden sm:flex items-center gap-3 px-4 py-2 rounded-xl bg-[var(--color-bg-tertiary)]">
-                      <div className="flex items-center gap-0.5">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className={`w-4 h-4 ${star <= Math.round(profile.avgRating) ? "fill-amber-400 text-amber-400" : "text-[var(--color-border)]"}`}
-                          />
-                        ))}
-                      </div>
+                      <MultiStarDisplay rating={profile.avgRating} size="md" />
                       <span className="font-bold text-[var(--color-text-primary)]">
                         {profile.avgRating.toFixed(1)}
                       </span>
@@ -834,7 +797,7 @@ export default function CompanyProfilePage() {
                         {/* Avatar */}
                         {review.clientId.avatar ? (
                           <img
-                            src={getImageUrl(review.clientId.avatar)}
+                            src={storage.getFileUrl(review.clientId.avatar)}
                             alt=""
                             className="w-12 h-12 rounded-xl object-cover"
                           />
@@ -859,18 +822,11 @@ export default function CompanyProfilePage() {
                                   : review.clientId.name}
                               </p>
                               <p className="text-xs text-[var(--color-text-muted)]">
-                                {formatTimeAgo(review.createdAt)}
+                                {formatTimeAgo(review.createdAt, locale as 'en' | 'ka')}
                               </p>
                             </div>
                             {/* Stars */}
-                            <div className="flex items-center gap-0.5">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`w-4 h-4 ${star <= review.rating ? "fill-amber-400 text-amber-400" : "text-[var(--color-border)]"}`}
-                                />
-                              ))}
-                            </div>
+                            <MultiStarDisplay rating={review.rating} size="md" />
                           </div>
 
                           {review.text && (
@@ -888,7 +844,7 @@ export default function CompanyProfilePage() {
                                   className="w-20 h-20 rounded-xl overflow-hidden"
                                 >
                                   <img
-                                    src={getImageUrl(photo)}
+                                    src={storage.getFileUrl(photo)}
                                     alt=""
                                     className="w-full h-full object-cover"
                                   />
@@ -909,11 +865,14 @@ export default function CompanyProfilePage() {
 
                 {/* View All Reviews */}
                 {profile.totalReviews > 4 && (
-                  <button className="w-full mt-6 py-4 rounded-xl font-semibold text-sm border-2 border-[var(--color-border-subtle)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)] hover:border-[var(--color-border)] transition-all">
+                  <Button
+                    variant="outline"
+                    className="w-full mt-6"
+                  >
                     {locale === "ka"
                       ? `ყველა ${profile.totalReviews} შეფასების ნახვა`
                       : `Read all ${profile.totalReviews} reviews`}
-                  </button>
+                  </Button>
                 )}
               </section>
             )}
@@ -925,14 +884,14 @@ export default function CompanyProfilePage() {
               {/* Quick Contact Card */}
               <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 shadow-sm">
                 {/* CTA Button */}
-                <button
+                <Button
                   onClick={handleContact}
-                  className="w-full py-4 rounded-xl text-white font-bold text-sm transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center gap-2"
-                  style={{ backgroundColor: ACCENT }}
+                  className="w-full"
+                  size="lg"
+                  leftIcon={<MessageSquare className="w-4 h-4" />}
                 >
-                  <MessageSquare className="w-4 h-4" />
                   {locale === "ka" ? "შეტყობინება" : "Contact Us"}
-                </button>
+                </Button>
 
                 {/* Contact Info */}
                 <div className="mt-6 space-y-3">
@@ -1223,7 +1182,7 @@ export default function CompanyProfilePage() {
         isOpen={lightboxOpen}
         onClose={closeLightbox}
         onIndexChange={setLightboxIndex}
-        getImageUrl={getImageUrl}
+        getImageUrl={storage.getFileUrl}
         locale={locale as "en" | "ka"}
         showThumbnails={false}
       />
@@ -1246,19 +1205,20 @@ export default function CompanyProfilePage() {
                 <h3 className="text-xl font-bold text-[var(--color-text-primary)]">
                   {locale === "ka" ? "შეტყობინება" : "Send Message"}
                 </h3>
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setShowContactModal(false)}
-                  className="w-10 h-10 rounded-xl bg-[var(--color-bg-tertiary)] flex items-center justify-center hover:bg-[var(--color-bg-muted)] transition-colors"
                 >
-                  <X className="w-5 h-5 text-[var(--color-text-secondary)]" />
-                </button>
+                  <X className="w-5 h-5" />
+                </Button>
               </div>
 
               {/* Company Info */}
               <div className="flex items-center gap-4 p-4 rounded-2xl bg-[var(--color-bg-tertiary)] mb-6">
                 {logoUrl ? (
                   <img
-                    src={getImageUrl(logoUrl)}
+                    src={storage.getFileUrl(logoUrl)}
                     alt=""
                     className="w-14 h-14 rounded-xl object-cover"
                   />
@@ -1295,26 +1255,23 @@ export default function CompanyProfilePage() {
               />
 
               <div className="flex gap-3 mt-6">
-                <button
+                <Button
+                  variant="secondary"
                   onClick={() => setShowContactModal(false)}
-                  className="flex-1 py-4 rounded-xl text-sm font-semibold border-2 border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                  className="flex-1"
                 >
                   {locale === "ka" ? "გაუქმება" : "Cancel"}
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleSendMessage}
                   disabled={isSending || !message.trim()}
-                  className="flex-1 py-4 text-sm font-bold rounded-xl text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 disabled:hover:translate-y-0"
-                  style={{ backgroundColor: ACCENT }}
+                  loading={isSending}
+                  className="flex-1"
                 >
                   {isSending
-                    ? locale === "ka"
-                      ? "იგზავნება..."
-                      : "Sending..."
-                    : locale === "ka"
-                      ? "გაგზავნა"
-                      : "Send"}
-                </button>
+                    ? (locale === "ka" ? "იგზავნება..." : "Sending...")
+                    : (locale === "ka" ? "გაგზავნა" : "Send")}
+                </Button>
               </div>
             </div>
           </div>

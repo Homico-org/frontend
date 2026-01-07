@@ -23,6 +23,11 @@ import {
   AlertCircle,
   Sparkles
 } from 'lucide-react';
+import { formatDateUK } from '@/utils/dateUtils';
+import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { MultiStarDisplay } from '@/components/ui/StarRating';
+import { ACCENT_COLOR } from '@/constants/theme';
 
 interface Review {
   _id: string;
@@ -101,31 +106,6 @@ function MyReviewsPageContent() {
     }
   }, [isAuthenticated, user, fetchReviews]);
 
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
-  };
-
-  const renderStars = (rating: number, size: 'sm' | 'md' = 'md') => {
-    const starSize = size === 'sm' ? 'w-4 h-4' : 'w-5 h-5';
-    return (
-      <div className="flex items-center gap-0.5">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            className={`${starSize} ${
-              star <= rating
-                ? 'text-amber-400 fill-amber-400'
-                : 'text-neutral-200 dark:text-neutral-700'
-            }`}
-          />
-        ))}
-      </div>
-    );
-  };
 
   const stats = {
     total: reviews.length,
@@ -140,10 +120,7 @@ function MyReviewsPageContent() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
         <div className="flex flex-col items-center gap-4">
-          <div className="relative">
-            <div className="w-14 h-14 rounded-full border-[3px] border-neutral-200 dark:border-neutral-700"></div>
-            <div className="absolute inset-0 w-14 h-14 rounded-full border-[3px] border-transparent border-t-forest-600 dark:border-t-primary-400 animate-spin"></div>
-          </div>
+          <LoadingSpinner size="xl" variant="border" color={ACCENT_COLOR} />
           <p className="text-sm text-neutral-500 dark:text-neutral-400">{language === 'ka' ? 'შეფასებები იტვირთება...' : 'Loading reviews...'}</p>
         </div>
       </div>
@@ -156,13 +133,15 @@ function MyReviewsPageContent() {
       <div className="border-b" style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)' }}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {/* Back Button */}
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => router.push('/browse')}
-            className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors mb-4"
+            leftIcon={<ArrowLeft className="h-4 w-4" />}
+            className="mb-4"
           >
-            <ArrowLeft className="h-4 w-4" />
             {language === 'ka' ? 'უკან' : 'Back'}
-          </button>
+          </Button>
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -310,9 +289,9 @@ function MyReviewsPageContent() {
                                 {review.proId.title}
                               </p>
                               <div className="flex items-center gap-3 mt-2">
-                                {renderStars(review.rating, 'sm')}
+                                <MultiStarDisplay rating={review.rating} size="sm" />
                                 <span className="text-sm text-neutral-500 dark:text-neutral-400">
-                                  {formatDate(review.createdAt)}
+                                  {formatDateUK(review.createdAt)}
                                 </span>
                               </div>
                             </div>
@@ -429,15 +408,15 @@ function MyReviewsPageContent() {
                                 {pending.proId.title}
                               </p>
                               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                                {language === 'ka' ? 'დასრულდა' : 'Completed on'} {formatDate(pending.completedAt)}
+                                {language === 'ka' ? 'დასრულდა' : 'Completed on'} {formatDateUK(pending.completedAt)}
                               </p>
                             </div>
-                            <button
-                              className="inline-flex items-center gap-2 px-4 py-2 bg-forest-600 dark:bg-primary-500 text-white rounded-xl text-sm font-medium hover:bg-forest-700 dark:hover:bg-primary-600 transition-colors"
+                            <Button
+                              size="sm"
+                              leftIcon={<Star className="h-4 w-4" />}
                             >
-                              <Star className="h-4 w-4" />
                               {language === 'ka' ? 'შეფასების დაწერა' : 'Write Review'}
-                            </button>
+                            </Button>
                           </div>
                           <div className="mt-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
                             <p className="text-sm text-neutral-600 dark:text-neutral-400">

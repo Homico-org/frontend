@@ -10,6 +10,8 @@ import { useLikes } from "@/hooks/useLikes";
 import { LikeTargetType, ProProfile } from "@/types";
 import { Users } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { SkeletonProCardGrid } from '@/components/ui/Skeleton';
 
 export default function ProfessionalsPage() {
   const { locale } = useLanguage();
@@ -179,41 +181,7 @@ export default function ProfessionalsPage() {
 
   // Compact Loading skeleton - matches new card design
   const ProfessionalsSkeleton = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-      {[...Array(8)].map((_, i) => (
-        <div
-          key={i}
-          className="pro-card-modern animate-pulse"
-          style={{ animationDelay: `${i * 50}ms` }}
-        >
-          {/* Top section */}
-          <div className="flex gap-2.5 p-2.5 sm:gap-3 sm:p-3">
-            {/* Avatar skeleton */}
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl bg-[var(--color-bg-tertiary)]" />
-            {/* Info skeleton */}
-            <div className="flex-1 min-w-0">
-              <div className="h-3.5 sm:h-4 rounded w-3/4 bg-[var(--color-bg-tertiary)] mb-1 sm:mb-1.5" />
-              <div className="h-2.5 sm:h-3 rounded w-1/2 bg-[var(--color-bg-tertiary)] mb-1.5 sm:mb-2" />
-              <div className="flex gap-1.5 sm:gap-2">
-                <div className="h-2.5 sm:h-3 rounded w-10 sm:w-12 bg-[var(--color-bg-tertiary)]" />
-                <div className="h-2.5 sm:h-3 rounded w-8 sm:w-10 bg-[var(--color-bg-tertiary)]" />
-              </div>
-            </div>
-            {/* Like button skeleton */}
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[var(--color-bg-tertiary)]" />
-          </div>
-          {/* Bottom section */}
-          <div className="px-2.5 pb-2.5 sm:px-3 sm:pb-3">
-            <div className="h-2.5 sm:h-3 rounded w-full bg-[var(--color-bg-tertiary)] mb-1" />
-            <div className="h-2.5 sm:h-3 rounded w-2/3 bg-[var(--color-bg-tertiary)] mb-1.5 sm:mb-2" />
-            <div className="flex gap-1">
-              <div className="h-4 sm:h-5 rounded-md w-14 sm:w-16 bg-[var(--color-bg-tertiary)]" />
-              <div className="h-4 sm:h-5 rounded-md w-12 sm:w-14 bg-[var(--color-bg-tertiary)]" />
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
+    <SkeletonProCardGrid count={8} columns={4} className="gap-3 sm:gap-4" />
   );
 
   // Empty state using shared component
@@ -259,10 +227,7 @@ export default function ProfessionalsPage() {
       <div ref={loaderRef} className="flex justify-center py-6 sm:py-10">
         {isLoadingMore && (
           <div className="flex items-center gap-3 px-4 py-2 sm:gap-4 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl glass-card">
-            <div className="relative w-4 h-4 sm:w-5 sm:h-5">
-              <div className="absolute inset-0 rounded-full border-2 border-[#E07B4F]/20" />
-              <div className="absolute inset-0 rounded-full border-2 border-[#E07B4F] border-t-transparent animate-spin" />
-            </div>
+            <LoadingSpinner size="sm" variant="border" color="#E07B4F" />
             <span className="text-xs sm:text-sm font-medium text-[var(--color-text-secondary)]">
               {locale === 'ka' ? 'იტვირთება...' : 'Loading more...'}
             </span>

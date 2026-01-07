@@ -2,25 +2,34 @@
 
 import Avatar from "@/components/common/Avatar";
 import Header, { HeaderSpacer } from "@/components/common/Header";
-import MediaLightbox, { MediaItem as LightboxMediaItem } from "@/components/common/MediaLightbox";
-import SpecCard from "@/components/jobs/SpecCard";
+import MediaLightbox from "@/components/common/MediaLightbox";
+import ClientCard from "@/components/jobs/ClientCard";
+import JobStatsBar from "@/components/jobs/JobStatsBar";
+import MyProposalCard from "@/components/jobs/MyProposalCard";
+import ProposalFormModal from "@/components/jobs/ProposalFormModal";
 import RequirementBadge from "@/components/jobs/RequirementBadge";
+import ReviewModal from "@/components/jobs/ReviewModal";
+import SpecCard from "@/components/jobs/SpecCard";
 import PollsTab from "@/components/polls/PollsTab";
 import ProjectChat from "@/components/projects/ProjectChat";
 import ProjectWorkspace from "@/components/projects/ProjectWorkspace";
+import { Button } from "@/components/ui/button";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ConfirmModal } from "@/components/ui/Modal";
+import { ACCENT_COLOR as ACCENT, ACCENT_LIGHT } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
 import api from "@/lib/api";
 import { storage } from "@/services/storage";
+import { formatBudget as formatBudgetUtil } from "@/utils/currencyUtils";
+import { formatTimeAgoCompact } from "@/utils/dateUtils";
 import {
   Armchair,
   ArrowLeft,
   BadgeCheck,
   BarChart3,
-  Building2,
   Calendar,
   Check,
   CheckCircle2,
@@ -35,7 +44,6 @@ import {
   Hammer,
   Home,
   Layers,
-  Loader2,
   Map,
   MapPin,
   Maximize2,
@@ -51,17 +59,12 @@ import {
   Trash2,
   Users,
   X,
-  Zap,
+  Zap
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
-
-// Design tokens
-const ACCENT = "#C4735B";
-const ACCENT_LIGHT = "#D4897A";
-const ACCENT_DARK = "#A85D4A";
 
 // Project stage types and constants
 type ProjectStage = "hired" | "started" | "in_progress" | "review" | "completed";
@@ -1127,45 +1130,14 @@ export default function JobDetailClient() {
   };
 
   const formatBudget = (job: Job) => {
-    switch (job.budgetType) {
-      case "fixed":
-        return job.budgetAmount
-          ? `₾${job.budgetAmount.toLocaleString()}`
-          : null;
-      case "range":
-        return job.budgetMin && job.budgetMax
-          ? `₾${job.budgetMin.toLocaleString()} - ₾${job.budgetMax.toLocaleString()}`
-          : null;
-      case "per_sqm":
-        return job.pricePerUnit ? `₾${job.pricePerUnit}/მ²` : null;
-      case "negotiable":
-        return locale === "ka" ? "შეთანხმებით" : "Negotiable";
-      default:
-        return null;
+    // Handle negotiable type explicitly
+    if (job.budgetType === "negotiable") {
+      return locale === "ka" ? "შეთანხმებით" : "Negotiable";
     }
+    return formatBudgetUtil(job, locale as "en" | "ka");
   };
 
-  const getTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (locale === "ka") {
-      if (diffMins < 60) return `${diffMins} წუთის წინ`;
-      if (diffHours < 24) return `${diffHours} საათის წინ`;
-      if (diffDays < 7) return `${diffDays} დღის წინ`;
-      const months = ["იან", "თებ", "მარ", "აპრ", "მაი", "ივნ", "ივლ", "აგვ", "სექ", "ოქტ", "ნოე", "დეკ"];
-      return `${date.getDate()} ${months[date.getMonth()]}`;
-    }
-
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  };
+  const getTimeAgo = (dateString: string) => formatTimeAgoCompact(dateString, locale as "en" | "ka");
 
   const getPropertyTypeLabel = (type: string) => {
     const label = propertyTypeLabels[type];
@@ -1298,15 +1270,14 @@ export default function JobDetailClient() {
         {/* Image counter */}
         {allMedia.length > 1 && (
           <div className="absolute top-6 right-6 z-20 flex items-center gap-2">
-            <button
+            <Button
+              variant="ghost"
               onClick={() => setSelectedMediaIndex(0)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all"
+              className="rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 hover:text-white"
+              leftIcon={<Maximize2 className="w-4 h-4" />}
             >
-              <Maximize2 className="w-4 h-4" />
-              <span className="font-body text-sm">
-                {allMedia.length} {locale === "ka" ? "ფოტო" : "photos"}
-              </span>
-            </button>
+              {allMedia.length} {locale === "ka" ? "ფოტო" : "photos"}
+            </Button>
           </div>
         )}
 
@@ -1442,67 +1413,17 @@ export default function JobDetailClient() {
       <main className="relative z-10 -mt-6">
         <div className="max-w-6xl mx-auto px-6">
           {/* Floating Stats Bar */}
-          <div
-            className={`relative bg-white dark:bg-neutral-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 p-4 md:p-6 mb-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-400 ${
-              isVisible
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-4"
-            }`}
-          >
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              {/* Budget */}
-              {budgetDisplay && (
-                <div className="flex items-center gap-4">
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center"
-                    style={{ backgroundColor: `${ACCENT}15` }}
-                  >
-                    <span
-                      className="font-body text-xl font-bold"
-                      style={{ color: ACCENT }}
-                    >
-                      ₾
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-xs font-body font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                      {locale === "ka" ? "ბიუჯეტი" : "Budget"}
-                    </p>
-                    <p className="text-xl md:text-2xl font-body font-bold text-neutral-900 dark:text-white tabular-nums">
-                      {budgetDisplay}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Divider */}
-              <div className="hidden md:block w-px h-12 bg-neutral-200 dark:bg-neutral-700" />
-
-              {/* Stats */}
-              <div className="flex items-center gap-6">
-                <div className="text-center">
-                  <p className="text-2xl font-body font-bold text-neutral-900 dark:text-white tabular-nums">
-                    {job.viewCount}
-                  </p>
-                  <p className="text-xs font-body text-neutral-500 dark:text-neutral-400">
-                    {locale === "ka" ? "ნახვა" : "Views"}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-body font-bold text-neutral-900 dark:text-white tabular-nums">
-                    {job.proposalCount}
-                  </p>
-                  <p className="text-xs font-body text-neutral-500 dark:text-neutral-400">
-                    {locale === "ka" ? "შეთავაზება" : "Proposals"}
-                  </p>
-                </div>
-              </div>
-
-              {/* Divider */}
-              <div className="hidden md:block w-px h-12 bg-neutral-200 dark:bg-neutral-700" />
-
-              {/* Owner Actions or Submit Button */}
-              {isOwner ? (
+          <JobStatsBar
+            budget={budgetDisplay}
+            viewCount={job.viewCount}
+            proposalCount={job.proposalCount}
+            budgetLabel={locale === "ka" ? "ბიუჯეტი" : "Budget"}
+            viewsLabel={locale === "ka" ? "ნახვა" : "Views"}
+            proposalsLabel={locale === "ka" ? "შეთავაზება" : "Proposals"}
+            isVisible={isVisible}
+            className="mb-8"
+            actions={
+              isOwner ? (
                 <div className="flex items-center gap-2">
                   <Link
                     href={`/post-job?edit=${job._id}`}
@@ -1511,32 +1432,29 @@ export default function JobDetailClient() {
                     <Edit3 className="w-4 h-4" />
                     {locale === "ka" ? "რედაქტირება" : "Edit"}
                   </Link>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-body text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                    className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
                   >
                     <Trash2 className="w-4 h-4" />
-                  </button>
+                  </Button>
                 </div>
               ) : isPro && isOpen && !myProposal && !isCheckingProposal ? (
-                <button
+                <Button
                   onClick={() => setShowProposalForm(true)}
-                  className="flex items-center gap-2 px-6 py-3 rounded-xl font-body text-sm font-semibold text-white transition-all hover:scale-105 hover:shadow-lg"
-                  style={{
-                    backgroundColor: ACCENT,
-                    boxShadow: `0 4px 20px ${ACCENT}40`,
-                  }}
+                  leftIcon={<Send className="w-4 h-4" />}
                 >
-                  <Send className="w-4 h-4" />
                   {locale === "ka" ? "შეთავაზების გაგზავნა" : "Submit Proposal"}
-                </button>
+                </Button>
               ) : isPro && isOpen && isCheckingProposal ? (
                 <div className="flex items-center gap-2 px-6 py-3 rounded-xl font-body text-sm font-semibold text-neutral-400">
-                  <div className="w-4 h-4 border-2 border-neutral-300 border-t-neutral-500 rounded-full animate-spin" />
+                  <LoadingSpinner size="sm" color="#737373" />
                 </div>
-              ) : null}
-            </div>
-          </div>
+              ) : undefined
+            }
+          />
 
           {/* Completed Status Banner */}
           {isCompleted && (
@@ -1559,14 +1477,14 @@ export default function JobDetailClient() {
                 </div>
                 {/* Leave Review Button for owner */}
                 {isOwner && job.hiredPro && !hasSubmittedReview && (
-                  <button
+                  <Button
                     onClick={() => setShowReviewModal(true)}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-body text-sm font-medium text-white transition-all hover:opacity-90 flex-shrink-0"
-                    style={{ backgroundColor: ACCENT }}
+                    size="sm"
+                    leftIcon={<Star className="w-4 h-4" />}
+                    className="flex-shrink-0"
                   >
-                    <Star className="w-4 h-4" />
                     {locale === "ka" ? "შეფასების დატოვება" : "Leave Review"}
-                  </button>
+                  </Button>
                 )}
                 {isOwner && hasSubmittedReview && (
                   <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-body text-sm font-medium text-green-600 bg-green-100 dark:bg-green-800/30 dark:text-green-400 flex-shrink-0">
@@ -1845,83 +1763,18 @@ export default function JobDetailClient() {
 
               {/* My Proposal */}
               {myProposal && isPro && (
-                <section className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-800/10 rounded-2xl p-6 md:p-8 border border-emerald-200/50 dark:border-emerald-800/50">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                    </div>
-                    <div>
-                      <h3 className="font-display text-lg font-semibold text-neutral-900 dark:text-white">
-                        {locale === "ka"
-                          ? "თქვენი შეთავაზება"
-                          : "Your Proposal"}
-                      </h3>
-                      <span
-                        className={`text-xs font-body font-medium uppercase tracking-wider ${
-                          myProposal.status === "pending"
-                            ? "text-amber-600 dark:text-amber-400"
-                            : myProposal.status === "accepted"
-                              ? "text-emerald-600 dark:text-emerald-400"
-                              : "text-red-600 dark:text-red-400"
-                        }`}
-                      >
-                        {myProposal.status === "pending"
-                          ? locale === "ka"
-                            ? "განხილვაში"
-                            : "Pending"
-                          : myProposal.status === "accepted"
-                            ? locale === "ka"
-                              ? "გაგზავნილი"
-                              : "Submitted"
-                            : locale === "ka"
-                              ? "უარყოფილი"
-                              : "Rejected"}
-                      </span>
-                    </div>
-                  </div>
-                  <p className="font-body text-neutral-600 dark:text-neutral-300 mb-4">
-                    {myProposal.coverLetter}
-                  </p>
-                  {(myProposal.proposedPrice ||
-                    myProposal.estimatedDuration) && (
-                    <div className="flex gap-6">
-                      {myProposal.proposedPrice && (
-                        <div>
-                          <p className="text-xs font-body text-neutral-500 dark:text-neutral-400">
-                            {locale === "ka" ? "ფასი" : "Price"}
-                          </p>
-                          <p
-                            className="font-display text-xl font-semibold"
-                            style={{ color: ACCENT }}
-                          >
-                            ₾{myProposal.proposedPrice.toLocaleString()}
-                          </p>
-                        </div>
-                      )}
-                      {myProposal.estimatedDuration && (
-                        <div>
-                          <p className="text-xs font-body text-neutral-500 dark:text-neutral-400">
-                            {locale === "ka" ? "ვადა" : "Duration"}
-                          </p>
-                          <p className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
-                            {myProposal.estimatedDuration}{" "}
-                            {myProposal.estimatedDurationUnit === "days"
-                              ? locale === "ka"
-                                ? "დღე"
-                                : "days"
-                              : myProposal.estimatedDurationUnit === "weeks"
-                                ? locale === "ka"
-                                  ? "კვირა"
-                                  : "weeks"
-                                : locale === "ka"
-                                  ? "თვე"
-                                  : "months"}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </section>
+                <MyProposalCard
+                  proposal={{
+                    _id: myProposal._id,
+                    coverLetter: myProposal.coverLetter,
+                    proposedPrice: myProposal.proposedPrice,
+                    estimatedDuration: myProposal.estimatedDuration,
+                    estimatedDurationUnit: myProposal.estimatedDurationUnit as 'days' | 'weeks' | 'months' | undefined,
+                    status: myProposal.status,
+                    createdAt: myProposal.createdAt,
+                  }}
+                  locale={locale as 'en' | 'ka'}
+                />
               )}
 
               {/* Project Status Tracker - for hired pro or job owner */}
@@ -1963,27 +1816,26 @@ export default function JobDetailClient() {
                             : "The professional has marked the work as complete. Please review and confirm."}
                         </p>
                         <div className="flex gap-2">
-                          <button
+                          <Button
                             onClick={handleClientConfirm}
                             disabled={isUpdatingStage}
-                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90 disabled:opacity-50"
-                            style={{ backgroundColor: "#10B981" }}
+                            loading={isUpdatingStage}
+                            variant="success"
+                            size="sm"
+                            className="flex-1"
+                            leftIcon={!isUpdatingStage ? <BadgeCheck className="w-4 h-4" /> : undefined}
                           >
-                            {isUpdatingStage ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <BadgeCheck className="w-4 h-4" />
-                            )}
                             {locale === "ka" ? "დადასტურება და დახურვა" : "Confirm & Close"}
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             onClick={handleClientRequestChanges}
                             disabled={isUpdatingStage}
-                            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-all disabled:opacity-50"
+                            variant="secondary"
+                            size="sm"
+                            leftIcon={<RotateCcw className="w-4 h-4" />}
                           >
-                            <RotateCcw className="w-4 h-4" />
                             {locale === "ka" ? "ცვლილებები" : "Request Changes"}
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     )}
@@ -1996,14 +1848,14 @@ export default function JobDetailClient() {
                             ? "პროექტი დასრულებულია. დატოვეთ შეფასება სპეციალისტზე."
                             : "Project is complete. Leave a review for the professional."}
                         </p>
-                        <button
+                        <Button
                           onClick={() => setShowReviewModal(true)}
-                          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90 w-full"
-                          style={{ backgroundColor: ACCENT }}
+                          size="sm"
+                          className="w-full"
+                          leftIcon={<Star className="w-4 h-4" />}
                         >
-                          <Star className="w-4 h-4" />
                           {locale === "ka" ? "შეფასების დატოვება" : "Leave a Review"}
-                        </button>
+                        </Button>
                       </div>
                     )}
 
@@ -2039,7 +1891,7 @@ export default function JobDetailClient() {
                             }}
                           >
                             {isUpdatingStage && isCurrent ? (
-                              <Loader2 className="w-3 h-3 animate-spin" />
+                              <LoadingSpinner size="xs" color="currentColor" />
                             ) : isStageCompleted ? (
                               <Check className="w-3 h-3" />
                             ) : (
@@ -2073,46 +1925,19 @@ export default function JobDetailClient() {
             <div className="lg:col-span-1">
               <div className="sticky top-24 space-y-6">
                 {/* Client Card */}
-                <div
-                  className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-500 ${
-                    isVisible
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-4"
-                  }`}
-                >
-                  <h3 className="font-display text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-4">
-                    {locale === "ka" ? "დამკვეთი" : "Client"}
-                  </h3>
-                  <div className="flex items-center gap-4 mb-4">
-                    <Avatar
-                      src={job.clientId?.avatar}
-                      name={job.clientId?.name || "Client"}
-                      size="lg"
-                      className="w-14 h-14 ring-2 ring-neutral-100 dark:ring-neutral-800"
-                    />
-                    <div className="min-w-0">
-                      <p className="font-body font-semibold text-neutral-900 dark:text-white truncate">
-                        {job.clientId?.accountType === "organization"
-                          ? job.clientId?.companyName || job.clientId?.name
-                          : job.clientId?.name}
-                      </p>
-                      {job.clientId?.city && (
-                        <p className="font-body text-sm text-neutral-500 dark:text-neutral-400 flex items-center gap-1">
-                          <MapPin className="w-3 h-3" />
-                          {job.clientId?.city}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  {job.clientId?.accountType === "organization" && (
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
-                      <Building2 className="w-4 h-4 text-neutral-400" />
-                      <span className="font-body text-xs text-neutral-500 dark:text-neutral-400">
-                        {locale === "ka" ? "ორგანიზაცია" : "Organization"}
-                      </span>
-                    </div>
-                  )}
-                </div>
+                <ClientCard
+                  client={{
+                    _id: job.clientId?._id || '',
+                    name: job.clientId?.name || 'Client',
+                    avatar: job.clientId?.avatar,
+                    city: job.clientId?.city,
+                    accountType: job.clientId?.accountType,
+                    companyName: job.clientId?.companyName,
+                  }}
+                  label={locale === "ka" ? "დამკვეთი" : "Client"}
+                  organizationLabel={locale === "ka" ? "ორგანიზაცია" : "Organization"}
+                  isVisible={isVisible}
+                />
 
                 {/* Hired Professional Card */}
                 {isHired && job.hiredPro && (
@@ -2290,7 +2115,8 @@ export default function JobDetailClient() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                      <button
+                      <Button
+                        size="icon"
                         onClick={() => {
                           const url = `${window.location.origin}/jobs/${job._id}`;
                           const text = job.title;
@@ -2300,12 +2126,14 @@ export default function JobDetailClient() {
                             'width=580,height=400'
                           );
                         }}
-                        className="flex items-center justify-center w-11 h-11 rounded-xl bg-[#1877F2] hover:bg-[#166FE5] hover:scale-105 text-white transition-all duration-200 shadow-sm hover:shadow-md"
+                        className="bg-[#1877F2] hover:bg-[#166FE5] text-white"
                         title="Share on Facebook"
                       >
                         <Facebook className="w-5 h-5" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="secondary"
                         onClick={async () => {
                           const url = `${window.location.origin}/jobs/${job._id}`;
                           if (navigator.share) {
@@ -2315,7 +2143,7 @@ export default function JobDetailClient() {
                                 text: job.description.slice(0, 100) + '...',
                                 url: url,
                               });
-                            } catch (err) {
+                            } catch {
                               // User cancelled or error
                             }
                           } else {
@@ -2324,23 +2152,23 @@ export default function JobDetailClient() {
                             setTimeout(() => setCopyToast(false), 2000);
                           }
                         }}
-                        className="flex items-center justify-center w-11 h-11 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:scale-105 text-neutral-600 dark:text-neutral-300 transition-all duration-200 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md"
                         title={locale === 'ka' ? 'გაზიარება' : 'Share'}
                       >
                         <Share2 className="w-5 h-5" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="secondary"
                         onClick={async () => {
                           const url = `${window.location.origin}/jobs/${job._id}`;
                           await navigator.clipboard.writeText(url);
                           setCopyToast(true);
                           setTimeout(() => setCopyToast(false), 2000);
                         }}
-                        className="flex items-center justify-center w-11 h-11 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:scale-105 text-neutral-600 dark:text-neutral-300 transition-all duration-200 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md"
                         title={locale === 'ka' ? 'ლინკის კოპირება' : 'Copy link'}
                       >
                         <Copy className="w-5 h-5" />
-                      </button>
+                      </Button>
                   </div>
                 </div>
               </div>
@@ -2350,161 +2178,16 @@ export default function JobDetailClient() {
       </main>
 
       {/* Proposal Form Modal */}
-      {showProposalForm && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setShowProposalForm(false)}
-          />
-          <div className="relative w-full sm:max-w-lg bg-white dark:bg-neutral-900 sm:rounded-2xl overflow-hidden shadow-2xl animate-slide-up">
-            <div className="p-6 border-b border-neutral-100 dark:border-neutral-800">
-              <div className="flex items-center justify-between">
-                <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
-                  {locale === "ka" ? "წინადადების გაგზავნა" : "Submit Proposal"}
-                </h2>
-                <button
-                  onClick={() => setShowProposalForm(false)}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                >
-                  <X className="w-5 h-5 text-neutral-400" />
-                </button>
-              </div>
-            </div>
-
-            {error && (
-              <div className="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-body text-sm">
-                {error}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmitProposal} className="p-6 space-y-5">
-              <div>
-                <label className="block font-body text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                  {locale === "ka" ? "სამოტივაციო წერილი" : "Cover Letter"}
-                </label>
-                <textarea
-                  rows={4}
-                  required
-                  value={proposalData.coverLetter}
-                  onChange={(e) =>
-                    setProposalData({
-                      ...proposalData,
-                      coverLetter: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-body placeholder:text-neutral-400 focus:outline-none focus:ring-2 transition-all resize-none"
-                  style={{ "--tw-ring-color": ACCENT } as any}
-                  placeholder={
-                    locale === "ka"
-                      ? "წარმოადგინეთ თქვენი გამოცდილება..."
-                      : "Describe your experience..."
-                  }
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block font-body text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                    {locale === "ka" ? "ფასი (₾)" : "Price (₾)"}
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={
-                      proposalData.proposedPrice
-                        ? Number(proposalData.proposedPrice)
-                            .toLocaleString("en-US")
-                            .replace(/,/g, " ")
-                        : ""
-                    }
-                    onChange={(e) => {
-                      // Remove spaces and non-numeric characters except decimal point
-                      const rawValue = e.target.value.replace(/[^\d.]/g, "");
-                      setProposalData({
-                        ...proposalData,
-                        proposedPrice: rawValue,
-                      });
-                    }}
-                    className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-body focus:outline-none focus:ring-2 transition-all"
-                    style={{ "--tw-ring-color": ACCENT } as any}
-                    placeholder="0"
-                  />
-                </div>
-                <div>
-                  <label className="block font-body text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                    {locale === "ka" ? "ვადა" : "Duration"}
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={proposalData.estimatedDuration}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value === '' || parseInt(value) >= 1) {
-                        setProposalData({
-                          ...proposalData,
-                          estimatedDuration: value,
-                        });
-                      }
-                    }}
-                    className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-body focus:outline-none focus:ring-2 transition-all"
-                    style={{ "--tw-ring-color": ACCENT } as any}
-                    placeholder="0"
-                  />
-                </div>
-                <div>
-                  <label className="block font-body text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                    {locale === "ka" ? "ერთეული" : "Unit"}
-                  </label>
-                  <select
-                    value={proposalData.estimatedDurationUnit}
-                    onChange={(e) =>
-                      setProposalData({
-                        ...proposalData,
-                        estimatedDurationUnit: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-body focus:outline-none focus:ring-2 transition-all cursor-pointer"
-                    style={{ "--tw-ring-color": ACCENT } as any}
-                  >
-                    <option value="days">
-                      {locale === "ka" ? "დღე" : "Days"}
-                    </option>
-                    <option value="weeks">
-                      {locale === "ka" ? "კვირა" : "Weeks"}
-                    </option>
-                    <option value="months">
-                      {locale === "ka" ? "თვე" : "Months"}
-                    </option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowProposalForm(false)}
-                  className="flex-1 py-3 rounded-xl font-body text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-                >
-                  {locale === "ka" ? "გაუქმება" : "Cancel"}
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 py-3 rounded-xl font-body text-sm font-semibold text-white transition-all hover:shadow-lg disabled:opacity-50"
-                  style={{ backgroundColor: ACCENT }}
-                >
-                  {isSubmitting
-                    ? "..."
-                    : locale === "ka"
-                      ? "გაგზავნა"
-                      : "Submit"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <ProposalFormModal
+        isOpen={showProposalForm}
+        onClose={() => setShowProposalForm(false)}
+        onSubmit={handleSubmitProposal}
+        isSubmitting={isSubmitting}
+        error={error}
+        locale={locale}
+        proposalData={proposalData}
+        onDataChange={setProposalData}
+      />
 
       {/* Delete Confirmation Modal */}
       <ConfirmModal
@@ -2538,12 +2221,14 @@ export default function JobDetailClient() {
           <div className="flex items-center gap-3 px-5 py-3 rounded-xl bg-emerald-500 text-white shadow-lg font-body">
             <CheckCircle2 className="w-5 h-5" />
             <span className="font-medium">{success}</span>
-            <button
+            <Button
+              variant="ghost"
+              size="icon-sm"
               onClick={() => setSuccess("")}
-              className="p-1 hover:bg-white/20 rounded-full transition-colors"
+              className="hover:bg-white/20 text-white hover:text-white"
             >
               <X className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -2574,114 +2259,19 @@ export default function JobDetailClient() {
       />
 
       {/* Review Modal */}
-      {showReviewModal && job?.hiredPro && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
-                {locale === "ka" ? "შეაფასეთ სპეციალისტი" : "Rate the Professional"}
-              </h3>
-              <button
-                onClick={() => setShowReviewModal(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-              >
-                <X className="w-5 h-5 text-neutral-500" />
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="p-5 space-y-5">
-              {/* Pro Info */}
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                  {job.hiredPro.avatar || job.hiredPro.userId.avatar ? (
-                    <img
-                      src={storage.getFileUrl(job.hiredPro.avatar || job.hiredPro.userId.avatar || "")}
-                      alt={job.hiredPro.userId.name}
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-xl font-semibold text-neutral-500">
-                      {job.hiredPro.userId.name?.charAt(0)}
-                    </span>
-                  )}
-                </div>
-                <div>
-                  <p className="font-semibold text-neutral-900 dark:text-white">{job.hiredPro.userId.name}</p>
-                  {job.hiredPro.title && (
-                    <p className="text-sm text-neutral-500">{job.hiredPro.title}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Star Rating */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                  {locale === "ka" ? "თქვენი შეფასება" : "Your Rating"}
-                </label>
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setReviewRating(star)}
-                      className="p-1 transition-transform hover:scale-110"
-                    >
-                      <Star
-                        className={`w-8 h-8 ${
-                          star <= reviewRating
-                            ? "fill-yellow-400 text-yellow-400"
-                            : "fill-neutral-200 text-neutral-200 dark:fill-neutral-700 dark:text-neutral-700"
-                        }`}
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Review Text */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                  {locale === "ka" ? "თქვენი კომენტარი (არასავალდებულო)" : "Your Comment (Optional)"}
-                </label>
-                <textarea
-                  value={reviewText}
-                  onChange={(e) => setReviewText(e.target.value)}
-                  placeholder={locale === "ka" ? "დაწერეთ თქვენი გამოცდილება..." : "Share your experience..."}
-                  className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-offset-1 resize-none"
-                  style={{ "--tw-ring-color": ACCENT } as any}
-                  rows={4}
-                />
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex items-center gap-3 px-5 py-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50">
-              <button
-                onClick={() => setShowReviewModal(false)}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors"
-              >
-                {locale === "ka" ? "გაუქმება" : "Cancel"}
-              </button>
-              <button
-                onClick={handleSubmitReview}
-                disabled={isSubmittingReview || reviewRating < 1}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                style={{ backgroundColor: ACCENT }}
-              >
-                {isSubmittingReview ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <>
-                    <Star className="w-4 h-4" />
-                    {locale === "ka" ? "გაგზავნა" : "Submit"}
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
+      {job?.hiredPro && (
+        <ReviewModal
+          isOpen={showReviewModal}
+          onClose={() => setShowReviewModal(false)}
+          onSubmit={handleSubmitReview}
+          isSubmitting={isSubmittingReview}
+          locale={locale}
+          rating={reviewRating}
+          onRatingChange={setReviewRating}
+          text={reviewText}
+          onTextChange={setReviewText}
+          pro={job.hiredPro}
+        />
       )}
 
       {/* Animations */}

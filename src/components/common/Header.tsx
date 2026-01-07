@@ -5,6 +5,7 @@ import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNotifications } from "@/contexts/NotificationContext";
+import { useClickOutside } from "@/hooks/useClickOutside";
 import api from "@/lib/api";
 import { ExternalLink, FileText, Hammer, LogIn, Plus, UserPlus, X } from "lucide-react";
 import Image from "next/image";
@@ -12,9 +13,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Avatar from "./Avatar";
-
-// Muted terracotta accent
-const ACCENT_COLOR = '#C4735B';
+import { Skeleton } from "@/components/ui/Skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ACCENT_COLOR } from "@/constants/theme";
 
 export default function Header() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -25,7 +27,7 @@ export default function Header() {
   const pathname = usePathname();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useClickOutside<HTMLDivElement>(() => setShowDropdown(false), showDropdown);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   // Check active routes for navigation highlighting
@@ -94,25 +96,6 @@ export default function Header() {
       document.body.style.overflow = '';
     };
   }, [showMobileMenu]);
-
-  // Handle click outside to close dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowDropdown(false);
-      }
-    };
-
-    if (showDropdown) {
-      setTimeout(() => {
-        document.addEventListener("mousedown", handleClickOutside);
-      }, 0);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showDropdown]);
 
   // Handle ESC key to close dropdown and mobile menu
   const handleEscKey = useCallback((e: KeyboardEvent) => {
@@ -264,7 +247,7 @@ export default function Header() {
           )}
 
           {isLoading ? (
-            <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
+            <Skeleton className="w-9 h-9 rounded-xl" />
           ) : isAuthenticated && user ? (
             <>
               {/* Notification Bell */}
@@ -288,9 +271,9 @@ export default function Header() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.73 21a2 2 0 01-3.46 0" />
                 </svg>
                 {unreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-white bg-red-500 rounded-full">
+                  <Badge variant="danger" size="xs" className="absolute -top-1 -right-1 !px-1 !py-0 !text-[9px] !min-w-[16px] !h-[16px]">
                     {unreadCount > 99 ? "99+" : unreadCount}
-                  </span>
+                  </Badge>
                 )}
               </Link>
 
@@ -594,38 +577,43 @@ export default function Header() {
             <>
               {/* Desktop: Login/Register buttons with text */}
               <div className="hidden md:flex items-center gap-2">
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => openLoginModal()}
-                  className="text-sm font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors px-3 py-2"
                 >
                   {t("nav.login")}
-                </button>
-                <Link
-                  href="/register"
-                  className="text-sm font-medium px-3 py-2 rounded-lg border transition-colors"
-                  style={{ borderColor: ACCENT_COLOR, color: ACCENT_COLOR }}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
                 >
-                  {t("nav.signUp")}
-                </Link>
+                  <Link href="/register">
+                    {t("nav.signUp")}
+                  </Link>
+                </Button>
               </div>
 
               {/* Tablet: Icon buttons */}
               <div className="hidden sm:flex md:hidden items-center gap-1">
-                <button
+                <Button
+                  variant="secondary"
+                  size="icon-sm"
                   onClick={() => openLoginModal()}
-                  className="flex items-center justify-center w-9 h-9 rounded-xl transition-all bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
                   title={t("nav.login")}
                 >
-                  <LogIn className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
-                </button>
-                <Link
-                  href="/register"
-                  className="flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:opacity-90"
-                  style={{ backgroundColor: ACCENT_COLOR }}
+                  <LogIn className="w-4 h-4" />
+                </Button>
+                <Button
+                  size="icon-sm"
+                  asChild
                   title={t("nav.signUp")}
                 >
-                  <UserPlus className="w-4 h-4 text-white" />
-                </Link>
+                  <Link href="/register">
+                    <UserPlus className="w-4 h-4" />
+                  </Link>
+                </Button>
               </div>
 
               {/* Mobile: Burger menu button */}
@@ -671,13 +659,14 @@ export default function Header() {
                 height={25}
                 className="h-6 w-auto dark:invert"
               />
-              <button
+              <Button
+                variant="secondary"
+                size="icon"
                 onClick={() => setShowMobileMenu(false)}
-                className="w-10 h-10 rounded-xl flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all active:scale-95"
                 aria-label="Close menu"
               >
-                <X className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
-              </button>
+                <X className="w-5 h-5" />
+              </Button>
             </div>
 
             {/* Menu Content */}

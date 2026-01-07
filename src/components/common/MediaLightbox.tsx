@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export interface MediaItem {
   url: string;
@@ -131,12 +132,14 @@ export default function MediaLightbox({
         )}
         <div className="flex items-center gap-2">
           {/* Zoom button */}
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={(e) => {
               e.stopPropagation();
               setIsZoomed(!isZoomed);
             }}
-            className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+            className="rounded-full bg-white/10 text-white hover:bg-white/20"
             aria-label={isZoomed ? 'Zoom out' : 'Zoom in'}
           >
             {isZoomed ? (
@@ -144,15 +147,17 @@ export default function MediaLightbox({
             ) : (
               <ZoomIn className="w-5 h-5" />
             )}
-          </button>
+          </Button>
           {/* Close button */}
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+            className="rounded-full bg-white/10 text-white hover:bg-white/20"
             aria-label={locale === 'ka' ? 'დახურვა' : 'Close'}
           >
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -164,26 +169,30 @@ export default function MediaLightbox({
         {/* Navigation arrows */}
         {items.length > 1 && (
           <>
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={(e) => {
                 e.stopPropagation();
                 goToPrev();
               }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 z-10"
               aria-label={locale === 'ka' ? 'წინა' : 'Previous'}
             >
               <ChevronLeft className="w-6 h-6" />
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={(e) => {
                 e.stopPropagation();
                 goToNext();
               }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 z-10"
               aria-label={locale === 'ka' ? 'შემდეგი' : 'Next'}
             >
               <ChevronRight className="w-6 h-6" />
-            </button>
+            </Button>
           </>
         )}
 

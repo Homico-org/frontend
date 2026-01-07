@@ -2,17 +2,19 @@
 
 import AuthGuard from '@/components/common/AuthGuard';
 import EmptyState from '@/components/common/EmptyState';
+import { Card } from '@/components/ui/Card';
+import { IconBadge } from '@/components/ui/IconBadge';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { BarChart3, Eye, MousePointer, TrendingUp } from 'lucide-react';
+import { BarChart3, Eye, LucideIcon, MousePointer, TrendingUp } from 'lucide-react';
 
 function ProAnalyticsPageContent() {
   const { locale } = useLanguage();
 
-  const stats = [
-    { label: locale === 'ka' ? 'პროფილის ნახვები' : 'Profile Views', value: '0', icon: Eye, color: 'bg-forest-800' },
-    { label: locale === 'ka' ? 'შთაბეჭდილებები' : 'Impressions', value: '0', icon: BarChart3, color: 'bg-terracotta-500' },
-    { label: locale === 'ka' ? 'დაკლიკების მაჩვ.' : 'Click Rate', value: '0%', icon: MousePointer, color: 'bg-primary-500' },
-    { label: locale === 'ka' ? 'კონვერსია' : 'Conversion', value: '0%', icon: TrendingUp, color: 'bg-terracotta-400' },
+  const stats: { label: string; value: string; icon: LucideIcon; variant: 'success' | 'accent' | 'info' | 'warning' }[] = [
+    { label: locale === 'ka' ? 'პროფილის ნახვები' : 'Profile Views', value: '0', icon: Eye, variant: 'success' },
+    { label: locale === 'ka' ? 'შთაბეჭდილებები' : 'Impressions', value: '0', icon: BarChart3, variant: 'accent' },
+    { label: locale === 'ka' ? 'დაკლიკების მაჩვ.' : 'Click Rate', value: '0%', icon: MousePointer, variant: 'info' },
+    { label: locale === 'ka' ? 'კონვერსია' : 'Conversion', value: '0%', icon: TrendingUp, variant: 'warning' },
   ];
 
   return (
@@ -30,22 +32,20 @@ function ProAnalyticsPageContent() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
           {stats.map((stat) => (
-            <div key={stat.label} className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-3 sm:p-6">
+            <Card key={stat.label} variant="elevated" size="md">
               <div className="flex items-center">
-                <div className={`${stat.color} p-2 sm:p-3 rounded-lg sm:rounded-xl`}>
-                  <stat.icon className="h-4 sm:h-6 w-4 sm:w-6 text-white" />
-                </div>
+                <IconBadge icon={stat.icon} variant={stat.variant} size="lg" />
                 <div className="ml-2.5 sm:ml-4">
                   <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">{stat.label}</p>
                   <p className="text-lg sm:text-2xl font-semibold text-neutral-900 dark:text-neutral-50">{stat.value}</p>
                 </div>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
 
         {/* Chart Placeholder */}
-        <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-4 sm:p-8 mb-6 sm:mb-8">
+        <Card variant="elevated" size="lg" className="mb-6 sm:mb-8">
           <h3 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-50 mb-3 sm:mb-4">
             {locale === 'ka' ? 'შედეგების მიმოხილვა' : 'Performance Overview'}
           </h3>
@@ -57,10 +57,10 @@ function ProAnalyticsPageContent() {
               </p>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Empty State */}
-        <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none">
+        <Card variant="elevated" size="lg">
           <EmptyState
             icon={BarChart3}
             title="No analytics data yet"
@@ -73,7 +73,7 @@ function ProAnalyticsPageContent() {
             variant="illustrated"
             size="md"
           />
-        </div>
+        </Card>
       </div>
     </div>
   );

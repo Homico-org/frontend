@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import EmptyState from '@/components/common/EmptyState';
 import { Package, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export default function ClientOrdersPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -21,7 +22,7 @@ export default function ClientOrdersPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-cream-50 dark:bg-dark-bg flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-forest-800 dark:border-primary-400"></div>
+        <LoadingSpinner size="xl" color="#C4735B" />
       </div>
     );
   }

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useClickOutside } from '@/hooks/useClickOutside';
 
 interface DatePickerProps {
   value: string;
@@ -37,24 +38,13 @@ export default function DatePicker({
 }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useClickOutside<HTMLDivElement>(() => setIsOpen(false), isOpen);
 
   const months = locale === 'ka' ? MONTHS_KA : MONTHS_EN;
   const weekdays = locale === 'ka' ? WEEKDAYS_KA : WEEKDAYS_EN;
 
   // Parse the value to Date
   const selectedDate = value ? new Date(value) : null;
-
-  // Close on outside click
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   // Set current month to selected date or today
   useEffect(() => {

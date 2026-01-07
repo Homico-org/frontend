@@ -2,8 +2,10 @@
 
 import { cn } from '@/lib/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { Loader2, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { ReactNode, useCallback, useEffect } from 'react';
+import { ACCENT_COLOR, ACCENT_HOVER } from '@/constants/theme';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Modal size variants
 const modalVariants = cva(
@@ -34,7 +36,7 @@ const headerVariants = cva('p-6 text-center', {
       warning: 'bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 border-b border-yellow-500/15',
       success: 'bg-gradient-to-br from-green-500/10 to-green-500/5 border-b border-green-500/15',
       info: 'bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-b border-blue-500/15',
-      accent: 'bg-gradient-to-br from-[#C4735B]/10 to-[#C4735B]/5 border-b border-[#C4735B]/15',
+      accent: 'border-b', // Background handled via inline style for theme consistency
     },
   },
   defaultVariants: {
@@ -53,7 +55,7 @@ const iconContainerVariants = cva(
         warning: 'bg-yellow-100 dark:bg-yellow-900/30',
         success: 'bg-green-100 dark:bg-green-900/30',
         info: 'bg-blue-100 dark:bg-blue-900/30',
-        accent: 'bg-[#C4735B]/10 dark:bg-[#C4735B]/20',
+        accent: '', // Background handled via inline style for theme consistency
       },
     },
     defaultVariants: {
@@ -71,7 +73,7 @@ const titleVariants = cva('text-xl font-bold', {
       warning: 'text-yellow-600 dark:text-yellow-500',
       success: 'text-green-600 dark:text-green-400',
       info: 'text-blue-600 dark:text-blue-400',
-      accent: 'text-[#C4735B]',
+      accent: '', // Color handled via inline style for theme consistency
     },
   },
   defaultVariants: {
@@ -185,14 +187,28 @@ export function ModalHeader({
   variant = 'default',
   className,
 }: ModalHeaderProps) {
+  // Inline styles for accent variant to use theme constants
+  const accentHeaderStyle = variant === 'accent' ? {
+    background: `linear-gradient(to bottom right, ${ACCENT_COLOR}1A, ${ACCENT_COLOR}0D)`,
+    borderColor: `${ACCENT_COLOR}26`,
+  } : undefined;
+
+  const accentIconStyle = variant === 'accent' ? {
+    backgroundColor: `${ACCENT_COLOR}1A`,
+  } : undefined;
+
+  const accentTitleStyle = variant === 'accent' ? {
+    color: ACCENT_COLOR,
+  } : undefined;
+
   return (
-    <div className={cn(headerVariants({ variant }), className)}>
+    <div className={cn(headerVariants({ variant }), className)} style={accentHeaderStyle}>
       {icon && (
-        <div className={iconContainerVariants({ variant })}>
+        <div className={iconContainerVariants({ variant })} style={accentIconStyle}>
           {icon}
         </div>
       )}
-      <h3 className={titleVariants({ variant })}>{title}</h3>
+      <h3 className={titleVariants({ variant })} style={accentTitleStyle}>{title}</h3>
       {description && (
         <p
           className="text-sm mt-2"
@@ -265,7 +281,16 @@ export function ModalActions({
     warning: 'bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-300 dark:disabled:bg-yellow-800',
     success: 'bg-green-500 hover:bg-green-600 disabled:bg-green-300 dark:disabled:bg-green-800',
     info: 'bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 dark:disabled:bg-blue-800',
-    accent: 'bg-[#C4735B] hover:bg-[#B5624A] disabled:bg-[#C4735B]/50',
+    accent: '', // Handled via inline style for theme consistency
+  };
+
+  // Get inline style for accent variant
+  const getAccentButtonStyle = () => {
+    if (variant !== 'accent') return undefined;
+    return {
+      backgroundColor: isLoading || confirmDisabled ? `${ACCENT_COLOR}80` : ACCENT_COLOR,
+      '--hover-bg': ACCENT_HOVER,
+    } as React.CSSProperties;
   };
 
   return (
@@ -286,12 +311,13 @@ export function ModalActions({
         disabled={isLoading || confirmDisabled}
         className={cn(
           'flex-1 py-3 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2 disabled:cursor-not-allowed',
-          buttonColors[variant]
+          variant === 'accent' ? 'hover:opacity-90' : buttonColors[variant]
         )}
+        style={getAccentButtonStyle()}
       >
         {isLoading ? (
           <>
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <LoadingSpinner size="sm" color="white" />
             {loadingLabel}
           </>
         ) : (

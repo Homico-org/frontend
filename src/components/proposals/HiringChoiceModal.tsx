@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   AlertTriangle,
@@ -125,13 +126,15 @@ export default function HiringChoiceModal({
           <div className="absolute -left-4 top-16 h-24 w-24 rounded-full bg-terracotta-500/10 blur-xl" />
 
           {/* Close button */}
-          <button
+          <Button
+            variant="ghost"
+            size="icon-sm"
             onClick={onClose}
             disabled={isLoading}
-            className="absolute right-4 top-4 z-10 rounded-xl bg-white/10 p-2.5 text-white/80 backdrop-blur-sm transition-all hover:bg-white/20 hover:text-white disabled:opacity-50"
+            className="absolute right-4 top-4 z-10 rounded-xl bg-white/10 text-white/80 backdrop-blur-sm hover:bg-white/20 hover:text-white"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
 
           {/* Header content */}
           <div className="relative flex h-full flex-col justify-end p-6 pb-5">

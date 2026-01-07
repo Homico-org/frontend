@@ -29,9 +29,9 @@ import {
   Clock,
   AlertCircle
 } from 'lucide-react';
-
-const ACCENT = '#E07B4F';
-const ACCENT_HOVER = '#D26B3F';
+import { COMPANY_ACCENT as ACCENT, COMPANY_ACCENT_HOVER as ACCENT_HOVER } from '@/constants/theme';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Badge } from '@/components/ui/badge';
 
 interface Employee {
   _id: string;
@@ -106,18 +106,18 @@ export default function CompanyEmployeesPage() {
     }
   }, [authLoading, user, fetchEmployees]);
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string): { variant: 'success' | 'warning' | 'default' | 'danger', icon: typeof Check } => {
     switch (status) {
       case 'active':
-        return { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-400', icon: Check };
+        return { variant: 'success', icon: Check };
       case 'pending':
-        return { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-400', icon: Clock };
+        return { variant: 'warning', icon: Clock };
       case 'inactive':
-        return { bg: 'bg-neutral-100 dark:bg-neutral-800', text: 'text-neutral-600 dark:text-neutral-400', icon: AlertCircle };
+        return { variant: 'default', icon: AlertCircle };
       case 'terminated':
-        return { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400', icon: X };
+        return { variant: 'danger', icon: X };
       default:
-        return { bg: 'bg-neutral-100 dark:bg-neutral-800', text: 'text-neutral-600 dark:text-neutral-400', icon: AlertCircle };
+        return { variant: 'default', icon: AlertCircle };
     }
   };
 
@@ -147,12 +147,7 @@ export default function CompanyEmployeesPage() {
   if (authLoading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-bg-primary)' }}>
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative w-12 h-12">
-            <div className="absolute inset-0 rounded-full border-2" style={{ borderColor: `${ACCENT}30` }} />
-            <div className="absolute inset-0 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: ACCENT }} />
-          </div>
-        </div>
+        <LoadingSpinner size="xl" variant="border" color={ACCENT} />
       </div>
     );
   }
@@ -426,10 +421,9 @@ export default function CompanyEmployeesPage() {
                           <RoleIcon className="w-3 h-3" />
                           {employee.role}
                         </span>
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(employee.status).bg} ${getStatusBadge(employee.status).text}`}>
-                          <StatusIcon className="w-3 h-3" />
+                        <Badge variant={getStatusBadge(employee.status).variant} size="xs" icon={<StatusIcon className="w-3 h-3" />}>
                           {employee.status}
-                        </span>
+                        </Badge>
                       </div>
                     </div>
                   </div>

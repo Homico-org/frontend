@@ -32,6 +32,9 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import { formatTimeAgoCompact } from '@/utils/dateUtils';
+import { ADMIN_THEME as THEME } from '@/constants/theme';
+import { getAdminActivityColor } from '@/utils/statusUtils';
 
 interface DashboardStats {
   users: {
@@ -98,25 +101,6 @@ interface LocationData {
   _id: string;
   count: number;
 }
-
-// Terracotta admin theme
-const THEME = {
-  primary: '#C4735B',
-  primaryDark: '#A85D4A',
-  accent: '#D4897A',
-  surface: '#1A1A1C',
-  surfaceLight: '#232326',
-  surfaceHover: '#2A2A2E',
-  border: '#333338',
-  borderLight: '#3D3D42',
-  text: '#FAFAFA',
-  textMuted: '#A1A1AA',
-  textDim: '#71717A',
-  success: '#22C55E',
-  warning: '#F59E0B',
-  error: '#EF4444',
-  info: '#3B82F6',
-};
 
 function AdminDashboardPageContent() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -202,21 +186,6 @@ function AdminDashboardPageContent() {
     return () => clearInterval(interval);
   }, [isAuthenticated, isRefreshing, fetchDashboardData]);
 
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return locale === 'ka' ? 'ახლა' : 'just now';
-    if (diffMins < 60) return `${diffMins}${locale === 'ka' ? 'წ' : 'm'}`;
-    if (diffHours < 24) return `${diffHours}${locale === 'ka' ? 'სთ' : 'h'}`;
-    if (diffDays < 7) return `${diffDays}${locale === 'ka' ? 'დ' : 'd'}`;
-    return date.toLocaleDateString();
-  };
-
   const getActivityIcon = (type: string) => {
     switch (type) {
       case 'user_signup': return Users;
@@ -227,15 +196,7 @@ function AdminDashboardPageContent() {
     }
   };
 
-  const getActivityColor = (type: string) => {
-    switch (type) {
-      case 'user_signup': return THEME.primary;
-      case 'job_created': return THEME.info;
-      case 'proposal_sent': return THEME.warning;
-      case 'ticket_created': return THEME.error;
-      default: return THEME.textMuted;
-    }
-  };
+  const getActivityColor = (type: string) => getAdminActivityColor(type);
 
   const getActivityMessage = (activity: Activity) => {
     switch (activity.type) {
@@ -365,7 +326,7 @@ function AdminDashboardPageContent() {
                 <div className="flex items-center gap-2 mt-0.5">
                   <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: THEME.success }} />
                   <span className="text-xs" style={{ color: THEME.textMuted, fontFamily: "'JetBrains Mono', monospace" }}>
-                    {lastUpdated ? formatTimeAgo(lastUpdated.toISOString()) : 'syncing...'}
+                    {lastUpdated ? formatTimeAgoCompact(lastUpdated.toISOString(), locale as 'en' | 'ka') : 'syncing...'}
                   </span>
                 </div>
               </div>
@@ -880,7 +841,7 @@ function AdminDashboardPageContent() {
                         className="text-xs flex-shrink-0"
                         style={{ color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace" }}
                       >
-                        {formatTimeAgo(activity.date)}
+                        {formatTimeAgoCompact(activity.date, locale as 'en' | 'ka')}
                       </span>
                     </div>
                   );

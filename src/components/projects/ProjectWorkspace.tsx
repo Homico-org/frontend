@@ -1,6 +1,9 @@
 'use client';
 
 import Avatar from '@/components/common/Avatar';
+import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
@@ -27,8 +30,6 @@ import {
   X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-
-const ACCENT = '#C4735B';
 
 // Types
 interface WorkspaceItem {
@@ -275,14 +276,13 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
       {/* Toolbar */}
       {!isClient && (
         <div className={embedded ? "pb-3 mb-3 border-b border-[var(--color-border)]" : "px-4 py-3 border-b border-[var(--color-border)] bg-[var(--color-bg-elevated)]"}>
-          <button
+          <Button
+            size="sm"
             onClick={() => setShowSectionModal(true)}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90"
-            style={{ backgroundColor: ACCENT }}
+            leftIcon={<Plus className="w-4 h-4" />}
           >
-            <Plus className="w-4 h-4" />
             {locale === 'ka' ? 'სექციის დამატება' : 'Add Section'}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -290,7 +290,7 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
       <div className={embedded ? "" : "p-4"}>
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: ACCENT, borderTopColor: 'transparent' }} />
+            <LoadingSpinner size="lg" color={ACCENT} />
           </div>
         ) : sections.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-[var(--color-text-tertiary)]">
@@ -502,13 +502,14 @@ function SectionCard({
 
         {!isClient && (
           <>
-            <button
+            <Button
               ref={menuButtonRef}
+              variant="ghost"
+              size="icon-sm"
               onClick={handleMenuClick}
-              className="w-7 h-7 rounded-md flex items-center justify-center text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
             >
               <MoreHorizontal className="w-4 h-4" />
-            </button>
+            </Button>
             {showMenu && (
               <>
                 <div className="fixed inset-0 z-[9998]" onClick={(e) => { e.stopPropagation(); setShowMenu(false); }} />
@@ -516,20 +517,24 @@ function SectionCard({
                   className="fixed z-[9999] w-36 bg-[var(--color-bg-elevated)] rounded-lg border border-[var(--color-border)] shadow-xl py-1"
                   style={{ top: menuPosition.top, left: menuPosition.left }}
                 >
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={(e) => { e.stopPropagation(); setShowMenu(false); onEdit(); }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                    className="w-full justify-start"
+                    leftIcon={<Pencil className="w-3.5 h-3.5" />}
                   >
-                    <Pencil className="w-3.5 h-3.5" />
                     {locale === 'ka' ? 'რედაქტირება' : 'Edit'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={(e) => { e.stopPropagation(); setShowMenu(false); onDelete(); }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                    className="w-full justify-start text-red-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"
+                    leftIcon={<Trash2 className="w-3.5 h-3.5" />}
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
                     {locale === 'ka' ? 'წაშლა' : 'Delete'}
-                  </button>
+                  </Button>
                 </div>
               </>
             )}
@@ -620,13 +625,14 @@ function SectionCard({
           {/* Add Item Button */}
           {!isClient && (
             <div className="px-4 py-3 bg-[var(--color-bg-tertiary)]/30">
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={onAddItem}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+                leftIcon={<Plus className="w-3.5 h-3.5" />}
               >
-                <Plus className="w-3.5 h-3.5" />
                 {locale === 'ka' ? 'ელემენტის დამატება' : 'Add item'}
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -706,12 +712,14 @@ function ItemRow({
             </div>
 
             {!isClient && (
-              <button
+              <Button
+                variant="ghost"
+                size="icon-sm"
                 onClick={onDelete}
-                className="w-6 h-6 rounded flex items-center justify-center text-[var(--color-text-tertiary)] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex-shrink-0"
+                className="hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-              </button>
+              </Button>
             )}
           </div>
 
@@ -845,14 +853,13 @@ function ItemRow({
                   placeholder={locale === 'ka' ? 'კომენტარი...' : 'Add comment...'}
                   className="flex-1 px-3 py-1.5 text-xs bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#C4735B]/30"
                 />
-                <button
+                <Button
+                  size="icon-sm"
                   onClick={onAddComment}
                   disabled={!commentText.trim()}
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-white disabled:opacity-50 transition-colors"
-                  style={{ backgroundColor: ACCENT }}
                 >
                   <Send className="w-3.5 h-3.5" />
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -943,9 +950,9 @@ function SectionModal({
               : (locale === 'ka' ? 'ახალი სექცია' : 'New Section')
             }
           </h3>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[var(--color-bg-tertiary)] transition-colors">
-            <X className="w-5 h-5 text-[var(--color-text-tertiary)]" />
-          </button>
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="w-5 h-5" />
+          </Button>
         </div>
 
         <div className="space-y-4">
@@ -999,7 +1006,7 @@ function SectionModal({
             >
               {isUploading ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  <LoadingSpinner size="sm" color="currentColor" />
                   {locale === 'ka' ? 'იტვირთება...' : 'Uploading...'}
                 </>
               ) : (
@@ -1052,24 +1059,20 @@ function SectionModal({
         </div>
 
         <div className="flex justify-end gap-2 mt-6">
-          <button
+          <Button
+            variant="secondary"
             onClick={onClose}
             disabled={isSaving}
-            className="px-4 py-2 rounded-xl text-sm font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors disabled:opacity-50"
           >
             {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => title.trim() && !isSaving && onSave(title.trim(), description.trim() || undefined, attachments.length > 0 ? attachments : undefined)}
             disabled={!title.trim() || isSaving}
-            className="px-4 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-50 transition-colors flex items-center gap-2"
-            style={{ backgroundColor: ACCENT }}
+            loading={isSaving}
           >
-            {isSaving && (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            )}
             {locale === 'ka' ? 'შენახვა' : 'Save'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -1156,9 +1159,9 @@ function ItemModal({
           <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
             {locale === 'ka' ? 'ელემენტის დამატება' : 'Add Item'}
           </h3>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[var(--color-bg-tertiary)] transition-colors">
-            <X className="w-5 h-5 text-[var(--color-text-tertiary)]" />
-          </button>
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="w-5 h-5" />
+          </Button>
         </div>
 
         <div className="space-y-4">
@@ -1251,7 +1254,7 @@ function ItemModal({
                   className="w-full flex items-center justify-center gap-2 px-4 py-8 rounded-xl border-2 border-dashed border-[var(--color-border)] text-[var(--color-text-tertiary)] hover:border-[#E07B4F] hover:text-[#E07B4F] transition-colors"
                 >
                   {isUploading ? (
-                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <LoadingSpinner size="md" color="currentColor" />
                   ) : (
                     <>
                       <Upload className="w-5 h-5" />
@@ -1329,20 +1332,12 @@ function ItemModal({
         </div>
 
         <div className="flex justify-end gap-2 mt-6">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 rounded-xl text-sm font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
-          >
+          <Button variant="secondary" onClick={onClose}>
             {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={!title.trim()}
-            className="px-4 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-50 transition-colors"
-            style={{ backgroundColor: ACCENT }}
-          >
+          </Button>
+          <Button onClick={handleSave} disabled={!title.trim()}>
             {locale === 'ka' ? 'დამატება' : 'Add'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

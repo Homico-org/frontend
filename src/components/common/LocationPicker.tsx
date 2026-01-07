@@ -1,24 +1,29 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
-declare namespace google.maps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  class Map { constructor(el: HTMLElement, opts: any); setCenter(c: any): void; setZoom(z: number): void; addListener(e: string, cb: any): void; }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  class Marker { constructor(opts: any); setPosition(p: any): void; getPosition(): any; addListener(e: string, cb: any): void; }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  class Geocoder { geocode(req: any, cb: (results: any, status: string) => void): void; }
-  interface MapMouseEvent { latLng?: { lat(): number; lng(): number; } }
-  namespace places {
-    interface AutocompletePrediction { place_id: string; description: string; structured_formatting: { main_text: string; secondary_text: string; } }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    class AutocompleteService { getPlacePredictions(req: any, cb: (results: AutocompletePrediction[] | null, status: string) => void): void; }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    class PlacesService { constructor(m: any); getDetails(req: any, cb: (place: any, status: string) => void): void; }
-    const PlacesServiceStatus: { OK: string };
-  }
+// Local type definitions for Google Maps API
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type GoogleMapsType = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type GoogleMapInstance = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type GoogleMarkerInstance = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type GoogleGeocoderInstance = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type GoogleAutocompleteServiceInstance = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type GooglePlacesServiceInstance = any;
+
+interface AutocompletePrediction {
+  place_id: string;
+  description: string;
+  structured_formatting: {
+    main_text: string;
+    secondary_text: string;
+  };
 }
 
 interface LocationPickerProps {
@@ -28,9 +33,9 @@ interface LocationPickerProps {
 }
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   interface Window {
-    google: typeof google;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    google: any;
     initGoogleMaps: () => void;
   }
 }
@@ -38,17 +43,17 @@ declare global {
 export default function LocationPicker({ value, onChange, placeholder = 'Enter address' }: LocationPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState(value);
-  const [predictions, setPredictions] = useState<google.maps.places.AutocompletePrediction[]>([]);
+  const [predictions, setPredictions] = useState<AutocompletePrediction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [selectedCoords, setSelectedCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<google.maps.Map | null>(null);
-  const markerRef = useRef<google.maps.Marker | null>(null);
-  const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
-  const placesServiceRef = useRef<google.maps.places.PlacesService | null>(null);
+  const mapInstanceRef = useRef<GoogleMapInstance>(null);
+  const markerRef = useRef<GoogleMarkerInstance>(null);
+  const autocompleteServiceRef = useRef<GoogleAutocompleteServiceInstance>(null);
+  const placesServiceRef = useRef<GooglePlacesServiceInstance>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load Google Maps script
@@ -82,7 +87,7 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
 
     const defaultCenter = { lat: 41.7151, lng: 44.8271 }; // Tbilisi default
 
-    mapInstanceRef.current = new google.maps.Map(mapRef.current, {
+    mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
       center: selectedCoords || defaultCenter,
       zoom: 13,
       disableDefaultUI: true,
@@ -93,14 +98,14 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
       ],
     });
 
-    markerRef.current = new google.maps.Marker({
+    markerRef.current = new window.google.maps.Marker({
       map: mapInstanceRef.current,
       draggable: true,
       position: selectedCoords || defaultCenter,
     });
 
-    autocompleteServiceRef.current = new google.maps.places.AutocompleteService();
-    placesServiceRef.current = new google.maps.places.PlacesService(mapInstanceRef.current);
+    autocompleteServiceRef.current = new window.google.maps.places.AutocompleteService();
+    placesServiceRef.current = new window.google.maps.places.PlacesService(mapInstanceRef.current);
 
     // Handle marker drag
     markerRef.current.addListener('dragend', () => {
@@ -109,8 +114,9 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
         const coords = { lat: pos.lat(), lng: pos.lng() };
         setSelectedCoords(coords);
         // Reverse geocode
-        const geocoder = new google.maps.Geocoder();
-        geocoder.geocode({ location: coords }, (results, status) => {
+        const geocoder = new window.google.maps.Geocoder();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        geocoder.geocode({ location: coords }, (results: any, status: string) => {
           if (status === 'OK' && results?.[0]) {
             setInputValue(results[0].formatted_address);
           }
@@ -119,14 +125,16 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
     });
 
     // Handle map click
-    mapInstanceRef.current.addListener('click', (e: google.maps.MapMouseEvent) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mapInstanceRef.current.addListener('click', (e: any) => {
       if (e.latLng) {
         const coords = { lat: e.latLng.lat(), lng: e.latLng.lng() };
         markerRef.current?.setPosition(coords);
         setSelectedCoords(coords);
         // Reverse geocode
-        const geocoder = new google.maps.Geocoder();
-        geocoder.geocode({ location: coords }, (results, status) => {
+        const geocoder = new window.google.maps.Geocoder();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        geocoder.geocode({ location: coords }, (results: any, status: string) => {
           if (status === 'OK' && results?.[0]) {
             setInputValue(results[0].formatted_address);
           }
@@ -148,10 +156,11 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
         input: query,
         componentRestrictions: { country: 'ge' }, // Georgia
       },
-      (results, status) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (results: any, status: string) => {
         setIsLoading(false);
-        if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-          setPredictions(results);
+        if (status === 'OK' && results) {
+          setPredictions(results as AutocompletePrediction[]);
         } else {
           setPredictions([]);
         }
@@ -174,15 +183,16 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
   };
 
   // Handle prediction selection
-  const handleSelectPrediction = (prediction: google.maps.places.AutocompletePrediction) => {
+  const handleSelectPrediction = (prediction: AutocompletePrediction) => {
     setInputValue(prediction.description);
     setPredictions([]);
 
     if (placesServiceRef.current) {
       placesServiceRef.current.getDetails(
         { placeId: prediction.place_id, fields: ['geometry', 'formatted_address'] },
-        (place, status) => {
-          if (status === google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (place: any, status: string) => {
+          if (status === 'OK' && place?.geometry?.location) {
             const coords = {
               lat: place.geometry.location.lat(),
               lng: place.geometry.location.lng(),
@@ -264,7 +274,7 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
                 />
                 {isLoading && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <div className="w-4 h-4 border-2 border-neutral-300 border-t-neutral-600 rounded-full animate-spin"></div>
+                    <LoadingSpinner size="sm" color="#525252" />
                   </div>
                 )}
               </div>
@@ -299,7 +309,7 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
             ) : (
               <div className="h-64 sm:h-80 bg-neutral-100 dark:bg-dark-bg flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-8 h-8 border-2 border-neutral-300 border-t-neutral-600 rounded-full animate-spin mx-auto mb-2"></div>
+                  <LoadingSpinner size="lg" color="#525252" className="mx-auto mb-2" />
                   <p className="text-sm text-neutral-500">Loading map...</p>
                 </div>
               </div>

@@ -4,6 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAnalytics, AnalyticsEvent } from '@/hooks/useAnalytics';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import AuthGuard from '@/components/common/AuthGuard';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { CheckCircle2, ArrowRight, Sparkles, Crown, Star, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -122,7 +123,7 @@ export default function SuccessPage() {
     <AuthGuard allowedRoles={['pro', 'admin']}>
       <Suspense fallback={
         <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-base)]">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#E07B4F] border-t-transparent" />
+          <LoadingSpinner size="lg" color="#E07B4F" />
         </div>
       }>
         <SuccessContent />

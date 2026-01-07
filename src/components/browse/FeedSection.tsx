@@ -9,9 +9,9 @@ import { Image } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import FeedCard from './FeedCard';
 import EmptyState from '../common/EmptyState';
-
-// Terracotta accent
-const ACCENT_COLOR = '#C4735B';
+import { SkeletonCardGrid } from '@/components/ui/Skeleton';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { ACCENT_COLOR } from '@/constants/theme';
 
 interface FeedSectionProps {
   selectedCategory: string | null;
@@ -199,26 +199,7 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
 
   // Skeleton loading - Grid style
   const FeedSkeleton = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {[...Array(8)].map((_, i) => (
-        <div
-          key={i}
-          className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-100 dark:border-neutral-800 overflow-hidden animate-pulse"
-        >
-          <div className="aspect-[4/3] bg-neutral-200 dark:bg-neutral-800" />
-          <div className="p-4 space-y-3">
-            <div className="h-4 rounded w-16 bg-neutral-200 dark:bg-neutral-800" />
-            <div className="h-5 rounded w-3/4 bg-neutral-200 dark:bg-neutral-800" />
-            <div className="h-4 rounded w-full bg-neutral-200 dark:bg-neutral-800" />
-            <div className="h-px bg-neutral-100 dark:bg-neutral-800" />
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-800" />
-              <div className="h-4 rounded w-24 bg-neutral-200 dark:bg-neutral-800" />
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
+    <SkeletonCardGrid count={8} columns={4} />
   );
 
   // Empty state using shared component
@@ -269,10 +250,7 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
           <div ref={loaderRef} className="flex justify-center py-12">
             {isLoadingMore && (
               <div className="flex items-center gap-3">
-                <div
-                  className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin"
-                  style={{ borderColor: ACCENT_COLOR, borderTopColor: 'transparent' }}
-                />
+                <LoadingSpinner size="md" color={ACCENT_COLOR} />
                 <span className="text-sm text-neutral-500">
                   {locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
                 </span>

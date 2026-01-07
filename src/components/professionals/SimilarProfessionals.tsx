@@ -5,6 +5,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCategories } from '@/contexts/CategoriesContext';
 import StatusBadge from '@/components/common/StatusBadge';
+import Avatar from '@/components/common/Avatar';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { ProStatus } from '@/types';
 
 interface SimilarPro {
@@ -116,14 +118,13 @@ export default function SimilarProfessionals({ currentProId, categories, subcate
     return (
       <div className="mt-8 sm:mt-12">
         <div className="flex items-center gap-3 mb-5">
-          <div className="h-6 w-48 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
+          <Skeleton className="h-6 w-48 rounded-lg" />
         </div>
         <div className="flex gap-4 overflow-hidden">
           {[1, 2, 3].map((i) => (
-            <div
+            <Skeleton
               key={i}
-              className="flex-shrink-0 w-[280px] h-[320px] rounded-2xl animate-pulse"
-              style={{ backgroundColor: 'var(--color-bg-tertiary)' }}
+              className="flex-shrink-0 w-[280px] h-[320px] rounded-2xl"
             />
           ))}
         </div>
@@ -418,24 +419,13 @@ export default function SimilarProfessionals({ currentProId, categories, subcate
                           className="w-14 h-14 rounded-xl overflow-hidden ring-2 ring-white/20 shadow-lg"
                           style={{ backgroundColor: 'var(--color-bg-tertiary)' }}
                         >
-                          {avatarUrl ? (
-                            <img
-                              src={avatarUrl}
-                              alt={displayName}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div
-                              className="w-full h-full flex items-center justify-center"
-                              style={{
-                                background: `linear-gradient(135deg,
-                                  hsl(${(displayName.charCodeAt(0) * 7) % 360}, 65%, 45%) 0%,
-                                  hsl(${(displayName.charCodeAt(0) * 7 + 40) % 360}, 55%, 35%) 100%)`
-                              }}
-                            >
-                              <span className="text-lg font-bold text-white">{displayName.charAt(0)}</span>
-                            </div>
-                          )}
+                          <Avatar
+                            src={avatarUrl}
+                            name={displayName}
+                            size="lg"
+                            rounded="xl"
+                            className="w-full h-full"
+                          />
                         </div>
                         <div className="absolute -bottom-1 -right-1">
                           <StatusBadge status={status} variant="minimal" size="sm" />

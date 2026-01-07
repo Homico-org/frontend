@@ -1,10 +1,13 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { Image, Loader2, Plus, Trash2, Type, Upload, X } from 'lucide-react';
-import { Modal, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
-import { storage } from '@/services/storage';
+import { Alert } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Modal, ModalBody, ModalFooter, ModalHeader } from '@/components/ui/Modal';
 import { cn } from '@/lib/utils';
+import { storage } from '@/services/storage';
+import { Image, Plus, Trash2, Type, Upload, X } from 'lucide-react';
+import { useRef, useState } from 'react';
 
 interface PollOptionInput {
   id: string;
@@ -158,9 +161,7 @@ export default function CreatePollModal({
         <div className="space-y-5">
           {/* Error message */}
           {error && (
-            <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm">
-              {error}
-            </div>
+            <Alert variant="error" size="sm" showIcon={false}>{error}</Alert>
           )}
 
           {/* Title */}
@@ -233,14 +234,14 @@ export default function CreatePollModal({
                 {locale === 'ka' ? 'ვარიანტები' : 'Options'} ({options.length}/6)
               </label>
               {options.length < 6 && (
-                <button
-                  type="button"
+                <Button
+                  variant="link"
+                  size="sm"
                   onClick={handleAddOption}
-                  className="text-sm text-[#C4735B] hover:text-[#B5624A] font-medium flex items-center gap-1"
+                  leftIcon={<Plus className="w-4 h-4" />}
                 >
-                  <Plus className="w-4 h-4" />
                   {locale === 'ka' ? 'დამატება' : 'Add'}
-                </button>
+                </Button>
               )}
             </div>
 
@@ -280,7 +281,7 @@ export default function CreatePollModal({
                           className="absolute inset-0 flex flex-col items-center justify-center text-neutral-400 hover:text-[#C4735B] transition-colors"
                         >
                           {uploadingIndex === index ? (
-                            <Loader2 className="w-6 h-6 animate-spin" />
+                            <LoadingSpinner size="md" color="currentColor" />
                           ) : (
                             <>
                               <Upload className="w-6 h-6 mb-1" />
@@ -347,32 +348,23 @@ export default function CreatePollModal({
       </ModalBody>
 
       <ModalFooter>
-        <button
-          type="button"
+        <Button
+          variant="outline"
           onClick={handleClose}
           disabled={isSubmitting}
-          className="px-5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
         >
           {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="px-5 py-2.5 rounded-xl bg-[#C4735B] hover:bg-[#B5624A] text-white font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+          loading={isSubmitting}
+          leftIcon={!isSubmitting ? <Plus className="w-4 h-4" /> : undefined}
         >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              {locale === 'ka' ? 'იქმნება...' : 'Creating...'}
-            </>
-          ) : (
-            <>
-              <Plus className="w-4 h-4" />
-              {locale === 'ka' ? 'შექმნა' : 'Create Poll'}
-            </>
-          )}
-        </button>
+          {isSubmitting
+            ? (locale === 'ka' ? 'იქმნება...' : 'Creating...')
+            : (locale === 'ka' ? 'შექმნა' : 'Create Poll')}
+        </Button>
       </ModalFooter>
     </Modal>
   );

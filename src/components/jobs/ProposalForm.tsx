@@ -2,8 +2,9 @@
 
 import { useState, FormEvent } from 'react';
 import { X } from 'lucide-react';
-
-const ACCENT = '#C4735B';
+import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
+import { formatNumberWithSpaces } from '@/utils/currencyUtils';
+import { Alert } from '@/components/ui/Alert';
 
 export interface ProposalFormData {
   coverLetter: string;
@@ -56,10 +57,7 @@ export default function ProposalForm({
     }
   };
 
-  const formatPrice = (value: string) => {
-    if (!value) return '';
-    return Number(value).toLocaleString('en-US').replace(/,/g, ' ');
-  };
+  const formatPrice = (value: string) => formatNumberWithSpaces(value);
 
   if (!isOpen) return null;
 
@@ -85,8 +83,8 @@ export default function ProposalForm({
         </div>
 
         {error && (
-          <div className="mx-6 mt-4 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-body text-sm">
-            {error}
+          <div className="mx-6 mt-4">
+            <Alert variant="error" size="sm" showIcon={false}>{error}</Alert>
           </div>
         )}
 

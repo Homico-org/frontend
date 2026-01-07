@@ -1,12 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { BarChart3, ChevronRight, Loader2, Plus } from 'lucide-react';
+import { BarChart3, ChevronRight, Plus } from 'lucide-react';
 import PollCard, { Poll } from './PollCard';
 import CreatePollModal from './CreatePollModal';
+import { Alert } from '@/components/ui/Alert';
+import { LoadingSpinnerCentered } from '@/components/ui/LoadingSpinner';
 import { api } from '@/lib/api';
-
-const ACCENT = '#C4735B';
+import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
 
 interface PollsTabProps {
   jobId: string;
@@ -93,13 +94,9 @@ export default function PollsTab({
       {/* Content */}
       <div className={embedded ? "" : "p-4"}>
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 animate-spin" style={{ color: ACCENT }} />
-          </div>
+          <LoadingSpinnerCentered size="lg" color={ACCENT} />
         ) : error ? (
-          <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm">
-            {error}
-          </div>
+          <Alert variant="error" size="sm" showIcon={false}>{error}</Alert>
         ) : polls.length > 0 ? (
           <div className="space-y-4">
             {polls.map((poll) => (

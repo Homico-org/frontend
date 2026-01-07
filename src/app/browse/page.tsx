@@ -3,6 +3,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 export default function BrowsePage() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function BrowsePage() {
 
   return (
     <div className="flex items-center justify-center py-20">
-      <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--color-accent)] border-t-transparent" />
+      <LoadingSpinner size="lg" color="#C4735B" />
     </div>
   );
 }

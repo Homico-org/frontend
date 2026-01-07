@@ -4,6 +4,11 @@ import { storage } from "@/services/storage";
 import Link from "next/link";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
+import { formatCurrency, formatPriceRange } from "@/utils/currencyUtils";
+import Avatar from "@/components/common/Avatar";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { StatusPill } from "@/components/ui/StatusPill";
 
 interface MediaItem {
   type: "image" | "video";
@@ -114,13 +119,13 @@ const JobCard = React.memo(function JobCard({
 
   const formattedBudget = useMemo(() => {
     if (job.budgetType === "fixed" && job.budgetAmount) {
-      return `${job.budgetAmount.toLocaleString()}₾`;
+      return formatCurrency(job.budgetAmount);
     } else if (job.budgetType === "per_sqm" && job.pricePerUnit) {
       const total = job.areaSize ? job.pricePerUnit * job.areaSize : null;
-      if (total) return `${total.toLocaleString()}₾`;
+      if (total) return formatCurrency(total);
       return `${job.pricePerUnit}₾/მ²`;
     } else if (job.budgetType === "range" && job.budgetMin && job.budgetMax) {
-      return `${job.budgetMin.toLocaleString()}-${job.budgetMax.toLocaleString()}₾`;
+      return formatPriceRange(job.budgetMin, job.budgetMax);
     }
     return locale === 'ka' ? "შეთანხმებით" : "Negotiable";
   }, [job.budgetType, job.budgetAmount, job.pricePerUnit, job.areaSize, job.budgetMin, job.budgetMax, locale]);
@@ -172,7 +177,7 @@ const JobCard = React.memo(function JobCard({
 
           {/* Loading placeholder */}
           {!imageLoaded && !imageError && allImages.length > 0 && (
-            <div className="absolute inset-0 bg-neutral-200 dark:bg-neutral-700 animate-pulse" />
+            <Skeleton className="absolute inset-0" />
           )}
 
           {/* Budget badge */}
@@ -183,19 +188,13 @@ const JobCard = React.memo(function JobCard({
           {/* Status badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-1.5">
             {isNew && !hasApplied && (
-              <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500 text-white">
-                {locale === 'ka' ? 'ახალი' : 'New'}
-              </span>
+              <StatusPill variant="new" size="xs" locale={locale} />
             )}
             {isUrgent && !isExpired && (
-              <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-amber-500 text-white">
-                {locale === 'ka' ? 'სასწრაფო' : 'Urgent'}
-              </span>
+              <StatusPill variant="urgent" size="xs" locale={locale} />
             )}
             {hasApplied && (
-              <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-blue-500 text-white">
-                {locale === 'ka' ? 'გაგზავნილი' : 'Applied'}
-              </span>
+              <StatusPill variant="applied" size="xs" locale={locale} />
             )}
           </div>
 
@@ -282,15 +281,11 @@ const JobCard = React.memo(function JobCard({
           <div className="flex items-center justify-between">
             {/* Client info */}
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex-shrink-0">
-                {job.clientId?.avatar ? (
-                  <img src={storage.getAvatarUrl(job.clientId.avatar, 'sm')} alt="" loading="lazy" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-                    {job.clientId?.name?.charAt(0) || 'C'}
-                  </div>
-                )}
-              </div>
+              <Avatar
+                src={job.clientId?.avatar}
+                name={job.clientId?.name || 'C'}
+                size="sm"
+              />
               <div className="min-w-0">
                 <p className="text-[13px] font-medium text-neutral-900 dark:text-white truncate">
                   {job.clientId?.name?.split(' ')[0] || (locale === 'ka' ? 'კლიენტი' : 'Client')}

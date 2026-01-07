@@ -24,8 +24,11 @@ import {
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useState } from 'react';
-
-const ACCENT_COLOR = '#C4735B';
+import { formatTimeAgoCompact } from '@/utils/dateUtils';
+import { ACCENT_COLOR } from '@/constants/theme';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Skeleton, SkeletonCard } from '@/components/ui/Skeleton';
+import { Badge } from '@/components/ui/badge';
 
 interface Proposal {
   _id: string;
@@ -54,25 +57,6 @@ interface Job {
   subcategory?: string;
   status: string;
   clientId: string;
-}
-
-function getTimeAgo(dateStr: string, locale: string) {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMins / 60);
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (locale === 'ka') {
-    if (diffMins < 60) return `${diffMins} წუთის წინ`;
-    if (diffHours < 24) return `${diffHours} საათის წინ`;
-    return `${diffDays} დღის წინ`;
-  }
-
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  return `${diffDays}d ago`;
 }
 
 function ProposalsPageContent() {
@@ -255,11 +239,11 @@ function ProposalsPageContent() {
         <Header />
         <HeaderSpacer />
         <div className="max-w-4xl mx-auto px-6 py-8">
-          <div className="w-32 h-6 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse mb-6" />
-          <div className="w-64 h-8 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse mb-8" />
+          <Skeleton className="w-32 h-6 mb-6" />
+          <Skeleton className="w-64 h-8 mb-8" />
           <div className="space-y-4">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-40 bg-neutral-50 dark:bg-neutral-900 rounded-2xl animate-pulse" />
+              <SkeletonCard key={i} variant="horizontal" className="h-40" />
             ))}
           </div>
         </div>
@@ -477,27 +461,22 @@ function ProposalCard({
               </Link>
               <div className="flex items-center gap-2 mt-0.5">
                 <Clock className="w-3 h-3 text-neutral-400" />
-                <span className="text-xs text-neutral-400">{getTimeAgo(proposal.createdAt, locale)}</span>
+                <span className="text-xs text-neutral-400">{formatTimeAgoCompact(proposal.createdAt, locale as 'en' | 'ka')}</span>
               </div>
             </div>
 
             {/* Status Badge */}
             {isShortlisted && (
-              <span
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-white"
-                style={{ backgroundColor: ACCENT_COLOR }}
-              >
-                <Check className="w-3 h-3" />
+              <Badge variant="premium" size="sm" icon={<Check className="w-3 h-3" />}>
                 {proposal.hiringChoice === 'direct'
                   ? (locale === 'ka' ? 'პირდაპირი' : 'Direct')
                   : (locale === 'ka' ? 'Homico' : 'Homico')}
-              </span>
+              </Badge>
             )}
             {isRejected && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400">
-                <X className="w-3 h-3" />
+              <Badge variant="default" size="sm" icon={<X className="w-3 h-3" />}>
                 {locale === 'ka' ? 'უარყოფილი' : 'Rejected'}
-              </span>
+              </Badge>
             )}
           </div>
 
@@ -584,7 +563,7 @@ function ProposalCard({
               >
                 {isProcessing ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <LoadingSpinner size="sm" color="white" />
                     {locale === 'ka' ? 'მუშავდება...' : 'Processing...'}
                   </>
                 ) : (
@@ -643,7 +622,7 @@ export default function ProposalsPage() {
     <AuthGuard allowedRoles={['client', 'pro', 'company', 'admin']}>
       <Suspense fallback={
         <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2" style={{ borderColor: ACCENT_COLOR }} />
+          <LoadingSpinner size="lg" color={ACCENT_COLOR} />
         </div>
       }>
         <ProposalsPageContent />

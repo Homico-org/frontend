@@ -9,9 +9,9 @@ import { useAnalytics, AnalyticsEvent } from "@/hooks/useAnalytics";
 import { Briefcase, Bookmark } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-
-// Terracotta accent
-const ACCENT_COLOR = '#C4735B';
+import { ACCENT_COLOR } from '@/constants/theme';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { SkeletonCardGrid } from '@/components/ui/Skeleton';
 
 interface MediaItem {
   type: "image" | "video";
@@ -243,27 +243,7 @@ export default function JobsPage() {
 
   // Skeleton loading - Grid style
   const JobsSkeleton = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {[...Array(6)].map((_, i) => (
-        <div
-          key={i}
-          className="break-inside-avoid rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden animate-pulse"
-        >
-          <div className="aspect-[4/3] bg-neutral-100 dark:bg-neutral-800" />
-          <div className="p-4 space-y-3">
-            <div className="h-5 rounded-lg w-3/4 bg-neutral-100 dark:bg-neutral-800" />
-            <div className="h-3 rounded w-full bg-neutral-100 dark:bg-neutral-800" />
-            <div className="h-3 rounded w-2/3 bg-neutral-100 dark:bg-neutral-800" />
-            <div className="flex items-center gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-              <div className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800" />
-              <div className="flex-1">
-                <div className="h-3 rounded w-20 bg-neutral-100 dark:bg-neutral-800" />
-              </div>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
+    <SkeletonCardGrid count={6} columns={4} />
   );
 
   // Empty state using shared component
@@ -283,10 +263,7 @@ export default function JobsPage() {
   if (isAuthLoading || !isPro) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div
-          className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin"
-          style={{ borderColor: ACCENT_COLOR, borderTopColor: 'transparent' }}
-        />
+        <LoadingSpinner size="lg" variant="border" color={ACCENT_COLOR} />
       </div>
     );
   }
@@ -321,10 +298,7 @@ export default function JobsPage() {
           <div ref={loaderRef} className="flex justify-center py-12">
             {isLoadingMore && (
               <div className="flex items-center gap-3">
-                <div
-                  className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin"
-                  style={{ borderColor: ACCENT_COLOR, borderTopColor: 'transparent' }}
-                />
+                <LoadingSpinner size="md" variant="border" color={ACCENT_COLOR} />
                 <span className="text-sm text-neutral-500">
                   {locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
                 </span>

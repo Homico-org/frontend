@@ -1,23 +1,26 @@
 'use client';
 
 import Avatar from '@/components/common/Avatar';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
 import { storage } from '@/services/storage';
+import { formatChatDateSeparator, formatMessageTime, Locale } from '@/utils/dateUtils';
 import {
-  ChevronRight,
-  FileText,
-  MessageSquare,
-  Paperclip,
-  Search,
-  Send,
-  X,
+    ChevronRight,
+    FileText,
+    MessageSquare,
+    Paperclip,
+    Search,
+    Send,
+    X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-
-const ACCENT = '#C4735B';
 
 interface ProjectMessage {
   _id?: string;
@@ -34,53 +37,6 @@ interface ProjectChatProps {
   jobId: string;
   locale: string;
   isClient?: boolean;
-}
-
-function formatRelativeTime(dateStr: string, locale: string): string {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMins / 60);
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (locale === 'ka') {
-    if (diffMins < 60) return `${diffMins} წუთის წინ`;
-    if (diffHours < 24) return `${diffHours} საათის წინ`;
-    return `${diffDays} დღის წინ`;
-  }
-
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  return `${diffDays}d ago`;
-}
-
-function formatMessageTime(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
-
-function formatDateSeparator(dateStr: string, locale: string): string {
-  const date = new Date(dateStr);
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  const isToday = date.toDateString() === today.toDateString();
-  const isYesterday = date.toDateString() === yesterday.toDateString();
-
-  if (isToday) {
-    return locale === 'ka' ? 'დღეს' : 'Today';
-  }
-  if (isYesterday) {
-    return locale === 'ka' ? 'გუშინ' : 'Yesterday';
-  }
-
-  return date.toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', {
-    weekday: 'long',
-    month: 'short',
-    day: 'numeric',
-  });
 }
 
 function getDateKey(dateStr: string): string {
@@ -410,18 +366,19 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
             <MessageSquare className="w-5 h-5" style={{ color: ACCENT }} />
             {locale === 'ka' ? 'პროექტის ჩატი' : 'Project Chat'}
             {unreadCount > 0 && (
-              <span className="w-5 h-5 rounded-full text-[10px] font-bold text-white flex items-center justify-center animate-pulse" style={{ backgroundColor: '#EF4444' }}>
+              <Badge variant="danger" size="xs" className="animate-pulse">
                 {unreadCount}
-              </span>
+              </Badge>
             )}
           </h3>
-          <button
+          <Button
+            variant="ghost"
+            size="icon-sm"
             onClick={handleSearchToggle}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             title={locale === 'ka' ? 'ძებნა' : 'Search'}
           >
             <Search className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -458,26 +415,29 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
             )}
             {searchQuery && searchResultCount > 0 && (
               <div className="flex items-center gap-1">
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   onClick={() => navigateSearch('prev')}
-                  className="w-7 h-7 rounded-md flex items-center justify-center text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                 >
                   <ChevronRight className="w-4 h-4 rotate-180" />
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   onClick={() => navigateSearch('next')}
-                  className="w-7 h-7 rounded-md flex items-center justify-center text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                 >
                   <ChevronRight className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             )}
-            <button
+            <Button
+              variant="ghost"
+              size="icon-sm"
               onClick={handleSearchToggle}
-              className="w-7 h-7 rounded-md flex items-center justify-center text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             >
               <X className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
         )}
 
@@ -487,7 +447,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
           <div className="h-72 sm:h-80 overflow-y-auto p-4 space-y-3">
             {isLoadingMessages ? (
               <div className="flex items-center justify-center h-full">
-                <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: ACCENT, borderTopColor: 'transparent' }} />
+                <LoadingSpinner size="lg" color={ACCENT} />
               </div>
             ) : messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-neutral-400">
@@ -538,9 +498,9 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                       {showDateSeparator && (
                         <div className="flex items-center gap-3 my-4">
                           <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
-                          <span className="text-[10px] font-medium text-neutral-500 px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800">
-                            {formatDateSeparator(msg.createdAt, locale)}
-                          </span>
+                          <Badge variant="secondary" size="xs">
+                            {formatChatDateSeparator(msg.createdAt, locale as Locale)}
+                          </Badge>
                           <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
                         </div>
                       )}
@@ -639,7 +599,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                 className="w-9 h-9 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
               >
                 {isUploading ? (
-                  <div className="w-4 h-4 border-2 border-neutral-400 border-t-transparent rounded-full animate-spin" />
+                  <LoadingSpinner size="sm" color="currentColor" />
                 ) : (
                   <Paperclip className="w-5 h-5" />
                 )}

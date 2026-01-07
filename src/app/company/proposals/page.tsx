@@ -1,33 +1,34 @@
 'use client';
 
+import EmptyState from '@/components/common/EmptyState';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/Card';
+import { Input } from '@/components/ui/input';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { COMPANY_ACCENT as ACCENT, COMPANY_ACCENT_HOVER as ACCENT_HOVER } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { formatTimeAgo } from '@/utils/dateUtils';
+import {
+  ArrowUpRight,
+  Briefcase,
+  Calendar,
+  CheckCircle2,
+  ChevronRight,
+  Clock,
+  Eye,
+  FileText,
+  MapPin,
+  Search,
+  Send,
+  User,
+  XCircle
+} from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import {
-  FileText,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  MapPin,
-  Calendar,
-  User,
-  ChevronRight,
-  Search,
-  Filter,
-  ArrowUpRight,
-  Send,
-  Eye,
-  MessageSquare,
-  DollarSign,
-  Briefcase
-} from 'lucide-react';
-
-// Terracotta accent colors
-const ACCENT = '#E07B4F';
-const ACCENT_HOVER = '#D26B3F';
 
 interface ProposalJob {
   _id: string;
@@ -156,34 +157,6 @@ export default function CompanyProposalsPage() {
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-
-    if (locale === 'ka') {
-      if (diffMins < 60) return `${diffMins} წუთის წინ`;
-      if (diffHours < 24) return `${diffHours} საათის წინ`;
-      if (diffDays < 7) return `${diffDays} დღის წინ`;
-      return formatDate(dateString);
-    }
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return formatDate(dateString);
-  };
-
   // Stats calculations
   const stats = {
     total: pagination.total || proposals.length,
@@ -204,10 +177,7 @@ export default function CompanyProposalsPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-primary)]">
-        <div
-          className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-          style={{ borderColor: ACCENT, borderTopColor: 'transparent' }}
-        />
+        <LoadingSpinner size="lg" variant="border" color={ACCENT} />
       </div>
     );
   }
@@ -225,16 +195,15 @@ export default function CompanyProposalsPage() {
               {locale === 'ka' ? 'თვალყური ადევნეთ კომპანიის შეთავაზებებს' : 'Track your company proposals and bids'}
             </p>
           </div>
-          <Link
-            href="/browse/jobs"
-            className="inline-flex items-center gap-2 px-5 py-2.5 text-white font-medium rounded-xl transition-all duration-200 self-start"
-            style={{ backgroundColor: ACCENT }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = ACCENT_HOVER}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ACCENT}
+          <Button
+            asChild
+            className="self-start"
           >
-            <Briefcase className="w-5 h-5" />
-            {locale === 'ka' ? 'სამუშაოების ნახვა' : 'Browse Jobs'}
-          </Link>
+            <Link href="/browse/jobs" className="flex items-center gap-2">
+              <Briefcase className="w-5 h-5" />
+              {locale === 'ka' ? 'სამუშაოების ნახვა' : 'Browse Jobs'}
+            </Link>
+          </Button>
         </div>
 
         {/* Stats Cards */}
@@ -336,41 +305,38 @@ export default function CompanyProposalsPage() {
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-[var(--color-bg-primary)] rounded-2xl border border-[var(--color-border-primary)] p-4 mb-6">
+        <Card variant="elevated" className="p-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-4">
             {/* Search */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-tertiary)]" />
-              <input
+            <div className="flex-1">
+              <Input
                 type="text"
                 placeholder={locale === 'ka' ? 'მოძებნე შეთავაზება...' : 'Search proposals...'}
                 value={filter.search}
                 onChange={(e) => setFilter({ ...filter, search: e.target.value })}
-                className="w-full pl-10 pr-4 py-2.5 bg-[var(--color-bg-secondary)] border border-[var(--color-border-primary)] rounded-xl text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E07B4F] transition-colors"
+                leftIcon={<Search className="w-5 h-5" />}
               />
             </div>
 
             {/* Clear Filter */}
             {filter.status && (
-              <button
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => setFilter({ ...filter, status: '' })}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--color-bg-secondary)] text-sm text-[var(--color-text-secondary)]"
+                leftIcon={<XCircle className="w-4 h-4" />}
               >
-                <XCircle className="w-4 h-4" />
                 {locale === 'ka' ? 'გაწმინდე' : 'Clear'}
-              </button>
+              </Button>
             )}
           </div>
-        </div>
+        </Card>
 
         {/* Proposals List */}
-        <div className="bg-[var(--color-bg-primary)] rounded-2xl border border-[var(--color-border-primary)] overflow-hidden">
+        <Card variant="elevated" className="overflow-hidden">
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
-              <div
-                className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-                style={{ borderColor: ACCENT, borderTopColor: 'transparent' }}
-              />
+              <LoadingSpinner size="lg" color={ACCENT} />
             </div>
           ) : displayedProposals.length > 0 ? (
             <div className="divide-y divide-[var(--color-border-primary)]">
@@ -391,10 +357,18 @@ export default function CompanyProposalsPage() {
                           <h3 className="font-semibold text-[var(--color-text-primary)] truncate">
                             {proposal.jobId?.title || 'Untitled Job'}
                           </h3>
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full border ${statusInfo.color}`}>
-                            <StatusIcon className="w-3 h-3" />
+                          <Badge
+                            variant={
+                              proposal.status === 'pending' ? 'warning' :
+                              proposal.status === 'viewed' ? 'info' :
+                              proposal.status === 'accepted' ? 'success' :
+                              proposal.status === 'rejected' ? 'danger' : 'secondary'
+                            }
+                            size="xs"
+                            icon={<StatusIcon className="w-3 h-3" />}
+                          >
                             {statusInfo.label}
-                          </span>
+                          </Badge>
                         </div>
 
                         {/* Meta info */}
@@ -411,7 +385,7 @@ export default function CompanyProposalsPage() {
                           )}
                           <span className="flex items-center gap-1.5">
                             <Calendar className="w-4 h-4" />
-                            {formatTimeAgo(proposal.createdAt)}
+                            {formatTimeAgo(proposal.createdAt, locale as 'en' | 'ka')}
                           </span>
                           {proposal.estimatedDuration && (
                             <span className="flex items-center gap-1.5">
@@ -471,49 +445,37 @@ export default function CompanyProposalsPage() {
               })}
             </div>
           ) : (
-            <div className="text-center py-16">
-              <div
-                className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-                style={{ backgroundColor: `${ACCENT}15` }}
-              >
-                <Send className="w-8 h-8" style={{ color: ACCENT }} />
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
-                {locale === 'ka' ? 'შეთავაზებები არ მოიძებნა' : 'No proposals found'}
-              </h3>
-              <p className="text-[var(--color-text-secondary)] mb-6 max-w-md mx-auto">
-                {filter.status || filter.search
-                  ? (locale === 'ka' ? 'სცადეთ ფილტრების შეცვლა' : 'Try adjusting your filters')
-                  : (locale === 'ka' ? 'დაიწყეთ სამუშაოებზე შეთავაზებების გაგზავნა' : 'Start bidding on jobs to grow your business')
-                }
-              </p>
-              <Link
-                href="/browse/jobs"
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-white font-medium rounded-xl transition-all duration-200"
-                style={{ backgroundColor: ACCENT }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = ACCENT_HOVER}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ACCENT}
-              >
-                <Briefcase className="w-5 h-5" />
-                {locale === 'ka' ? 'სამუშაოების ნახვა' : 'Browse Jobs'}
-              </Link>
-            </div>
+            <EmptyState
+              icon={Send}
+              title={filter.status || filter.search ? 'No proposals found' : 'No proposals yet'}
+              titleKa={filter.status || filter.search ? 'შეთავაზებები არ მოიძებნა' : 'შეთავაზებები ჯერ არ არის'}
+              description={filter.status || filter.search
+                ? 'Try adjusting your filters'
+                : 'Start bidding on jobs to grow your business'}
+              descriptionKa={filter.status || filter.search
+                ? 'სცადეთ ფილტრების შეცვლა'
+                : 'დაიწყეთ სამუშაოებზე შეთავაზებების გაგზავნა'}
+              actionLabel="Browse Jobs"
+              actionLabelKa="სამუშაოების ნახვა"
+              actionHref="/browse/jobs"
+              variant="illustrated"
+              size="lg"
+            />
           )}
 
           {/* Pagination */}
           {pagination.hasMore && (
             <div className="p-4 border-t border-[var(--color-border-primary)] text-center">
-              <button
+              <Button
+                variant="link"
                 onClick={() => fetchProposals(pagination.page + 1)}
-                className="inline-flex items-center gap-2 px-4 py-2 font-medium transition-all duration-200 hover:opacity-80"
-                style={{ color: ACCENT }}
+                rightIcon={<ArrowUpRight className="w-4 h-4" />}
               >
                 {locale === 'ka' ? 'მეტის ჩატვირთვა' : 'Load More'}
-                <ArrowUpRight className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           )}
-        </div>
+        </Card>
       </main>
     </div>
   );

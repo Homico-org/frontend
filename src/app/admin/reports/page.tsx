@@ -28,25 +28,9 @@ import {
   Archive,
   Trash2,
 } from 'lucide-react';
-
-// Terracotta admin theme (matching dashboard)
-const THEME = {
-  primary: '#C4735B',
-  primaryDark: '#A85D4A',
-  accent: '#D4897A',
-  surface: '#1A1A1C',
-  surfaceLight: '#232326',
-  surfaceHover: '#2A2A2E',
-  border: '#333338',
-  borderLight: '#3D3D42',
-  text: '#FAFAFA',
-  textMuted: '#A1A1AA',
-  textDim: '#71717A',
-  success: '#22C55E',
-  warning: '#F59E0B',
-  error: '#EF4444',
-  info: '#3B82F6',
-};
+import { formatDateShort } from '@/utils/dateUtils';
+import { ADMIN_THEME as THEME } from '@/constants/theme';
+import { getAdminReportStatusColor, getAdminReportStatusLabel } from '@/utils/statusUtils';
 
 interface Report {
   _id: string;
@@ -176,34 +160,8 @@ function AdminReportsPageContent() {
     setPage(1);
   }, [searchQuery, statusFilter, typeFilter]);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending': return THEME.warning;
-      case 'investigating': return THEME.info;
-      case 'resolved': return THEME.success;
-      case 'dismissed': return THEME.textDim;
-      default: return THEME.textDim;
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'pending': return locale === 'ka' ? 'მოლოდინში' : 'Pending';
-      case 'investigating': return locale === 'ka' ? 'გამოძიება' : 'Investigating';
-      case 'resolved': return locale === 'ka' ? 'გადაჭრილი' : 'Resolved';
-      case 'dismissed': return locale === 'ka' ? 'უარყოფილი' : 'Dismissed';
-      default: return status;
-    }
-  };
+  const getStatusColor = (status: string) => getAdminReportStatusColor(status);
+  const getStatusLabel = (status: string) => getAdminReportStatusLabel(status, locale as 'en' | 'ka');
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -479,7 +437,7 @@ function AdminReportsPageContent() {
                       </p>
                     )}
                     <p className="text-xs mt-1" style={{ color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace" }}>
-                      {formatDate(report.createdAt)}
+                      {formatDateShort(report.createdAt, locale as 'en' | 'ka')}
                     </p>
                   </div>
 

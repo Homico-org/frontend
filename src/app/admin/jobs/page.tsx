@@ -30,25 +30,9 @@ import {
   User,
   FileText,
 } from 'lucide-react';
-
-// Terracotta admin theme (matching dashboard)
-const THEME = {
-  primary: '#C4735B',
-  primaryDark: '#A85D4A',
-  accent: '#D4897A',
-  surface: '#1A1A1C',
-  surfaceLight: '#232326',
-  surfaceHover: '#2A2A2E',
-  border: '#333338',
-  borderLight: '#3D3D42',
-  text: '#FAFAFA',
-  textMuted: '#A1A1AA',
-  textDim: '#71717A',
-  success: '#22C55E',
-  warning: '#F59E0B',
-  error: '#EF4444',
-  info: '#3B82F6',
-};
+import { formatDateShort } from '@/utils/dateUtils';
+import { ADMIN_THEME as THEME } from '@/constants/theme';
+import { getAdminJobStatusColor, getJobStatusLabel } from '@/utils/statusUtils';
 
 interface Job {
   _id: string;
@@ -164,15 +148,6 @@ function AdminJobsPageContent() {
     setPage(1);
   }, [searchQuery, statusFilter]);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
   const formatBudget = (budget?: Job['budget']) => {
     if (!budget) return '-';
     if (budget.min && budget.max) {
@@ -183,25 +158,8 @@ function AdminJobsPageContent() {
     return '-';
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'open': return THEME.success;
-      case 'in_progress': return THEME.warning;
-      case 'completed': return THEME.info;
-      case 'cancelled': return THEME.error;
-      default: return THEME.textDim;
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'open': return locale === 'ka' ? 'ღია' : 'Open';
-      case 'in_progress': return locale === 'ka' ? 'მიმდინარე' : 'In Progress';
-      case 'completed': return locale === 'ka' ? 'დასრულებული' : 'Completed';
-      case 'cancelled': return locale === 'ka' ? 'გაუქმებული' : 'Cancelled';
-      default: return status;
-    }
-  };
+  const getStatusColor = (status: string) => getAdminJobStatusColor(status);
+  const getStatusLabel = (status: string) => getJobStatusLabel(status, locale as 'en' | 'ka');
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -464,7 +422,7 @@ function AdminJobsPageContent() {
                       className="text-sm"
                       style={{ color: THEME.textMuted, fontFamily: "'JetBrains Mono', monospace" }}
                     >
-                      {formatDate(job.createdAt)}
+                      {formatDateShort(job.createdAt, locale as 'en' | 'ka')}
                     </p>
                     {job.proposalCount !== undefined && (
                       <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: THEME.textDim }}>

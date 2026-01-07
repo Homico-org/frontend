@@ -20,25 +20,17 @@ import {
   CreditCard,
   ChevronRight,
   Save,
-  Loader2,
   ExternalLink,
   Check,
   X
 } from 'lucide-react';
 
-// Terracotta accent colors
-const ACCENT = '#E07B4F';
-const ACCENT_HOVER = '#D26B3F';
-
-// Helper function to get proper image URL
-const getImageUrl = (path: string | undefined): string => {
-  if (!path) return '';
-  if (path.startsWith('data:')) return path;
-  if (path.startsWith('http://') || path.startsWith('https://')) return path;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-  if (path.startsWith('/')) return `${apiUrl}${path}`;
-  return `${apiUrl}/uploads/${path}`;
-};
+import { storage } from '@/services/storage';
+import { COMPANY_ACCENT as ACCENT, COMPANY_ACCENT_HOVER as ACCENT_HOVER } from '@/constants/theme';
+import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Badge } from '@/components/ui/badge';
+import { Toggle } from '@/components/ui/Toggle';
 
 interface CompanySettings {
   name: string;
@@ -123,7 +115,7 @@ export default function CompanySettingsPage() {
         const data = await res.json();
         setSettings(prev => ({ ...prev, ...data }));
         if (data.logo) {
-          setLogoPreview(getImageUrl(data.logo));
+          setLogoPreview(storage.getFileUrl(data.logo));
         }
       }
     } catch (error) {
@@ -202,10 +194,7 @@ export default function CompanySettingsPage() {
   if (authLoading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-primary)]">
-        <div
-          className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-          style={{ borderColor: ACCENT, borderTopColor: 'transparent' }}
-        />
+        <LoadingSpinner size="lg" variant="border" color={ACCENT} />
       </div>
     );
   }
@@ -572,22 +561,16 @@ export default function CompanySettingsPage() {
                       {locale === 'ka' ? 'უფასო' : 'Free Plan'}
                     </h4>
                   </div>
-                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <Badge variant="success" size="sm">
                     {locale === 'ka' ? 'აქტიური' : 'Active'}
-                  </span>
+                  </Badge>
                 </div>
                 <p className="text-sm text-[var(--color-text-secondary)] mb-4">
                   {locale === 'ka' ? 'ძირითადი ფუნქციები უფასოდ' : 'Basic features for free'}
                 </p>
-                <button
-                  className="inline-flex items-center gap-2 px-5 py-2.5 text-white font-medium rounded-xl transition-all duration-200"
-                  style={{ backgroundColor: ACCENT }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = ACCENT_HOVER}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ACCENT}
-                >
+                <Button rightIcon={<ExternalLink className="w-4 h-4" />}>
                   {locale === 'ka' ? 'განაახლე პრემიუმზე' : 'Upgrade to Premium'}
-                  <ExternalLink className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
 
               {/* Payment Method */}
@@ -598,10 +581,13 @@ export default function CompanySettingsPage() {
                 <p className="text-sm text-[var(--color-text-tertiary)]">
                   {locale === 'ka' ? 'გადახდის მეთოდი არ არის დამატებული' : 'No payment method added'}
                 </p>
-                <button className="mt-4 text-sm font-medium flex items-center gap-1.5 transition-colors hover:opacity-80" style={{ color: ACCENT }}>
-                  <CreditCard className="w-4 h-4" />
+                <Button
+                  variant="link"
+                  className="mt-4 p-0"
+                  leftIcon={<CreditCard className="w-4 h-4" />}
+                >
                   {locale === 'ka' ? 'დაამატე გადახდის მეთოდი' : 'Add Payment Method'}
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -609,26 +595,16 @@ export default function CompanySettingsPage() {
           {/* Save Button */}
           <div className="px-6 sm:px-8 py-4 border-t border-[var(--color-border-primary)] bg-[var(--color-bg-secondary)]">
             <div className="flex justify-end">
-              <button
+              <Button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="inline-flex items-center gap-2 px-6 py-2.5 text-white font-medium rounded-xl transition-all duration-200 disabled:opacity-50"
-                style={{ backgroundColor: ACCENT }}
-                onMouseEnter={(e) => !isSaving && (e.currentTarget.style.backgroundColor = ACCENT_HOVER)}
-                onMouseLeave={(e) => !isSaving && (e.currentTarget.style.backgroundColor = ACCENT)}
+                loading={isSaving}
+                leftIcon={!isSaving ? <Save className="w-4 h-4" /> : undefined}
               >
-                {isSaving ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    {locale === 'ka' ? 'ინახება...' : 'Saving...'}
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4" />
-                    {locale === 'ka' ? 'შენახვა' : 'Save Changes'}
-                  </>
-                )}
-              </button>
+                {isSaving
+                  ? (locale === 'ka' ? 'ინახება...' : 'Saving...')
+                  : (locale === 'ka' ? 'შენახვა' : 'Save Changes')}
+              </Button>
             </div>
           </div>
         </div>

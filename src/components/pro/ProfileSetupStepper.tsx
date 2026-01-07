@@ -2,6 +2,7 @@
 
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export interface StepConfig {
   id: string;
@@ -215,7 +216,7 @@ export default function ProfileSetupStepper({
               >
                 {isLoading ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <LoadingSpinner size="sm" color="white" />
                     <span>{locale === 'ka' ? 'იტვირთება...' : 'Loading...'}</span>
                   </>
                 ) : isLastStep ? (

@@ -1,5 +1,8 @@
 'use client';
 
+import { formatNumberWithSpaces, parsePriceInput } from '@/utils/currencyUtils';
+import { ACCENT_COLOR } from '@/constants/theme';
+
 export type BudgetType = 'fixed' | 'range' | 'negotiable';
 
 export interface BudgetSelectorProps {
@@ -44,14 +47,8 @@ export default function BudgetSelector({
   locale = 'en',
   className = '',
 }: BudgetSelectorProps) {
-  const formatNumber = (value: string) => {
-    if (!value) return '';
-    return Number(value).toLocaleString('en-US').replace(/,/g, ' ');
-  };
-
-  const parseNumber = (value: string) => {
-    return value.replace(/[^\d]/g, '');
-  };
+  const formatNumber = (value: string) => formatNumberWithSpaces(value);
+  const parseNumber = (value: string) => parsePriceInput(value);
 
   return (
     <div className={className}>

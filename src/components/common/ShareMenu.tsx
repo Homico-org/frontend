@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { Share2, Facebook, Link2, Check, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export interface ShareMenuProps {
   /** URL to share. Defaults to current page URL */
@@ -270,27 +271,30 @@ export function ShareButtons({
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <button
+      <Button
+        size="icon"
         onClick={handleShareFacebook}
-        className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#1877F2] hover:bg-[#166FE5] text-white transition-colors"
+        className="bg-[#1877F2] hover:bg-[#166FE5] text-white"
         title="Share on Facebook"
       >
         <Facebook className="w-5 h-5" />
-      </button>
-      <button
+      </Button>
+      <Button
+        size="icon"
+        variant="secondary"
         onClick={handleNativeShare}
-        className="flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 text-neutral-600 dark:text-neutral-300 transition-colors"
         title={locale === 'ka' ? 'გაზიარება' : 'Share'}
       >
         <Share2 className="w-5 h-5" />
-      </button>
-      <button
+      </Button>
+      <Button
+        size="icon"
+        variant="secondary"
         onClick={handleCopyLink}
-        className="flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 text-neutral-600 dark:text-neutral-300 transition-colors"
         title={locale === 'ka' ? 'ლინკის კოპირება' : 'Copy link'}
       >
         <Link2 className="w-5 h-5" />
-      </button>
+      </Button>
     </div>
   );
 }

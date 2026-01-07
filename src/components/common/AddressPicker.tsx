@@ -2,7 +2,10 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { MapPin, Loader2, Search, Maximize2, Minimize2, X, Navigation } from 'lucide-react';
+import { MapPin, Search, Maximize2, Minimize2, X, Navigation } from 'lucide-react';
+import { useGoogleMaps } from '@/hooks/useGoogleMaps';
+import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -64,7 +67,7 @@ export default function AddressPicker({
   label,
   required = false
 }: AddressPickerProps) {
-  const [mapLoaded, setMapLoaded] = useState(false);
+  const { isLoaded: mapLoaded } = useGoogleMaps();
   const [selectedAddress, setSelectedAddress] = useState(value);
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -108,36 +111,6 @@ export default function AddressPicker({
       document.body.style.overflow = '';
     };
   }, [isFullscreen]);
-
-  // Load Google Maps script
-  useEffect(() => {
-    if ((window as any).google?.maps) {
-      setMapLoaded(true);
-      return;
-    }
-
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-    if (!apiKey) {
-      console.warn('Google Maps API key not found');
-      return;
-    }
-
-    const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
-    if (existingScript) {
-      existingScript.addEventListener('load', () => setMapLoaded(true));
-      if ((window as any).google?.maps) {
-        setMapLoaded(true);
-      }
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-    script.async = true;
-    script.defer = true;
-    script.onload = () => setMapLoaded(true);
-    document.head.appendChild(script);
-  }, []);
 
   // Initialize map
   const initMap = useCallback((container: HTMLDivElement) => {
@@ -418,7 +391,7 @@ export default function AddressPicker({
                 >
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
                     {isSearching ? (
-                      <Loader2 className="w-4 h-4 text-neutral-400 animate-spin" />
+                      <LoadingSpinner size="sm" color="#9ca3af" />
                     ) : (
                       <Search className="w-4 h-4 text-neutral-400" />
                     )}
@@ -487,30 +460,28 @@ export default function AddressPicker({
               {/* Control Buttons */}
               <div className="absolute top-3 right-3 z-10 flex flex-col gap-2">
                 {/* Fullscreen Button */}
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
+                  size="icon-sm"
                   onClick={() => setIsFullscreen(true)}
-                  className="p-2.5 rounded-xl bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all duration-200 hover:scale-105"
-                  style={{
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                  }}
+                  className="shadow-md"
                   title={locale === 'ka' ? 'სრული ეკრანი' : 'Fullscreen'}
                 >
-                  <Maximize2 className="w-4 h-4 text-neutral-600 dark:text-neutral-300" />
-                </button>
+                  <Maximize2 className="w-4 h-4" />
+                </Button>
 
                 {/* Current Location Button */}
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
+                  size="icon-sm"
                   onClick={getCurrentLocation}
-                  className="p-2.5 rounded-xl bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all duration-200 hover:scale-105"
-                  style={{
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                  }}
+                  className="shadow-md"
                   title={locale === 'ka' ? 'ჩემი მდებარეობა' : 'My location'}
                 >
-                  <Navigation className="w-4 h-4 text-neutral-600 dark:text-neutral-300" />
-                </button>
+                  <Navigation className="w-4 h-4" />
+                </Button>
               </div>
 
               {/* Selected Address on Map */}
@@ -555,10 +526,7 @@ export default function AddressPicker({
             </>
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center gap-3">
-              <div className="relative">
-                <div className="w-12 h-12 rounded-full border-2 border-[#E07B4F]/20 animate-ping absolute inset-0" />
-                <Loader2 className="w-8 h-8 text-[#E07B4F] animate-spin relative" />
-              </div>
+              <LoadingSpinner size="lg" color="#E07B4F" />
               <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                 {locale === 'ka' ? 'რუკა იტვირთება...' : 'Loading map...'}
               </p>
@@ -620,7 +588,7 @@ export default function AddressPicker({
             >
               <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
                 {isSearching ? (
-                  <Loader2 className="w-5 h-5 text-neutral-400 animate-spin" />
+                  <LoadingSpinner size="md" color="#9ca3af" />
                 ) : (
                   <Search className="w-5 h-5 text-neutral-400" />
                 )}
@@ -689,28 +657,26 @@ export default function AddressPicker({
           {/* Control Buttons */}
           <div className="absolute top-4 right-4 z-10 flex gap-3">
             {/* Current Location */}
-            <button
+            <Button
               type="button"
+              variant="secondary"
+              size="icon"
               onClick={getCurrentLocation}
-              className="p-3 rounded-xl bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all duration-200 hover:scale-105"
-              style={{
-                boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
-              }}
+              className="shadow-lg"
             >
-              <Navigation className="w-5 h-5 text-neutral-600 dark:text-neutral-300" />
-            </button>
+              <Navigation className="w-5 h-5" />
+            </Button>
 
             {/* Close Button */}
-            <button
+            <Button
               type="button"
+              variant="secondary"
+              size="icon"
               onClick={() => setIsFullscreen(false)}
-              className="p-3 rounded-xl bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all duration-200 hover:scale-105"
-              style={{
-                boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
-              }}
+              className="shadow-lg"
             >
-              <Minimize2 className="w-5 h-5 text-neutral-600 dark:text-neutral-300" />
-            </button>
+              <Minimize2 className="w-5 h-5" />
+            </Button>
           </div>
 
           {/* Selected Address Display */}
