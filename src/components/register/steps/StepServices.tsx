@@ -1,5 +1,6 @@
 'use client';
 
+import NextImage from 'next/image';
 import { Alert } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -268,13 +269,13 @@ function ProjectCard({
             <div key={pair.id} className="relative group">
               <div className="w-24 h-12 rounded-lg border border-emerald-300 overflow-hidden flex">
                 <div className="w-1/2 h-full relative">
-                  <img src={pair.beforeImage} alt="Before" className="w-full h-full object-cover" />
+                  <NextImage src={pair.beforeImage} alt="Before" fill className="object-cover" sizes="100px" unoptimized />
                   <span className="absolute bottom-0 left-0 text-[8px] bg-black/60 text-white px-1">
                     {locale === 'ka' ? 'მანამდე' : 'Before'}
                   </span>
                 </div>
                 <div className="w-1/2 h-full relative">
-                  <img src={pair.afterImage} alt="After" className="w-full h-full object-cover" />
+                  <NextImage src={pair.afterImage} alt="After" fill className="object-cover" sizes="100px" unoptimized />
                   <span className="absolute bottom-0 right-0 text-[8px] bg-emerald-500/80 text-white px-1">
                     {locale === 'ka' ? 'შემდეგ' : 'After'}
                   </span>

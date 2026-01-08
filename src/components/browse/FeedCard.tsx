@@ -1,16 +1,17 @@
 'use client';
 
-import { FeedItem, FeedItemType } from '@/types';
-import { getCategoryLabelStatic } from '@/hooks/useCategoryLabels';
-import { storage } from '@/services/storage';
-import { StarRating } from '@/components/ui/StarRating';
 import Avatar from '@/components/common/Avatar';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { StarRating } from '@/components/ui/StarRating';
 import { StatusPill } from '@/components/ui/StatusPill';
 import { Badge } from '@/components/ui/badge';
-import Link from 'next/link';
-import React, { useState, useCallback, useMemo } from 'react';
 import { ACCENT_COLOR } from '@/constants/theme';
+import { getCategoryLabelStatic } from '@/hooks/useCategoryLabels';
+import { storage } from '@/services/storage';
+import { FeedItem, FeedItemType } from '@/types';
+import Image from 'next/image';
+import Link from 'next/link';
+import React, { useCallback, useMemo, useState } from 'react';
 
 interface FeedCardProps {
   item: FeedItem;
@@ -125,9 +126,10 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
               onTouchEnd={() => setIsDragging(false)}
               onTouchMove={handleSliderMove}
             >
-              <img src={storage.getFeedCardImageUrl(afterImage)} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+              <Image src={storage.getFeedCardImageUrl(afterImage)} alt="After" fill className="object-cover" sizes="(max-width: 640px) 100vw, 400px" priority={false} />
               <div className="absolute inset-0 overflow-hidden" style={{ width: `${sliderPosition}%` }}>
-                <img src={storage.getFeedCardImageUrl(beforeImage)} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" style={{ width: `${100 / (sliderPosition / 100)}%`, maxWidth: 'none' }} />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={storage.getFeedCardImageUrl(beforeImage)} alt="Before" loading="lazy" className="absolute inset-0 w-full h-full object-cover" style={{ width: `${100 / (sliderPosition / 100)}%`, maxWidth: 'none' }} />
               </div>
 
               {/* Slider handle */}

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Avatar from '@/components/common/Avatar';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -1238,7 +1239,7 @@ function ItemModal({
               {fileUrl ? (
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]">
                   {type === 'image' ? (
-                    <img src={storage.getFileUrl(fileUrl)} alt="" className="w-16 h-16 rounded-lg object-cover" />
+                    <Image src={storage.getFileUrl(fileUrl)} alt="Attachment" width={64} height={64} className="rounded-lg object-cover" />
                   ) : (
                     <FileText className="w-8 h-8 text-[var(--color-text-tertiary)]" />
                   )}

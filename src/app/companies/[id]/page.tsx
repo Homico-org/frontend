@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import AppBackground from "@/components/common/AppBackground";
 import Header, { HeaderSpacer } from "@/components/common/Header";
 import { Button } from "@/components/ui/button";
@@ -382,10 +383,12 @@ export default function CompanyProfilePage() {
         {/* Cover Image */}
         {profile.coverImage && (
           <div className="relative h-48 sm:h-64 lg:h-80 overflow-hidden">
-            <img
+            <Image
               src={storage.getFileUrl(profile.coverImage)}
-              alt=""
-              className="w-full h-full object-cover"
+              alt="Company cover"
+              fill
+              className="object-cover"
+              sizes="100vw"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
           </div>
@@ -402,9 +405,11 @@ export default function CompanyProfilePage() {
                   {/* Logo */}
                   <div className="relative flex-shrink-0 self-start">
                     {logoUrl ? (
-                      <img
+                      <Image
                         src={storage.getFileUrl(logoUrl)}
                         alt={profile.name}
+                        width={144}
+                        height={144}
                         className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl object-cover border-4 border-[var(--color-bg-elevated)] shadow-xl ring-4 ring-white/50 dark:ring-white/10"
                       />
                     ) : (
@@ -630,9 +635,11 @@ export default function CompanyProfilePage() {
                       className="p-4 rounded-xl bg-[var(--color-bg-tertiary)] text-center"
                     >
                       {member.avatar ? (
-                        <img
+                        <Image
                           src={storage.getFileUrl(member.avatar)}
                           alt={member.name}
+                          width={64}
+                          height={64}
                           className="w-16 h-16 rounded-xl object-cover mx-auto mb-3"
                         />
                       ) : (
@@ -717,10 +724,12 @@ export default function CompanyProfilePage() {
                           : "aspect-square"
                       }`}
                     >
-                      <img
+                      <Image
                         src={storage.getFileUrl(img.url)}
-                        alt={img.title || ""}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        alt={img.title || "Portfolio image"}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                        sizes="(max-width: 640px) 50vw, 300px"
                       />
 
                       {/* Overlay */}
@@ -795,9 +804,11 @@ export default function CompanyProfilePage() {
                       <div className="flex items-start gap-4">
                         {/* Avatar */}
                         {review.clientId.avatar ? (
-                          <img
+                          <Image
                             src={storage.getFileUrl(review.clientId.avatar)}
-                            alt=""
+                            alt="Client"
+                            width={48}
+                            height={48}
                             className="w-12 h-12 rounded-xl object-cover"
                           />
                         ) : (
@@ -842,10 +853,12 @@ export default function CompanyProfilePage() {
                                   key={pIdx}
                                   className="w-20 h-20 rounded-xl overflow-hidden"
                                 >
-                                  <img
+                                  <Image
                                     src={storage.getFileUrl(photo)}
-                                    alt=""
-                                    className="w-full h-full object-cover"
+                                    alt="Review photo"
+                                    fill
+                                    className="object-cover"
+                                    sizes="80px"
                                   />
                                 </div>
                               ))}
@@ -1216,9 +1229,11 @@ export default function CompanyProfilePage() {
               {/* Company Info */}
               <div className="flex items-center gap-4 p-4 rounded-2xl bg-[var(--color-bg-tertiary)] mb-6">
                 {logoUrl ? (
-                  <img
+                  <Image
                     src={storage.getFileUrl(logoUrl)}
-                    alt=""
+                    alt={profile.name}
+                    width={56}
+                    height={56}
                     className="w-14 h-14 rounded-xl object-cover"
                   />
                 ) : (

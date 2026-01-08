@@ -15,6 +15,7 @@ import { useAuthModal } from '@/contexts/AuthModalContext';
 import { api } from '@/lib/api';
 import { Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 interface Employee {
@@ -495,7 +496,7 @@ export default function CreateCompanyJobPage() {
                       formData.assignedEmployees.includes(employee._id) ? 'bg-white/20' : 'bg-neutral-400'
                     }`}>
                       {employee.userId?.avatar ? (
-                        <img src={employee.userId.avatar} alt="" className="w-full h-full rounded-full object-cover" />
+                        <Image src={employee.userId.avatar} alt={employee.userId?.name || 'Employee'} fill className="rounded-full object-cover" sizes="40px" />
                       ) : (
                         employee.userId?.name?.[0]?.toUpperCase() || '?'
                       )}

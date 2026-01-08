@@ -1,5 +1,6 @@
 'use client';
 
+import NextImage from 'next/image';
 import React from 'react';
 import { countries, CountryCode } from '@/contexts/LanguageContext';
 import { Badge } from '@/components/ui/badge';
@@ -71,7 +72,7 @@ export default function StepReview({
             <div className="relative group">
               <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden ring-4 ring-[#C4735B]/20 shadow-lg">
                 {avatarPreview ? (
-                  <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                  <NextImage src={avatarPreview} alt="Avatar" fill className="object-cover" sizes="80px" unoptimized />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-[#C4735B] to-[#A85D47] flex items-center justify-center">
                     <span className="text-3xl font-bold text-white">

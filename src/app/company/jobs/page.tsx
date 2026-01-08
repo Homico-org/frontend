@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 interface Employee {
@@ -516,7 +517,7 @@ export default function CompanyJobsPage() {
                                 title={emp.name}
                               >
                                 {emp.avatar ? (
-                                  <img src={emp.avatar} alt={emp.name} className="w-full h-full rounded-full object-cover" />
+                                  <Image src={emp.avatar} alt={emp.name} fill className="rounded-full object-cover" sizes="32px" />
                                 ) : (
                                   emp.name?.charAt(0)
                                 )}

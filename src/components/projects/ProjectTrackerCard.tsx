@@ -14,34 +14,35 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
 import { api } from "@/lib/api";
 import { storage } from "@/services/storage";
+import type { ProjectStage, ProjectTracking } from "@/types/shared";
 import { formatDateMonthDay, formatMessageTime } from "@/utils/dateUtils";
 import {
-  AlertCircle,
-  BadgeCheck,
-  BarChart3,
-  Calendar,
-  Check,
-  CheckCircle2,
-  ChevronRight,
-  Clock,
-  Eye,
-  FileText,
-  FolderOpen,
-  History,
-  MessageCircle,
-  Package,
-  Paperclip,
-  Phone,
-  Play,
-  RotateCcw,
-  Send,
-  Star,
-  Vote
+    AlertCircle,
+    BadgeCheck,
+    BarChart3,
+    Calendar,
+    Check,
+    CheckCircle2,
+    ChevronRight,
+    Clock,
+    Eye,
+    FileText,
+    FolderOpen,
+    History,
+    MessageCircle,
+    Package,
+    Paperclip,
+    Phone,
+    Play,
+    RotateCcw,
+    Send,
+    Star,
+    Vote
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import type { Job, ProjectTracking, ProjectStage, ProjectComment, ProjectAttachment } from "@/types/shared";
 
 // Re-export for components that import from here
 export type { ProjectStage };
@@ -1377,7 +1378,7 @@ export default function ProjectTrackerCard({
         {/* Background Image */}
         <div className="h-20 sm:h-24 relative overflow-hidden">
           {firstImage ? (
-            <img src={storage.getFileUrl(firstImage)} alt="" className="w-full h-full object-cover" />
+            <Image src={storage.getFileUrl(firstImage)} alt="Project" fill className="object-cover" sizes="(max-width: 640px) 100vw, 400px" />
           ) : (
             <div
               className="w-full h-full"

@@ -1,34 +1,32 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/common/AuthGuard';
-import { useAuth } from '@/contexts/AuthContext';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { api } from '@/lib/api';
 import Avatar from '@/components/common/Avatar';
-import Link from 'next/link';
-import {
-  ArrowLeft,
-  Star,
-  MessageSquare,
-  Clock,
-  CheckCircle,
-  Calendar,
-  ThumbsUp,
-  Image as ImageIcon,
-  MoreVertical,
-  Edit3,
-  Trash2,
-  AlertCircle,
-  Sparkles
-} from 'lucide-react';
-import { formatDateUK } from '@/utils/dateUtils';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { MultiStarDisplay } from '@/components/ui/StarRating';
 import { ACCENT_COLOR } from '@/constants/theme';
+import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { api } from '@/lib/api';
 import type { BaseEntity } from '@/types/shared';
+import { formatDateUK } from '@/utils/dateUtils';
+import {
+  ArrowLeft,
+  CheckCircle,
+  Clock,
+  Edit3,
+  Image as ImageIcon,
+  MoreVertical,
+  Sparkles,
+  Star,
+  ThumbsUp,
+  Trash2
+} from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
 
 // Page-specific review with populated fields
 interface PageReview extends BaseEntity {
@@ -345,7 +343,7 @@ function MyReviewsPageContent() {
                             <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
                               {review.photos.map((photo, idx) => (
                                 <div key={idx} className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden">
-                                  <img src={photo} alt="" className="w-full h-full object-cover" />
+                                  <Image src={photo} alt="Review photo" fill className="object-cover" sizes="80px" />
                                 </div>
                               ))}
                             </div>

@@ -3,7 +3,8 @@
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Plus, Pencil, Trash2, X } from 'lucide-react';
+import { Pencil, Plus, Trash2, X } from 'lucide-react';
+import Image from 'next/image';
 import { useRef, useState } from 'react';
 import AddressPicker from './AddressPicker';
 
@@ -420,7 +421,7 @@ export default function PortfolioProjectsInput({
                   {/* Regular Images */}
                   {project.images.map((url, idx) => (
                     <div key={idx} className="aspect-square rounded-lg overflow-hidden bg-[var(--color-bg-tertiary)]">
-                      <img src={url} alt="" className="w-full h-full object-cover" />
+                      <Image src={url} alt="Portfolio image" fill className="object-cover" sizes="100px" unoptimized />
                     </div>
                   ))}
                 </div>
@@ -568,7 +569,7 @@ export default function PortfolioProjectsInput({
                   {/* Regular Images */}
                   {currentProject.images.map((url, idx) => (
                     <div key={idx} className="relative aspect-square rounded-lg overflow-hidden group">
-                      <img src={url} alt="" className="w-full h-full object-cover" />
+                      <Image src={url} alt="Portfolio image" fill className="object-cover" sizes="100px" unoptimized />
                       <button
                         type="button"
                         onClick={() => handleRemoveGalleryImage(idx)}

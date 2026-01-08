@@ -5,6 +5,7 @@ import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import {
   Building2,
@@ -242,7 +243,7 @@ export default function CompanySettingsPage() {
                   <label className="relative cursor-pointer group">
                     <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-dashed border-[var(--color-border-primary)] hover:border-[#E07B4F] transition-colors">
                       {logoPreview ? (
-                        <img src={logoPreview} alt="Logo" className="w-full h-full object-cover" />
+                        <Image src={logoPreview} alt="Company logo" fill className="object-cover" sizes="96px" unoptimized />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-[var(--color-bg-secondary)]">
                           <Building2 className="w-8 h-8 text-[var(--color-text-tertiary)]" />

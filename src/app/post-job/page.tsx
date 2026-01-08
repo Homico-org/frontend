@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { CategoryIcon, CategorySelector } from "@/components/categories";
 import AddressPicker from "@/components/common/AddressPicker";
 import AuthGuard from "@/components/common/AuthGuard";
@@ -842,7 +843,7 @@ function PostJobPageContent() {
                     {/* Preview - Existing */}
                     {existingMedia.map((media, idx) => (
                       <div key={`existing-${idx}`} className="relative w-20 h-20 rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0 ring-2 ring-emerald-200 ring-offset-1">
-                        <img src={storage.getFileUrl(media.url)} alt="" className="w-full h-full object-cover" />
+                        <Image src={storage.getFileUrl(media.url)} alt="Uploaded media" fill className="object-cover" sizes="80px" />
                         <button
                           onClick={() => removeExistingMedia(idx)}
                           className="absolute top-1.5 right-1.5 w-5 h-5 bg-black/60 hover:bg-red-500 rounded-full flex items-center justify-center transition-colors"
@@ -855,7 +856,7 @@ function PostJobPageContent() {
                     {/* Preview - New */}
                     {mediaFiles.map((media, idx) => (
                       <div key={`new-${idx}`} className="relative w-20 h-20 rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0 ring-2 ring-emerald-200 ring-offset-1">
-                        <img src={media.preview} alt="" className="w-full h-full object-cover" />
+                        <Image src={media.preview} alt="Preview" fill className="object-cover" sizes="80px" unoptimized />
                         <button
                           onClick={() => removeMediaFile(idx)}
                           className="absolute top-1.5 right-1.5 w-5 h-5 bg-black/60 hover:bg-red-500 rounded-full flex items-center justify-center transition-colors"
@@ -1032,12 +1033,12 @@ function PostJobPageContent() {
                   <div className="flex gap-2">
                     {existingMedia.map((media, idx) => (
                       <div key={`review-existing-${idx}`} className="w-14 h-14 rounded-lg overflow-hidden bg-neutral-100">
-                        <img src={storage.getFileUrl(media.url)} alt="" className="w-full h-full object-cover" />
+                        <Image src={storage.getFileUrl(media.url)} alt="Uploaded media" fill className="object-cover" sizes="80px" />
                       </div>
                     ))}
                     {mediaFiles.map((media, idx) => (
                       <div key={`review-new-${idx}`} className="w-14 h-14 rounded-lg overflow-hidden bg-neutral-100">
-                        <img src={media.preview} alt="" className="w-full h-full object-cover" />
+                        <Image src={media.preview} alt="Preview" fill className="object-cover" sizes="80px" unoptimized />
                       </div>
                     ))}
                   </div>

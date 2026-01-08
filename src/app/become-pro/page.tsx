@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import AvatarCropper from "@/components/common/AvatarCropper";
 import BackButton from "@/components/common/BackButton";
 import Header, { HeaderSpacer } from "@/components/common/Header";
@@ -925,10 +926,13 @@ export default function BecomeProPage() {
                     {/* Profile Preview */}
                     <div className="flex items-center gap-4 mb-6 pb-6 border-b border-[var(--color-border-subtle)]">
                       {avatarPreview && (
-                        <img
+                        <Image
                           src={avatarPreview}
-                          alt=""
+                          alt="Avatar"
+                          width={64}
+                          height={64}
                           className="w-16 h-16 rounded-xl object-cover"
+                          unoptimized
                         />
                       )}
                       <div>
@@ -1085,10 +1089,13 @@ export default function BecomeProPage() {
                                 className="relative aspect-square rounded-lg overflow-hidden bg-[var(--color-bg-tertiary)]"
                               >
                                 {coverImage && (
-                                  <img
+                                  <Image
                                     src={coverImage}
                                     alt={project.title}
-                                    className="w-full h-full object-cover"
+                                    fill
+                                    className="object-cover"
+                                    sizes="100px"
+                                    unoptimized
                                   />
                                 )}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
