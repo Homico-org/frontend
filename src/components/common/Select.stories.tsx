@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs';
 import { useState } from 'react';
-import Select from './Select';
+import Select, { SelectOption } from './Select';
 
 const meta: Meta<typeof Select> = {
   title: 'Common/Select',
@@ -39,7 +39,7 @@ const basicOptions = [
 ];
 
 // Interactive wrapper
-const InteractiveSelect = (props: any) => {
+const InteractiveSelect = (props: Omit<Partial<React.ComponentProps<typeof Select>>, 'options'> & { options: SelectOption[] }) => {
   const [value, setValue] = useState(props.value || '');
   return <Select {...props} value={value} onChange={setValue} />;
 };

@@ -3,12 +3,15 @@
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import { Alert } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Mail } from 'lucide-react';
 
 export default function InviteEmployeePage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -67,8 +70,9 @@ export default function InviteEmployeePage() {
       setTimeout(() => {
         router.push('/company/employees');
       }, 2000);
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong');
+    } catch (err) {
+      const error = err as { message?: string };
+      setError(error.message || 'Something went wrong');
     } finally {
       setIsSubmitting(false);
     }
@@ -168,12 +172,11 @@ export default function InviteEmployeePage() {
                     <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1">
                       Full Name *
                     </label>
-                    <input
+                    <Input
                       type="text"
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-neutral-200 dark:border-dark-border dark:bg-dark-elevated dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="John Doe"
                     />
                   </div>
@@ -181,12 +184,11 @@ export default function InviteEmployeePage() {
                     <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1">
                       Email Address *
                     </label>
-                    <input
+                    <Input
                       type="email"
                       required
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-neutral-200 dark:border-dark-border dark:bg-dark-elevated dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="john@example.com"
                     />
                   </div>
@@ -194,11 +196,10 @@ export default function InviteEmployeePage() {
                     <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1">
                       Phone Number
                     </label>
-                    <input
+                    <Input
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-neutral-200 dark:border-dark-border dark:bg-dark-elevated dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="+995 555 123 456"
                     />
                   </div>
@@ -226,11 +227,10 @@ export default function InviteEmployeePage() {
                     <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1">
                       Job Title
                     </label>
-                    <input
+                    <Input
                       type="text"
                       value={formData.jobTitle}
                       onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-neutral-200 dark:border-dark-border dark:bg-dark-elevated dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g. Senior Electrician"
                     />
                   </div>
@@ -238,11 +238,10 @@ export default function InviteEmployeePage() {
                     <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1">
                       Department
                     </label>
-                    <input
+                    <Input
                       type="text"
                       value={formData.department}
                       onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-neutral-200 dark:border-dark-border dark:bg-dark-elevated dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g. Electrical"
                     />
                   </div>
@@ -253,21 +252,21 @@ export default function InviteEmployeePage() {
               <div>
                 <h3 className="font-medium text-neutral-900 dark:text-neutral-50 mb-4">Skills</h3>
                 <div className="flex gap-2 mb-3">
-                  <input
+                  <Input
                     type="text"
                     value={newSkill}
                     onChange={(e) => setNewSkill(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-                    className="flex-1 px-4 py-2.5 border border-neutral-200 dark:border-dark-border dark:bg-dark-elevated dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1"
                     placeholder="Add a skill..."
                   />
-                  <button
+                  <Button
                     type="button"
+                    variant="secondary"
                     onClick={addSkill}
-                    className="px-4 py-2.5 bg-neutral-100 dark:bg-dark-elevated hover:bg-neutral-200 dark:hover:bg-dark-card rounded-xl font-medium transition-all duration-200 ease-out"
                   >
                     Add
-                  </button>
+                  </Button>
                 </div>
                 {formData.skills.length > 0 && (
                   <div className="flex flex-wrap gap-2">
@@ -316,31 +315,21 @@ export default function InviteEmployeePage() {
 
             {/* Submit */}
             <div className="mt-8 flex items-center justify-end gap-3">
-              <Link
-                href="/company/employees"
-                className="px-6 py-2.5 border border-neutral-200 dark:border-dark-border hover:bg-neutral-50 dark:hover:bg-dark-elevated rounded-xl font-medium transition-all duration-200 ease-out"
+              <Button
+                variant="outline"
+                onClick={() => router.push('/company/employees')}
+                type="button"
               >
                 Cancel
-              </Link>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                loading={isSubmitting}
+                leftIcon={!isSubmitting ? <Mail className="w-5 h-5" /> : undefined}
               >
-                {isSubmitting ? (
-                  <>
-                    <LoadingSpinner size="sm" variant="border" color="white" />
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    Send Invitation
-                  </>
-                )}
-              </button>
+                {isSubmitting ? 'Sending...' : 'Send Invitation'}
+              </Button>
             </div>
           </form>
         </div>

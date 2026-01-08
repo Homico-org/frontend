@@ -28,17 +28,18 @@ import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { MultiStarDisplay } from '@/components/ui/StarRating';
 import { ACCENT_COLOR } from '@/constants/theme';
+import type { BaseEntity } from '@/types/shared';
 
-interface Review {
-  _id: string;
+// Page-specific review with populated fields
+interface PageReview extends BaseEntity {
   proId: {
-    _id: string;
+    id: string;
     name: string;
     avatar?: string;
     title: string;
   };
   projectId?: {
-    _id: string;
+    id: string;
     title: string;
   };
   rating: number;
@@ -47,14 +48,13 @@ interface Review {
   createdAt: string;
 }
 
-interface PendingReview {
-  _id: string;
+interface PendingReview extends BaseEntity {
   jobId: {
-    _id: string;
+    id: string;
     title: string;
   };
   proId: {
-    _id: string;
+    id: string;
     name: string;
     avatar?: string;
     title: string;
@@ -67,7 +67,7 @@ function MyReviewsPageContent() {
   const { locale: language } = useLanguage();
   const router = useRouter();
 
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviews, setReviews] = useState<PageReview[]>([]);
   const [pendingReviews, setPendingReviews] = useState<PendingReview[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'given' | 'pending'>('given');
@@ -89,10 +89,11 @@ function MyReviewsPageContent() {
       // Fetch pending reviews (completed jobs without reviews)
       // This would need a backend endpoint - for now we'll use empty array
       setPendingReviews([]);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to fetch reviews:', err);
+      const apiErr = err as { response?: { status?: number } };
       // Don't redirect on error, just show empty state
-      if (err?.response?.status !== 401) {
+      if (apiErr?.response?.status !== 401) {
         setReviews([]);
       }
     } finally {
@@ -260,14 +261,14 @@ function MyReviewsPageContent() {
               <div className="space-y-4">
                 {reviews.map((review) => (
                   <div
-                    key={review._id}
+                    key={review.id}
                     className="rounded-2xl overflow-hidden transition-shadow hover:shadow-md"
                     style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}
                   >
                     <div className="p-5 sm:p-6">
                       <div className="flex items-start gap-4">
                         {/* Pro Avatar */}
-                        <Link href={`/professionals/${review.proId._id}`} className="flex-shrink-0">
+                        <Link href={`/professionals/${review.proId.id}`} className="flex-shrink-0">
                           <Avatar
                             src={review.proId.avatar}
                             name={review.proId.name}
@@ -280,7 +281,7 @@ function MyReviewsPageContent() {
                           <div className="flex items-start justify-between gap-4">
                             <div>
                               <Link
-                                href={`/professionals/${review.proId._id}`}
+                                href={`/professionals/${review.proId.id}`}
                                 className="font-medium text-neutral-900 dark:text-neutral-50 hover:text-forest-600 dark:hover:text-primary-400 transition-colors"
                               >
                                 {review.proId.name}
@@ -299,12 +300,12 @@ function MyReviewsPageContent() {
                             {/* Actions Menu */}
                             <div className="relative">
                               <button
-                                onClick={() => setActionMenuId(actionMenuId === review._id ? null : review._id)}
+                                onClick={() => setActionMenuId(actionMenuId === review.id ? null : review.id)}
                                 className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                               >
                                 <MoreVertical className="h-5 w-5 text-neutral-400" />
                               </button>
-                              {actionMenuId === review._id && (
+                              {actionMenuId === review.id && (
                                 <>
                                   <div
                                     className="fixed inset-0 z-10"
@@ -387,7 +388,7 @@ function MyReviewsPageContent() {
               <div className="space-y-4">
                 {pendingReviews.map((pending) => (
                   <div
-                    key={pending._id}
+                    key={pending.id}
                     className="rounded-2xl overflow-hidden"
                     style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}
                   >

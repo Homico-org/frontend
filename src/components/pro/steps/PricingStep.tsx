@@ -1,7 +1,7 @@
 "use client";
 
-import { useLanguage } from "@/contexts/LanguageContext";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Check } from "lucide-react";
 
 interface PricingStepProps {
@@ -170,7 +170,7 @@ export default function PricingStep({
             <button
               key={option.key}
               type="button"
-              onClick={() => onFormChange({ pricingModel: option.key as any })}
+              onClick={() => onFormChange({ pricingModel: option.key as typeof formData.pricingModel })}
               className={`
                 group relative p-4 rounded-xl border-2 text-left transition-all duration-200
                 ${

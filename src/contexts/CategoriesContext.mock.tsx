@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, ReactNode } from 'react';
+import { createContext, ReactNode, useContext } from 'react';
 
 // Types matching the real context
 export interface SubSubcategory {
@@ -25,7 +25,7 @@ export interface Subcategory {
 }
 
 export interface Category {
-  _id: string;
+  id: string;
   key: string;
   name: string;
   nameKa: string;
@@ -66,7 +66,7 @@ const CategoriesContext = createContext<CategoriesContextType | undefined>(undef
 // Mock categories for Storybook
 const mockCategories: Category[] = [
   {
-    _id: '1',
+    id: '1',
     key: 'design',
     name: 'Interior Design',
     nameKa: 'ინტერიერის დიზაინი',
@@ -80,7 +80,7 @@ const mockCategories: Category[] = [
     ],
   },
   {
-    _id: '2',
+    id: '2',
     key: 'architecture',
     name: 'Architecture',
     nameKa: 'არქიტექტურა',
@@ -91,7 +91,7 @@ const mockCategories: Category[] = [
     subcategories: [],
   },
   {
-    _id: '3',
+    id: '3',
     key: 'craftsmen',
     name: 'Craftsmen',
     nameKa: 'ხელოსნები',
@@ -105,7 +105,7 @@ const mockCategories: Category[] = [
     ],
   },
   {
-    _id: '4',
+    id: '4',
     key: 'homecare',
     name: 'Home Care',
     nameKa: 'სახლის მოვლა',

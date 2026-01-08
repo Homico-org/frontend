@@ -1,155 +1,82 @@
-export enum UserRole {
-  CLIENT = 'client',
-  PRO = 'pro',
-  COMPANY = 'company',
-  ADMIN = 'admin',
-}
+/**
+ * TYPES INDEX
+ *
+ * This file re-exports all types from the new shared types system.
+ * The shared types use 'id' instead of '_id' for consistency.
+ *
+ * MIGRATION NOTE:
+ * Legacy types with '_id' have been replaced with types using 'id'.
+ * Use the transform utilities when receiving backend data:
+ *
+ *   import { transformEntity, transformEntities } from '@/types/shared/transforms';
+ *
+ * IMPORTING:
+ *   // Preferred - direct from shared
+ *   import { User, Job, ProProfile, UserRole } from '@/types/shared';
+ *
+ *   // Also works - from index (for backward compatibility)
+ *   import { User, Job, ProProfile, UserRole } from '@/types';
+ */
 
-export enum ProStatus {
-  ACTIVE = 'active',
-  BUSY = 'busy',
-  AWAY = 'away',
-}
+// Re-export everything from shared types
+export * from './shared';
 
-export enum LikeTargetType {
-  PRO_PROFILE = 'pro_profile',
-  PORTFOLIO_ITEM = 'portfolio_item',
-  FEED_ITEM = 'feed_item',
-}
+// ============== LEGACY COMPATIBILITY ALIASES ==============
+// These ensure existing code continues to work during migration
 
-export enum FeedItemType {
-  PORTFOLIO = 'portfolio',
-  COMPLETION = 'completion',
-  BEFORE_AFTER = 'before_after',
-  PRO_HIGHLIGHT = 'pro_highlight',
-}
+import type {
+  CompanyRef,
+  ProProfile as NewProProfile,
+  PortfolioItem as NewPortfolioItem,
+  FeedItem as NewFeedItem,
+  ProjectRequest as NewProjectRequest,
+  Conversation as NewConversation,
+  Message as NewMessage,
+  Offer as NewOffer,
+  Review as NewReview,
+  Service as NewService,
+  Order as NewOrder,
+  OrderMilestone as NewOrderMilestone,
+  Proposal as NewProposal,
+  Notification as NewNotification,
+} from './shared';
 
-export enum AccountType {
-  INDIVIDUAL = 'individual',
-  ORGANIZATION = 'organization',
-}
+// ============== LEGACY TYPES WITH _id ==============
+// These are kept for backward compatibility but should be migrated
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  avatar?: string;
-  phone?: string;
-  city?: string;
-  selectedCategories?: string[];
-  selectedSubcategories?: string[];
-  accountType?: 'individual' | 'organization';
-  companyName?: string;
-  whatsapp?: string;
-  telegram?: string;
-}
-
-export interface Company {
+/**
+ * @deprecated Use Company from shared types with 'id' instead of '_id'
+ */
+export interface LegacyCompany {
   _id: string;
   name: string;
   logo?: string;
 }
 
-export interface PaymentMethod {
-  id: string;
-  type: 'card' | 'bank';
-  cardLast4?: string;
-  cardBrand?: string;
-  cardExpiry?: string;
-}
-
-export interface PortfolioProject {
-  id: string;
-  title: string;
-  description: string;
-  location?: string;
-  images: string[];
-  videos?: string[];
-  beforeAfterPairs?: { id?: string; beforeImage: string; afterImage: string }[];
-  source?: 'external' | 'homico'; // 'external' = work done outside Homico, 'homico' = completed via platform
-  jobId?: string; // Reference to original job if done through Homico
-}
-export interface ProProfile {
-  accountType: AccountType;
-  availability: string[];
-  avatar: string;
-  avgRating: number;
-  cadastralVerified: boolean;
-  categories: string[];
-  certifications: string[];
-  city: string;
-  companies: Company[];
-  completedJobs: number;
-  completedProjects: number;
-  createdAt: Date;
-  designStyles: string[];
-  email: string;
-  isActive: boolean;
-  isAvailable: boolean;
-  isEmailVerified: boolean;
-  isPhoneVerified: boolean;
-  isPremium: boolean;
-  languages: string[];
-  lastLoginAt: Date;
-  name: string;
-  paymentMethods: PaymentMethod[];
-  phone: string;
-  pinterestLinks: string[];
-  portfolioImages: string[];
-  portfolioProjects: PortfolioProject[];
-  premiumTier: string;
-  profileType: string;
-  role: UserRole;
-  selectedCategories: string[];
-  selectedSubcategories: string[];
-  serviceAreas: string[];
-  status: ProStatus;
-  statusAutoSuggested: boolean;
-  subcategories: string[];
-  telegram: string;
-  totalReviews: number;
-  verificationStatus?: 'pending' | 'submitted' | 'verified' | 'rejected';
-  whatsapp: string;
-  yearsExperience: number;
-  // Pricing
-  pricingModel?: 'hourly' | 'daily' | 'sqm' | 'project_based' | 'from';
-  basePrice?: number;
-  maxPrice?: number;
-  // Custom services
-  customServices?: string[];
-  // Social links
-  facebookUrl?: string;
-  instagramUrl?: string;
-  linkedinUrl?: string;
-  websiteUrl?: string;
+/**
+ * @deprecated Access pro.id instead of pro._id
+ */
+export interface LegacyProProfile extends Omit<NewProProfile, 'id' | 'companies' | 'createdAt' | 'lastLoginAt'> {
+  _id: string;
   __v: number;
-  _id: string;
+  companies: LegacyCompany[];
+  createdAt: Date;
+  lastLoginAt: Date;
 }
 
-export interface PortfolioItem {
+/**
+ * @deprecated Access item.id instead of item._id
+ */
+export interface LegacyPortfolioItem extends Omit<NewPortfolioItem, 'id' | 'createdAt' | 'projectDate'> {
   _id: string;
-  proId: string;
-  title: string;
-  description?: string;
-  imageUrl: string;
-  tags: string[];
   projectDate?: Date;
-  location?: string;
 }
 
-export interface FeedItem {
+/**
+ * @deprecated Access item.id and item.pro.id instead of _id
+ */
+export interface LegacyFeedItem extends Omit<NewFeedItem, 'id' | 'pro'> {
   _id: string;
-  type: FeedItemType;
-  title: string;
-  description?: string;
-  images: string[];
-  videos?: string[];
-  beforeImage?: string;
-  afterImage?: string;
-  beforeAfterPairs?: { id?: string; beforeImage: string; afterImage: string }[];
-  category: string;
-  tags?: string[];
   pro: {
     _id: string;
     name: string;
@@ -157,227 +84,104 @@ export interface FeedItem {
     rating: number;
     title?: string;
   };
-  client?: {
-    name?: string;
-    avatar?: string;
-    city?: string;
-  };
-  rating?: number;
-  review?: string;
-  likeCount: number;
-  isLiked: boolean;
-  createdAt: string;
-  isVerified?: boolean; // Work done through Homico platform
-  jobId?: string; // Reference to original job if done on Homico
-  // For embedded projects that don't have their own ObjectId
-  likeTargetType?: 'portfolio_item' | 'pro_profile';
-  likeTargetId?: string;
 }
 
-export enum ProjectStatus {
-  NEW = 'new',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled',
-}
-
-export interface ProjectRequest {
+/**
+ * @deprecated Access request.id instead of request._id
+ */
+export interface LegacyProjectRequest extends Omit<NewProjectRequest, 'id' | 'createdAt'> {
   _id: string;
-  clientId: User;
-  proId?: ProProfile;
-  category: string;
-  title: string;
-  description: string;
-  location: string;
-  address?: string;
-  budgetMin?: number;
-  budgetMax?: number;
-  currency?: string;
-  estimatedStartDate?: Date;
-  estimatedEndDate?: Date;
-  photos: string[];
-  status: ProjectStatus;
   createdAt: Date;
 }
 
-export interface Conversation {
+/**
+ * @deprecated Access conversation.id instead of conversation._id
+ */
+export interface LegacyConversation extends Omit<NewConversation, 'id' | 'lastMessageAt' | 'createdAt'> {
   _id: string;
-  clientId: User;
-  proId: ProProfile;
-  projectRequestId?: string;
   lastMessageAt?: Date;
-  lastMessagePreview?: string;
 }
 
-export interface Message {
+/**
+ * @deprecated Access message.id instead of message._id
+ */
+export interface LegacyMessage extends Omit<NewMessage, 'id' | 'createdAt'> {
   _id: string;
-  conversationId: string;
-  senderId: User;
-  content: string;
-  isRead: boolean;
   createdAt: Date;
-  attachments: string[];
 }
 
-export interface Offer {
+/**
+ * @deprecated Access offer.id instead of offer._id
+ */
+export interface LegacyOffer extends Omit<NewOffer, 'id' | 'createdAt' | 'estimatedStartDate'> {
   _id: string;
-  projectRequestId: string;
-  proId: ProProfile;
-  priceEstimate: number;
-  currency: string;
   estimatedStartDate?: Date;
-  estimatedDurationDays?: number;
-  description?: string;
-  status: 'pending' | 'accepted' | 'rejected' | 'expired';
   createdAt: Date;
 }
 
-export interface Review {
+/**
+ * @deprecated Access review.id instead of review._id
+ */
+export interface LegacyReview extends Omit<NewReview, 'id' | 'createdAt'> {
   _id: string;
-  projectId: string;
-  clientId: User;
-  proId: ProProfile;
-  rating: number;
-  text?: string;
-  photos: string[];
   createdAt: Date;
 }
 
-// Gig/Service types (Fiverr-style)
-export interface ServicePackage {
-  name: 'basic' | 'standard' | 'premium';
-  title: string;
-  description: string;
-  price: number;
-  deliveryDays: number;
-  revisions: number;
-  features: string[];
-}
-
-export interface Service {
+/**
+ * @deprecated Access service.id instead of service._id
+ */
+export interface LegacyService extends Omit<NewService, 'id' | 'createdAt' | 'updatedAt'> {
   _id: string;
-  proId: ProProfile;
-  title: string;
-  description: string;
-  category: string;
-  subcategory?: string;
-  tags: string[];
-  packages: ServicePackage[];
-  gallery: {
-    type: 'image' | 'video';
-    url: string;
-    thumbnail?: string;
-  }[];
-  faqs: {
-    question: string;
-    answer: string;
-  }[];
-  requirements: string[];
-  avgRating: number;
-  totalReviews: number;
-  totalOrders: number;
-  impressions: number;
-  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
-// Order types
-export enum OrderStatus {
-  PENDING = 'pending',
-  ACCEPTED = 'accepted',
-  IN_PROGRESS = 'in_progress',
-  DELIVERED = 'delivered',
-  REVISION = 'revision',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled',
-  DISPUTED = 'disputed',
-}
-
-export interface OrderMilestone {
+/**
+ * @deprecated Access milestone.id instead of milestone._id
+ */
+export interface LegacyOrderMilestone extends Omit<NewOrderMilestone, 'id' | 'dueDate' | 'completedAt' | 'createdAt'> {
   _id: string;
-  title: string;
-  description: string;
-  amount: number;
   dueDate?: Date;
-  status: 'pending' | 'in_progress' | 'completed' | 'approved';
-  deliverables?: string[];
   completedAt?: Date;
 }
 
-export interface Order {
+/**
+ * @deprecated Access order.id instead of order._id
+ */
+export interface LegacyOrder extends Omit<NewOrder, 'id' | 'milestones' | 'deliveryDeadline' | 'deliveredAt' | 'completedAt' | 'createdAt' | 'updatedAt'> {
   _id: string;
-  serviceId?: Service;
-  projectRequestId?: ProjectRequest;
-  clientId: User;
-  proId: ProProfile;
-  packageType?: 'basic' | 'standard' | 'premium';
-  customOffer?: {
-    description: string;
-    price: number;
-    deliveryDays: number;
-    revisions: number;
-  };
-  milestones: OrderMilestone[];
-  totalAmount: number;
-  platformFee: number;
-  status: OrderStatus;
-  requirements?: string;
-  attachments: string[];
+  milestones: LegacyOrderMilestone[];
   deliveryDeadline: Date;
   deliveredAt?: Date;
   completedAt?: Date;
-  cancelReason?: string;
-  revision: {
-    count: number;
-    maxAllowed: number;
-  };
   createdAt: Date;
   updatedAt: Date;
 }
 
-// Proposal for jobs
-export interface Proposal {
+/**
+ * @deprecated Access proposal.id instead of proposal._id
+ */
+export interface LegacyProposal extends Omit<NewProposal, 'id' | 'createdAt'> {
   _id: string;
-  jobId: string;
-  proId: ProProfile;
-  coverLetter: string;
+  /** @deprecated Use proposedPrice */
   proposedAmount: number;
+  /** @deprecated Use estimatedDuration */
   deliveryDays: number;
-  milestones?: {
-    title: string;
-    amount: number;
-    deliveryDays: number;
-  }[];
-  attachments: string[];
-  status: 'pending' | 'shortlisted' | 'accepted' | 'rejected' | 'withdrawn';
+  /** @deprecated Use viewedByClient */
   isViewed: boolean;
   createdAt: Date;
 }
 
-// Notification types
-export interface Notification {
+/**
+ * @deprecated Access notification.id instead of notification._id
+ */
+export interface LegacyNotification extends Omit<NewNotification, 'id' | 'createdAt'> {
   _id: string;
-  userId: string;
-  type: 'order' | 'message' | 'review' | 'proposal' | 'payment' | 'system';
-  title: string;
-  message: string;
-  link?: string;
-  isRead: boolean;
   createdAt: Date;
 }
 
-// Earnings/Analytics
-export interface ProEarnings {
-  totalEarnings: number;
-  pendingEarnings: number;
-  availableForWithdrawal: number;
-  thisMonth: number;
-  lastMonth: number;
-  totalOrders: number;
-  completedOrders: number;
-  cancelledOrders: number;
-  avgOrderValue: number;
-  responseRate: number;
-  responseTime: number; // in hours
-}
+// ============== TYPE ALIASES FOR MIGRATION ==============
+// Allow gradual migration by supporting both patterns
+
+/** @see NewProProfile for the new type with 'id' */
+export type Company = CompanyRef;

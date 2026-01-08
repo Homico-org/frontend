@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs';
-import { ProProfile, ProStatus, AccountType, UserRole } from '@/types';
+import { ProProfile, ProStatus, AccountType, UserRole, VerificationStatus } from '@/types';
 import ProCard from './ProCard';
 
 const meta: Meta<typeof ProCard> = {
@@ -29,7 +29,7 @@ type Story = StoryObj<typeof ProCard>;
 
 // Create a complete mock profile for stories
 const baseProfile: ProProfile = {
-  _id: '1',
+  id: '1',
   name: 'Giorgi Kapanadze',
   avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop',
   status: ProStatus.ACTIVE,
@@ -42,7 +42,7 @@ const baseProfile: ProProfile = {
   selectedSubcategories: ['interior', 'residential', 'commercial'],
   categories: ['design'],
   subcategories: ['interior', 'residential', 'commercial'],
-  verificationStatus: 'verified',
+  verificationStatus: VerificationStatus.VERIFIED,
   isPremium: false,
   // Required fields with defaults
   accountType: AccountType.INDIVIDUAL,
@@ -51,7 +51,7 @@ const baseProfile: ProProfile = {
   certifications: [],
   city: 'Tbilisi',
   companies: [],
-  createdAt: new Date(),
+  createdAt: new Date().toISOString(),
   designStyles: [],
   email: 'giorgi@example.com',
   isActive: true,
@@ -59,7 +59,7 @@ const baseProfile: ProProfile = {
   isEmailVerified: true,
   isPhoneVerified: true,
   languages: ['ka', 'en'],
-  lastLoginAt: new Date(),
+  lastLoginAt: new Date().toISOString(),
   paymentMethods: [],
   phone: '+995555123456',
   pinterestLinks: [],
@@ -72,7 +72,6 @@ const baseProfile: ProProfile = {
   statusAutoSuggested: false,
   telegram: '',
   whatsapp: '',
-  __v: 0,
 };
 
 export const Default: Story = {
@@ -143,7 +142,7 @@ export const NotVerified: Story = {
   args: {
     profile: {
       ...baseProfile,
-      verificationStatus: 'pending' as const,
+      verificationStatus: VerificationStatus.PENDING,
     },
   },
 };
@@ -193,7 +192,7 @@ export const MultipleCards: Story = {
       <ProCard
         profile={{
           ...baseProfile,
-          _id: '2',
+          id: '2',
           name: 'Levan Tsiklauri',
           avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop',
           status: ProStatus.BUSY,

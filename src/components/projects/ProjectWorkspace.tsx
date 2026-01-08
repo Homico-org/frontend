@@ -3,6 +3,7 @@
 import Avatar from '@/components/common/Avatar';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Input, Textarea } from '@/components/ui/input';
 import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -30,6 +31,13 @@ import {
   X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+
+// User type for workspace components
+interface WorkspaceUser {
+  id: string;
+  name: string;
+  avatar?: string;
+}
 
 // Types
 interface WorkspaceItem {
@@ -114,9 +122,10 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
       const response = await api.get(`/jobs/projects/${jobId}/workspace`);
       setSections(response.data.sections || []);
       setHasLoaded(true);
-    } catch (error: any) {
+    } catch (error) {
       // If 404, workspace doesn't exist yet - that's ok
-      if (error.response?.status !== 404) {
+      const apiErr = error as { response?: { status?: number } };
+      if (apiErr.response?.status !== 404) {
         console.error('Failed to fetch workspace:', error);
       }
       setHasLoaded(true);
@@ -441,7 +450,7 @@ function SectionCard({
   section: WorkspaceSection;
   locale: string;
   isClient: boolean;
-  user: any;
+  user: WorkspaceUser | null;
   onToggle: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -658,7 +667,7 @@ function ItemRow({
   item: WorkspaceItem;
   locale: string;
   isClient: boolean;
-  user: any;
+  user: WorkspaceUser | null;
   onDelete: () => void;
   onReaction: (type: 'like' | 'love' | 'approved') => void;
   isCommentActive: boolean;
@@ -845,13 +854,13 @@ function ItemRow({
 
               {/* Add Comment */}
               <div className="flex items-center gap-2">
-                <input
+                <Input
                   type="text"
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && onAddComment()}
                   placeholder={locale === 'ka' ? 'კომენტარი...' : 'Add comment...'}
-                  className="flex-1 px-3 py-1.5 text-xs bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#C4735B]/30"
+                  className="flex-1 text-xs"
                 />
                 <Button
                   size="icon-sm"
@@ -960,12 +969,11 @@ function SectionModal({
             <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
               {locale === 'ka' ? 'სათაური' : 'Title'} *
             </label>
-            <input
+            <Input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={locale === 'ka' ? 'მაგ: სამზარეულოს მასალები' : 'e.g., Kitchen Materials'}
-              className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E07B4F]/50"
             />
           </div>
 
@@ -973,12 +981,11 @@ function SectionModal({
             <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
               {locale === 'ka' ? 'აღწერა' : 'Description'}
             </label>
-            <textarea
+            <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder={locale === 'ka' ? 'სურვილისამებრ...' : 'Optional...'}
               rows={2}
-              className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E07B4F]/50 resize-none"
             />
           </div>
 
@@ -1196,11 +1203,10 @@ function ItemModal({
             <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
               {locale === 'ka' ? 'სათაური' : 'Title'} *
             </label>
-            <input
+            <Input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E07B4F]/50"
             />
           </div>
 
@@ -1209,11 +1215,10 @@ function ItemModal({
             <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
               {locale === 'ka' ? 'აღწერა' : 'Description'}
             </label>
-            <textarea
+            <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
-              className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E07B4F]/50 resize-none"
             />
           </div>
 
@@ -1272,12 +1277,11 @@ function ItemModal({
               <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
                 {locale === 'ka' ? 'ბმული' : 'URL'}
               </label>
-              <input
+              <Input
                 type="url"
                 value={linkUrl}
                 onChange={(e) => setLinkUrl(e.target.value)}
                 placeholder="https://"
-                className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E07B4F]/50"
               />
             </div>
           )}
@@ -1290,9 +1294,9 @@ function ItemModal({
                   <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
                     {locale === 'ka' ? 'ფასი' : 'Price'}
                   </label>
-                  <input
+                  <Input
                     type="number"
-                    min="0"
+                    min={0}
                     value={price}
                     onChange={(e) => {
                       const value = e.target.value;
@@ -1301,18 +1305,16 @@ function ItemModal({
                       }
                     }}
                     placeholder="0"
-                    className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E07B4F]/50"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
                     {locale === 'ka' ? 'მაღაზია' : 'Store'}
                   </label>
-                  <input
+                  <Input
                     type="text"
                     value={storeName}
                     onChange={(e) => setStoreName(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E07B4F]/50"
                   />
                 </div>
               </div>
@@ -1320,11 +1322,10 @@ function ItemModal({
                 <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
                   {locale === 'ka' ? 'მისამართი' : 'Address'}
                 </label>
-                <input
+                <Input
                   type="text"
                   value={storeAddress}
                   onChange={(e) => setStoreAddress(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E07B4F]/50"
                 />
               </div>
             </>

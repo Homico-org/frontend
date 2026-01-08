@@ -31,6 +31,7 @@ import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Badge } from '@/components/ui/badge';
 import { Toggle } from '@/components/ui/Toggle';
+import { Input, Textarea } from '@/components/ui/input';
 
 interface CompanySettings {
   name: string;
@@ -213,23 +214,20 @@ export default function CompanySettingsPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
+                <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
-              <button
+              <Button
                 key={tab.id}
+                variant={activeTab === tab.id ? 'default' : 'secondary'}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm whitespace-nowrap transition-all duration-200 ${
-                  activeTab === tab.id
-                    ? 'text-white'
-                    : 'bg-[var(--color-bg-primary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
-                }`}
+                leftIcon={<Icon className="w-4 h-4" />}
+                className="whitespace-nowrap"
                 style={activeTab === tab.id ? { backgroundColor: ACCENT } : {}}
               >
-                <Icon className="w-4 h-4" />
                 {tab.label}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -283,11 +281,10 @@ export default function CompanySettingsPage() {
                     <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                       {locale === 'ka' ? 'კომპანიის სახელი' : 'Company Name'}
                     </label>
-                    <input
+                    <Input
                       type="text"
                       value={settings.name}
                       onChange={(e) => setSettings({ ...settings, name: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[#E07B4F] transition-colors"
                     />
                   </div>
 
@@ -295,12 +292,11 @@ export default function CompanySettingsPage() {
                     <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                       {locale === 'ka' ? 'სლოგანი' : 'Tagline'}
                     </label>
-                    <input
+                    <Input
                       type="text"
                       value={settings.tagline || ''}
                       onChange={(e) => setSettings({ ...settings, tagline: e.target.value })}
                       placeholder={locale === 'ka' ? 'მოკლე აღწერა' : 'Short description'}
-                      className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E07B4F] transition-colors"
                     />
                   </div>
 
@@ -308,11 +304,10 @@ export default function CompanySettingsPage() {
                     <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                       {locale === 'ka' ? 'აღწერა' : 'Description'}
                     </label>
-                    <textarea
+                    <Textarea
                       value={settings.description || ''}
                       onChange={(e) => setSettings({ ...settings, description: e.target.value })}
                       rows={4}
-                      className="w-full px-4 py-3 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E07B4F] transition-colors resize-none"
                     />
                   </div>
 
@@ -322,7 +317,7 @@ export default function CompanySettingsPage() {
                     </label>
                     <select
                       value={settings.companyType}
-                      onChange={(e) => setSettings({ ...settings, companyType: e.target.value as any })}
+                      onChange={(e) => setSettings({ ...settings, companyType: e.target.value as typeof settings.companyType })}
                       className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[#E07B4F] transition-colors"
                     >
                       <option value="construction">{locale === 'ka' ? 'სამშენებლო' : 'Construction'}</option>
@@ -335,7 +330,7 @@ export default function CompanySettingsPage() {
                     <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                       {locale === 'ka' ? 'დაარსების წელი' : 'Founded Year'}
                     </label>
-                    <input
+                    <Input
                       type="number"
                       value={settings.foundedYear || ''}
                       onChange={(e) => {
@@ -345,9 +340,8 @@ export default function CompanySettingsPage() {
                           setSettings({ ...settings, foundedYear: parsed || undefined });
                         }
                       }}
-                      min="1900"
+                      min={1900}
                       max={new Date().getFullYear()}
-                      className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[#E07B4F] transition-colors"
                     />
                   </div>
                 </div>
@@ -365,11 +359,10 @@ export default function CompanySettingsPage() {
                       <Mail className="w-4 h-4 inline mr-2" />
                       {locale === 'ka' ? 'ელფოსტა' : 'Email'}
                     </label>
-                    <input
+                    <Input
                       type="email"
                       value={settings.email || ''}
                       onChange={(e) => setSettings({ ...settings, email: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[#E07B4F] transition-colors"
                     />
                   </div>
 
@@ -378,11 +371,10 @@ export default function CompanySettingsPage() {
                       <Phone className="w-4 h-4 inline mr-2" />
                       {locale === 'ka' ? 'ტელეფონი' : 'Phone'}
                     </label>
-                    <input
+                    <Input
                       type="tel"
                       value={settings.phone || ''}
                       onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[#E07B4F] transition-colors"
                     />
                   </div>
 
@@ -391,12 +383,11 @@ export default function CompanySettingsPage() {
                       <Globe className="w-4 h-4 inline mr-2" />
                       {locale === 'ka' ? 'ვებსაიტი' : 'Website'}
                     </label>
-                    <input
+                    <Input
                       type="url"
                       value={settings.website || ''}
                       onChange={(e) => setSettings({ ...settings, website: e.target.value })}
                       placeholder="https://"
-                      className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E07B4F] transition-colors"
                     />
                   </div>
 
@@ -405,11 +396,10 @@ export default function CompanySettingsPage() {
                       <MapPin className="w-4 h-4 inline mr-2" />
                       {locale === 'ka' ? 'ქალაქი' : 'City'}
                     </label>
-                    <input
+                    <Input
                       type="text"
                       value={settings.city || ''}
                       onChange={(e) => setSettings({ ...settings, city: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[#E07B4F] transition-colors"
                     />
                   </div>
 
@@ -417,11 +407,10 @@ export default function CompanySettingsPage() {
                     <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                       {locale === 'ka' ? 'მისამართი' : 'Address'}
                     </label>
-                    <input
+                    <Input
                       type="text"
                       value={settings.address || ''}
                       onChange={(e) => setSettings({ ...settings, address: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[#E07B4F] transition-colors"
                     />
                   </div>
 
@@ -429,12 +418,11 @@ export default function CompanySettingsPage() {
                     <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                       {locale === 'ka' ? 'სამუშაო საათები' : 'Working Hours'}
                     </label>
-                    <input
+                    <Input
                       type="text"
                       value={settings.workingHours || ''}
                       onChange={(e) => setSettings({ ...settings, workingHours: e.target.value })}
                       placeholder={locale === 'ka' ? 'მაგ: ორშ-პარ, 09:00-18:00' : 'e.g., Mon-Fri, 9AM-6PM'}
-                      className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E07B4F] transition-colors"
                     />
                   </div>
                 </div>
@@ -458,18 +446,10 @@ export default function CompanySettingsPage() {
                       {locale === 'ka' ? 'მიიღეთ შეტყობინებები ელფოსტით' : 'Receive notifications via email'}
                     </p>
                   </div>
-                  <button
-                    onClick={() => setSettings({ ...settings, emailNotifications: !settings.emailNotifications })}
-                    className={`relative w-12 h-7 rounded-full transition-colors duration-200 ${
-                      settings.emailNotifications ? 'bg-[#E07B4F]' : 'bg-[var(--color-border-primary)]'
-                    }`}
-                  >
-                    <div
-                      className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                        settings.emailNotifications ? 'left-6' : 'left-1'
-                      }`}
-                    />
-                  </button>
+                  <Toggle
+                    checked={settings.emailNotifications}
+                    onChange={(e) => setSettings({ ...settings, emailNotifications: e.target.checked })}
+                  />
                 </div>
 
                 <div className="flex items-center justify-between p-4 rounded-xl bg-[var(--color-bg-secondary)]">
@@ -481,18 +461,10 @@ export default function CompanySettingsPage() {
                       {locale === 'ka' ? 'შეტყობინებები შეთავაზებების სტატუსის შესახებ' : 'Updates on your proposals'}
                     </p>
                   </div>
-                  <button
-                    onClick={() => setSettings({ ...settings, proposalNotifications: !settings.proposalNotifications })}
-                    className={`relative w-12 h-7 rounded-full transition-colors duration-200 ${
-                      settings.proposalNotifications ? 'bg-[#E07B4F]' : 'bg-[var(--color-border-primary)]'
-                    }`}
-                  >
-                    <div
-                      className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                        settings.proposalNotifications ? 'left-6' : 'left-1'
-                      }`}
-                    />
-                  </button>
+                  <Toggle
+                    checked={settings.proposalNotifications}
+                    onChange={(e) => setSettings({ ...settings, proposalNotifications: e.target.checked })}
+                  />
                 </div>
 
                 <div className="flex items-center justify-between p-4 rounded-xl bg-[var(--color-bg-secondary)]">
@@ -504,18 +476,10 @@ export default function CompanySettingsPage() {
                       {locale === 'ka' ? 'შეტყობინებები ახალი სამუშაოების შესახებ' : 'New job opportunities matching your profile'}
                     </p>
                   </div>
-                  <button
-                    onClick={() => setSettings({ ...settings, jobAlerts: !settings.jobAlerts })}
-                    className={`relative w-12 h-7 rounded-full transition-colors duration-200 ${
-                      settings.jobAlerts ? 'bg-[#E07B4F]' : 'bg-[var(--color-border-primary)]'
-                    }`}
-                  >
-                    <div
-                      className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                        settings.jobAlerts ? 'left-6' : 'left-1'
-                      }`}
-                    />
-                  </button>
+                  <Toggle
+                    checked={settings.jobAlerts}
+                    onChange={(e) => setSettings({ ...settings, jobAlerts: e.target.checked })}
+                  />
                 </div>
 
                 <div className="flex items-center justify-between p-4 rounded-xl bg-[var(--color-bg-secondary)]">
@@ -527,18 +491,10 @@ export default function CompanySettingsPage() {
                       {locale === 'ka' ? 'ყოველკვირეული შეჯამება' : 'Weekly summary of your activity'}
                     </p>
                   </div>
-                  <button
-                    onClick={() => setSettings({ ...settings, weeklyReport: !settings.weeklyReport })}
-                    className={`relative w-12 h-7 rounded-full transition-colors duration-200 ${
-                      settings.weeklyReport ? 'bg-[#E07B4F]' : 'bg-[var(--color-border-primary)]'
-                    }`}
-                  >
-                    <div
-                      className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                        settings.weeklyReport ? 'left-6' : 'left-1'
-                      }`}
-                    />
-                  </button>
+                  <Toggle
+                    checked={settings.weeklyReport}
+                    onChange={(e) => setSettings({ ...settings, weeklyReport: e.target.checked })}
+                  />
                 </div>
               </div>
             </div>

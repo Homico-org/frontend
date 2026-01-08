@@ -41,6 +41,8 @@ import {
 import { formatDateShort } from '@/utils/dateUtils';
 import { ADMIN_THEME as THEME } from '@/constants/theme';
 import { getAdminRoleColor, getAdminRoleLabel } from '@/utils/statusUtils';
+import { Button } from '@/components/ui/button';
+import { Input, Textarea } from '@/components/ui/input';
 
 interface User {
   _id: string;
@@ -127,8 +129,9 @@ function AdminUsersPageContent() {
         console.log('Users API response:', usersRes.data);
         usersData = usersRes.data.users || [];
         totalPagesData = usersRes.data.totalPages || 1;
-      } catch (err: any) {
-        console.error('Failed to fetch /admin/users:', err.response?.status, err.response?.data || err.message);
+      } catch (err) {
+        const apiErr = err as { response?: { status?: number; data?: unknown }; message?: string };
+        console.error('Failed to fetch /admin/users:', apiErr.response?.status, apiErr.response?.data || apiErr.message);
         // Fallback: use recent-users endpoint if paginated endpoint fails
         try {
           const recentRes = await api.get('/admin/recent-users?limit=50');
@@ -244,13 +247,14 @@ function AdminUsersPageContent() {
         <div className="max-w-[1800px] mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button
+              <Button
+                variant="secondary"
+                size="icon"
                 onClick={() => router.push('/admin')}
-                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-105"
                 style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
               >
                 <ArrowLeft className="w-5 h-5" style={{ color: THEME.textMuted }} />
-              </button>
+              </Button>
               <div>
                 <h1
                   className="text-xl font-semibold tracking-tight"
@@ -264,19 +268,18 @@ function AdminUsersPageContent() {
               </div>
             </div>
 
-            <button
+            <Button
               onClick={() => fetchData(true)}
               disabled={isRefreshing}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all hover:scale-105 disabled:opacity-50"
+              loading={isRefreshing}
+              leftIcon={!isRefreshing ? <RefreshCw className="w-4 h-4" /> : undefined}
               style={{
                 background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primaryDark})`,
-                color: 'white',
                 boxShadow: `0 4px 16px ${THEME.primary}40`,
               }}
             >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">{locale === 'ka' ? 'განახლება' : 'Refresh'}</span>
-            </button>
+            </Button>
           </div>
         </div>
       </header>
@@ -322,13 +325,13 @@ function AdminUsersPageContent() {
         >
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: THEME.textDim }} />
-              <input
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 z-10" style={{ color: THEME.textDim }} />
+              <Input
                 type="text"
                 placeholder={locale === 'ka' ? 'სახელი, ემაილი ან ტელეფონი...' : 'Search by name, email or phone...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-all"
+                className="pl-12"
                 style={{
                   background: THEME.surface,
                   border: `1px solid ${THEME.border}`,
@@ -592,22 +595,24 @@ function AdminUsersPageContent() {
               {locale === 'ka' ? `გვერდი ${page} / ${totalPages}` : `Page ${page} of ${totalPages}`}
             </p>
             <div className="flex items-center gap-2">
-              <button
+              <Button
+                variant="secondary"
+                size="icon"
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all disabled:opacity-50"
                 style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
               >
                 <ChevronLeft className="w-5 h-5" style={{ color: THEME.textMuted }} />
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="secondary"
+                size="icon"
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all disabled:opacity-50"
                 style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
               >
                 <ChevronRight className="w-5 h-5" style={{ color: THEME.textMuted }} />
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -848,12 +853,11 @@ function AdminUsersPageContent() {
                   <h4 className="text-sm font-medium mb-3" style={{ color: THEME.text }}>
                     {locale === 'ka' ? 'უარყოფის მიზეზი' : 'Rejection Reason'}
                   </h4>
-                  <textarea
+                  <Textarea
                     value={rejectionNote}
                     onChange={(e) => setRejectionNote(e.target.value)}
                     placeholder={locale === 'ka' ? 'მიუთითეთ უარყოფის მიზეზი...' : 'Enter rejection reason...'}
                     rows={3}
-                    className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none resize-none"
                     style={{
                       background: THEME.surface,
                       border: `1px solid ${THEME.border}`,
@@ -879,47 +883,44 @@ function AdminUsersPageContent() {
             >
               {verificationAction === 'reject' ? (
                 <>
-                  <button
+                  <Button
+                    variant="secondary"
                     onClick={() => setVerificationAction(null)}
-                    className="px-4 py-2 rounded-xl text-sm font-medium transition-all"
                     style={{ background: THEME.surface, color: THEME.textMuted }}
                   >
                     {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="destructive"
                     onClick={() => handleVerificationAction('reject')}
                     disabled={isProcessingVerification || !rejectionNote.trim()}
-                    className="px-4 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-50 flex items-center gap-2"
-                    style={{ background: THEME.error, color: 'white' }}
+                    loading={isProcessingVerification}
                   >
-                    {isProcessingVerification && <RefreshCw className="w-4 h-4 animate-spin" />}
                     {locale === 'ka' ? 'უარყოფა' : 'Confirm Reject'}
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <>
-                  <button
+                  <Button
+                    variant="outline"
                     onClick={() => setVerificationAction('reject')}
-                    className="px-4 py-2 rounded-xl text-sm font-medium transition-all hover:scale-105 flex items-center gap-2"
-                    style={{ background: `${THEME.error}20`, color: THEME.error }}
+                    leftIcon={<XCircle className="w-4 h-4" />}
+                    style={{ background: `${THEME.error}20`, color: THEME.error, borderColor: THEME.error }}
                   >
-                    <XCircle className="w-4 h-4" />
                     {locale === 'ka' ? 'უარყოფა' : 'Reject'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => handleVerificationAction('approve')}
                     disabled={isProcessingVerification}
-                    className="px-4 py-2 rounded-xl text-sm font-medium transition-all hover:scale-105 disabled:opacity-50 flex items-center gap-2"
+                    loading={isProcessingVerification}
+                    leftIcon={!isProcessingVerification ? <BadgeCheck className="w-4 h-4" /> : undefined}
                     style={{
                       background: `linear-gradient(135deg, ${THEME.success}, #16A34A)`,
-                      color: 'white',
                       boxShadow: `0 4px 16px ${THEME.success}40`,
                     }}
                   >
-                    {isProcessingVerification && <RefreshCw className="w-4 h-4 animate-spin" />}
-                    <BadgeCheck className="w-4 h-4" />
                     {locale === 'ka' ? 'დადასტურება' : 'Approve'}
-                  </button>
+                  </Button>
                 </>
               )}
             </div>

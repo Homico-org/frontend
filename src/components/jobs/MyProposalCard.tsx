@@ -5,7 +5,7 @@ import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
 import { formatCurrency } from '@/utils/currencyUtils';
 
 export interface Proposal {
-  _id: string;
+  id: string;
   coverLetter: string;
   proposedPrice?: number;
   estimatedDuration?: number;

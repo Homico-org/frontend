@@ -425,8 +425,9 @@ export default function BecomeProPage() {
 
       setShowConfetti(true);
       setIsComplete(true);
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
+    } catch (err) {
+      const error = err as { message?: string };
+      setError(error.message || "Something went wrong");
       setIsSubmitting(false);
     }
   };

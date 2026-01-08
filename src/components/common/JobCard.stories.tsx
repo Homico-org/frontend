@@ -1,3 +1,4 @@
+import type { Job } from '@/types/shared';
 import type { Meta, StoryObj } from '@storybook/nextjs';
 import JobCard from './JobCard';
 
@@ -20,8 +21,8 @@ const meta: Meta<typeof JobCard> = {
 export default meta;
 type Story = StoryObj<typeof JobCard>;
 
-const baseJob = {
-  _id: '1',
+const baseJob: Job = {
+  id: '1',
   title: 'Kitchen Renovation Project',
   description: 'Looking for an experienced contractor to renovate our kitchen. Need new cabinets, countertops, and flooring.',
   category: 'craftsmen',
@@ -38,7 +39,7 @@ const baseJob = {
   viewCount: 156,
   createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
   clientId: {
-    _id: 'client1',
+    id: 'client1',
     name: 'John Smith',
     city: 'Tbilisi',
   },
@@ -132,7 +133,7 @@ export const WithClientAvatar: Story = {
     job: {
       ...baseJob,
       clientId: {
-        _id: 'client1',
+        id: 'client1',
         name: 'Sarah Johnson',
         avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
         city: 'Batumi',
@@ -146,7 +147,7 @@ export const OrganizationClient: Story = {
     job: {
       ...baseJob,
       clientId: {
-        _id: 'client1',
+        id: 'client1',
         name: 'Acme Corp',
         accountType: 'organization' as const,
         companyName: 'Acme Corporation',
@@ -171,7 +172,7 @@ export const MultipleCards: Story = {
       <JobCard
         job={{
           ...baseJob,
-          _id: '2',
+          id: '2',
           title: 'Interior Design Consultation',
           category: 'design',
           budgetType: 'range',

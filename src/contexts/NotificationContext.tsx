@@ -1,9 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useAuth } from './AuthContext';
 import api from '@/lib/api';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { useAuth } from './AuthContext';
 
 export type NotificationType =
   | 'new_proposal'
@@ -18,7 +18,7 @@ export type NotificationType =
   | 'system_announcement';
 
 export interface Notification {
-  _id: string;
+  id: string;
   userId: string;
   type: NotificationType;
   title: string;
@@ -27,9 +27,44 @@ export interface Notification {
   link?: string;
   referenceId?: string;
   referenceModel?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
+}
+
+// Raw notification from API (before transformation)
+interface RawNotification {
+  _id?: string;
+  id?: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  isRead: boolean;
+  link?: string;
+  referenceId?: string;
+  referenceModel?: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+// Transform backend response to frontend format
+function transformNotification(n: RawNotification): Notification {
+  return {
+    id: n._id || n.id || '',
+    userId: n.userId,
+    type: n.type,
+    title: n.title,
+    message: n.message,
+    isRead: n.isRead,
+    link: n.link,
+    referenceId: n.referenceId,
+    referenceModel: n.referenceModel,
+    metadata: n.metadata,
+    createdAt: n.createdAt,
+    updatedAt: n.updatedAt,
+  };
 }
 
 interface NotificationContextType {
@@ -79,7 +114,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       if (options?.unreadOnly) params.append('unreadOnly', 'true');
 
       const response = await api.get(`/notifications?${params.toString()}`);
-      setNotifications(response.data.notifications);
+      setNotifications(response.data.notifications.map(transformNotification));
       setUnreadCount(response.data.unreadCount);
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
@@ -94,7 +129,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       await api.post('/notifications/mark-read', { notificationIds });
       setNotifications(prev =>
         prev.map(n =>
-          !notificationIds || notificationIds.includes(n._id)
+          !notificationIds || notificationIds.includes(n.id)
             ? { ...n, isRead: true }
             : n
         )
@@ -120,7 +155,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     if (!isAuthenticated) return;
     try {
       await api.delete(`/notifications/${id}`);
-      setNotifications(prev => prev.filter(n => n._id !== id));
+      setNotifications(prev => prev.filter(n => n.id !== id));
       await refreshUnreadCount();
     } catch (error) {
       console.error('Failed to delete notification:', error);
@@ -139,13 +174,14 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   }, [isAuthenticated]);
 
   // Handle new notification from WebSocket
-  const handleNewNotification = useCallback((notification: Notification) => {
+  const handleNewNotification = useCallback((rawNotification: RawNotification) => {
+    const notification = transformNotification(rawNotification);
     console.log('[Notifications] New notification received:', notification.type);
 
     // Add to notifications list (at the beginning)
     setNotifications(prev => {
       // Check if notification already exists
-      if (prev.some(n => n._id === notification._id)) {
+      if (prev.some(n => n.id === notification.id)) {
         return prev;
       }
       return [notification, ...prev];

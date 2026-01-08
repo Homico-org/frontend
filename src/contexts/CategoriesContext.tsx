@@ -1,7 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import api from '@/lib/api';
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 // Types matching the backend schema
 export interface SubSubcategory {
@@ -26,7 +26,7 @@ export interface Subcategory {
 }
 
 export interface Category {
-  _id: string;
+  id: string;
   key: string;
   name: string;
   nameKa: string;
@@ -37,6 +37,68 @@ export interface Category {
   isActive: boolean;
   sortOrder: number;
   subcategories: Subcategory[];
+}
+
+// Raw category from API (before transformation)
+interface RawCategory {
+  _id?: string;
+  id?: string;
+  key: string;
+  name: string;
+  nameKa?: string;
+  description?: string;
+  descriptionKa?: string;
+  icon?: string;
+  keywords: string[];
+  isActive: boolean;
+  sortOrder: number;
+  subcategories?: RawSubcategory[];
+}
+
+interface RawSubcategory {
+  _id?: string;
+  id?: string;
+  key: string;
+  name: string;
+  nameKa?: string;
+  description?: string;
+  descriptionKa?: string;
+  keywords?: string[];
+  isActive?: boolean;
+  sortOrder?: number;
+  icon?: string;
+  children?: SubSubcategory[];
+}
+
+// Transform raw subcategory to frontend format
+function transformSubcategory(sub: RawSubcategory): Subcategory {
+  return {
+    key: sub.key,
+    name: sub.name,
+    nameKa: sub.nameKa || sub.name,
+    icon: sub.icon,
+    keywords: sub.keywords || [],
+    sortOrder: sub.sortOrder ?? 0,
+    isActive: sub.isActive ?? true,
+    children: sub.children || [],
+  };
+}
+
+// Transform backend response to frontend format
+function transformCategory(cat: RawCategory): Category {
+  return {
+    id: cat._id || cat.id || cat.key,
+    key: cat.key,
+    name: cat.name,
+    nameKa: cat.nameKa || cat.name,
+    description: cat.description,
+    descriptionKa: cat.descriptionKa,
+    icon: cat.icon,
+    keywords: cat.keywords || [],
+    isActive: cat.isActive ?? true,
+    sortOrder: cat.sortOrder ?? 0,
+    subcategories: (cat.subcategories || []).map(transformSubcategory),
+  };
 }
 
 export interface FlatCategoryItem {
@@ -79,15 +141,16 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
       setError(null);
 
       const [categoriesRes, flatRes] = await Promise.all([
-        api.get<Category[]>('/categories'),
+        api.get('/categories'),
         api.get<FlatCategoryItem[]>('/categories/flat'),
       ]);
 
-      setCategories(categoriesRes.data);
+      setCategories(categoriesRes.data.map(transformCategory));
       setFlatCategories(flatRes.data);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to fetch categories:', err);
-      setError(err.message || 'Failed to fetch categories');
+      const error = err as { message?: string };
+      setError(error.message || 'Failed to fetch categories');
     } finally {
       setLoading(false);
     }

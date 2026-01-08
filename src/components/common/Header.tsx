@@ -279,9 +279,11 @@ export default function Header() {
 
               {/* Profile Dropdown */}
               <div className="relative" ref={dropdownRef}>
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setShowDropdown(!showDropdown)}
-                  className="flex items-center hover:opacity-90 transition-opacity"
+                  className="p-0 hover:bg-transparent"
                 >
                   <Avatar
                     src={user.avatar}
@@ -290,7 +292,7 @@ export default function Header() {
                     rounded="xl"
                     className="w-9 h-9 ring-2 ring-neutral-200 dark:ring-neutral-700 hover:ring-neutral-300 dark:hover:ring-neutral-600 transition-all duration-300"
                   />
-                </button>
+                </Button>
 
                 {showDropdown && (
                   <div
@@ -552,12 +554,13 @@ export default function Header() {
                       <div className="my-2 mx-4 h-px bg-neutral-200 dark:bg-neutral-700" />
 
                       {/* Logout */}
-                      <button
+                      <Button
+                        variant="ghost"
                         onClick={() => {
                           setShowDropdown(false);
                           logout();
                         }}
-                        className="group flex items-center gap-3 w-full px-4 py-2.5 text-sm text-neutral-600 hover:text-neutral-900 transition-all duration-200"
+                        className="group flex items-center gap-3 w-full px-4 py-2.5 text-sm text-neutral-600 hover:text-neutral-900 justify-start h-auto rounded-none"
                       >
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-neutral-100">
                           <svg className="w-4 h-4" style={{ color: ACCENT_COLOR }} viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -567,7 +570,7 @@ export default function Header() {
                           </svg>
                         </div>
                         <span>{t("nav.signOut")}</span>
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -617,9 +620,11 @@ export default function Header() {
               </div>
 
               {/* Mobile: Burger menu button */}
-              <button
+              <Button
+                variant="secondary"
+                size="icon"
                 onClick={() => setShowMobileMenu(true)}
-                className="sm:hidden flex items-center justify-center w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all active:scale-95"
+                className="sm:hidden"
                 aria-label="Open menu"
               >
                 <div className="flex flex-col gap-1.5 w-5">
@@ -627,7 +632,7 @@ export default function Header() {
                   <span className="block h-0.5 w-3/4 rounded-full bg-neutral-600 dark:bg-neutral-400" />
                   <span className="block h-0.5 w-1/2 rounded-full bg-neutral-600 dark:bg-neutral-400" />
                 </div>
-              </button>
+              </Button>
             </>
           )}
         </div>
@@ -682,12 +687,13 @@ export default function Header() {
               </div>
 
               {/* Login Button */}
-              <button
+              <Button
+                variant="secondary"
                 onClick={() => {
                   setShowMobileMenu(false);
                   openLoginModal();
                 }}
-                className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all active:scale-[0.98]"
+                className="flex items-center gap-3 w-full px-4 py-3.5 h-auto justify-start"
               >
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center"
@@ -706,7 +712,7 @@ export default function Header() {
                 <svg className="w-5 h-5 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
-              </button>
+              </Button>
 
               {/* Register Button */}
               <Link

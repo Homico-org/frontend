@@ -5,25 +5,13 @@ import Header, { HeaderSpacer } from '@/components/common/Header';
 import LocationPicker from '@/components/common/LocationPicker';
 import MediaUpload from '@/components/common/MediaUpload';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Button } from '@/components/ui/button';
+import { Input, Textarea } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
+import type { ProProfile } from '@/types/shared';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-
-interface ProProfile {
-  _id: string;
-  name: string;
-  avatar?: string;
-  title: string;
-  categories: string[];
-  avgRating: number;
-  totalReviews: number;
-  yearsExperience: number;
-  responseTime?: string;
-  completedJobs?: number;
-  isAvailable: boolean;
-  serviceAreas: string[];
-}
 
 interface MediaItem {
   id: string;
@@ -115,7 +103,7 @@ export default function QuickHirePage() {
         const profiles = result.data || result.profiles || result || [];
         const availablePros = profiles.filter((pro: ProProfile) => pro.isAvailable !== false && (pro.avgRating || 0) >= 4);
         setSuggestedPros(availablePros);
-        setSelectedPros(availablePros.slice(0, 3).map((p: ProProfile) => p._id));
+        setSelectedPros(availablePros.slice(0, 3).map((p: ProProfile) => p.id));
       }
     } catch (error) {
       console.error('Failed to fetch pros:', error);
@@ -281,15 +269,15 @@ export default function QuickHirePage() {
 
                 {/* Search */}
                 <div className="relative mb-4">
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
-                  <input
+                  <Input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search services..."
-                    className="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl focus:outline-none focus:border-neutral-400 text-sm"
+                    className="pl-10"
                   />
                 </div>
 
@@ -339,12 +327,11 @@ export default function QuickHirePage() {
                   <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-2">
                     What needs to be done?
                   </label>
-                  <textarea
+                  <Textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Describe the issue or work needed..."
                     rows={4}
-                    className="w-full px-4 py-3 border border-neutral-200 rounded-xl focus:outline-none focus:border-neutral-400 text-sm resize-none"
                   />
                 </div>
 
@@ -397,20 +384,20 @@ export default function QuickHirePage() {
                   <div className="space-y-2">
                     {suggestedPros.map((pro) => (
                       <div
-                        key={pro._id}
-                        onClick={() => toggleProSelection(pro._id)}
+                        key={pro.id}
+                        onClick={() => toggleProSelection(pro.id)}
                         className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                          selectedPros.includes(pro._id)
+                          selectedPros.includes(pro.id)
                             ? 'border-neutral-900 bg-neutral-50'
                             : 'border-neutral-200 hover:border-neutral-300'
                         }`}
                       >
                         <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
-                          selectedPros.includes(pro._id)
+                          selectedPros.includes(pro.id)
                             ? 'border-neutral-900 bg-neutral-900'
                             : 'border-neutral-300'
                         }`}>
-                          {selectedPros.includes(pro._id) && (
+                          {selectedPros.includes(pro.id) && (
                             <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                             </svg>
@@ -455,39 +442,31 @@ export default function QuickHirePage() {
           {/* Navigation */}
           <div className="flex items-center justify-between mt-6">
             {step > 1 ? (
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => setStep(step - 1)}
-                className="px-4 py-2 text-neutral-600 hover:text-neutral-900 font-medium transition-colors"
               >
                 Back
-              </button>
+              </Button>
             ) : (
               <div />
             )}
 
             {step < 3 ? (
-              <button
+              <Button
                 onClick={() => setStep(step + 1)}
                 disabled={!canGoNext()}
-                className="px-6 py-3 bg-neutral-900 hover:bg-neutral-800 disabled:bg-neutral-200 disabled:text-neutral-400 text-white font-medium rounded-xl transition-colors"
               >
                 Continue
-              </button>
+              </Button>
             ) : (
-              <button
+              <Button
                 onClick={handleSubmit}
                 disabled={!canGoNext() || isSubmitting}
-                className="px-6 py-3 bg-neutral-900 hover:bg-neutral-800 disabled:bg-neutral-200 disabled:text-neutral-400 text-white font-medium rounded-xl transition-colors"
+                loading={isSubmitting}
               >
-                {isSubmitting ? (
-                  <span className="flex items-center gap-2">
-                    <LoadingSpinner size="sm" variant="border" color="white" />
-                    Sending...
-                  </span>
-                ) : (
-                  `Send to ${selectedPros.length} pro${selectedPros.length !== 1 ? 's' : ''}`
-                )}
-              </button>
+                {isSubmitting ? 'Sending...' : `Send to ${selectedPros.length} pro${selectedPros.length !== 1 ? 's' : ''}`}
+              </Button>
             )}
           </div>
         </div>

@@ -156,8 +156,9 @@ export default function CreateCompanyJobPage() {
       setTimeout(() => {
         router.push('/company/jobs');
       }, 1500);
-    } catch (err: any) {
-      setError(err.message || 'Failed to create job');
+    } catch (err) {
+      const error = err as { message?: string };
+      setError(error.message || 'Failed to create job');
     } finally {
       setIsSubmitting(false);
     }

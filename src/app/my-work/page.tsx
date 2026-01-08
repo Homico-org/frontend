@@ -37,63 +37,33 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import type { Job, Proposal, ProjectTracking, ProjectStage, ProjectComment, ProjectAttachment } from '@/types/shared';
+import type { LucideIcon } from 'lucide-react';
 
 type TabType = 'active' | 'proposals' | 'completed';
 
-interface Job {
-  _id: string;
-  title: string;
-  description: string;
-  category: string;
-  location: string;
-  budgetType: string;
-  budgetAmount?: number;
-  budgetMin?: number;
-  budgetMax?: number;
-  pricePerUnit?: number;
-  deadline?: string;
-  status: string;
-  images: string[];
-  media: { type: string; url: string }[];
-  proposalCount: number;
-  viewCount: number;
-  createdAt: string;
-  clientId: {
-    _id: string;
-    name: string;
-    email: string;
-    avatar?: string;
-    city?: string;
-    phone?: string;
-    accountType?: string;
-    companyName?: string;
+// Proposal with populated job (for my-work page)
+type WorkProposal = Omit<Proposal, 'jobId'> & { jobId: Job };
+
+// Socket event data types
+interface ProjectStageUpdateEvent {
+  jobId: string;
+  stage: ProjectStage;
+  progress: number;
+  project?: {
+    startedAt?: string;
+    completedAt?: string;
   };
 }
 
-interface ProjectTracking {
-  _id: string;
-  currentStage: 'hired' | 'started' | 'in_progress' | 'review' | 'completed';
-  progress: number;
-  startedAt?: string;
-  completedAt?: string;
-}
-
-interface Proposal {
-  _id: string;
-  jobId: Job;
-  coverLetter: string;
-  proposedPrice: number;
-  estimatedDuration: number;
-  estimatedDurationUnit: string;
-  status: 'pending' | 'in_discussion' | 'accepted' | 'rejected' | 'withdrawn' | 'completed';
-  contactRevealed: boolean;
-  conversationId?: string;
-  clientRespondedAt?: string;
-  acceptedAt?: string;
-  rejectionNote?: string;
-  unreadMessageCount?: number;
-  createdAt: string;
-  projectTracking?: ProjectTracking;
+// Status config type
+interface StatusConfig {
+  label: string;
+  labelKa: string;
+  icon: LucideIcon;
+  color: string;
+  bg: string;
+  border: string;
 }
 
 const TERRACOTTA = '#C4735B';
@@ -104,7 +74,7 @@ function MyWorkPageContent() {
   const toast = useToast();
   const router = useRouter();
 
-  const [allProposals, setAllProposals] = useState<Proposal[]>([]);
+  const [allProposals, setAllProposals] = useState<WorkProposal[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('active');
@@ -116,13 +86,13 @@ function MyWorkPageContent() {
   const socketRef = useRef<Socket | null>(null);
 
   // Helper functions
-  const isProjectCompleted = (p: Proposal) =>
+  const isProjectCompleted = (p: WorkProposal) =>
     p.projectTracking?.currentStage === 'completed' || p.status === 'completed';
 
-  const isActiveProject = (p: Proposal) =>
+  const isActiveProject = (p: WorkProposal) =>
     p.status === 'accepted' && p.projectTracking?.currentStage !== 'completed';
 
-  const isPendingProposal = (p: Proposal) =>
+  const isPendingProposal = (p: WorkProposal) =>
     p.status === 'pending' || p.status === 'in_discussion' || p.status === 'rejected' || p.status === 'withdrawn';
 
   // Calculate counts
@@ -174,9 +144,10 @@ function MyWorkPageContent() {
       const data = Array.isArray(response.data) ? response.data : [];
       setAllProposals(data);
       setError(null);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to fetch proposals:', err);
-      setError(err.response?.data?.message || 'Failed to load data');
+      const apiErr = err as { response?: { data?: { message?: string } } };
+      setError(apiErr.response?.data?.message || 'Failed to load data');
     } finally {
       setIsInitialLoading(false);
     }
@@ -211,22 +182,21 @@ function MyWorkPageContent() {
     });
 
     // Listen for project stage updates
-    socketRef.current.on("projectStageUpdate", (data: { jobId: string; stage: string; progress: number; project: any }) => {
+    socketRef.current.on("projectStageUpdate", (data: ProjectStageUpdateEvent) => {
       console.log("[MyWork] Project stage update:", data);
       // Update the proposal's project tracking data in state
       setAllProposals((prevProposals) =>
         prevProposals.map((proposal) => {
-          if (proposal.jobId._id === data.jobId) {
+          if (proposal.jobId.id === data.jobId) {
             return {
               ...proposal,
-              projectTracking: {
+              projectTracking: proposal.projectTracking ? {
                 ...proposal.projectTracking,
-                _id: proposal.projectTracking?._id || '',
                 currentStage: data.stage as ProjectTracking['currentStage'],
                 progress: data.progress,
                 startedAt: data.project?.startedAt,
                 completedAt: data.project?.completedAt,
-              },
+              } : undefined,
             };
           }
           return proposal;
@@ -247,17 +217,18 @@ function MyWorkPageContent() {
     try {
       await api.post(`/jobs/proposals/${withdrawModalId}/withdraw`);
       setAllProposals(prev => prev.map(p =>
-        p._id === withdrawModalId ? { ...p, status: 'withdrawn' as const } : p
+        p.id === withdrawModalId ? { ...p, status: 'withdrawn' as const } : p
       ));
       setWithdrawModalId(null);
       toast.success(
         language === 'ka' ? 'შეთავაზება გაუქმდა' : 'Proposal withdrawn',
         language === 'ka' ? 'თქვენი შეთავაზება წარმატებით გაუქმდა' : 'Your proposal has been withdrawn'
       );
-    } catch (err: any) {
+    } catch (err) {
+      const apiErr = err as { response?: { data?: { message?: string } } };
       toast.error(
         language === 'ka' ? 'შეცდომა' : 'Error',
-        err.response?.data?.message || 'Failed to withdraw proposal'
+        apiErr.response?.data?.message || 'Failed to withdraw proposal'
       );
     } finally {
       setIsWithdrawing(false);
@@ -265,7 +236,7 @@ function MyWorkPageContent() {
   };
 
   const getStatusConfig = (status: string) => {
-    const configs: Record<string, { label: string; labelKa: string; icon: any; color: string; bg: string; border: string }> = {
+    const configs: Record<string, StatusConfig> = {
       pending: {
         label: 'Pending',
         labelKa: 'მოლოდინში',
@@ -463,35 +434,36 @@ function MyWorkPageContent() {
               // For active or completed projects - use ProjectTrackerCard
               if (isActiveProject(proposal) || isProjectCompleted(proposal)) {
                 const projectData = {
-                  _id: proposal.projectTracking?._id || proposal._id,
-                  jobId: job._id,
+                  id: proposal.projectTracking?.id || proposal.id,
+                  jobId: job.id,
                   clientId: {
-                    _id: job.clientId?._id || '',
+                    id: job.clientId?.id || '',
                     name: job.clientId?.name || '',
                     avatar: job.clientId?.avatar,
                   },
                   proId: {
-                    _id: user?.id || '',
+                    id: user?.id || '',
                     name: user?.name || '',
                     avatar: user?.avatar,
                     phone: user?.phone,
-                    title: (user as any)?.title,
+                    title: user && 'title' in user ? (user as { title?: string }).title : undefined,
                   },
                   currentStage: proposal.projectTracking?.currentStage || 'hired',
                   progress: proposal.projectTracking?.progress || 10,
                   hiredAt: proposal.acceptedAt || proposal.createdAt,
                   startedAt: proposal.projectTracking?.startedAt,
                   completedAt: proposal.projectTracking?.completedAt,
-                  comments: [],
-                  attachments: [],
+                  comments: [] as ProjectComment[],
+                  attachments: [] as ProjectAttachment[],
                   agreedPrice: proposal.proposedPrice,
                   estimatedDuration: proposal.estimatedDuration,
                   estimatedDurationUnit: proposal.estimatedDurationUnit,
+                  createdAt: proposal.createdAt,
                 };
 
                 return (
                   <ProjectTrackerCard
-                    key={proposal._id}
+                    key={proposal.id}
                     job={job}
                     project={projectData}
                     isClient={false}
@@ -509,7 +481,7 @@ function MyWorkPageContent() {
 
               return (
                 <div
-                  key={proposal._id}
+                  key={proposal.id}
                   className="group bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border)] overflow-hidden transition-all duration-300 hover:border-[#C4735B]/20 hover:shadow-lg"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
@@ -534,7 +506,7 @@ function MyWorkPageContent() {
                   {/* Content */}
                   <div className="p-4 sm:p-5">
                     {/* Job Title */}
-                    <Link href={`/jobs/${job._id}`} className="block group/title mb-3">
+                    <Link href={`/jobs/${job.id}`} className="block group/title mb-3">
                       <h3 className="text-lg font-bold text-[var(--color-text-primary)] leading-snug line-clamp-2 group-hover/title:text-[#C4735B] transition-colors">
                         {job.title}
                       </h3>
@@ -605,7 +577,7 @@ function MyWorkPageContent() {
                         variant="secondary"
                         size="sm"
                       >
-                        <Link href={`/jobs/${job._id}`} className="flex items-center gap-2">
+                        <Link href={`/jobs/${job.id}`} className="flex items-center gap-2">
                           <ExternalLink className="w-4 h-4" />
                           {language === 'ka' ? 'სამუშაო' : 'View Job'}
                         </Link>
@@ -615,7 +587,7 @@ function MyWorkPageContent() {
                         <Button
                           variant="destructive"
                           size="sm"
-                          onClick={() => setWithdrawModalId(proposal._id)}
+                          onClick={() => setWithdrawModalId(proposal.id)}
                           leftIcon={<X className="w-4 h-4" />}
                         >
                           {language === 'ka' ? 'გაუქმება' : 'Withdraw'}

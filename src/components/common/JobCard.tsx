@@ -1,56 +1,17 @@
 "use client";
 
-import { storage } from "@/services/storage";
-import Link from "next/link";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useCategoryLabels } from "@/hooks/useCategoryLabels";
-import { formatCurrency, formatPriceRange } from "@/utils/currencyUtils";
 import Avatar from "@/components/common/Avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { useCategoryLabels } from "@/hooks/useCategoryLabels";
+import { storage } from "@/services/storage";
+import type { Job } from "@/types/shared";
+import { formatCurrency, formatPriceRange } from "@/utils/currencyUtils";
+import Link from "next/link";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-interface MediaItem {
-  type: "image" | "video";
-  url: string;
-  thumbnail?: string;
-}
-
-interface Job {
-  _id: string;
-  title: string;
-  description: string;
-  category: string;
-  subcategory?: string;
-  skills: string[];
-  location: string;
-  propertyType?: string;
-  areaSize?: number;
-  sizeUnit?: string;
-  roomCount?: number;
-  budgetType: string;
-  budgetAmount?: number;
-  budgetMin?: number;
-  budgetMax?: number;
-  pricePerUnit?: number;
-  deadline?: string;
-  status: "open" | "in_progress" | "completed" | "cancelled";
-  images: string[];
-  media: MediaItem[];
-  proposalCount: number;
-  viewCount: number;
-  createdAt: string;
-  clientId: {
-    _id: string;
-    name: string;
-    avatar?: string;
-    city?: string;
-    accountType?: "individual" | "organization";
-    companyName?: string;
-  };
-}
-
-interface JobCardProps {
+export interface JobCardProps {
   job: Job;
   variant?: "default" | "compact" | "list";
   onSave?: (jobId: string) => void;
@@ -148,7 +109,7 @@ const JobCard = React.memo(function JobCard({
   const isExpired = daysLeft === 0;
 
   return (
-    <Link href={`/jobs/${job._id}`} className="group block">
+    <Link href={`/jobs/${job.id}`} className="group block">
       <div className="game-card-wrapper">
         <div className={`game-card-content bg-white dark:bg-neutral-900 rounded-lg overflow-hidden shadow-sm transition-shadow duration-300 border border-neutral-100 dark:border-neutral-800 ${isExpired ? 'opacity-60' : ''}`}>
 
@@ -204,7 +165,7 @@ const JobCard = React.memo(function JobCard({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              onSave?.(job._id);
+              onSave?.(job.id);
             }}
             className="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-white/90 dark:bg-black/50 flex items-center justify-center shadow-sm hover:scale-105 transition-transform"
           >
@@ -256,7 +217,7 @@ const JobCard = React.memo(function JobCard({
             </span>
             {(job.subcategory || job.skills?.[0]) && (
               <span className="px-2 py-0.5 text-[11px] font-medium rounded bg-[#C4735B]/10 text-[#C4735B]">
-                {getCategoryLabel(job.subcategory || job.skills[0])}
+                {getCategoryLabel(job.subcategory || job.skills?.[0] || '')}
               </span>
             )}
             <span className="text-[11px] text-neutral-400">
@@ -291,7 +252,7 @@ const JobCard = React.memo(function JobCard({
                   {job.clientId?.name?.split(' ')[0] || (locale === 'ka' ? 'კლიენტი' : 'Client')}
                 </p>
                 <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
-                  {truncateLocation(job.location)}
+                  {truncateLocation(job.location || '')}
                 </p>
               </div>
             </div>

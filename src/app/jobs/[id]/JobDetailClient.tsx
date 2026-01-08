@@ -65,9 +65,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
-
-// Project stage types and constants
-type ProjectStage = "hired" | "started" | "in_progress" | "review" | "completed";
+import type { Job, Proposal, ProjectStage, JobClient, MediaItem } from "@/types/shared";
 
 const STAGES: {
   key: ProjectStage;
@@ -87,83 +85,10 @@ function getStageIndex(stage: ProjectStage): number {
   return STAGES.findIndex((s) => s.key === stage);
 }
 
-interface MediaItem {
-  type: "image" | "video";
-  url: string;
-  thumbnail?: string;
-}
-
-interface Reference {
-  type: "link" | "image" | "pinterest" | "instagram";
-  url: string;
-  title?: string;
-  thumbnail?: string;
-}
-
-interface Proposal {
-  _id: string;
-  coverLetter: string;
-  proposedPrice?: number;
-  estimatedDuration?: number;
-  estimatedDurationUnit?: string;
-  status: "pending" | "accepted" | "rejected" | "withdrawn";
-  createdAt: string;
-}
-
-interface Job {
-  _id: string;
-  jobNumber?: number;
-  title: string;
-  description: string;
-  category: string;
-  subcategory?: string;
-  skills: string[];
-  location: string;
-  propertyType?: "apartment" | "office" | "building" | "house" | "other";
-  currentCondition?: "shell" | "black-frame" | "needs-renovation" | "partial-renovation" | "good";
-  areaSize?: number;
-  sizeUnit?: "sqm" | "room" | "unit" | "floor" | "item";
-  roomCount?: number;
-  budgetType: "fixed" | "range" | "per_sqm" | "negotiable";
-  budgetAmount?: number;
-  budgetMin?: number;
-  budgetMax?: number;
-  pricePerUnit?: number;
-  floorCount?: number;
-  workTypes?: string[];
-  materialsProvided?: boolean;
-  materialsNote?: string;
-  furnitureIncluded?: boolean;
-  visualizationNeeded?: boolean;
-  occupiedDuringWork?: boolean;
-  references?: Reference[];
-  deadline?: string;
-  status: "open" | "in_progress" | "completed" | "cancelled";
-  images: string[];
-  media: MediaItem[];
-  proposalCount: number;
-  viewCount: number;
-  createdAt: string;
-  updatedAt: string;
-  cadastralId?: string;
-  landArea?: number;
-  pointsCount?: number;
-  clientId: {
-    _id: string;
-    name: string;
-    email: string;
-    avatar?: string;
-    city?: string;
-    phone?: string;
-    accountType?: "individual" | "organization";
-    companyName?: string;
-  };
-  hiredPro?: {
-    _id: string;
-    userId: { _id: string; name: string; avatar?: string };
-    avatar?: string;
-    title?: string;
-  };
+// Extended Job type for this page with additional client fields
+interface PageJob extends Omit<Job, 'clientId'> {
+  clientId: JobClient & { email?: string; phone?: string };
+  updatedAt?: string;
 }
 
 const propertyTypeLabels: Record<string, { en: string; ka: string }> = {
@@ -718,7 +643,7 @@ export default function JobDetailClient() {
   const { trackEvent } = useAnalytics();
   const toast = useToast();
 
-  const [job, setJob] = useState<Job | null>(null);
+  const [job, setJob] = useState<PageJob | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [myProposal, setMyProposal] = useState<Proposal | null>(null);
   const [isCheckingProposal, setIsCheckingProposal] = useState(true);
@@ -751,10 +676,10 @@ export default function JobDetailClient() {
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [hasSubmittedReview, setHasSubmittedReview] = useState(false);
 
-  const isOwner = user && job?.clientId && user.id === job.clientId._id;
+  const isOwner = user && job?.clientId && user.id === job.clientId.id;
   const isPro = user?.role === "pro" || user?.role === "admin";
   // Check if current user is the hired pro for this job
-  const isHiredPro = isPro && job?.hiredPro && user?.id === job.hiredPro.userId?._id;
+  const isHiredPro = isPro && job?.hiredPro && user?.id === job.hiredPro.userId?.id;
 
   // WebSocket for real-time updates (polls, resources, stage)
   const socketRef = useRef<Socket | null>(null);
@@ -777,7 +702,7 @@ export default function JobDetailClient() {
 
   // WebSocket connection for real-time updates (for hired pro or client)
   useEffect(() => {
-    if (!job?._id || !user) return;
+    if (!job?.id || !user) return;
 
     // Only connect if user is the owner (client) or the hired pro
     const shouldConnect = isOwner || isHiredPro;
@@ -797,19 +722,19 @@ export default function JobDetailClient() {
     socketRef.current.on("connect", () => {
       console.log("[JobDetail] WebSocket connected");
       // Join the project room for this job
-      socketRef.current?.emit("joinProjectChat", job._id);
+      socketRef.current?.emit("joinProjectChat", job.id);
     });
 
     // Listen for project stage updates
     socketRef.current.on("projectStageUpdate", (data: { jobId: string; stage: string; progress: number }) => {
       console.log("[JobDetail] Project stage update:", data);
-      if (data.jobId === job._id) {
+      if (data.jobId === job.id) {
         setProjectStage(data.stage as ProjectStage);
       }
     });
 
     // Listen for poll updates (will trigger re-render in PollsTab)
-    socketRef.current.on("projectPollUpdate", (data: { type: string; poll: any }) => {
+    socketRef.current.on("projectPollUpdate", (data: { type: string; poll: Record<string, unknown> }) => {
       console.log("[JobDetail] Poll update:", data);
       // PollsTab component handles its own state, this is just for logging
     });
@@ -821,19 +746,19 @@ export default function JobDetailClient() {
     });
 
     return () => {
-      socketRef.current?.emit("leaveProjectChat", job._id);
+      socketRef.current?.emit("leaveProjectChat", job.id);
       socketRef.current?.disconnect();
       socketRef.current = null;
     };
-  }, [job?._id, user, isOwner, isHiredPro]);
+  }, [job?.id, user, isOwner, isHiredPro]);
 
   // Check if owner has already submitted a review for this job
   useEffect(() => {
-    if (!isOwner || !user || !job?._id || job?.status !== "completed") return;
+    if (!isOwner || !user || !job?.id || job?.status !== "completed") return;
 
     const checkReview = async () => {
       try {
-        const response = await api.get(`/reviews/check/job/${job._id}`);
+        const response = await api.get(`/reviews/check/job/${job.id}`);
         if (response.data?.hasReview) {
           setHasSubmittedReview(true);
         }
@@ -843,7 +768,7 @@ export default function JobDetailClient() {
     };
 
     checkReview();
-  }, [isOwner, user, job?._id, job?.status]);
+  }, [isOwner, user, job?.id, job?.status]);
 
   // Submit review handler
   const handleSubmitReview = async () => {
@@ -852,8 +777,8 @@ export default function JobDetailClient() {
     setIsSubmittingReview(true);
     try {
       await api.post("/reviews", {
-        jobId: job._id,
-        proId: job.hiredPro.userId._id,
+        jobId: job.id,
+        proId: job.hiredPro.userId?.id || '',
         rating: reviewRating,
         text: reviewText.trim() || undefined,
       });
@@ -861,8 +786,9 @@ export default function JobDetailClient() {
       setHasSubmittedReview(true);
       setSuccess(locale === "ka" ? "შეფასება გაიგზავნა" : "Review submitted successfully");
       setTimeout(() => setSuccess(""), 3000);
-    } catch (err: any) {
-      const message = err?.response?.data?.message;
+    } catch (err) {
+      const apiErr = err as { response?: { data?: { message?: string } } };
+      const message = apiErr?.response?.data?.message;
       if (message === "Review already exists for this project") {
         setHasSubmittedReview(true);
         setShowReviewModal(false);
@@ -884,7 +810,7 @@ export default function JobDetailClient() {
         const data = await response.json();
         setJob(data);
         trackEvent(AnalyticsEvent.JOB_VIEW, {
-          jobId: data._id,
+          jobId: data.id,
           jobTitle: data.title,
           jobCategory: data.category,
         });
@@ -957,12 +883,12 @@ export default function JobDetailClient() {
   // Fetch project tracking data for hired jobs
   useEffect(() => {
     const fetchProjectTracking = async () => {
-      if (!job?._id || job.status !== "in_progress") return;
+      if (!job?.id || job.status !== "in_progress") return;
       if (!isOwner && !isHiredPro) return;
 
       try {
         const token = localStorage.getItem("access_token");
-        const response = await api.get(`/jobs/projects/${job._id}`);
+        const response = await api.get(`/jobs/projects/${job.id}`);
         if (response.data) {
           setProjectStage(response.data.currentStage || "hired");
           setIsClientConfirmed(response.data.clientConfirmed || false);
@@ -973,18 +899,18 @@ export default function JobDetailClient() {
     };
 
     fetchProjectTracking();
-  }, [job?._id, job?.status, isOwner, isHiredPro]);
+  }, [job?.id, job?.status, isOwner, isHiredPro]);
 
   // Handle stage change (for pro)
   const handleStageChange = async (newStage: ProjectStage) => {
-    if (!job?._id || !isHiredPro) return;
+    if (!job?.id || !isHiredPro) return;
 
     const previousStage = projectStage;
     setProjectStage(newStage);
     setIsUpdatingStage(true);
 
     try {
-      await api.patch(`/jobs/projects/${job._id}/stage`, { stage: newStage });
+      await api.patch(`/jobs/projects/${job.id}/stage`, { stage: newStage });
       toast.success(
         locale === "ka" ? "წარმატება" : "Success",
         locale === "ka" ? "სტატუსი განახლდა" : "Stage updated"
@@ -1002,11 +928,11 @@ export default function JobDetailClient() {
 
   // Handle client confirmation
   const handleClientConfirm = async () => {
-    if (!job?._id || !isOwner) return;
+    if (!job?.id || !isOwner) return;
 
     setIsUpdatingStage(true);
     try {
-      await api.post(`/jobs/projects/${job._id}/confirm-completion`);
+      await api.post(`/jobs/projects/${job.id}/confirm-completion`);
       toast.success(
         locale === "ka" ? "წარმატება" : "Success",
         locale === "ka" ? "პროექტი დაიხურა. გადახდა მოხდება მალე." : "Project closed. Payment will be processed shortly."
@@ -1026,14 +952,14 @@ export default function JobDetailClient() {
 
   // Handle client request changes
   const handleClientRequestChanges = async () => {
-    if (!job?._id || !isOwner) return;
+    if (!job?.id || !isOwner) return;
 
     const previousStage = projectStage;
     setProjectStage("review");
     setIsUpdatingStage(true);
 
     try {
-      await api.patch(`/jobs/projects/${job._id}/stage`, { stage: "review" });
+      await api.patch(`/jobs/projects/${job.id}/stage`, { stage: "review" });
       toast.success(
         locale === "ka" ? "წარმატება" : "Success",
         locale === "ka" ? "მოთხოვნა გაიგზავნა" : "Request sent"
@@ -1100,8 +1026,9 @@ export default function JobDetailClient() {
       );
       const jobData = await jobResponse.json();
       setJob(jobData);
-    } catch (err: any) {
-      setError(err.message || "Failed to submit proposal");
+    } catch (err) {
+      const error = err as { message?: string };
+      setError(error.message || "Failed to submit proposal");
     } finally {
       setIsSubmitting(false);
     }
@@ -1117,11 +1044,12 @@ export default function JobDetailClient() {
         jobTitle: job?.title,
       });
       router.push("/my-jobs");
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to delete job:", err);
+      const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
       const errorMessage =
-        err.response?.data?.message ||
-        err.message ||
+        apiErr.response?.data?.message ||
+        apiErr.message ||
         (locale === "ka" ? "წაშლა ვერ მოხერხდა" : "Failed to delete");
       setDeleteError(errorMessage);
     } finally {
@@ -1426,7 +1354,7 @@ export default function JobDetailClient() {
               isOwner ? (
                 <div className="flex items-center gap-2">
                   <Link
-                    href={`/post-job?edit=${job._id}`}
+                    href={`/post-job?edit=${job.id}`}
                     className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-body text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
                   >
                     <Edit3 className="w-4 h-4" />
@@ -1765,12 +1693,12 @@ export default function JobDetailClient() {
               {myProposal && isPro && (
                 <MyProposalCard
                   proposal={{
-                    _id: myProposal._id,
+                    id: myProposal.id,
                     coverLetter: myProposal.coverLetter,
                     proposedPrice: myProposal.proposedPrice,
                     estimatedDuration: myProposal.estimatedDuration,
                     estimatedDurationUnit: myProposal.estimatedDurationUnit as 'days' | 'weeks' | 'months' | undefined,
-                    status: myProposal.status,
+                    status: myProposal.status as 'pending' | 'accepted' | 'rejected' | 'withdrawn',
                     createdAt: myProposal.createdAt,
                   }}
                   locale={locale as 'en' | 'ka'}
@@ -1913,7 +1841,7 @@ export default function JobDetailClient() {
               {(isHiredPro || isOwner) && isHired && (
                 <section className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden">
                   <ProjectChat
-                    jobId={job._id}
+                    jobId={job.id}
                     locale={locale}
                     isClient={isOwner || false}
                   />
@@ -1927,7 +1855,7 @@ export default function JobDetailClient() {
                 {/* Client Card */}
                 <ClientCard
                   client={{
-                    _id: job.clientId?._id || '',
+                    _id: job.clientId?.id || '',
                     name: job.clientId?.name || 'Client',
                     avatar: job.clientId?.avatar,
                     city: job.clientId?.city,
@@ -1967,7 +1895,7 @@ export default function JobDetailClient() {
                       </h3>
                     </div>
                     <Link
-                      href={`/professionals/${job.hiredPro._id}`}
+                      href={`/professionals/${job.hiredPro.id}`}
                       className="flex items-center gap-4 group"
                     >
                       <Avatar
@@ -1975,7 +1903,7 @@ export default function JobDetailClient() {
                         name={job.hiredPro.userId?.name || "Professional"}
                         size="lg"
                         className="w-14 h-14 ring-2 transition-all group-hover:ring-4"
-                        style={{ "--tw-ring-color": `${ACCENT}40` } as any}
+                        style={{ "--tw-ring-color": `${ACCENT}40` } as React.CSSProperties}
                       />
                       <div className="min-w-0 flex-1">
                         <p className="font-body font-semibold text-neutral-900 dark:text-white truncate group-hover:underline">
@@ -2032,7 +1960,7 @@ export default function JobDetailClient() {
                     <div className={`transition-all duration-300 overflow-hidden ${isPollsExpanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"}`}>
                       <div className="p-4 pt-0 border-t border-neutral-100 dark:border-neutral-800">
                         <PollsTab
-                          jobId={job._id}
+                          jobId={job.id}
                           isPro={isPro || !!isHiredPro}
                           isClient={isOwner || false}
                           userId={user?.id}
@@ -2081,7 +2009,7 @@ export default function JobDetailClient() {
                     <div className={`transition-all duration-300 overflow-hidden ${isResourcesExpanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"}`}>
                       <div className="p-4 pt-0 border-t border-neutral-100 dark:border-neutral-800">
                         <ProjectWorkspace
-                          jobId={job._id}
+                          jobId={job.id}
                           locale={locale}
                           isClient={isOwner || false}
                           embedded={true}
@@ -2109,7 +2037,7 @@ export default function JobDetailClient() {
                           {locale === "ka" ? "გაზიარება" : "Share"}
                         </span>
                         <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                          #{job.jobNumber || job._id.slice(-6)}
+                          #{job.jobNumber || job.id.slice(-6)}
                         </span>
                       </div>
                     </div>
@@ -2118,7 +2046,7 @@ export default function JobDetailClient() {
                       <Button
                         size="icon"
                         onClick={() => {
-                          const url = `${window.location.origin}/jobs/${job._id}`;
+                          const url = `${window.location.origin}/jobs/${job.id}`;
                           const text = job.title;
                           window.open(
                             `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`,
@@ -2135,7 +2063,7 @@ export default function JobDetailClient() {
                         size="icon"
                         variant="secondary"
                         onClick={async () => {
-                          const url = `${window.location.origin}/jobs/${job._id}`;
+                          const url = `${window.location.origin}/jobs/${job.id}`;
                           if (navigator.share) {
                             try {
                               await navigator.share({
@@ -2160,7 +2088,7 @@ export default function JobDetailClient() {
                         size="icon"
                         variant="secondary"
                         onClick={async () => {
-                          const url = `${window.location.origin}/jobs/${job._id}`;
+                          const url = `${window.location.origin}/jobs/${job.id}`;
                           await navigator.clipboard.writeText(url);
                           setCopyToast(true);
                           setTimeout(() => setCopyToast(false), 2000);

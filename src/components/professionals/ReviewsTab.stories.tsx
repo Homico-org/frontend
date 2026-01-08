@@ -27,7 +27,7 @@ type Story = StoryObj<typeof ReviewsTab>;
 
 const mockReviews = [
   {
-    _id: '1',
+    id: '1',
     clientId: {
       name: 'John Smith',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
@@ -42,7 +42,7 @@ const mockReviews = [
     isAnonymous: false,
   },
   {
-    _id: '2',
+    id: '2',
     clientId: {
       name: 'Anonymous',
     },
@@ -52,7 +52,7 @@ const mockReviews = [
     isAnonymous: true,
   },
   {
-    _id: '3',
+    id: '3',
     clientId: {
       name: 'Maria Garcia',
       avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200',
@@ -63,7 +63,7 @@ const mockReviews = [
     isAnonymous: false,
   },
   {
-    _id: '4',
+    id: '4',
     clientId: {
       name: 'David Chen',
     },
@@ -137,7 +137,7 @@ export const GeorgianLocale: Story = {
   args: {
     reviews: [
       {
-        _id: '1',
+        id: '1',
         clientId: {
           name: 'გიორგი',
           avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
@@ -148,7 +148,7 @@ export const GeorgianLocale: Story = {
         isAnonymous: false,
       },
       {
-        _id: '2',
+        id: '2',
         clientId: {
           name: 'ანონიმური',
         },
@@ -176,7 +176,7 @@ export const ManyReviews: Story = {
     reviews: [
       ...mockReviews,
       {
-        _id: '5',
+        id: '5',
         clientId: { name: 'Alex Johnson' },
         rating: 5,
         text: 'Best contractor I have ever worked with.',
@@ -184,7 +184,7 @@ export const ManyReviews: Story = {
         isAnonymous: false,
       },
       {
-        _id: '6',
+        id: '6',
         clientId: { name: 'Sarah Williams' },
         rating: 4,
         text: 'Great work on our bathroom renovation.',

@@ -428,17 +428,15 @@ export default function HelpPage() {
           {/* Category Pills */}
           <div className="flex flex-wrap justify-center gap-2 mb-8">
             {categories.map((cat) => (
-              <button
+              <Button
                 key={cat.id}
+                variant={activeCategory === cat.id ? 'premium' : 'secondary'}
+                size="sm"
                 onClick={() => setActiveCategory(cat.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                  activeCategory === cat.id
-                    ? 'bg-gradient-to-r from-[#C4735B] to-[#B8654D] text-white shadow-lg shadow-[#C4735B]/20'
-                    : 'bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm text-neutral-600 dark:text-neutral-400 hover:bg-[#C4735B]/5 dark:hover:bg-[#E8956A]/10 border border-[#C4735B]/10 dark:border-[#E8956A]/15'
-                }`}
+                className="rounded-full"
               >
                 {cat.label}
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -450,9 +448,10 @@ export default function HelpPage() {
                   key={index}
                   className={`${index !== filteredFaqs.length - 1 ? 'border-b border-neutral-100 dark:border-dark-border' : ''}`}
                 >
-                  <button
+                  <Button
+                    variant="ghost"
                     onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                    className="w-full flex items-center justify-between p-5 text-left hover:bg-cream-50 dark:hover:bg-dark-elevated transition-colors"
+                    className="w-full flex items-center justify-between p-5 text-left hover:bg-cream-50 dark:hover:bg-dark-elevated rounded-none h-auto"
                   >
                     <span className="font-medium text-neutral-900 dark:text-neutral-50 pr-8">
                       {faq.question}
@@ -460,7 +459,7 @@ export default function HelpPage() {
                     <div className={`w-8 h-8 rounded-lg bg-cream-100 dark:bg-dark-elevated flex items-center justify-center flex-shrink-0 transition-transform duration-200 ${openFaq === index ? 'rotate-180' : ''}`}>
                       <ChevronDown className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
                     </div>
-                  </button>
+                  </Button>
                   <div className={`overflow-hidden transition-all duration-300 ${openFaq === index ? 'max-h-96' : 'max-h-0'}`}>
                     <div className="px-5 pb-5">
                       <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
@@ -498,23 +497,24 @@ export default function HelpPage() {
                       { value: 'account_issue', label: t('helpPage.contact.types.account'), icon: 'M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z' },
                       { value: 'feedback', label: t('helpPage.contact.types.feedback'), icon: 'M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z' },
                     ].map((type) => (
-                      <button
+                      <Button
                         key={type.value}
                         type="button"
+                        variant={contactForm.type === type.value ? 'outline' : 'secondary'}
                         onClick={() => setContactForm({ ...contactForm, type: type.value as 'general' | 'account_issue' | 'feedback' })}
-                        className={`p-4 rounded-xl border-2 transition-all duration-200 text-center ${
+                        className={`p-4 h-auto flex-col ${
                           contactForm.type === type.value
                             ? 'border-[#C4735B] dark:border-[#E8956A] bg-[#C4735B]/5 dark:bg-[#E8956A]/10'
-                            : 'border-neutral-200 dark:border-dark-border hover:border-neutral-300 dark:hover:border-neutral-600'
+                            : ''
                         }`}
                       >
-                        <svg className={`w-5 h-5 mx-auto mb-2 ${contactForm.type === type.value ? 'text-[#C4735B] dark:text-[#E8956A]' : 'text-neutral-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className={`w-5 h-5 mb-2 ${contactForm.type === type.value ? 'text-[#C4735B] dark:text-[#E8956A]' : 'text-neutral-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={type.icon} />
                         </svg>
                         <span className={`text-sm font-medium ${contactForm.type === type.value ? 'text-[#C4735B] dark:text-[#E8956A]' : 'text-neutral-600 dark:text-neutral-400'}`}>
                           {type.label}
                         </span>
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>

@@ -3,6 +3,7 @@
 import { CategoryIcon } from '@/components/categories';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useBrowseContext } from '@/contexts/BrowseContext';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -348,13 +349,13 @@ export default function BrowseFiltersSidebar({
               {/* Min Input */}
               <div className="flex-1">
                 <label className="block text-[10px] text-neutral-500 mb-1">Min</label>
-                <input
+                <Input
                   type="text"
                   inputMode="numeric"
                   value={localMinPrice}
                   onChange={(e) => handleMinPriceChange(e.target.value)}
                   placeholder={MIN_BUDGET.toString()}
-                  className="w-full h-8 px-2 bg-neutral-50 border border-neutral-200 rounded text-xs text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-[#C47B65]/20 focus:border-[#C47B65]/50 transition-all"
+                  className="h-8 text-xs"
                 />
               </div>
 
@@ -364,13 +365,13 @@ export default function BrowseFiltersSidebar({
               {/* Max Input */}
               <div className="flex-1">
                 <label className="block text-[10px] text-neutral-500 mb-1">Max</label>
-                <input
+                <Input
                   type="text"
                   inputMode="numeric"
                   value={localMaxPrice}
                   onChange={(e) => handleMaxPriceChange(e.target.value)}
                   placeholder={MAX_BUDGET.toString()}
-                  className="w-full h-8 px-2 bg-neutral-50 border border-neutral-200 rounded text-xs text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-[#C47B65]/20 focus:border-[#C47B65]/50 transition-all"
+                  className="h-8 text-xs"
                 />
               </div>
             </div>

@@ -1,69 +1,19 @@
 'use client';
 
+import ArchitecturalBackground from '@/components/browse/ArchitecturalBackground';
+import Avatar from '@/components/common/Avatar';
 import BackButton from '@/components/common/BackButton';
 import Header, { HeaderSpacer } from '@/components/common/Header';
-import Avatar from '@/components/common/Avatar';
 import JobCard from '@/components/common/JobCard';
-import ArchitecturalBackground from '@/components/browse/ArchitecturalBackground';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { useAuthModal } from '@/contexts/AuthModalContext';
-import { useToast } from '@/contexts/ToastContext';
-import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState, useCallback } from 'react';
-import Link from 'next/link';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ACCENT_COLOR } from '@/constants/theme';
-
-interface UserProfile {
-  _id: string;
-  name: string;
-  avatar?: string;
-  city?: string;
-  role: string;
-  accountType?: 'individual' | 'organization';
-  companyName?: string;
-  createdAt: string;
-}
-
-interface MediaItem {
-  type: 'image' | 'video';
-  url: string;
-  thumbnail?: string;
-}
-
-interface Job {
-  _id: string;
-  title: string;
-  description: string;
-  category: string;
-  skills: string[];
-  location: string;
-  propertyType?: string;
-  areaSize?: number;
-  sizeUnit?: string;
-  roomCount?: number;
-  budgetType: string;
-  budgetAmount?: number;
-  budgetMin?: number;
-  budgetMax?: number;
-  pricePerUnit?: number;
-  deadline?: string;
-  status: 'open' | 'in_progress' | 'completed' | 'cancelled';
-  images: string[];
-  media: MediaItem[];
-  proposalCount: number;
-  viewCount: number;
-  createdAt: string;
-  clientId: {
-    _id: string;
-    name: string;
-    avatar?: string;
-    city?: string;
-    accountType?: 'individual' | 'organization';
-    companyName?: string;
-  };
-}
+import { useAuth } from '@/contexts/AuthContext';
+import { useAuthModal } from '@/contexts/AuthModalContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/contexts/ToastContext';
+import type { Job, PublicUserProfile } from '@/types/shared';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function UserProfilePage() {
   const params = useParams();
@@ -73,7 +23,7 @@ export default function UserProfilePage() {
   const { t, locale } = useLanguage();
   const toast = useToast();
 
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<PublicUserProfile | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -93,8 +43,9 @@ export default function UserProfilePage() {
         if (!response.ok) throw new Error('User not found');
         const data = await response.json();
         setProfile(data);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load profile');
+      } catch (err) {
+        const error = err as { message?: string };
+        setError(error.message || 'Failed to load profile');
       } finally {
         setIsLoading(false);
       }
@@ -133,7 +84,7 @@ export default function UserProfilePage() {
       return;
     }
     // Navigate to messages with this user as recipient
-    router.push(`/messages?recipient=${profile?._id}`);
+    router.push(`/messages?recipient=${profile?.id}`);
   };
 
   const handleSendMessage = async () => {
@@ -152,7 +103,7 @@ export default function UserProfilePage() {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         },
         body: JSON.stringify({
-          recipientId: profile?._id,
+          recipientId: profile?.id,
           message: message
         })
       });
@@ -440,7 +391,7 @@ export default function UserProfilePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {jobs.map((job, index) => (
                     <div
-                      key={job._id}
+                      key={job.id}
                       className="animate-fade-in"
                       style={{ animationDelay: `${0.3 + index * 0.1}s` }}
                     >

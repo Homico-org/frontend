@@ -98,7 +98,7 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
           const likeStatesFromServer: Record<string, { isLiked: boolean; likeCount: number }> = {};
           data.forEach((item: FeedItem) => {
             // Use the actual like target ID for state tracking
-            const targetId = item.likeTargetId || item._id;
+            const targetId = item.likeTargetId || item.id;
             likeStatesFromServer[targetId] = {
               isLiked: item.isLiked || false,
               likeCount: item.likeCount || 0,
@@ -185,7 +185,7 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
     // Update both the actual target ID and the item ID states
     setFeedItems((prev) =>
       prev.map((item) =>
-        item._id === itemId
+        item.id === itemId
           ? { ...item, isLiked: newState.isLiked, likeCount: newState.likeCount }
           : item
       )
@@ -227,7 +227,7 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {feedItems.map((item, index) => (
               <div
-                key={item._id}
+                key={item.id}
                 className="animate-fade-in"
                 style={{ animationDelay: `${(index % 12) * 40}ms` }}
               >
@@ -235,10 +235,10 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
                   item={{
                     ...item,
                     // Use actual like target for state lookup
-                    isLiked: likeStates[item.likeTargetId || item._id]?.isLiked ?? item.isLiked,
-                    likeCount: likeStates[item.likeTargetId || item._id]?.likeCount ?? item.likeCount,
+                    isLiked: likeStates[item.likeTargetId || item.id]?.isLiked ?? item.isLiked,
+                    likeCount: likeStates[item.likeTargetId || item.id]?.likeCount ?? item.likeCount,
                   }}
-                  onLike={(likeTargetType, likeTargetId) => handleLike(item._id, likeTargetType, likeTargetId)}
+                  onLike={(likeTargetType, likeTargetId) => handleLike(item.id, likeTargetType, likeTargetId)}
                   isAuthenticated={isAuthenticated}
                   locale={locale}
                 />

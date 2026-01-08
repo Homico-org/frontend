@@ -80,10 +80,11 @@ export default function PasswordChangeForm({
           text: result.error || (locale === 'ka' ? 'პაროლის შეცვლა ვერ მოხერხდა' : 'Failed to change password'),
         });
       }
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as { message?: string };
       setMessage({
         type: 'error',
-        text: error.message || (locale === 'ka' ? 'პაროლის შეცვლა ვერ მოხერხდა' : 'Failed to change password'),
+        text: err.message || (locale === 'ka' ? 'პაროლის შეცვლა ვერ მოხერხდა' : 'Failed to change password'),
       });
     } finally {
       setIsChanging(false);

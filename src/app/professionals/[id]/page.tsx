@@ -6,7 +6,7 @@ import ContactModal from "@/components/professionals/ContactModal";
 import AboutTab from "@/components/professionals/AboutTab";
 import PortfolioTab from "@/components/professionals/PortfolioTab";
 import ReviewsTab from "@/components/professionals/ReviewsTab";
-import { Review } from "@/components/professionals/ReviewItem";
+import { Review as ReviewItemComponent } from "@/components/professionals/ReviewItem";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useCategories } from "@/contexts/CategoriesContext";
@@ -42,84 +42,10 @@ import { Badge } from "@/components/ui/badge";
 import { ACCENT_COLOR } from "@/constants/theme";
 import Avatar from "@/components/common/Avatar";
 import { MultiStarDisplay } from "@/components/ui/StarRating";
+import type { ProProfile, PortfolioItem, BaseEntity } from "@/types/shared";
 
-interface PortfolioProject {
-  id?: string;
-  title: string;
-  description?: string;
-  location?: string;
-  images: string[];
-  videos?: string[];
-  beforeAfterPairs?: { id?: string; beforeImage: string; afterImage: string }[];
-}
-
-interface PortfolioItem {
-  _id: string;
-  title: string;
-  description?: string;
-  imageUrl: string;
-  images?: string[];
-  tags?: string[];
-  projectDate?: string;
-  completedDate?: string;
-  location?: string;
-  projectType: "quick" | "project" | "job";
-  status: "completed" | "in_progress";
-  category?: string;
-  rating?: number;
-  review?: string;
-  beforeImage?: string;
-  afterImage?: string;
-}
-
-interface ProProfile {
-  _id: string;
-  uid?: number;
-  name: string;
-  email: string;
-  phone?: string;
-  avatar?: string;
-  city?: string;
-  whatsapp?: string;
-  telegram?: string;
-  title: string;
-  companyName?: string;
-  description: string;
-  categories: string[];
-  subcategories?: string[];
-  customServices?: string[];
-  yearsExperience: number;
-  serviceAreas: string[];
-  pricingModel: "hourly" | "project_based" | "from" | "sqm" | "daily";
-  basePrice: number;
-  maxPrice?: number;
-  currency: string;
-  avgRating: number;
-  totalReviews: number;
-  completedJobs?: number;
-  externalCompletedJobs?: number;
-  isAvailable: boolean;
-  status?: "active" | "busy" | "away";
-  coverImage?: string;
-  certifications: string[];
-  languages: string[];
-  tagline?: string;
-  responseTime?: string;
-  createdAt?: string;
-  isPremium?: boolean;
-  premiumTier?: "none" | "basic" | "pro" | "elite";
-  portfolioProjects?: PortfolioProject[];
-  isPhoneVerified?: boolean;
-  isEmailVerified?: boolean;
-  verificationStatus?: "pending" | "submitted" | "verified" | "rejected";
-  facebookUrl?: string;
-  instagramUrl?: string;
-  linkedinUrl?: string;
-  websiteUrl?: string;
-}
-
-interface Review {
-  _id: string;
+// Page-specific review with populated client info
+interface PageReview extends BaseEntity {
   clientId: {
     name: string;
     avatar?: string;
@@ -147,7 +73,7 @@ export default function ProfessionalDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviews, setReviews] = useState<PageReview[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
 
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -191,12 +117,13 @@ export default function ProfessionalDetailPage() {
         const data = await response.json();
         setProfile(data);
         trackEvent(AnalyticsEvent.PROFILE_VIEW, {
-          proId: data._id || data.id,
+          proId: data.id || data.id,
           proName: data.name,
           category: data.categories?.[0],
         });
-      } catch (err: any) {
-        setError(err.message || "Failed to load profile");
+      } catch (err) {
+        const error = err as { message?: string };
+        setError(error.message || "Failed to load profile");
       } finally {
         setIsLoading(false);
       }
@@ -215,10 +142,10 @@ export default function ProfessionalDetailPage() {
 
   useEffect(() => {
     const fetchPortfolio = async () => {
-      if (!profile?._id) return;
+      if (!profile?.id) return;
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/portfolio/pro/${profile._id}`
+          `${process.env.NEXT_PUBLIC_API_URL}/portfolio/pro/${profile.id}`
         );
         if (response.ok) {
           const data = await response.json();
@@ -228,15 +155,15 @@ export default function ProfessionalDetailPage() {
         console.error("Failed to fetch portfolio:", err);
       }
     };
-    if (profile?._id) fetchPortfolio();
-  }, [profile?._id]);
+    if (profile?.id) fetchPortfolio();
+  }, [profile?.id]);
 
   useEffect(() => {
     const fetchReviews = async () => {
-      if (!profile?._id) return;
+      if (!profile?.id) return;
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/reviews/pro/${profile._id}`
+          `${process.env.NEXT_PUBLIC_API_URL}/reviews/pro/${profile.id}`
         );
         if (response.ok) {
           const data = await response.json();
@@ -246,8 +173,8 @@ export default function ProfessionalDetailPage() {
         console.error("Failed to fetch reviews:", err);
       }
     };
-    if (profile?._id) fetchReviews();
-  }, [profile?._id]);
+    if (profile?.id) fetchReviews();
+  }, [profile?.id]);
 
   const isBasicTier =
     !profile?.premiumTier ||
@@ -264,13 +191,13 @@ export default function ProfessionalDetailPage() {
     if (isBasicTier && profile?.phone) {
       setPhoneRevealed(true);
       trackEvent(AnalyticsEvent.CONTACT_REVEAL, {
-        proId: profile._id,
+        proId: profile.id,
         proName: profile.name,
       });
       return;
     }
 
-    router.push(`/messages?recipient=${profile?._id}`);
+    router.push(`/messages?recipient=${profile?.id}`);
   };
 
   // Share functions
@@ -367,7 +294,7 @@ export default function ProfessionalDetailPage() {
 
     // Add from portfolio items (fetched separately)
     portfolio.forEach((item) => {
-      const titleKey = item.title?.toLowerCase().trim() || item._id;
+      const titleKey = item.title?.toLowerCase().trim() || item.id;
       if (seenTitles.has(titleKey)) return;
       seenTitles.add(titleKey);
 
@@ -381,7 +308,7 @@ export default function ProfessionalDetailPage() {
 
       if (images.length > 0) {
         projects.push({
-          id: item._id,
+          id: item.id,
           title: item.title,
           description: item.description,
           location: item.location,
@@ -697,7 +624,7 @@ export default function ProfessionalDetailPage() {
             </div>
 
             {/* Price Display */}
-            {profile.basePrice > 0 && (
+            {(profile.basePrice ?? 0) > 0 && (
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-lg font-bold text-neutral-900 dark:text-white">
                   {profile.pricingModel === "from" &&
@@ -771,7 +698,7 @@ export default function ProfessionalDetailPage() {
             ].map((tab) => (
               <button
                 key={tab.key}
-                onClick={() => setActiveTab(tab.key as any)}
+                onClick={() => setActiveTab(tab.key as typeof activeTab)}
                 className={`relative px-4 py-4 text-sm font-medium transition-colors ${
                   activeTab === tab.key
                     ? "text-[#C4735B]"
@@ -837,7 +764,7 @@ export default function ProfessionalDetailPage() {
         {/* REVIEWS TAB */}
         {activeTab === "reviews" && (
           <ReviewsTab
-            reviews={reviews as Review[]}
+            reviews={reviews}
             avgRating={profile.avgRating}
             totalReviews={profile.totalReviews}
             locale={locale as 'en' | 'ka'}
@@ -1128,7 +1055,7 @@ export default function ProfessionalDetailPage() {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("access_token")}`,
               },
-              body: JSON.stringify({ proId: profile?._id, message: msg }),
+              body: JSON.stringify({ proId: profile?.id, message: msg }),
             }
           );
           if (response.ok) {
@@ -1137,7 +1064,7 @@ export default function ProfessionalDetailPage() {
               locale === "ka" ? "შეტყობინება გაგზავნილია!" : "Message sent!"
             );
             trackEvent(AnalyticsEvent.CONVERSATION_START, {
-              proId: profile?._id,
+              proId: profile?.id,
               proName: profile?.name,
             });
           } else {

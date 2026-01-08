@@ -10,6 +10,12 @@ import CategoriesStep from '@/components/pro/steps/CategoriesStep';
 import PricingAreasStep from '@/components/pro/steps/PricingAreasStep';
 import ReviewStep from '@/components/pro/steps/ReviewStep';
 import ProjectsStep, { PortfolioProject } from '@/components/pro/steps/ProjectsStep';
+
+// Raw portfolio project from API (may have _id and imageUrl)
+interface RawPortfolioProject extends Partial<PortfolioProject> {
+  _id?: string;
+  imageUrl?: string;
+}
 import { useAuth } from '@/contexts/AuthContext';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -157,7 +163,7 @@ function ProProfileSetupPageContent() {
             setFormData(prev => ({ ...prev, cadastralId: parsed.cadastralId }));
           }
           if (parsed.portfolioProjects && Array.isArray(parsed.portfolioProjects)) {
-            const cleanedProjects = parsed.portfolioProjects.map((p: any, idx: number) => ({
+            const cleanedProjects = parsed.portfolioProjects.map((p: RawPortfolioProject, idx: number) => ({
               id: p.id || `project-${Date.now()}-${idx}`,
               title: p.title || '',
               description: p.description || '',
@@ -262,7 +268,7 @@ function ProProfileSetupPageContent() {
           // Load portfolio projects
           let loadedProjects: PortfolioProject[] = [];
           if (profile.portfolioProjects && profile.portfolioProjects.length > 0) {
-            loadedProjects = profile.portfolioProjects.map((p: any, idx: number) => ({
+            loadedProjects = profile.portfolioProjects.map((p: RawPortfolioProject, idx: number) => ({
               id: p.id || `project-${Date.now()}-${idx}`,
               title: p.title || '',
               description: p.description || '',
@@ -278,7 +284,7 @@ function ProProfileSetupPageContent() {
             if (portfolioRes.ok) {
               const portfolioData = await portfolioRes.json();
               if (portfolioData && portfolioData.length > 0) {
-                const fetchedProjects = portfolioData.map((p: any, idx: number) => ({
+                const fetchedProjects = portfolioData.map((p: RawPortfolioProject, idx: number) => ({
                   id: p.id || p._id || `portfolio-${Date.now()}-${idx}`,
                   title: p.title || '',
                   description: p.description || '',
@@ -514,8 +520,9 @@ function ProProfileSetupPageContent() {
       updateUser({ isProfileCompleted: true });
 
       router.push('/browse');
-    } catch (err: any) {
-      setError(err.message || (isEditMode ? 'Failed to update profile' : 'Failed to create profile'));
+    } catch (err) {
+      const error = err as { message?: string };
+      setError(error.message || (isEditMode ? 'Failed to update profile' : 'Failed to create profile'));
     } finally {
       setIsLoading(false);
     }

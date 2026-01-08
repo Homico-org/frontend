@@ -51,7 +51,7 @@ export default function ReviewsTab({
         {/* Reviews List */}
         {reviews.map((review) => (
           <ReviewItem
-            key={review._id}
+            key={review.id}
             review={review}
             locale={locale}
             onPhotoClick={onPhotoClick}

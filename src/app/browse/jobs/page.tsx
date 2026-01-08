@@ -1,56 +1,18 @@
 "use client";
 
-import JobCard from "@/components/common/JobCard";
 import EmptyState from "@/components/common/EmptyState";
+import JobCard from "@/components/common/JobCard";
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { SkeletonCardGrid } from '@/components/ui/Skeleton';
+import { ACCENT_COLOR } from '@/constants/theme';
 import { useAuth } from "@/contexts/AuthContext";
 import { useJobsContext } from "@/contexts/JobsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAnalytics, AnalyticsEvent } from "@/hooks/useAnalytics";
-import { Briefcase, Bookmark } from "lucide-react";
+import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
+import type { Job } from "@/types/shared";
+import { Bookmark, Briefcase } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ACCENT_COLOR } from '@/constants/theme';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { SkeletonCardGrid } from '@/components/ui/Skeleton';
-
-interface MediaItem {
-  type: "image" | "video";
-  url: string;
-  thumbnail?: string;
-}
-
-interface Job {
-  _id: string;
-  title: string;
-  description: string;
-  category: string;
-  skills: string[];
-  location: string;
-  propertyType?: string;
-  areaSize?: number;
-  sizeUnit?: string;
-  roomCount?: number;
-  budgetType: string;
-  budgetAmount?: number;
-  budgetMin?: number;
-  budgetMax?: number;
-  pricePerUnit?: number;
-  deadline?: string;
-  status: "open" | "in_progress" | "completed" | "cancelled";
-  images: string[];
-  media: MediaItem[];
-  proposalCount: number;
-  viewCount: number;
-  createdAt: string;
-  clientId: {
-    _id: string;
-    name: string;
-    avatar?: string;
-    city?: string;
-    accountType?: "individual" | "organization";
-    companyName?: string;
-  };
-}
 
 export default function JobsPage() {
   const { locale } = useLanguage();
@@ -280,15 +242,15 @@ export default function JobsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {displayedJobs.map((job, index) => (
               <div
-                key={job._id}
+                key={job.id}
                 className="animate-fade-in"
                 style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}
               >
                 <JobCard
                   job={job}
                   onSave={handleSaveJob}
-                  isSaved={savedJobIds.has(job._id)}
-                  hasApplied={appliedJobIds.has(job._id)}
+                  isSaved={savedJobIds.has(job.id)}
+                  hasApplied={appliedJobIds.has(job.id)}
                 />
               </div>
             ))}

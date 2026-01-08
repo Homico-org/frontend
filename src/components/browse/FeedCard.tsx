@@ -80,7 +80,7 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
 
   return (
     <Link
-      href={`/professionals/${item.pro._id}`}
+      href={`/professionals/${item.pro.id}`}
       className="group block"
     >
       {/* Card Container with Game Card Effect */}

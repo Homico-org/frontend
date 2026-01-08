@@ -33,9 +33,9 @@ import {
 import { formatDateShort } from '@/utils/dateUtils';
 import { ADMIN_THEME as THEME } from '@/constants/theme';
 import { getAdminJobStatusColor, getJobStatusLabel } from '@/utils/statusUtils';
+import type { BaseEntity } from '@/types/shared';
 
-interface Job {
-  _id: string;
+interface AdminJob extends BaseEntity {
   title: string;
   description?: string;
   category: string;
@@ -48,7 +48,7 @@ interface Job {
   };
   location?: string;
   clientId: {
-    _id: string;
+    id: string;
     name: string;
     avatar?: string;
   };
@@ -71,7 +71,7 @@ function AdminJobsPageContent() {
   const { t, locale } = useLanguage();
   const router = useRouter();
 
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [jobs, setJobs] = useState<AdminJob[]>([]);
   const [stats, setStats] = useState<JobStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -99,7 +99,7 @@ function AdminJobsPageContent() {
       });
 
       // Try to fetch paginated jobs
-      let jobsData: Job[] = [];
+      let jobsData: AdminJob[] = [];
       let totalPagesData = 1;
 
       try {
@@ -107,8 +107,9 @@ function AdminJobsPageContent() {
         console.log('Jobs API response:', jobsRes.data);
         jobsData = jobsRes.data.jobs || [];
         totalPagesData = jobsRes.data.totalPages || 1;
-      } catch (err: any) {
-        console.error('Failed to fetch /admin/jobs:', err.response?.status, err.response?.data || err.message);
+      } catch (err) {
+        const apiErr = err as { response?: { status?: number; data?: unknown }; message?: string };
+        console.error('Failed to fetch /admin/jobs:', apiErr.response?.status, apiErr.response?.data || apiErr.message);
         // Fallback: use recent-jobs endpoint if paginated endpoint fails
         try {
           const recentRes = await api.get('/admin/recent-jobs?limit=50');
@@ -148,7 +149,7 @@ function AdminJobsPageContent() {
     setPage(1);
   }, [searchQuery, statusFilter]);
 
-  const formatBudget = (budget?: Job['budget']) => {
+  const formatBudget = (budget?: AdminJob['budget']) => {
     if (!budget) return '-';
     if (budget.min && budget.max) {
       return `₾${budget.min} - ₾${budget.max}`;
@@ -358,7 +359,7 @@ function AdminJobsPageContent() {
               const StatusIcon = getStatusIcon(job.status);
               return (
                 <div
-                  key={job._id}
+                  key={job.id}
                   className="px-6 py-4 grid grid-cols-12 gap-4 items-center transition-colors cursor-pointer"
                   style={{
                     borderBottom: index < jobs.length - 1 ? `1px solid ${THEME.border}` : 'none',
@@ -435,7 +436,7 @@ function AdminJobsPageContent() {
                   {/* Actions */}
                   <div className="col-span-2 flex items-center justify-end gap-2">
                     <button
-                      onClick={() => router.push(`/jobs/${job._id}`)}
+                      onClick={() => router.push(`/jobs/${job.id}`)}
                       className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
                       style={{ background: `${THEME.info}20` }}
                       title={locale === 'ka' ? 'ნახვა' : 'View Job'}
@@ -444,13 +445,13 @@ function AdminJobsPageContent() {
                     </button>
                     <div className="relative">
                       <button
-                        onClick={() => setActionMenuJob(actionMenuJob === job._id ? null : job._id)}
+                        onClick={() => setActionMenuJob(actionMenuJob === job.id ? null : job.id)}
                         className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
                         style={{ background: THEME.surface }}
                       >
                         <MoreVertical className="w-4 h-4" style={{ color: THEME.textMuted }} />
                       </button>
-                      {actionMenuJob === job._id && (
+                      {actionMenuJob === job.id && (
                         <div
                           className="absolute right-0 mt-2 w-48 rounded-xl overflow-hidden shadow-xl z-10"
                           style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
@@ -462,7 +463,7 @@ function AdminJobsPageContent() {
                             onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                             onClick={() => {
                               setActionMenuJob(null);
-                              router.push(`/jobs/${job._id}`);
+                              router.push(`/jobs/${job.id}`);
                             }}
                           >
                             <Eye className="w-4 h-4" style={{ color: THEME.info }} />
@@ -475,7 +476,7 @@ function AdminJobsPageContent() {
                             onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                             onClick={() => {
                               setActionMenuJob(null);
-                              router.push(`/profile/${job.clientId?._id}`);
+                              router.push(`/profile/${job.clientId?.id}`);
                             }}
                           >
                             <User className="w-4 h-4" style={{ color: THEME.warning }} />

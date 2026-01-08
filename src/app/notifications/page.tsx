@@ -31,7 +31,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 // Notification type configurations
-const notificationConfig: Record<NotificationType, { icon: any; color: string; bgColor: string }> = {
+const notificationConfig: Record<NotificationType, { icon: typeof Briefcase; color: string; bgColor: string }> = {
   new_proposal: {
     icon: Briefcase,
     color: '#3B82F6',
@@ -302,7 +302,7 @@ function NotificationsPageContent() {
 
   const handleNotificationClick = async (notification: Notification) => {
     if (!notification.isRead) {
-      await markAsRead([notification._id]);
+      await markAsRead([notification.id]);
     }
     if (notification.link) {
       router.push(notification.link);
@@ -521,9 +521,9 @@ function NotificationsPageContent() {
                 <div className="px-4 space-y-2">
                   {group.notifications.map((notification) => (
                     <SwipeableNotificationCard
-                      key={notification._id}
+                      key={notification.id}
                       notification={notification}
-                      onDelete={() => deleteNotification(notification._id)}
+                      onDelete={() => deleteNotification(notification.id)}
                       onClick={() => handleNotificationClick(notification)}
                       locale={locale}
                     />

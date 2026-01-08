@@ -2,6 +2,43 @@ import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
+/**
+ * Recursively transforms MongoDB _id to id in response data.
+ * This ensures frontend always uses 'id' instead of '_id'.
+ */
+function transformIds(data: unknown): unknown {
+  if (data === null || data === undefined) {
+    return data;
+  }
+
+  if (Array.isArray(data)) {
+    return data.map(transformIds);
+  }
+
+  if (typeof data === 'object') {
+    const obj = data as Record<string, unknown>;
+    const result: Record<string, unknown> = {};
+
+    for (const key of Object.keys(obj)) {
+      if (key === '_id') {
+        // Transform _id to id, but only if id doesn't already exist
+        if (!('id' in obj)) {
+          result['id'] = obj[key];
+        }
+        // Skip _id in output
+      } else if (key === '__v') {
+        // Skip mongoose version key
+      } else {
+        result[key] = transformIds(obj[key]);
+      }
+    }
+
+    return result;
+  }
+
+  return data;
+}
+
 export const api = axios.create({
   baseURL: API_URL,
   headers: {
@@ -25,7 +62,13 @@ api.interceptors.request.use((config) => {
 });
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Transform _id to id in all responses
+    if (response.data) {
+      response.data = transformIds(response.data);
+    }
+    return response;
+  },
   (error) => {
     if (error.response?.status === 401) {
       // Clear all auth data

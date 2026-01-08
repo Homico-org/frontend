@@ -51,7 +51,7 @@ export interface PortfolioProject {
 export interface UseRegistrationReturn {
   // Router & Context
   router: ReturnType<typeof useRouter>;
-  locale: string;
+  locale: 'en' | 'ka';
   country: string;
   categories: ReturnType<typeof useCategories>['categories'];
   openLoginModal: () => void;

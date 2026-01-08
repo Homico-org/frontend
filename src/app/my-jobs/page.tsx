@@ -4,7 +4,7 @@ import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
 import BackButton from '@/components/common/BackButton';
 import EmptyState from '@/components/common/EmptyState';
-import ProjectTrackerCard, { ProjectStage } from '@/components/projects/ProjectTrackerCard';
+import ProjectTrackerCard from '@/components/projects/ProjectTrackerCard';
 import { Button } from '@/components/ui/button';
 import { ConfirmModal } from '@/components/ui/Modal';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,6 +12,15 @@ import { useToast } from '@/contexts/ToastContext';
 import { useCategoryLabels } from '@/hooks/useCategoryLabels';
 import { api } from '@/lib/api';
 import { storage } from '@/services/storage';
+import type { Job, ProjectStage, ProjectTracking } from '@/types/shared';
+
+// Socket event data type
+interface ProjectStageUpdateEvent {
+  jobId: string;
+  stage: ProjectStage;
+  progress: number;
+  project?: Partial<ProjectTracking>;
+}
 import {
   AlertTriangle,
   ArrowLeft,
@@ -36,75 +45,6 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { io, Socket } from 'socket.io-client';
 import { Skeleton, SkeletonCard } from '@/components/ui/Skeleton';
 import { Badge } from '@/components/ui/badge';
-
-interface ProjectTracking {
-  _id: string;
-  jobId: string;
-  clientId: { _id: string; name: string; avatar?: string };
-  proId: { _id: string; name: string; avatar?: string; phone?: string; title?: string };
-  currentStage: ProjectStage;
-  progress: number;
-  hiredAt: string;
-  startedAt?: string;
-  expectedEndDate?: string;
-  completedAt?: string;
-  comments: Array<{
-    userId: string;
-    userName: string;
-    userAvatar?: string;
-    userRole: 'client' | 'pro';
-    content: string;
-    createdAt: string;
-  }>;
-  attachments: Array<{
-    uploadedBy: string;
-    uploaderName: string;
-    fileName: string;
-    fileUrl: string;
-    fileType: string;
-    fileSize?: number;
-    description?: string;
-    uploadedAt: string;
-  }>;
-  agreedPrice?: number;
-  estimatedDuration?: number;
-  estimatedDurationUnit?: string;
-}
-
-interface Job {
-  _id: string;
-  title: string;
-  description: string;
-  category: string;
-  subcategory?: string;
-  skills: string[];
-  location: string;
-  budgetType: string;
-  budgetAmount?: number;
-  budgetMin?: number;
-  budgetMax?: number;
-  status: 'open' | 'in_progress' | 'completed' | 'cancelled' | 'expired';
-  images: string[];
-  media: { type: string; url: string }[];
-  proposalCount: number;
-  shortlistedCount?: number;
-  viewCount: number;
-  createdAt: string;
-  deadline?: string;
-  hiredPro?: {
-    _id: string;
-    userId: { _id: string; name: string; avatar?: string };
-    avatar?: string;
-    title?: string;
-  };
-  // New proposals with avatars
-  recentProposals?: Array<{
-    _id: string;
-    proId: { avatar?: string; name: string };
-  }>;
-  // Project tracking data for in_progress jobs
-  projectTracking?: ProjectTracking;
-}
 
 type StatusFilter = 'all' | 'open' | 'hired' | 'closed' | 'expired';
 
@@ -150,18 +90,19 @@ function MyJobsPageContent() {
     });
 
     // Listen for project stage updates
-    socketRef.current.on("projectStageUpdate", (data: { jobId: string; stage: string; progress: number; project: any }) => {
+    socketRef.current.on("projectStageUpdate", (data: ProjectStageUpdateEvent) => {
       console.log("[MyJobs] Project stage update:", data);
       // Update the job's project tracking data in state
       setJobs((prevJobs) =>
         prevJobs.map((job) => {
-          if (job._id === data.jobId) {
+          if (job.id === data.jobId && job.projectTracking) {
             return {
               ...job,
               projectTracking: {
                 ...job.projectTracking,
                 ...data.project,
-                currentStage: data.stage as ProjectStage,
+                jobId: job.projectTracking.jobId || job.id,
+                currentStage: data.stage,
                 progress: data.progress,
               },
             };
@@ -193,7 +134,7 @@ function MyJobsPageContent() {
         jobsData.map(async (job: Job) => {
           if (job.status === 'in_progress') {
             try {
-              const trackingResponse = await api.get(`/jobs/projects/${job._id}`);
+              const trackingResponse = await api.get(`/jobs/projects/${job.id}`);
               return { ...job, projectTracking: trackingResponse.data.project };
             } catch {
               // If no project tracking exists, return job as-is
@@ -205,7 +146,7 @@ function MyJobsPageContent() {
       );
 
       setJobs(jobsWithTracking);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to fetch jobs:', err);
       toast.error(
         locale === 'ka' ? 'შეცდომა' : 'Error',
@@ -244,12 +185,12 @@ function MyJobsPageContent() {
   const handleDeleteJob = async () => {
     if (!deleteModalJob) return;
 
-    const jobId = deleteModalJob._id;
+    const jobId = deleteModalJob.id;
 
     try {
       setDeletingJobId(jobId);
       await api.delete(`/jobs/${jobId}`);
-      setJobs(prev => prev.filter(j => j._id !== jobId));
+      setJobs(prev => prev.filter(j => j.id !== jobId));
       toast.success(
         locale === 'ka' ? 'წარმატება' : 'Success',
         locale === 'ka' ? 'პროექტი წაიშალა' : 'Job deleted successfully'
@@ -273,7 +214,7 @@ function MyJobsPageContent() {
 
       // Update job in local state to open status
       setJobs(prev => prev.map(j =>
-        j._id === jobId ? { ...j, status: 'open' as const } : j
+        j.id === jobId ? { ...j, status: 'open' as const } : j
       ));
 
       toast.success(
@@ -453,7 +394,7 @@ function MyJobsPageContent() {
               if (isHired && job.projectTracking) {
                 return (
                   <ProjectTrackerCard
-                    key={job._id}
+                    key={job.id}
                     job={job}
                     project={job.projectTracking}
                     isClient={true}
@@ -465,8 +406,8 @@ function MyJobsPageContent() {
 
               return (
                 <div
-                  key={job._id}
-                  onClick={() => router.push(`/jobs/${job._id}`)}
+                  key={job.id}
+                  onClick={() => router.push(`/jobs/${job.id}`)}
                   className="bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-100 dark:border-neutral-800 transition-shadow hover:shadow-lg cursor-pointer"
                 >
                   {/* Mobile: Vertical Stack Layout */}
@@ -527,7 +468,7 @@ function MyJobsPageContent() {
                               onClick={(e) => e.stopPropagation()}
                               className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm shadow-sm"
                             >
-                              <Link href={`/post-job?edit=${job._id}`}>
+                              <Link href={`/post-job?edit=${job.id}`}>
                                 <Edit3 className="w-4 h-4" />
                               </Link>
                             </Button>
@@ -535,7 +476,7 @@ function MyJobsPageContent() {
                               variant="ghost"
                               size="icon"
                               onClick={(e) => { e.stopPropagation(); setDeleteModalJob(job); }}
-                              disabled={deletingJobId === job._id}
+                              disabled={deletingJobId === job.id}
                               className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm shadow-sm text-neutral-400 hover:text-red-500"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -546,9 +487,9 @@ function MyJobsPageContent() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={(e) => { e.stopPropagation(); handleRenewJob(job._id); }}
-                            disabled={renewingJobId === job._id}
-                            loading={renewingJobId === job._id}
+                            onClick={(e) => { e.stopPropagation(); handleRenewJob(job.id); }}
+                            disabled={renewingJobId === job.id}
+                            loading={renewingJobId === job.id}
                             className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm shadow-sm text-amber-600 hover:text-amber-700"
                           >
                             <RefreshCw className="w-4 h-4" />
@@ -568,7 +509,7 @@ function MyJobsPageContent() {
                               style={{ color: ACCENT_COLOR }}
                             >
                               {getCategoryLabel(job.category)}
-                              {(job.subcategory || job.skills?.[0]) && ` • ${getCategoryLabel(job.subcategory || job.skills[0])}`}
+                              {(job.subcategory || job.skills?.[0]) && ` • ${getCategoryLabel(job.subcategory || job.skills?.[0] || '')}`}
                             </span>
                             <span className="flex items-center gap-1 text-[10px] sm:text-[11px] text-neutral-400">
                               <Clock className="w-3 h-3" />
@@ -598,7 +539,7 @@ function MyJobsPageContent() {
                                 asChild
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <Link href={`/post-job?edit=${job._id}`}>
+                                <Link href={`/post-job?edit=${job.id}`}>
                                   <Edit3 className="w-4 h-4" />
                                 </Link>
                               </Button>
@@ -606,7 +547,7 @@ function MyJobsPageContent() {
                                 variant="ghost"
                                 size="icon"
                                 onClick={(e) => { e.stopPropagation(); setDeleteModalJob(job); }}
-                                disabled={deletingJobId === job._id}
+                                disabled={deletingJobId === job.id}
                                 className="text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -617,9 +558,9 @@ function MyJobsPageContent() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={(e) => { e.stopPropagation(); handleRenewJob(job._id); }}
-                              disabled={renewingJobId === job._id}
-                              loading={renewingJobId === job._id}
+                              onClick={(e) => { e.stopPropagation(); handleRenewJob(job.id); }}
+                              disabled={renewingJobId === job.id}
+                              loading={renewingJobId === job.id}
                               className="text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
                               title={locale === 'ka' ? 'განახლება' : 'Renew'}
                             >
@@ -716,9 +657,9 @@ function MyJobsPageContent() {
                               variant="outline"
                               size="sm"
                               asChild
-                              onClick={(e) => { e.stopPropagation(); handleViewProposals(job._id); }}
+                              onClick={(e) => { e.stopPropagation(); handleViewProposals(job.id); }}
                             >
-                              <Link href={`/my-jobs/${job._id}/proposals`} className="flex items-center gap-1">
+                              <Link href={`/my-jobs/${job.id}/proposals`} className="flex items-center gap-1">
                                 {locale === 'ka' ? 'შეთავაზებების ნახვა' : 'View Proposals'}
                                 <ChevronRight className="w-4 h-4" />
                               </Link>
@@ -726,14 +667,14 @@ function MyJobsPageContent() {
                           )}
                           {isExpired && (
                             <Button
-                              onClick={(e) => { e.stopPropagation(); handleRenewJob(job._id); }}
-                              disabled={renewingJobId === job._id}
-                              loading={renewingJobId === job._id}
+                              onClick={(e) => { e.stopPropagation(); handleRenewJob(job.id); }}
+                              disabled={renewingJobId === job.id}
+                              loading={renewingJobId === job.id}
                               size="sm"
-                              leftIcon={!renewingJobId || renewingJobId !== job._id ? <RefreshCw className="w-4 h-4" /> : undefined}
+                              leftIcon={!renewingJobId || renewingJobId !== job.id ? <RefreshCw className="w-4 h-4" /> : undefined}
                               className="bg-amber-500 hover:bg-amber-600"
                             >
-                              {renewingJobId === job._id
+                              {renewingJobId === job.id
                                 ? (locale === 'ka' ? 'მიმდინარეობს...' : 'Renewing...')
                                 : (locale === 'ka' ? 'განახლება 30 დღით' : 'Renew for 30 days')}
                             </Button>

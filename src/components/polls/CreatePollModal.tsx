@@ -2,6 +2,7 @@
 
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/button';
+import { Input, Textarea } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '@/components/ui/Modal';
 import { cn } from '@/lib/utils';
@@ -134,8 +135,9 @@ export default function CreatePollModal({
         { id: '2', text: '', imageUrl: '' },
       ]);
       onClose();
-    } catch (err: any) {
-      setError(err.message || (locale === 'ka' ? 'შეცდომა' : 'Error'));
+    } catch (err) {
+      const error = err as { message?: string };
+      setError(error.message || (locale === 'ka' ? 'შეცდომა' : 'Error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -169,12 +171,10 @@ export default function CreatePollModal({
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
               {locale === 'ka' ? 'სათაური' : 'Title'} *
             </label>
-            <input
-              type="text"
+            <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={locale === 'ka' ? 'მაგ: ფერთა პალიტრა მისაღებისთვის' : 'e.g. Color Palette for Living Room'}
-              className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]"
             />
           </div>
 
@@ -183,12 +183,11 @@ export default function CreatePollModal({
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
               {locale === 'ka' ? 'აღწერა' : 'Description'} ({locale === 'ka' ? 'არასავალდებულო' : 'optional'})
             </label>
-            <textarea
+            <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder={locale === 'ka' ? 'დამატებითი ინფორმაცია...' : 'Additional information...'}
-              rows={2}
-              className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B] resize-none"
+              textareaSize="sm"
             />
           </div>
 
@@ -198,32 +197,30 @@ export default function CreatePollModal({
               {locale === 'ka' ? 'ვარიანტების ტიპი' : 'Option Type'}
             </label>
             <div className="flex gap-2">
-              <button
+              <Button
                 type="button"
+                variant={optionType === 'image' ? 'outline' : 'secondary'}
                 onClick={() => setOptionType('image')}
                 className={cn(
-                  'flex-1 py-2.5 px-4 rounded-xl border-2 transition-all flex items-center justify-center gap-2',
-                  optionType === 'image'
-                    ? 'border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B]'
-                    : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400'
+                  'flex-1',
+                  optionType === 'image' && 'border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B]'
                 )}
+                leftIcon={<Image className="w-4 h-4" />}
               >
-                <Image className="w-4 h-4" />
                 {locale === 'ka' ? 'სურათი' : 'Image'}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant={optionType === 'text' ? 'outline' : 'secondary'}
                 onClick={() => setOptionType('text')}
                 className={cn(
-                  'flex-1 py-2.5 px-4 rounded-xl border-2 transition-all flex items-center justify-center gap-2',
-                  optionType === 'text'
-                    ? 'border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B]'
-                    : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400'
+                  'flex-1',
+                  optionType === 'text' && 'border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B]'
                 )}
+                leftIcon={<Type className="w-4 h-4" />}
               >
-                <Type className="w-4 h-4" />
                 {locale === 'ka' ? 'ტექსტი' : 'Text'}
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -260,25 +257,28 @@ export default function CreatePollModal({
                             alt=""
                             className="w-full h-full object-cover"
                           />
-                          <button
+                          <Button
                             type="button"
+                            variant="ghost"
+                            size="icon-sm"
                             onClick={() => {
                               const newOptions = [...options];
                               newOptions[index].imageUrl = '';
                               newOptions[index].imagePreview = '';
                               setOptions(newOptions);
                             }}
-                            className="absolute top-2 right-2 p-1.5 bg-white/90 dark:bg-neutral-900/90 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute top-2 right-2 bg-white/90 dark:bg-neutral-900/90 opacity-0 group-hover:opacity-100 transition-opacity"
                           >
                             <X className="w-3 h-3 text-neutral-600" />
-                          </button>
+                          </Button>
                         </>
                       ) : (
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
                           onClick={() => fileInputRefs.current[index]?.click()}
                           disabled={uploadingIndex === index}
-                          className="absolute inset-0 flex flex-col items-center justify-center text-neutral-400 hover:text-[#C4735B] transition-colors"
+                          className="absolute inset-0 flex flex-col items-center justify-center text-neutral-400 hover:text-[#C4735B] h-full w-full rounded-xl"
                         >
                           {uploadingIndex === index ? (
                             <LoadingSpinner size="md" color="currentColor" />
@@ -290,7 +290,7 @@ export default function CreatePollModal({
                               </span>
                             </>
                           )}
-                        </button>
+                        </Button>
                       )}
                       <input
                         ref={(el) => { fileInputRefs.current[index] = el; }}
@@ -311,34 +311,37 @@ export default function CreatePollModal({
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <input
-                        type="text"
+                      <Input
                         value={option.text}
                         onChange={(e) => handleOptionTextChange(index, e.target.value)}
                         placeholder={`${locale === 'ka' ? 'ვარიანტი' : 'Option'} ${index + 1}`}
-                        className="flex-1 px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]"
+                        className="flex-1"
                       />
                       {options.length > 2 && (
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="icon-sm"
                           onClick={() => handleRemoveOption(index)}
-                          className="p-2 text-neutral-400 hover:text-red-500 transition-colors"
+                          className="text-neutral-400 hover:text-red-500"
                         >
                           <Trash2 className="w-4 h-4" />
-                        </button>
+                        </Button>
                       )}
                     </div>
                   )}
 
                   {/* Remove button for image options */}
                   {optionType === 'image' && options.length > 2 && (
-                    <button
+                    <Button
                       type="button"
+                      variant="destructive"
+                      size="icon-sm"
                       onClick={() => handleRemoveOption(index)}
-                      className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                      className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg w-6 h-6"
                     >
                       <Trash2 className="w-3 h-3" />
-                    </button>
+                    </Button>
                   )}
                 </div>
               ))}

@@ -66,7 +66,7 @@ export default function ProCard({
   const currentStatus =
     STATUS_CONFIG[profile.status || ProStatus.AWAY] ||
     STATUS_CONFIG[ProStatus.AWAY];
-  const isTopRated = profile.avgRating >= 4.8 && profile.completedProjects >= 5;
+  const isTopRated = profile.avgRating >= 4.8 && (profile.completedProjects || 0) >= 5;
   const isPremium = profile.isPremium || false;
 
   // Avatar priority
@@ -84,7 +84,7 @@ export default function ProCard({
   // Default/Compact variant
   if (variant === "compact" || variant === "default") {
     return (
-      <Link href={`/professionals/${profile._id}`} className="group block">
+      <Link href={`/professionals/${profile.id}`} className="group block">
         <div className={`game-card-wrapper ${isPremium ? 'game-card-premium' : ''}`}>
           <div className="game-card-content bg-white dark:bg-neutral-900 rounded-lg overflow-hidden shadow-sm transition-shadow duration-300 border border-neutral-100 dark:border-neutral-800 p-4">
           {/* Top Row - Badges & Like */}
@@ -268,7 +268,7 @@ export default function ProCard({
   // Horizontal variant
   if (variant === "horizontal") {
     return (
-      <Link href={`/professionals/${profile._id}`} className="group block">
+      <Link href={`/professionals/${profile.id}`} className="group block">
         <div className={`game-card-wrapper ${isPremium ? 'game-card-premium' : ''}`}>
           <div className="game-card-content bg-white dark:bg-neutral-900 rounded-lg overflow-hidden shadow-sm transition-shadow duration-300 border border-neutral-100 dark:border-neutral-800 p-3">
           <div className="flex items-center gap-3">

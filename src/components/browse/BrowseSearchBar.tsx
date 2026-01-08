@@ -1,5 +1,7 @@
 'use client';
 
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { useBrowseContext } from '@/contexts/BrowseContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useClickOutside } from '@/hooks/useClickOutside';
@@ -80,8 +82,8 @@ export default function BrowseSearchBar({ placeholder }: BrowseSearchBarProps) {
     <div ref={containerRef} className="relative w-full max-w-md">
       {/* Search Input */}
       <div className="relative flex items-center">
-        <Search className="absolute left-3 w-4 h-4 text-[var(--color-text-tertiary)]" />
-        <input
+        <Search className="absolute left-3 w-4 h-4 text-[var(--color-text-tertiary)] z-10" />
+        <Input
           ref={inputRef}
           type="text"
           value={inputValue}
@@ -105,15 +107,17 @@ export default function BrowseSearchBar({ placeholder }: BrowseSearchBarProps) {
             }
           }}
           placeholder={placeholder || defaultPlaceholder}
-          className="w-full pl-9 pr-8 py-2 text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] rounded-lg focus:outline-none focus:border-[#E07B4F] focus:ring-1 focus:ring-[#E07B4F]/20 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)]"
+          className="pl-9 pr-8"
         />
         {inputValue && (
-          <button
+          <Button
+            variant="ghost"
+            size="icon-sm"
             onClick={clearSearch}
-            className="absolute right-2 p-1 rounded-full hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)]"
+            className="absolute right-2"
           >
             <X className="w-3.5 h-3.5" />
-          </button>
+          </Button>
         )}
       </div>
 

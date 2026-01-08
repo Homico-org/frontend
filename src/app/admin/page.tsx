@@ -5,8 +5,9 @@ import Avatar from '@/components/common/Avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { api } from '@/lib/api';
+import { logApiError } from '@/utils/errorUtils';
 import {
-  Activity,
+  Activity as ActivityIcon,
   AlertCircle,
   ArrowUpRight,
   BarChart3,
@@ -81,9 +82,19 @@ interface DashboardStats {
   };
 }
 
+interface ActivityData {
+  name?: string;
+  role?: string;
+  title?: string;
+  clientId?: { name?: string };
+  proId?: { name?: string };
+  userId?: { name?: string };
+  [key: string]: unknown;
+}
+
 interface Activity {
   type: string;
-  data: any;
+  data: ActivityData;
   date: string;
 }
 
@@ -160,9 +171,10 @@ function AdminDashboardPageContent() {
       setDailyJobs(dailyJobsRes.data);
       setDailyProposals(dailyProposalsRes.data);
       setLastUpdated(new Date());
-    } catch (err: any) {
-      console.error('Failed to fetch dashboard data:', err);
-      const message = err?.response?.data?.message || err?.message || 'Failed to load dashboard data';
+    } catch (err) {
+      logApiError('Admin Dashboard', err);
+      const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
+      const message = apiErr?.response?.data?.message || apiErr?.message || 'Failed to load dashboard data';
       setError(message);
     } finally {
       setIsLoading(false);
@@ -192,7 +204,7 @@ function AdminDashboardPageContent() {
       case 'job_created': return Briefcase;
       case 'proposal_sent': return FileText;
       case 'ticket_created': return MessageCircle;
-      default: return Activity;
+      default: return ActivityIcon;
     }
   };
 
@@ -386,7 +398,7 @@ function AdminDashboardPageContent() {
             { label: locale === 'ka' ? 'მომხმარებლები' : 'Users', icon: Users, href: '/admin/users', color: THEME.primary, count: stats?.users.total },
             { label: locale === 'ka' ? 'სამუშაოები' : 'Jobs', icon: Briefcase, href: '/admin/jobs', color: THEME.info, count: stats?.jobs.total },
             { label: locale === 'ka' ? 'მხარდაჭერა' : 'Support', icon: MessageCircle, href: '/admin/support', color: THEME.warning, count: stats?.support.open, badge: stats?.support.unread },
-            { label: locale === 'ka' ? 'ლოგები' : 'Activity Logs', icon: Activity, href: '/admin/activity-logs', color: THEME.success },
+            { label: locale === 'ka' ? 'ლოგები' : 'Activity Logs', icon: ActivityIcon, href: '/admin/activity-logs', color: THEME.success },
           ].map((action) => (
             <Link
               key={action.label}
@@ -661,7 +673,7 @@ function AdminDashboardPageContent() {
                 ].map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveChart(tab.id as any)}
+                    onClick={() => setActiveChart(tab.id as typeof activeChart)}
                     className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
                     style={{
                       background: activeChart === tab.id ? tab.color : 'transparent',
@@ -806,7 +818,7 @@ function AdminDashboardPageContent() {
             <div className="max-h-[400px] overflow-y-auto">
               {activities.length === 0 ? (
                 <div className="p-12 text-center">
-                  <Activity className="w-12 h-12 mx-auto mb-3" style={{ color: THEME.textDim }} />
+                  <ActivityIcon className="w-12 h-12 mx-auto mb-3" style={{ color: THEME.textDim }} />
                   <p style={{ color: THEME.textMuted }}>{locale === 'ka' ? 'აქტივობა არ არის' : 'No recent activity'}</p>
                 </div>
               ) : (

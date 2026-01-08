@@ -32,6 +32,19 @@ import { formatDateShort } from '@/utils/dateUtils';
 import { ADMIN_THEME as THEME } from '@/constants/theme';
 import { getAdminReportStatusColor, getAdminReportStatusLabel } from '@/utils/statusUtils';
 
+// Support ticket structure (fallback data source)
+interface SupportTicket {
+  _id: string;
+  category?: string;
+  subject?: string;
+  messages?: Array<{ content: string }>;
+  status: string;
+  priority?: string;
+  userId?: { _id: string; name: string; avatar?: string };
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface Report {
   _id: string;
   type: 'user' | 'job' | 'order' | 'payment';
@@ -105,15 +118,16 @@ function AdminReportsPageContent() {
         reportsData = reportsRes.data.reports || [];
         totalPagesData = reportsRes.data.totalPages || 1;
         statsData = statsRes.data;
-      } catch (err: any) {
-        console.error('Failed to fetch /admin/reports:', err.response?.status, err.response?.data || err.message);
+      } catch (err) {
+        const apiErr = err as { response?: { status?: number; data?: unknown }; message?: string };
+        console.error('Failed to fetch /admin/reports:', apiErr.response?.status, apiErr.response?.data || apiErr.message);
         // Fallback: use support tickets endpoint
         try {
           const ticketsRes = await api.get('/support/admin/tickets');
           console.log('Fallback to support tickets:', ticketsRes.data);
           // Transform tickets to report format
           const tickets = ticketsRes.data || [];
-          reportsData = tickets.map((ticket: any) => ({
+          reportsData = tickets.map((ticket: SupportTicket) => ({
             _id: ticket._id,
             type: ticket.category || 'user',
             reason: ticket.subject,

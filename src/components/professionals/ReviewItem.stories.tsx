@@ -23,7 +23,7 @@ type Story = StoryObj<typeof ReviewItem>;
 export const FiveStars: Story = {
   args: {
     review: {
-      _id: '1',
+      id: '1',
       clientId: {
         name: 'John Doe',
         city: 'Tbilisi',
@@ -38,7 +38,7 @@ export const FiveStars: Story = {
 export const FourStars: Story = {
   args: {
     review: {
-      _id: '2',
+      id: '2',
       clientId: {
         name: 'Jane Smith',
         city: 'Batumi',
@@ -53,7 +53,7 @@ export const FourStars: Story = {
 export const ThreeStars: Story = {
   args: {
     review: {
-      _id: '3',
+      id: '3',
       clientId: {
         name: 'Mike Johnson',
         city: 'Kutaisi',
@@ -68,7 +68,7 @@ export const ThreeStars: Story = {
 export const Anonymous: Story = {
   args: {
     review: {
-      _id: '4',
+      id: '4',
       clientId: {
         name: 'Hidden',
       },
@@ -83,7 +83,7 @@ export const Anonymous: Story = {
 export const WithPhotos: Story = {
   args: {
     review: {
-      _id: '5',
+      id: '5',
       clientId: {
         name: 'Sarah Williams',
       },
@@ -103,7 +103,7 @@ export const WithPhotos: Story = {
 export const NoText: Story = {
   args: {
     review: {
-      _id: '6',
+      id: '6',
       clientId: {
         name: 'Tom Brown',
       },
@@ -116,7 +116,7 @@ export const NoText: Story = {
 export const GeorgianLocale: Story = {
   args: {
     review: {
-      _id: '7',
+      id: '7',
       clientId: {
         name: 'გიორგი მელაძე',
         city: 'თბილისი',
@@ -134,7 +134,7 @@ export const MultipleReviews: Story = {
     <div className="space-y-4">
       <ReviewItem
         review={{
-          _id: '1',
+          id: '1',
           clientId: { name: 'John Doe' },
           rating: 5,
           text: 'Excellent work!',
@@ -143,7 +143,7 @@ export const MultipleReviews: Story = {
       />
       <ReviewItem
         review={{
-          _id: '2',
+          id: '2',
           clientId: { name: 'Jane Smith' },
           rating: 4,
           text: 'Good service, would recommend.',
@@ -152,7 +152,7 @@ export const MultipleReviews: Story = {
       />
       <ReviewItem
         review={{
-          _id: '3',
+          id: '3',
           clientId: { name: 'Anonymous' },
           rating: 5,
           isAnonymous: true,
@@ -182,7 +182,7 @@ export const RatingSummaryWithReviews: Story = {
       <RatingSummary avgRating={4.8} totalReviews={3} />
       <ReviewItem
         review={{
-          _id: '1',
+          id: '1',
           clientId: { name: 'John Doe' },
           rating: 5,
           text: 'Perfect renovation!',
@@ -191,7 +191,7 @@ export const RatingSummaryWithReviews: Story = {
       />
       <ReviewItem
         review={{
-          _id: '2',
+          id: '2',
           clientId: { name: 'Jane Smith' },
           rating: 5,
           text: 'Highly professional.',
@@ -200,7 +200,7 @@ export const RatingSummaryWithReviews: Story = {
       />
       <ReviewItem
         review={{
-          _id: '3',
+          id: '3',
           clientId: { name: 'Mike Johnson' },
           rating: 4,
           text: 'Good work overall.',

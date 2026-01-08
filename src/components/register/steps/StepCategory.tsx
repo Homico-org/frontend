@@ -1,13 +1,13 @@
 'use client';
 
-import React from 'react';
 import { CategorySelector } from '@/components/categories';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { IconBadge } from '@/components/ui/IconBadge';
-import { Plus, X, Briefcase } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Briefcase, Plus, X } from 'lucide-react';
+import React from 'react';
 import type { FormData } from '../hooks/useRegistration';
 
 interface Category {
@@ -100,7 +100,7 @@ export default function StepCategory({
               <span className="text-neutral-400 font-normal text-[10px]">({locale === 'ka' ? 'არასავალდებულო' : 'optional'})</span>
             </h2>
             {customServices.length > 0 && (
-              <Badge variant="accent" size="sm">
+              <Badge variant="premium" size="sm">
                 {customServices.length}/5
               </Badge>
             )}

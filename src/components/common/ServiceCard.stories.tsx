@@ -21,7 +21,7 @@ export default meta;
 type Story = StoryObj<typeof ServiceCard>;
 
 const baseService = {
-  _id: '1',
+  id: '1',
   title: 'Complete Interior Design Package - Modern Living Space Transformation',
   category: 'design',
   gallery: [
@@ -38,7 +38,7 @@ const baseService = {
   totalReviews: 47,
   totalOrders: 123,
   proId: {
-    _id: 'pro1',
+    id: 'pro1',
     userId: {
       name: 'Ana Beridze',
       avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
@@ -128,7 +128,7 @@ export const Grid: Story = {
       <ServiceCard
         service={{
           ...baseService,
-          _id: '2',
+          id: '2',
           title: 'Professional Kitchen Renovation & Design',
           category: 'craftsmen',
           packages: [
@@ -138,7 +138,7 @@ export const Grid: Story = {
             { type: 'image', url: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop' },
           ],
           proId: {
-            _id: 'pro2',
+            id: 'pro2',
             userId: {
               name: 'Giorgi K.',
               avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop',

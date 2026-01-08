@@ -6,9 +6,10 @@ import ka from '@/locales/ka.json';
 
 type Locale = 'en' | 'ka';
 
-interface Translations {
-  [key: string]: any;
-}
+// Translation types for JSON locale files
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TranslationValue = any;
+type Translations = Record<string, TranslationValue>;
 
 const translations: Record<Locale, Translations> = { en, ka };
 
@@ -144,7 +145,7 @@ function detectCountry(): CountryCode {
   }
 
   // Check browser language
-  const lang = navigator.language || (navigator as any).userLanguage;
+  const lang = navigator.language || (navigator as Navigator & { userLanguage?: string }).userLanguage;
   if (lang?.startsWith('ka')) {
     return 'GE';
   }
@@ -185,7 +186,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const t = useCallback((key: string, params?: Record<string, string | number>): string => {
     const keys = key.split('.');
-    let value: any = translations[locale];
+    let value: TranslationValue = translations[locale];
 
     for (const k of keys) {
       if (value && typeof value === 'object' && k in value) {

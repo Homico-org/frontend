@@ -19,10 +19,11 @@ interface ReviewModalProps {
   onTextChange: (text: string) => void;
   pro: {
     avatar?: string;
-    userId: {
+    userId?: {
       name: string;
       avatar?: string;
     };
+    name?: string;
     title?: string;
   };
 }
@@ -62,12 +63,12 @@ export default function ReviewModal({
         {/* Pro Info */}
         <div className="flex items-center gap-3">
           <Avatar
-            src={pro.avatar || pro.userId.avatar}
-            name={pro.userId.name}
+            src={pro.avatar || pro.userId?.avatar}
+            name={pro.userId?.name || pro.name || 'Professional'}
             size="lg"
           />
           <div>
-            <p className="font-semibold text-neutral-900 dark:text-white">{pro.userId.name}</p>
+            <p className="font-semibold text-neutral-900 dark:text-white">{pro.userId?.name || pro.name || 'Professional'}</p>
             {pro.title && (
               <p className="text-sm text-neutral-500">{pro.title}</p>
             )}

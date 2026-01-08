@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import Avatar from '@/components/common/Avatar';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/input';
+import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
 
 export interface ContactModalProps {
   /** Whether the modal is open */
@@ -72,7 +74,7 @@ export default function ContactModal({
         </div>
 
         {/* Message textarea */}
-        <textarea
+        <Textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder={
@@ -80,8 +82,6 @@ export default function ContactModal({
               ? 'დაწერეთ შეტყობინება...'
               : 'Write a message...'
           }
-          className="w-full px-4 py-3 text-sm rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 resize-none focus:outline-none focus:ring-2"
-          style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
           rows={3}
         />
 

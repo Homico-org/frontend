@@ -32,7 +32,7 @@ export default meta;
 type Story = StoryObj<typeof LikeButton>;
 
 // Interactive wrapper for stateful stories
-const InteractiveLikeButton = (props: any) => {
+const InteractiveLikeButton = (props: Partial<React.ComponentProps<typeof LikeButton>>) => {
   const [isLiked, setIsLiked] = useState(props.isLiked || false);
   const [likeCount, setLikeCount] = useState(props.likeCount || 42);
 

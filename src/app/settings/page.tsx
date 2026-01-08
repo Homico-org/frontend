@@ -680,8 +680,9 @@ function SettingsPageContent() {
         const data = await res.json();
         throw new Error(data.message || 'Failed to delete account');
       }
-    } catch (error: any) {
-      setDeleteError(error.message || (locale === 'ka' ? 'ანგარიშის წაშლა ვერ მოხერხდა' : 'Failed to delete account'));
+    } catch (error) {
+      const err = error as { message?: string };
+      setDeleteError(err.message || (locale === 'ka' ? 'ანგარიშის წაშლა ვერ მოხერხდა' : 'Failed to delete account'));
     } finally {
       setIsDeletingAccount(false);
     }
@@ -743,8 +744,9 @@ function SettingsPageContent() {
         const data = await res.json();
         throw new Error(data.message || 'Failed to deactivate profile');
       }
-    } catch (error: any) {
-      setDeactivationError(error.message || (locale === 'ka' ? 'დეაქტივაცია ვერ მოხერხდა' : 'Failed to deactivate profile'));
+    } catch (error) {
+      const err = error as { message?: string };
+      setDeactivationError(err.message || (locale === 'ka' ? 'დეაქტივაცია ვერ მოხერხდა' : 'Failed to deactivate profile'));
     } finally {
       setIsDeactivating(false);
     }
@@ -894,8 +896,9 @@ function SettingsPageContent() {
                       }
                       return { success: false, error: data.message };
                     }
-                  } catch (error: any) {
-                    return { success: false, error: error.message };
+                  } catch (error) {
+                    const err = error as { message?: string };
+                    return { success: false, error: err.message };
                   }
                 }}
               />
@@ -1104,8 +1107,9 @@ function SettingsPageContent() {
                                 }
                                 return { success: false, error: data.message };
                               }
-                            } catch (error: any) {
-                              return { success: false, error: error.message };
+                            } catch (error) {
+                              const err = error as { message?: string };
+                              return { success: false, error: err.message };
                             }
                           }}
                         />

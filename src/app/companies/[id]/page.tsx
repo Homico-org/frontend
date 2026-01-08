@@ -36,17 +36,16 @@ import { COMPANY_ACCENT as ACCENT, COMPANY_ACCENT_HOVER as ACCENT_HOVER } from "
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { MultiStarDisplay } from "@/components/ui/StarRating";
 import { Badge } from "@/components/ui/badge";
+import type { BaseEntity } from "@/types/shared";
 
-interface TeamMember {
-  _id: string;
+interface TeamMember extends BaseEntity {
   name: string;
   avatar?: string;
   title?: string;
   role: "owner" | "manager" | "employee";
 }
 
-interface PortfolioProject {
-  _id: string;
+interface PortfolioProject extends BaseEntity {
   title: string;
   description?: string;
   images: string[];
@@ -55,7 +54,7 @@ interface PortfolioProject {
 }
 
 interface CompanyProfile {
-  _id: string;
+  id: string;
   name: string;
   logo?: string;
   coverImage?: string;
@@ -84,8 +83,7 @@ interface CompanyProfile {
   createdAt?: string;
 }
 
-interface Review {
-  _id: string;
+interface PageReview extends BaseEntity {
   clientId: {
     name: string;
     avatar?: string;
@@ -113,7 +111,7 @@ export default function CompanyProfilePage() {
   const [showContactModal, setShowContactModal] = useState(false);
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviews, setReviews] = useState<PageReview[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
 
   // Lightbox state
@@ -134,8 +132,9 @@ export default function CompanyProfilePage() {
         if (!response.ok) throw new Error("Company not found");
         const data = await response.json();
         setProfile(data);
-      } catch (err: any) {
-        setError(err.message || "Failed to load company");
+      } catch (err) {
+        const error = err as { message?: string };
+        setError(error.message || "Failed to load company");
       } finally {
         setIsLoading(false);
       }
@@ -154,11 +153,11 @@ export default function CompanyProfilePage() {
 
   useEffect(() => {
     const fetchReviews = async () => {
-      if (!profile?._id) return;
+      if (!profile?.id) return;
       setReviewsLoading(true);
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/reviews/company/${profile._id}`
+          `${process.env.NEXT_PUBLIC_API_URL}/reviews/company/${profile.id}`
         );
         if (response.ok) {
           const data = await response.json();
@@ -170,15 +169,15 @@ export default function CompanyProfilePage() {
         setReviewsLoading(false);
       }
     };
-    if (profile?._id) fetchReviews();
-  }, [profile?._id]);
+    if (profile?.id) fetchReviews();
+  }, [profile?.id]);
 
   const handleContact = () => {
     if (!user) {
       openLoginModal();
       return;
     }
-    router.push(`/messages?company=${profile?._id}`);
+    router.push(`/messages?company=${profile?.id}`);
   };
 
   const handleSendMessage = async () => {
@@ -195,7 +194,7 @@ export default function CompanyProfilePage() {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
           body: JSON.stringify({
-            companyId: profile?._id,
+            companyId: profile?.id,
             message: message,
           }),
         }
@@ -627,7 +626,7 @@ export default function CompanyProfilePage() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   {profile.teamMembers.slice(0, 8).map((member) => (
                     <div
-                      key={member._id}
+                      key={member.id}
                       className="p-4 rounded-xl bg-[var(--color-bg-tertiary)] text-center"
                     >
                       {member.avatar ? (
@@ -790,7 +789,7 @@ export default function CompanyProfilePage() {
                 <div className="space-y-6">
                   {reviews.slice(0, 4).map((review, idx) => (
                     <div
-                      key={review._id}
+                      key={review.id}
                       className={`${idx < Math.min(reviews.length, 4) - 1 ? "pb-6 border-b border-[var(--color-border-subtle)]" : ""}`}
                     >
                       <div className="flex items-start gap-4">

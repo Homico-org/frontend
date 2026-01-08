@@ -2,9 +2,10 @@
 
 import { useState, FormEvent } from 'react';
 import { X } from 'lucide-react';
-import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
 import { formatNumberWithSpaces } from '@/utils/currencyUtils';
 import { Alert } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/button';
+import { Input, Textarea } from '@/components/ui/input';
 
 export interface ProposalFormData {
   coverLetter: string;
@@ -73,12 +74,13 @@ export default function ProposalForm({
             <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
               {locale === 'ka' ? 'წინადადების გაგზავნა' : 'Submit Proposal'}
             </h2>
-            <button
+            <Button
+              variant="ghost"
+              size="icon-sm"
               onClick={onClose}
-              className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             >
               <X className="w-5 h-5 text-neutral-400" />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -93,15 +95,12 @@ export default function ProposalForm({
             <label className="block font-body text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
               {locale === 'ka' ? 'სამოტივაციო წერილი' : 'Cover Letter'}
             </label>
-            <textarea
-              rows={4}
+            <Textarea
               required
               value={formData.coverLetter}
               onChange={(e) =>
                 setFormData({ ...formData, coverLetter: e.target.value })
               }
-              className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-body placeholder:text-neutral-400 focus:outline-none focus:ring-2 transition-all resize-none"
-              style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
               placeholder={
                 locale === 'ka'
                   ? 'წარმოადგინეთ თქვენი გამოცდილება...'
@@ -115,7 +114,7 @@ export default function ProposalForm({
               <label className="block font-body text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 {locale === 'ka' ? 'ფასი (₾)' : 'Price (₾)'}
               </label>
-              <input
+              <Input
                 type="text"
                 inputMode="numeric"
                 value={formatPrice(formData.proposedPrice)}
@@ -123,8 +122,6 @@ export default function ProposalForm({
                   const rawValue = e.target.value.replace(/[^\d.]/g, '');
                   setFormData({ ...formData, proposedPrice: rawValue });
                 }}
-                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-body focus:outline-none focus:ring-2 transition-all"
-                style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
                 placeholder="0"
               />
             </div>
@@ -132,9 +129,9 @@ export default function ProposalForm({
               <label className="block font-body text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 {locale === 'ka' ? 'ვადა' : 'Duration'}
               </label>
-              <input
+              <Input
                 type="number"
-                min="1"
+                min={1}
                 value={formData.estimatedDuration}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -142,8 +139,6 @@ export default function ProposalForm({
                     setFormData({ ...formData, estimatedDuration: value });
                   }
                 }}
-                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-body focus:outline-none focus:ring-2 transition-all"
-                style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
                 placeholder="0"
               />
             </div>
@@ -159,8 +154,7 @@ export default function ProposalForm({
                     estimatedDurationUnit: e.target.value as 'days' | 'weeks' | 'months',
                   })
                 }
-                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-body focus:outline-none focus:ring-2 transition-all cursor-pointer"
-                style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
+                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-body focus:outline-none focus:ring-2 focus:ring-[#E07B4F]/20 focus:border-[#E07B4F] transition-all cursor-pointer"
               >
                 <option value="days">
                   {locale === 'ka' ? 'დღე' : 'Days'}
@@ -176,25 +170,22 @@ export default function ProposalForm({
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button
+            <Button
               type="button"
+              variant="secondary"
               onClick={onClose}
-              className="flex-1 py-3 rounded-xl font-body text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+              className="flex-1"
             >
               {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 py-3 rounded-xl font-body text-sm font-semibold text-white transition-all hover:shadow-lg disabled:opacity-50"
-              style={{ backgroundColor: ACCENT }}
+              loading={isSubmitting}
+              className="flex-1"
             >
-              {isSubmitting
-                ? '...'
-                : locale === 'ka'
-                  ? 'გაგზავნა'
-                  : 'Submit'}
-            </button>
+              {locale === 'ka' ? 'გაგზავნა' : 'Submit'}
+            </Button>
           </div>
         </form>
       </div>

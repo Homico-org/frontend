@@ -1,9 +1,9 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, useEffect, ReactNode, useRef, useMemo } from 'react';
-import { useAuth } from './AuthContext';
-import { trackAnalyticsEvent, AnalyticsEvent } from '@/hooks/useAnalytics';
+import { AnalyticsEvent, trackAnalyticsEvent } from '@/hooks/useAnalytics';
 import api from '@/lib/api';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useAuth } from './AuthContext';
 
 export interface JobFilters {
   category: string | null;
@@ -108,12 +108,14 @@ export function JobsProvider({ children }: { children: ReactNode }) {
         const response = await api.get('/jobs/my-proposals/list');
         const data = response.data;
         const proposals = data.data || data.proposals || data || [];
-        // Extract job IDs from proposals
+        // Extract job IDs from proposals (handle both _id and id formats from backend)
         const jobIds = new Set<string>(
           proposals
-            .map((p: { jobId?: string | { _id: string } }) => {
+            .map((p: { jobId?: string | { _id?: string; id?: string } }) => {
               if (typeof p.jobId === 'string') return p.jobId;
-              if (p.jobId && typeof p.jobId === 'object' && '_id' in p.jobId) return p.jobId._id;
+              if (p.jobId && typeof p.jobId === 'object') {
+                return p.jobId.id || p.jobId._id;
+              }
               return null;
             })
             .filter(Boolean)

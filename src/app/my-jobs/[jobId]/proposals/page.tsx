@@ -4,12 +4,18 @@ import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import HiringChoiceModal from '@/components/proposals/HiringChoiceModal';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ConfirmModal } from '@/components/ui/Modal';
+import { Skeleton, SkeletonCard } from '@/components/ui/Skeleton';
+import { Badge } from '@/components/ui/badge';
+import { ACCENT_COLOR } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useCategoryLabels } from '@/hooks/useCategoryLabels';
 import { api } from '@/lib/api';
+import type { Proposal } from '@/types/shared';
 import { isHighLevelCategory } from '@/utils/categoryHelpers';
+import { formatTimeAgoCompact } from '@/utils/dateUtils';
 import {
   AlertCircle,
   ArrowLeft,
@@ -24,34 +30,10 @@ import {
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useState } from 'react';
-import { formatTimeAgoCompact } from '@/utils/dateUtils';
-import { ACCENT_COLOR } from '@/constants/theme';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { Skeleton, SkeletonCard } from '@/components/ui/Skeleton';
-import { Badge } from '@/components/ui/badge';
 
-interface Proposal {
-  _id: string;
-  coverLetter: string;
-  proposedPrice?: number;
-  estimatedDuration?: number;
-  estimatedDurationUnit?: string;
-  status: 'pending' | 'shortlisted' | 'accepted' | 'rejected' | 'withdrawn';
-  hiringChoice?: 'homico' | 'direct';
-  contactRevealed?: boolean;
-  viewedByClient: boolean;
-  createdAt: string;
-  proId: {
-    _id: string;
-    name: string;
-    email: string;
-    avatar?: string;
-    phone?: string;
-  };
-}
-
-interface Job {
-  _id: string;
+// Minimal job info for this page
+interface JobSummary {
+  id: string;
   title: string;
   category: string;
   subcategory?: string;
@@ -66,7 +48,7 @@ function ProposalsPageContent() {
   const { getCategoryLabel, locale } = useCategoryLabels();
   const toast = useToast();
 
-  const [job, setJob] = useState<Job | null>(null);
+  const [job, setJob] = useState<JobSummary | null>(null);
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(null);
@@ -118,14 +100,14 @@ function ProposalsPageContent() {
 
     setIsProcessing(true);
     try {
-      const response = await api.post(`/jobs/proposals/${selectedProposal._id}/shortlist`, {
+      const response = await api.post(`/jobs/proposals/${selectedProposal.id}/shortlist`, {
         hiringChoice: choice,
       });
 
       // Update proposal in list
       setProposals(prev =>
         prev.map(p =>
-          p._id === selectedProposal._id
+          p.id === selectedProposal.id
             ? { ...p, status: 'shortlisted', hiringChoice: choice, contactRevealed: choice === 'direct', proId: response.data.proId || p.proId }
             : p
         )
@@ -145,10 +127,11 @@ function ProposalsPageContent() {
           locale === 'ka' ? 'დაინტერესებულებში დაემატა' : 'Marked as interested'
         );
       }
-    } catch (error: any) {
+    } catch (error) {
+      const apiErr = error as { response?: { data?: { message?: string } } };
       toast.error(
         locale === 'ka' ? 'შეცდომა' : 'Error',
-        error.response?.data?.message || (locale === 'ka' ? 'ვერ მოხერხდა' : 'Failed to process')
+        apiErr.response?.data?.message || (locale === 'ka' ? 'ვერ მოხერხდა' : 'Failed to process')
       );
     } finally {
       setIsProcessing(false);
@@ -162,7 +145,7 @@ function ProposalsPageContent() {
 
       setProposals(prev =>
         prev.map(p =>
-          p._id === proposalId
+          p.id === proposalId
             ? { ...p, status: 'rejected' }
             : p
         )
@@ -173,10 +156,11 @@ function ProposalsPageContent() {
         locale === 'ka' ? 'წარმატება' : 'Success',
         locale === 'ka' ? 'შეთავაზება უარყოფილია' : 'Proposal rejected'
       );
-    } catch (error: any) {
+    } catch (error) {
+      const apiErr = error as { response?: { data?: { message?: string } } };
       toast.error(
         locale === 'ka' ? 'შეცდომა' : 'Error',
-        error.response?.data?.message || (locale === 'ka' ? 'ვერ მოხერხდა' : 'Failed to reject')
+        apiErr.response?.data?.message || (locale === 'ka' ? 'ვერ მოხერხდა' : 'Failed to reject')
       );
     } finally {
       setIsProcessing(false);
@@ -197,10 +181,11 @@ function ProposalsPageContent() {
       setTimeout(() => {
         router.push('/my-jobs?status=hired');
       }, 1500);
-    } catch (error: any) {
+    } catch (error) {
+      const apiErr = error as { response?: { data?: { message?: string } } };
       toast.error(
         locale === 'ka' ? 'შეცდომა' : 'Error',
-        error.response?.data?.message || (locale === 'ka' ? 'ვერ მოხერხდა' : 'Failed to accept')
+        apiErr.response?.data?.message || (locale === 'ka' ? 'ვერ მოხერხდა' : 'Failed to accept')
       );
       setIsProcessing(false);
     }
@@ -213,7 +198,7 @@ function ProposalsPageContent() {
 
       setProposals(prev =>
         prev.map(p =>
-          p._id === proposalId
+          p.id === proposalId
             ? { ...p, status: 'pending', hiringChoice: undefined, contactRevealed: false }
             : p
         )
@@ -223,10 +208,11 @@ function ProposalsPageContent() {
         locale === 'ka' ? 'წარმატება' : 'Success',
         locale === 'ka' ? 'შეთავაზება დაბრუნდა ახალში' : 'Reverted to new proposals'
       );
-    } catch (error: any) {
+    } catch (error) {
+      const apiErr = error as { response?: { data?: { message?: string } } };
       toast.error(
         locale === 'ka' ? 'შეცდომა' : 'Error',
-        error.response?.data?.message || (locale === 'ka' ? 'ვერ მოხერხდა' : 'Failed to revert')
+        apiErr.response?.data?.message || (locale === 'ka' ? 'ვერ მოხერხდა' : 'Failed to revert')
       );
     } finally {
       setIsProcessing(false);
@@ -320,11 +306,11 @@ function ProposalsPageContent() {
                 <div className="space-y-4">
                   {pendingProposals.map(proposal => (
                     <ProposalCard
-                      key={proposal._id}
+                      key={proposal.id}
                       proposal={proposal}
                       locale={locale}
                       onShortlist={() => handleShortlist(proposal)}
-                      onReject={() => setShowRejectConfirm(proposal._id)}
+                      onReject={() => setShowRejectConfirm(proposal.id)}
                       isHighLevel={isHighLevel}
                     />
                   ))}
@@ -341,13 +327,13 @@ function ProposalsPageContent() {
                 <div className="space-y-4">
                   {shortlistedProposals.map(proposal => (
                     <ProposalCard
-                      key={proposal._id}
+                      key={proposal.id}
                       proposal={proposal}
                       locale={locale}
                       isShortlisted
                       isHighLevel={isHighLevel}
-                      onAccept={() => handleAccept(proposal._id)}
-                      onRevert={() => handleRevertToPending(proposal._id)}
+                      onAccept={() => handleAccept(proposal.id)}
+                      onRevert={() => handleRevertToPending(proposal.id)}
                       isProcessing={isProcessing}
                     />
                   ))}
@@ -364,7 +350,7 @@ function ProposalsPageContent() {
                 <div className="space-y-4 opacity-60">
                   {rejectedProposals.map(proposal => (
                     <ProposalCard
-                      key={proposal._id}
+                      key={proposal.id}
                       proposal={proposal}
                       locale={locale}
                       isRejected
@@ -454,7 +440,7 @@ function ProposalCard({
           <div className="flex items-start justify-between mb-2">
             <div>
               <Link
-                href={`/professionals/${pro?._id}`}
+                href={`/professionals/${pro?.id}`}
                 className="text-base font-semibold text-neutral-900 dark:text-white hover:underline"
               >
                 {pro?.name || 'Professional'}
@@ -543,7 +529,7 @@ function ProposalCard({
                 {locale === 'ka' ? 'უარყოფა' : 'Reject'}
               </button>
               <Link
-                href={`/professionals/${pro?._id}`}
+                href={`/professionals/${pro?.id}`}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
               >
                 {locale === 'ka' ? 'პროფილი' : 'Profile'}
@@ -576,7 +562,7 @@ function ProposalCard({
 
               {proposal.hiringChoice === 'homico' && isHighLevel && (
                 <Link
-                  href={`/messages?recipient=${pro?._id}`}
+                  href={`/messages?recipient=${pro?.id}`}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                 >
                   <MessageCircle className="w-4 h-4" />
@@ -593,7 +579,7 @@ function ProposalCard({
                 </a>
               )}
               <Link
-                href={`/professionals/${pro?._id}`}
+                href={`/professionals/${pro?.id}`}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
               >
                 {locale === 'ka' ? 'პროფილი' : 'Profile'}

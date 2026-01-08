@@ -41,17 +41,14 @@ import {
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
+import type { Job, ProjectTracking, ProjectStage, ProjectComment, ProjectAttachment } from "@/types/shared";
 
-export type ProjectStage =
-  | "hired"
-  | "started"
-  | "in_progress"
-  | "review"
-  | "completed";
+// Re-export for components that import from here
+export type { ProjectStage };
 
 interface ProjectMessage {
-  _id?: string;
-  senderId: string | { _id: string; name: string; avatar?: string };
+  id?: string;
+  senderId: string | { id: string; name: string; avatar?: string };
   senderName?: string;
   senderAvatar?: string;
   senderRole?: "client" | "pro";
@@ -60,59 +57,20 @@ interface ProjectMessage {
   createdAt: string;
 }
 
-interface ProjectComment {
-  userId: string;
-  userName: string;
-  userAvatar?: string;
-  userRole: "client" | "pro";
-  content: string;
-  createdAt: string;
-}
-
-interface ProjectAttachment {
-  uploadedBy: string;
-  uploaderName: string;
-  fileName: string;
-  fileUrl: string;
-  fileType: string;
-  fileSize?: number;
-  description?: string;
-  uploadedAt: string;
-}
-
-interface ProjectTracking {
-  _id: string;
-  jobId: string;
-  clientId: { _id: string; name: string; avatar?: string };
-  proId: {
-    _id: string;
-    name: string;
-    avatar?: string;
-    phone?: string;
-    title?: string;
-  };
-  currentStage: ProjectStage;
-  progress: number;
-  hiredAt: string;
-  startedAt?: string;
-  expectedEndDate?: string;
-  completedAt?: string;
+// Extended tracking with additional fields used by this component
+interface ExtendedProjectTracking extends ProjectTracking {
   clientConfirmedAt?: string;
-  comments: ProjectComment[];
-  attachments: ProjectAttachment[];
-  agreedPrice?: number;
-  estimatedDuration?: number;
-  estimatedDurationUnit?: string;
 }
 
-interface Job {
-  _id: string;
+// Minimal job for this component
+interface CardJob {
+  id: string;
   title: string;
   description: string;
   category: string;
-  location: string;
+  location?: string;
   images: string[];
-  media: { type: string; url: string }[];
+  media?: { type: string; url: string }[];
   budgetType: string;
   budgetAmount?: number;
   budgetMin?: number;
@@ -168,8 +126,8 @@ interface HistoryEvent {
 }
 
 interface ProjectTrackerCardProps {
-  job: Job;
-  project: ProjectTracking;
+  job: CardJob;
+  project: ExtendedProjectTracking;
   isClient: boolean;
   locale: string;
   onRefresh?: () => void;
@@ -195,9 +153,9 @@ function getStageIndex(stage: ProjectStage): number {
   return STAGES.findIndex((s) => s.key === stage);
 }
 
-function getSenderId(senderId: string | { _id: string }): string {
+function getSenderId(senderId: string | { id: string }): string {
   if (typeof senderId === "string") return senderId;
-  return senderId._id;
+  return senderId.id;
 }
 
 // Inline Stage Stepper Component - Clean & Intuitive
@@ -519,7 +477,7 @@ export default function ProjectTrackerCard({
 
     const checkReview = async () => {
       try {
-        const response = await api.get(`/reviews/check/job/${job._id}`);
+        const response = await api.get(`/reviews/check/job/${job.id}`);
         if (response.data?.hasReview) {
           setHasSubmittedReview(true);
         }
@@ -529,7 +487,7 @@ export default function ProjectTrackerCard({
     };
 
     checkReview();
-  }, [isClient, user, job._id]);
+  }, [isClient, user, job.id]);
 
   // Fetch messages when chat tab is active or when project starts
   useEffect(() => {
@@ -550,32 +508,32 @@ export default function ProjectTrackerCard({
     if (activeTab === 'chat' && unreadCount > 0) {
       setUnreadCount(0);
       // Mark messages as read on backend
-      api.post(`/jobs/projects/${job._id}/messages/read`).catch(() => {
+      api.post(`/jobs/projects/${job.id}/messages/read`).catch(() => {
         // Silently fail - not critical
       });
     }
-  }, [activeTab, unreadCount, job._id]);
+  }, [activeTab, unreadCount, job.id]);
 
   // Clear polls unread count when polls tab is opened
   useEffect(() => {
     if (activeTab === 'polls' && unreadPollsCount > 0) {
       setUnreadPollsCount(0);
-      api.post(`/jobs/projects/${job._id}/polls/viewed`).catch(() => {});
+      api.post(`/jobs/projects/${job.id}/polls/viewed`).catch(() => {});
     }
-  }, [activeTab, unreadPollsCount, job._id]);
+  }, [activeTab, unreadPollsCount, job.id]);
 
   // Clear materials unread count when materials tab is opened
   useEffect(() => {
     if (activeTab === 'materials' && unreadMaterialsCount > 0) {
       setUnreadMaterialsCount(0);
-      api.post(`/jobs/projects/${job._id}/materials/viewed`).catch(() => {});
+      api.post(`/jobs/projects/${job.id}/materials/viewed`).catch(() => {});
     }
-  }, [activeTab, unreadMaterialsCount, job._id]);
+  }, [activeTab, unreadMaterialsCount, job.id]);
 
   // Fetch unread counts on mount
   useEffect(() => {
     if (isProjectStarted) {
-      api.get(`/jobs/projects/${job._id}/unread-counts`)
+      api.get(`/jobs/projects/${job.id}/unread-counts`)
         .then((response) => {
           setUnreadCount(response.data.chat || 0);
           setUnreadPollsCount(response.data.polls || 0);
@@ -583,7 +541,7 @@ export default function ProjectTrackerCard({
         })
         .catch(() => {});
     }
-  }, [isProjectStarted, job._id]);
+  }, [isProjectStarted, job.id]);
 
   // Fetch history when history tab is active
   useEffect(() => {
@@ -609,14 +567,14 @@ export default function ProjectTrackerCard({
     });
 
     socketRef.current.on("connect", () => {
-      socketRef.current?.emit("joinProjectChat", job._id);
+      socketRef.current?.emit("joinProjectChat", job.id);
     });
 
     socketRef.current.on("projectMessage", handleNewMessage);
     socketRef.current.on("projectTyping", handleTyping);
 
     // Handle poll updates
-    socketRef.current.on("projectPollUpdate", (data: { type: string; poll: any }) => {
+    socketRef.current.on("projectPollUpdate", (data: { type: string; poll: Record<string, unknown> }) => {
       if (activeTab !== 'polls') {
         setUnreadPollsCount((prev) => prev + 1);
       }
@@ -630,11 +588,11 @@ export default function ProjectTrackerCard({
     });
 
     return () => {
-      socketRef.current?.emit("leaveProjectChat", job._id);
+      socketRef.current?.emit("leaveProjectChat", job.id);
       socketRef.current?.disconnect();
       socketRef.current = null;
     };
-  }, [isProjectStarted, user, job._id, activeTab]);
+  }, [isProjectStarted, user, job.id, activeTab]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -649,7 +607,7 @@ export default function ProjectTrackerCard({
   const fetchMessages = async () => {
     try {
       setIsLoadingMessages(true);
-      const response = await api.get(`/jobs/projects/${job._id}/messages`);
+      const response = await api.get(`/jobs/projects/${job.id}/messages`);
       const fetchedMessages = response.data.messages || [];
       setMessages(fetchedMessages);
 
@@ -662,7 +620,7 @@ export default function ProjectTrackerCard({
     } catch (error) {
       if (project.comments?.length) {
         const legacyMessages: ProjectMessage[] = project.comments.map((c, idx) => ({
-          _id: `legacy-${idx}`,
+          id: `legacy-${idx}`,
           senderId: c.userId,
           senderName: c.userName,
           senderAvatar: c.userAvatar,
@@ -680,7 +638,7 @@ export default function ProjectTrackerCard({
   const fetchHistory = async () => {
     try {
       setIsLoadingHistory(true);
-      const response = await api.get(`/jobs/projects/${job._id}/history`);
+      const response = await api.get(`/jobs/projects/${job.id}/history`);
       setHistoryEvents(response.data.history || []);
       historyLoadedRef.current = true;
     } catch (error) {
@@ -695,7 +653,7 @@ export default function ProjectTrackerCard({
     if (senderId === user?.id) return;
 
     setMessages((prev) => {
-      if (prev.some((m) => m._id === message._id)) return prev;
+      if (prev.some((m) => m.id === message.id)) return prev;
       return [...prev, message];
     });
 
@@ -716,7 +674,7 @@ export default function ProjectTrackerCard({
 
     if (!isTyping) {
       setIsTyping(true);
-      socketRef.current.emit("projectTyping", { jobId: job._id, isTyping: true });
+      socketRef.current.emit("projectTyping", { jobId: job.id, isTyping: true });
     }
 
     if (typingTimeoutRef.current) {
@@ -725,9 +683,9 @@ export default function ProjectTrackerCard({
 
     typingTimeoutRef.current = setTimeout(() => {
       setIsTyping(false);
-      socketRef.current?.emit("projectTyping", { jobId: job._id, isTyping: false });
+      socketRef.current?.emit("projectTyping", { jobId: job.id, isTyping: false });
     }, 2000);
-  }, [job._id, isTyping]);
+  }, [job.id, isTyping]);
 
   const handleSendMessage = async (attachments?: string[]) => {
     const messageContent = newMessage.trim();
@@ -738,7 +696,7 @@ export default function ProjectTrackerCard({
 
     const tempId = `temp-${Date.now()}`;
     const optimisticMessage: ProjectMessage = {
-      _id: tempId,
+      id: tempId,
       senderId: user.id,
       senderName: user.name,
       senderAvatar: user.avatar,
@@ -753,16 +711,16 @@ export default function ProjectTrackerCard({
 
     try {
       setIsSubmitting(true);
-      const response = await api.post(`/jobs/projects/${job._id}/messages`, {
+      const response = await api.post(`/jobs/projects/${job.id}/messages`, {
         content: messageContent || "",
         attachments: hasAttachments ? attachments : undefined,
       });
 
       if (response.data?.message) {
-        setMessages((prev) => prev.map((m) => (m._id === tempId ? response.data.message : m)));
+        setMessages((prev) => prev.map((m) => (m.id === tempId ? response.data.message : m)));
       }
     } catch (err) {
-      setMessages((prev) => prev.filter((m) => m._id !== tempId));
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
       setNewMessage(messageContent);
       toast.error(
         locale === "ka" ? "შეცდომა" : "Error",
@@ -809,7 +767,7 @@ export default function ProjectTrackerCard({
     setIsUpdatingStage(true);
 
     try {
-      await api.patch(`/jobs/projects/${job._id}/stage`, { stage: newStage });
+      await api.patch(`/jobs/projects/${job.id}/stage`, { stage: newStage });
       toast.success(
         locale === "ka" ? "წარმატება" : "Success",
         locale === "ka" ? "სტატუსი განახლდა" : "Stage updated"
@@ -862,7 +820,7 @@ export default function ProjectTrackerCard({
     setIsUpdatingStage(true);
 
     try {
-      await api.patch(`/jobs/projects/${job._id}/stage`, {
+      await api.patch(`/jobs/projects/${job.id}/stage`, {
         stage: "completed",
         portfolioImages: portfolioImages.length > 0 ? portfolioImages : undefined,
       });
@@ -887,7 +845,7 @@ export default function ProjectTrackerCard({
   const handleClientConfirm = async () => {
     setIsUpdatingStage(true);
     try {
-      await api.post(`/jobs/projects/${job._id}/confirm-completion`);
+      await api.post(`/jobs/projects/${job.id}/confirm-completion`);
       toast.success(
         locale === "ka" ? "წარმატება" : "Success",
         locale === "ka" ? "პროექტი დაიხურა. გადახდა მოხდება მალე." : "Project closed. Payment will be processed shortly."
@@ -912,8 +870,8 @@ export default function ProjectTrackerCard({
     setIsSubmittingReview(true);
     try {
       await api.post("/reviews", {
-        jobId: job._id,
-        proId: project.proId._id,
+        jobId: job.id,
+        proId: project.proId.id,
         rating: reviewRating,
         text: reviewText.trim() || undefined,
       });
@@ -924,8 +882,9 @@ export default function ProjectTrackerCard({
       setShowReviewModal(false);
       setHasSubmittedReview(true);
       onRefresh?.();
-    } catch (err: any) {
-      const message = err?.response?.data?.message;
+    } catch (err) {
+      const apiErr = err as { response?: { data?: { message?: string } } };
+      const message = apiErr?.response?.data?.message;
       if (message === "Review already exists for this project") {
         toast.error(
           locale === "ka" ? "შეცდომა" : "Error",
@@ -951,7 +910,7 @@ export default function ProjectTrackerCard({
     setIsUpdatingStage(true);
 
     try {
-      await api.patch(`/jobs/projects/${job._id}/stage`, { stage: "review" });
+      await api.patch(`/jobs/projects/${job.id}/stage`, { stage: "review" });
       toast.success(
         locale === "ka" ? "წარმატება" : "Success",
         locale === "ka" ? "პროექტი გადატანილია შემოწმებაზე" : "Project moved back for review"
@@ -1090,7 +1049,7 @@ export default function ProjectTrackerCard({
               const senderAvatar = msg.senderAvatar || (typeof msg.senderId === "object" ? msg.senderId.avatar : undefined);
 
               return (
-                <div key={msg._id || idx} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+                <div key={msg.id || idx} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
                   <div className={`flex items-end gap-2 max-w-[80%] ${isMine ? "flex-row-reverse" : ""}`}>
                     {!isMine && (
                       <Avatar src={senderAvatar} name={senderName} size="sm" className="w-7 h-7 flex-shrink-0" />
@@ -1221,7 +1180,7 @@ export default function ProjectTrackerCard({
   const renderPollsTab = () => (
     <div className="p-4">
       <PollsTab
-        jobId={job._id}
+        jobId={job.id}
         isPro={!isClient}
         isClient={isClient}
         userId={user?.id}
@@ -1234,7 +1193,7 @@ export default function ProjectTrackerCard({
   const renderMaterialsTab = () => (
     <div className="p-4">
       <ProjectWorkspace
-        jobId={job._id}
+        jobId={job.id}
         locale={locale}
         isClient={isClient}
         embedded
@@ -1432,7 +1391,7 @@ export default function ProjectTrackerCard({
         <div className="absolute inset-x-0 bottom-0 p-4">
           <div className="flex items-center gap-2 mb-0.5">
             <span className="text-[10px] font-medium uppercase tracking-wider text-white/60">
-              #{job._id.slice(-6).toUpperCase()}
+              #{job.id.slice(-6).toUpperCase()}
             </span>
           </div>
           <h3 className="text-base font-semibold text-white line-clamp-1">{job.title}</h3>
@@ -1514,7 +1473,7 @@ export default function ProjectTrackerCard({
         <div className="flex items-center justify-between gap-3">
           {/* Partner Info */}
           <Link
-            href={isClient ? `/professionals/${project.proId?._id}` : `/users/${project.clientId?._id}`}
+            href={isClient ? `/professionals/${project.proId?.id}` : `/users/${project.clientId?.id}`}
             className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
           >
             <Avatar
@@ -1548,7 +1507,7 @@ export default function ProjectTrackerCard({
               </a>
             )}
             <Link
-              href={`/jobs/${job._id}`}
+              href={`/jobs/${job.id}`}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90"
               style={{ backgroundColor: TERRACOTTA.primary }}
             >

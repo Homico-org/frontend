@@ -10,7 +10,7 @@ import { Award } from 'lucide-react';
 
 interface ServiceCardProps {
   service: {
-    _id: string;
+    id: string;
     title: string;
     category: string;
     gallery: { type: string; url: string; thumbnail?: string }[];
@@ -19,7 +19,7 @@ interface ServiceCardProps {
     totalReviews: number;
     totalOrders: number;
     proId: {
-      _id: string;
+      id: string;
       userId: { name: string; avatar?: string };
       title: string;
       avgRating: number;
@@ -48,7 +48,7 @@ export default function ServiceCard({ service }: ServiceCardProps) {
   };
 
   return (
-    <Link href={`/services/${service._id}`} className="group block">
+    <Link href={`/services/${service.id}`} className="group block">
       <div
         className="bg-white dark:bg-dark-card rounded-xl overflow-hidden border border-neutral-200 dark:border-dark-border hover:border-neutral-300 dark:hover:border-dark-border-subtle hover:shadow-lg dark:hover:shadow-none transition-all duration-200 ease-out"
         onMouseEnter={() => setIsHovered(true)}

@@ -1,12 +1,12 @@
 'use client';
 
+import Avatar from '@/components/common/Avatar';
+import { MultiStarDisplay } from '@/components/ui/StarRating';
 import { storage } from '@/services/storage';
 import { formatTimeAgo } from '@/utils/dateUtils';
-import { MultiStarDisplay } from '@/components/ui/StarRating';
-import Avatar from '@/components/common/Avatar';
 
 export interface Review {
-  _id: string;
+  id: string;
   clientId: {
     name: string;
     avatar?: string;

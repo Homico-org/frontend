@@ -77,7 +77,7 @@ export default function GoogleSignInButton({
 }: GoogleSignInButtonProps) {
   const [scriptLoaded, setScriptLoaded] = useState(() => {
     if (typeof window !== 'undefined') {
-      return !!(window as any)?.google?.accounts?.id;
+      return !!window.google?.accounts?.id;
     }
     return false;
   });
@@ -106,7 +106,7 @@ export default function GoogleSignInButton({
   useEffect(() => {
     if (!scriptLoaded) {
       const checkGoogle = () => {
-        if ((window as any)?.google?.accounts?.id) {
+        if (window.google?.accounts?.id) {
           setScriptLoaded(true);
         }
       };
@@ -136,7 +136,7 @@ export default function GoogleSignInButton({
     }
 
     const initializeButton = () => {
-      const googleAccounts = (window as any)?.google?.accounts?.id as GoogleAccountsId | undefined;
+      const googleAccounts = window.google?.accounts?.id;
       const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
       if (!googleAccounts || !clientId || !buttonRef.current) {
