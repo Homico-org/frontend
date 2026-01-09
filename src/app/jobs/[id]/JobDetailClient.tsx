@@ -21,7 +21,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
-import api from "@/lib/api";
+import { api } from "@/lib/api";
 import { storage } from "@/services/storage";
 import { formatBudget as formatBudgetUtil } from "@/utils/currencyUtils";
 import { formatTimeAgoCompact } from "@/utils/dateUtils";
@@ -678,8 +678,43 @@ export default function JobDetailClient() {
 
   const isOwner = user && job?.clientId && user.id === job.clientId.id;
   const isPro = user?.role === "pro" || user?.role === "admin";
+  
   // Check if current user is the hired pro for this job
-  const isHiredPro = isPro && job?.hiredPro && user?.id === job.hiredPro.userId?.id;
+  // hiredPro structure can vary:
+  // - hiredPro.userId can be a string ID or a populated object { id, name, avatar }
+  // - After _id->id transform, it might be in different places
+  const getHiredProUserId = (): string | null => {
+    if (!job?.hiredPro) return null;
+    
+    // Try userId first (can be string or object)
+    const hiredPro = job.hiredPro as { 
+      userId?: string | { id?: string; _id?: string }; 
+      id?: string;
+    };
+    
+    if (hiredPro.userId) {
+      if (typeof hiredPro.userId === 'string') return hiredPro.userId;
+      if (typeof hiredPro.userId === 'object') {
+        return hiredPro.userId.id || hiredPro.userId._id || null;
+      }
+    }
+    
+    return null;
+  };
+  const hiredProUserId = getHiredProUserId();
+  const isHiredPro = isPro && job?.hiredPro && user?.id === hiredProUserId;
+  
+  // Debug log (remove in production)
+  if (job?.hiredPro && user) {
+    console.log('[JobDetail] Hired pro check:', {
+      hiredPro: job.hiredPro,
+      hiredProUserId,
+      userId: user.id,
+      isPro,
+      isHiredPro,
+      jobStatus: job.status,
+    });
+  }
 
   // WebSocket for real-time updates (polls, resources, stage)
   const socketRef = useRef<Socket | null>(null);
@@ -803,11 +838,8 @@ export default function JobDetailClient() {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/jobs/${params.id}`
-        );
-        if (!response.ok) throw new Error("Job not found");
-        const data = await response.json();
+        const response = await api.get(`/jobs/${params.id}`);
+        const data = response.data;
         setJob(data);
         trackEvent(AnalyticsEvent.JOB_VIEW, {
           jobId: data.id,
@@ -839,18 +871,10 @@ export default function JobDetailClient() {
       }
 
       try {
-        const token = localStorage.getItem("access_token");
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/jobs/${params.id}/my-proposal`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        if (response.ok) {
-          const data = await response.json();
-          setMyProposal(data);
-        }
+        const response = await api.get(`/jobs/${params.id}/my-proposal`);
+        setMyProposal(response.data);
       } catch (err) {
+        // 404 is expected if no proposal exists
         console.error("Failed to fetch my proposal:", err);
       } finally {
         setIsCheckingProposal(false);
@@ -981,32 +1005,15 @@ export default function JobDetailClient() {
     setIsSubmitting(true);
 
     try {
-      const token = localStorage.getItem("access_token");
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/jobs/${params.id}/proposals`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            ...proposalData,
-            proposedPrice: proposalData.proposedPrice
-              ? parseFloat(proposalData.proposedPrice)
-              : undefined,
-            estimatedDuration: proposalData.estimatedDuration
-              ? parseInt(proposalData.estimatedDuration)
-              : undefined,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to submit proposal");
-      }
+      const response = await api.post(`/jobs/${params.id}/proposals`, {
+        ...proposalData,
+        proposedPrice: proposalData.proposedPrice
+          ? parseFloat(proposalData.proposedPrice)
+          : undefined,
+        estimatedDuration: proposalData.estimatedDuration
+          ? parseInt(proposalData.estimatedDuration)
+          : undefined,
+      });
 
       setSuccess(
         locale === "ka"
@@ -1014,21 +1021,19 @@ export default function JobDetailClient() {
           : "Proposal submitted successfully"
       );
       setShowProposalForm(false);
-      setMyProposal(data);
+      setMyProposal(response.data);
       trackEvent(AnalyticsEvent.PROPOSAL_SUBMIT, {
         jobId: params.id as string,
         proposalAmount: proposalData.proposedPrice
           ? parseFloat(proposalData.proposedPrice)
           : undefined,
       });
-      const jobResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/jobs/${params.id}`
-      );
-      const jobData = await jobResponse.json();
-      setJob(jobData);
+      // Refresh job data
+      const jobResponse = await api.get(`/jobs/${params.id}`);
+      setJob(jobResponse.data);
     } catch (err) {
-      const error = err as { message?: string };
-      setError(error.message || "Failed to submit proposal");
+      const error = err as { response?: { data?: { message?: string } }; message?: string };
+      setError(error.response?.data?.message || error.message || "Failed to submit proposal");
     } finally {
       setIsSubmitting(false);
     }
@@ -1111,7 +1116,8 @@ export default function JobDetailClient() {
 
   const budgetDisplay = formatBudget(job);
   const isOpen = job.status === "open";
-  const isHired = job.status === "in_progress" || job.status === "completed";
+  // Job is considered "hired" if status is in_progress/completed OR if hiredPro exists
+  const isHired = job.status === "in_progress" || job.status === "completed" || !!job.hiredPro;
   const isCompleted = job.status === "completed";
 
   return (
@@ -1424,6 +1430,33 @@ export default function JobDetailClient() {
             </div>
           )}
 
+          {/* Role Banner - Shows clearly if you're hired on this job */}
+          {isHiredPro && (
+            <div className="mb-6 flex items-center gap-3 px-5 py-4 rounded-2xl bg-gradient-to-r from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-800/10 border border-purple-200 dark:border-purple-800/50">
+              <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-800/50 flex items-center justify-center flex-shrink-0">
+                <BadgeCheck className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-purple-800 dark:text-purple-200">
+                  {locale === "ka" ? "თქვენ დაგიქირავეს ამ სამუშაოზე!" : "You've been hired for this job!"}
+                </p>
+                <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">
+                  {locale === "ka" 
+                    ? `${job.clientId?.name || 'კლიენტმა'} დაგიქირავათ` 
+                    : `${job.clientId?.name || 'The client'} hired you`}
+                </p>
+              </div>
+              {job.hiredPro?.userId?.name && (
+                <Avatar
+                  src={job.clientId?.avatar}
+                  name={job.clientId?.name || "Client"}
+                  size="md"
+                  className="ring-2 ring-purple-200 dark:ring-purple-700"
+                />
+              )}
+            </div>
+          )}
+
           {/* Two Column Layout */}
           <div className="grid lg:grid-cols-3 gap-8 pb-24">
             {/* Main Content */}
@@ -1689,8 +1722,8 @@ export default function JobDetailClient() {
                 </section>
               )}
 
-              {/* My Proposal */}
-              {myProposal && isPro && (
+              {/* My Proposal - only show when not hired (pending/rejected/withdrawn) */}
+              {myProposal && isPro && !isHiredPro && (
                 <MyProposalCard
                   proposal={{
                     id: myProposal.id,

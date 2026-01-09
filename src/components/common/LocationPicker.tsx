@@ -32,13 +32,7 @@ interface LocationPickerProps {
   placeholder?: string;
 }
 
-declare global {
-  interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    google: any;
-    initGoogleMaps: () => void;
-  }
-}
+// Types declared in src/types/google.d.ts
 
 export default function LocationPicker({ value, onChange, placeholder = 'Enter address' }: LocationPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -84,10 +78,12 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
   // Initialize map when opened
   useEffect(() => {
     if (!isOpen || !mapLoaded || !mapRef.current || mapInstanceRef.current) return;
+    if (!window.google?.maps) return; // Guard against undefined
 
+    const googleMaps = window.google.maps;
     const defaultCenter = { lat: 41.7151, lng: 44.8271 }; // Tbilisi default
 
-    mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
+    mapInstanceRef.current = new googleMaps.Map(mapRef.current, {
       center: selectedCoords || defaultCenter,
       zoom: 13,
       disableDefaultUI: true,
@@ -98,14 +94,14 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
       ],
     });
 
-    markerRef.current = new window.google.maps.Marker({
+    markerRef.current = new googleMaps.Marker({
       map: mapInstanceRef.current,
       draggable: true,
       position: selectedCoords || defaultCenter,
     });
 
-    autocompleteServiceRef.current = new window.google.maps.places.AutocompleteService();
-    placesServiceRef.current = new window.google.maps.places.PlacesService(mapInstanceRef.current);
+    autocompleteServiceRef.current = new googleMaps.places.AutocompleteService();
+    placesServiceRef.current = new googleMaps.places.PlacesService(mapInstanceRef.current);
 
     // Handle marker drag
     markerRef.current.addListener('dragend', () => {
@@ -114,7 +110,7 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
         const coords = { lat: pos.lat(), lng: pos.lng() };
         setSelectedCoords(coords);
         // Reverse geocode
-        const geocoder = new window.google.maps.Geocoder();
+        const geocoder = new googleMaps.Geocoder();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         geocoder.geocode({ location: coords }, (results: any, status: string) => {
           if (status === 'OK' && results?.[0]) {
@@ -132,7 +128,7 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
         markerRef.current?.setPosition(coords);
         setSelectedCoords(coords);
         // Reverse geocode
-        const geocoder = new window.google.maps.Geocoder();
+        const geocoder = new googleMaps.Geocoder();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         geocoder.geocode({ location: coords }, (results: any, status: string) => {
           if (status === 'OK' && results?.[0]) {

@@ -2,16 +2,17 @@
 
 import EmptyState from "@/components/common/EmptyState";
 import ProCard from "@/components/common/ProCard";
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { SkeletonProCardGrid } from '@/components/ui/Skeleton';
 import { useAuth } from "@/contexts/AuthContext";
 import { useBrowseContext } from "@/contexts/BrowseContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { useLikes } from "@/hooks/useLikes";
+import { api } from "@/lib/api";
 import { LikeTargetType, ProProfile } from "@/types";
 import { Users } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { SkeletonProCardGrid } from '@/components/ui/Skeleton';
 
 export default function ProfessionalsPage() {
   const { locale } = useLanguage();
@@ -51,23 +52,8 @@ export default function ProfessionalsPage() {
         if (budgetMin !== null) params.append("priceMin", budgetMin.toString());
         if (budgetMax !== null) params.append("priceMax", budgetMax.toString());
 
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/users/pros?${params.toString()}`,
-          {
-            headers: {
-              ...(localStorage.getItem("access_token") && {
-                Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-              }),
-            },
-          }
-        );
-
-        if (!response.ok) {
-          setHasMore(false);
-          throw new Error("Failed to fetch");
-        }
-
-        const result = await response.json();
+        const response = await api.get(`/users/pros?${params.toString()}`);
+        const result = response.data;
         const profiles = result.data as ProProfile[];
         const pagination = result.pagination || {};
 
@@ -206,7 +192,7 @@ export default function ProfessionalsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
           {results.map((profile, index) => (
             <div
-              key={profile.id}
+              key={profile.id || `pro-${index}`}
               className="animate-stagger"
               style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}
             >

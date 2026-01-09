@@ -20,6 +20,7 @@ import {
     AlertCircle,
     BadgeCheck,
     BarChart3,
+    Briefcase,
     Calendar,
     Check,
     CheckCircle2,
@@ -29,9 +30,11 @@ import {
     FileText,
     FolderOpen,
     History,
+    Home,
     MessageCircle,
     Package,
     Paperclip,
+    PartyPopper,
     Phone,
     Play,
     RotateCcw,
@@ -365,6 +368,215 @@ function TabButton({
   );
 }
 
+// Role Banner Component - Shows clearly who owns the job and who is hired
+function RoleBanner({
+  isClient,
+  isCompleted,
+  isConfirmed,
+  partnerName,
+  completedAt,
+  locale,
+}: {
+  isClient: boolean;
+  isCompleted: boolean;
+  isConfirmed: boolean;
+  partnerName: string;
+  completedAt?: string;
+  locale: string;
+}) {
+  // Completed state
+  if (isCompleted && isConfirmed) {
+    return (
+      <div className="flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/20 border-b border-green-100 dark:border-green-800/50">
+        <div className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-800/50 flex items-center justify-center">
+          <PartyPopper className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-semibold text-green-700 dark:text-green-300">
+            {locale === "ka" ? "დასრულებული" : "Completed"}
+            {completedAt && (
+              <span className="font-normal text-green-600 dark:text-green-400 ml-1">
+                · {new Date(completedAt).toLocaleDateString(locale === "ka" ? "ka-GE" : "en-US", { month: "short", day: "numeric" })}
+              </span>
+            )}
+          </p>
+          <p className="text-[11px] text-green-600 dark:text-green-400 truncate">
+            {isClient
+              ? (locale === "ka" ? `${partnerName}-მ შეასრულა სამუშაო` : `${partnerName} completed the work`)
+              : (locale === "ka" ? `${partnerName}-მა დაადასტურა სამუშაო` : `${partnerName} confirmed your work`)
+            }
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Pending completion (completed but not confirmed by client)
+  if (isCompleted && !isConfirmed) {
+    return (
+      <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-100 dark:border-amber-800/50">
+        <div className="w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-800/50 flex items-center justify-center">
+          <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-semibold text-amber-700 dark:text-amber-300">
+            {locale === "ka" ? "ელოდება დადასტურებას" : "Pending Confirmation"}
+          </p>
+          <p className="text-[11px] text-amber-600 dark:text-amber-400 truncate">
+            {isClient
+              ? (locale === "ka" ? "გთხოვთ შეამოწმოთ და დაადასტუროთ სამუშაო" : "Please review and confirm the work")
+              : (locale === "ka" ? `${partnerName} ჯერ არ დაადასტურა` : `Waiting for ${partnerName} to confirm`)
+            }
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Active state - show role clearly
+  if (isClient) {
+    return (
+      <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-800/50">
+        <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-800/50 flex items-center justify-center">
+          <Home className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">
+            {locale === "ka" ? "თქვენი სამუშაო" : "Your Job"}
+          </p>
+          <p className="text-[11px] text-blue-600 dark:text-blue-400 truncate">
+            {locale === "ka" ? `თქვენ დაიქირავეთ ${partnerName}` : `You hired ${partnerName}`}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Pro view
+  return (
+    <div className="flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-800/50">
+      <div className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-800/50 flex items-center justify-center">
+        <Briefcase className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-semibold text-purple-700 dark:text-purple-300">
+          {locale === "ka" ? "დაქირავებული ხართ" : "Hired Job"}
+        </p>
+        <p className="text-[11px] text-purple-600 dark:text-purple-400 truncate">
+          {locale === "ka" ? `${partnerName}-მა დაგიქირავათ` : `${partnerName} hired you`}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// Completed Summary Component - Shows when project is fully completed
+function CompletedSummary({
+  project,
+  job,
+  isClient,
+  locale,
+  partnerName,
+  partnerAvatar,
+  hasReview,
+  onLeaveReview,
+}: {
+  project: ExtendedProjectTracking;
+  job: CardJob;
+  isClient: boolean;
+  locale: string;
+  partnerName: string;
+  partnerAvatar?: string;
+  hasReview: boolean;
+  onLeaveReview: () => void;
+}) {
+  const duration = project.completedAt && project.hiredAt
+    ? Math.ceil((new Date(project.completedAt).getTime() - new Date(project.hiredAt).getTime()) / (1000 * 60 * 60 * 24))
+    : null;
+
+  return (
+    <div className="p-4 sm:p-5 space-y-4">
+      {/* Success Message */}
+      <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+        <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-800/50 flex items-center justify-center flex-shrink-0">
+          <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-green-800 dark:text-green-200">
+            {locale === "ka" ? "პროექტი წარმატებით დასრულდა!" : "Project Successfully Completed!"}
+          </p>
+          <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">
+            {project.completedAt && new Date(project.completedAt).toLocaleDateString(locale === "ka" ? "ka-GE" : "en-US", { 
+              year: "numeric", 
+              month: "long", 
+              day: "numeric" 
+            })}
+          </p>
+        </div>
+      </div>
+
+      {/* Summary Stats */}
+      <div className="grid grid-cols-2 gap-3">
+        {/* Duration */}
+        <div className="rounded-xl p-4 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700">
+          <div className="flex items-center gap-2 mb-2 text-neutral-500 dark:text-neutral-400">
+            <Clock className="w-4 h-4" />
+            <span className="text-xs uppercase tracking-wider font-medium">
+              {locale === "ka" ? "ხანგრძლივობა" : "Duration"}
+            </span>
+          </div>
+          <span className="text-lg font-semibold text-neutral-900 dark:text-white">
+            {duration 
+              ? (locale === "ka" ? `${duration} დღე` : `${duration} days`)
+              : "—"
+            }
+          </span>
+        </div>
+
+        {/* Final Price */}
+        <div className="rounded-xl p-4 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700">
+          <div className="flex items-center gap-2 mb-2 text-neutral-500 dark:text-neutral-400">
+            <span className="text-xs uppercase tracking-wider font-medium">₾</span>
+            <span className="text-xs uppercase tracking-wider font-medium">
+              {locale === "ka" ? "თანხა" : "Amount"}
+            </span>
+          </div>
+          <span className="text-lg font-semibold text-neutral-900 dark:text-white">
+            {project.agreedPrice 
+              ? `₾${project.agreedPrice.toLocaleString()}`
+              : job.budgetAmount
+                ? `₾${job.budgetAmount.toLocaleString()}`
+                : "—"
+            }
+          </span>
+        </div>
+      </div>
+
+      {/* Leave Review CTA (for client who hasn't reviewed yet) */}
+      {isClient && !hasReview && (
+        <Button
+          onClick={onLeaveReview}
+          leftIcon={<Star className="w-4 h-4" />}
+          className="w-full"
+          size="lg"
+        >
+          {locale === "ka" ? "დატოვეთ შეფასება" : "Leave a Review"}
+        </Button>
+      )}
+
+      {/* Already reviewed message */}
+      {isClient && hasReview && (
+        <div className="flex items-center gap-2 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700">
+          <Star className="w-4 h-4 text-yellow-500" />
+          <span className="text-sm text-neutral-600 dark:text-neutral-400">
+            {locale === "ka" ? "თქვენ უკვე დატოვეთ შეფასება" : "You have already left a review"}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ProjectTrackerCard({
   job,
   project,
@@ -437,6 +649,14 @@ export default function ProjectTrackerCard({
   const notStartedTooltip = locale === "ka"
     ? "პროექტი ჯერ არ დაწყებულა"
     : "Project not started yet";
+
+  // Check if project is fully completed (stage = completed AND client confirmed)
+  const isProjectCompleted = localStage === "completed";
+  const isProjectConfirmed = !!project.clientConfirmedAt;
+  const isFullyCompleted = isProjectCompleted && isProjectConfirmed;
+
+  // Determine which tabs should be visible
+  const showInteractiveTabs = isProjectStarted && !isFullyCompleted;
 
   // Helper to check if attachment is an image
   const isImageAttachment = useCallback((attachment: string): boolean => {
@@ -1399,70 +1619,114 @@ export default function ProjectTrackerCard({
         </div>
       </div>
 
-      {/* Inline Stage Stepper - Clean design */}
-      <div className="border-b border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
-        <InlineStageStepper
-          currentStage={localStage}
-          locale={locale}
-          isPro={!isClient}
-          isUpdating={isUpdatingStage}
-          onStageChange={handleStageChange}
-          onClientConfirm={handleClientConfirm}
-          onClientRequestChanges={handleClientRequestChanges}
-          isClientConfirmed={!!project.clientConfirmedAt}
-          hasReview={hasSubmittedReview}
-          onLeaveReview={() => setShowReviewModal(true)}
-        />
-      </div>
+      {/* Role Banner - Shows clearly who owns the job */}
+      <RoleBanner
+        isClient={isClient}
+        isCompleted={isProjectCompleted}
+        isConfirmed={isProjectConfirmed}
+        partnerName={partnerName || ""}
+        completedAt={project.completedAt}
+        locale={locale}
+      />
 
-      {/* Tab Navigation */}
-      <div className="flex items-center justify-around border-b border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
-        <TabButton
-          active={activeTab === "overview"}
-          onClick={() => setActiveTab("overview")}
-          icon={<Eye className="w-4 h-4" />}
-          label={locale === "ka" ? "მიმოხილვა" : "Overview"}
-        />
-        <TabButton
-          active={activeTab === "chat"}
-          onClick={() => setActiveTab("chat")}
-          icon={<MessageCircle className="w-4 h-4" />}
-          label={locale === "ka" ? "ჩატი" : "Chat"}
-          badge={unreadCount}
-          disabled={!isProjectStarted}
-          disabledTooltip={notStartedTooltip}
-        />
-        <TabButton
-          active={activeTab === "polls"}
-          onClick={() => setActiveTab("polls")}
-          icon={<BarChart3 className="w-4 h-4" />}
-          label={locale === "ka" ? "გამოკითხვები" : "Polls"}
-          badge={unreadPollsCount}
-          disabled={!isProjectStarted}
-          disabledTooltip={notStartedTooltip}
-        />
-        <TabButton
-          active={activeTab === "materials"}
-          onClick={() => setActiveTab("materials")}
-          icon={<FolderOpen className="w-4 h-4" />}
-          label={locale === "ka" ? "მასალები" : "Materials"}
-          badge={unreadMaterialsCount}
-          disabled={!isProjectStarted}
-          disabledTooltip={notStartedTooltip}
-        />
-        <TabButton
-          active={activeTab === "history"}
-          onClick={() => setActiveTab("history")}
-          icon={<History className="w-4 h-4" />}
-          label={locale === "ka" ? "ისტორია" : "History"}
-          disabled={!isProjectStarted}
-          disabledTooltip={notStartedTooltip}
-        />
-      </div>
+      {/* Inline Stage Stepper - Only show when not fully completed */}
+      {!isFullyCompleted && (
+        <div className="border-b border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+          <InlineStageStepper
+            currentStage={localStage}
+            locale={locale}
+            isPro={!isClient}
+            isUpdating={isUpdatingStage}
+            onStageChange={handleStageChange}
+            onClientConfirm={handleClientConfirm}
+            onClientRequestChanges={handleClientRequestChanges}
+            isClientConfirmed={!!project.clientConfirmedAt}
+            hasReview={hasSubmittedReview}
+            onLeaveReview={() => setShowReviewModal(true)}
+          />
+        </div>
+      )}
+
+      {/* Tab Navigation - Simplified when completed */}
+      {isFullyCompleted ? (
+        // Completed: Only show Overview and History tabs
+        <div className="flex items-center justify-center gap-4 border-b border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+          <TabButton
+            active={activeTab === "overview"}
+            onClick={() => setActiveTab("overview")}
+            icon={<CheckCircle2 className="w-4 h-4" />}
+            label={locale === "ka" ? "შეჯამება" : "Summary"}
+          />
+          <TabButton
+            active={activeTab === "history"}
+            onClick={() => setActiveTab("history")}
+            icon={<History className="w-4 h-4" />}
+            label={locale === "ka" ? "ისტორია" : "History"}
+          />
+        </div>
+      ) : (
+        // Active: Show all tabs
+        <div className="flex items-center justify-around border-b border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+          <TabButton
+            active={activeTab === "overview"}
+            onClick={() => setActiveTab("overview")}
+            icon={<Eye className="w-4 h-4" />}
+            label={locale === "ka" ? "მიმოხილვა" : "Overview"}
+          />
+          <TabButton
+            active={activeTab === "chat"}
+            onClick={() => setActiveTab("chat")}
+            icon={<MessageCircle className="w-4 h-4" />}
+            label={locale === "ka" ? "ჩატი" : "Chat"}
+            badge={unreadCount}
+            disabled={!isProjectStarted}
+            disabledTooltip={notStartedTooltip}
+          />
+          <TabButton
+            active={activeTab === "polls"}
+            onClick={() => setActiveTab("polls")}
+            icon={<BarChart3 className="w-4 h-4" />}
+            label={locale === "ka" ? "გამოკითხვები" : "Polls"}
+            badge={unreadPollsCount}
+            disabled={!isProjectStarted}
+            disabledTooltip={notStartedTooltip}
+          />
+          <TabButton
+            active={activeTab === "materials"}
+            onClick={() => setActiveTab("materials")}
+            icon={<FolderOpen className="w-4 h-4" />}
+            label={locale === "ka" ? "მასალები" : "Materials"}
+            badge={unreadMaterialsCount}
+            disabled={!isProjectStarted}
+            disabledTooltip={notStartedTooltip}
+          />
+          <TabButton
+            active={activeTab === "history"}
+            onClick={() => setActiveTab("history")}
+            icon={<History className="w-4 h-4" />}
+            label={locale === "ka" ? "ისტორია" : "History"}
+            disabled={!isProjectStarted}
+            disabledTooltip={notStartedTooltip}
+          />
+        </div>
+      )}
 
       {/* Tab Content */}
       <div className="min-h-[180px]">
-        {activeTab === "overview" && renderOverviewTab()}
+        {/* When fully completed, show CompletedSummary instead of regular overview */}
+        {activeTab === "overview" && isFullyCompleted && (
+          <CompletedSummary
+            project={project}
+            job={job}
+            isClient={isClient}
+            locale={locale}
+            partnerName={partnerName || ""}
+            partnerAvatar={partnerAvatar}
+            hasReview={hasSubmittedReview}
+            onLeaveReview={() => setShowReviewModal(true)}
+          />
+        )}
+        {activeTab === "overview" && !isFullyCompleted && renderOverviewTab()}
         {activeTab === "chat" && renderChatTab()}
         {activeTab === "polls" && renderPollsTab()}
         {activeTab === "materials" && renderMaterialsTab()}
@@ -1477,12 +1741,20 @@ export default function ProjectTrackerCard({
             href={isClient ? `/professionals/${project.proId?.id}` : `/users/${project.clientId?.id}`}
             className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
           >
-            <Avatar
-              src={partnerAvatar}
-              name={partnerName}
-              size="md"
-              className="w-10 h-10 ring-2 ring-neutral-100 dark:ring-neutral-700"
-            />
+            <div className="relative">
+              <Avatar
+                src={partnerAvatar}
+                name={partnerName}
+                size="md"
+                className="w-10 h-10 ring-2 ring-neutral-100 dark:ring-neutral-700"
+              />
+              {/* Completed checkmark badge on avatar */}
+              {isFullyCompleted && (
+                <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-green-500 flex items-center justify-center ring-2 ring-white dark:ring-neutral-900">
+                  <Check className="w-3 h-3 text-white" />
+                </div>
+              )}
+            </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-neutral-900 dark:text-white truncate">
                 {partnerName}
@@ -1496,9 +1768,10 @@ export default function ProjectTrackerCard({
             </div>
           </Link>
 
-          {/* Quick Actions */}
+          {/* Quick Actions - Simplified when completed */}
           <div className="flex items-center gap-2">
-            {isClient && partnerPhone && (
+            {/* Show phone button only when project is active */}
+            {!isFullyCompleted && isClient && partnerPhone && (
               <a
                 href={`tel:${partnerPhone}`}
                 className="w-10 h-10 rounded-full flex items-center justify-center border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
@@ -1509,10 +1782,17 @@ export default function ProjectTrackerCard({
             )}
             <Link
               href={`/jobs/${job.id}`}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all hover:opacity-90"
-              style={{ backgroundColor: TERRACOTTA.primary }}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all hover:opacity-90 ${
+                isFullyCompleted 
+                  ? "bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300" 
+                  : "text-white"
+              }`}
+              style={!isFullyCompleted ? { backgroundColor: TERRACOTTA.primary } : {}}
             >
-              {locale === "ka" ? "დეტალები" : "Details"}
+              {isFullyCompleted 
+                ? (locale === "ka" ? "ნახვა" : "View")
+                : (locale === "ka" ? "დეტალები" : "Details")
+              }
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>

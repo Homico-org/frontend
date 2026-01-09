@@ -40,9 +40,16 @@ interface WorkspaceUser {
   avatar?: string;
 }
 
+// Helper to get ID from object (handles both id and _id)
+const getId = (obj: { id?: string; _id?: string } | undefined): string => {
+  if (!obj) return '';
+  return obj.id || obj._id || '';
+};
+
 // Types
 interface WorkspaceItem {
-  _id: string;
+  id?: string;
+  _id?: string;
   title: string;
   description?: string;
   type: 'image' | 'file' | 'link' | 'product';
@@ -62,7 +69,8 @@ interface WorkspaceItem {
     userName: string;
   }[];
   comments: {
-    _id: string;
+    id?: string;
+    _id?: string;
     userId: string;
     userName: string;
     userAvatar?: string;
@@ -73,7 +81,8 @@ interface WorkspaceItem {
 }
 
 interface SectionAttachment {
-  _id: string;
+  id?: string;
+  _id?: string;
   fileName: string;
   fileUrl: string;
   fileType: string; // 'image' | 'document' | 'other'
@@ -82,7 +91,8 @@ interface SectionAttachment {
 }
 
 interface WorkspaceSection {
-  _id: string;
+  id?: string;
+  _id?: string;
   title: string;
   description?: string;
   attachments: SectionAttachment[];
@@ -178,7 +188,7 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
         attachments,
       });
       setSections(prev => prev.map(s =>
-        s._id === sectionId ? { ...s, title, description, attachments: response.data.section?.attachments || s.attachments } : s
+        getId(s) === sectionId ? { ...s, title, description, attachments: response.data.section?.attachments || s.attachments } : s
       ));
       setEditingSection(null);
       toast.success(locale === 'ka' ? 'შენახულია' : 'Saved');
@@ -192,7 +202,7 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
 
     try {
       await api.delete(`/jobs/projects/${jobId}/workspace/sections/${sectionId}`);
-      setSections(prev => prev.filter(s => s._id !== sectionId));
+      setSections(prev => prev.filter(s => getId(s) !== sectionId));
       toast.success(locale === 'ka' ? 'წაიშალა' : 'Deleted');
     } catch (error) {
       toast.error(locale === 'ka' ? 'შეცდომა' : 'Error');
@@ -204,7 +214,7 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
     try {
       const response = await api.post(`/jobs/projects/${jobId}/workspace/sections/${sectionId}/items`, itemData);
       setSections(prev => prev.map(s =>
-        s._id === sectionId
+        getId(s) === sectionId
           ? { ...s, items: [...s.items, response.data.item] }
           : s
       ));
@@ -219,8 +229,8 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
     try {
       await api.delete(`/jobs/projects/${jobId}/workspace/sections/${sectionId}/items/${itemId}`);
       setSections(prev => prev.map(s =>
-        s._id === sectionId
-          ? { ...s, items: s.items.filter(i => i._id !== itemId) }
+        getId(s) === sectionId
+          ? { ...s, items: s.items.filter(i => getId(i) !== itemId) }
           : s
       ));
       toast.success(locale === 'ka' ? 'წაიშალა' : 'Deleted');
@@ -234,11 +244,11 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
     try {
       const response = await api.post(`/jobs/projects/${jobId}/workspace/sections/${sectionId}/items/${itemId}/reactions`, { type });
       setSections(prev => prev.map(s =>
-        s._id === sectionId
+        getId(s) === sectionId
           ? {
               ...s,
               items: s.items.map(i =>
-                i._id === itemId ? { ...i, reactions: response.data.reactions } : i
+                getId(i) === itemId ? { ...i, reactions: response.data.reactions } : i
               )
             }
           : s
@@ -257,11 +267,11 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
         content: commentText,
       });
       setSections(prev => prev.map(s =>
-        s._id === sectionId
+        getId(s) === sectionId
           ? {
               ...s,
               items: s.items.map(i =>
-                i._id === itemId ? { ...i, comments: response.data.comments } : i
+                getId(i) === itemId ? { ...i, comments: response.data.comments } : i
               )
             }
           : s
@@ -274,7 +284,7 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
 
   const toggleSection = (sectionId: string) => {
     setSections(prev => prev.map(s =>
-      s._id === sectionId ? { ...s, isExpanded: !s.isExpanded } : s
+      getId(s) === sectionId ? { ...s, isExpanded: !s.isExpanded } : s
     ));
   };
 
@@ -317,22 +327,22 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
           <div className="space-y-3">
             {sections.map((section) => (
               <SectionCard
-                key={section._id}
+                key={getId(section)}
                 section={section}
                 locale={locale}
                 isClient={isClient}
                 user={user}
-                onToggle={() => toggleSection(section._id)}
+                onToggle={() => toggleSection(getId(section))}
                 onEdit={() => setEditingSection(section)}
-                onDelete={() => handleDeleteSection(section._id)}
-                onAddItem={() => setShowItemModal(section._id)}
-                onDeleteItem={(itemId) => handleDeleteItem(section._id, itemId)}
-                onReaction={(itemId, type) => handleReaction(section._id, itemId, type)}
+                onDelete={() => handleDeleteSection(getId(section))}
+                onAddItem={() => setShowItemModal(getId(section))}
+                onDeleteItem={(itemId) => handleDeleteItem(getId(section), itemId)}
+                onReaction={(itemId, type) => handleReaction(getId(section), itemId, type)}
                 activeCommentItem={activeCommentItem}
                 setActiveCommentItem={setActiveCommentItem}
                 commentText={commentText}
                 setCommentText={setCommentText}
-                onAddComment={(itemId) => handleAddComment(section._id, itemId)}
+                onAddComment={(itemId) => handleAddComment(getId(section), itemId)}
               />
             ))}
           </div>
@@ -356,7 +366,7 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
           }}
           onSave={(title, description, attachments) => {
             if (editingSection) {
-              handleUpdateSection(editingSection._id, title, description, attachments);
+              handleUpdateSection(getId(editingSection), title, description, attachments);
             } else {
               handleCreateSection(title, description, attachments);
             }
@@ -569,7 +579,7 @@ function SectionCard({
                 <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-3">
                   {section.attachments.filter(a => a.fileType === 'image').map((att) => (
                     <a
-                      key={att._id}
+                      key={getId(att)}
                       href={storage.getFileUrl(att.fileUrl)}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -589,7 +599,7 @@ function SectionCard({
                 <div className="flex flex-wrap gap-2">
                   {section.attachments.filter(a => a.fileType !== 'image').map((att) => (
                     <a
-                      key={att._id}
+                      key={getId(att)}
                       href={storage.getFileUrl(att.fileUrl)}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -615,18 +625,18 @@ function SectionCard({
             <div className="divide-y divide-[var(--color-border)]">
               {section.items.map((item) => (
                 <ItemRow
-                  key={item._id}
+                  key={getId(item)}
                   item={item}
                   locale={locale}
                   isClient={isClient}
                   user={user}
-                  onDelete={() => onDeleteItem(item._id)}
-                  onReaction={(type) => onReaction(item._id, type)}
-                  isCommentActive={activeCommentItem === item._id}
-                  onToggleComment={() => setActiveCommentItem(activeCommentItem === item._id ? null : item._id)}
+                  onDelete={() => onDeleteItem(getId(item))}
+                  onReaction={(type) => onReaction(getId(item), type)}
+                  isCommentActive={activeCommentItem === getId(item)}
+                  onToggleComment={() => setActiveCommentItem(activeCommentItem === getId(item) ? null : getId(item))}
                   commentText={commentText}
                   setCommentText={setCommentText}
-                  onAddComment={() => onAddComment(item._id)}
+                  onAddComment={() => onAddComment(getId(item))}
                 />
               ))}
             </div>
@@ -770,42 +780,65 @@ function ItemRow({
 
           {/* Actions Row */}
           <div className="flex items-center gap-2 mt-2">
-            {/* Reactions */}
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => onReaction('like')}
-                className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors ${
-                  userReaction?.type === 'like'
-                    ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600'
-                    : 'hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)]'
-                }`}
-              >
-                <ThumbsUp className="w-3 h-3" />
-                {item.reactions?.filter(r => r.type === 'like').length || 0}
-              </button>
-              <button
-                onClick={() => onReaction('love')}
-                className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors ${
-                  userReaction?.type === 'love'
-                    ? 'bg-red-100 dark:bg-red-500/20 text-red-500'
-                    : 'hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)]'
-                }`}
-              >
-                <Heart className="w-3 h-3" />
-                {item.reactions?.filter(r => r.type === 'love').length || 0}
-              </button>
-              <button
-                onClick={() => onReaction('approved')}
-                className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors ${
-                  userReaction?.type === 'approved'
-                    ? 'bg-green-100 dark:bg-green-500/20 text-green-600'
-                    : 'hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)]'
-                }`}
-              >
-                ✓
-                {item.reactions?.filter(r => r.type === 'approved').length || 0}
-              </button>
-            </div>
+            {/* Reactions - Only clients can react to items */}
+            {isClient ? (
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => onReaction('like')}
+                  className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors ${
+                    userReaction?.type === 'like'
+                      ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600'
+                      : 'hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)]'
+                  }`}
+                >
+                  <ThumbsUp className="w-3 h-3" />
+                  {item.reactions?.filter(r => r.type === 'like').length || 0}
+                </button>
+                <button
+                  onClick={() => onReaction('love')}
+                  className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors ${
+                    userReaction?.type === 'love'
+                      ? 'bg-red-100 dark:bg-red-500/20 text-red-500'
+                      : 'hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)]'
+                  }`}
+                >
+                  <Heart className="w-3 h-3" />
+                  {item.reactions?.filter(r => r.type === 'love').length || 0}
+                </button>
+                <button
+                  onClick={() => onReaction('approved')}
+                  className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors ${
+                    userReaction?.type === 'approved'
+                      ? 'bg-green-100 dark:bg-green-500/20 text-green-600'
+                      : 'hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)]'
+                  }`}
+                >
+                  ✓
+                  {item.reactions?.filter(r => r.type === 'approved').length || 0}
+                </button>
+              </div>
+            ) : (
+              /* Pro can see reaction counts but not interact */
+              <div className="flex items-center gap-1 opacity-60">
+                {(item.reactions?.filter(r => r.type === 'like').length || 0) > 0 && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-blue-600">
+                    <ThumbsUp className="w-3 h-3" />
+                    {item.reactions?.filter(r => r.type === 'like').length}
+                  </span>
+                )}
+                {(item.reactions?.filter(r => r.type === 'love').length || 0) > 0 && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-red-500">
+                    <Heart className="w-3 h-3" />
+                    {item.reactions?.filter(r => r.type === 'love').length}
+                  </span>
+                )}
+                {(item.reactions?.filter(r => r.type === 'approved').length || 0) > 0 && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-green-600">
+                    ✓ {item.reactions?.filter(r => r.type === 'approved').length}
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Comment toggle */}
             <button
@@ -828,7 +861,7 @@ function ItemRow({
               {item.comments?.length > 0 && (
                 <div className="space-y-2 mb-3">
                   {item.comments.map((comment) => (
-                    <div key={comment._id} className="flex items-start gap-2">
+                    <div key={getId(comment)} className="flex items-start gap-2">
                       <Avatar
                         src={comment.userAvatar}
                         name={comment.userName}
@@ -1030,7 +1063,7 @@ function SectionModal({
               <div className="mt-3 space-y-2">
                 {attachments.map((att, index) => (
                   <div
-                    key={att._id}
+                    key={getId(att)}
                     className="flex items-center gap-3 p-2.5 rounded-xl bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]"
                   >
                     {att.fileType === 'image' ? (

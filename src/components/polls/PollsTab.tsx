@@ -9,6 +9,12 @@ import { LoadingSpinnerCentered } from '@/components/ui/LoadingSpinner';
 import { api } from '@/lib/api';
 import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
 
+// Helper to get ID from object (handles both id and _id)
+const getId = (obj: { id?: string; _id?: string } | undefined): string => {
+  if (!obj) return '';
+  return obj.id || obj._id || '';
+};
+
 interface PollsTabProps {
   jobId: string;
   isPro: boolean;
@@ -62,27 +68,27 @@ export default function PollsTab({
   const handleVote = async (pollId: string, optionId: string) => {
     await api.post(`/jobs/polls/${pollId}/vote`, { optionId });
     setPolls(polls.map(p =>
-      p._id === pollId ? { ...p, clientVote: optionId } : p
+      getId(p) === pollId ? { ...p, clientVote: optionId } : p
     ));
   };
 
   const handleApprove = async (pollId: string, optionId: string) => {
     await api.post(`/jobs/polls/${pollId}/approve`, { optionId });
     setPolls(polls.map(p =>
-      p._id === pollId ? { ...p, status: 'approved', selectedOption: optionId } : p
+      getId(p) === pollId ? { ...p, status: 'approved', selectedOption: optionId } : p
     ));
   };
 
   const handleClose = async (pollId: string) => {
     await api.post(`/jobs/polls/${pollId}/close`);
     setPolls(polls.map(p =>
-      p._id === pollId ? { ...p, status: 'closed' } : p
+      getId(p) === pollId ? { ...p, status: 'closed' } : p
     ));
   };
 
   const handleDelete = async (pollId: string) => {
     await api.delete(`/jobs/polls/${pollId}`);
-    setPolls(polls.filter(p => p._id !== pollId));
+    setPolls(polls.filter(p => getId(p) !== pollId));
   };
 
   const activePollsCount = polls.filter(p => p.status === 'active').length;
@@ -101,7 +107,7 @@ export default function PollsTab({
           <div className="space-y-4">
             {polls.map((poll) => (
               <PollCard
-                key={poll._id}
+                key={poll.id || poll._id}
                 poll={poll}
                 isPro={isPro}
                 isClient={isClient}

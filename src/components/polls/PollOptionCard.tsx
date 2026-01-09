@@ -7,7 +7,8 @@ import { Check, ZoomIn } from 'lucide-react';
 import { useState } from 'react';
 
 export interface PollOption {
-  _id: string;
+  id?: string;
+  _id?: string;
   text?: string;
   imageUrl?: string;
 }
@@ -40,7 +41,7 @@ export default function PollOptionCard({
     <>
       <button
         type="button"
-        onClick={() => !disabled && onSelect(option._id)}
+        onClick={() => !disabled && onSelect(option.id || option._id || '')}
         disabled={disabled}
         className={cn(
           'relative group rounded-2xl overflow-hidden transition-all duration-300',

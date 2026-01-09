@@ -116,12 +116,7 @@ export interface AnalyticsEventParams {
   [key: string]: string | number | boolean | undefined;
 }
 
-// Declare dataLayer type
-declare global {
-  interface Window {
-    dataLayer: Record<string, any>[];
-  }
-}
+// dataLayer type declared in src/types/google.d.ts
 
 /**
  * Hook for firing analytics events to Google Tag Manager

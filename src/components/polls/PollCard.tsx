@@ -9,8 +9,15 @@ import { Check, Clock, MoreVertical, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import PollOptionCard, { PollOption } from './PollOptionCard';
 
+// Helper to get ID from object (handles both id and _id)
+const getId = (obj: { id?: string; _id?: string } | undefined): string => {
+  if (!obj) return '';
+  return obj.id || obj._id || '';
+};
+
 export interface Poll {
-  _id: string;
+  id?: string;
+  _id?: string;
   jobId: string;
   title: string;
   description?: string;
@@ -19,7 +26,8 @@ export interface Poll {
   selectedOption?: string;
   clientVote?: string;
   createdBy: {
-    _id: string;
+    id?: string;
+    _id?: string;
     name: string;
     avatar?: string;
   };
@@ -60,7 +68,7 @@ export default function PollCard({
   const isActive = poll.status === 'active';
   const isApproved = poll.status === 'approved';
   const isClosed = poll.status === 'closed';
-  const isOwner = poll.createdBy._id === userId;
+  const isOwner = getId(poll.createdBy) === userId;
   const hasImages = poll.options.some(opt => opt.imageUrl);
 
   const handleOptionSelect = async (optionId: string) => {
@@ -69,7 +77,7 @@ export default function PollCard({
     setSelectedOption(optionId);
     setIsVoting(true);
     try {
-      await onVote(poll._id, optionId);
+      await onVote(getId(poll), optionId);
     } catch (error) {
       setSelectedOption(poll.clientVote || null);
     } finally {
@@ -82,7 +90,7 @@ export default function PollCard({
 
     setIsApproving(true);
     try {
-      await onApprove(poll._id, selectedOption);
+      await onApprove(getId(poll), selectedOption);
     } finally {
       setIsApproving(false);
     }
@@ -91,7 +99,7 @@ export default function PollCard({
   const handleClose = async () => {
     setIsClosing(true);
     try {
-      await onClose(poll._id);
+      await onClose(getId(poll));
       setShowMenu(false);
     } finally {
       setIsClosing(false);
@@ -101,7 +109,7 @@ export default function PollCard({
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      await onDelete(poll._id);
+      await onDelete(getId(poll));
     } finally {
       setIsDeleting(false);
     }
@@ -203,10 +211,10 @@ export default function PollCard({
         )}>
           {poll.options.map((option) => (
             <PollOptionCard
-              key={option._id}
+              key={option.id || option._id}
               option={option}
-              isSelected={selectedOption === option._id}
-              isApproved={isApproved && poll.selectedOption === option._id}
+              isSelected={selectedOption === getId(option)}
+              isApproved={isApproved && poll.selectedOption === getId(option)}
               disabled={!isClient || !isActive || isVoting}
               onSelect={handleOptionSelect}
               locale={locale}
