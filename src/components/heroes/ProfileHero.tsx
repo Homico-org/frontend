@@ -218,7 +218,7 @@ export default function ProfileHero({
             <div className="flex items-center justify-center flex-wrap gap-4 md:gap-6 text-sm mb-6">
               {avgRating > 0 && (
                 <div className="flex items-center gap-1.5">
-                  <MultiStarDisplay rating={avgRating} size={16} />
+                  <MultiStarDisplay rating={avgRating} size="sm" />
                   <span className="font-semibold text-neutral-900 dark:text-white">
                     {avgRating.toFixed(1)}
                   </span>

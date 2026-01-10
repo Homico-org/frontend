@@ -2,8 +2,8 @@
 
 import EmptyState from "@/components/common/EmptyState";
 import ProCard from "@/components/common/ProCard";
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { SkeletonProCardGrid } from '@/components/ui/Skeleton';
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { SkeletonProCardGrid } from "@/components/ui/Skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBrowseContext } from "@/contexts/BrowseContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -18,7 +18,16 @@ export default function ProfessionalsPage() {
   const { locale } = useLanguage();
   const { user } = useAuth();
   const { trackEvent } = useAnalytics();
-  const { selectedCategory, selectedSubcategory, minRating, searchQuery, sortBy, selectedCity, budgetMin, budgetMax } = useBrowseContext();
+  const {
+    selectedCategory,
+    selectedSubcategory,
+    minRating,
+    searchQuery,
+    sortBy,
+    selectedCity,
+    budgetMin,
+    budgetMax,
+  } = useBrowseContext();
   const { toggleLike } = useLikes();
 
   const [results, setResults] = useState<ProProfile[]>([]);
@@ -44,11 +53,13 @@ export default function ProfessionalsPage() {
         params.append("limit", "12");
 
         if (selectedCategory) params.append("category", selectedCategory);
-        if (selectedSubcategory) params.append("subcategory", selectedSubcategory);
+        if (selectedSubcategory)
+          params.append("subcategory", selectedSubcategory);
         if (minRating > 0) params.append("minRating", minRating.toString());
         if (searchQuery) params.append("search", searchQuery);
-        if (sortBy && sortBy !== 'recommended') params.append("sort", sortBy);
-        if (selectedCity && selectedCity !== 'tbilisi') params.append("serviceArea", selectedCity);
+        if (sortBy && sortBy !== "recommended") params.append("sort", sortBy);
+        if (selectedCity && selectedCity !== "tbilisi")
+          params.append("serviceArea", selectedCity);
         if (budgetMin !== null) params.append("priceMin", budgetMin.toString());
         if (budgetMax !== null) params.append("priceMax", budgetMax.toString());
 
@@ -57,7 +68,7 @@ export default function ProfessionalsPage() {
         const profiles = result.data as ProProfile[];
         const pagination = result.pagination || {};
 
-        console.log('profiles', profiles);
+        console.log("profiles", profiles);
         if (reset) {
           setResults(profiles);
           // initializeLikeStates(
@@ -78,8 +89,12 @@ export default function ProfessionalsPage() {
           // );
         }
 
-        setTotalCount(pagination.total || result.total || result.totalCount || 0);
-        setHasMore(pagination.hasMore ?? (profiles.length === 12 && profiles.length > 0));
+        setTotalCount(
+          pagination.total || result.total || result.totalCount || 0
+        );
+        setHasMore(
+          pagination.hasMore ?? (profiles.length === 12 && profiles.length > 0)
+        );
       } catch (error) {
         console.error("Error fetching professionals:", error);
         setHasMore(false);
@@ -88,7 +103,16 @@ export default function ProfessionalsPage() {
         setIsLoadingMore(false);
       }
     },
-    [selectedCategory, selectedSubcategory, minRating, searchQuery, sortBy, selectedCity, budgetMin, budgetMax]
+    [
+      selectedCategory,
+      selectedSubcategory,
+      minRating,
+      searchQuery,
+      sortBy,
+      selectedCity,
+      budgetMin,
+      budgetMax,
+    ]
   );
 
   // Track if initial fetch has been done to prevent double fetching
@@ -118,13 +142,21 @@ export default function ProfessionalsPage() {
     // Track analytics events only when filters actually change (not initial mount)
     if (hasFetchedRef.current && prevFiltersRef.current !== filterKey) {
       if (searchQuery) {
-        trackEvent(AnalyticsEvent.SEARCH, { searchQuery, category: selectedCategory || undefined });
+        trackEvent(AnalyticsEvent.SEARCH, {
+          searchQuery,
+          category: selectedCategory || undefined,
+        });
       }
       if (selectedCategory) {
-        trackEvent(AnalyticsEvent.CATEGORY_SELECT, { category: selectedCategory });
+        trackEvent(AnalyticsEvent.CATEGORY_SELECT, {
+          category: selectedCategory,
+        });
       }
       if (selectedSubcategory) {
-        trackEvent(AnalyticsEvent.SUBCATEGORY_SELECT, { category: selectedCategory || undefined, subcategory: selectedSubcategory });
+        trackEvent(AnalyticsEvent.SUBCATEGORY_SELECT, {
+          category: selectedCategory || undefined,
+          subcategory: selectedSubcategory,
+        });
       }
     }
 
@@ -133,13 +165,29 @@ export default function ProfessionalsPage() {
     hasFetchedRef.current = true;
     setPage(1);
     fetchProfessionals(1, true);
-  }, [selectedCategory, selectedSubcategory, minRating, searchQuery, sortBy, selectedCity, budgetMin, budgetMax, fetchProfessionals, trackEvent]);
+  }, [
+    selectedCategory,
+    selectedSubcategory,
+    minRating,
+    searchQuery,
+    sortBy,
+    selectedCity,
+    budgetMin,
+    budgetMax,
+    fetchProfessionals,
+    trackEvent,
+  ]);
 
   // Infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading && !isLoadingMore) {
+        if (
+          entries[0].isIntersecting &&
+          hasMore &&
+          !isLoading &&
+          !isLoadingMore
+        ) {
           setPage((prev) => prev + 1);
         }
       },
@@ -215,17 +263,8 @@ export default function ProfessionalsPage() {
           <div className="flex items-center gap-3 px-4 py-2 sm:gap-4 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl glass-card">
             <LoadingSpinner size="sm" variant="border" color="#E07B4F" />
             <span className="text-xs sm:text-sm font-medium text-[var(--color-text-secondary)]">
-              {locale === 'ka' ? 'იტვირთება...' : 'Loading more...'}
+              {locale === "ka" ? "იტვირთება..." : "Loading more..."}
             </span>
-          </div>
-        )}
-        {!hasMore && results.length > 0 && (
-          <div className="flex items-center gap-2 text-xs sm:text-sm text-[var(--color-text-tertiary)]">
-            <div className="w-6 sm:w-8 h-px bg-gradient-to-r from-transparent via-[#E07B4F]/20 to-transparent" />
-            <span className="text-[var(--color-text-tertiary)]">
-              {locale === 'ka' ? 'ყველა სპეციალისტი ნაჩვენებია' : 'All professionals are listed'}
-            </span>
-            <div className="w-6 sm:w-8 h-px bg-gradient-to-r from-transparent via-[#E07B4F]/20 to-transparent" />
           </div>
         )}
       </div>
