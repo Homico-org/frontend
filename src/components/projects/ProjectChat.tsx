@@ -207,11 +207,17 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
 
   // Allowed file types for chat
   const ALLOWED_FILE_TYPES = [
+    // Images
     'image/jpeg',
     'image/jpg',
     'image/png',
     'image/gif',
     'image/webp',
+    // Videos
+    'video/mp4',
+    'video/quicktime',
+    'video/webm',
+    // Documents
     'application/pdf',
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -220,22 +226,22 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
     'text/plain',
   ];
 
-  const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.txt'];
+  const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.mp4', '.mov', '.webm', '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.txt'];
 
   const validateFile = (file: File): string | null => {
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    const maxSize = 50 * 1024 * 1024; // 50MB
     const extension = '.' + file.name.split('.').pop()?.toLowerCase();
 
     if (!ALLOWED_FILE_TYPES.includes(file.type) && !ALLOWED_EXTENSIONS.includes(extension)) {
       return locale === 'ka'
-        ? 'მხარდაჭერილი ფორმატები: JPG, PNG, GIF, WebP, PDF, DOC, DOCX, XLS, XLSX, TXT'
-        : 'Supported formats: JPG, PNG, GIF, WebP, PDF, DOC, DOCX, XLS, XLSX, TXT';
+        ? 'მხარდაჭერილი ფორმატები: JPG, PNG, GIF, WebP, MP4, MOV, PDF, DOC, DOCX, XLS, XLSX, TXT'
+        : 'Supported formats: JPG, PNG, GIF, WebP, MP4, MOV, PDF, DOC, DOCX, XLS, XLSX, TXT';
     }
 
     if (file.size > maxSize) {
       return locale === 'ka'
-        ? 'ფაილის ზომა არ უნდა აღემატებოდეს 10MB-ს'
-        : 'File size must not exceed 10MB';
+        ? 'ფაილის ზომა არ უნდა აღემატებოდეს 50MB-ს'
+        : 'File size must not exceed 50MB';
     }
 
     return null;
@@ -604,7 +610,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
                 onChange={handleFileUpload}
                 className="hidden"
               />

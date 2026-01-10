@@ -53,6 +53,7 @@ export interface Message extends BaseEntity {
 
 export interface FeedItemPro {
   id: string;
+  _id?: string; // Backend may return _id instead of id
   name: string;
   avatar?: string;
   rating: number;

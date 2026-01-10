@@ -6,6 +6,8 @@ import Header, { HeaderSpacer } from "@/components/common/Header";
 import MediaLightbox from "@/components/common/MediaLightbox";
 import ClientCard from "@/components/jobs/ClientCard";
 import MyProposalCard from "@/components/jobs/MyProposalCard";
+import ProjectSidebar, { ProjectSidebarMobile, ProjectSidebarTab } from "@/components/jobs/ProjectSidebar";
+import ProjectStatusBar from "@/components/jobs/ProjectStatusBar";
 import ProposalFormModal from "@/components/jobs/ProposalFormModal";
 import RequirementBadge from "@/components/jobs/RequirementBadge";
 import ReviewModal from "@/components/jobs/ReviewModal";
@@ -674,6 +676,14 @@ export default function JobDetailClient() {
   const [isPollsExpanded, setIsPollsExpanded] = useState(true);
   const [isResourcesExpanded, setIsResourcesExpanded] = useState(true);
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
+  
+  // Sidebar navigation state for hired projects
+  const [activeSidebarTab, setActiveSidebarTab] = useState<ProjectSidebarTab>("details");
+  
+  // Unread counts for sidebar badges
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
+  const [unreadPollsCount, setUnreadPollsCount] = useState(0);
+  const [unreadResourcesCount, setUnreadResourcesCount] = useState(0);
 
   // History state
   type HistoryEventType =
@@ -734,6 +744,7 @@ export default function JobDetailClient() {
   const [reviewText, setReviewText] = useState("");
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [hasSubmittedReview, setHasSubmittedReview] = useState(false);
+  const [isCompletionFlow, setIsCompletionFlow] = useState(false);
 
   const isOwner = user && job?.clientId && user.id === job.clientId.id;
   const isPro = user?.role === "pro" || user?.role === "admin";
@@ -780,6 +791,8 @@ export default function JobDetailClient() {
   const [projectStage, setProjectStage] = useState<ProjectStage>("hired");
   const [isUpdatingStage, setIsUpdatingStage] = useState(false);
   const [isClientConfirmed, setIsClientConfirmed] = useState(false);
+  // Store pro info from project tracking as fallback when job.hiredPro is missing
+  const [projectProId, setProjectProId] = useState<string | null>(null);
 
   const allMedia: MediaItem[] = job
     ? [
@@ -881,10 +894,11 @@ export default function JobDetailClient() {
 
   useEffect(() => {
     const jobIsHired = job?.status === "in_progress" || job?.status === "completed" || !!job?.hiredPro;
-    if (isHistoryExpanded && !historyLoadedRef.current && jobIsHired) {
+    const shouldLoadHistory = (isHistoryExpanded || activeSidebarTab === "history") && !historyLoadedRef.current && jobIsHired;
+    if (shouldLoadHistory) {
       fetchHistory();
     }
-  }, [isHistoryExpanded, job?.status, job?.hiredPro, job?.id]);
+  }, [isHistoryExpanded, activeSidebarTab, job?.status, job?.hiredPro, job?.id]);
 
   // Helper to get event icon and color
   const getEventConfig = (eventType: HistoryEventType) => {
@@ -965,31 +979,87 @@ export default function JobDetailClient() {
     ? historyEvents
     : historyEvents.filter(e => e.userRole === historyFilter);
 
-  // Submit review handler
+  // Submit review handler (and optionally confirm completion)
   const handleSubmitReview = async () => {
-    if (!job || reviewRating < 1 || reviewRating > 5 || !job.hiredPro) return;
+    if (!job || reviewRating < 1 || reviewRating > 5) {
+      console.log('[handleSubmitReview] Early return:', { job: !!job, reviewRating });
+      return;
+    }
+
+    // Get pro ID from various possible locations (including project tracking fallback)
+    const hiredProUser = job.hiredPro?.userId as { id?: string; _id?: string } | string | undefined;
+    const proId = (typeof hiredProUser === 'object' ? (hiredProUser?.id || hiredProUser?._id) : hiredProUser) ||
+                  job.hiredPro?.id ||
+                  projectProId || // Fallback to project tracking proId
+                  '';
+
+    console.log('[handleSubmitReview] Starting review submission:', { 
+      jobId: job.id, 
+      proId, 
+      rating: reviewRating,
+      hiredPro: job.hiredPro,
+      projectProId, // Fallback source
+    });
+
+    // Validate proId
+    if (!proId) {
+      console.error('[handleSubmitReview] No proId found!', job.hiredPro);
+      setError(locale === "ka" ? "სპეციალისტის ID ვერ მოიძებნა" : "Professional ID not found");
+      setTimeout(() => setError(""), 3000);
+      return;
+    }
 
     setIsSubmittingReview(true);
     try {
-      await api.post("/reviews", {
+      // If in completion flow, confirm completion first
+      if (isCompletionFlow) {
+        await api.post(`/jobs/projects/${job.id}/confirm-completion`);
+        setIsClientConfirmed(true);
+      }
+
+      const reviewData = {
         jobId: job.id,
-        proId: job.hiredPro.userId?.id || '',
+        proId: proId,
         rating: reviewRating,
         text: reviewText.trim() || undefined,
-      });
+      };
+      console.log('[handleSubmitReview] Sending review data:', reviewData);
+
+      // Then submit review
+      await api.post("/reviews", reviewData);
+      
       setShowReviewModal(false);
+      setIsCompletionFlow(false);
       setHasSubmittedReview(true);
-      setSuccess(locale === "ka" ? "შეფასება გაიგზავნა" : "Review submitted successfully");
+      setSuccess(
+        isCompletionFlow
+          ? (locale === "ka" ? "პროექტი დასრულდა და შეფასება გაიგზავნა" : "Project completed and review submitted")
+          : (locale === "ka" ? "შეფასება გაიგზავნა" : "Review submitted successfully")
+      );
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
       const apiErr = err as { response?: { data?: { message?: string } } };
       const message = apiErr?.response?.data?.message;
       if (message === "Review already exists for this project") {
+        // If review already exists but we were in completion flow, still try to confirm
+        if (isCompletionFlow) {
+          try {
+            await api.post(`/jobs/projects/${job.id}/confirm-completion`);
+            setIsClientConfirmed(true);
+            setSuccess(locale === "ka" ? "პროექტი დასრულდა" : "Project completed");
+            setTimeout(() => setSuccess(""), 3000);
+          } catch {
+            setError(locale === "ka" ? "პროექტი ვერ დაიხურა" : "Failed to close project");
+            setTimeout(() => setError(""), 3000);
+          }
+        }
         setHasSubmittedReview(true);
         setShowReviewModal(false);
+        setIsCompletionFlow(false);
+      } else {
+        setError(locale === "ka" ? "შეფასება ვერ გაიგზავნა" : "Failed to submit review");
+        setTimeout(() => setError(""), 3000);
       }
-      setError(locale === "ka" ? "შეფასება ვერ გაიგზავნა" : "Failed to submit review");
-      setTimeout(() => setError(""), 3000);
     } finally {
       setIsSubmittingReview(false);
     }
@@ -1064,18 +1134,32 @@ export default function JobDetailClient() {
     }
   }, [job]);
 
-  // Fetch project tracking data for hired jobs
+  // Fetch project tracking data for hired jobs (in_progress or completed)
   useEffect(() => {
     const fetchProjectTracking = async () => {
-      if (!job?.id || job.status !== "in_progress") return;
+      if (!job?.id) return;
+      // Only fetch for in_progress or completed jobs
+      if (job.status !== "in_progress" && job.status !== "completed") return;
       if (!isOwner && !isHiredPro) return;
 
       try {
-        const token = localStorage.getItem("access_token");
         const response = await api.get(`/jobs/projects/${job.id}`);
-        if (response.data) {
-          setProjectStage(response.data.currentStage || "hired");
-          setIsClientConfirmed(response.data.clientConfirmed || false);
+        if (response.data?.project) {
+          const project = response.data.project;
+          setProjectStage(project.currentStage || "hired");
+          // For legacy jobs: if completed with completedAt but no clientConfirmedAt, treat as confirmed
+          const isLegacyCompleted = project.currentStage === "completed" && 
+            !!project.completedAt && !project.clientConfirmedAt;
+          setIsClientConfirmed(!!project.clientConfirmedAt || isLegacyCompleted);
+          
+          // Store pro ID from project tracking as fallback
+          if (project.proId) {
+            const proIdValue = typeof project.proId === 'object' 
+              ? (project.proId._id || project.proId.id) 
+              : project.proId;
+            setProjectProId(proIdValue);
+            console.log('[fetchProjectTracking] Stored proId:', proIdValue);
+          }
         }
       } catch (err) {
         console.error("Failed to fetch project tracking:", err);
@@ -1084,6 +1168,44 @@ export default function JobDetailClient() {
 
     fetchProjectTracking();
   }, [job?.id, job?.status, isOwner, isHiredPro]);
+
+  // Fetch unread counts for sidebar badges
+  useEffect(() => {
+    const fetchUnreadCounts = async () => {
+      if (!job?.id) return;
+      if (job.status !== "in_progress" && job.status !== "completed") return;
+      if (!isOwner && !isHiredPro) return;
+
+      try {
+        const response = await api.get(`/jobs/projects/${job.id}/unread-counts`);
+        setUnreadChatCount(response.data.chat || 0);
+        setUnreadPollsCount(response.data.polls || 0);
+        setUnreadResourcesCount(response.data.materials || 0);
+      } catch (err) {
+        // Silently fail
+      }
+    };
+
+    fetchUnreadCounts();
+  }, [job?.id, job?.status, isOwner, isHiredPro]);
+
+  // Clear unread counts when switching tabs
+  useEffect(() => {
+    if (!job?.id) return;
+    
+    if (activeSidebarTab === "chat" && unreadChatCount > 0) {
+      api.post(`/jobs/projects/${job.id}/messages/read`).catch(() => {});
+      setUnreadChatCount(0);
+    }
+    if (activeSidebarTab === "polls" && unreadPollsCount > 0) {
+      api.post(`/jobs/projects/${job.id}/polls/viewed`).catch(() => {});
+      setUnreadPollsCount(0);
+    }
+    if (activeSidebarTab === "resources" && unreadResourcesCount > 0) {
+      api.post(`/jobs/projects/${job.id}/materials/viewed`).catch(() => {});
+      setUnreadResourcesCount(0);
+    }
+  }, [activeSidebarTab, job?.id, unreadChatCount, unreadPollsCount, unreadResourcesCount]);
 
   // Handle stage change (for pro)
   const handleStageChange = async (newStage: ProjectStage) => {
@@ -1110,28 +1232,12 @@ export default function JobDetailClient() {
     }
   };
 
-  // Handle client confirmation
+  // Handle client confirmation - opens review modal first
   const handleClientConfirm = async () => {
     if (!job?.id || !isOwner) return;
-
-    setIsUpdatingStage(true);
-    try {
-      await api.post(`/jobs/projects/${job.id}/confirm-completion`);
-      toast.success(
-        locale === "ka" ? "წარმატება" : "Success",
-        locale === "ka" ? "პროექტი დაიხურა. გადახდა მოხდება მალე." : "Project closed. Payment will be processed shortly."
-      );
-      setIsClientConfirmed(true);
-      // Show review modal
-      setShowReviewModal(true);
-    } catch (err) {
-      toast.error(
-        locale === "ka" ? "შეცდომა" : "Error",
-        locale === "ka" ? "პროექტი ვერ დაიხურა" : "Failed to close project"
-      );
-    } finally {
-      setIsUpdatingStage(false);
-    }
+    // Open review modal in completion flow mode
+    setIsCompletionFlow(true);
+    setShowReviewModal(true);
   };
 
   // Handle client request changes
@@ -1302,22 +1408,39 @@ export default function JobDetailClient() {
         {/* Subtle decorative elements */}
         <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-[#D4846C]/5 blur-3xl" />
         <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-[#C4735B]/5 blur-2xl" />
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-4">
-          {/* Back button */}
-          <div className="mb-4">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-3">
+          {/* Back button + Edit/Delete buttons row (only when job is not hired) */}
+          <div className="flex items-center justify-between mb-3">
             <BackButton href="/browse/jobs" />
+            {isOwner && !isHired && (
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/post-job?edit=${job.id}`}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-body text-xs font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-800 transition-all"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  {locale === "ka" ? "რედაქტირება" : "Edit"}
+                </Link>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Side-by-side layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
-            {/* Left: Image Gallery */}
-            <div className="space-y-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
+            {/* Left: Image Gallery - smaller */}
+            <div className="space-y-2">
               {allMedia.length > 0 ? (
                 <>
-                  {/* Main Image */}
+                  {/* Main Image - smaller aspect ratio */}
                   <button
                     onClick={() => setSelectedMediaIndex(activeImageIndex)}
-                    className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 group"
+                    className="relative w-full aspect-[16/10] rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 group"
                   >
                     <img
                       src={storage.getFileUrl(allMedia[activeImageIndex]?.url)}
@@ -1367,7 +1490,7 @@ export default function JobDetailClient() {
                 </>
               ) : (
                 /* No images placeholder - Terracotta with Homico logo */
-                <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-br from-[#D4846C] via-[#C4735B] to-[#A85D4A]">
+                <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden bg-gradient-to-br from-[#D4846C] via-[#C4735B] to-[#A85D4A]">
                   {/* Gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-white/10" />
                   
@@ -1477,27 +1600,47 @@ export default function JobDetailClient() {
                 </div>
               </div>
 
-              {/* Stats row */}
-              <div className="flex items-center gap-6 text-sm">
+              {/* Stats row - hide proposals link when hired */}
+              <div className="flex items-center gap-6 text-sm mb-3">
                 <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
                   <Eye className="w-4 h-4" />
                   <span>{job.viewCount || 0} {locale === "ka" ? "ნახვა" : "views"}</span>
                 </div>
-                {isOwner ? (
-                  <Link
-                    href={`/my-jobs/${job.id}/proposals`}
-                    className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-[#C4735B] transition-colors"
-                  >
-                    <Users className="w-4 h-4" />
-                    <span className="underline underline-offset-2">{job.proposalCount || 0} {locale === "ka" ? "შეთავაზება" : "proposals"}</span>
-                  </Link>
-                ) : (
-                  <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
-                    <Users className="w-4 h-4" />
-                    <span>{job.proposalCount || 0} {locale === "ka" ? "შეთავაზება" : "proposals"}</span>
-                  </div>
+                {!isHired && (
+                  isOwner ? (
+                    <Link
+                      href={`/my-jobs/${job.id}/proposals`}
+                      className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-[#C4735B] transition-colors"
+                    >
+                      <Users className="w-4 h-4" />
+                      <span className="underline underline-offset-2">{job.proposalCount || 0} {locale === "ka" ? "შეთავაზება" : "proposals"}</span>
+                    </Link>
+                  ) : (
+                    <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
+                      <Users className="w-4 h-4" />
+                      <span>{job.proposalCount || 0} {locale === "ka" ? "შეთავაზება" : "proposals"}</span>
+                    </div>
+                  )
                 )}
               </div>
+
+              {/* Compact Status Bar in Hero (for hired projects) */}
+              {isHired && (isOwner || isHiredPro) && (
+                <ProjectStatusBar
+                  currentStage={projectStage}
+                  locale={locale}
+                  isPro={!!isHiredPro}
+                  isClient={!!isOwner}
+                  isUpdating={isUpdatingStage}
+                  isClientConfirmed={isClientConfirmed}
+                  hasSubmittedReview={hasSubmittedReview}
+                  onStageChange={handleStageChange}
+                  onClientConfirm={handleClientConfirm}
+                  onClientRequestChanges={handleClientRequestChanges}
+                  onLeaveReview={() => setShowReviewModal(true)}
+                  compact={true}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -1505,83 +1648,22 @@ export default function JobDetailClient() {
 
       {/* Main Content */}
       <main className="relative z-10 bg-[#FAFAFA] dark:bg-[#0A0A0A]">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-6">
-          {/* Action buttons for owner */}
-          <div
-            className={`flex items-center justify-end gap-3 mb-6 transition-all duration-500 ${
-              isVisible ? "opacity-100" : "opacity-0"
-            }`}
-          >
-            {
-              isOwner ? (
-                <div className="flex items-center gap-2">
-                  <Link
-                    href={`/post-job?edit=${job.id}`}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-body text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                    {locale === "ka" ? "რედაქტირება" : "Edit"}
-                  </Link>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setShowDeleteConfirm(true)}
-                    className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              ) : isPro && isOpen && !myProposal && !isCheckingProposal ? (
-                <Button
-                  onClick={() => setShowProposalForm(true)}
-                  leftIcon={<Send className="w-4 h-4" />}
-                >
-                  {locale === "ka" ? "შეთავაზების გაგზავნა" : "Submit Proposal"}
-                </Button>
-              ) : isPro && isOpen && isCheckingProposal ? (
-                <div className="flex items-center gap-2 px-6 py-3 rounded-xl font-body text-sm font-semibold text-neutral-400">
-                  <LoadingSpinner size="sm" color="#737373" />
-                </div>
-              ) : undefined
-            }
-          </div>
-
-          {/* Completed Status Banner */}
-          {isCompleted && (
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-4 md:p-6 mb-8">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-800/50 flex items-center justify-center flex-shrink-0">
-                    <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
-                  </div>
-                  <div>
-                    <h3 className="font-body text-lg font-semibold text-green-800 dark:text-green-300">
-                      {locale === "ka" ? "პროექტი დასრულებულია" : "Project Completed"}
-                    </h3>
-                    <p className="font-body text-sm text-green-700 dark:text-green-400">
-                      {locale === "ka"
-                        ? "ეს პროექტი წარმატებით დასრულდა და დაიხურა."
-                        : "This project has been successfully completed and closed."}
-                    </p>
-                  </div>
-                </div>
-                {/* Leave Review Button for owner */}
-                {isOwner && job.hiredPro && !hasSubmittedReview && (
-                  <Button
-                    onClick={() => setShowReviewModal(true)}
-                    size="sm"
-                    leftIcon={<Star className="w-4 h-4" />}
-                    className="flex-shrink-0"
-                  >
-                    {locale === "ka" ? "შეფასების დატოვება" : "Leave Review"}
-                  </Button>
-                )}
-                {isOwner && hasSubmittedReview && (
-                  <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-body text-sm font-medium text-green-600 bg-green-100 dark:bg-green-800/30 dark:text-green-400 flex-shrink-0">
-                    <Check className="w-4 h-4" />
-                    {locale === "ka" ? "შეფასება დატოვებულია" : "Review Submitted"}
-                  </div>
-                )}
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-4">
+          {/* Submit Proposal button for pro - only when not hired */}
+          {isPro && isOpen && !isHired && !myProposal && !isCheckingProposal && (
+            <div className="flex justify-end mb-4">
+              <Button
+                onClick={() => setShowProposalForm(true)}
+                leftIcon={<Send className="w-4 h-4" />}
+              >
+                {locale === "ka" ? "შეთავაზების გაგზავნა" : "Submit Proposal"}
+              </Button>
+            </div>
+          )}
+          {isPro && isOpen && !isHired && isCheckingProposal && (
+            <div className="flex justify-end mb-4">
+              <div className="flex items-center gap-2 px-6 py-3 rounded-xl font-body text-sm font-semibold text-neutral-400">
+                <LoadingSpinner size="sm" color="#737373" />
               </div>
             </div>
           )}
@@ -1613,25 +1695,194 @@ export default function JobDetailClient() {
             </div>
           )}
 
-          {/* Two Column Layout */}
-          <div className="grid lg:grid-cols-3 gap-8 pb-24">
-            {/* Main Content */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Description */}
-              <section
-                className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-500 ${
-                  isVisible
-                    ? "opacity-100 translate-y-0"
-                    : "opacity-0 translate-y-4"
-                }`}
-              >
-                <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white mb-4">
-                  {locale === "ka" ? "აღწერა" : "Description"}
-                </h2>
-                <p className="font-body text-neutral-600 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
-                  {job.description}
-                </p>
-              </section>
+          {/* Mobile Sidebar Tabs for hired projects */}
+          {isHired && (isOwner || isHiredPro) && (
+            <div className="lg:hidden mb-6">
+              <ProjectSidebarMobile
+                activeTab={activeSidebarTab}
+                onTabChange={setActiveSidebarTab}
+                locale={locale}
+                unreadChatCount={unreadChatCount}
+                unreadPollsCount={unreadPollsCount}
+                unreadResourcesCount={unreadResourcesCount}
+                isProjectStarted={projectStage !== "hired"}
+              />
+            </div>
+          )}
+
+          {/* Status bar moved to hero section - keeping only sidebar tabs below */}
+
+          {/* Two Column Layout (or Three with sidebar for hired projects) */}
+          <div className={`grid gap-8 pb-24 ${isHired && (isOwner || isHiredPro) ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}>
+            {/* Desktop Sidebar for hired projects */}
+            {isHired && (isOwner || isHiredPro) && (
+              <div className="hidden lg:block">
+                <div className="sticky top-24 bg-white dark:bg-neutral-900 rounded-2xl p-4 border border-neutral-200/50 dark:border-neutral-800">
+                  <ProjectSidebar
+                    activeTab={activeSidebarTab}
+                    onTabChange={setActiveSidebarTab}
+                    locale={locale}
+                    unreadChatCount={unreadChatCount}
+                    unreadPollsCount={unreadPollsCount}
+                    unreadResourcesCount={unreadResourcesCount}
+                    isProjectStarted={projectStage !== "hired"}
+                  />
+                </div>
+              </div>
+            )}
+            {/* Main Content - min-height prevents layout jumping when switching tabs */}
+            <div className="lg:col-span-2 space-y-8 min-h-[500px]">
+              {/* CHAT TAB CONTENT */}
+              {isHired && (isOwner || isHiredPro) && activeSidebarTab === "chat" && (
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden min-h-[450px]">
+                  <ProjectChat
+                    jobId={job.id}
+                    locale={locale}
+                    isClient={!!isOwner}
+                  />
+                </div>
+              )}
+
+              {/* POLLS TAB CONTENT */}
+              {isHired && (isOwner || isHiredPro) && activeSidebarTab === "polls" && (
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 p-4 md:p-6 min-h-[300px]">
+                  <PollsTab
+                    jobId={job.id}
+                    isPro={isPro || !!isHiredPro}
+                    isClient={isOwner || false}
+                    userId={user?.id}
+                    locale={locale}
+                    embedded={true}
+                  />
+                </div>
+              )}
+
+              {/* RESOURCES TAB CONTENT */}
+              {isHired && (isOwner || isHiredPro) && activeSidebarTab === "resources" && (
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 p-4 md:p-6 min-h-[300px]">
+                  <ProjectWorkspace
+                    jobId={job.id}
+                    locale={locale}
+                    isClient={isOwner || false}
+                    embedded={true}
+                  />
+                </div>
+              )}
+
+              {/* HISTORY TAB CONTENT */}
+              {isHired && (isOwner || isHiredPro) && activeSidebarTab === "history" && (
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden min-h-[300px]">
+                  {/* Filter Tabs */}
+                  <div className="flex items-center gap-1 px-4 py-3 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
+                    {[
+                      { key: "all", label: "All", labelKa: "ყველა" },
+                      { key: "client", label: "Client", labelKa: "კლიენტი" },
+                      { key: "pro", label: "Pro", labelKa: "სპეციალისტი" },
+                    ].map(f => (
+                      <button
+                        key={f.key}
+                        onClick={() => setHistoryFilter(f.key as typeof historyFilter)}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+                          historyFilter === f.key
+                            ? "text-white"
+                            : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+                        }`}
+                        style={historyFilter === f.key ? { backgroundColor: ACCENT } : {}}
+                      >
+                        {locale === "ka" ? f.labelKa : f.label}
+                      </button>
+                    ))}
+                  </div>
+                  {/* History Timeline */}
+                  <div className="p-4 max-h-[600px] overflow-y-auto">
+                    {isLoadingHistory ? (
+                      <div className="flex items-center justify-center py-8">
+                        <LoadingSpinner size="lg" color={ACCENT} />
+                      </div>
+                    ) : filteredHistory.length === 0 ? (
+                      <div className="text-center py-8 text-neutral-500 dark:text-neutral-400">
+                        <History className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                        <p className="text-sm">
+                          {locale === "ka" ? "ისტორია ცარიელია" : "No activity yet"}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        {/* Timeline Line */}
+                        <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-neutral-200 dark:bg-neutral-700" />
+
+                        <div className="space-y-4">
+                          {filteredHistory.slice(0, 30).map((event, idx) => {
+                            const config = getEventConfig(event.eventType);
+                            const description = getEventDescription(event);
+                            return (
+                              <div key={`history-${idx}`} className="relative flex items-start gap-3 pl-1">
+                                <div
+                                  className="relative z-10 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white dark:ring-neutral-900"
+                                  style={{ backgroundColor: config.bgColor, color: config.color }}
+                                >
+                                  {config.icon}
+                                </div>
+                                <div className="flex-1 min-w-0 pt-0.5">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-sm font-medium text-neutral-900 dark:text-white">
+                                      {event.userName}
+                                    </span>
+                                    <Badge variant={event.userRole === "client" ? "info" : "success"} size="xs">
+                                      {event.userRole === "client"
+                                        ? (locale === "ka" ? "კლიენტი" : "Client")
+                                        : (locale === "ka" ? "სპეც." : "Pro")}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
+                                    {locale === "ka" ? config.labelKa : config.label}
+                                    {description && (
+                                      <span className="text-neutral-500"> · {description}</span>
+                                    )}
+                                  </p>
+                                  <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-1">
+                                    {formatHistoryTime(event.createdAt)}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Show more indicator */}
+                        {filteredHistory.length > 30 && (
+                          <div className="mt-4 text-center">
+                            <span className="text-xs text-neutral-400">
+                              {locale === "ka" 
+                                ? `+ ${filteredHistory.length - 30} სხვა მოვლენა` 
+                                : `+ ${filteredHistory.length - 30} more events`}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* DETAILS TAB CONTENT (or non-hired job content) */}
+              {(!isHired || !(isOwner || isHiredPro) || activeSidebarTab === "details") && (
+                <>
+                  {/* Description */}
+                  <section
+                    className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-500 ${
+                      isVisible
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 translate-y-4"
+                    }`}
+                  >
+                    <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white mb-4">
+                      {locale === "ka" ? "აღწერა" : "Description"}
+                    </h2>
+                    <p className="font-body text-neutral-600 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
+                      {job.description}
+                    </p>
+                  </section>
 
               {/* Property Specs */}
               {(job.propertyType ||
@@ -1893,9 +2144,11 @@ export default function JobDetailClient() {
                   locale={locale as 'en' | 'ka'}
                 />
               )}
+                </>
+              )}
 
-              {/* Project Status Tracker - for hired pro or job owner */}
-              {(isHiredPro || isOwner) && isHired && (
+              {/* LEGACY: Project Status Tracker - HIDDEN when sidebar is active */}
+              {(isHiredPro || isOwner) && isHired && activeSidebarTab === "details" && false && (
                 <section className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden">
                   {/* Header with progress */}
                   <div className="p-4 border-b border-neutral-100 dark:border-neutral-800">
@@ -1997,6 +2250,7 @@ export default function JobDetailClient() {
                           </div>
                         </div>
                         <Button
+                          type="button"
                           onClick={() => setShowReviewModal(true)}
                           size="sm"
                           className="w-full bg-amber-600 hover:bg-amber-700"
@@ -2115,16 +2369,7 @@ export default function JobDetailClient() {
                 </section>
               )}
 
-              {/* Project Chat - for hired pro or job owner */}
-              {(isHiredPro || isOwner) && isHired && (
-                <section id="chat" className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden scroll-mt-20">
-                  <ProjectChat
-                    jobId={job.id}
-                    locale={locale}
-                    isClient={isOwner || false}
-                  />
-                </section>
-              )}
+              {/* LEGACY: Project Chat moved to sidebar tabs - HIDDEN */}
             </div>
 
             {/* Sidebar */}
@@ -2201,13 +2446,16 @@ export default function JobDetailClient() {
                   </div>
                 )}
 
-                {/* Polls Section - visible for hired jobs (client or hired pro) */}
-                {(isHired || isHiredPro) && (
-                  <div id="polls" className="group rounded-2xl bg-gradient-to-br from-white to-neutral-50/80 dark:from-neutral-900 dark:to-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 scroll-mt-20">
-                    <button
-                      onClick={() => setIsPollsExpanded(!isPollsExpanded)}
-                      className="w-full flex items-center justify-between p-4 hover:bg-white/50 dark:hover:bg-neutral-800/50 transition-colors"
-                    >
+                {/* LEGACY: Polls Section moved to sidebar tabs - HIDDEN */}
+
+                {/* LEGACY: Resources Section moved to sidebar tabs - HIDDEN */}
+
+                {/* LEGACY: History Section moved to sidebar tabs - HIDDEN */}
+
+                {/* Share Section - Only show when job is not hired */}
+                {!isHired && (
+                  <div className="group rounded-2xl bg-gradient-to-br from-white to-neutral-50/80 dark:from-neutral-900 dark:to-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 p-4">
+                    <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <div
                           className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
@@ -2216,304 +2464,76 @@ export default function JobDetailClient() {
                             border: `1px solid ${ACCENT}20`
                           }}
                         >
-                          <BarChart3 className="w-5 h-5" style={{ color: ACCENT }} />
+                          <Share2 className="w-5 h-5" style={{ color: ACCENT }} />
                         </div>
                         <div className="text-left">
                           <span className="font-body font-semibold text-neutral-900 dark:text-white block">
-                            {locale === "ka" ? "გამოკითხვები" : "Polls"}
+                            {locale === "ka" ? "გაზიარება" : "Share"}
                           </span>
                           <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                            {locale === "ka" ? "არჩევანები და გადაწყვეტილებები" : "Choices & decisions"}
+                            #{job.jobNumber || job.id.slice(-6)}
                           </span>
-                        </div>
-                      </div>
-                      <div
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
-                          isPollsExpanded ? "bg-neutral-100 dark:bg-neutral-800 rotate-90" : "group-hover:bg-neutral-100 dark:group-hover:bg-neutral-800"
-                        }`}
-                      >
-                        <ChevronRight className="w-4 h-4 text-neutral-400" />
-                      </div>
-                    </button>
-                    <div className={`transition-all duration-300 overflow-hidden ${isPollsExpanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"}`}>
-                      <div className="p-4 pt-0 border-t border-neutral-100 dark:border-neutral-800">
-                        <PollsTab
-                          jobId={job.id}
-                          isPro={isPro || !!isHiredPro}
-                          isClient={isOwner || false}
-                          userId={user?.id}
-                          locale={locale}
-                          embedded={true}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Project Resources Section - visible for hired jobs (client or hired pro) */}
-                {(isHired || isHiredPro) && (
-                  <div className="group rounded-2xl bg-gradient-to-br from-white to-neutral-50/80 dark:from-neutral-900 dark:to-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
-                    <button
-                      onClick={() => setIsResourcesExpanded(!isResourcesExpanded)}
-                      className="w-full flex items-center justify-between p-4 hover:bg-white/50 dark:hover:bg-neutral-800/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
-                          style={{
-                            background: `linear-gradient(135deg, ${ACCENT}15 0%, ${ACCENT}25 100%)`,
-                            border: `1px solid ${ACCENT}20`
-                          }}
-                        >
-                          <Package className="w-5 h-5" style={{ color: ACCENT }} />
-                        </div>
-                        <div className="text-left">
-                          <span className="font-body font-semibold text-neutral-900 dark:text-white block">
-                            {locale === "ka" ? "მასალები" : "Resources"}
-                          </span>
-                          <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                            {locale === "ka" ? "პროექტის მასალები და ფაილები" : "Project materials & files"}
-                          </span>
-                        </div>
-                      </div>
-                      <div
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
-                          isResourcesExpanded ? "bg-neutral-100 dark:bg-neutral-800 rotate-90" : "group-hover:bg-neutral-100 dark:group-hover:bg-neutral-800"
-                        }`}
-                      >
-                        <ChevronRight className="w-4 h-4 text-neutral-400" />
-                      </div>
-                    </button>
-                    <div className={`transition-all duration-300 overflow-hidden ${isResourcesExpanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"}`}>
-                      <div className="p-4 pt-0 border-t border-neutral-100 dark:border-neutral-800">
-                        <ProjectWorkspace
-                          jobId={job.id}
-                          locale={locale}
-                          isClient={isOwner || false}
-                          embedded={true}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Project History Section - visible for hired jobs after in_progress */}
-                {(isHired || isHiredPro) && (projectStage !== "hired") && (
-                  <div className="group rounded-2xl bg-gradient-to-br from-white to-neutral-50/80 dark:from-neutral-900 dark:to-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
-                    <button
-                      onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
-                      className="w-full flex items-center justify-between p-4 hover:bg-white/50 dark:hover:bg-neutral-800/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
-                          style={{
-                            background: `linear-gradient(135deg, ${ACCENT}15 0%, ${ACCENT}25 100%)`,
-                            border: `1px solid ${ACCENT}20`
-                          }}
-                        >
-                          <History className="w-5 h-5" style={{ color: ACCENT }} />
-                        </div>
-                        <div className="text-left">
-                          <span className="font-body font-semibold text-neutral-900 dark:text-white block">
-                            {locale === "ka" ? "ისტორია" : "History"}
-                          </span>
-                          <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                            {locale === "ka" ? "პროექტის აქტივობა" : "Project activity"}
-                          </span>
-                        </div>
-                      </div>
-                      <div
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
-                          isHistoryExpanded ? "bg-neutral-100 dark:bg-neutral-800 rotate-90" : "group-hover:bg-neutral-100 dark:group-hover:bg-neutral-800"
-                        }`}
-                      >
-                        <ChevronRight className="w-4 h-4 text-neutral-400" />
-                      </div>
-                    </button>
-                    <div className={`transition-all duration-300 overflow-hidden ${isHistoryExpanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"}`}>
-                      <div className="border-t border-neutral-100 dark:border-neutral-800">
-                        {/* Filter Tabs */}
-                        <div className="flex items-center gap-1 px-4 py-3 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
-                          {[
-                            { key: "all", label: "All", labelKa: "ყველა" },
-                            { key: "client", label: "Client", labelKa: "კლიენტი" },
-                            { key: "pro", label: "Pro", labelKa: "სპეციალისტი" },
-                          ].map(f => (
-                            <button
-                              key={f.key}
-                              onClick={() => setHistoryFilter(f.key as typeof historyFilter)}
-                              className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
-                                historyFilter === f.key
-                                  ? "text-white"
-                                  : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
-                              }`}
-                              style={historyFilter === f.key ? { backgroundColor: ACCENT } : {}}
-                            >
-                              {locale === "ka" ? f.labelKa : f.label}
-                            </button>
-                          ))}
-                        </div>
-
-                        {/* History Timeline */}
-                        <div className="p-4 max-h-[400px] overflow-y-auto">
-                          {isLoadingHistory ? (
-                            <div className="flex items-center justify-center py-8">
-                              <LoadingSpinner size="lg" color={ACCENT} />
-                            </div>
-                          ) : filteredHistory.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-8 text-neutral-400">
-                              <History className="w-12 h-12 mb-3 opacity-40" />
-                              <p className="text-sm font-medium">
-                                {locale === "ka" ? "ისტორია ცარიელია" : "No history yet"}
-                              </p>
-                            </div>
-                          ) : (
-                            <div className="relative">
-                              {/* Timeline Line */}
-                              <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-neutral-200 dark:bg-neutral-700" />
-
-                              {/* Events */}
-                              <div className="space-y-4">
-                                {filteredHistory.slice(0, 20).map((event, idx) => {
-                                  const config = getEventConfig(event.eventType);
-                                  const description = getEventDescription(event);
-
-                                  return (
-                                    <div key={idx} className="relative flex items-start gap-3 pl-1">
-                                      {/* Icon */}
-                                      <div
-                                        className="relative z-10 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white dark:ring-neutral-900"
-                                        style={{ backgroundColor: config.bgColor, color: config.color }}
-                                      >
-                                        {config.icon}
-                                      </div>
-
-                                      {/* Content */}
-                                      <div className="flex-1 min-w-0 pt-0.5">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                          <span className="text-sm font-medium text-neutral-900 dark:text-white">
-                                            {event.userName}
-                                          </span>
-                                          <Badge variant={event.userRole === "client" ? "info" : "success"} size="xs">
-                                            {event.userRole === "client"
-                                              ? (locale === "ka" ? "კლიენტი" : "Client")
-                                              : (locale === "ka" ? "სპეც." : "Pro")}
-                                          </Badge>
-                                        </div>
-                                        <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
-                                          {locale === "ka" ? config.labelKa : config.label}
-                                          {description && (
-                                            <span className="text-neutral-500"> · {description}</span>
-                                          )}
-                                        </p>
-                                        <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-1">
-                                          {formatHistoryTime(event.createdAt)}
-                                        </p>
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-
-                              {/* Show more indicator */}
-                              {filteredHistory.length > 20 && (
-                                <div className="mt-4 text-center">
-                                  <span className="text-xs text-neutral-400">
-                                    {locale === "ka" 
-                                      ? `+ ${filteredHistory.length - 20} სხვა მოვლენა` 
-                                      : `+ ${filteredHistory.length - 20} more events`}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          )}
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
-
-                {/* Share Section - Unified design */}
-                <div className="group rounded-2xl bg-gradient-to-br from-white to-neutral-50/80 dark:from-neutral-900 dark:to-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 p-4">
-                  <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
-                        style={{
-                          background: `linear-gradient(135deg, ${ACCENT}15 0%, ${ACCENT}25 100%)`,
-                          border: `1px solid ${ACCENT}20`
-                        }}
-                      >
-                        <Share2 className="w-5 h-5" style={{ color: ACCENT }} />
-                      </div>
-                      <div className="text-left">
-                        <span className="font-body font-semibold text-neutral-900 dark:text-white block">
-                          {locale === "ka" ? "გაზიარება" : "Share"}
-                        </span>
-                        <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                          #{job.jobNumber || job.id.slice(-6)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                      <Button
-                        size="icon"
-                        onClick={() => {
-                          const url = `${window.location.origin}/jobs/${job.id}`;
-                          const text = job.title;
-                          window.open(
-                            `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`,
-                            'facebook-share',
-                            'width=580,height=400'
-                          );
-                        }}
-                        className="bg-[#1877F2] hover:bg-[#166FE5] text-white"
-                        title="Share on Facebook"
-                      >
-                        <Facebook className="w-5 h-5" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="secondary"
-                        onClick={async () => {
-                          const url = `${window.location.origin}/jobs/${job.id}`;
-                          if (navigator.share) {
-                            try {
-                              await navigator.share({
-                                title: job.title,
-                                text: job.description.slice(0, 100) + '...',
-                                url: url,
-                              });
-                            } catch {
-                              // User cancelled or error
+                        <Button
+                          size="icon"
+                          onClick={() => {
+                            const url = `${window.location.origin}/jobs/${job.id}`;
+                            const text = job.title;
+                            window.open(
+                              `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`,
+                              'facebook-share',
+                              'width=580,height=400'
+                            );
+                          }}
+                          className="bg-[#1877F2] hover:bg-[#166FE5] text-white"
+                          title="Share on Facebook"
+                        >
+                          <Facebook className="w-5 h-5" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="secondary"
+                          onClick={async () => {
+                            const url = `${window.location.origin}/jobs/${job.id}`;
+                            if (navigator.share) {
+                              try {
+                                await navigator.share({
+                                  title: job.title,
+                                  text: job.description.slice(0, 100) + '...',
+                                  url: url,
+                                });
+                              } catch {
+                                // User cancelled or error
+                              }
+                            } else {
+                              await navigator.clipboard.writeText(url);
+                              setCopyToast(true);
+                              setTimeout(() => setCopyToast(false), 2000);
                             }
-                          } else {
+                          }}
+                          title={locale === 'ka' ? 'გაზიარება' : 'Share'}
+                        >
+                          <Share2 className="w-5 h-5" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="secondary"
+                          onClick={async () => {
+                            const url = `${window.location.origin}/jobs/${job.id}`;
                             await navigator.clipboard.writeText(url);
                             setCopyToast(true);
                             setTimeout(() => setCopyToast(false), 2000);
-                          }
-                        }}
-                        title={locale === 'ka' ? 'გაზიარება' : 'Share'}
-                      >
-                        <Share2 className="w-5 h-5" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="secondary"
-                        onClick={async () => {
-                          const url = `${window.location.origin}/jobs/${job.id}`;
-                          await navigator.clipboard.writeText(url);
-                          setCopyToast(true);
-                          setTimeout(() => setCopyToast(false), 2000);
-                        }}
-                        title={locale === 'ka' ? 'ლინკის კოპირება' : 'Copy link'}
-                      >
-                        <Copy className="w-5 h-5" />
-                      </Button>
+                          }}
+                          title={locale === 'ka' ? 'ლინკის კოპირება' : 'Copy link'}
+                        >
+                          <Copy className="w-5 h-5" />
+                        </Button>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -2602,20 +2622,22 @@ export default function JobDetailClient() {
       />
 
       {/* Review Modal */}
-      {job?.hiredPro && (
-        <ReviewModal
-          isOpen={showReviewModal}
-          onClose={() => setShowReviewModal(false)}
-          onSubmit={handleSubmitReview}
-          isSubmitting={isSubmittingReview}
-          locale={locale}
-          rating={reviewRating}
-          onRatingChange={setReviewRating}
-          text={reviewText}
-          onTextChange={setReviewText}
-          pro={job.hiredPro}
-        />
-      )}
+      <ReviewModal
+        isOpen={showReviewModal}
+        onClose={() => {
+          setShowReviewModal(false);
+          setIsCompletionFlow(false);
+        }}
+        onSubmit={handleSubmitReview}
+        isSubmitting={isSubmittingReview}
+        locale={locale}
+        rating={reviewRating}
+        onRatingChange={setReviewRating}
+        text={reviewText}
+        onTextChange={setReviewText}
+        pro={job?.hiredPro || { userId: { name: 'Professional' } }}
+        isCompletionFlow={isCompletionFlow}
+      />
 
       {/* Animations */}
       <style jsx>{`

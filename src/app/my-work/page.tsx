@@ -18,6 +18,7 @@ import { formatBudget } from '@/utils/currencyUtils';
 import { formatDateShort, formatTimeAgo } from '@/utils/dateUtils';
 import {
   AlertTriangle,
+  ArrowRight,
   Ban,
   Briefcase,
   CheckCheck,
@@ -29,7 +30,9 @@ import {
   MessageCircle,
   MessageSquare,
   Play,
+  Quote,
   Search,
+  Sparkles,
   X,
   XCircle
 } from 'lucide-react';
@@ -348,15 +351,21 @@ function MyWorkPageContent() {
   return (
     <div>
       <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-24">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-start gap-3 sm:gap-4 mb-4">
-            <BackButton showLabel={false} className="mt-0.5" />
+        {/* Header - Enhanced */}
+        <div className="mb-8">
+          <div className="flex items-start gap-4">
+            <BackButton showLabel={false} className="mt-1" />
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-3xl font-bold text-[var(--color-text-primary)] tracking-tight">
-                {language === 'ka' ? 'ჩემი სამუშაო' : 'My Work'}
-              </h1>
-              <p className="text-sm text-[var(--color-text-secondary)] mt-0.5 hidden sm:block">
+              <div className="flex items-center gap-3 mb-1">
+                <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white tracking-tight">
+                  {language === 'ka' ? 'ჩემი სამუშაო' : 'My Work'}
+                </h1>
+                <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#C4735B]/10 text-[#C4735B]">
+                  <Briefcase className="w-3.5 h-3.5" />
+                  <span className="text-xs font-semibold">{allProposals.length}</span>
+                </div>
+              </div>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 hidden sm:block">
                 {language === 'ka'
                   ? 'აქტიური პროექტები და შეთავაზებები'
                   : 'Your active projects and proposals'}
@@ -365,9 +374,9 @@ function MyWorkPageContent() {
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs - Premium Design */}
         <div className="mb-6">
-          <div className="flex gap-1 p-1 bg-[var(--color-bg-elevated)] rounded-xl border border-[var(--color-border)]">
+          <div className="relative flex gap-1 p-1.5 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100 dark:border-neutral-800 shadow-sm">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.key;
@@ -376,38 +385,56 @@ function MyWorkPageContent() {
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
                   className={`
-                    flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
+                    relative flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300
                     ${isActive
-                      ? 'bg-[#C4735B] text-white shadow-sm'
-                      : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
+                      ? 'text-white shadow-lg'
+                      : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
                     }
                   `}
                 >
-                  <Icon className="w-4 h-4" />
-                  <span className="hidden sm:inline">{tab.label}</span>
-                  <Badge
-                    variant={isActive ? "ghost" : "secondary"}
-                    size="xs"
-                    className={isActive ? "bg-white/20 text-white" : ""}
-                  >
-                    {tab.count}
-                  </Badge>
+                  {/* Active background with gradient */}
+                  {isActive && (
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-[#C4735B] to-[#A85D48] shadow-[0_4px_12px_-2px_rgba(196,115,91,0.4)]" />
+                  )}
+                  
+                  <span className="relative flex items-center gap-2">
+                    <Icon className={`w-4 h-4 ${isActive ? 'animate-pulse' : ''}`} />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                    <Badge
+                      variant={isActive ? "ghost" : "secondary"}
+                      size="xs"
+                      className={isActive ? "bg-white/20 text-white border-white/10" : ""}
+                    >
+                      {tab.count}
+                    </Badge>
+                  </span>
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* Search (for proposals tab) */}
+        {/* Search (for proposals tab) - Enhanced */}
         {activeTab === 'proposals' && counts.proposals > 0 && (
-          <div className="mb-4">
-            <Input
-              type="text"
-              placeholder={language === 'ka' ? 'ძებნა...' : 'Search proposals...'}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              leftIcon={<Search className="w-4 h-4" />}
-            />
+          <div className="mb-6">
+            <div className="relative">
+              <Input
+                type="text"
+                placeholder={language === 'ka' ? 'ძებნა სამუშაოს სახელით, კატეგორიით ან მდებარეობით...' : 'Search by job title, category, or location...'}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                leftIcon={<Search className="w-4 h-4" />}
+                className="pr-10"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                >
+                  <X className="w-3.5 h-3.5 text-neutral-500" />
+                </button>
+              )}
+            </div>
           </div>
         )}
 
@@ -473,132 +500,182 @@ function MyWorkPageContent() {
                 );
               }
 
-              // For pending/rejected proposals - simpler card
+              // For pending/rejected proposals - Premium card design
               const statusConfig = getStatusConfig(proposal.status);
               const StatusIcon = statusConfig.icon;
               const hasUnread = (proposal.unreadMessageCount ?? 0) > 0;
               const isPending = proposal.status === 'pending';
+              const isInDiscussion = proposal.status === 'in_discussion';
 
               return (
                 <div
                   key={proposal.id}
-                  className="group bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border)] overflow-hidden transition-all duration-300 hover:border-[#C4735B]/20 hover:shadow-lg"
+                  className="group relative transition-all duration-500"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  {/* Header */}
-                  <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)]/30">
-                    <span
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold"
-                      style={{
-                        backgroundColor: statusConfig.bg,
-                        color: statusConfig.color,
-                        border: `1px solid ${statusConfig.border}`
-                      }}
-                    >
-                      <StatusIcon className="w-3.5 h-3.5" />
-                      {language === 'ka' ? statusConfig.labelKa : statusConfig.label}
-                    </span>
-                    <span className="text-xs text-[var(--color-text-tertiary)]">
-                      {formatTimeAgo(proposal.createdAt, language as 'en' | 'ka')}
-                    </span>
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-4 sm:p-5">
-                    {/* Job Title */}
-                    <Link href={`/jobs/${job.id}`} className="block group/title mb-3">
-                      <h3 className="text-lg font-bold text-[var(--color-text-primary)] leading-snug line-clamp-2 group-hover/title:text-[#C4735B] transition-colors">
-                        {job.title}
-                      </h3>
-                    </Link>
-
-                    {/* Client + Meta */}
-                    <div className="flex flex-wrap items-center gap-3 mb-4 text-sm text-[var(--color-text-secondary)]">
-                      <div className="flex items-center gap-2">
-                        <Avatar
-                          src={job.clientId?.avatar}
-                          name={job.clientId?.name || 'Client'}
-                          size="xs"
-                        />
-                        <span>{job.clientId?.name}</span>
-                      </div>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5 opacity-60" />
-                        {job.location}
-                      </span>
-                      <span className="flex items-center gap-1 font-medium text-[#C4735B]">
-                        <DollarSign className="w-3.5 h-3.5" />
-                        {formatBudget(job, language as 'en' | 'ka') || (language === 'ka' ? 'შეთანხმებით' : 'Negotiable')}
-                      </span>
+                  {/* Premium border glow effect */}
+                  <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-[#C4735B]/0 via-[#C4735B]/0 to-[#C4735B]/0 group-hover:from-[#C4735B]/20 group-hover:via-[#D4937B]/10 group-hover:to-[#C4735B]/20 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-[1px]" />
+                  
+                  {/* Main Card */}
+                  <div className="relative bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100/80 dark:border-neutral-800 overflow-hidden group-hover:border-[#C4735B]/20 transition-all duration-500 group-hover:shadow-[0_20px_50px_-12px_rgba(196,115,91,0.12)] group-hover:-translate-y-0.5">
+                    
+                    {/* Shine effect overlay */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-30">
+                      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/3 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
                     </div>
 
-                    {/* Your Proposal */}
-                    <div className="rounded-xl p-4 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-[#C4735B]">
-                          {language === 'ka' ? 'შენი შეთავაზება' : 'Your Proposal'}
-                        </p>
-                        <span className="text-xs text-[var(--color-text-tertiary)]">
-                          {formatDateShort(proposal.createdAt, language as 'en' | 'ka')}
-                        </span>
-                      </div>
-                      <div className="flex items-baseline gap-3 mb-2">
-                        <span className="text-xl font-bold text-[#C4735B]">
-                          ₾{proposal.proposedPrice?.toLocaleString()}
-                        </span>
-                        <span className="text-sm text-[var(--color-text-tertiary)] flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" />
-                          {proposal.estimatedDuration}{' '}
-                          {proposal.estimatedDurationUnit === 'days'
-                            ? (language === 'ka' ? 'დღე' : 'days')
-                            : proposal.estimatedDurationUnit === 'weeks'
-                            ? (language === 'ka' ? 'კვირა' : 'weeks')
-                            : (language === 'ka' ? 'თვე' : 'months')}
-                        </span>
-                      </div>
-                      <p className="text-sm text-[var(--color-text-tertiary)] line-clamp-2 italic">
-                        &ldquo;{proposal.coverLetter}&rdquo;
-                      </p>
-                    </div>
+                    {/* Decorative corner accent */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#C4735B]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-                    {/* Rejection Note */}
-                    {proposal.status === 'rejected' && proposal.rejectionNote && (
-                      <Alert variant="error" size="sm" className="mt-3">
-                        <strong>{language === 'ka' ? 'მიზეზი:' : 'Reason:'}</strong> {proposal.rejectionNote}
-                      </Alert>
-                    )}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="px-4 sm:px-5 py-3 border-t border-[var(--color-border)] bg-[var(--color-bg-tertiary)]/20">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        asChild
-                        variant="secondary"
-                        size="sm"
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-5 py-3.5 border-b border-neutral-100 dark:border-neutral-800 bg-gradient-to-r from-neutral-50/80 to-transparent dark:from-neutral-800/30">
+                      <span
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm"
+                        style={{
+                          backgroundColor: statusConfig.bg,
+                          color: statusConfig.color,
+                          border: `1px solid ${statusConfig.border}`
+                        }}
                       >
-                        <Link href={`/jobs/${job.id}`} className="flex items-center gap-2">
-                          <ExternalLink className="w-4 h-4" />
-                          {language === 'ka' ? 'სამუშაო' : 'View Job'}
-                        </Link>
-                      </Button>
+                        <StatusIcon className="w-3.5 h-3.5" />
+                        {language === 'ka' ? statusConfig.labelKa : statusConfig.label}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        {hasUnread && (
+                          <Badge variant="pulse" size="xs" icon={<MessageCircle className="w-3 h-3" />} className="font-bold">
+                            {proposal.unreadMessageCount}
+                          </Badge>
+                        )}
+                        <span className="text-xs text-neutral-400 dark:text-neutral-500">
+                          {formatTimeAgo(proposal.createdAt, language as 'en' | 'ka')}
+                        </span>
+                      </div>
+                    </div>
 
-                      {isPending && (
+                    {/* Content */}
+                    <div className="p-5">
+                      {/* Job Title with animated underline */}
+                      <Link href={`/jobs/${job.id}`} className="block group/title mb-4">
+                        <div className="relative inline-block">
+                          <h3 className="text-lg font-bold text-neutral-900 dark:text-white leading-snug line-clamp-2 group-hover/title:text-[#C4735B] transition-colors duration-300">
+                            {job.title}
+                          </h3>
+                          {/* Animated underline */}
+                          <span className="absolute -bottom-0.5 left-0 w-0 h-[2px] bg-gradient-to-r from-[#C4735B] via-[#D4937B] to-[#C4735B] group-hover/title:w-full transition-all duration-500 ease-out rounded-full" />
+                        </div>
+                      </Link>
+
+                      {/* Client + Meta - Enhanced */}
+                      <div className="flex flex-wrap items-center gap-3 mb-5">
+                        <div className="flex items-center gap-2 group/client">
+                          <div className="relative">
+                            <Avatar
+                              src={job.clientId?.avatar}
+                              name={job.clientId?.name || 'Client'}
+                              size="sm"
+                            />
+                            <div className="absolute -inset-0.5 rounded-full border-2 border-transparent group-hover/client:border-[#C4735B]/20 transition-all duration-300" />
+                          </div>
+                          <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300 group-hover/client:text-[#C4735B] transition-colors">
+                            {job.clientId?.name}
+                          </span>
+                        </div>
+                        <div className="w-px h-4 bg-neutral-200 dark:bg-neutral-700" />
+                        <span className="flex items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400">
+                          <MapPin className="w-3.5 h-3.5" />
+                          {job.location}
+                        </span>
+                        <div className="w-px h-4 bg-neutral-200 dark:bg-neutral-700" />
+                        <span className="flex items-center gap-1.5 text-sm font-semibold text-[#C4735B]">
+                          <DollarSign className="w-3.5 h-3.5" />
+                          {formatBudget(job, language as 'en' | 'ka') || (language === 'ka' ? 'შეთანხმებით' : 'Negotiable')}
+                        </span>
+                      </div>
+
+                      {/* Your Proposal - Premium card */}
+                      <div className="relative rounded-xl overflow-hidden">
+                        {/* Gradient background */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#C4735B]/5 via-transparent to-[#D4937B]/5" />
+                        
+                        <div className="relative p-4 border border-[#C4735B]/10 rounded-xl">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-[#C4735B]/10 flex items-center justify-center">
+                                <Sparkles className="w-3.5 h-3.5 text-[#C4735B]" />
+                              </div>
+                              <p className="text-xs font-bold uppercase tracking-wider text-[#C4735B]">
+                                {language === 'ka' ? 'შენი შეთავაზება' : 'Your Proposal'}
+                              </p>
+                            </div>
+                            <span className="text-xs text-neutral-400">
+                              {formatDateShort(proposal.createdAt, language as 'en' | 'ka')}
+                            </span>
+                          </div>
+                          
+                          {/* Price and duration row */}
+                          <div className="flex items-center gap-4 mb-3">
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-2xl font-bold text-[#C4735B]">
+                                ₾{proposal.proposedPrice?.toLocaleString()}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs font-medium text-neutral-600 dark:text-neutral-400">
+                              <Clock className="w-3.5 h-3.5" />
+                              {proposal.estimatedDuration}{' '}
+                              {proposal.estimatedDurationUnit === 'days'
+                                ? (language === 'ka' ? 'დღე' : 'days')
+                                : proposal.estimatedDurationUnit === 'weeks'
+                                ? (language === 'ka' ? 'კვირა' : 'weeks')
+                                : (language === 'ka' ? 'თვე' : 'months')}
+                            </div>
+                          </div>
+                          
+                          {/* Cover letter */}
+                          <div className="flex gap-2">
+                            <Quote className="w-4 h-4 text-[#C4735B]/40 flex-shrink-0 mt-0.5" />
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400 line-clamp-2 italic leading-relaxed">
+                              {proposal.coverLetter}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Rejection Note */}
+                      {proposal.status === 'rejected' && proposal.rejectionNote && (
+                        <Alert variant="error" size="sm" className="mt-4">
+                          <strong>{language === 'ka' ? 'მიზეზი:' : 'Reason:'}</strong> {proposal.rejectionNote}
+                        </Alert>
+                      )}
+                    </div>
+
+                    {/* Actions - Enhanced */}
+                    <div className="px-5 py-4 border-t border-neutral-100 dark:border-neutral-800 bg-gradient-to-r from-neutral-50/50 to-transparent dark:from-neutral-800/20">
+                      <div className="flex items-center gap-3">
                         <Button
-                          variant="destructive"
+                          asChild
+                          variant="secondary"
                           size="sm"
-                          onClick={() => setWithdrawModalId(proposal.id)}
-                          leftIcon={<X className="w-4 h-4" />}
+                          className="group/btn"
                         >
-                          {language === 'ka' ? 'გაუქმება' : 'Withdraw'}
+                          <Link href={`/jobs/${job.id}`} className="flex items-center gap-2">
+                            <ExternalLink className="w-4 h-4 transition-transform group-hover/btn:scale-110" />
+                            {language === 'ka' ? 'სამუშაო' : 'View Job'}
+                            <ArrowRight className="w-3.5 h-3.5 opacity-0 -ml-1 group-hover/btn:opacity-100 group-hover/btn:ml-0 transition-all" />
+                          </Link>
                         </Button>
-                      )}
 
-                      {hasUnread && (
-                        <Badge variant="pulse" size="sm" icon={<MessageCircle className="w-3.5 h-3.5" />} className="ml-auto font-bold">
-                          {proposal.unreadMessageCount}
-                        </Badge>
-                      )}
+                        {(isPending || isInDiscussion) && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setWithdrawModalId(proposal.id)}
+                            leftIcon={<X className="w-4 h-4" />}
+                            className="text-neutral-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          >
+                            {language === 'ka' ? 'გაუქმება' : 'Withdraw'}
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

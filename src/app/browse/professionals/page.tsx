@@ -60,8 +60,8 @@ export default function ProfessionalsPage() {
         if (sortBy && sortBy !== "recommended") params.append("sort", sortBy);
         if (selectedCity && selectedCity !== "tbilisi")
           params.append("serviceArea", selectedCity);
-        if (budgetMin !== null) params.append("priceMin", budgetMin.toString());
-        if (budgetMax !== null) params.append("priceMax", budgetMax.toString());
+        if (budgetMin !== null) params.append("minPrice", budgetMin.toString());
+        if (budgetMax !== null) params.append("maxPrice", budgetMax.toString());
 
         const response = await api.get(`/users/pros?${params.toString()}`);
         const result = response.data;

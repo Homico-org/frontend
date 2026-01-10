@@ -16,9 +16,12 @@ export { default as AboutTab } from './AboutTab';
 export type { AboutTabProps } from './AboutTab';
 
 export { default as PortfolioTab } from './PortfolioTab';
-export type { PortfolioProject as PortfolioTabProject, PortfolioTabProps } from './PortfolioTab';
+export type { PortfolioTabProps } from './PortfolioTab';
 
 export { default as ReviewsTab } from './ReviewsTab';
 export type { ReviewsTabProps } from './ReviewsTab';
 
 export { default as SimilarProfessionals } from './SimilarProfessionals';
+
+export { default as ProfileSidebar, ProfileSidebarMobile } from './ProfileSidebar';
+export type { ProfileSidebarTab } from './ProfileSidebar';

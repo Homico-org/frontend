@@ -1,27 +1,27 @@
 'use client';
 
 import AuthGuard from '@/components/common/AuthGuard';
+import AboutStep from '@/components/pro/steps/AboutStep';
+import CategoriesStep from '@/components/pro/steps/CategoriesStep';
+import PricingAreasStep from '@/components/pro/steps/PricingAreasStep';
+import ProjectsStep, { PortfolioProject } from '@/components/pro/steps/ProjectsStep';
+import ReviewStep from '@/components/pro/steps/ReviewStep';
 import { Alert } from '@/components/ui/Alert';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Progress } from '@/components/ui/progress';
-import AboutStep from '@/components/pro/steps/AboutStep';
+import { useAuth } from '@/contexts/AuthContext';
+import { useCategories } from '@/contexts/CategoriesContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import Image from 'next/image';
-import CategoriesStep from '@/components/pro/steps/CategoriesStep';
-import PricingAreasStep from '@/components/pro/steps/PricingAreasStep';
-import ReviewStep from '@/components/pro/steps/ReviewStep';
-import ProjectsStep, { PortfolioProject } from '@/components/pro/steps/ProjectsStep';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 // Raw portfolio project from API (may have _id and imageUrl)
 interface RawPortfolioProject extends Partial<PortfolioProject> {
   _id?: string;
   imageUrl?: string;
 }
-import { useAuth } from '@/contexts/AuthContext';
-import { useCategories } from '@/contexts/CategoriesContext';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useEffect, useRef, useState, useMemo } from 'react';
 
 type ProfileSetupStep = 'about' | 'categories' | 'pricing-areas' | 'projects' | 'review';
 
@@ -519,7 +519,13 @@ function ProProfileSetupPageContent() {
       // Update the user context to mark profile as completed
       updateUser({ isProfileCompleted: true });
 
-      router.push('/browse');
+      // Navigate to the professional's profile page
+      const userId = data.id || data._id || user?.id;
+      if (userId) {
+        router.push(`/professionals/${userId}`);
+      } else {
+        router.push('/browse/professionals');
+      }
     } catch (err) {
       const error = err as { message?: string };
       setError(error.message || (isEditMode ? 'Failed to update profile' : 'Failed to create profile'));

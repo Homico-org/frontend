@@ -78,6 +78,7 @@ export interface LegacyPortfolioItem extends Omit<NewPortfolioItem, 'id' | 'crea
 export interface LegacyFeedItem extends Omit<NewFeedItem, 'id' | 'pro'> {
   _id: string;
   pro: {
+    id?: string;
     _id: string;
     name: string;
     avatar?: string;

@@ -615,6 +615,11 @@ export default function ProjectTrackerCard({
   const [localStage, setLocalStage] = useState<ProjectStage>(project.currentStage);
   const [isUpdatingStage, setIsUpdatingStage] = useState(false);
 
+  // Sync localStage when project.currentStage changes (e.g., after refresh)
+  useEffect(() => {
+    setLocalStage(project.currentStage);
+  }, [project.currentStage]);
+
   // History state
   const [historyEvents, setHistoryEvents] = useState<HistoryEvent[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
@@ -661,7 +666,10 @@ export default function ProjectTrackerCard({
 
   // Check if project is fully completed (stage = completed AND client confirmed)
   const isProjectCompleted = localStage === "completed";
-  const isProjectConfirmed = !!project.clientConfirmedAt;
+  // For legacy jobs: if stage is completed AND completedAt exists but no clientConfirmedAt,
+  // treat as confirmed (old jobs completed before the confirmation system was added)
+  const isLegacyCompleted = isProjectCompleted && !!project.completedAt && !project.clientConfirmedAt;
+  const isProjectConfirmed = !!project.clientConfirmedAt || isLegacyCompleted;
   const isFullyCompleted = isProjectCompleted && isProjectConfirmed;
 
   // Determine which tabs should be visible
@@ -980,6 +988,17 @@ export default function ProjectTrackerCard({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Check file size (50MB limit)
+    const maxSize = 50 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error(
+        locale === "ka" ? "შეცდომა" : "Error",
+        locale === "ka" ? "ფაილი ძალიან დიდია (მაქს. 50MB)" : "File too large (max 50MB)"
+      );
+      e.target.value = "";
+      return;
+    }
+
     try {
       setIsUploading(true);
       const formData = new FormData();
@@ -988,9 +1007,11 @@ export default function ProjectTrackerCard({
       const fileUrl = uploadResponse.data.url || uploadResponse.data.filename;
       await handleSendMessage([fileUrl]);
     } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } };
+      const message = error?.response?.data?.message;
       toast.error(
         locale === "ka" ? "შეცდომა" : "Error",
-        locale === "ka" ? "ფაილი ვერ აიტვირთა" : "Failed to upload file"
+        message || (locale === "ka" ? "ფაილი ვერ აიტვირთა" : "Failed to upload file")
       );
     } finally {
       setIsUploading(false);
@@ -1085,56 +1106,67 @@ export default function ProjectTrackerCard({
     }
   };
 
-  // Client confirms completion and closes job (triggers payment)
+  // State for completion flow (confirmation + review together)
+  const [isCompletionFlow, setIsCompletionFlow] = useState(false);
+
+  // Client clicks confirm - opens review modal in completion mode
   const handleClientConfirm = async () => {
-    setIsUpdatingStage(true);
-    try {
-      await api.post(`/jobs/projects/${job.id}/confirm-completion`);
-      toast.success(
-        locale === "ka" ? "წარმატება" : "Success",
-        locale === "ka" ? "პროექტი დაიხურა. გადახდა მოხდება მალე." : "Project closed. Payment will be processed shortly."
-      );
-      // Show review modal after successful confirmation
-      // Don't call onRefresh yet - we'll call it after review is submitted or dismissed
-      setShowReviewModal(true);
-    } catch (err) {
-      toast.error(
-        locale === "ka" ? "შეცდომა" : "Error",
-        locale === "ka" ? "პროექტი ვერ დაიხურა" : "Failed to close project"
-      );
-    } finally {
-      setIsUpdatingStage(false);
-    }
+    // Open review modal in completion flow mode
+    setIsCompletionFlow(true);
+    setShowReviewModal(true);
   };
 
-  // Submit review for the pro
+  // Submit review for the pro (and optionally confirm completion)
   const handleSubmitReview = async () => {
     if (reviewRating < 1 || reviewRating > 5) return;
 
     setIsSubmittingReview(true);
     try {
+      // If in completion flow, confirm completion first
+      if (isCompletionFlow) {
+        await api.post(`/jobs/projects/${job.id}/confirm-completion`);
+      }
+
+      // Then submit review
       await api.post("/reviews", {
         jobId: job.id,
         proId: project.proId.id,
         rating: reviewRating,
         text: reviewText.trim() || undefined,
       });
+
       toast.success(
         locale === "ka" ? "წარმატება" : "Success",
-        locale === "ka" ? "შეფასება გაიგზავნა" : "Review submitted successfully"
+        isCompletionFlow
+          ? (locale === "ka" ? "პროექტი დასრულდა და შეფასება გაიგზავნა" : "Project completed and review submitted")
+          : (locale === "ka" ? "შეფასება გაიგზავნა" : "Review submitted successfully")
       );
       setShowReviewModal(false);
+      setIsCompletionFlow(false);
       setHasSubmittedReview(true);
       onRefresh?.();
     } catch (err) {
       const apiErr = err as { response?: { data?: { message?: string } } };
       const message = apiErr?.response?.data?.message;
       if (message === "Review already exists for this project") {
-        toast.error(
-          locale === "ka" ? "შეცდომა" : "Error",
-          locale === "ka" ? "თქვენ უკვე დატოვეთ შეფასება" : "You have already submitted a review"
-        );
+        // If review already exists but we were in completion flow, still try to confirm
+        if (isCompletionFlow) {
+          try {
+            await api.post(`/jobs/projects/${job.id}/confirm-completion`);
+            toast.success(
+              locale === "ka" ? "წარმატება" : "Success",
+              locale === "ka" ? "პროექტი დასრულდა" : "Project completed"
+            );
+            onRefresh?.();
+          } catch {
+            toast.error(
+              locale === "ka" ? "შეცდომა" : "Error",
+              locale === "ka" ? "პროექტი ვერ დაიხურა" : "Failed to close project"
+            );
+          }
+        }
         setShowReviewModal(false);
+        setIsCompletionFlow(false);
         setHasSubmittedReview(true);
       } else {
         toast.error(
@@ -1389,7 +1421,7 @@ export default function ProjectTrackerCard({
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+            accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
             onChange={handleFileUpload}
             className="hidden"
           />
@@ -1851,6 +1883,7 @@ export default function ProjectTrackerCard({
         isOpen={showReviewModal}
         onClose={() => {
           setShowReviewModal(false);
+          setIsCompletionFlow(false);
           onRefresh?.();
         }}
         onSubmit={handleSubmitReview}
@@ -1868,6 +1901,7 @@ export default function ProjectTrackerCard({
           },
           title: partnerTitle,
         }}
+        isCompletionFlow={isCompletionFlow}
       />
 
       {/* Portfolio Completion Modal (Pro completing job) */}

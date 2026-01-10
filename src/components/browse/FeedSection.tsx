@@ -227,7 +227,7 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {feedItems.map((item, index) => (
               <div
-                key={item.id}
+                key={item.id || `feed-item-${index}`}
                 className="animate-fade-in"
                 style={{ animationDelay: `${(index % 12) * 40}ms` }}
               >
