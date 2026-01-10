@@ -609,6 +609,7 @@ export default function ProjectTrackerCard({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const messagesLoadedRef = useRef(false);
+  const activeTabRef = useRef<TabKey>(activeTab);
 
   // Local state for optimistic updates
   const [localStage, setLocalStage] = useState<ProjectStage>(project.currentStage);
@@ -636,6 +637,14 @@ export default function ProjectTrackerCard({
   const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
   const [isUploadingPortfolio, setIsUploadingPortfolio] = useState(false);
   const portfolioInputRef = useRef<HTMLInputElement>(null);
+
+  // Phone reveal state
+  const [phoneRevealed, setPhoneRevealed] = useState(false);
+
+  // Keep activeTabRef in sync for stable WebSocket handlers
+  useEffect(() => {
+    activeTabRef.current = activeTab;
+  }, [activeTab]);
 
   const currentStageIndex = getStageIndex(localStage);
   const firstImage = job.media?.[0]?.url || job.images?.[0];
@@ -778,42 +787,77 @@ export default function ProjectTrackerCard({
     const token = localStorage.getItem("access_token");
     if (!token) return;
 
+    // Prevent duplicate connections
+    if (socketRef.current?.connected) {
+      return;
+    }
+
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
     const backendUrl = apiUrl.endsWith("/api") ? apiUrl.slice(0, -4) : apiUrl;
 
-    socketRef.current = io(`${backendUrl}/chat`, {
+    const socket = io(`${backendUrl}/chat`, {
       auth: { token },
       transports: ["websocket", "polling"],
       reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
     });
 
-    socketRef.current.on("connect", () => {
-      socketRef.current?.emit("joinProjectChat", job.id);
+    socketRef.current = socket;
+
+    socket.on("connect", () => {
+      console.log("[ProjectTrackerCard] Connected to WebSocket");
+      socket.emit("joinProjectChat", job.id);
     });
 
-    socketRef.current.on("projectMessage", handleNewMessage);
-    socketRef.current.on("projectTyping", handleTyping);
+    socket.on("disconnect", (reason) => {
+      console.log("[ProjectTrackerCard] Disconnected:", reason);
+    });
+
+    // Handle incoming messages - use inline handler with ref for stable deps
+    socket.on("projectMessage", (message: ProjectMessage) => {
+      const senderId = getSenderId(message.senderId);
+      if (senderId === user.id) return;
+
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === message.id)) return prev;
+        return [...prev, message];
+      });
+
+      // Increment unread count if not on chat tab (use ref for current value)
+      if (activeTabRef.current !== 'chat') {
+        setUnreadCount((prev) => prev + 1);
+      }
+    });
+
+    // Handle typing indicator
+    socket.on("projectTyping", ({ userId, isTyping: typing }: { userId: string; isTyping: boolean }) => {
+      if (userId !== user.id) {
+        setOtherUserTyping(typing);
+      }
+    });
 
     // Handle poll updates
-    socketRef.current.on("projectPollUpdate", (data: { type: string; poll: Record<string, unknown> }) => {
-      if (activeTab !== 'polls') {
+    socket.on("projectPollUpdate", (data: { type: string; poll: Record<string, unknown> }) => {
+      if (activeTabRef.current !== 'polls') {
         setUnreadPollsCount((prev) => prev + 1);
       }
     });
 
     // Handle materials updates
-    socketRef.current.on("projectMaterialsUpdate", (data: { type: string }) => {
-      if (activeTab !== 'materials') {
+    socket.on("projectMaterialsUpdate", (data: { type: string }) => {
+      if (activeTabRef.current !== 'materials') {
         setUnreadMaterialsCount((prev) => prev + 1);
       }
     });
 
     return () => {
-      socketRef.current?.emit("leaveProjectChat", job.id);
-      socketRef.current?.disconnect();
+      socket.emit("leaveProjectChat", job.id);
+      socket.removeAllListeners();
+      socket.disconnect();
       socketRef.current = null;
     };
-  }, [isProjectStarted, user, job.id, activeTab]);
+  }, [isProjectStarted, user?.id, job.id]); // Stable deps only
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -868,27 +912,6 @@ export default function ProjectTrackerCard({
       setIsLoadingHistory(false);
     }
   };
-
-  const handleNewMessage = useCallback((message: ProjectMessage) => {
-    const senderId = getSenderId(message.senderId);
-    if (senderId === user?.id) return;
-
-    setMessages((prev) => {
-      if (prev.some((m) => m.id === message.id)) return prev;
-      return [...prev, message];
-    });
-
-    // Increment unread count if not on chat tab
-    if (activeTab !== 'chat') {
-      setUnreadCount((prev) => prev + 1);
-    }
-  }, [user?.id, activeTab]);
-
-  const handleTyping = useCallback(({ userId, isTyping: typing }: { userId: string; isTyping: boolean }) => {
-    if (userId !== user?.id) {
-      setOtherUserTyping(typing);
-    }
-  }, [user?.id]);
 
   const emitTyping = useCallback(() => {
     if (!socketRef.current) return;
@@ -1772,13 +1795,23 @@ export default function ProjectTrackerCard({
           <div className="flex items-center gap-2">
             {/* Show phone button only when project is active */}
             {!isFullyCompleted && isClient && partnerPhone && (
-              <a
-                href={`tel:${partnerPhone}`}
-                className="w-10 h-10 rounded-full flex items-center justify-center border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-                style={{ color: TERRACOTTA.primary }}
-              >
-                <Phone className="w-4 h-4" />
-              </a>
+              phoneRevealed ? (
+                <a
+                  href={`tel:${partnerPhone}`}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+                >
+                  <Phone className="w-4 h-4" />
+                  <span>{partnerPhone}</span>
+                </a>
+              ) : (
+                <button
+                  onClick={() => setPhoneRevealed(true)}
+                  className="w-10 h-10 rounded-full flex items-center justify-center border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                  style={{ color: TERRACOTTA.primary }}
+                >
+                  <Phone className="w-4 h-4" />
+                </button>
+              )
             )}
             <Link
               href={`/jobs/${job.id}`}

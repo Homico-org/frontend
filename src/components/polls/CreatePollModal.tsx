@@ -88,11 +88,20 @@ export default function CreatePollModal({
     }
   };
 
+  // Allowed image types (no SVG, no PDF)
+  const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg'];
+  const ALLOWED_EXTENSIONS = '.jpg,.jpeg,.png,.webp,.gif';
+
   const handleFileSelect = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (!file.type.startsWith('image/')) {
-        setError(locale === 'ka' ? 'მხოლოდ სურათები არის დაშვებული' : 'Only images are allowed');
+      // Check file type explicitly (reject SVG, PDF, etc.)
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        setError(locale === 'ka'
+          ? 'მხოლოდ JPG, PNG, WebP და GIF ფორმატებია დაშვებული'
+          : 'Only JPG, PNG, WebP and GIF formats are allowed');
+        // Reset input
+        e.target.value = '';
         return;
       }
       handleImageUpload(index, file);
@@ -159,7 +168,7 @@ export default function CreatePollModal({
         icon={<Image className="w-6 h-6 text-[#C4735B]" />}
       />
 
-      <ModalBody>
+      <ModalBody className="max-h-[60vh] overflow-y-auto">
         <div className="space-y-5">
           {/* Error message */}
           {error && (
@@ -295,7 +304,7 @@ export default function CreatePollModal({
                       <input
                         ref={(el) => { fileInputRefs.current[index] = el; }}
                         type="file"
-                        accept="image/*"
+                        accept={ALLOWED_EXTENSIONS}
                         className="hidden"
                         onChange={(e) => handleFileSelect(index, e)}
                       />

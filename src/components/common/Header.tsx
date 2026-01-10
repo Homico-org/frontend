@@ -271,9 +271,9 @@ export default function Header() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.73 21a2 2 0 01-3.46 0" />
                 </svg>
                 {unreadCount > 0 && (
-                  <Badge variant="danger" size="xs" className="absolute -top-1 -right-1 !px-1 !py-0 !text-[9px] !min-w-[16px] !h-[16px]">
+                  <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-red-500 rounded-full ring-2 ring-white dark:ring-neutral-900">
                     {unreadCount > 99 ? "99+" : unreadCount}
-                  </Badge>
+                  </span>
                 )}
               </Link>
 

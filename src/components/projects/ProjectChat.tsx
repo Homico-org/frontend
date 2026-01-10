@@ -2,7 +2,7 @@
 
 import Avatar from '@/components/common/Avatar';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { Badge } from '@/components/ui/badge';
+import { Badge, CountBadge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,13 +11,13 @@ import { api } from '@/lib/api';
 import { storage } from '@/services/storage';
 import { formatChatDateSeparator, formatMessageTime, Locale } from '@/utils/dateUtils';
 import {
-    ChevronRight,
-    FileText,
-    MessageSquare,
-    Paperclip,
-    Search,
-    Send,
-    X,
+  ChevronRight,
+  FileText,
+  MessageSquare,
+  Paperclip,
+  Search,
+  Send,
+  X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
@@ -91,62 +91,6 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
     fetchUnreadCount();
   }, [jobId]);
 
-  // Fetch messages when expanded
-  useEffect(() => {
-    if (isExpanded && !messagesLoadedRef.current) {
-      fetchMessages();
-    }
-  }, [isExpanded]);
-
-  // Mark messages as read and clear unread count when expanded
-  useEffect(() => {
-    if (isExpanded && unreadCount > 0) {
-      api.post(`/jobs/projects/${jobId}/messages/read`).catch(() => {});
-      setUnreadCount(0);
-    }
-  }, [isExpanded, jobId, unreadCount]);
-
-  // WebSocket connection
-  useEffect(() => {
-    if (!isExpanded || !user) return;
-
-    const token = localStorage.getItem('access_token');
-    if (!token) return;
-
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    const backendUrl = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl;
-
-    socketRef.current = io(`${backendUrl}/chat`, {
-      auth: { token },
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-    });
-
-    socketRef.current.on('connect', () => {
-      console.log('[ProjectChat] Connected to WebSocket');
-      socketRef.current?.emit('joinProjectChat', jobId);
-    });
-
-    socketRef.current.on('projectMessage', handleNewMessage);
-    socketRef.current.on('projectTyping', handleTyping);
-
-    return () => {
-      socketRef.current?.emit('leaveProjectChat', jobId);
-      socketRef.current?.disconnect();
-      socketRef.current = null;
-    };
-  }, [isExpanded, user, jobId]);
-
-  // Scroll to bottom when messages change - only scroll within chat container
-  useEffect(() => {
-    if (isExpanded && messagesEndRef.current) {
-      const container = messagesEndRef.current.parentElement;
-      if (container) {
-        container.scrollTop = container.scrollHeight;
-      }
-    }
-  }, [messages, isExpanded]);
-
   const fetchMessages = async () => {
     try {
       setIsLoadingMessages(true);
@@ -159,22 +103,6 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
       setIsLoadingMessages(false);
     }
   };
-
-  const handleNewMessage = useCallback((message: ProjectMessage) => {
-    const senderId = getSenderId(message.senderId);
-    if (senderId === user?.id) return; // Skip own messages
-
-    setMessages(prev => {
-      if (prev.some(m => m._id === message._id)) return prev;
-      return [...prev, message];
-    });
-  }, [user?.id]);
-
-  const handleTyping = useCallback(({ userId, isTyping: typing }: { userId: string; isTyping: boolean }) => {
-    if (userId !== user?.id) {
-      setOtherUserTyping(typing);
-    }
-  }, [user?.id]);
 
   const emitTyping = useCallback(() => {
     if (!socketRef.current) return;
@@ -277,9 +205,56 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
     }
   }, [currentSearchIndex, searchQuery, filteredMessages]);
 
+  // Allowed file types for chat
+  const ALLOWED_FILE_TYPES = [
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/plain',
+  ];
+
+  const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.txt'];
+
+  const validateFile = (file: File): string | null => {
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    const extension = '.' + file.name.split('.').pop()?.toLowerCase();
+
+    if (!ALLOWED_FILE_TYPES.includes(file.type) && !ALLOWED_EXTENSIONS.includes(extension)) {
+      return locale === 'ka'
+        ? 'მხარდაჭერილი ფორმატები: JPG, PNG, GIF, WebP, PDF, DOC, DOCX, XLS, XLSX, TXT'
+        : 'Supported formats: JPG, PNG, GIF, WebP, PDF, DOC, DOCX, XLS, XLSX, TXT';
+    }
+
+    if (file.size > maxSize) {
+      return locale === 'ka'
+        ? 'ფაილის ზომა არ უნდა აღემატებოდეს 10MB-ს'
+        : 'File size must not exceed 10MB';
+    }
+
+    return null;
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Validate file
+    const validationError = validateFile(file);
+    if (validationError) {
+      toast.error(
+        locale === 'ka' ? 'არასწორი ფაილი' : 'Invalid file',
+        validationError
+      );
+      e.target.value = '';
+      return;
+    }
 
     try {
       setIsUploading(true);
@@ -308,36 +283,63 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
     }
   }, []);
 
-  // WebSocket connection - always connect since always expanded
+  // WebSocket connection - stable connection without callback dependencies
   useEffect(() => {
     if (!user) return;
 
     const token = localStorage.getItem('access_token');
     if (!token) return;
 
+    // Prevent duplicate connections
+    if (socketRef.current?.connected) {
+      return;
+    }
+
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     const backendUrl = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl;
 
-    socketRef.current = io(`${backendUrl}/chat`, {
+    const socket = io(`${backendUrl}/chat`, {
       auth: { token },
       transports: ['websocket', 'polling'],
       reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
     });
 
-    socketRef.current.on('connect', () => {
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
       console.log('[ProjectChat] Connected to WebSocket');
-      socketRef.current?.emit('joinProjectChat', jobId);
+      socket.emit('joinProjectChat', jobId);
     });
 
-    socketRef.current.on('projectMessage', handleNewMessage);
-    socketRef.current.on('projectTyping', handleTyping);
+    socket.on('disconnect', (reason) => {
+      console.log('[ProjectChat] Disconnected:', reason);
+    });
+
+    socket.on('projectMessage', (message: ProjectMessage) => {
+      const senderId = getSenderId(message.senderId);
+      if (senderId === user.id) return; // Skip own messages
+
+      setMessages(prev => {
+        if (prev.some(m => m._id === message._id)) return prev;
+        return [...prev, message];
+      });
+    });
+
+    socket.on('projectTyping', ({ userId, isTyping: typing }: { userId: string; isTyping: boolean }) => {
+      if (userId !== user.id) {
+        setOtherUserTyping(typing);
+      }
+    });
 
     return () => {
-      socketRef.current?.emit('leaveProjectChat', jobId);
-      socketRef.current?.disconnect();
+      socket.emit('leaveProjectChat', jobId);
+      socket.removeAllListeners();
+      socket.disconnect();
       socketRef.current = null;
     };
-  }, [user, jobId, handleNewMessage, handleTyping]);
+  }, [user?.id, jobId]); // Only reconnect when user or job changes
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -351,10 +353,9 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
 
   // Mark messages as read on mount
   useEffect(() => {
-    if (unreadCount > 0) {
-      api.post(`/jobs/projects/${jobId}/messages/read`).catch(() => {});
-      setUnreadCount(0);
-    }
+    // Always mark as read when chat is viewed - the backend will handle if there's nothing to mark
+    api.post(`/jobs/projects/${jobId}/messages/read`).catch(() => {});
+    setUnreadCount(0);
   }, [jobId]);
 
   return (
@@ -365,11 +366,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
           <h3 className="font-display text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
             <MessageSquare className="w-5 h-5" style={{ color: ACCENT }} />
             {locale === 'ka' ? 'პროექტის ჩატი' : 'Project Chat'}
-            {unreadCount > 0 && (
-              <Badge variant="danger" size="xs" className="animate-pulse">
-                {unreadCount}
-              </Badge>
-            )}
+            <CountBadge count={unreadCount} />
           </h3>
           <Button
             variant="ghost"
@@ -607,7 +604,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+                accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt"
                 onChange={handleFileUpload}
                 className="hidden"
               />

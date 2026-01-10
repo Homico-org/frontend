@@ -2,12 +2,16 @@
 
 import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
+import BackButton from '@/components/common/BackButton';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import HiringChoiceModal from '@/components/proposals/HiringChoiceModal';
+import { Alert } from '@/components/ui/Alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ConfirmModal } from '@/components/ui/Modal';
 import { Skeleton, SkeletonCard } from '@/components/ui/Skeleton';
-import { Badge } from '@/components/ui/badge';
 import { ACCENT_COLOR } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -17,14 +21,14 @@ import type { Proposal } from '@/types/shared';
 import { isHighLevelCategory } from '@/utils/categoryHelpers';
 import { formatTimeAgoCompact } from '@/utils/dateUtils';
 import {
-  AlertCircle,
-  ArrowLeft,
   Check,
   Clock,
+  ExternalLink,
   FileText,
-  MessageCircle,
   Phone,
   RotateCcw,
+  Star,
+  Users,
   X
 } from 'lucide-react';
 import Link from 'next/link';
@@ -60,6 +64,8 @@ function ProposalsPageContent() {
   const isHighLevel = job ? isHighLevelCategory(job.category) : false;
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchData = async () => {
       try {
         setIsLoading(true);
@@ -68,12 +74,15 @@ function ProposalsPageContent() {
           api.get(`/jobs/${jobId}/proposals`),
         ]);
 
+        if (!isMounted) return;
+
         setJob(jobRes.data);
         setProposals(proposalsRes.data);
 
         // Mark proposals as viewed
         await api.post(`/jobs/counters/mark-proposals-viewed/${jobId}`);
       } catch (error) {
+        if (!isMounted) return;
         console.error('Failed to fetch data:', error);
         toast.error(
           locale === 'ka' ? 'შეცდომა' : 'Error',
@@ -81,14 +90,21 @@ function ProposalsPageContent() {
         );
         router.push('/my-jobs');
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     if (jobId) {
       fetchData();
     }
-  }, [jobId, locale, router, toast]);
+
+    return () => {
+      isMounted = false;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobId]);
 
   const handleShortlist = useCallback((proposal: Proposal) => {
     setSelectedProposal(proposal);
@@ -242,68 +258,130 @@ function ProposalsPageContent() {
   const rejectedProposals = proposals.filter(p => p.status === 'rejected' || p.status === 'withdrawn');
 
   return (
-    <div className="min-h-screen bg-white dark:bg-neutral-950 flex flex-col">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col">
       <Header />
       <HeaderSpacer />
 
-      <main className="flex-1 max-w-4xl mx-auto w-full px-6 py-8">
-        {/* Back Link */}
-        <Link
-          href="/my-jobs"
-          className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          {locale === 'ka' ? 'უკან' : 'Back to Jobs'}
-        </Link>
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 pb-20 lg:pb-8">
+        {/* Back Button */}
+        <BackButton href="/my-jobs" className="mb-6" />
 
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">
-            {locale === 'ka' ? 'შეთავაზებები' : 'Proposals'}
-          </h1>
-          {job && (
-            <p className="text-neutral-500 dark:text-neutral-400">
-              {job.title} • <span style={{ color: ACCENT_COLOR }}>{getCategoryLabel(job.category)}</span>
-            </p>
-          )}
+        {/* Page Header with Stats */}
+        <div className="mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
+                {locale === 'ka' ? 'შეთავაზებები' : 'Proposals'}
+              </h1>
+              {job && (
+                <Link 
+                  href={`/jobs/${job.id}`}
+                  className="inline-flex items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400 hover:text-[#C4735B] transition-colors"
+                >
+                  {job.title}
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </Link>
+              )}
+            </div>
+            {job && (
+              <Badge variant="premium" size="xl">
+                {getCategoryLabel(job.category)}
+              </Badge>
+            )}
+          </div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-3 gap-3">
+            <Card variant="default" size="sm" className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <div className="w-6 h-6 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
+                  <Users className="w-3.5 h-3.5 text-[#C4735B]" />
+                </div>
+                <span className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white">
+                  {pendingProposals.length}
+                </span>
+              </div>
+              <p className="text-[10px] sm:text-xs text-neutral-500">
+                {locale === 'ka' ? 'ახალი' : 'New'}
+              </p>
+            </Card>
+            <Card variant="default" size="sm" className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <div className="w-6 h-6 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                  <Star className="w-3.5 h-3.5 text-emerald-500" />
+                </div>
+                <span className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white">
+                  {shortlistedProposals.length}
+                </span>
+              </div>
+              <p className="text-[10px] sm:text-xs text-neutral-500">
+                {locale === 'ka' ? 'მონიშნული' : 'Shortlisted'}
+              </p>
+            </Card>
+            <Card variant="default" size="sm" className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <div className="w-6 h-6 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                  <X className="w-3.5 h-3.5 text-neutral-400" />
+                </div>
+                <span className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white">
+                  {rejectedProposals.length}
+                </span>
+              </div>
+              <p className="text-[10px] sm:text-xs text-neutral-500">
+                {locale === 'ka' ? 'უარყოფილი' : 'Rejected'}
+              </p>
+            </Card>
+          </div>
         </div>
 
         {/* Info Banner for Low-Level Categories */}
         {!isHighLevel && (
-          <div className="mb-6 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
-                  {locale === 'ka' ? 'პირდაპირი კონტაქტი' : 'Direct Contact Category'}
-                </p>
-                <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
-                  {locale === 'ka'
-                    ? 'ამ კატეგორიაში სპეციალისტებთან პირდაპირ ტელეფონით დაკავშირდებით. Homico-ს მეშვეობით დაქირავებისას მიიღებთ გარანტიას.'
-                    : 'For this category, you can contact professionals directly by phone. Hiring through Homico gives you quality guarantee.'}
-                </p>
-              </div>
-            </div>
-          </div>
+          <Alert 
+            variant="warning" 
+            size="sm"
+            title={locale === 'ka' ? 'პირდაპირი კონტაქტი' : 'Direct Contact Category'}
+            className="mb-6"
+          >
+            {locale === 'ka'
+              ? 'ამ კატეგორიაში სპეციალისტებთან პირდაპირ ტელეფონით დაკავშირდებით. Homico-ს მეშვეობით დაქირავებისას მიიღებთ გარანტიას.'
+              : 'For this category, you can contact professionals directly by phone. Hiring through Homico gives you quality guarantee.'}
+          </Alert>
         )}
 
         {/* Proposals List */}
         {proposals.length === 0 ? (
-          <div className="text-center py-16">
-            <FileText className="w-12 h-12 text-neutral-300 dark:text-neutral-700 mx-auto mb-4" />
-            <p className="text-neutral-500 dark:text-neutral-400">
+          <Card variant="default" size="lg" className="text-center">
+            <div className="w-16 h-16 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4">
+              <FileText className="w-8 h-8 text-neutral-400" />
+            </div>
+            <h3 className="text-base font-semibold text-neutral-900 dark:text-white mb-2">
               {locale === 'ka' ? 'შეთავაზებები ჯერ არ არის' : 'No proposals yet'}
+            </h3>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-xs mx-auto">
+              {locale === 'ka' 
+                ? 'როცა სპეციალისტები შეთავაზებებს გამოგზავნიან, აქ გამოჩნდებიან.'
+                : 'When professionals send proposals, they will appear here.'}
             </p>
-          </div>
+          </Card>
         ) : (
           <div className="space-y-8">
             {/* Pending Proposals */}
             {pendingProposals.length > 0 && (
-              <div>
-                <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-4">
-                  {locale === 'ka' ? 'ახალი შეთავაზებები' : 'New Proposals'} ({pendingProposals.length})
-                </h2>
-                <div className="space-y-4">
+              <section>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-[#C4735B]/10">
+                    <FileText className="w-4 h-4 text-[#C4735B]" />
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-sm sm:text-base font-semibold text-neutral-900 dark:text-white">
+                      {locale === 'ka' ? 'ახალი შეთავაზებები' : 'New Proposals'}
+                    </h2>
+                  </div>
+                  <Badge variant="default" size="sm">
+                    {pendingProposals.length}
+                  </Badge>
+                </div>
+                <div className="space-y-3">
                   {pendingProposals.map(proposal => (
                     <ProposalCard
                       key={proposal.id}
@@ -315,16 +393,29 @@ function ProposalsPageContent() {
                     />
                   ))}
                 </div>
-              </div>
+              </section>
             )}
 
             {/* Interested Proposals */}
             {shortlistedProposals.length > 0 && (
-              <div>
-                <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-4">
-                  {locale === 'ka' ? 'დაინტერესებული' : 'Interested'} ({shortlistedProposals.length})
-                </h2>
-                <div className="space-y-4">
+              <section>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-500/10">
+                    <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-sm sm:text-base font-semibold text-neutral-900 dark:text-white">
+                      {locale === 'ka' ? 'მონიშნული' : 'Shortlisted'}
+                    </h2>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                      {locale === 'ka' ? 'აირჩიეთ ერთი პროექტის დასაწყებად' : 'Select one to start the project'}
+                    </p>
+                  </div>
+                  <Badge variant="success" size="sm">
+                    {shortlistedProposals.length}
+                  </Badge>
+                </div>
+                <div className="space-y-3">
                   {shortlistedProposals.map(proposal => (
                     <ProposalCard
                       key={proposal.id}
@@ -338,16 +429,26 @@ function ProposalsPageContent() {
                     />
                   ))}
                 </div>
-              </div>
+              </section>
             )}
 
             {/* Rejected Proposals */}
             {rejectedProposals.length > 0 && (
-              <div>
-                <h2 className="text-sm font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-4">
-                  {locale === 'ka' ? 'უარყოფილი' : 'Rejected'} ({rejectedProposals.length})
-                </h2>
-                <div className="space-y-4 opacity-60">
+              <section>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-800">
+                    <X className="w-4 h-4 text-neutral-400 dark:text-neutral-500" />
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-sm sm:text-base font-semibold text-neutral-500 dark:text-neutral-400">
+                      {locale === 'ka' ? 'უარყოფილი' : 'Rejected'}
+                    </h2>
+                  </div>
+                  <Badge variant="default" size="sm">
+                    {rejectedProposals.length}
+                  </Badge>
+                </div>
+                <div className="space-y-3 opacity-60 hover:opacity-80 transition-opacity">
                   {rejectedProposals.map(proposal => (
                     <ProposalCard
                       key={proposal.id}
@@ -358,7 +459,7 @@ function ProposalsPageContent() {
                     />
                   ))}
                 </div>
-              </div>
+              </section>
             )}
           </div>
         )}
@@ -424,36 +525,42 @@ function ProposalCard({
   const pro = proposal.proId;
 
   return (
-    <div className={`bg-white dark:bg-neutral-900 rounded-2xl border ${isShortlisted ? 'border-green-200 dark:border-green-800' : 'border-neutral-100 dark:border-neutral-800'} p-5`}>
-      <div className="flex items-start gap-4">
-        {/* Avatar */}
-        <Avatar
-          src={pro?.avatar}
-          name={pro?.name || 'Pro'}
-          size="lg"
-          className="w-14 h-14"
-        />
+    <Card 
+      variant="default" 
+      size="md"
+      className={isShortlisted ? 'ring-2 ring-emerald-500/20 border-emerald-200 dark:border-emerald-800' : ''}
+    >
+      <div className="flex items-start gap-3 sm:gap-4">
+        {/* Avatar with Link */}
+        <Link href={`/professionals/${pro?.id}`} className="flex-shrink-0">
+          <Avatar
+            src={pro?.avatar}
+            name={pro?.name || 'Pro'}
+            size="lg"
+            className="w-12 h-12 sm:w-14 sm:h-14 ring-2 ring-white dark:ring-neutral-800 shadow-sm"
+          />
+        </Link>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
           {/* Header */}
-          <div className="flex items-start justify-between mb-2">
-            <div>
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <div className="min-w-0">
               <Link
                 href={`/professionals/${pro?.id}`}
-                className="text-base font-semibold text-neutral-900 dark:text-white hover:underline"
+                className="text-sm sm:text-base font-semibold text-neutral-900 dark:text-white hover:text-[#C4735B] transition-colors block truncate"
               >
                 {pro?.name || 'Professional'}
               </Link>
               <div className="flex items-center gap-2 mt-0.5">
-                <Clock className="w-3 h-3 text-neutral-400" />
+                <Clock className="w-3 h-3 text-neutral-400 flex-shrink-0" />
                 <span className="text-xs text-neutral-400">{formatTimeAgoCompact(proposal.createdAt, locale as 'en' | 'ka')}</span>
               </div>
             </div>
 
             {/* Status Badge */}
             {isShortlisted && (
-              <Badge variant="premium" size="sm" icon={<Check className="w-3 h-3" />}>
+              <Badge variant="success" size="sm" icon={<Check className="w-3 h-3" />}>
                 {proposal.hiringChoice === 'direct'
                   ? (locale === 'ka' ? 'პირდაპირი' : 'Direct')
                   : (locale === 'ka' ? 'Homico' : 'Homico')}
@@ -466,42 +573,51 @@ function ProposalCard({
             )}
           </div>
 
-          {/* Cover Letter */}
-          <p className="text-sm text-neutral-600 dark:text-neutral-300 mb-3 line-clamp-3">
-            {proposal.coverLetter}
-          </p>
-
-          {/* Price & Duration */}
-          <div className="flex items-center gap-4 mb-4">
+          {/* Price & Duration - More prominent */}
+          <div className="flex items-center flex-wrap gap-3 mb-3">
             {proposal.proposedPrice && (
-              <span className="text-lg font-bold" style={{ color: ACCENT_COLOR }}>
-                ₾{proposal.proposedPrice.toLocaleString()}
-              </span>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#C4735B]/10">
+                <span className="text-base sm:text-lg font-bold text-[#C4735B]">
+                  ₾{proposal.proposedPrice.toLocaleString()}
+                </span>
+              </div>
             )}
             {proposal.estimatedDuration && (
-              <span className="text-sm text-neutral-500">
-                {proposal.estimatedDuration}{' '}
-                {proposal.estimatedDurationUnit === 'days'
-                  ? locale === 'ka' ? 'დღე' : 'days'
-                  : proposal.estimatedDurationUnit === 'weeks'
-                    ? locale === 'ka' ? 'კვირა' : 'weeks'
-                    : locale === 'ka' ? 'თვე' : 'months'}
-              </span>
+              <div className="flex items-center gap-1.5 text-sm text-neutral-500">
+                <Clock className="w-3.5 h-3.5" />
+                <span>
+                  {proposal.estimatedDuration}{' '}
+                  {proposal.estimatedDurationUnit === 'days'
+                    ? locale === 'ka' ? 'დღე' : 'days'
+                    : proposal.estimatedDurationUnit === 'weeks'
+                      ? locale === 'ka' ? 'კვირა' : 'weeks'
+                      : locale === 'ka' ? 'თვე' : 'months'}
+                </span>
+              </div>
             )}
           </div>
 
+          {/* Cover Letter */}
+          {proposal.coverLetter && (
+            <p className="text-sm text-neutral-600 dark:text-neutral-300 mb-4 line-clamp-2 sm:line-clamp-3">
+              {proposal.coverLetter}
+            </p>
+          )}
+
           {/* Phone Number (if revealed) */}
           {isShortlisted && proposal.contactRevealed && pro?.phone && (
-            <div className="mb-4 p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+            <div className="mb-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
               <div className="flex items-center gap-3">
-                <Phone className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                  <Phone className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                </div>
                 <div>
-                  <p className="text-xs text-green-600 dark:text-green-400 font-medium mb-0.5">
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-0.5">
                     {locale === 'ka' ? 'ტელეფონი' : 'Phone'}
                   </p>
                   <a
                     href={`tel:${pro.phone}`}
-                    className="text-lg font-semibold text-green-700 dark:text-green-300 hover:underline"
+                    className="text-lg font-semibold text-emerald-700 dark:text-emerald-300 hover:underline"
                   >
                     {pro.phone}
                   </a>
@@ -512,28 +628,31 @@ function ProposalCard({
 
           {/* Actions for Pending */}
           {!isShortlisted && !isRejected && (
-            <div className="flex items-center gap-2">
-              <button
+            <div className="flex items-center flex-wrap gap-2">
+              <Button
                 onClick={onShortlist}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white transition-colors"
-                style={{ backgroundColor: ACCENT_COLOR }}
+                size="sm"
+                leftIcon={<Check className="w-4 h-4" />}
               >
-                <Check className="w-4 h-4" />
                 {locale === 'ka' ? 'დაინტერესება' : 'Interested'}
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={onReject}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                variant="outline"
+                size="sm"
+                leftIcon={<X className="w-4 h-4" />}
               >
-                <X className="w-4 h-4" />
                 {locale === 'ka' ? 'უარყოფა' : 'Reject'}
-              </button>
-              <Link
-                href={`/professionals/${pro?.id}`}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                asChild
               >
-                {locale === 'ka' ? 'პროფილი' : 'Profile'}
-              </Link>
+                <Link href={`/professionals/${pro?.id}`}>
+                  {locale === 'ka' ? 'პროფილი' : 'Profile'}
+                </Link>
+              </Button>
             </div>
           )}
 
@@ -541,65 +660,57 @@ function ProposalCard({
           {isShortlisted && (
             <div className="flex flex-wrap items-center gap-2">
               {/* Accept/Start Project Button - Primary Action */}
-              <button
+              <Button
                 onClick={onAccept}
                 disabled={isProcessing}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-                style={{ backgroundColor: ACCENT_COLOR }}
+                loading={isProcessing}
+                size="sm"
+                leftIcon={!isProcessing ? <Check className="w-4 h-4" /> : undefined}
+                className="shadow-lg"
               >
-                {isProcessing ? (
-                  <>
-                    <LoadingSpinner size="sm" color="white" />
-                    {locale === 'ka' ? 'მუშავდება...' : 'Processing...'}
-                  </>
-                ) : (
-                  <>
-                    <Check className="w-4 h-4" />
-                    {locale === 'ka' ? 'პროექტის დაწყება' : 'Start Project'}
-                  </>
-                )}
-              </button>
+                {locale === 'ka' ? 'პროექტის დაწყება' : 'Start Project'}
+              </Button>
 
-              {proposal.hiringChoice === 'homico' && isHighLevel && (
-                <Link
-                  href={`/messages?recipient=${pro?.id}`}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  {locale === 'ka' ? 'მიწერა' : 'Message'}
-                </Link>
-              )}
               {proposal.contactRevealed && pro?.phone && (
-                <a
-                  href={`tel:${pro.phone}`}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-green-200 dark:border-green-700 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors"
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  className="border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
                 >
-                  <Phone className="w-4 h-4" />
-                  {locale === 'ka' ? 'დარეკვა' : 'Call'}
-                </a>
+                  <a href={`tel:${pro.phone}`}>
+                    <Phone className="w-4 h-4 mr-1.5" />
+                    {locale === 'ka' ? 'დარეკვა' : 'Call'}
+                  </a>
+                </Button>
               )}
-              <Link
-                href={`/professionals/${pro?.id}`}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+              <Button
+                variant="ghost"
+                size="sm"
+                asChild
               >
-                {locale === 'ka' ? 'პროფილი' : 'Profile'}
-              </Link>
+                <Link href={`/professionals/${pro?.id}`}>
+                  {locale === 'ka' ? 'პროფილი' : 'Profile'}
+                </Link>
+              </Button>
               {/* Revert to Pending Button */}
               {onRevert && (
-                <button
+                <Button
                   onClick={onRevert}
                   disabled={isProcessing}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors disabled:opacity-50"
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<RotateCcw className="w-4 h-4" />}
+                  className="border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30"
                 >
-                  <RotateCcw className="w-4 h-4" />
                   {locale === 'ka' ? 'დაბრუნება' : 'Revert'}
-                </button>
+                </Button>
               )}
             </div>
           )}
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 

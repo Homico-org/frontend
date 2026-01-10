@@ -13,6 +13,7 @@ import SpecCard from "@/components/jobs/SpecCard";
 import PollsTab from "@/components/polls/PollsTab";
 import ProjectChat from "@/components/projects/ProjectChat";
 import ProjectWorkspace from "@/components/projects/ProjectWorkspace";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ConfirmModal } from "@/components/ui/Modal";
@@ -27,6 +28,7 @@ import type { Job, JobClient, MediaItem, ProjectStage, Proposal } from "@/types/
 import { formatBudget as formatBudgetUtil } from "@/utils/currencyUtils";
 import { formatTimeAgoCompact } from "@/utils/dateUtils";
 import {
+  AlertCircle,
   Armchair,
   BadgeCheck,
   BarChart3,
@@ -41,12 +43,15 @@ import {
   ExternalLink,
   Eye,
   Facebook,
+  FileText,
   Hammer,
+  History,
   Home,
   Layers,
   Map,
   MapPin,
   Maximize2,
+  MessageCircle,
   Mountain,
   Package,
   Play,
@@ -58,6 +63,7 @@ import {
   Star,
   Trash2,
   Users,
+  Vote,
   X,
   Zap
 } from "lucide-react";
@@ -667,6 +673,60 @@ export default function JobDetailClient() {
   const [copyToast, setCopyToast] = useState(false);
   const [isPollsExpanded, setIsPollsExpanded] = useState(true);
   const [isResourcesExpanded, setIsResourcesExpanded] = useState(true);
+  const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
+
+  // History state
+  type HistoryEventType =
+    | "stage_changed"
+    | "poll_created"
+    | "poll_voted"
+    | "poll_closed"
+    | "poll_option_selected"
+    | "resource_added"
+    | "resource_removed"
+    | "resource_edited"
+    | "resource_item_added"
+    | "resource_item_removed"
+    | "resource_item_edited"
+    | "resource_reaction"
+    | "attachment_added"
+    | "attachment_removed"
+    | "message_sent"
+    | "project_created"
+    | "project_completed"
+    | "price_updated"
+    | "deadline_updated";
+
+  interface HistoryEvent {
+    eventType: HistoryEventType;
+    userId: string;
+    userName: string;
+    userAvatar?: string;
+    userRole: "client" | "pro" | "system";
+    metadata?: {
+      fromStage?: string;
+      toStage?: string;
+      pollId?: string;
+      pollTitle?: string;
+      optionText?: string;
+      resourceId?: string;
+      resourceName?: string;
+      itemId?: string;
+      itemName?: string;
+      reactionType?: string;
+      fileName?: string;
+      fileUrl?: string;
+      oldValue?: string | number;
+      newValue?: string | number;
+      description?: string;
+    };
+    createdAt: string;
+  }
+
+  const [historyEvents, setHistoryEvents] = useState<HistoryEvent[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [historyFilter, setHistoryFilter] = useState<"all" | "client" | "pro">("all");
+  const historyLoadedRef = useRef(false);
 
   // Review state
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -803,6 +863,107 @@ export default function JobDetailClient() {
 
     checkReview();
   }, [isOwner, user, job?.id, job?.status]);
+
+  // Fetch history when expanded and not loaded yet
+  const fetchHistory = async () => {
+    if (!job?.id) return;
+    try {
+      setIsLoadingHistory(true);
+      const response = await api.get(`/jobs/projects/${job.id}/history`);
+      setHistoryEvents(response.data.history || []);
+      historyLoadedRef.current = true;
+    } catch (error) {
+      console.error("Failed to fetch history:", error);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  useEffect(() => {
+    const jobIsHired = job?.status === "in_progress" || job?.status === "completed" || !!job?.hiredPro;
+    if (isHistoryExpanded && !historyLoadedRef.current && jobIsHired) {
+      fetchHistory();
+    }
+  }, [isHistoryExpanded, job?.status, job?.hiredPro, job?.id]);
+
+  // Helper to get event icon and color
+  const getEventConfig = (eventType: HistoryEventType) => {
+    const configs: Record<HistoryEventType, { icon: React.ReactNode; color: string; bgColor: string; label: string; labelKa: string }> = {
+      stage_changed: { icon: <Play className="w-3.5 h-3.5" />, color: "#3B82F6", bgColor: "rgba(59, 130, 246, 0.1)", label: "Stage Changed", labelKa: "სტატუსი შეიცვალა" },
+      poll_created: { icon: <Vote className="w-3.5 h-3.5" />, color: "#8B5CF6", bgColor: "rgba(139, 92, 246, 0.1)", label: "Poll Created", labelKa: "გამოკითხვა შეიქმნა" },
+      poll_voted: { icon: <Vote className="w-3.5 h-3.5" />, color: "#8B5CF6", bgColor: "rgba(139, 92, 246, 0.1)", label: "Voted", labelKa: "ხმა მისცა" },
+      poll_closed: { icon: <Vote className="w-3.5 h-3.5" />, color: "#6B7280", bgColor: "rgba(107, 114, 128, 0.1)", label: "Poll Closed", labelKa: "გამოკითხვა დაიხურა" },
+      poll_option_selected: { icon: <Check className="w-3.5 h-3.5" />, color: "#10B981", bgColor: "rgba(16, 185, 129, 0.1)", label: "Option Selected", labelKa: "ვარიანტი აირჩიეს" },
+      resource_added: { icon: <Package className="w-3.5 h-3.5" />, color: "#10B981", bgColor: "rgba(16, 185, 129, 0.1)", label: "Resource Added", labelKa: "რესურსი დაემატა" },
+      resource_removed: { icon: <Package className="w-3.5 h-3.5" />, color: "#EF4444", bgColor: "rgba(239, 68, 68, 0.1)", label: "Resource Removed", labelKa: "რესურსი წაიშალა" },
+      resource_edited: { icon: <Package className="w-3.5 h-3.5" />, color: "#F59E0B", bgColor: "rgba(245, 158, 11, 0.1)", label: "Resource Edited", labelKa: "რესურსი რედაქტირდა" },
+      resource_item_added: { icon: <Package className="w-3.5 h-3.5" />, color: "#10B981", bgColor: "rgba(16, 185, 129, 0.1)", label: "Item Added", labelKa: "ელემენტი დაემატა" },
+      resource_item_removed: { icon: <Package className="w-3.5 h-3.5" />, color: "#EF4444", bgColor: "rgba(239, 68, 68, 0.1)", label: "Item Removed", labelKa: "ელემენტი წაიშალა" },
+      resource_item_edited: { icon: <Package className="w-3.5 h-3.5" />, color: "#F59E0B", bgColor: "rgba(245, 158, 11, 0.1)", label: "Item Edited", labelKa: "ელემენტი რედაქტირდა" },
+      resource_reaction: { icon: <Star className="w-3.5 h-3.5" />, color: "#F59E0B", bgColor: "rgba(245, 158, 11, 0.1)", label: "Reaction", labelKa: "რეაქცია" },
+      attachment_added: { icon: <FileText className="w-3.5 h-3.5" />, color: "#06B6D4", bgColor: "rgba(6, 182, 212, 0.1)", label: "File Uploaded", labelKa: "ფაილი აიტვირთა" },
+      attachment_removed: { icon: <FileText className="w-3.5 h-3.5" />, color: "#EF4444", bgColor: "rgba(239, 68, 68, 0.1)", label: "File Removed", labelKa: "ფაილი წაიშალა" },
+      message_sent: { icon: <MessageCircle className="w-3.5 h-3.5" />, color: "#8B5CF6", bgColor: "rgba(139, 92, 246, 0.1)", label: "Message Sent", labelKa: "შეტყობინება გაიგზავნა" },
+      project_created: { icon: <CheckCircle2 className="w-3.5 h-3.5" />, color: "#10B981", bgColor: "rgba(16, 185, 129, 0.1)", label: "Project Created", labelKa: "პროექტი შეიქმნა" },
+      project_completed: { icon: <CheckCircle2 className="w-3.5 h-3.5" />, color: "#10B981", bgColor: "rgba(16, 185, 129, 0.1)", label: "Project Completed", labelKa: "პროექტი დასრულდა" },
+      price_updated: { icon: <AlertCircle className="w-3.5 h-3.5" />, color: "#F59E0B", bgColor: "rgba(245, 158, 11, 0.1)", label: "Price Updated", labelKa: "ფასი განახლდა" },
+      deadline_updated: { icon: <Calendar className="w-3.5 h-3.5" />, color: "#F59E0B", bgColor: "rgba(245, 158, 11, 0.1)", label: "Deadline Updated", labelKa: "ვადა განახლდა" },
+    };
+    return configs[eventType] || { icon: <History className="w-3.5 h-3.5" />, color: "#6B7280", bgColor: "rgba(107, 114, 128, 0.1)", label: eventType, labelKa: eventType };
+  };
+
+  // Generate event description
+  const getEventDescription = (event: HistoryEvent): string => {
+    const meta = event.metadata;
+    switch (event.eventType) {
+      case "stage_changed":
+        const fromLabel = STAGES.find(s => s.key === meta?.fromStage);
+        const toLabel = STAGES.find(s => s.key === meta?.toStage);
+        return locale === "ka"
+          ? `${fromLabel?.labelKa || meta?.fromStage || "—"} → ${toLabel?.labelKa || meta?.toStage}`
+          : `${fromLabel?.label || meta?.fromStage || "—"} → ${toLabel?.label || meta?.toStage}`;
+      case "poll_created":
+        return `"${meta?.pollTitle}"`;
+      case "poll_voted":
+      case "poll_option_selected":
+        return `"${meta?.pollTitle}" - ${meta?.optionText}`;
+      case "resource_added":
+      case "resource_removed":
+      case "resource_edited":
+        return meta?.resourceName || "";
+      case "resource_item_added":
+      case "resource_item_removed":
+      case "resource_item_edited":
+        return `${meta?.itemName} (${meta?.resourceName})`;
+      case "resource_reaction":
+        return `${meta?.reactionType} - ${meta?.itemName}`;
+      case "attachment_added":
+      case "attachment_removed":
+        return meta?.fileName || "";
+      default:
+        return meta?.description || "";
+    }
+  };
+
+  // Format history time
+  const formatHistoryTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return locale === "ka" ? "ახლახანს" : "Just now";
+    if (diffMins < 60) return locale === "ka" ? `${diffMins} წთ წინ` : `${diffMins}m ago`;
+    if (diffHours < 24) return locale === "ka" ? `${diffHours} სთ წინ` : `${diffHours}h ago`;
+    if (diffDays < 7) return locale === "ka" ? `${diffDays} დღე წინ` : `${diffDays}d ago`;
+    return date.toLocaleDateString(locale === "ka" ? "ka-GE" : "en-US", { month: "short", day: "numeric" });
+  };
+
+  const filteredHistory = historyFilter === "all"
+    ? historyEvents
+    : historyEvents.filter(e => e.userRole === historyFilter);
 
   // Submit review handler
   const handleSubmitReview = async () => {
@@ -1322,10 +1483,20 @@ export default function JobDetailClient() {
                   <Eye className="w-4 h-4" />
                   <span>{job.viewCount || 0} {locale === "ka" ? "ნახვა" : "views"}</span>
                 </div>
-                <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
-                  <Users className="w-4 h-4" />
-                  <span>{job.proposalCount || 0} {locale === "ka" ? "შეთავაზება" : "proposals"}</span>
-                </div>
+                {isOwner ? (
+                  <Link
+                    href={`/my-jobs/${job.id}/proposals`}
+                    className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-[#C4735B] transition-colors"
+                  >
+                    <Users className="w-4 h-4" />
+                    <span className="underline underline-offset-2">{job.proposalCount || 0} {locale === "ka" ? "შეთავაზება" : "proposals"}</span>
+                  </Link>
+                ) : (
+                  <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
+                    <Users className="w-4 h-4" />
+                    <span>{job.proposalCount || 0} {locale === "ka" ? "შეთავაზება" : "proposals"}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1726,61 +1897,82 @@ export default function JobDetailClient() {
               {/* Project Status Tracker - for hired pro or job owner */}
               {(isHiredPro || isOwner) && isHired && (
                 <section className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden">
+                  {/* Header with progress */}
                   <div className="p-4 border-b border-neutral-100 dark:border-neutral-800">
-                    <h3 className="font-display text-lg font-semibold text-neutral-900 dark:text-white">
-                      {locale === "ka" ? "პროექტის სტატუსი" : "Project Status"}
-                    </h3>
-                  </div>
-                  <div className="p-4">
-                    {/* Progress Bar */}
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
-                          {locale === "ka" ? STAGES[getStageIndex(projectStage)]?.labelKa : STAGES[getStageIndex(projectStage)]?.label}
-                        </span>
-                        <span className="text-sm font-bold" style={{ color: ACCENT }}>
-                          {STAGES[getStageIndex(projectStage)]?.progress || 0}%
-                        </span>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div 
+                          className="w-10 h-10 rounded-xl flex items-center justify-center"
+                          style={{ backgroundColor: `${ACCENT}15` }}
+                        >
+                          <BarChart3 className="w-5 h-5" style={{ color: ACCENT }} />
+                        </div>
+                        <div>
+                          <h3 className="font-display text-base font-semibold text-neutral-900 dark:text-white">
+                            {locale === "ka" ? "პროექტის სტატუსი" : "Project Status"}
+                          </h3>
+                          <p className="text-xs text-neutral-500">
+                            {locale === "ka" ? STAGES[getStageIndex(projectStage)]?.labelKa : STAGES[getStageIndex(projectStage)]?.label}
+                          </p>
+                        </div>
                       </div>
-                      <div className="h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all duration-500 ease-out"
-                          style={{
-                            width: `${STAGES[getStageIndex(projectStage)]?.progress || 0}%`,
-                            backgroundColor: ACCENT,
-                          }}
-                        />
+                      <div 
+                        className="text-lg font-bold"
+                        style={{ color: ACCENT }}
+                      >
+                        {STAGES[getStageIndex(projectStage)]?.progress || 0}%
                       </div>
                     </div>
+                    {/* Progress Bar */}
+                    <div className="h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-700 ease-out"
+                        style={{
+                          width: `${STAGES[getStageIndex(projectStage)]?.progress || 0}%`,
+                          background: `linear-gradient(90deg, ${ACCENT} 0%, ${ACCENT_LIGHT} 100%)`,
+                        }}
+                      />
+                    </div>
+                  </div>
 
+                  <div className="p-4">
                     {/* Client Actions when project is completed but not yet confirmed */}
                     {isOwner && projectStage === "completed" && !isClientConfirmed && (
-                      <div className="mb-4 p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                        <p className="text-sm font-medium text-green-800 dark:text-green-300 mb-3">
-                          {locale === "ka"
-                            ? "სპეციალისტმა დაასრულა სამუშაო. გთხოვთ გადაამოწმოთ და დაადასტუროთ."
-                            : "The professional has marked the work as complete. Please review and confirm."}
-                        </p>
+                      <div className="mb-4 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+                              {locale === "ka" ? "სამუშაო დასრულებულია!" : "Work Completed!"}
+                            </p>
+                            <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">
+                              {locale === "ka"
+                                ? "გთხოვთ გადაამოწმოთ და დაადასტუროთ."
+                                : "Please review and confirm completion."}
+                            </p>
+                          </div>
+                        </div>
                         <div className="flex gap-2">
                           <Button
                             onClick={handleClientConfirm}
                             disabled={isUpdatingStage}
                             loading={isUpdatingStage}
-                            variant="success"
                             size="sm"
-                            className="flex-1"
+                            className="flex-1 bg-emerald-600 hover:bg-emerald-700"
                             leftIcon={!isUpdatingStage ? <BadgeCheck className="w-4 h-4" /> : undefined}
                           >
-                            {locale === "ka" ? "დადასტურება და დახურვა" : "Confirm & Close"}
+                            {locale === "ka" ? "დადასტურება" : "Confirm"}
                           </Button>
                           <Button
                             onClick={handleClientRequestChanges}
                             disabled={isUpdatingStage}
-                            variant="secondary"
+                            variant="outline"
                             size="sm"
                             leftIcon={<RotateCcw className="w-4 h-4" />}
                           >
-                            {locale === "ka" ? "ცვლილებები" : "Request Changes"}
+                            {locale === "ka" ? "ცვლილება" : "Changes"}
                           </Button>
                         </div>
                       </div>
@@ -1788,66 +1980,134 @@ export default function JobDetailClient() {
 
                     {/* Leave Review button when project is confirmed but no review yet */}
                     {isOwner && projectStage === "completed" && isClientConfirmed && !hasSubmittedReview && (
-                      <div className="mb-4 p-3 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
-                        <p className="text-sm font-medium text-yellow-800 dark:text-yellow-300 mb-3">
-                          {locale === "ka"
-                            ? "პროექტი დასრულებულია. დატოვეთ შეფასება სპეციალისტზე."
-                            : "Project is complete. Leave a review for the professional."}
-                        </p>
+                      <div className="mb-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                            <Star className="w-4 h-4 text-amber-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                              {locale === "ka" ? "დატოვეთ შეფასება" : "Leave a Review"}
+                            </p>
+                            <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                              {locale === "ka"
+                                ? "თქვენი გამოხმაურება მნიშვნელოვანია."
+                                : "Your feedback helps other clients."}
+                            </p>
+                          </div>
+                        </div>
                         <Button
                           onClick={() => setShowReviewModal(true)}
                           size="sm"
-                          className="w-full"
+                          className="w-full bg-amber-600 hover:bg-amber-700"
                           leftIcon={<Star className="w-4 h-4" />}
                         >
-                          {locale === "ka" ? "შეფასების დატოვება" : "Leave a Review"}
+                          {locale === "ka" ? "შეფასების დატოვება" : "Write a Review"}
                         </Button>
                       </div>
                     )}
 
-                    {/* Stage Pills */}
-                    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                    {/* Stage Timeline */}
+                    <div className="space-y-0">
                       {STAGES.map((stage, index) => {
                         const currentIndex = getStageIndex(projectStage);
                         const isStageCompleted = index < currentIndex;
                         const isCurrent = index === currentIndex;
                         const isNext = index === currentIndex + 1;
                         const canAdvance = isHiredPro && isNext && !isUpdatingStage;
+                        const isLast = index === STAGES.length - 1;
 
                         return (
-                          <button
-                            key={stage.key}
-                            onClick={() => canAdvance && handleStageChange(stage.key)}
-                            disabled={!canAdvance}
-                            className={`
-                              flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium
-                              whitespace-nowrap transition-all duration-200 flex-shrink-0
-                              ${isStageCompleted
-                                ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
-                                : isCurrent
-                                  ? 'text-white shadow-sm'
-                                  : canAdvance
-                                    ? 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border-2 border-dashed hover:border-solid cursor-pointer'
-                                    : 'bg-neutral-50 dark:bg-neutral-800/50 text-neutral-400 dark:text-neutral-500'
-                              }
-                            `}
-                            style={{
-                              backgroundColor: isCurrent ? ACCENT : undefined,
-                              borderColor: canAdvance ? ACCENT_LIGHT : undefined,
-                            }}
-                          >
-                            {isUpdatingStage && isCurrent ? (
-                              <LoadingSpinner size="xs" color="currentColor" />
-                            ) : isStageCompleted ? (
-                              <Check className="w-3 h-3" />
-                            ) : (
-                              stage.icon
-                            )}
-                            <span>{locale === "ka" ? stage.labelKa : stage.label}</span>
-                            {canAdvance && (
-                              <ChevronRight className="w-3 h-3 ml-0.5" style={{ color: ACCENT }} />
-                            )}
-                          </button>
+                          <div key={stage.key} className="flex items-stretch gap-3">
+                            {/* Timeline indicator */}
+                            <div className="flex flex-col items-center">
+                              <div
+                                className={`
+                                  w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
+                                  transition-all duration-300
+                                  ${isStageCompleted
+                                    ? 'bg-emerald-500 text-white'
+                                    : isCurrent
+                                      ? 'text-white shadow-lg'
+                                      : canAdvance
+                                        ? 'bg-white dark:bg-neutral-800 border-2 border-dashed text-neutral-400'
+                                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400'
+                                  }
+                                `}
+                                style={{
+                                  backgroundColor: isCurrent ? ACCENT : undefined,
+                                  borderColor: canAdvance ? ACCENT : undefined,
+                                }}
+                              >
+                                {isUpdatingStage && isCurrent ? (
+                                  <LoadingSpinner size="xs" color="white" />
+                                ) : isStageCompleted ? (
+                                  <Check className="w-4 h-4" />
+                                ) : (
+                                  <span className="text-xs font-bold">{index + 1}</span>
+                                )}
+                              </div>
+                              {/* Connecting line */}
+                              {!isLast && (
+                                <div 
+                                  className={`w-0.5 flex-1 min-h-[24px] transition-colors duration-300 ${
+                                    isStageCompleted 
+                                      ? 'bg-emerald-500' 
+                                      : 'bg-neutral-200 dark:bg-neutral-700'
+                                  }`}
+                                />
+                              )}
+                            </div>
+
+                            {/* Stage content */}
+                            <div className={`flex-1 pb-4 ${isLast ? 'pb-0' : ''}`}>
+                              <button
+                                onClick={() => canAdvance && handleStageChange(stage.key)}
+                                disabled={!canAdvance}
+                                className={`
+                                  w-full text-left p-3 rounded-xl transition-all duration-200
+                                  ${isCurrent
+                                    ? 'bg-[#C4735B]/10 border border-[#C4735B]/20'
+                                    : canAdvance
+                                      ? 'bg-white dark:bg-neutral-800 border border-dashed border-[#C4735B]/40 hover:border-solid hover:border-[#C4735B] hover:shadow-md cursor-pointer'
+                                      : isStageCompleted
+                                        ? 'bg-emerald-50/50 dark:bg-emerald-900/10'
+                                        : ''
+                                  }
+                                `}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <span className={`
+                                      text-sm font-medium
+                                      ${isStageCompleted 
+                                        ? 'text-emerald-600 dark:text-emerald-400'
+                                        : isCurrent
+                                          ? 'text-[#C4735B] font-semibold'
+                                          : 'text-neutral-500 dark:text-neutral-400'
+                                      }
+                                    `}>
+                                      {locale === "ka" ? stage.labelKa : stage.label}
+                                    </span>
+                                    {isCurrent && (
+                                      <span 
+                                        className="text-[10px] px-1.5 py-0.5 rounded-full font-medium text-white"
+                                        style={{ backgroundColor: ACCENT }}
+                                      >
+                                        {locale === "ka" ? "მიმდინარე" : "Current"}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {canAdvance && (
+                                    <div className="flex items-center gap-1 text-xs font-medium" style={{ color: ACCENT }}>
+                                      <span>{locale === "ka" ? "შემდეგი" : "Next"}</span>
+                                      <ChevronRight className="w-4 h-4" />
+                                    </div>
+                                  )}
+                                </div>
+                              </button>
+                            </div>
+                          </div>
                         );
                       })}
                     </div>
@@ -1857,7 +2117,7 @@ export default function JobDetailClient() {
 
               {/* Project Chat - for hired pro or job owner */}
               {(isHiredPro || isOwner) && isHired && (
-                <section className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden">
+                <section id="chat" className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden scroll-mt-20">
                   <ProjectChat
                     jobId={job.id}
                     locale={locale}
@@ -1943,7 +2203,7 @@ export default function JobDetailClient() {
 
                 {/* Polls Section - visible for hired jobs (client or hired pro) */}
                 {(isHired || isHiredPro) && (
-                  <div className="group rounded-2xl bg-gradient-to-br from-white to-neutral-50/80 dark:from-neutral-900 dark:to-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+                  <div id="polls" className="group rounded-2xl bg-gradient-to-br from-white to-neutral-50/80 dark:from-neutral-900 dark:to-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 scroll-mt-20">
                     <button
                       onClick={() => setIsPollsExpanded(!isPollsExpanded)}
                       className="w-full flex items-center justify-between p-4 hover:bg-white/50 dark:hover:bg-neutral-800/50 transition-colors"
@@ -2032,6 +2292,143 @@ export default function JobDetailClient() {
                           isClient={isOwner || false}
                           embedded={true}
                         />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Project History Section - visible for hired jobs after in_progress */}
+                {(isHired || isHiredPro) && (projectStage !== "hired") && (
+                  <div className="group rounded-2xl bg-gradient-to-br from-white to-neutral-50/80 dark:from-neutral-900 dark:to-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+                    <button
+                      onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
+                      className="w-full flex items-center justify-between p-4 hover:bg-white/50 dark:hover:bg-neutral-800/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
+                          style={{
+                            background: `linear-gradient(135deg, ${ACCENT}15 0%, ${ACCENT}25 100%)`,
+                            border: `1px solid ${ACCENT}20`
+                          }}
+                        >
+                          <History className="w-5 h-5" style={{ color: ACCENT }} />
+                        </div>
+                        <div className="text-left">
+                          <span className="font-body font-semibold text-neutral-900 dark:text-white block">
+                            {locale === "ka" ? "ისტორია" : "History"}
+                          </span>
+                          <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                            {locale === "ka" ? "პროექტის აქტივობა" : "Project activity"}
+                          </span>
+                        </div>
+                      </div>
+                      <div
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
+                          isHistoryExpanded ? "bg-neutral-100 dark:bg-neutral-800 rotate-90" : "group-hover:bg-neutral-100 dark:group-hover:bg-neutral-800"
+                        }`}
+                      >
+                        <ChevronRight className="w-4 h-4 text-neutral-400" />
+                      </div>
+                    </button>
+                    <div className={`transition-all duration-300 overflow-hidden ${isHistoryExpanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"}`}>
+                      <div className="border-t border-neutral-100 dark:border-neutral-800">
+                        {/* Filter Tabs */}
+                        <div className="flex items-center gap-1 px-4 py-3 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
+                          {[
+                            { key: "all", label: "All", labelKa: "ყველა" },
+                            { key: "client", label: "Client", labelKa: "კლიენტი" },
+                            { key: "pro", label: "Pro", labelKa: "სპეციალისტი" },
+                          ].map(f => (
+                            <button
+                              key={f.key}
+                              onClick={() => setHistoryFilter(f.key as typeof historyFilter)}
+                              className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+                                historyFilter === f.key
+                                  ? "text-white"
+                                  : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+                              }`}
+                              style={historyFilter === f.key ? { backgroundColor: ACCENT } : {}}
+                            >
+                              {locale === "ka" ? f.labelKa : f.label}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* History Timeline */}
+                        <div className="p-4 max-h-[400px] overflow-y-auto">
+                          {isLoadingHistory ? (
+                            <div className="flex items-center justify-center py-8">
+                              <LoadingSpinner size="lg" color={ACCENT} />
+                            </div>
+                          ) : filteredHistory.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-8 text-neutral-400">
+                              <History className="w-12 h-12 mb-3 opacity-40" />
+                              <p className="text-sm font-medium">
+                                {locale === "ka" ? "ისტორია ცარიელია" : "No history yet"}
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="relative">
+                              {/* Timeline Line */}
+                              <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-neutral-200 dark:bg-neutral-700" />
+
+                              {/* Events */}
+                              <div className="space-y-4">
+                                {filteredHistory.slice(0, 20).map((event, idx) => {
+                                  const config = getEventConfig(event.eventType);
+                                  const description = getEventDescription(event);
+
+                                  return (
+                                    <div key={idx} className="relative flex items-start gap-3 pl-1">
+                                      {/* Icon */}
+                                      <div
+                                        className="relative z-10 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white dark:ring-neutral-900"
+                                        style={{ backgroundColor: config.bgColor, color: config.color }}
+                                      >
+                                        {config.icon}
+                                      </div>
+
+                                      {/* Content */}
+                                      <div className="flex-1 min-w-0 pt-0.5">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                          <span className="text-sm font-medium text-neutral-900 dark:text-white">
+                                            {event.userName}
+                                          </span>
+                                          <Badge variant={event.userRole === "client" ? "info" : "success"} size="xs">
+                                            {event.userRole === "client"
+                                              ? (locale === "ka" ? "კლიენტი" : "Client")
+                                              : (locale === "ka" ? "სპეც." : "Pro")}
+                                          </Badge>
+                                        </div>
+                                        <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
+                                          {locale === "ka" ? config.labelKa : config.label}
+                                          {description && (
+                                            <span className="text-neutral-500"> · {description}</span>
+                                          )}
+                                        </p>
+                                        <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-1">
+                                          {formatHistoryTime(event.createdAt)}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
+                              {/* Show more indicator */}
+                              {filteredHistory.length > 20 && (
+                                <div className="mt-4 text-center">
+                                  <span className="text-xs text-neutral-400">
+                                    {locale === "ka" 
+                                      ? `+ ${filteredHistory.length - 20} სხვა მოვლენა` 
+                                      : `+ ${filteredHistory.length - 20} more events`}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

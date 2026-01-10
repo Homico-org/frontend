@@ -148,8 +148,10 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
   useEffect(() => {
     if ((isExpanded || embedded) && !hasLoaded) {
       fetchWorkspace();
+      // Mark materials as viewed
+      api.post(`/jobs/projects/${jobId}/materials/viewed`).catch(() => {});
     }
-  }, [isExpanded, embedded, hasLoaded, fetchWorkspace]);
+  }, [isExpanded, embedded, hasLoaded, fetchWorkspace, jobId]);
 
   // Section CRUD
   const [isSavingSection, setIsSavingSection] = useState(false);
@@ -930,24 +932,51 @@ function SectionModal({
   const [description, setDescription] = useState(section?.description || '');
   const [attachments, setAttachments] = useState<SectionAttachment[]>(section?.attachments || []);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Allowed file types
+  const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  const ALLOWED_DOC_TYPES = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'text/plain'];
+  const ALLOWED_FILE_EXTENSIONS = '.jpg,.jpeg,.png,.webp,.gif,.pdf,.doc,.docx,.xls,.xlsx,.txt';
 
   const getFileType = (fileName: string): string => {
     const ext = fileName.split('.').pop()?.toLowerCase() || '';
-    const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
+    const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
     const docExts = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt'];
     if (imageExts.includes(ext)) return 'image';
     if (docExts.includes(ext)) return 'document';
     return 'other';
   };
 
+  const isAllowedFile = (file: File): boolean => {
+    // Check MIME type
+    if (ALLOWED_IMAGE_TYPES.includes(file.type) || ALLOWED_DOC_TYPES.includes(file.type)) {
+      return true;
+    }
+    // Fallback to extension check
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+    const allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt'];
+    return allowedExts.includes(ext);
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    setUploadError('');
     setIsUploading(true);
+
     try {
       for (const file of Array.from(files)) {
+        // Validate file type
+        if (!isAllowedFile(file)) {
+          setUploadError(locale === 'ka'
+            ? 'მხოლოდ JPG, PNG, WebP, GIF, PDF, DOC, DOCX, XLS, XLSX და TXT ფორმატებია დაშვებული'
+            : 'Only JPG, PNG, WebP, GIF, PDF, DOC, DOCX, XLS, XLSX and TXT formats are allowed');
+          continue;
+        }
+
         const formData = new FormData();
         formData.append('file', file);
         const response = await api.post('/upload', formData);
@@ -965,6 +994,7 @@ function SectionModal({
       }
     } catch (error) {
       console.error('Upload failed:', error);
+      setUploadError(locale === 'ka' ? 'ატვირთვა ვერ მოხერხდა' : 'Upload failed');
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -1029,6 +1059,13 @@ function SectionModal({
               {locale === 'ka' ? 'დანართები' : 'Attachments'}
             </label>
 
+            {/* Upload Error */}
+            {uploadError && (
+              <div className="mb-2 p-2 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-xs">
+                {uploadError}
+              </div>
+            )}
+
             {/* Upload Button */}
             <input
               ref={fileInputRef}
@@ -1036,7 +1073,7 @@ function SectionModal({
               multiple
               onChange={handleFileUpload}
               className="hidden"
-              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+              accept={ALLOWED_FILE_EXTENSIONS}
             />
 
             <button
@@ -1139,11 +1176,34 @@ function ItemModal({
   const [storeName, setStoreName] = useState('');
   const [storeAddress, setStoreAddress] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Allowed file types
+  const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  const ALLOWED_IMAGE_EXTENSIONS = '.jpg,.jpeg,.png,.webp,.gif';
+  const ALLOWED_FILE_EXTENSIONS = '.jpg,.jpeg,.png,.webp,.gif,.pdf,.doc,.docx,.xls,.xlsx,.txt';
+
+  const isAllowedImageFile = (file: File): boolean => {
+    if (ALLOWED_IMAGE_TYPES.includes(file.type)) return true;
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+    return ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext);
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    setUploadError('');
+
+    // Validate image files (no SVG)
+    if (type === 'image' && !isAllowedImageFile(file)) {
+      setUploadError(locale === 'ka'
+        ? 'მხოლოდ JPG, PNG, WebP და GIF ფორმატებია დაშვებული'
+        : 'Only JPG, PNG, WebP and GIF formats are allowed');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
 
     try {
       setIsUploading(true);
@@ -1154,6 +1214,7 @@ function ItemModal({
       if (!title) setTitle(file.name.split('.')[0]);
     } catch (error) {
       console.error('Upload failed:', error);
+      setUploadError(locale === 'ka' ? 'ატვირთვა ვერ მოხერხდა' : 'Upload failed');
     } finally {
       setIsUploading(false);
     }
@@ -1262,11 +1323,16 @@ function ItemModal({
               <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
                 {type === 'image' ? (locale === 'ka' ? 'სურათი' : 'Image') : (locale === 'ka' ? 'ფაილი' : 'File')}
               </label>
+              {uploadError && (
+                <div className="mb-2 p-2 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-xs">
+                  {uploadError}
+                </div>
+              )}
               <input
                 ref={fileInputRef}
                 type="file"
                 onChange={handleFileUpload}
-                accept={type === 'image' ? 'image/*' : '*'}
+                accept={type === 'image' ? ALLOWED_IMAGE_EXTENSIONS : ALLOWED_FILE_EXTENSIONS}
                 className="hidden"
               />
               {fileUrl ? (

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { CategoryIcon, CategorySelector } from "@/components/categories";
 import AddressPicker from "@/components/common/AddressPicker";
 import AuthGuard from "@/components/common/AuthGuard";
@@ -37,6 +36,7 @@ import {
   Ruler,
   X
 } from "lucide-react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 
@@ -405,10 +405,13 @@ function PostJobPageContent() {
         jobData.images = allMedia.filter((m) => m.type === "image").map((m) => m.url);
       }
 
+      let jobId = editJobId;
+
       if (isEditMode && editJobId) {
         await api.put(`/jobs/${editJobId}`, jobData);
       } else {
-        await api.post("/jobs", jobData);
+        const response = await api.post("/jobs", jobData);
+        jobId = response.data?.id || response.data?._id;
       }
 
       toast.success(
@@ -425,7 +428,7 @@ function PostJobPageContent() {
         jobBudget: Number(formData.budgetMax) || Number(formData.budgetMin),
       });
 
-      router.push("/my-jobs");
+      router.push(jobId ? `/jobs/${jobId}` : "/my-jobs");
     } catch (err: unknown) {
       console.error("Failed to save job:", err);
       const errorMessage = err instanceof Error ? err.message : "Failed to save project";
@@ -964,17 +967,20 @@ function PostJobPageContent() {
                   </div>
                 </div>
 
+                {/* Budget */}
                 <div className="bg-white rounded-xl border border-neutral-200 p-3">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
                       <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
-                        <Clock className="w-3 h-3 text-[#C4735B]" />
+                        <svg className="w-3 h-3 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
                       </div>
                       {locale === "ka" ? "ბიუჯეტი" : "Budget"}
                     </h3>
-<Button variant="ghost" size="icon-sm" onClick={() => goToStep("location")} className="text-[#C4735B] w-6 h-6">
-                    <Pencil className="w-3 h-3" />
-                  </Button>
+                    <Button variant="ghost" size="icon-sm" onClick={() => goToStep("location")} className="text-[#C4735B] w-6 h-6">
+                      <Pencil className="w-3 h-3" />
+                    </Button>
                   </div>
                   <p className="text-xs font-medium text-neutral-900">
                     {formData.budgetType === "negotiable"
@@ -983,19 +989,76 @@ function PostJobPageContent() {
                       ? `${formData.budgetMin} - ${formData.budgetMax} GEL`
                       : `${formData.budgetMin} GEL`}
                   </p>
-                  <div className="flex gap-1 mt-1">
-                    <Badge
-                      variant={formData.timing === "asap" ? "danger" : formData.timing === "this_week" ? "warning" : "default"}
-                      size="xs"
-                    >
-                      {formData.timing === "flexible" && (locale === "ka" ? "მოქნილი" : "Flexible")}
-                      {formData.timing === "asap" && (locale === "ka" ? "სასწრაფოდ" : "ASAP")}
-                      {formData.timing === "this_week" && (locale === "ka" ? "ამ კვირაში" : "This week")}
-                      {formData.timing === "this_month" && (locale === "ka" ? "ამ თვეში" : "This month")}
-                    </Badge>
+                </div>
+
+                {/* Timing */}
+                <div className="bg-white rounded-xl border border-neutral-200 p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
+                      <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
+                        <Clock className="w-3 h-3 text-[#C4735B]" />
+                      </div>
+                      {locale === "ka" ? "როდის გჭირდება" : "When needed"}
+                    </h3>
+                    <Button variant="ghost" size="icon-sm" onClick={() => goToStep("location")} className="text-[#C4735B] w-6 h-6">
+                      <Pencil className="w-3 h-3" />
+                    </Button>
                   </div>
+                  <Badge
+                    variant={formData.timing === "asap" ? "danger" : formData.timing === "this_week" ? "warning" : "default"}
+                    size="xs"
+                  >
+                    {formData.timing === "flexible" && (locale === "ka" ? "მოქნილი" : "Flexible")}
+                    {formData.timing === "asap" && (locale === "ka" ? "სასწრაფოდ" : "ASAP")}
+                    {formData.timing === "this_week" && (locale === "ka" ? "ამ კვირაში" : "This week")}
+                    {formData.timing === "this_month" && (locale === "ka" ? "ამ თვეში" : "This month")}
+                  </Badge>
                 </div>
               </div>
+
+              {/* Category-specific fields - Show if any are filled */}
+              {(formData.areaSize || formData.roomCount || formData.pointsCount || formData.cadastralId || formData.landArea) && (
+                <div className="bg-white rounded-xl border border-neutral-200 p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
+                      <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
+                        <Ruler className="w-3 h-3 text-[#C4735B]" />
+                      </div>
+                      {locale === "ka" ? "დეტალები" : "Details"}
+                    </h3>
+                    <Button variant="ghost" size="icon-sm" onClick={() => goToStep("details")} className="text-[#C4735B] w-6 h-6">
+                      <Pencil className="w-3 h-3" />
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.areaSize && (
+                      <Badge variant="secondary" size="xs">
+                        {locale === "ka" ? "ფართი" : "Area"}: {formData.areaSize} m²
+                      </Badge>
+                    )}
+                    {formData.roomCount && (
+                      <Badge variant="secondary" size="xs">
+                        {locale === "ka" ? "ოთახები" : "Rooms"}: {formData.roomCount}
+                      </Badge>
+                    )}
+                    {formData.pointsCount && (
+                      <Badge variant="secondary" size="xs">
+                        {locale === "ka" ? "წერტილები" : "Points"}: {formData.pointsCount}
+                      </Badge>
+                    )}
+                    {formData.cadastralId && (
+                      <Badge variant="secondary" size="xs">
+                        {locale === "ka" ? "საკადასტრო" : "Cadastral"}: {formData.cadastralId}
+                      </Badge>
+                    )}
+                    {formData.landArea && (
+                      <Badge variant="secondary" size="xs">
+                        {locale === "ka" ? "მიწის ფართი" : "Land"}: {formData.landArea} m²
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Description - Compact */}
               <div className="bg-white rounded-xl border border-neutral-200 p-3">
@@ -1030,15 +1093,15 @@ function PostJobPageContent() {
                       <Pencil className="w-3 h-3" />
                     </Button>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     {existingMedia.map((media, idx) => (
-                      <div key={`review-existing-${idx}`} className="w-14 h-14 rounded-lg overflow-hidden bg-neutral-100">
-                        <Image src={storage.getFileUrl(media.url)} alt="Uploaded media" fill className="object-cover" sizes="80px" />
+                      <div key={`review-existing-${idx}`} className="relative w-14 h-14 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
+                        <Image src={storage.getFileUrl(media.url)} alt="Uploaded media" fill className="object-cover" sizes="56px" />
                       </div>
                     ))}
                     {mediaFiles.map((media, idx) => (
-                      <div key={`review-new-${idx}`} className="w-14 h-14 rounded-lg overflow-hidden bg-neutral-100">
-                        <Image src={media.preview} alt="Preview" fill className="object-cover" sizes="80px" unoptimized />
+                      <div key={`review-new-${idx}`} className="relative w-14 h-14 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
+                        <Image src={media.preview} alt="Preview" fill className="object-cover" sizes="56px" unoptimized />
                       </div>
                     ))}
                   </div>

@@ -57,8 +57,10 @@ export default function PollsTab({
   useEffect(() => {
     if ((isExpanded || embedded) && !hasLoaded) {
       fetchPolls();
+      // Mark polls as viewed
+      api.post(`/jobs/projects/${jobId}/polls/viewed`).catch(() => {});
     }
-  }, [isExpanded, embedded, hasLoaded, fetchPolls]);
+  }, [isExpanded, embedded, hasLoaded, fetchPolls, jobId]);
 
   const handleCreatePoll = async (data: { title: string; description?: string; options: { text?: string; imageUrl?: string }[] }) => {
     const response = await api.post(`/jobs/${jobId}/polls`, data);

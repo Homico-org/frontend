@@ -29,8 +29,21 @@ const badgeVariants = cva(
           "bg-transparent text-[var(--color-text-secondary)]",
         pulse:
           "bg-[#E07B4F]/10 text-[#E07B4F] border border-[#E07B4F]/20 animate-pulse",
+        // Solid variants for notification counts
+        "danger-solid":
+          "bg-red-500 text-white border-0",
+        "success-solid":
+          "bg-emerald-500 text-white border-0",
+        "warning-solid":
+          "bg-amber-500 text-white border-0",
+        "info-solid":
+          "bg-blue-500 text-white border-0",
+        "accent-solid":
+          "bg-[#E07B4F] text-white border-0",
       },
       size: {
+        // Compact circular size for notification counts  
+        count: "text-[10px] min-w-[18px] h-[18px] px-1 rounded-full !gap-0 !inline-grid place-items-center",
         xs: "text-[9px] px-1.5 py-0.5 rounded-md uppercase tracking-wider",
         sm: "text-[10px] px-2 py-0.5 rounded-lg uppercase tracking-wider",
         default: "text-xs px-2.5 py-1 rounded-xl",
@@ -150,7 +163,7 @@ interface CountBadgeProps extends Omit<BadgeProps, 'children'> {
 }
 
 const CountBadge = React.forwardRef<HTMLDivElement, CountBadgeProps>(
-  ({ count, max = 99, showZero = false, size = 'xs', variant = 'default', ...props }, ref) => {
+  ({ count, max = 99, showZero = false, size = 'count', variant = 'danger-solid', className, ...props }, ref) => {
     if (count === 0 && !showZero) return null;
 
     const displayCount = count > max ? `${max}+` : count.toString();
@@ -160,7 +173,7 @@ const CountBadge = React.forwardRef<HTMLDivElement, CountBadgeProps>(
         ref={ref}
         variant={variant}
         size={size}
-        className="min-w-[1.25rem] justify-center"
+        className={cn("font-bold", className)}
         {...props}
       >
         {displayCount}

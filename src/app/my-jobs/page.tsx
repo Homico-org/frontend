@@ -57,7 +57,7 @@ function MyJobsPageContent() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isFilterLoading, setIsFilterLoading] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('open');
   const [deletingJobId, setDeletingJobId] = useState<string | null>(null);
   const [deleteModalJob, setDeleteModalJob] = useState<Job | null>(null);
   const [renewingJobId, setRenewingJobId] = useState<string | null>(null);

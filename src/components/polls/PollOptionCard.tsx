@@ -56,26 +56,39 @@ export default function PollOptionCard({
       >
         {/* Image section */}
         {hasImage && (
-          <div className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+          <div
+            className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-100 dark:bg-neutral-800"
+            onClick={(e) => {
+              if (disabled) {
+                e.stopPropagation();
+                setShowFullImage(true);
+              }
+            }}
+          >
             <img
               src={imageUrl}
               alt={option.text || 'Option'}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
 
-            {/* Zoom button */}
-            {!disabled && (
-              <button
-                type="button"
-                onClick={(e) => {
+            {/* Zoom button - always visible for image preview */}
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowFullImage(true);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
                   e.stopPropagation();
                   setShowFullImage(true);
-                }}
-                className="absolute top-2 left-2 p-1.5 rounded-lg bg-black/40 backdrop-blur-sm text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
-              >
-                <ZoomIn className="w-4 h-4" />
-              </button>
-            )}
+                }
+              }}
+              className="absolute top-2 left-2 p-1.5 rounded-lg bg-black/40 backdrop-blur-sm text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60 cursor-pointer"
+            >
+              <ZoomIn className="w-4 h-4" />
+            </div>
 
             {/* Selection indicator on image */}
             {(isSelected || isApproved) && (

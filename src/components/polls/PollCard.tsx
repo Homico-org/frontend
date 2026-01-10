@@ -59,7 +59,6 @@ export default function PollCard({
   onDelete,
 }: PollCardProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(poll.clientVote || null);
-  const [isVoting, setIsVoting] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -71,18 +70,9 @@ export default function PollCard({
   const isOwner = getId(poll.createdBy) === userId;
   const hasImages = poll.options.some(opt => opt.imageUrl);
 
-  const handleOptionSelect = async (optionId: string) => {
+  const handleOptionSelect = (optionId: string) => {
     if (!isClient || !isActive) return;
-
     setSelectedOption(optionId);
-    setIsVoting(true);
-    try {
-      await onVote(getId(poll), optionId);
-    } catch (error) {
-      setSelectedOption(poll.clientVote || null);
-    } finally {
-      setIsVoting(false);
-    }
   };
 
   const handleApprove = async () => {
@@ -90,6 +80,8 @@ export default function PollCard({
 
     setIsApproving(true);
     try {
+      // Vote and approve in one action
+      await onVote(getId(poll), selectedOption);
       await onApprove(getId(poll), selectedOption);
     } finally {
       setIsApproving(false);
@@ -215,20 +207,12 @@ export default function PollCard({
               option={option}
               isSelected={selectedOption === getId(option)}
               isApproved={isApproved && poll.selectedOption === getId(option)}
-              disabled={!isClient || !isActive || isVoting}
+              disabled={!isClient || !isActive}
               onSelect={handleOptionSelect}
               locale={locale}
             />
           ))}
         </div>
-
-        {/* Voting indicator */}
-        {isVoting && (
-          <div className="mt-3 flex items-center justify-center gap-2 text-sm text-neutral-500">
-            <LoadingSpinner size="sm" color="currentColor" />
-            {locale === 'ka' ? 'ინახება...' : 'Saving...'}
-          </div>
-        )}
       </div>
 
       {/* Approve button for client */}
@@ -237,7 +221,7 @@ export default function PollCard({
           <button
             onClick={handleApprove}
             disabled={isApproving}
-            className="w-full py-3 rounded-xl bg-[#C4735B] hover:bg-[#B5624A] text-white font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full py-2.5 rounded-xl bg-[#C4735B] hover:bg-[#B5624A] text-white text-sm font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {isApproving ? (
               <>
@@ -246,8 +230,8 @@ export default function PollCard({
               </>
             ) : (
               <>
-                <Check className="w-4 h-4" />
-                {locale === 'ka' ? 'არჩევანის დამტკიცება' : 'Approve Selection'}
+                <Check className="w-3.5 h-3.5" />
+                {locale === 'ka' ? 'დამტკიცება' : 'Approve'}
               </>
             )}
           </button>
