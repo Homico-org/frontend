@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useJobsContext } from "@/contexts/JobsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
+import { api } from "@/lib/api";
 import type { Job } from "@/types/shared";
 import { Bookmark, Briefcase } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -103,18 +104,8 @@ export default function JobsPage() {
           params.append("savedOnly", "true");
         }
 
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/jobs?${params.toString()}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            },
-          }
-        );
-
-        if (!response.ok) throw new Error("Failed to fetch jobs");
-
-        const data = await response.json();
+        const response = await api.get(`/jobs?${params.toString()}`);
+        const data = response.data;
         const jobsList = data.data || data.jobs || [];
 
         if (reset) {

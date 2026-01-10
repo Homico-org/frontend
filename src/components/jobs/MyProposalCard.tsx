@@ -1,7 +1,5 @@
 'use client';
 
-import { CheckCircle2 } from 'lucide-react';
-import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
 import { formatCurrency } from '@/utils/currencyUtils';
 
 export interface Proposal {
@@ -28,99 +26,129 @@ export default function MyProposalCard({
   locale = 'en',
   className = '',
 }: MyProposalCardProps) {
-  const getStatusText = () => {
-    switch (proposal.status) {
-      case 'pending':
-        return locale === 'ka' ? 'განხილვაში' : 'Pending';
-      case 'accepted':
-        return locale === 'ka' ? 'გაგზავნილი' : 'Submitted';
-      case 'rejected':
-        return locale === 'ka' ? 'უარყოფილი' : 'Rejected';
-      case 'withdrawn':
-        return locale === 'ka' ? 'გაუქმებული' : 'Withdrawn';
-      default:
-        return proposal.status;
-    }
+  const statusConfig = {
+    pending: {
+      label: locale === 'ka' ? 'განხილვაში' : 'Pending',
+      bg: 'bg-amber-50 dark:bg-amber-500/10',
+      text: 'text-amber-700 dark:text-amber-400',
+      dot: 'bg-amber-500',
+    },
+    accepted: {
+      label: locale === 'ka' ? 'მიღებული' : 'Accepted',
+      bg: 'bg-emerald-50 dark:bg-emerald-500/10',
+      text: 'text-emerald-700 dark:text-emerald-400',
+      dot: 'bg-emerald-500',
+    },
+    rejected: {
+      label: locale === 'ka' ? 'უარყოფილი' : 'Rejected',
+      bg: 'bg-red-50 dark:bg-red-500/10',
+      text: 'text-red-700 dark:text-red-400',
+      dot: 'bg-red-500',
+    },
+    withdrawn: {
+      label: locale === 'ka' ? 'გაუქმებული' : 'Withdrawn',
+      bg: 'bg-neutral-100 dark:bg-neutral-500/10',
+      text: 'text-neutral-600 dark:text-neutral-400',
+      dot: 'bg-neutral-400',
+    },
   };
 
-  const getStatusColor = () => {
-    switch (proposal.status) {
-      case 'pending':
-        return 'text-amber-600 dark:text-amber-400';
-      case 'accepted':
-        return 'text-emerald-600 dark:text-emerald-400';
-      case 'rejected':
-      case 'withdrawn':
-        return 'text-red-600 dark:text-red-400';
-      default:
-        return 'text-neutral-600 dark:text-neutral-400';
-    }
-  };
+  const status = statusConfig[proposal.status] || statusConfig.pending;
 
   const getDurationLabel = () => {
-    switch (proposal.estimatedDurationUnit) {
-      case 'days':
-        return locale === 'ka' ? 'დღე' : 'days';
-      case 'weeks':
-        return locale === 'ka' ? 'კვირა' : 'weeks';
-      case 'months':
-        return locale === 'ka' ? 'თვე' : 'months';
-      default:
-        return '';
-    }
+    const units = {
+      days: locale === 'ka' ? 'დღე' : 'd',
+      weeks: locale === 'ka' ? 'კვირა' : 'w',
+      months: locale === 'ka' ? 'თვე' : 'mo',
+    };
+    return units[proposal.estimatedDurationUnit || 'days'] || '';
   };
 
   return (
     <section
-      className={`bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-800/10 rounded-2xl p-6 md:p-8 border border-emerald-200/50 dark:border-emerald-800/50 ${className}`}
+      className={`group relative bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200/80 dark:border-neutral-800 overflow-hidden transition-all duration-300 hover:border-[#C4735B]/30 hover:shadow-lg hover:shadow-[#C4735B]/5 ${className}`}
     >
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+      {/* Accent line */}
+      <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#C4735B] via-[#D4846C] to-[#C4735B]" />
+
+      <div className="p-5">
+        {/* Header: Title + Status */}
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <div className="flex items-center gap-2.5">
+            {/* Terracotta icon */}
+            <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center flex-shrink-0">
+              <svg className="w-4 h-4 text-[#C4735B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+              </svg>
+            </div>
+            <span className="text-sm font-semibold text-neutral-900 dark:text-white">
+              {locale === 'ka' ? 'თქვენი შეთავაზება' : 'Your Proposal'}
+            </span>
+          </div>
+
+          {/* Status pill */}
+          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full ${status.bg}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${status.dot} animate-pulse`} />
+            <span className={`text-[11px] font-medium ${status.text}`}>
+              {status.label}
+            </span>
+          </div>
         </div>
-        <div>
-          <h3 className="font-display text-lg font-semibold text-neutral-900 dark:text-white">
-            {locale === 'ka' ? 'თქვენი შეთავაზება' : 'Your Proposal'}
-          </h3>
-          <span
-            className={`text-xs font-body font-medium uppercase tracking-wider ${getStatusColor()}`}
-          >
-            {getStatusText()}
-          </span>
+
+        {/* Metrics row */}
+        {(proposal.proposedPrice || proposal.estimatedDuration) && (
+          <div className="flex items-center gap-4 mb-4 pb-4 border-b border-neutral-100 dark:border-neutral-800">
+            {proposal.proposedPrice && (
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-md bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                  <svg className="w-3.5 h-3.5 text-neutral-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                    {locale === 'ka' ? 'ფასი' : 'Price'}
+                  </p>
+                  <p className="text-base font-bold text-[#C4735B]">
+                    {formatCurrency(proposal.proposedPrice)}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {proposal.proposedPrice && proposal.estimatedDuration && (
+              <div className="w-px h-8 bg-neutral-200 dark:bg-neutral-700" />
+            )}
+
+            {proposal.estimatedDuration && (
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-md bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                  <svg className="w-3.5 h-3.5 text-neutral-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                    {locale === 'ka' ? 'ვადა' : 'Duration'}
+                  </p>
+                  <p className="text-base font-bold text-neutral-900 dark:text-white">
+                    {proposal.estimatedDuration}{getDurationLabel()}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Cover letter */}
+        <div className="relative">
+          <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#C4735B]/40 via-[#C4735B]/20 to-transparent rounded-full" />
+          <p className="pl-3.5 text-[13px] leading-relaxed text-neutral-600 dark:text-neutral-400 line-clamp-3">
+            {proposal.coverLetter}
+          </p>
         </div>
       </div>
-
-      <p className="font-body text-neutral-600 dark:text-neutral-300 mb-4">
-        {proposal.coverLetter}
-      </p>
-
-      {(proposal.proposedPrice || proposal.estimatedDuration) && (
-        <div className="flex gap-6">
-          {proposal.proposedPrice && (
-            <div>
-              <p className="text-xs font-body text-neutral-500 dark:text-neutral-400">
-                {locale === 'ka' ? 'ფასი' : 'Price'}
-              </p>
-              <p
-                className="font-display text-xl font-semibold"
-                style={{ color: ACCENT }}
-              >
-                {formatCurrency(proposal.proposedPrice)}
-              </p>
-            </div>
-          )}
-          {proposal.estimatedDuration && (
-            <div>
-              <p className="text-xs font-body text-neutral-500 dark:text-neutral-400">
-                {locale === 'ka' ? 'ვადა' : 'Duration'}
-              </p>
-              <p className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
-                {proposal.estimatedDuration} {getDurationLabel()}
-              </p>
-            </div>
-          )}
-        </div>
-      )}
     </section>
   );
 }

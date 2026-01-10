@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/button';
 import { Input, Textarea, Label } from '@/components/ui/input';
+import Select from '@/components/common/Select';
 import { formatNumberWithSpaces } from '@/utils/currencyUtils';
 
 interface ProposalData {
@@ -131,15 +132,15 @@ export default function ProposalFormModal({
             </div>
             <div>
               <Label>{t.unit}</Label>
-              <select
+              <Select
                 value={proposalData.estimatedDurationUnit}
-                onChange={(e) => onDataChange({ ...proposalData, estimatedDurationUnit: e.target.value })}
-                className="flex w-full h-11 px-4 py-2.5 text-sm rounded-xl bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)] focus:outline-none focus:border-[#E07B4F] focus:ring-2 focus:ring-[#E07B4F]/15 transition-all cursor-pointer"
-              >
-                <option value="days">{t.days}</option>
-                <option value="weeks">{t.weeks}</option>
-                <option value="months">{t.months}</option>
-              </select>
+                onChange={(value) => onDataChange({ ...proposalData, estimatedDurationUnit: value })}
+                options={[
+                  { value: 'days', label: t.days },
+                  { value: 'weeks', label: t.weeks },
+                  { value: 'months', label: t.months },
+                ]}
+              />
             </div>
           </div>
 

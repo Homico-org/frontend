@@ -177,6 +177,16 @@ export function formatMessageTime(dateString: string): string {
   return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
+// Georgian weekday names
+const GEORGIAN_WEEKDAYS = [
+  'კვირა', 'ორშაბათი', 'სამშაბათი', 'ოთხშაბათი', 'ხუთშაბათი', 'პარასკევი', 'შაბათი'
+];
+
+// Georgian month names (short)
+const GEORGIAN_MONTHS_SHORT = [
+  'იან', 'თებ', 'მარ', 'აპრ', 'მაი', 'ივნ', 'ივლ', 'აგვ', 'სექ', 'ოქტ', 'ნოე', 'დეკ'
+];
+
 /**
  * Format a date separator for chat (Today/Yesterday/weekday + date)
  */
@@ -196,7 +206,14 @@ export function formatChatDateSeparator(dateString: string, locale: Locale = 'en
     return locale === 'ka' ? 'გუშინ' : 'Yesterday';
   }
 
-  return date.toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', {
+  if (locale === 'ka') {
+    const weekday = GEORGIAN_WEEKDAYS[date.getDay()];
+    const month = GEORGIAN_MONTHS_SHORT[date.getMonth()];
+    const day = date.getDate();
+    return `${weekday}, ${day} ${month}`;
+  }
+
+  return date.toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'short',
     day: 'numeric',

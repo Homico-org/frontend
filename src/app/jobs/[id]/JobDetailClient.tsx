@@ -1,10 +1,10 @@
 "use client";
 
 import Avatar from "@/components/common/Avatar";
+import BackButton from "@/components/common/BackButton";
 import Header, { HeaderSpacer } from "@/components/common/Header";
 import MediaLightbox from "@/components/common/MediaLightbox";
 import ClientCard from "@/components/jobs/ClientCard";
-import JobStatsBar from "@/components/jobs/JobStatsBar";
 import MyProposalCard from "@/components/jobs/MyProposalCard";
 import ProposalFormModal from "@/components/jobs/ProposalFormModal";
 import RequirementBadge from "@/components/jobs/RequirementBadge";
@@ -23,11 +23,11 @@ import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
 import { api } from "@/lib/api";
 import { storage } from "@/services/storage";
+import type { Job, JobClient, MediaItem, ProjectStage, Proposal } from "@/types/shared";
 import { formatBudget as formatBudgetUtil } from "@/utils/currencyUtils";
 import { formatTimeAgoCompact } from "@/utils/dateUtils";
 import {
   Armchair,
-  ArrowLeft,
   BadgeCheck,
   BarChart3,
   Calendar,
@@ -65,7 +65,6 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import type { Job, Proposal, ProjectStage, JobClient, MediaItem } from "@/types/shared";
 
 const STAGES: {
   key: ProjectStage;
@@ -1137,226 +1136,212 @@ export default function JobDetailClient() {
       <Header />
       <HeaderSpacer />
 
-      {/* Hero Gallery Section */}
-      <section className="relative h-[55vh] md:h-[65vh] overflow-hidden bg-[#FAFAF9]">
-        {/* Background image with Ken Burns effect */}
-        {allMedia.length > 0 ? (
-          <>
-            {allMedia.map((media, idx) => (
-              <div
-                key={idx}
-                className={`absolute inset-0 transition-opacity duration-1000 ${
-                  idx === activeImageIndex ? "opacity-100" : "opacity-0"
-                }`}
-              >
-                <div
-                  className="absolute inset-0 bg-contain bg-center bg-no-repeat"
-                  style={{
-                    backgroundImage: `url(${storage.getFileUrl(media.url)})`,
-                  }}
-                />
-                {/* Blurred background fill for letterboxing */}
-                <div
-                  className="absolute inset-0 -z-10 scale-110 blur-2xl opacity-50"
-                  style={{
-                    backgroundImage: `url(${storage.getFileUrl(media.url)})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                  }}
-                />
-              </div>
-            ))}
-            {/* Gradient overlays */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-transparent" />
-          </>
-        ) : (
-          <>
-            {/* Category-based illustration background - light theme */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#FAFAF9] to-[#F0EDE8]" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-[300px] h-[300px] md:w-[400px] md:h-[400px] opacity-80">
-                {getCategoryIllustration(job?.category, job?.subcategory)}
-              </div>
-            </div>
-            {/* Gradient overlays for text readability - light to dark at bottom */}
-            <div className="absolute inset-0 bg-gradient-to-t from-neutral-800/90 via-transparent to-transparent" />
-          </>
-        )}
-
-        {/* Back button */}
-        <div
-          className={`absolute top-6 left-6 z-20 transition-all duration-700 ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
-          }`}
-        >
-          <Link
-            href="/browse/jobs"
-            className="group flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all duration-300"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span className="font-body text-sm font-medium">
-              {locale === "ka" ? "უკან" : "Back"}
-            </span>
-          </Link>
-        </div>
-
-        {/* Image counter */}
-        {allMedia.length > 1 && (
-          <div className="absolute top-6 right-6 z-20 flex items-center gap-2">
-            <Button
-              variant="ghost"
-              onClick={() => setSelectedMediaIndex(0)}
-              className="rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 hover:text-white"
-              leftIcon={<Maximize2 className="w-4 h-4" />}
-            >
-              {allMedia.length} {locale === "ka" ? "ფოტო" : "photos"}
-            </Button>
+      {/* Compact Header with Side-by-Side Layout */}
+      <section className="relative bg-gradient-to-br from-[#FDF8F5] via-[#FAF5F2] to-[#F8F2EE] dark:from-neutral-900 dark:via-neutral-900 dark:to-neutral-800 border-b border-neutral-200 dark:border-neutral-800 overflow-hidden">
+        {/* Subtle decorative elements */}
+        <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-[#D4846C]/5 blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-[#C4735B]/5 blur-2xl" />
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-4">
+          {/* Back button */}
+          <div className="mb-4">
+            <BackButton href="/browse/jobs" />
           </div>
-        )}
 
-        {/* Thumbnail strip - positioned at top right on mobile/tablet, bottom center on desktop */}
-        {allMedia.length > 1 && (
-          <div className="absolute bottom-32 md:bottom-40 right-4 md:right-auto md:left-1/2 md:-translate-x-1/2 z-20 flex items-center gap-2">
-            {allMedia.slice(0, 5).map((media, idx) => (
-              <button
-                key={idx}
-                onClick={() => setActiveImageIndex(idx)}
-                className={`relative w-12 h-9 md:w-16 md:h-12 rounded-lg overflow-hidden transition-all duration-300 ${
-                  idx === activeImageIndex
-                    ? "ring-2 ring-white scale-110"
-                    : "opacity-60 hover:opacity-100"
-                }`}
-              >
-                <img
-                  src={storage.getFileUrl(media.url)}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
-              </button>
-            ))}
-            {allMedia.length > 5 && (
-              <button
-                onClick={() => setSelectedMediaIndex(0)}
-                className="w-12 h-9 md:w-16 md:h-12 rounded-lg bg-black/50 backdrop-blur flex items-center justify-center text-white text-xs md:text-sm font-medium"
-              >
-                +{allMedia.length - 5}
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Hero content */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-12">
-          <div className="max-w-6xl mx-auto">
-            {/* Status & Category */}
-            <div
-              className={`flex flex-wrap items-center gap-3 mb-4 transition-all duration-700 delay-100 ${
-                isVisible
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 translate-y-4"
-              }`}
-            >
-              {isOpen && (
-                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 backdrop-blur-sm border border-emerald-500/30">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-emerald-300 text-xs font-body font-semibold uppercase tracking-wider">
-                    {locale === "ka" ? "აქტიური" : "Active"}
-                  </span>
-                </span>
-              )}
-              {isHired && (
-                <span
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-sm border"
-                  style={{
-                    backgroundColor: `${ACCENT}30`,
-                    borderColor: `${ACCENT}50`,
-                  }}
-                >
-                  <Check
-                    className="w-3.5 h-3.5"
-                    style={{ color: ACCENT_LIGHT }}
-                  />
-                  <span
-                    className="text-xs font-body font-semibold uppercase tracking-wider"
-                    style={{ color: ACCENT_LIGHT }}
+          {/* Side-by-side layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
+            {/* Left: Image Gallery */}
+            <div className="space-y-3">
+              {allMedia.length > 0 ? (
+                <>
+                  {/* Main Image */}
+                  <button
+                    onClick={() => setSelectedMediaIndex(activeImageIndex)}
+                    className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 group"
                   >
-                    {locale === "ka" ? "დაქირავებული" : "Hired"}
-                  </span>
-                </span>
+                    <img
+                      src={storage.getFileUrl(allMedia[activeImageIndex]?.url)}
+                      alt={job.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    {/* Expand icon */}
+                    <div className="absolute top-3 right-3 p-2 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Maximize2 className="w-4 h-4" />
+                    </div>
+                    {/* Image count badge */}
+                    {allMedia.length > 1 && (
+                      <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/60 text-white text-xs font-medium backdrop-blur-sm">
+                        {activeImageIndex + 1} / {allMedia.length}
+                      </div>
+                    )}
+                  </button>
+
+                  {/* Thumbnail strip */}
+                  {allMedia.length > 1 && (
+                    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                      {allMedia.map((media, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setActiveImageIndex(idx)}
+                          className={`relative flex-shrink-0 w-16 h-12 md:w-20 md:h-14 rounded-lg overflow-hidden transition-all ${
+                            idx === activeImageIndex
+                              ? "ring-2 ring-offset-2 ring-offset-white dark:ring-offset-neutral-900"
+                              : "opacity-60 hover:opacity-100"
+                          }`}
+                          style={idx === activeImageIndex ? { borderColor: ACCENT } as React.CSSProperties : undefined}
+                        >
+                          <img
+                            src={storage.getFileUrl(media.url)}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                          {media.type === "video" && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                              <Play className="w-4 h-4 text-white fill-white" />
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                /* No images placeholder - Terracotta with Homico logo */
+                <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-br from-[#D4846C] via-[#C4735B] to-[#A85D4A]">
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-white/10" />
+                  
+                  {/* Decorative geometric pattern */}
+                  <div className="absolute inset-0 opacity-[0.07]">
+                    <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
+                      <defs>
+                        <pattern id="homico-grid-detail" x="0" y="0" width="25" height="25" patternUnits="userSpaceOnUse">
+                          <path d="M25 0L25 25M0 25L25 25" stroke="white" strokeWidth="0.5" fill="none" />
+                        </pattern>
+                      </defs>
+                      <rect width="100" height="100" fill="url(#homico-grid-detail)" />
+                    </svg>
+                  </div>
+                  
+                  {/* Centered Homico logomark */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                    <div className="relative">
+                      {/* Soft white glow */}
+                      <div className="absolute inset-0 blur-3xl bg-white/20 rounded-full scale-[2.5]" />
+                      {/* Homico "H" logomark - white on terracotta */}
+                      <svg className="w-16 h-16 md:w-20 md:h-20 relative drop-shadow-md" viewBox="0 0 56 60" fill="none">
+                        <rect x="0" y="0" width="10" height="50" rx="2" fill="white" fillOpacity="0.9" />
+                        <rect x="36" y="0" width="10" height="50" rx="2" fill="white" fillOpacity="0.9" />
+                        <path d="M10 25 Q23 5 36 25" stroke="white" strokeOpacity="0.9" strokeWidth="10" fill="none" strokeLinecap="round" />
+                      </svg>
+                    </div>
+                    <span className="text-xs font-medium text-white/70 tracking-wider uppercase">
+                      {locale === "ka" ? "ფოტო არ არის" : "No photo"}
+                    </span>
+                  </div>
+                </div>
               )}
-              <span
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-sm border"
-                style={{
-                  backgroundColor: `${ACCENT}20`,
-                  borderColor: `${ACCENT}40`,
-                }}
-              >
+            </div>
+
+            {/* Right: Job Info */}
+            <div className="flex flex-col justify-center">
+              {/* Status badges */}
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                {isOpen && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-xs font-semibold">
+                      {locale === "ka" ? "აქტიური" : "Active"}
+                    </span>
+                  </span>
+                )}
+                {isHired && (
+                  <span
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+                    style={{ backgroundColor: `${ACCENT}20`, color: ACCENT }}
+                  >
+                    <Check className="w-3 h-3" />
+                    <span className="text-xs font-semibold">
+                      {locale === "ka" ? "დაქირავებული" : "Hired"}
+                    </span>
+                  </span>
+                )}
                 <span
-                  className="text-xs font-body font-medium tracking-wider"
-                  style={{ color: ACCENT_LIGHT }}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"
+                  style={{ backgroundColor: `${ACCENT}10`, color: ACCENT }}
                 >
                   {getCategoryLabel(job.category)}
-                </span>
-                {job.subcategory && (
-                  <>
-                    <span className="text-white/40">/</span>
-                    <span className="text-xs font-body font-medium tracking-wider text-white/80">
+                  {job.subcategory && (
+                    <>
+                      <span className="opacity-50">/</span>
                       {getCategoryLabel(job.subcategory)}
-                    </span>
-                  </>
-                )}
-              </span>
-            </div>
-
-            {/* Title */}
-            <h1
-              className={`font-display text-3xl md:text-5xl lg:text-6xl font-semibold text-white leading-tight mb-4 transition-all duration-700 delay-200 ${
-                isVisible
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 translate-y-4"
-              }`}
-            >
-              {job.title}
-            </h1>
-
-            {/* Location & Time */}
-            <div
-              className={`flex flex-wrap items-center gap-3 md:gap-4 text-white/70 text-sm md:text-base transition-all duration-700 delay-300 ${
-                isVisible
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 translate-y-4"
-              }`}
-            >
-              {job.location && (
-                <span className="flex items-center gap-1.5 md:gap-2 font-body max-w-[200px] md:max-w-none">
-                  <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
-                  <span className="truncate">{job.location}</span>
+                    </>
+                  )}
                 </span>
-              )}
-              <span className="flex items-center gap-1.5 md:gap-2 font-body flex-shrink-0">
-                <Clock className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                {getTimeAgo(job.createdAt)}
-              </span>
+              </div>
+
+              {/* Title */}
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-neutral-900 dark:text-white mb-4 leading-tight">
+                {job.title}
+              </h1>
+
+              {/* Quick stats */}
+              <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+                {job.location && (
+                  <span className="flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4" />
+                    <span className="truncate max-w-[180px]">{job.location}</span>
+                  </span>
+                )}
+                <span className="flex items-center gap-1.5">
+                  <Clock className="w-4 h-4" />
+                  {getTimeAgo(job.createdAt)}
+                </span>
+              </div>
+
+              {/* Budget highlight */}
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 mb-4">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: `${ACCENT}15` }}
+                >
+                  <span className="text-lg" style={{ color: ACCENT }}>₾</span>
+                </div>
+                <div>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                    {locale === "ka" ? "ბიუჯეტი" : "Budget"}
+                  </p>
+                  <p className="text-xl font-bold text-neutral-900 dark:text-white">
+                    {budgetDisplay}
+                  </p>
+                </div>
+              </div>
+
+              {/* Stats row */}
+              <div className="flex items-center gap-6 text-sm">
+                <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
+                  <Eye className="w-4 h-4" />
+                  <span>{job.viewCount || 0} {locale === "ka" ? "ნახვა" : "views"}</span>
+                </div>
+                <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
+                  <Users className="w-4 h-4" />
+                  <span>{job.proposalCount || 0} {locale === "ka" ? "შეთავაზება" : "proposals"}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Main Content */}
-      <main className="relative z-10 -mt-6">
-        <div className="max-w-6xl mx-auto px-6">
-          {/* Floating Stats Bar */}
-          <JobStatsBar
-            budget={budgetDisplay}
-            viewCount={job.viewCount}
-            proposalCount={job.proposalCount}
-            budgetLabel={locale === "ka" ? "ბიუჯეტი" : "Budget"}
-            viewsLabel={locale === "ka" ? "ნახვა" : "Views"}
-            proposalsLabel={locale === "ka" ? "შეთავაზება" : "Proposals"}
-            isVisible={isVisible}
-            className="mb-8"
-            actions={
+      <main className="relative z-10 bg-[#FAFAFA] dark:bg-[#0A0A0A]">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-6">
+          {/* Action buttons for owner */}
+          <div
+            className={`flex items-center justify-end gap-3 mb-6 transition-all duration-500 ${
+              isVisible ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            {
               isOwner ? (
                 <div className="flex items-center gap-2">
                   <Link
@@ -1388,7 +1373,7 @@ export default function JobDetailClient() {
                 </div>
               ) : undefined
             }
-          />
+          </div>
 
           {/* Completed Status Banner */}
           {isCompleted && (

@@ -126,12 +126,33 @@ const JobCard = React.memo(function JobCard({
               onError={() => setImageError(true)}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-800 dark:to-neutral-900">
-              <div className="flex flex-col items-center gap-2">
-                <svg className="w-10 h-10 text-neutral-300 dark:text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
+            <div className="w-full h-full relative overflow-hidden bg-gradient-to-br from-[#D4846C] via-[#C4735B] to-[#A85D4A]">
+              {/* Animated gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-white/10" />
+              {/* Decorative geometric pattern */}
+              <div className="absolute inset-0 opacity-[0.07]">
+                <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
+                  <defs>
+                    <pattern id="homico-grid" x="0" y="0" width="25" height="25" patternUnits="userSpaceOnUse">
+                      <path d="M25 0L25 25M0 25L25 25" stroke="white" strokeWidth="0.5" fill="none" />
+                    </pattern>
+                  </defs>
+                  <rect width="100" height="100" fill="url(#homico-grid)" />
                 </svg>
-                <span className="text-[11px] text-neutral-400 dark:text-neutral-500">{locale === 'ka' ? 'ფოტო არ არის' : 'No photo'}</span>
+              </div>
+              {/* Centered Homico logomark */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5">
+                <div className="relative">
+                  {/* Soft white glow */}
+                  <div className="absolute inset-0 blur-2xl bg-white/20 rounded-full scale-[2]" />
+                  {/* Homico "H" logomark - white on terracotta */}
+                  <svg className="w-10 h-10 relative drop-shadow-sm" viewBox="0 0 56 60" fill="none">
+                    <rect x="0" y="0" width="10" height="50" rx="2" fill="white" fillOpacity="0.9" />
+                    <rect x="36" y="0" width="10" height="50" rx="2" fill="white" fillOpacity="0.9" />
+                    <path d="M10 25 Q23 5 36 25" stroke="white" strokeOpacity="0.9" strokeWidth="10" fill="none" strokeLinecap="round" />
+                  </svg>
+                </div>
+                <span className="text-[10px] font-medium text-white/70 tracking-wider uppercase">{locale === 'ka' ? 'ფოტო არ არის' : 'No photo'}</span>
               </div>
             </div>
           )}
@@ -227,7 +248,9 @@ const JobCard = React.memo(function JobCard({
 
           {/* Title */}
           <h3 className="font-semibold text-[15px] text-neutral-900 dark:text-white leading-snug mb-1 line-clamp-2">
-            {job.title}
+            <span className="relative inline bg-gradient-to-r from-neutral-400 to-neutral-400 dark:from-neutral-500 dark:to-neutral-500 bg-[length:0%_1px] bg-left-bottom bg-no-repeat transition-[background-size] duration-300 ease-out group-hover:bg-[length:100%_1px]">
+              {job.title}
+            </span>
           </h3>
 
           {/* Description */}
@@ -262,7 +285,7 @@ const JobCard = React.memo(function JobCard({
               {job.proposalCount > 0 && (
                 <div className="flex items-center gap-1">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
                   </svg>
                   <span className="text-[12px] font-medium">{job.proposalCount}</span>
                 </div>

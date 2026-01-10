@@ -525,35 +525,75 @@ export default function ProfessionalDetailPage() {
         ref={heroRef}
         className={`relative transition-all duration-700 ${isVisible ? "opacity-100" : "opacity-0"}`}
       >
-        {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#F5F0ED] via-[#FAFAFA] to-[#FAFAFA] dark:from-[#1A1612] dark:via-[#0A0A0A] dark:to-[#0A0A0A]" />
-
-        {/* Back button */}
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-4">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => router.back()}
-            className="rounded-full bg-white/60 dark:bg-neutral-800/60 backdrop-blur-sm"
-            leftIcon={<ChevronLeft className="w-4 h-4" />}
-          >
-            {locale === "ka" ? "უკან" : "Back"}
-          </Button>
+        {/* Cover Banner with warm gradient and decorative elements */}
+        <div className="relative h-40 md:h-52 overflow-hidden">
+          {/* Warm gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#D4B8A0] via-[#C4A080] to-[#A08060] dark:from-[#3A2820] dark:via-[#2A1E18] dark:to-[#1A1410]" />
+          
+          {/* Decorative circles */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div 
+              className="absolute -top-16 -right-16 w-48 md:w-64 h-48 md:h-64 rounded-full opacity-20"
+              style={{ backgroundColor: ACCENT_COLOR }}
+            />
+            <div 
+              className="absolute top-1/2 -left-8 w-32 h-32 rounded-full opacity-15"
+              style={{ backgroundColor: ACCENT_COLOR }}
+            />
+            <div 
+              className="absolute bottom-0 right-1/4 w-20 h-20 rounded-full opacity-10"
+              style={{ backgroundColor: ACCENT_COLOR }}
+            />
+          </div>
+          
+          {/* Subtle pattern overlay */}
+          <div className="absolute inset-0 opacity-[0.03]" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1.5'/%3E%3Ccircle cx='13' cy='13' r='1.5'/%3E%3C/g%3E%3C/svg%3E")`,
+          }} />
+          
+          {/* Bottom fade to white */}
+          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#FAFAFA] dark:from-[#0A0A0A] to-transparent" />
         </div>
 
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-4 pb-6">
+        {/* Back & Share buttons - positioned over cover */}
+        <div className="absolute top-4 left-0 right-0 z-10">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 flex justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.back()}
+              className="rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm shadow-md hover:bg-white dark:hover:bg-neutral-800"
+              leftIcon={<ChevronLeft className="w-4 h-4" />}
+            >
+              {locale === "ka" ? "უკან" : "Back"}
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowShareMenu(!showShareMenu)}
+              className="rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm shadow-md hover:bg-white dark:hover:bg-neutral-800"
+              leftIcon={<Share2 className="w-4 h-4" />}
+            >
+              {locale === "ka" ? "გაზიარება" : "Share"}
+            </Button>
+          </div>
+        </div>
+
+        {/* Profile content - overlapping cover */}
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 -mt-20 md:-mt-24 pb-6">
           {/* Profile Header */}
           <div className="flex flex-col items-center text-center">
-            {/* Avatar */}
+            {/* Avatar - larger and overlapping */}
             <div className="relative mb-5">
               {avatarUrl ? (
                 <img
                   src={storage.getFileUrl(avatarUrl)}
                   alt={profile.name}
-                  className="w-32 h-32 sm:w-36 sm:h-36 rounded-full object-cover ring-4 ring-white dark:ring-neutral-900 shadow-xl"
+                  className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover ring-4 ring-white dark:ring-neutral-900 shadow-2xl"
                 />
               ) : (
-                <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full flex items-center justify-center text-white text-5xl font-bold bg-gradient-to-br from-[#C4735B] to-[#A65D47] ring-4 ring-white dark:ring-neutral-900 shadow-xl">
+                <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full flex items-center justify-center text-white text-5xl font-bold bg-gradient-to-br from-[#C4735B] to-[#A65D47] ring-4 ring-white dark:ring-neutral-900 shadow-2xl">
                   {profile.name.charAt(0)}
                 </div>
               )}

@@ -1,7 +1,7 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
 import { SocialIcon, socialColors } from '@/components/icons';
+import { Badge } from '@/components/ui/badge';
 import { Globe } from 'lucide-react';
 
 export interface AboutTabProps {
@@ -52,6 +52,9 @@ export default function AboutTab({
       {/* Description */}
       {description && (
         <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-sm border border-neutral-100 dark:border-neutral-800">
+          <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-4">
+            {locale === 'ka' ? 'შესახებ' : 'About'}
+          </h3>
           <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
             {description}
           </p>
