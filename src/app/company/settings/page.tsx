@@ -1,5 +1,6 @@
 'use client';
 
+import Select from '@/components/common/Select';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -316,15 +317,15 @@ export default function CompanySettingsPage() {
                     <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                       {locale === 'ka' ? 'კომპანიის ტიპი' : 'Company Type'}
                     </label>
-                    <select
+                    <Select
                       value={settings.companyType}
-                      onChange={(e) => setSettings({ ...settings, companyType: e.target.value as typeof settings.companyType })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[#E07B4F] transition-colors"
-                    >
-                      <option value="construction">{locale === 'ka' ? 'სამშენებლო' : 'Construction'}</option>
-                      <option value="service_agency">{locale === 'ka' ? 'სერვისის სააგენტო' : 'Service Agency'}</option>
-                      <option value="both">{locale === 'ka' ? 'ორივე' : 'Both'}</option>
-                    </select>
+                      onChange={(value) => setSettings({ ...settings, companyType: value as typeof settings.companyType })}
+                      options={[
+                        { value: 'construction', label: locale === 'ka' ? 'სამშენებლო' : 'Construction' },
+                        { value: 'service_agency', label: locale === 'ka' ? 'სერვისის სააგენტო' : 'Service Agency' },
+                        { value: 'both', label: locale === 'ka' ? 'ორივე' : 'Both' },
+                      ]}
+                    />
                   </div>
 
                   <div>

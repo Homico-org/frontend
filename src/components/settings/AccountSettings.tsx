@@ -135,7 +135,7 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
                 </Button>
               </div>
             ) : (
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-4">
                 <div>
                   <h4 className="font-medium text-neutral-900 dark:text-white">
                     {locale === 'ka' ? 'დროებით გამორთვა' : 'Temporarily Pause'}
@@ -150,9 +150,9 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
                   variant="outline"
                   onClick={onOpenDeactivateModal}
                   leftIcon={<BriefcaseBusiness className="w-4 h-4" />}
-                  className="border-yellow-500 text-yellow-600 hover:bg-yellow-500/10"
+                  className="w-full sm:w-auto border-yellow-500 text-yellow-600 hover:bg-yellow-500/10"
                 >
-                  {locale === 'ka' ? 'პროფილის დამალვა' : 'Pause Profile'}
+                  {locale === 'ka' ? 'დამალვა' : 'Pause Profile'}
                 </Button>
               </div>
             )}
@@ -172,7 +172,7 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
         </div>
 
         <div className="p-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-4">
             <div>
               <h4 className="font-medium text-neutral-900 dark:text-white">
                 {locale === 'ka' ? 'ანგარიშის წაშლა' : 'Delete Account'}
@@ -187,8 +187,9 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
               variant="destructive"
               onClick={onOpenDeleteModal}
               leftIcon={<Trash2 className="w-4 h-4" />}
+              className="w-full sm:w-auto"
             >
-              {locale === 'ka' ? 'ანგარიშის წაშლა' : 'Delete Account'}
+              {locale === 'ka' ? 'წაშლა' : 'Delete Account'}
             </Button>
           </div>
         </div>

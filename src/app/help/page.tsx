@@ -1,6 +1,7 @@
 'use client';
 
 import Header, { HeaderSpacer } from '@/components/common/Header';
+import Select from '@/components/common/Select';
 import { Alert } from '@/components/ui/Alert';
 import { Card } from '@/components/ui/Card';
 import { IconBadge } from '@/components/ui/IconBadge';
@@ -284,29 +285,29 @@ export default function HelpPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <FormGroup>
                       <Label>{t('helpPage.myTickets.category')}</Label>
-                      <select
+                      <Select
                         value={ticketForm.category}
-                        onChange={(e) => setTicketForm({ ...ticketForm, category: e.target.value })}
-                        className="w-full px-4 py-3 bg-cream-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl text-neutral-900 dark:text-neutral-50 focus:outline-none focus:ring-2 focus:ring-[#C4735B]/20 dark:focus:ring-[#E8956A]/20 focus:border-[#C4735B] dark:focus:border-[#E8956A] transition-all duration-200"
-                      >
-                        <option value="account">{t('helpPage.ticketCategories.account')}</option>
-                        <option value="job">{t('helpPage.ticketCategories.job')}</option>
-                        <option value="payment">{t('helpPage.ticketCategories.payment')}</option>
-                        <option value="technical">{t('helpPage.ticketCategories.technical')}</option>
-                        <option value="other">{t('helpPage.ticketCategories.other')}</option>
-                      </select>
+                        onChange={(value) => setTicketForm({ ...ticketForm, category: value })}
+                        options={[
+                          { value: 'account', label: t('helpPage.ticketCategories.account') },
+                          { value: 'job', label: t('helpPage.ticketCategories.job') },
+                          { value: 'payment', label: t('helpPage.ticketCategories.payment') },
+                          { value: 'technical', label: t('helpPage.ticketCategories.technical') },
+                          { value: 'other', label: t('helpPage.ticketCategories.other') },
+                        ]}
+                      />
                     </FormGroup>
                     <FormGroup>
                       <Label>{t('helpPage.myTickets.priority')}</Label>
-                      <select
+                      <Select
                         value={ticketForm.priority}
-                        onChange={(e) => setTicketForm({ ...ticketForm, priority: e.target.value as 'low' | 'medium' | 'high' })}
-                        className="w-full px-4 py-3 bg-cream-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border rounded-xl text-neutral-900 dark:text-neutral-50 focus:outline-none focus:ring-2 focus:ring-[#C4735B]/20 dark:focus:ring-[#E8956A]/20 focus:border-[#C4735B] dark:focus:border-[#E8956A] transition-all duration-200"
-                      >
-                        <option value="low">{t('helpPage.priorities.low')}</option>
-                        <option value="medium">{t('helpPage.priorities.medium')}</option>
-                        <option value="high">{t('helpPage.priorities.high')}</option>
-                      </select>
+                        onChange={(value) => setTicketForm({ ...ticketForm, priority: value as 'low' | 'medium' | 'high' })}
+                        options={[
+                          { value: 'low', label: t('helpPage.priorities.low') },
+                          { value: 'medium', label: t('helpPage.priorities.medium') },
+                          { value: 'high', label: t('helpPage.priorities.high') },
+                        ]}
+                      />
                     </FormGroup>
                   </div>
 

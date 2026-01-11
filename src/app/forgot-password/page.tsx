@@ -49,7 +49,13 @@ export default function ForgotPasswordPage() {
       }
 
       // Store phone for the next step and navigate
-      sessionStorage.setItem('resetPhone', fullPhone);
+      try {
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('resetPhone', fullPhone);
+        }
+      } catch {
+        // sessionStorage might be unavailable - continue anyway
+      }
       router.push('/forgot-password/verify');
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : '';

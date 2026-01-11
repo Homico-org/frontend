@@ -1,8 +1,8 @@
 'use client';
 
-import { useRef, useState, useEffect, KeyboardEvent, ClipboardEvent } from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { ClipboardEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
 
 const inputVariants = cva(
   'text-center font-mono font-semibold rounded-xl transition-all focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed',
@@ -92,8 +92,9 @@ export function OTPInput({
       inputRefs.current[index + 1]?.focus();
     }
 
-    // Check if complete
-    if (combinedValue.length === length && !combinedValue.includes('')) {
+    // Check if complete - all slots filled with digits
+    const isComplete = newValue.every(v => v !== '');
+    if (isComplete && combinedValue.length === length) {
       onComplete?.(combinedValue);
     }
   };

@@ -1,6 +1,7 @@
 'use client';
 
 import Header, { HeaderSpacer } from '@/components/common/Header';
+import Select from '@/components/common/Select';
 import { Alert } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -214,14 +215,14 @@ export default function InviteEmployeePage() {
                     <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1">
                       Role *
                     </label>
-                    <select
+                    <Select
                       value={formData.role}
-                      onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-neutral-200 dark:border-dark-border dark:bg-dark-elevated dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="worker">Worker</option>
-                      <option value="manager">Manager</option>
-                    </select>
+                      onChange={(value) => setFormData({ ...formData, role: value })}
+                      options={[
+                        { value: 'worker', label: 'Worker' },
+                        { value: 'manager', label: 'Manager' },
+                      ]}
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-1">

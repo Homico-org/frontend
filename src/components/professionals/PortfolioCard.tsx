@@ -14,6 +14,8 @@ export interface PortfolioProject {
   date?: string;
   rating?: number;
   isVerified?: boolean;
+  /** Whether this project can be edited/deleted by owner (false for Homico-generated projects) */
+  isEditable?: boolean;
 }
 
 export interface PortfolioCardProps {

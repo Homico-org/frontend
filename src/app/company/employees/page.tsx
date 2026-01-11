@@ -3,6 +3,7 @@
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import AppBackground from '@/components/common/AppBackground';
 import Avatar from '@/components/common/Avatar';
+import Select from '@/components/common/Select';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -23,7 +24,6 @@ import {
   Crown,
   Shield,
   User,
-  ChevronDown,
   X,
   Check,
   Clock,
@@ -291,36 +291,30 @@ export default function CompanyEmployeesPage() {
               />
             </div>
             <div className="flex gap-2">
-              <select
+              <Select
                 value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-                className="px-4 py-2.5 rounded-xl text-sm focus:outline-none cursor-pointer"
-                style={{
-                  background: 'var(--color-bg-secondary)',
-                  border: '1px solid var(--color-border)',
-                  color: 'var(--color-text-primary)',
-                }}
-              >
-                <option value="">{locale === 'ka' ? 'ყველა როლი' : 'All Roles'}</option>
-                <option value="owner">{locale === 'ka' ? 'მფლობელი' : 'Owner'}</option>
-                <option value="manager">{locale === 'ka' ? 'მენეჯერი' : 'Manager'}</option>
-                <option value="worker">{locale === 'ka' ? 'თანამშრომელი' : 'Worker'}</option>
-              </select>
-              <select
+                onChange={setRoleFilter}
+                placeholder={locale === 'ka' ? 'ყველა როლი' : 'All Roles'}
+                size="sm"
+                options={[
+                  { value: '', label: locale === 'ka' ? 'ყველა როლი' : 'All Roles' },
+                  { value: 'owner', label: locale === 'ka' ? 'მფლობელი' : 'Owner' },
+                  { value: 'manager', label: locale === 'ka' ? 'მენეჯერი' : 'Manager' },
+                  { value: 'worker', label: locale === 'ka' ? 'თანამშრომელი' : 'Worker' },
+                ]}
+              />
+              <Select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2.5 rounded-xl text-sm focus:outline-none cursor-pointer"
-                style={{
-                  background: 'var(--color-bg-secondary)',
-                  border: '1px solid var(--color-border)',
-                  color: 'var(--color-text-primary)',
-                }}
-              >
-                <option value="">{locale === 'ka' ? 'ყველა სტატუსი' : 'All Status'}</option>
-                <option value="active">{locale === 'ka' ? 'აქტიური' : 'Active'}</option>
-                <option value="pending">{locale === 'ka' ? 'მოლოდინში' : 'Pending'}</option>
-                <option value="inactive">{locale === 'ka' ? 'არააქტიური' : 'Inactive'}</option>
-              </select>
+                onChange={setStatusFilter}
+                placeholder={locale === 'ka' ? 'ყველა სტატუსი' : 'All Status'}
+                size="sm"
+                options={[
+                  { value: '', label: locale === 'ka' ? 'ყველა სტატუსი' : 'All Status' },
+                  { value: 'active', label: locale === 'ka' ? 'აქტიური' : 'Active' },
+                  { value: 'pending', label: locale === 'ka' ? 'მოლოდინში' : 'Pending' },
+                  { value: 'inactive', label: locale === 'ka' ? 'არააქტიური' : 'Inactive' },
+                ]}
+              />
               <button
                 onClick={fetchEmployees}
                 className="px-4 py-2.5 rounded-xl text-sm font-medium transition-all"

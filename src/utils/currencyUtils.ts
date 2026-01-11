@@ -75,10 +75,17 @@ export function formatPriceInput(value: string): string {
 }
 
 /**
- * Parse a formatted price back to number string (remove spaces)
+ * Parse a formatted price back to number string (remove spaces, prevent negative)
  */
 export function parsePriceInput(value: string): string {
-  return value.replace(/\s/g, '');
+  // Remove spaces and non-numeric characters except decimal point
+  const cleaned = value.replace(/[^\d.]/g, '');
+  // Ensure only one decimal point
+  const parts = cleaned.split('.');
+  if (parts.length > 2) {
+    return parts[0] + '.' + parts.slice(1).join('');
+  }
+  return cleaned;
 }
 
 /**

@@ -2,6 +2,7 @@
 
 import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
+import Select from '@/components/common/Select';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -698,17 +699,17 @@ function AdminSupportPageContent() {
                   </div>
 
                   {/* Status Dropdown */}
-                  <select
+                  <Select
                     value={selectedTicket.status}
-                    onChange={(e) => updateStatus(selectedTicket._id, e.target.value)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer focus:outline-none"
-                    style={{ background: THEME.surface, color: THEME.text, border: `1px solid ${THEME.border}` }}
-                  >
-                    <option value="open">Open</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="resolved">Resolved</option>
-                    <option value="closed">Closed</option>
-                  </select>
+                    onChange={(value) => updateStatus(selectedTicket._id, value)}
+                    size="sm"
+                    options={[
+                      { value: 'open', label: 'Open' },
+                      { value: 'in_progress', label: 'In Progress' },
+                      { value: 'resolved', label: 'Resolved' },
+                      { value: 'closed', label: 'Closed' },
+                    ]}
+                  />
                 </div>
 
                 {/* Subject Banner */}

@@ -548,8 +548,17 @@ function PostJobPageContent() {
                           <div className="relative">
                             <input
                               type={field.type}
+                              min={field.type === "number" ? 0 : undefined}
                               value={formData[field.key as keyof typeof formData] || ""}
-                              onChange={(e) => updateFormData(field.key, e.target.value)}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                // For number fields, prevent negative values
+                                if (field.type === "number" && value !== '') {
+                                  const num = parseFloat(value);
+                                  if (!isNaN(num) && num < 0) return;
+                                }
+                                updateFormData(field.key, value);
+                              }}
                               placeholder={locale === "ka" ? field.placeholderKa : field.placeholderEn}
                               className={`w-full px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B] ${
                                 field.suffix ? "pr-10" : ""

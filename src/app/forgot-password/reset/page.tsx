@@ -25,12 +25,17 @@ export default function ResetPasswordPage() {
   const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
-    const storedPhone = sessionStorage.getItem('resetPhone');
-    if (!storedPhone) {
+    try {
+      const storedPhone = typeof window !== 'undefined' ? sessionStorage.getItem('resetPhone') : null;
+      if (!storedPhone) {
+        router.push('/forgot-password');
+        return;
+      }
+      setPhone(storedPhone);
+    } catch {
+      // sessionStorage might be unavailable (private browsing, etc.)
       router.push('/forgot-password');
-      return;
     }
-    setPhone(storedPhone);
   }, [router]);
 
   const passwordStrengthData = getPasswordStrength(password, locale);
@@ -68,7 +73,13 @@ export default function ResetPasswordPage() {
       }
 
       // Clear session storage
-      sessionStorage.removeItem('resetPhone');
+      try {
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('resetPhone');
+        }
+      } catch {
+        // Ignore sessionStorage errors
+      }
 
       setIsSuccess(true);
     } catch (err: unknown) {
@@ -76,7 +87,13 @@ export default function ResetPasswordPage() {
       if (errorMessage.includes('session expired') || errorMessage.includes('verify your phone')) {
         setError(locale === 'ka' ? 'სესია ამოიწურა. გთხოვთ დაიწყოთ თავიდან.' : 'Session expired. Please start over.');
         setTimeout(() => {
-          sessionStorage.removeItem('resetPhone');
+          try {
+            if (typeof window !== 'undefined') {
+              sessionStorage.removeItem('resetPhone');
+            }
+          } catch {
+            // Ignore sessionStorage errors
+          }
           router.push('/forgot-password');
         }, 2000);
       } else {

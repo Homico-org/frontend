@@ -22,12 +22,17 @@ export default function VerifyResetCodePage() {
   const [canResend, setCanResend] = useState(false);
 
   useEffect(() => {
-    const storedPhone = sessionStorage.getItem('resetPhone');
-    if (!storedPhone) {
+    try {
+      const storedPhone = typeof window !== 'undefined' ? sessionStorage.getItem('resetPhone') : null;
+      if (!storedPhone) {
+        router.push('/forgot-password');
+        return;
+      }
+      setPhone(storedPhone);
+    } catch {
+      // sessionStorage might be unavailable (private browsing, etc.)
       router.push('/forgot-password');
-      return;
     }
-    setPhone(storedPhone);
   }, [router]);
 
   useEffect(() => {
@@ -195,7 +200,13 @@ export default function VerifyResetCodePage() {
           <Button
             variant="link"
             onClick={() => {
-              sessionStorage.removeItem('resetPhone');
+              try {
+                if (typeof window !== 'undefined') {
+                  sessionStorage.removeItem('resetPhone');
+                }
+              } catch {
+                // Ignore sessionStorage errors
+              }
               router.push('/forgot-password');
             }}
             className="p-0 h-auto font-semibold"

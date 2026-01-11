@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import AuthGuard from '@/components/common/AuthGuard';
+import Select from '@/components/common/Select';
 import { api } from '@/lib/api';
 import {
   Activity,
@@ -300,21 +301,19 @@ function AdminActivityLogsPageContent() {
                 }}
               />
             </div>
-            <select
+            <Select
               value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="px-4 py-3 rounded-xl text-sm cursor-pointer focus:outline-none transition-all min-w-[200px]"
-              style={{
-                background: THEME.surface,
-                border: `1px solid ${THEME.border}`,
-                color: THEME.text,
-              }}
-            >
-              <option value="all">{locale === 'ka' ? 'ყველა ტიპი' : 'All Types'}</option>
-              {activityTypes.map((type) => (
-                <option key={type} value={type}>{formatActivityType(type)}</option>
-              ))}
-            </select>
+              onChange={setTypeFilter}
+              size="sm"
+              className="min-w-[200px]"
+              options={[
+                { value: 'all', label: locale === 'ka' ? 'ყველა ტიპი' : 'All Types' },
+                ...activityTypes.map((type) => ({
+                  value: type,
+                  label: formatActivityType(type),
+                })),
+              ]}
+            />
           </div>
         </div>
 

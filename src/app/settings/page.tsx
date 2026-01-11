@@ -3,6 +3,7 @@
 import AuthGuard from '@/components/common/AuthGuard';
 import AvatarCropper from '@/components/common/AvatarCropper';
 import BackButton from '@/components/common/BackButton';
+import Select from '@/components/common/Select';
 import { Button } from '@/components/ui/button';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import { AccountSettings, EmailChangeModal, NotificationSettings, PasswordChangeForm, PaymentSettings, PhoneChangeModal, ProfileSettings } from '@/components/settings';
@@ -1374,30 +1375,17 @@ function SettingsPageContent() {
                 <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
                   {locale === 'ka' ? 'მიზეზი (არასავალდებულო)' : 'Reason (optional)'}
                 </label>
-                <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <BriefcaseBusiness className="w-5 h-5 text-yellow-600" />
-                  </div>
-                  <select
-                    value={deactivateReasonInput}
-                    onChange={(e) => setDeactivateReasonInput(e.target.value)}
-                    className="w-full pl-12 pr-10 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-yellow-500/50 appearance-none cursor-pointer"
-                    style={{
-                      backgroundColor: 'var(--color-bg-elevated)',
-                      border: '1px solid var(--color-border)',
-                      color: deactivateReasonInput ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)',
-                    }}
-                  >
-                    <option value="">{locale === 'ka' ? 'აირჩიეთ მიზეზი' : 'Select reason'}</option>
-                    <option value="vacation">{locale === 'ka' ? 'შვებულება' : 'Vacation'}</option>
-                    <option value="busy">{locale === 'ka' ? 'დატვირთული გრაფიკი' : 'Busy schedule'}</option>
-                    <option value="personal">{locale === 'ka' ? 'პირადი მიზეზები' : 'Personal reasons'}</option>
-                    <option value="other">{locale === 'ka' ? 'სხვა' : 'Other'}</option>
-                  </select>
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <ChevronDown className="w-5 h-5 text-neutral-400" />
-                  </div>
-                </div>
+                <Select
+                  value={deactivateReasonInput}
+                  onChange={setDeactivateReasonInput}
+                  placeholder={locale === 'ka' ? 'აირჩიეთ მიზეზი' : 'Select reason'}
+                  options={[
+                    { value: 'vacation', label: locale === 'ka' ? 'შვებულება' : 'Vacation' },
+                    { value: 'busy', label: locale === 'ka' ? 'დატვირთული გრაფიკი' : 'Busy schedule' },
+                    { value: 'personal', label: locale === 'ka' ? 'პირადი მიზეზები' : 'Personal reasons' },
+                    { value: 'other', label: locale === 'ka' ? 'სხვა' : 'Other' },
+                  ]}
+                />
               </div>
 
               {/* Info */}

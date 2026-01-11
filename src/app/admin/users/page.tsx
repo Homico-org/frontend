@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
+import Select from '@/components/common/Select';
 import { api } from '@/lib/api';
 import {
   Users,
@@ -339,38 +340,30 @@ function AdminUsersPageContent() {
                 }}
               />
             </div>
-            <select
+            <Select
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-              className="px-4 py-3 rounded-xl text-sm cursor-pointer focus:outline-none transition-all"
-              style={{
-                background: THEME.surface,
-                border: `1px solid ${THEME.border}`,
-                color: THEME.text,
-              }}
-            >
-              <option value="all">{locale === 'ka' ? 'ყველა როლი' : 'All Roles'}</option>
-              <option value="client">{locale === 'ka' ? 'კლიენტები' : 'Clients'}</option>
-              <option value="pro">{locale === 'ka' ? 'პროფესიონალები' : 'Professionals'}</option>
-              <option value="company">{locale === 'ka' ? 'კომპანიები' : 'Companies'}</option>
-              <option value="admin">{locale === 'ka' ? 'ადმინები' : 'Admins'}</option>
-            </select>
-            <select
+              onChange={setRoleFilter}
+              size="sm"
+              options={[
+                { value: 'all', label: locale === 'ka' ? 'ყველა როლი' : 'All Roles' },
+                { value: 'client', label: locale === 'ka' ? 'კლიენტები' : 'Clients' },
+                { value: 'pro', label: locale === 'ka' ? 'პროფესიონალები' : 'Professionals' },
+                { value: 'company', label: locale === 'ka' ? 'კომპანიები' : 'Companies' },
+                { value: 'admin', label: locale === 'ka' ? 'ადმინები' : 'Admins' },
+              ]}
+            />
+            <Select
               value={verificationFilter}
-              onChange={(e) => setVerificationFilter(e.target.value)}
-              className="px-4 py-3 rounded-xl text-sm cursor-pointer focus:outline-none transition-all"
-              style={{
-                background: verificationFilter === 'submitted' ? THEME.warning + '20' : THEME.surface,
-                border: `1px solid ${verificationFilter === 'submitted' ? THEME.warning : THEME.border}`,
-                color: THEME.text,
-              }}
-            >
-              <option value="all">{locale === 'ka' ? 'ყველა ვერიფიკაცია' : 'All Verification'}</option>
-              <option value="submitted">{locale === 'ka' ? '⏳ მოლოდინში' : '⏳ Pending Review'}</option>
-              <option value="verified">{locale === 'ka' ? '✓ ვერიფიცირებული' : '✓ Verified'}</option>
-              <option value="rejected">{locale === 'ka' ? '✗ უარყოფილი' : '✗ Rejected'}</option>
-              <option value="pending">{locale === 'ka' ? 'არ გაგზავნილა' : 'Not Submitted'}</option>
-            </select>
+              onChange={setVerificationFilter}
+              size="sm"
+              options={[
+                { value: 'all', label: locale === 'ka' ? 'ყველა ვერიფიკაცია' : 'All Verification' },
+                { value: 'submitted', label: locale === 'ka' ? '⏳ მოლოდინში' : '⏳ Pending Review' },
+                { value: 'verified', label: locale === 'ka' ? '✓ ვერიფიცირებული' : '✓ Verified' },
+                { value: 'rejected', label: locale === 'ka' ? '✗ უარყოფილი' : '✗ Rejected' },
+                { value: 'pending', label: locale === 'ka' ? 'არ გაგზავნილა' : 'Not Submitted' },
+              ]}
+            />
           </div>
         </div>
 

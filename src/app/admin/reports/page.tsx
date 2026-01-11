@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
+import Select from '@/components/common/Select';
 import { api } from '@/lib/api';
 import {
   Flag,
@@ -362,38 +363,30 @@ function AdminReportsPageContent() {
                 }}
               />
             </div>
-            <select
+            <Select
               value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="px-4 py-3 rounded-xl text-sm cursor-pointer focus:outline-none transition-all"
-              style={{
-                background: THEME.surface,
-                border: `1px solid ${THEME.border}`,
-                color: THEME.text,
-              }}
-            >
-              <option value="all">{locale === 'ka' ? 'ყველა ტიპი' : 'All Types'}</option>
-              <option value="user">{locale === 'ka' ? 'მომხმარებელი' : 'User'}</option>
-              <option value="job">{locale === 'ka' ? 'სამუშაო' : 'Job'}</option>
-              <option value="order">{locale === 'ka' ? 'შეკვეთა' : 'Order'}</option>
-              <option value="payment">{locale === 'ka' ? 'გადახდა' : 'Payment'}</option>
-            </select>
-            <select
+              onChange={setTypeFilter}
+              size="sm"
+              options={[
+                { value: 'all', label: locale === 'ka' ? 'ყველა ტიპი' : 'All Types' },
+                { value: 'user', label: locale === 'ka' ? 'მომხმარებელი' : 'User' },
+                { value: 'job', label: locale === 'ka' ? 'სამუშაო' : 'Job' },
+                { value: 'order', label: locale === 'ka' ? 'შეკვეთა' : 'Order' },
+                { value: 'payment', label: locale === 'ka' ? 'გადახდა' : 'Payment' },
+              ]}
+            />
+            <Select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-3 rounded-xl text-sm cursor-pointer focus:outline-none transition-all"
-              style={{
-                background: THEME.surface,
-                border: `1px solid ${THEME.border}`,
-                color: THEME.text,
-              }}
-            >
-              <option value="all">{locale === 'ka' ? 'ყველა სტატუსი' : 'All Status'}</option>
-              <option value="pending">{locale === 'ka' ? 'მოლოდინში' : 'Pending'}</option>
-              <option value="investigating">{locale === 'ka' ? 'გამოძიება' : 'Investigating'}</option>
-              <option value="resolved">{locale === 'ka' ? 'გადაჭრილი' : 'Resolved'}</option>
-              <option value="dismissed">{locale === 'ka' ? 'უარყოფილი' : 'Dismissed'}</option>
-            </select>
+              onChange={setStatusFilter}
+              size="sm"
+              options={[
+                { value: 'all', label: locale === 'ka' ? 'ყველა სტატუსი' : 'All Status' },
+                { value: 'pending', label: locale === 'ka' ? 'მოლოდინში' : 'Pending' },
+                { value: 'investigating', label: locale === 'ka' ? 'გამოძიება' : 'Investigating' },
+                { value: 'resolved', label: locale === 'ka' ? 'გადაჭრილი' : 'Resolved' },
+                { value: 'dismissed', label: locale === 'ka' ? 'უარყოფილი' : 'Dismissed' },
+              ]}
+            />
           </div>
         </div>
 

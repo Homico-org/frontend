@@ -3,6 +3,7 @@
 import { useState, FormEvent } from 'react';
 import { X } from 'lucide-react';
 import { formatNumberWithSpaces } from '@/utils/currencyUtils';
+import Select from '@/components/common/Select';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/button';
 import { Input, Textarea } from '@/components/ui/input';
@@ -146,26 +147,20 @@ export default function ProposalForm({
               <label className="block font-body text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 {locale === 'ka' ? 'ერთეული' : 'Unit'}
               </label>
-              <select
+              <Select
                 value={formData.estimatedDurationUnit}
-                onChange={(e) =>
+                onChange={(value) =>
                   setFormData({
                     ...formData,
-                    estimatedDurationUnit: e.target.value as 'days' | 'weeks' | 'months',
+                    estimatedDurationUnit: value as 'days' | 'weeks' | 'months',
                   })
                 }
-                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-body focus:outline-none focus:ring-2 focus:ring-[#E07B4F]/20 focus:border-[#E07B4F] transition-all cursor-pointer"
-              >
-                <option value="days">
-                  {locale === 'ka' ? 'დღე' : 'Days'}
-                </option>
-                <option value="weeks">
-                  {locale === 'ka' ? 'კვირა' : 'Weeks'}
-                </option>
-                <option value="months">
-                  {locale === 'ka' ? 'თვე' : 'Months'}
-                </option>
-              </select>
+                options={[
+                  { value: 'days', label: locale === 'ka' ? 'დღე' : 'Days' },
+                  { value: 'weeks', label: locale === 'ka' ? 'კვირა' : 'Weeks' },
+                  { value: 'months', label: locale === 'ka' ? 'თვე' : 'Months' },
+                ]}
+              />
             </div>
           </div>
 

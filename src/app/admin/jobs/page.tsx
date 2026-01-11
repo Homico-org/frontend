@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
+import Select from '@/components/common/Select';
 import { api } from '@/lib/api';
 import {
   Briefcase,
@@ -307,22 +308,18 @@ function AdminJobsPageContent() {
                 }}
               />
             </div>
-            <select
+            <Select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-3 rounded-xl text-sm cursor-pointer focus:outline-none transition-all"
-              style={{
-                background: THEME.surface,
-                border: `1px solid ${THEME.border}`,
-                color: THEME.text,
-              }}
-            >
-              <option value="all">{locale === 'ka' ? 'ყველა სტატუსი' : 'All Status'}</option>
-              <option value="open">{locale === 'ka' ? 'ღია' : 'Open'}</option>
-              <option value="in_progress">{locale === 'ka' ? 'მიმდინარე' : 'In Progress'}</option>
-              <option value="completed">{locale === 'ka' ? 'დასრულებული' : 'Completed'}</option>
-              <option value="cancelled">{locale === 'ka' ? 'გაუქმებული' : 'Cancelled'}</option>
-            </select>
+              onChange={setStatusFilter}
+              size="sm"
+              options={[
+                { value: 'all', label: locale === 'ka' ? 'ყველა სტატუსი' : 'All Status' },
+                { value: 'open', label: locale === 'ka' ? 'ღია' : 'Open' },
+                { value: 'in_progress', label: locale === 'ka' ? 'მიმდინარე' : 'In Progress' },
+                { value: 'completed', label: locale === 'ka' ? 'დასრულებული' : 'Completed' },
+                { value: 'cancelled', label: locale === 'ka' ? 'გაუქმებული' : 'Cancelled' },
+              ]}
+            />
           </div>
         </div>
 

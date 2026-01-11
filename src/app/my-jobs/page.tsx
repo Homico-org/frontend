@@ -34,6 +34,7 @@ import {
   Eye,
   FileText,
   MapPin,
+  Plus,
   RefreshCw,
   Sparkles,
   Trash2,
@@ -276,14 +277,26 @@ function MyJobsPageContent() {
           <div className="flex items-start gap-4">
             <BackButton showLabel={false} className="mt-1" />
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-1">
-                <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white tracking-tight">
-                  {locale === 'ka' ? 'ჩემი განცხადებები' : 'My Jobs'}
-                </h1>
-                <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#C4735B]/10 text-[#C4735B]">
-                  <Briefcase className="w-3.5 h-3.5" />
-                  <span className="text-xs font-semibold">{jobs.length}</span>
+              <div className="flex items-center justify-between gap-3 mb-1">
+                <div className="flex items-center gap-3">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white tracking-tight">
+                    {locale === 'ka' ? 'ჩემი განცხადებები' : 'My Jobs'}
+                  </h1>
+                  <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#C4735B]/10 text-[#C4735B]">
+                    <Briefcase className="w-3.5 h-3.5" />
+                    <span className="text-xs font-semibold">{jobs.length}</span>
+                  </div>
                 </div>
+                <Button
+                  asChild
+                  size="sm"
+                  className="rounded-full"
+                  leftIcon={<Plus className="w-4 h-4" />}
+                >
+                  <Link href="/post-job">
+                    {locale === 'ka' ? 'დამატება' : 'Add Job'}
+                  </Link>
+                </Button>
               </div>
               <p className="text-sm text-neutral-500 dark:text-neutral-400 hidden sm:block">
                 {locale === 'ka'

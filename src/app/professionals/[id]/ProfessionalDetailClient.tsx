@@ -8,8 +8,10 @@ import ProfileSidebar, { ProfileSidebarMobile, type ProfileSidebarTab } from "@/
 import ReviewsTab from "@/components/professionals/ReviewsTab";
 import SimilarProfessionals from "@/components/professionals/SimilarProfessionals";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { ConfirmModal, Modal } from "@/components/ui/Modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ACCENT_COLOR } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
@@ -26,13 +28,17 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Edit3,
   Facebook,
   Link2,
   MapPin,
   MessageSquare,
   Phone,
+  Plus,
+  Settings,
   Share2,
   Star,
+  Trash2,
   X
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -86,6 +92,16 @@ export default function ProfessionalDetailClient() {
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
+
+  // Owner edit states
+  const [showEditAboutModal, setShowEditAboutModal] = useState(false);
+  const [showAddProjectModal, setShowAddProjectModal] = useState(false);
+  const [editingProject, setEditingProject] = useState<{ id: string; title: string; description?: string; location?: string; images: string[] } | null>(null);
+  const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Check if current user is viewing their own profile
+  const isOwner = user?.id === profile?.id;
 
   useEffect(() => {
     setIsVisible(true);
@@ -231,6 +247,99 @@ export default function ProfessionalDetailClient() {
     }
   };
 
+  // === OWNER CRUD FUNCTIONS ===
+  const handleSaveAbout = async (data: { description: string }) => {
+    if (!isOwner || !profile) return;
+    setIsSaving(true);
+    try {
+      await api.patch('/users/me/pro-profile', { description: data.description });
+      setProfile(prev => prev ? { ...prev, description: data.description } : prev);
+      setShowEditAboutModal(false);
+      toast.success(locale === "ka" ? "შენახულია" : "Saved successfully");
+    } catch (err) {
+      toast.error(locale === "ka" ? "შეცდომა" : "Failed to save");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAddProject = async (data: { 
+    title: string; 
+    description?: string; 
+    location?: string; 
+    images: string[];
+    videos?: string[];
+    beforeAfter?: { before: string; after: string }[];
+  }) => {
+    if (!isOwner || !profile) return;
+    setIsSaving(true);
+    try {
+      const response = await api.post('/portfolio', {
+        title: data.title,
+        description: data.description,
+        location: data.location,
+        images: data.images,
+        videos: data.videos,
+        beforeAfter: data.beforeAfter,
+      });
+      setPortfolio(prev => [...prev, response.data]);
+      setShowAddProjectModal(false);
+      toast.success(locale === "ka" ? "პროექტი დაემატა" : "Project added");
+    } catch (err) {
+      toast.error(locale === "ka" ? "შეცდომა" : "Failed to add project");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleUpdateProject = async (data: { 
+    title: string; 
+    description?: string; 
+    location?: string; 
+    images: string[];
+    videos?: string[];
+    beforeAfter?: { before: string; after: string }[];
+  }) => {
+    if (!isOwner || !editingProject) return;
+    setIsSaving(true);
+    try {
+      await api.patch(`/portfolio/${editingProject.id}`, {
+        title: data.title,
+        description: data.description,
+        location: data.location,
+        images: data.images,
+        videos: data.videos,
+        beforeAfter: data.beforeAfter,
+      });
+      setPortfolio(prev => prev.map(p => 
+        p.id === editingProject.id 
+          ? { ...p, title: data.title, description: data.description, location: data.location, images: data.images }
+          : p
+      ));
+      setEditingProject(null);
+      toast.success(locale === "ka" ? "პროექტი განახლდა" : "Project updated");
+    } catch (err) {
+      toast.error(locale === "ka" ? "შეცდომა" : "Failed to update project");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteProject = async () => {
+    if (!isOwner || !deleteProjectId) return;
+    setIsSaving(true);
+    try {
+      await api.delete(`/portfolio/${deleteProjectId}`);
+      setPortfolio(prev => prev.filter(p => p.id !== deleteProjectId));
+      setDeleteProjectId(null);
+      toast.success(locale === "ka" ? "პროექტი წაიშალა" : "Project deleted");
+    } catch (err) {
+      toast.error(locale === "ka" ? "შეცდომა" : "Failed to delete project");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const getCategoryLabel = (categoryKey: string) => {
     if (!categoryKey) return "";
     const category = CATEGORIES.find((cat) => cat.key === categoryKey);
@@ -275,6 +384,7 @@ export default function ProfessionalDetailClient() {
     images: string[];
     videos: string[];
     date?: string;
+    source?: 'external' | 'homico'; // 'homico' = from completed jobs, not editable
   }
 
   const getUnifiedProjects = useCallback((): UnifiedProject[] => {
@@ -304,11 +414,13 @@ export default function ProfessionalDetailClient() {
           images,
           videos: [],
           date: item.completedDate || item.projectDate,
+          source: item.source, // Pass through the source field
         });
       }
     });
 
     // Add from profile's embedded portfolioProjects (avoid duplicates by title)
+    // These are typically external/manual additions
     profile?.portfolioProjects?.forEach((project, idx) => {
       const titleKey = project.title?.toLowerCase().trim() || `project-${idx}`;
       if (seenTitles.has(titleKey)) return;
@@ -323,6 +435,7 @@ export default function ProfessionalDetailClient() {
           location: project.location,
           images: project.images || [],
           videos: project.videos || [],
+          source: 'external', // Embedded projects are manual/external
         });
       }
     });
@@ -650,6 +763,27 @@ export default function ProfessionalDetailClient() {
                     <span>{profile.yearsExperience}+ {locale === "ka" ? "წელი" : "yrs"}</span>
                   </div>
                 </div>
+
+                {/* Categories & Subcategories */}
+                {(profile.categories?.length > 0 || profile.subcategories?.length > 0) && (
+                  <div className="flex flex-wrap justify-center sm:justify-start gap-1.5 mt-2">
+                    {profile.categories?.map((cat, idx) => (
+                      <Badge key={`cat-${idx}`} variant="premium" size="xs">
+                        {getCategoryLabel(cat)}
+                      </Badge>
+                    ))}
+                    {profile.subcategories?.slice(0, 4).map((sub, idx) => (
+                      <Badge key={`sub-${idx}`} variant="secondary" size="xs">
+                        {getSubcategoryLabel(sub)}
+                      </Badge>
+                    ))}
+                    {(profile.subcategories?.length || 0) > 4 && (
+                      <Badge variant="secondary" size="xs">
+                        +{(profile.subcategories?.length || 0) - 4}
+                      </Badge>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Price & CTA - Right side */}
@@ -671,25 +805,28 @@ export default function ProfessionalDetailClient() {
                     </Badge>
                   </div>
                 )}
-                {phoneRevealed && profile.phone ? (
-                  <a
-                    href={`tel:${profile.phone}`}
-                    className="px-5 py-2 rounded-full text-white font-medium text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg shadow-emerald-500/25"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Phone className="w-4 h-4" />
-                      {profile.phone}
-                    </span>
-                  </a>
-                ) : (
-                  <Button
-                    onClick={handleContact}
-                    size="sm"
-                    className="rounded-full"
-                    leftIcon={isBasicTier ? <Phone className="w-4 h-4" /> : <MessageSquare className="w-4 h-4" />}
-                  >
-                    {isBasicTier ? (locale === "ka" ? "ტელეფონის ნახვა" : "Show Phone") : (locale === "ka" ? "დაკავშირება" : "Contact")}
-                  </Button>
+                {/* Visitor: Contact button (no owner edit button - edits are inline now) */}
+                {!isOwner && (
+                  phoneRevealed && profile.phone ? (
+                    <a
+                      href={`tel:${profile.phone}`}
+                      className="px-5 py-2 rounded-full text-white font-medium text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg shadow-emerald-500/25"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Phone className="w-4 h-4" />
+                        {profile.phone}
+                      </span>
+                    </a>
+                  ) : (
+                    <Button
+                      onClick={handleContact}
+                      size="sm"
+                      className="rounded-full"
+                      leftIcon={isBasicTier ? <Phone className="w-4 h-4" /> : <MessageSquare className="w-4 h-4" />}
+                    >
+                      {isBasicTier ? (locale === "ka" ? "ტელეფონის ნახვა" : "Show Phone") : (locale === "ka" ? "დაკავშირება" : "Contact")}
+                    </Button>
+                  )
                 )}
               </div>
             </div>
@@ -742,6 +879,22 @@ export default function ProfessionalDetailClient() {
                   linkedinUrl={profile.linkedinUrl}
                   websiteUrl={profile.websiteUrl}
                   locale={locale as 'en' | 'ka'}
+                  isOwner={isOwner}
+                  onSaveDescription={async (description) => {
+                    await api.patch('/users/me/pro-profile', { description });
+                    setProfile(prev => prev ? { ...prev, description } : prev);
+                    toast.success(locale === "ka" ? "შენახულია" : "Saved");
+                  }}
+                  onSaveServices={async (customServices) => {
+                    await api.patch('/users/me/pro-profile', { customServices });
+                    setProfile(prev => prev ? { ...prev, customServices } : prev);
+                    toast.success(locale === "ka" ? "შენახულია" : "Saved");
+                  }}
+                  onSaveSocialLinks={async (socialLinks) => {
+                    await api.patch('/users/me/pro-profile', socialLinks);
+                    setProfile(prev => prev ? { ...prev, ...socialLinks } : prev);
+                    toast.success(locale === "ka" ? "შენახულია" : "Saved");
+                  }}
                 />
               </div>
             )}
@@ -757,9 +910,20 @@ export default function ProfessionalDetailClient() {
                     location: p.location,
                     images: p.images,
                     videos: p.videos,
+                    isEditable: p.source !== 'homico', // Only allow edit/delete for non-Homico projects
                   }))}
                   onProjectClick={setSelectedProject}
                   locale={locale as 'en' | 'ka'}
+                  isOwner={isOwner}
+                  onAddProject={() => setShowAddProjectModal(true)}
+                  onEditProject={(project) => setEditingProject({
+                    id: project.id,
+                    title: project.title,
+                    description: project.description,
+                    location: project.location,
+                    images: project.images,
+                  })}
+                  onDeleteProject={(projectId) => setDeleteProjectId(projectId)}
                 />
               </div>
             )}
@@ -1026,6 +1190,695 @@ export default function ProfessionalDetailClient() {
         avatar={avatarUrl}
         locale={locale as "en" | "ka"}
       />
+
+      {/* ========== ADD/EDIT PROJECT MODAL ========== */}
+      {(showAddProjectModal || editingProject) && (
+        <ProjectFormModal
+          isOpen={showAddProjectModal || !!editingProject}
+          onClose={() => {
+            setShowAddProjectModal(false);
+            setEditingProject(null);
+          }}
+          onSubmit={editingProject ? handleUpdateProject : handleAddProject}
+          isLoading={isSaving}
+          locale={locale as 'en' | 'ka'}
+          initialData={editingProject || undefined}
+        />
+      )}
+
+      {/* ========== DELETE PROJECT CONFIRM ========== */}
+      <ConfirmModal
+        isOpen={!!deleteProjectId}
+        onClose={() => setDeleteProjectId(null)}
+        onConfirm={handleDeleteProject}
+        title={locale === "ka" ? "პროექტის წაშლა" : "Delete Project"}
+        description={locale === "ka" 
+          ? "დარწმუნებული ხართ რომ გსურთ ამ პროექტის წაშლა? ეს მოქმედება შეუქცევადია."
+          : "Are you sure you want to delete this project? This action cannot be undone."}
+        confirmLabel={locale === "ka" ? "წაშლა" : "Delete"}
+        variant="danger"
+        isLoading={isSaving}
+      />
     </div>
+  );
+}
+
+// ========== PROJECT FORM MODAL COMPONENT ==========
+import { Image as ImageIcon, Video, SplitSquareHorizontal, Trash2 as TrashIcon } from "lucide-react";
+
+interface MediaItem {
+  url: string;
+  type: 'image' | 'video' | 'before_after';
+  beforeUrl?: string; // For before/after type
+}
+
+interface ProjectFormModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: { 
+    title: string; 
+    description?: string; 
+    location?: string; 
+    images: string[];
+    videos?: string[];
+    beforeAfter?: { before: string; after: string }[];
+  }) => void;
+  isLoading: boolean;
+  locale: 'en' | 'ka';
+  initialData?: { 
+    title: string; 
+    description?: string; 
+    location?: string; 
+    images: string[];
+    videos?: string[];
+    beforeAfter?: { before: string; after: string }[];
+  };
+}
+
+type MediaUploadType = 'images' | 'videos' | 'before' | 'after';
+
+function ProjectFormModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  isLoading,
+  locale,
+  initialData,
+}: ProjectFormModalProps) {
+  const [title, setTitle] = useState(initialData?.title || '');
+  const [description, setDescription] = useState(initialData?.description || '');
+  const [location, setLocation] = useState(initialData?.location || '');
+  
+  // Separate arrays for different media types
+  const [images, setImages] = useState<string[]>(initialData?.images || []);
+  const [videos, setVideos] = useState<string[]>(initialData?.videos || []);
+  const [beforeAfterPairs, setBeforeAfterPairs] = useState<{ before: string; after: string }[]>(initialData?.beforeAfter || []);
+  
+  // Active tab
+  const [activeMediaTab, setActiveMediaTab] = useState<'images' | 'videos' | 'before_after'>('images');
+  
+  // Upload states
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadingType, setUploadingType] = useState<MediaUploadType | null>(null);
+  const [pendingBeforeImage, setPendingBeforeImage] = useState<string | null>(null);
+  
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  const beforeInputRef = useRef<HTMLInputElement>(null);
+  const afterInputRef = useRef<HTMLInputElement>(null);
+  const toast = useToast();
+
+  // File size limits
+  const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+  const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB
+  
+  // Allowed types
+  const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+  const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/webm'];
+
+  // Reset form when modal opens with new data
+  useEffect(() => {
+    if (isOpen) {
+      setTitle(initialData?.title || '');
+      setDescription(initialData?.description || '');
+      setLocation(initialData?.location || '');
+      setImages(initialData?.images || []);
+      setVideos(initialData?.videos || []);
+      setBeforeAfterPairs(initialData?.beforeAfter || []);
+      setPendingBeforeImage(null);
+    }
+  }, [isOpen, initialData]);
+
+  const validateFile = (file: File, type: 'image' | 'video'): string | null => {
+    if (type === 'image') {
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        return locale === 'ka' ? 'მხოლოდ JPG, PNG, WebP, GIF ფორმატი' : 'Only JPG, PNG, WebP, GIF allowed';
+      }
+      if (file.size > MAX_IMAGE_SIZE) {
+        return locale === 'ka' ? 'სურათი ძალიან დიდია (მაქს 10MB)' : 'Image too large (max 10MB)';
+      }
+    } else {
+      if (!ALLOWED_VIDEO_TYPES.includes(file.type)) {
+        return locale === 'ka' ? 'მხოლოდ MP4, MOV, WebM ფორმატი' : 'Only MP4, MOV, WebM allowed';
+      }
+      if (file.size > MAX_VIDEO_SIZE) {
+        return locale === 'ka' ? 'ვიდეო ძალიან დიდია (მაქს 100MB)' : 'Video too large (max 100MB)';
+      }
+    }
+    return null;
+  };
+
+  const uploadFile = async (file: File): Promise<string | null> => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await api.post('/upload', formData);
+      return response.data.url || response.data.filename;
+    } catch {
+      return null;
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploading(true);
+    setUploadingType('images');
+    const newImages: string[] = [];
+
+    try {
+      for (const file of Array.from(files)) {
+        const error = validateFile(file, 'image');
+        if (error) {
+          toast.error(locale === 'ka' ? 'შეცდომა' : 'Error', error);
+          continue;
+        }
+        const url = await uploadFile(file);
+        if (url) newImages.push(url);
+      }
+      if (newImages.length > 0) {
+        setImages(prev => [...prev, ...newImages]);
+      }
+    } catch {
+      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error', locale === 'ka' ? 'ატვირთვა ვერ მოხერხდა' : 'Upload failed');
+    } finally {
+      setIsUploading(false);
+      setUploadingType(null);
+      if (imageInputRef.current) imageInputRef.current.value = '';
+    }
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploading(true);
+    setUploadingType('videos');
+    const newVideos: string[] = [];
+
+    try {
+      for (const file of Array.from(files)) {
+        const error = validateFile(file, 'video');
+        if (error) {
+          toast.error(locale === 'ka' ? 'შეცდომა' : 'Error', error);
+          continue;
+        }
+        const url = await uploadFile(file);
+        if (url) newVideos.push(url);
+      }
+      if (newVideos.length > 0) {
+        setVideos(prev => [...prev, ...newVideos]);
+      }
+    } catch {
+      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error', locale === 'ka' ? 'ატვირთვა ვერ მოხერხდა' : 'Upload failed');
+    } finally {
+      setIsUploading(false);
+      setUploadingType(null);
+      if (videoInputRef.current) videoInputRef.current.value = '';
+    }
+  };
+
+  const handleBeforeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const error = validateFile(file, 'image');
+    if (error) {
+      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error', error);
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadingType('before');
+    try {
+      const url = await uploadFile(file);
+      if (url) {
+        setPendingBeforeImage(url);
+      }
+    } catch {
+      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error', locale === 'ka' ? 'ატვირთვა ვერ მოხერხდა' : 'Upload failed');
+    } finally {
+      setIsUploading(false);
+      setUploadingType(null);
+      if (beforeInputRef.current) beforeInputRef.current.value = '';
+    }
+  };
+
+  const handleAfterUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !pendingBeforeImage) return;
+
+    const error = validateFile(file, 'image');
+    if (error) {
+      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error', error);
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadingType('after');
+    try {
+      const url = await uploadFile(file);
+      if (url) {
+        setBeforeAfterPairs(prev => [...prev, { before: pendingBeforeImage, after: url }]);
+        setPendingBeforeImage(null);
+      }
+    } catch {
+      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error', locale === 'ka' ? 'ატვირთვა ვერ მოხერხდა' : 'Upload failed');
+    } finally {
+      setIsUploading(false);
+      setUploadingType(null);
+      if (afterInputRef.current) afterInputRef.current.value = '';
+    }
+  };
+
+  const removeImage = (index: number) => setImages(prev => prev.filter((_, i) => i !== index));
+  const removeVideo = (index: number) => setVideos(prev => prev.filter((_, i) => i !== index));
+  const removeBeforeAfter = (index: number) => setBeforeAfterPairs(prev => prev.filter((_, i) => i !== index));
+
+  const handleSubmit = () => {
+    if (!title.trim()) {
+      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error', locale === 'ka' ? 'სათაური აუცილებელია' : 'Title is required');
+      return;
+    }
+    if (images.length === 0 && videos.length === 0 && beforeAfterPairs.length === 0) {
+      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error', locale === 'ka' ? 'მინიმუმ ერთი მედია აუცილებელია' : 'At least one media item is required');
+      return;
+    }
+    onSubmit({ 
+      title: title.trim(), 
+      description: description.trim() || undefined, 
+      location: location.trim() || undefined, 
+      images,
+      videos: videos.length > 0 ? videos : undefined,
+      beforeAfter: beforeAfterPairs.length > 0 ? beforeAfterPairs : undefined,
+    });
+  };
+
+  const modalTitle = initialData 
+    ? (locale === 'ka' ? 'პროექტის რედაქტირება' : 'Edit Project') 
+    : (locale === 'ka' ? 'პროექტის დამატება' : 'Add Project');
+
+  const totalMedia = images.length + videos.length + beforeAfterPairs.length;
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} size="lg">
+      <div className="max-h-[85vh] overflow-hidden flex flex-col -m-6">
+        {/* Premium Header with Gradient */}
+        <div className="relative px-6 py-5 bg-gradient-to-br from-[#C4735B] via-[#B8654D] to-[#A65D47]">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10 blur-xl" />
+            <div className="absolute bottom-0 left-0 w-32 h-16 rounded-full bg-black/5 blur-2xl" />
+          </div>
+          <div className="relative flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-white">
+                {modalTitle}
+              </h2>
+              <p className="text-white/70 text-sm mt-0.5">
+                {locale === 'ka' ? 'აჩვენე შენი საუკეთესო სამუშაო' : 'Showcase your best work'}
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto space-y-5 px-6 py-6">
+          {/* Title & Location Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="flex items-center gap-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-2">
+                <span className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center text-[#C4735B] text-xs">1</span>
+                {locale === 'ka' ? 'სათაური' : 'Title'}
+                <span className="text-red-400">*</span>
+              </label>
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={locale === 'ka' ? 'მაგ: სამზარეულოს რემონტი' : 'e.g. Kitchen Renovation'}
+              />
+            </div>
+            <div>
+              <label className="flex items-center gap-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-2">
+                <MapPin className="w-4 h-4 text-neutral-400" />
+                {locale === 'ka' ? 'მდებარეობა' : 'Location'}
+              </label>
+              <Input
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder={locale === 'ka' ? 'მაგ: თბილისი' : 'e.g. Tbilisi'}
+              />
+            </div>
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="flex items-center gap-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-2">
+              <span className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center text-[#C4735B] text-xs">2</span>
+              {locale === 'ka' ? 'აღწერა' : 'Description'}
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={locale === 'ka' ? 'რა გააკეთეთ? რა მასალები გამოიყენეთ? რამდენ ხანში დასრულდა?' : 'What did you do? Materials used? How long did it take?'}
+              rows={2}
+              className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent focus:bg-white dark:focus:bg-neutral-800 resize-none transition-all"
+            />
+          </div>
+
+          {/* Media Section */}
+          <div className="bg-neutral-50 dark:bg-neutral-800/30 rounded-2xl p-4 border border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between mb-4">
+              <label className="flex items-center gap-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+                <span className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center text-[#C4735B] text-xs">3</span>
+                {locale === 'ka' ? 'მედია ფაილები' : 'Media Files'}
+                <span className="text-red-400">*</span>
+              </label>
+              {totalMedia > 0 && (
+                <span className="px-2.5 py-1 bg-[#C4735B] text-white text-xs font-medium rounded-full">
+                  {totalMedia} {locale === 'ka' ? 'ფაილი' : 'files'}
+                </span>
+              )}
+            </div>
+
+            {/* Media Type Tabs - Premium Design */}
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              {[
+                { key: 'images' as const, icon: ImageIcon, label: locale === 'ka' ? 'სურათები' : 'Photos', count: images.length },
+                { key: 'videos' as const, icon: Video, label: locale === 'ka' ? 'ვიდეო' : 'Video', count: videos.length },
+                { key: 'before_after' as const, icon: SplitSquareHorizontal, label: locale === 'ka' ? 'მანამ./შემდ.' : 'B/A', count: beforeAfterPairs.length },
+              ].map(tab => {
+                const Icon = tab.icon;
+                const isActive = activeMediaTab === tab.key;
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveMediaTab(tab.key)}
+                    className={`relative flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${
+                      isActive
+                        ? 'border-[#C4735B] bg-[#C4735B]/5 shadow-sm'
+                        : 'border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-600'
+                    }`}
+                  >
+                    <Icon className={`w-5 h-5 ${isActive ? 'text-[#C4735B]' : 'text-neutral-400'}`} />
+                    <span className={`text-xs font-medium ${isActive ? 'text-[#C4735B]' : 'text-neutral-500'}`}>
+                      {tab.label}
+                    </span>
+                    {tab.count > 0 && (
+                      <span className={`absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center ${
+                        isActive ? 'bg-[#C4735B] text-white' : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300'
+                      }`}>
+                        {tab.count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Images Tab */}
+            {activeMediaTab === 'images' && (
+              <div className="space-y-3">
+                {images.length === 0 ? (
+                  // Empty State - Large Upload Area
+                  <button
+                    onClick={() => imageInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="w-full py-10 rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800/50 flex flex-col items-center justify-center text-neutral-400 hover:border-[#C4735B] hover:text-[#C4735B] hover:bg-[#C4735B]/5 transition-all group"
+                  >
+                    {isUploading && uploadingType === 'images' ? (
+                      <LoadingSpinner size="lg" color="#C4735B" />
+                    ) : (
+                      <>
+                        <div className="w-14 h-14 rounded-2xl bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center mb-3 group-hover:bg-[#C4735B]/10 group-hover:scale-110 transition-all">
+                          <ImageIcon className="w-7 h-7" />
+                        </div>
+                        <span className="text-sm font-medium">{locale === 'ka' ? 'აირჩიეთ სურათები' : 'Choose Photos'}</span>
+                        <span className="text-xs mt-1 text-neutral-400">{locale === 'ka' ? 'ან გადმოათრიეთ აქ' : 'or drag and drop'}</span>
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  // Image Grid with Add Button
+                  <div className="grid grid-cols-4 gap-2">
+                    {images.map((img, idx) => (
+                      <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group ring-1 ring-neutral-200 dark:ring-neutral-700">
+                        <img src={storage.getFileUrl(img)} alt="" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
+                        <button
+                          onClick={() => removeImage(idx)}
+                          className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 flex items-center justify-center shadow-lg"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => imageInputRef.current?.click()}
+                      disabled={isUploading}
+                      className="aspect-square rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-600 flex flex-col items-center justify-center text-neutral-400 hover:border-[#C4735B] hover:text-[#C4735B] hover:bg-[#C4735B]/5 transition-all"
+                    >
+                      {isUploading && uploadingType === 'images' ? (
+                        <LoadingSpinner size="sm" />
+                      ) : (
+                        <Plus className="w-6 h-6" />
+                      )}
+                    </button>
+                  </div>
+                )}
+                <p className="text-[11px] text-neutral-400 flex items-center gap-1.5">
+                  <span className="w-1 h-1 rounded-full bg-neutral-300" />
+                  JPG, PNG, WebP, GIF
+                  <span className="w-1 h-1 rounded-full bg-neutral-300" />
+                  {locale === 'ka' ? 'მაქს' : 'Max'} 10MB
+                </p>
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                  multiple
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </div>
+            )}
+
+          {/* Videos Tab */}
+          {activeMediaTab === 'videos' && (
+            <div className="space-y-3">
+              {videos.length === 0 ? (
+                <button
+                  onClick={() => videoInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="w-full py-10 rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800/50 flex flex-col items-center justify-center text-neutral-400 hover:border-[#C4735B] hover:text-[#C4735B] hover:bg-[#C4735B]/5 transition-all group"
+                >
+                  {isUploading && uploadingType === 'videos' ? (
+                    <LoadingSpinner size="lg" color="#C4735B" />
+                  ) : (
+                    <>
+                      <div className="w-14 h-14 rounded-2xl bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center mb-3 group-hover:bg-[#C4735B]/10 group-hover:scale-110 transition-all">
+                        <Video className="w-7 h-7" />
+                      </div>
+                      <span className="text-sm font-medium">{locale === 'ka' ? 'ატვირთეთ ვიდეო' : 'Upload Video'}</span>
+                      <span className="text-xs mt-1 text-neutral-400">MP4, MOV, WebM</span>
+                    </>
+                  )}
+                </button>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {videos.map((vid, idx) => (
+                    <div key={idx} className="relative aspect-video rounded-xl overflow-hidden group ring-1 ring-neutral-200 dark:ring-neutral-700 bg-neutral-900">
+                      <video src={storage.getFileUrl(vid)} className="w-full h-full object-cover" muted />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/50 transition-colors">
+                        <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                          <Video className="w-6 h-6 text-white" />
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => removeVideo(idx)}
+                        className="absolute top-2 right-2 w-7 h-7 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 flex items-center justify-center shadow-lg"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => videoInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="aspect-video rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-600 flex flex-col items-center justify-center text-neutral-400 hover:border-[#C4735B] hover:text-[#C4735B] hover:bg-[#C4735B]/5 transition-all"
+                  >
+                    {isUploading && uploadingType === 'videos' ? (
+                      <LoadingSpinner size="sm" />
+                    ) : (
+                      <>
+                        <Plus className="w-6 h-6" />
+                        <span className="text-xs mt-1">{locale === 'ka' ? 'დამატება' : 'Add'}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+              <p className="text-[11px] text-neutral-400 flex items-center gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-neutral-300" />
+                MP4, MOV, WebM
+                <span className="w-1 h-1 rounded-full bg-neutral-300" />
+                {locale === 'ka' ? 'მაქს' : 'Max'} 100MB
+              </p>
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/mp4,video/quicktime,video/webm"
+                onChange={handleVideoUpload}
+                className="hidden"
+              />
+            </div>
+          )}
+
+          {/* Before/After Tab */}
+          {activeMediaTab === 'before_after' && (
+            <div className="space-y-3">
+              {/* Existing pairs */}
+              {beforeAfterPairs.map((pair, idx) => (
+                <div key={idx} className="relative flex gap-3 p-3 rounded-xl bg-white dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 shadow-sm">
+                  <div className="flex-1 space-y-1.5">
+                    <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-full">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                      {locale === 'ka' ? 'მანამდე' : 'Before'}
+                    </span>
+                    <div className="aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-neutral-200 dark:ring-neutral-700">
+                      <img src={storage.getFileUrl(pair.before)} alt="Before" className="w-full h-full object-cover" />
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 rounded-full bg-[#C4735B]/10 flex items-center justify-center">
+                      <ChevronRight className="w-4 h-4 text-[#C4735B]" />
+                    </div>
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      {locale === 'ka' ? 'შემდეგ' : 'After'}
+                    </span>
+                    <div className="aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-neutral-200 dark:ring-neutral-700">
+                      <img src={storage.getFileUrl(pair.after)} alt="After" className="w-full h-full object-cover" />
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => removeBeforeAfter(idx)}
+                    className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+
+              {/* Add new pair */}
+              {pendingBeforeImage ? (
+                <div className="relative flex gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-2 border-amber-300 dark:border-amber-700">
+                  <div className="flex-1 space-y-1.5">
+                    <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-amber-600 bg-amber-100 dark:bg-amber-800/30 px-2 py-0.5 rounded-full">
+                      ✓ {locale === 'ka' ? 'მანამდე' : 'Before'}
+                    </span>
+                    <div className="aspect-[4/3] rounded-lg overflow-hidden ring-2 ring-amber-300 dark:ring-amber-600">
+                      <img src={storage.getFileUrl(pendingBeforeImage)} alt="Before" className="w-full h-full object-cover" />
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 rounded-full bg-amber-200 dark:bg-amber-700 flex items-center justify-center animate-pulse">
+                      <ChevronRight className="w-4 h-4 text-amber-600 dark:text-amber-300" />
+                    </div>
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-amber-600 bg-amber-100 dark:bg-amber-800/30 px-2 py-0.5 rounded-full">
+                      {locale === 'ka' ? 'შემდეგ' : 'After'}?
+                    </span>
+                    <button
+                      onClick={() => afterInputRef.current?.click()}
+                      disabled={isUploading}
+                      className="aspect-[4/3] w-full rounded-lg border-2 border-dashed border-amber-400 dark:border-amber-600 flex flex-col items-center justify-center text-amber-500 bg-white/50 dark:bg-neutral-800/50 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                    >
+                      {isUploading && uploadingType === 'after' ? (
+                        <LoadingSpinner size="sm" color="#D97706" />
+                      ) : (
+                        <>
+                          <Plus className="w-6 h-6" />
+                          <span className="text-xs font-medium mt-1">{locale === 'ka' ? 'აირჩიეთ' : 'Select'}</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => setPendingBeforeImage(null)}
+                    className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-neutral-500 text-white flex items-center justify-center shadow-lg hover:bg-neutral-600 transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => beforeInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="w-full py-8 rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800/50 flex flex-col items-center justify-center text-neutral-400 hover:border-[#C4735B] hover:text-[#C4735B] hover:bg-[#C4735B]/5 transition-all group"
+                >
+                  {isUploading && uploadingType === 'before' ? (
+                    <LoadingSpinner size="lg" color="#C4735B" />
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
+                          <ImageIcon className="w-5 h-5 text-red-400" />
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-neutral-300 group-hover:text-[#C4735B] transition-colors" />
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+                          <ImageIcon className="w-5 h-5 text-emerald-400" />
+                        </div>
+                      </div>
+                      <span className="text-sm font-medium">{locale === 'ka' ? 'შედარების დამატება' : 'Add Comparison'}</span>
+                      <span className="text-xs mt-1 text-neutral-400">{locale === 'ka' ? 'ჯერ აირჩიეთ "მანამდე"' : 'Start with "Before" image'}</span>
+                    </>
+                  )}
+                </button>
+              )}
+
+              <input ref={beforeInputRef} type="file" accept="image/jpeg,image/jpg,image/png,image/webp" onChange={handleBeforeUpload} className="hidden" />
+              <input ref={afterInputRef} type="file" accept="image/jpeg,image/jpg,image/png,image/webp" onChange={handleAfterUpload} className="hidden" />
+            </div>
+          )}
+        </div>
+      </div>
+
+        {/* Footer Actions - Fixed at Bottom */}
+        <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
+          <p className="text-xs text-neutral-400 hidden sm:block">
+            {totalMedia === 0 
+              ? (locale === 'ka' ? 'დაამატეთ მინიმუმ ერთი ფაილი' : 'Add at least one file')
+              : `${totalMedia} ${locale === 'ka' ? 'ფაილი მზადაა' : 'files ready'}`
+            }
+          </p>
+          <div className="flex gap-2 ml-auto">
+            <Button variant="ghost" onClick={onClose} disabled={isLoading}>
+              {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+            </Button>
+            <Button 
+              onClick={handleSubmit} 
+              loading={isLoading}
+              disabled={totalMedia === 0 || !title.trim()}
+              className="min-w-[120px]"
+            >
+              {initialData 
+                ? (locale === 'ka' ? 'განახლება' : 'Update')
+                : (locale === 'ka' ? 'დამატება' : 'Add Project')
+              }
+            </Button>
+          </div>
+        </div>
+      </div>
+    </Modal>
   );
 }

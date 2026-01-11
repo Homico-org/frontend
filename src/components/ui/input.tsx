@@ -42,9 +42,31 @@ export interface InputProps
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, variant, inputSize, leftIcon, rightIcon, error, success, ...props }, ref) => {
+  ({ className, type, variant, inputSize, leftIcon, rightIcon, error, success, min, onChange, ...props }, ref) => {
     // Hide number spinners when rightIcon is present to prevent overlap
     const hideSpinners = type === 'number' && rightIcon;
+
+    // For number inputs, default min to 0 to prevent negative values
+    const numberMin = type === 'number' ? (min !== undefined ? Number(min) : 0) : undefined;
+
+    // Handle change to prevent negative values for number inputs
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (type === 'number') {
+        const value = e.target.value;
+        // Allow empty string for clearing
+        if (value === '') {
+          onChange?.(e);
+          return;
+        }
+        // Prevent negative values
+        const numValue = parseFloat(value);
+        const minValue = numberMin ?? 0;
+        if (!isNaN(numValue) && numValue < minValue) {
+          e.target.value = String(minValue);
+        }
+      }
+      onChange?.(e);
+    };
 
     return (
       <div className="relative">
@@ -55,6 +77,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
         <input
           type={type}
+          min={numberMin}
           className={cn(
             inputVariants({ variant, inputSize }),
             leftIcon && "pl-10",
@@ -65,6 +88,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             className
           )}
           ref={ref}
+          onChange={handleChange}
           {...props}
         />
         {rightIcon && (
