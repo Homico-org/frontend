@@ -25,6 +25,7 @@ import { useToast } from "@/contexts/ToastContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
 import { api } from "@/lib/api";
+import { isMVPMode } from "@/lib/mvp";
 import { storage } from "@/services/storage";
 import type { Job, JobClient, MediaItem, ProjectStage, Proposal } from "@/types/shared";
 import { formatBudget as formatBudgetUtil } from "@/utils/currencyUtils";
@@ -56,6 +57,7 @@ import {
   MessageCircle,
   Mountain,
   Package,
+  Phone,
   Play,
   RotateCcw,
   Ruler,
@@ -1624,8 +1626,8 @@ export default function JobDetailClient() {
                 )}
               </div>
 
-              {/* Compact Status Bar in Hero (for hired projects) */}
-              {isHired && (isOwner || isHiredPro) && (
+              {/* Compact Status Bar in Hero (for hired projects) - hidden in MVP mode */}
+              {isHired && (isOwner || isHiredPro) && !isMVPMode() && (
                 <ProjectStatusBar
                   currentStage={projectStage}
                   locale={locale}
@@ -1695,8 +1697,8 @@ export default function JobDetailClient() {
             </div>
           )}
 
-          {/* Mobile Sidebar Tabs for hired projects */}
-          {isHired && (isOwner || isHiredPro) && (
+          {/* Mobile Sidebar Tabs for hired projects - hidden in MVP mode */}
+          {isHired && (isOwner || isHiredPro) && !isMVPMode() && (
             <div className="lg:hidden mb-6">
               <ProjectSidebarMobile
                 activeTab={activeSidebarTab}
@@ -1710,12 +1712,73 @@ export default function JobDetailClient() {
             </div>
           )}
 
+          {/* MVP Mode: Simplified Hired Card */}
+          {isHired && (isOwner || isHiredPro) && isMVPMode() && (
+            <div className="mb-6 p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/50 dark:border-neutral-800 shadow-sm">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-800/50 flex items-center justify-center">
+                  <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-neutral-900 dark:text-white">
+                    {locale === "ka" ? "დაქირავებულია" : "Hired"}
+                  </h3>
+                  <p className="text-sm text-neutral-500">
+                    {isOwner 
+                      ? (locale === "ka" ? "თქვენ დაიქირავეთ სპეციალისტი" : "You hired the professional")
+                      : (locale === "ka" ? "კლიენტმა დაგიქირავათ" : "The client hired you")
+                    }
+                  </p>
+                </div>
+              </div>
+              
+              {/* Partner info with phone */}
+              <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/50">
+                <div className="flex items-center gap-3">
+                  <Avatar 
+                    src={isOwner ? job.hiredPro?.userId?.avatar : job.clientId?.avatar} 
+                    name={isOwner ? (job.hiredPro?.userId?.name || "Professional") : (job.clientId?.name || "Client")} 
+                    size="md" 
+                  />
+                  <div>
+                    <p className="font-medium text-neutral-900 dark:text-white">
+                      {isOwner ? (job.hiredPro?.userId?.name || "Professional") : (job.clientId?.name || "Client")}
+                    </p>
+                    <p className="text-xs text-neutral-500">
+                      {isOwner ? (locale === "ka" ? "სპეციალისტი" : "Professional") : (locale === "ka" ? "კლიენტი" : "Client")}
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Phone CTA */}
+                {isOwner && job.hiredPro?.userId?.phone && (
+                  <a
+                    href={`tel:${job.hiredPro.userId.phone}`}
+                    className="flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-500 text-white font-semibold text-sm hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/25"
+                  >
+                    <Phone className="w-4 h-4" />
+                    {job.hiredPro.userId.phone}
+                  </a>
+                )}
+                {isHiredPro && job.clientId?.phone && (
+                  <a
+                    href={`tel:${job.clientId.phone}`}
+                    className="flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-500 text-white font-semibold text-sm hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/25"
+                  >
+                    <Phone className="w-4 h-4" />
+                    {job.clientId.phone}
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Status bar moved to hero section - keeping only sidebar tabs below */}
 
-          {/* Two Column Layout (or Three with sidebar for hired projects) */}
-          <div className={`grid gap-8 pb-24 ${isHired && (isOwner || isHiredPro) ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}>
-            {/* Desktop Sidebar for hired projects */}
-            {isHired && (isOwner || isHiredPro) && (
+          {/* Two Column Layout (or Three with sidebar for hired projects - except in MVP mode) */}
+          <div className={`grid gap-8 pb-24 ${isHired && (isOwner || isHiredPro) && !isMVPMode() ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}>
+            {/* Desktop Sidebar for hired projects - hidden in MVP mode */}
+            {isHired && (isOwner || isHiredPro) && !isMVPMode() && (
               <div className="hidden lg:block">
                 <div className="sticky top-24 bg-white dark:bg-neutral-900 rounded-2xl p-4 border border-neutral-200/50 dark:border-neutral-800">
                   <ProjectSidebar
@@ -1732,8 +1795,8 @@ export default function JobDetailClient() {
             )}
             {/* Main Content - min-height prevents layout jumping when switching tabs */}
             <div className="lg:col-span-2 space-y-8 min-h-[500px]">
-              {/* CHAT TAB CONTENT */}
-              {isHired && (isOwner || isHiredPro) && activeSidebarTab === "chat" && (
+              {/* CHAT TAB CONTENT - hidden in MVP mode */}
+              {isHired && (isOwner || isHiredPro) && activeSidebarTab === "chat" && !isMVPMode() && (
                 <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden min-h-[450px]">
                   <ProjectChat
                     jobId={job.id}
@@ -1743,8 +1806,8 @@ export default function JobDetailClient() {
                 </div>
               )}
 
-              {/* POLLS TAB CONTENT */}
-              {isHired && (isOwner || isHiredPro) && activeSidebarTab === "polls" && (
+              {/* POLLS TAB CONTENT - hidden in MVP mode */}
+              {isHired && (isOwner || isHiredPro) && activeSidebarTab === "polls" && !isMVPMode() && (
                 <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 p-4 md:p-6 min-h-[300px]">
                   <PollsTab
                     jobId={job.id}
@@ -1757,8 +1820,8 @@ export default function JobDetailClient() {
                 </div>
               )}
 
-              {/* RESOURCES TAB CONTENT */}
-              {isHired && (isOwner || isHiredPro) && activeSidebarTab === "resources" && (
+              {/* RESOURCES TAB CONTENT - hidden in MVP mode */}
+              {isHired && (isOwner || isHiredPro) && activeSidebarTab === "resources" && !isMVPMode() && (
                 <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 p-4 md:p-6 min-h-[300px]">
                   <ProjectWorkspace
                     jobId={job.id}
@@ -1769,8 +1832,8 @@ export default function JobDetailClient() {
                 </div>
               )}
 
-              {/* HISTORY TAB CONTENT */}
-              {isHired && (isOwner || isHiredPro) && activeSidebarTab === "history" && (
+              {/* HISTORY TAB CONTENT - hidden in MVP mode */}
+              {isHired && (isOwner || isHiredPro) && activeSidebarTab === "history" && !isMVPMode() && (
                 <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden min-h-[300px]">
                   {/* Filter Tabs */}
                   <div className="flex items-center gap-1 px-4 py-3 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">

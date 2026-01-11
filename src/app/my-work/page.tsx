@@ -14,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
+import { isMVPMode } from '@/lib/mvp';
 import { formatBudget } from '@/utils/currencyUtils';
 import { formatDateShort, formatTimeAgo } from '@/utils/dateUtils';
 import {
@@ -21,7 +22,9 @@ import {
   ArrowRight,
   Ban,
   Briefcase,
+  Check,
   CheckCheck,
+  ChevronRight,
   Clock,
   DollarSign,
   ExternalLink,
@@ -29,6 +32,7 @@ import {
   MapPin,
   MessageCircle,
   MessageSquare,
+  Phone,
   Play,
   Quote,
   Search,
@@ -458,8 +462,78 @@ function MyWorkPageContent() {
               const job = proposal.jobId;
               if (!job || typeof job === 'string') return null;
 
-              // For active or completed projects - use ProjectTrackerCard
+              // For active or completed projects
               if (isActiveProject(proposal) || isProjectCompleted(proposal)) {
+                // In MVP mode, show simplified card instead of ProjectTrackerCard
+                if (isMVPMode()) {
+                  const clientName = job.clientId?.name || (language === 'ka' ? 'კლიენტი' : 'Client');
+                  const clientPhone = job.clientId?.phone;
+                  const clientAvatar = job.clientId?.avatar;
+                  
+                  return (
+                    <div
+                      key={proposal.id}
+                      className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100 dark:border-neutral-800 overflow-hidden"
+                    >
+                      {/* Header */}
+                      <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-emerald-50 dark:bg-emerald-900/20">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-800/50 flex items-center justify-center">
+                            <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                          </div>
+                          <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                            {language === 'ka' ? 'დაქირავებული ხართ' : 'You are hired'}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Content */}
+                      <div className="p-4">
+                        <h3 className="font-semibold text-neutral-900 dark:text-white mb-4 line-clamp-2">
+                          {job.title}
+                        </h3>
+                        
+                        {/* Client Info */}
+                        <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50">
+                          <div className="flex items-center gap-3">
+                            <Avatar src={clientAvatar} name={clientName} size="md" className="w-10 h-10" />
+                            <div>
+                              <p className="font-medium text-neutral-900 dark:text-white">{clientName}</p>
+                              <p className="text-xs text-neutral-500">{language === 'ka' ? 'კლიენტი' : 'Client'}</p>
+                            </div>
+                          </div>
+                          
+                          {/* Phone Button */}
+                          {clientPhone && (
+                            <a
+                              href={`tel:${clientPhone}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 text-white font-medium text-sm hover:bg-emerald-600 transition-colors"
+                            >
+                              <Phone className="w-4 h-4" />
+                              {clientPhone}
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Footer */}
+                      <div className="p-4 border-t border-neutral-100 dark:border-neutral-800">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => router.push(`/jobs/${job.id}`)}
+                          rightIcon={<ChevronRight className="w-4 h-4" />}
+                          className="w-full"
+                        >
+                          {language === 'ka' ? 'ნახვა' : 'View Details'}
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                }
+                
+                // Full ProjectTrackerCard for non-MVP mode
                 const projectData = {
                   id: proposal.projectTracking?.id || proposal.id,
                   jobId: job.id,

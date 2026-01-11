@@ -16,6 +16,7 @@ import {
   Clock,
   Crown,
   Eye,
+  Gem,
   Headphones,
   MessageCircle,
   Palette,
@@ -26,19 +27,23 @@ import {
   Zap,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
-// Terracotta color palette
-const TERRACOTTA = {
-  primary: "#C4735B",
-  light: "#D4897A",
-  dark: "#A85D4A",
-  cream: "#F9F5F2",
-  sand: "#F0E6DE",
-  warm: "#E8DDD5",
+// Luxurious color palette
+const COLORS = {
+  gold: "#D4AF37",
+  goldLight: "#E8C547",
+  goldDark: "#B8962F",
+  terracotta: "#C4735B",
+  terracottaLight: "#D4897A",
+  terracottaDark: "#A85D4A",
+  cream: "#FFFBF5",
+  champagne: "#F7E7CE",
+  charcoal: "#1A1A1A",
+  platinum: "#E5E4E2",
 };
 
-// Premium tier type
+// Premium tier configuration
 interface PremiumTier {
   id: string;
   name: { en: string; ka: string };
@@ -49,6 +54,7 @@ interface PremiumTier {
   accentColor: string;
   gradientFrom: string;
   gradientTo: string;
+  glowColor: string;
   features: {
     icon: React.ElementType;
     text: { en: string; ka: string };
@@ -58,7 +64,6 @@ interface PremiumTier {
   highlight?: { en: string; ka: string };
 }
 
-// Premium tier configuration
 const PREMIUM_TIERS: Record<string, PremiumTier> = {
   basic: {
     id: "basic",
@@ -70,6 +75,7 @@ const PREMIUM_TIERS: Record<string, PremiumTier> = {
     accentColor: "#4A9B9B",
     gradientFrom: "#4A9B9B",
     gradientTo: "#3D8585",
+    glowColor: "rgba(74, 155, 155, 0.3)",
     features: [
       { icon: BadgeCheck, text: { en: "Premium Badge", ka: "პრემიუმ ბეჯი" } },
       { icon: TrendingUp, text: { en: "Priority Search", ka: "პრიორიტეტული ძიება" } },
@@ -86,9 +92,10 @@ const PREMIUM_TIERS: Record<string, PremiumTier> = {
     price: { monthly: 59, yearly: 590 },
     currency: "₾",
     icon: Zap,
-    accentColor: TERRACOTTA.primary,
-    gradientFrom: TERRACOTTA.primary,
-    gradientTo: TERRACOTTA.dark,
+    accentColor: COLORS.terracotta,
+    gradientFrom: COLORS.terracotta,
+    gradientTo: COLORS.terracottaDark,
+    glowColor: "rgba(196, 115, 91, 0.35)",
     highlight: { en: "Most Popular", ka: "პოპულარული" },
     features: [
       { icon: BadgeCheck, text: { en: "Everything in Premium", ka: "ყველაფერი პრემიუმიდან" }, included: true },
@@ -107,10 +114,11 @@ const PREMIUM_TIERS: Record<string, PremiumTier> = {
     tagline: { en: "The ultimate experience", ka: "უმაღლესი გამოცდილება" },
     price: { monthly: 99, yearly: 990 },
     currency: "₾",
-    icon: Crown,
-    accentColor: "#B8860B",
-    gradientFrom: "#B8860B",
-    gradientTo: "#8B6914",
+    icon: Gem,
+    accentColor: COLORS.gold,
+    gradientFrom: COLORS.gold,
+    gradientTo: COLORS.goldDark,
+    glowColor: "rgba(212, 175, 55, 0.4)",
     features: [
       { icon: BadgeCheck, text: { en: "Everything in Pro", ka: "ყველაფერი პრო-დან" }, included: true },
       { icon: Crown, text: { en: "Elite Gold Badge", ka: "ელიტა ოქროს ბეჯი" } },
@@ -127,192 +135,355 @@ const PREMIUM_TIERS: Record<string, PremiumTier> = {
 
 type BillingPeriod = "monthly" | "yearly";
 
-// Elite Portfolio Showcase
-function EliteShowcase({ locale, isVisible }: { locale: string; isVisible: boolean }) {
-  const portfolioImages = [
-    { url: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&q=90", title: "Modern Living" },
-    { url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=90", title: "Luxury Kitchen" },
-    { url: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=90", title: "Master Suite" },
-    { url: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&q=90", title: "Office Design" },
-  ];
-
+// Animated Sparkle Component
+function AnimatedSparkles() {
   return (
-    <div className={`relative transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-      {/* Section Title */}
-      <div className="text-center mb-12">
-        <p className="text-sm tracking-[0.3em] uppercase mb-3 font-medium" style={{ color: TERRACOTTA.primary }}>
-          {locale === "ka" ? "ელიტა პორტფოლიო" : "Elite Portfolio"}
-        </p>
-        <h3 className="text-3xl md:text-4xl font-serif text-neutral-800 mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-          {locale === "ka" ? "შენი ნამუშევრები, განსაკუთრებულად" : "Your Work, Elevated"}
-        </h3>
-        <p className="text-neutral-500 max-w-xl mx-auto">
-          {locale === "ka"
-            ? "ელიტა პორტფოლიო გაძლევს უნიკალურ დიზაინს რომელიც შენს ნამუშევრებს განსაკუთრებულად წარმოაჩენს"
-            : "Elite gives you a bespoke portfolio design that presents your work with the prestige it deserves"}
-        </p>
-      </div>
-
-      {/* Showcase Container */}
-      <div className="relative">
-        {/* Floating Badge */}
-        <div className="absolute -top-4 left-8 z-20">
-          <div
-            className="px-4 py-2 rounded-full text-white text-xs font-bold tracking-wider flex items-center gap-2 shadow-lg"
-            style={{ background: `linear-gradient(135deg, ${TERRACOTTA.primary}, ${TERRACOTTA.dark})` }}
-          >
-            <Crown className="w-3.5 h-3.5" />
-            ELITE EXCLUSIVE
-          </div>
-        </div>
-
-        {/* Main Showcase Frame */}
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {[...Array(20)].map((_, i) => (
         <div
-          className="relative rounded-2xl overflow-hidden shadow-2xl"
+          key={i}
+          className="absolute animate-float"
           style={{
-            background: TERRACOTTA.cream,
-            border: `1px solid ${TERRACOTTA.sand}`,
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            animationDelay: `${Math.random() * 5}s`,
+            animationDuration: `${3 + Math.random() * 4}s`,
           }}
         >
-          {/* Corner accents */}
-          <div className="absolute top-0 left-0 w-24 h-24 border-t-2 border-l-2 rounded-tl-2xl" style={{ borderColor: `${TERRACOTTA.primary}40` }} />
-          <div className="absolute bottom-0 right-0 w-24 h-24 border-b-2 border-r-2 rounded-br-2xl" style={{ borderColor: `${TERRACOTTA.primary}40` }} />
+          <Sparkles 
+            className="text-amber-400/20" 
+            style={{ 
+              width: `${8 + Math.random() * 12}px`,
+              height: `${8 + Math.random() * 12}px`,
+            }} 
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
 
-          {/* Profile Header */}
-          <div className="relative p-8 border-b" style={{ borderColor: TERRACOTTA.sand }}>
-            <div className="flex items-center gap-6">
-              {/* Avatar */}
-              <div className="relative">
-                <div
-                  className="w-24 h-24 rounded-full p-1"
-                  style={{ background: `linear-gradient(135deg, ${TERRACOTTA.primary}, ${TERRACOTTA.dark})` }}
-                >
-                  <div
-                    className="w-full h-full rounded-full flex items-center justify-center"
-                    style={{ background: TERRACOTTA.warm }}
-                  >
-                    <span className="text-3xl font-bold" style={{ color: TERRACOTTA.dark, fontFamily: "'Playfair Display', Georgia, serif" }}>NS</span>
-                  </div>
-                </div>
-                <div
-                  className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full flex items-center justify-center shadow-lg"
-                  style={{ background: `linear-gradient(135deg, #B8860B, #8B6914)` }}
-                >
-                  <Crown className="w-4 h-4 text-white" />
-                </div>
-              </div>
+// Premium Card Component
+function PremiumCard({
+  tier,
+  isSelected,
+  billingPeriod,
+  currentTier,
+  locale,
+  onSelect,
+  onChoose,
+  index,
+}: {
+  tier: PremiumTier;
+  isSelected: boolean;
+  billingPeriod: BillingPeriod;
+  currentTier: string;
+  locale: string;
+  onSelect: () => void;
+  onChoose: () => void;
+  index: number;
+}) {
+  const TierIcon = tier.icon;
+  const isElite = tier.id === "elite";
+  const price = tier.price[billingPeriod];
+  const isCurrent = currentTier === tier.id;
 
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h4 className="text-2xl font-semibold text-neutral-800" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                    {locale === "ka" ? "ნინო სანიკიძე" : "Nino Sanikidze"}
-                  </h4>
-                  <span
-                    className="px-3 py-1 rounded-full text-xs font-bold tracking-wider"
-                    style={{
-                      background: `linear-gradient(135deg, #B8860B20, #8B691420)`,
-                      border: '1px solid #B8860B40',
-                      color: '#8B6914'
-                    }}
-                  >
-                    ELITE
-                  </span>
-                </div>
-                <p className="text-neutral-500 mb-3">
-                  {locale === "ka" ? "ინტერიერის დიზაინერი & არქიტექტორი" : "Interior Designer & Architect"}
-                </p>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1.5">
-                    {[1,2,3,4,5].map(i => (
-                      <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                    ))}
-                    <span className="text-neutral-800 font-semibold ml-1">5.0</span>
-                  </div>
-                  <span className="text-neutral-300">|</span>
-                  <span className="text-neutral-500 text-sm">156 {locale === "ka" ? "მიმოხილვა" : "reviews"}</span>
-                </div>
-              </div>
+  return (
+    <div
+      onClick={onSelect}
+      className={`
+        relative rounded-3xl cursor-pointer transition-all duration-500 group
+        ${isSelected ? "scale-[1.03] z-10" : "hover:scale-[1.01]"}
+      `}
+      style={{
+        animationDelay: `${index * 100}ms`,
+      }}
+    >
+      {/* Glow Effect */}
+      <div
+        className={`absolute -inset-1 rounded-3xl blur-xl transition-opacity duration-500 ${
+          isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-50"
+        }`}
+        style={{ background: tier.glowColor }}
+      />
+
+      {/* Gradient Border */}
+      <div
+        className={`absolute inset-0 rounded-3xl p-px transition-opacity duration-300 ${
+          isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+        }`}
+        style={{ background: `linear-gradient(135deg, ${tier.gradientFrom}, ${tier.gradientTo})` }}
+      >
+        <div className="w-full h-full rounded-3xl bg-white dark:bg-neutral-950" />
+      </div>
+
+      {/* Card Content */}
+      <div
+        className={`relative rounded-3xl p-8 h-full overflow-hidden ${
+          isSelected ? "" : "border border-neutral-200/50 dark:border-neutral-800"
+        }`}
+        style={{ background: "white" }}
+      >
+        {/* Shine Effect */}
+        <div
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+          style={{
+            background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.8) 50%, transparent 60%)",
+            transform: "translateX(-100%)",
+            animation: isSelected ? "none" : undefined,
+          }}
+        />
+
+        {/* Elite special background */}
+        {isElite && (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div 
+              className="absolute -top-24 -right-24 w-48 h-48 rounded-full opacity-10"
+              style={{ background: `radial-gradient(circle, ${COLORS.gold} 0%, transparent 70%)` }}
+            />
+            <div 
+              className="absolute -bottom-12 -left-12 w-32 h-32 rounded-full opacity-10"
+              style={{ background: `radial-gradient(circle, ${COLORS.gold} 0%, transparent 70%)` }}
+            />
+          </div>
+        )}
+
+        {/* Popular Badge */}
+        {tier.popular && (
+          <div className="absolute -top-px left-1/2 -translate-x-1/2">
+            <div
+              className="px-4 py-1.5 rounded-b-xl text-xs font-bold text-white tracking-wider flex items-center gap-1.5 shadow-lg"
+              style={{ background: `linear-gradient(135deg, ${tier.gradientFrom}, ${tier.gradientTo})` }}
+            >
+              <Sparkles className="w-3 h-3" />
+              {tier.highlight?.[locale === "ka" ? "ka" : "en"]}
             </div>
           </div>
+        )}
 
-          {/* Portfolio Grid */}
-          <div className="p-8" style={{ background: 'white' }}>
-            <div className="grid grid-cols-12 gap-4">
-              {/* Large featured image */}
-              <div className="col-span-7 row-span-2 relative rounded-xl overflow-hidden group cursor-pointer aspect-[4/3]">
-                <img
-                  src={portfolioImages[0].url}
-                  alt={portfolioImages[0].title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4">
-                  <p className="text-white font-medium text-lg" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                    {portfolioImages[0].title}
-                  </p>
-                  <p className="text-white/70 text-sm mt-1">Tbilisi, 2024</p>
-                </div>
-                {/* Elite watermark */}
-                <div
-                  className="absolute top-4 right-4 w-10 h-10 rounded-full backdrop-blur-sm flex items-center justify-center"
-                  style={{ background: `linear-gradient(135deg, ${TERRACOTTA.primary}E6, ${TERRACOTTA.dark}E6)` }}
-                >
-                  <Crown className="w-5 h-5 text-white" />
-                </div>
-              </div>
-
-              {/* Side images */}
-              {portfolioImages.slice(1).map((img, idx) => (
-                <div key={idx} className="col-span-5 relative rounded-xl overflow-hidden group cursor-pointer aspect-[4/3]">
-                  <img
-                    src={img.url}
-                    alt={img.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="absolute bottom-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <p className="text-white text-sm font-medium">{img.title}</p>
-                  </div>
-                </div>
-              ))}
+        {/* Elite Crown */}
+        {isElite && isSelected && (
+          <div className="absolute top-4 right-4">
+            <div 
+              className="w-10 h-10 rounded-full flex items-center justify-center animate-pulse"
+              style={{ background: `linear-gradient(135deg, ${COLORS.gold}30, ${COLORS.goldDark}20)` }}
+            >
+              <Crown className="w-5 h-5" style={{ color: COLORS.gold }} />
             </div>
+          </div>
+        )}
 
-            {/* View all link */}
-            <div className="mt-6 flex justify-center">
-              <button
-                className="group flex items-center gap-2 transition-colors"
-                style={{ color: TERRACOTTA.primary }}
+        {/* Header */}
+        <div className="mb-8 mt-2">
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110"
+            style={{
+              background: `linear-gradient(135deg, ${tier.gradientFrom}20, ${tier.gradientTo}10)`,
+              boxShadow: isSelected ? `0 8px 32px ${tier.glowColor}` : "none",
+            }}
+          >
+            <TierIcon className="w-7 h-7" style={{ color: tier.accentColor }} />
+          </div>
+          <h3 
+            className="text-2xl font-bold text-neutral-900 mb-2"
+            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+          >
+            {tier.name[locale === "ka" ? "ka" : "en"]}
+          </h3>
+          <p className="text-neutral-500 text-sm">
+            {tier.tagline[locale === "ka" ? "ka" : "en"]}
+          </p>
+        </div>
+
+        {/* Price */}
+        <div className="mb-8">
+          <div className="flex items-baseline gap-1">
+            <span 
+              className="text-5xl font-bold"
+              style={{ 
+                fontFamily: "'Playfair Display', Georgia, serif",
+                background: isElite 
+                  ? `linear-gradient(135deg, ${COLORS.gold}, ${COLORS.goldDark})`
+                  : `linear-gradient(135deg, ${tier.gradientFrom}, ${tier.gradientTo})`,
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              {tier.currency}{price}
+            </span>
+            <span className="text-neutral-400 text-lg">
+              /{billingPeriod === "monthly" ? (locale === "ka" ? "თვე" : "mo") : (locale === "ka" ? "წელი" : "yr")}
+            </span>
+          </div>
+          {billingPeriod === "yearly" && (
+            <div 
+              className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full text-sm font-medium"
+              style={{ background: "#ECFDF5", color: "#059669" }}
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              {locale === "ka" ? `დაზოგე ₾${tier.price.monthly * 12 - tier.price.yearly}` : `Save ₾${tier.price.monthly * 12 - tier.price.yearly}`}
+            </div>
+          )}
+        </div>
+
+        {/* Features */}
+        <ul className="space-y-4 mb-8">
+          {tier.features.map((feature, i) => {
+            const FeatureIcon = feature.icon;
+            return (
+              <li 
+                key={i} 
+                className={`flex items-center gap-3 transition-all duration-300 ${
+                  feature.included ? "opacity-60" : ""
+                }`}
               >
-                <span className="text-sm tracking-wide">{locale === "ka" ? "ყველა პროექტის ნახვა" : "View All Projects"}</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </button>
-            </div>
-          </div>
+                <div
+                  className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
+                  style={{ 
+                    backgroundColor: feature.included ? "#F3F4F6" : `${tier.accentColor}15`,
+                  }}
+                >
+                  {feature.included ? (
+                    <Check className="w-3.5 h-3.5 text-neutral-400" />
+                  ) : (
+                    <FeatureIcon className="w-3.5 h-3.5" style={{ color: tier.accentColor }} />
+                  )}
+                </div>
+                <span className={`text-sm ${feature.included ? "text-neutral-400" : "text-neutral-700"}`}>
+                  {feature.text[locale === "ka" ? "ka" : "en"]}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
 
-          {/* Stats Bar */}
-          <div className="grid grid-cols-3" style={{ borderTop: `1px solid ${TERRACOTTA.sand}`, background: TERRACOTTA.cream }}>
-            {[
-              { value: "156", label: locale === "ka" ? "პროექტი" : "Projects" },
-              { value: "10x", label: locale === "ka" ? "მეტი ნახვა" : "More Views" },
-              { value: "#1", label: locale === "ka" ? "ძიებაში" : "In Search" },
-            ].map((stat, i) => (
-              <div key={i} className="p-6 text-center border-r last:border-r-0" style={{ borderColor: TERRACOTTA.sand }}>
-                <p className="text-2xl font-bold" style={{ color: TERRACOTTA.dark, fontFamily: "'Playfair Display', Georgia, serif" }}>{stat.value}</p>
-                <p className="text-neutral-500 text-sm mt-1">{stat.label}</p>
-              </div>
-            ))}
-          </div>
+        {/* CTA Button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onChoose();
+          }}
+          disabled={isCurrent}
+          className={`
+            relative w-full py-4 rounded-xl font-bold text-sm transition-all duration-300 
+            flex items-center justify-center gap-2 overflow-hidden group/btn
+            ${isCurrent
+              ? "bg-neutral-100 text-neutral-400 cursor-not-allowed"
+              : isSelected
+                ? "text-white shadow-xl hover:shadow-2xl"
+                : "text-neutral-700 hover:shadow-lg"
+            }
+          `}
+          style={{
+            background: isSelected && !isCurrent
+              ? `linear-gradient(135deg, ${tier.gradientFrom}, ${tier.gradientTo})`
+              : isCurrent 
+                ? undefined 
+                : COLORS.platinum,
+            boxShadow: isSelected && !isCurrent ? `0 8px 32px ${tier.glowColor}` : undefined,
+          }}
+        >
+          {/* Button shine effect */}
+          {isSelected && !isCurrent && (
+            <div 
+              className="absolute inset-0 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-500"
+              style={{
+                background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%)",
+              }}
+            />
+          )}
+          <span className="relative z-10 flex items-center gap-2">
+            {isCurrent ? (
+              <>{locale === "ka" ? "მიმდინარე გეგმა" : "Current Plan"}</>
+            ) : (
+              <>
+                {isElite && <Crown className="w-4 h-4" />}
+                {locale === "ka" ? "აირჩიე" : "Get Started"}
+                <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+              </>
+            )}
+          </span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Testimonial Component
+function TestimonialCard({ 
+  name, 
+  role, 
+  text, 
+  rating,
+  avatar,
+  tier,
+  index,
+}: { 
+  name: string; 
+  role: string; 
+  text: string; 
+  rating: number;
+  avatar: string;
+  tier: string;
+  index: number;
+}) {
+  const tierColors: Record<string, { bg: string; text: string }> = {
+    elite: { bg: `${COLORS.gold}20`, text: COLORS.goldDark },
+    pro: { bg: `${COLORS.terracotta}20`, text: COLORS.terracottaDark },
+    premium: { bg: "#4A9B9B20", text: "#3D8585" },
+  };
+  const colors = tierColors[tier] || tierColors.premium;
+
+  return (
+    <div 
+      className="relative bg-white rounded-2xl p-6 border border-neutral-100 shadow-sm hover:shadow-xl transition-all duration-500 group"
+      style={{ animationDelay: `${index * 100}ms` }}
+    >
+      {/* Quote mark */}
+      <div 
+        className="absolute top-4 right-4 text-5xl font-serif opacity-10"
+        style={{ color: COLORS.terracotta }}
+      >
+        &ldquo;
+      </div>
+
+      <div className="flex items-start gap-4 mb-4">
+        <div 
+          className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
+          style={{ background: `linear-gradient(135deg, ${COLORS.terracotta}, ${COLORS.terracottaDark})` }}
+        >
+          {avatar}
+        </div>
+        <div>
+          <h4 className="font-semibold text-neutral-900">{name}</h4>
+          <p className="text-sm text-neutral-500">{role}</p>
+        </div>
+        <div 
+          className="ml-auto px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider"
+          style={{ background: colors.bg, color: colors.text }}
+        >
+          {tier}
         </div>
       </div>
 
-      {/* Comparison hint */}
-      <div className="mt-8 text-center">
-        <p className="text-neutral-400 text-sm flex items-center justify-center gap-2">
-          <span className="w-8 h-px" style={{ background: TERRACOTTA.sand }} />
-          {locale === "ka" ? "სტანდარტული vs ელიტა პორტფოლიო" : "Standard vs Elite Portfolio"}
-          <span className="w-8 h-px" style={{ background: TERRACOTTA.sand }} />
-        </p>
+      <p className="text-neutral-600 text-sm leading-relaxed mb-4">{text}</p>
+
+      <div className="flex items-center gap-0.5">
+        {[...Array(5)].map((_, i) => (
+          <Star 
+            key={i} 
+            className={`w-4 h-4 ${i < rating ? "fill-amber-400 text-amber-400" : "text-neutral-200"}`} 
+          />
+        ))}
       </div>
+
+      {/* Hover glow */}
+      <div 
+        className="absolute -inset-px rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+        style={{ 
+          background: `linear-gradient(135deg, ${COLORS.terracotta}20, transparent 50%, ${COLORS.gold}20)`,
+        }}
+      />
     </div>
   );
 }
@@ -330,7 +501,7 @@ function FAQItem({
   onToggle: () => void;
 }) {
   return (
-    <div className="border-b last:border-0" style={{ borderColor: TERRACOTTA.sand }}>
+    <div className="border-b border-neutral-100 last:border-0">
       <button
         onClick={onToggle}
         className="w-full flex items-center justify-between gap-4 py-6 text-left group"
@@ -338,10 +509,17 @@ function FAQItem({
         <span className="font-medium text-neutral-800 group-hover:text-neutral-600 transition-colors">
           {question}
         </span>
-        <ChevronDown
-          className={`w-5 h-5 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
-          style={{ color: isOpen ? TERRACOTTA.primary : '#9CA3AF' }}
-        />
+        <div 
+          className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+          style={{ background: isOpen ? `${COLORS.terracotta}15` : "#F3F4F6" }}
+        >
+          <ChevronDown
+            className="w-4 h-4"
+            style={{ color: isOpen ? COLORS.terracotta : "#9CA3AF" }}
+          />
+        </div>
       </button>
       <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-48 pb-6" : "max-h-0"}`}>
         <p className="text-neutral-500 leading-relaxed">{answer}</p>
@@ -355,12 +533,12 @@ export default function PremiumPlansPage() {
   const { locale } = useLanguage();
   const router = useRouter();
   const { trackEvent } = useAnalytics();
-  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("monthly");
-  const [selectedTier, setSelectedTier] = useState<string>("elite");
+  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("yearly");
+  const [selectedTier, setSelectedTier] = useState<string>("pro");
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [showcaseVisible, setShowcaseVisible] = useState(false);
-  const showcaseRef = useRef<HTMLDivElement>(null);
+  const testimonialsRef = useRef<HTMLDivElement>(null);
+  const [testimonialsVisible, setTestimonialsVisible] = useState(false);
 
   const isPro = user?.role === "pro";
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -374,21 +552,14 @@ export default function PremiumPlansPage() {
     trackEvent(AnalyticsEvent.PREMIUM_VIEW);
   }, [trackEvent]);
 
-  // Intersection observer for showcase
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setShowcaseVisible(true);
-        }
+        if (entry.isIntersecting) setTestimonialsVisible(true);
       },
       { threshold: 0.2 }
     );
-
-    if (showcaseRef.current) {
-      observer.observe(showcaseRef.current);
-    }
-
+    if (testimonialsRef.current) observer.observe(testimonialsRef.current);
     return () => observer.disconnect();
   }, []);
 
@@ -401,13 +572,45 @@ export default function PremiumPlansPage() {
       router.push("/become-pro?redirect=/pro/premium");
       return;
     }
-    const tier = PREMIUM_TIERS[tierId];
     trackEvent(AnalyticsEvent.PREMIUM_CHECKOUT_START, {
       planType: tierId,
-      planPrice: tier.price[billingPeriod],
+      planPrice: PREMIUM_TIERS[tierId].price[billingPeriod],
     });
     router.push(`/pro/premium/checkout?tier=${tierId}&period=${billingPeriod}`);
   };
+
+  const testimonials = [
+    {
+      name: locale === "ka" ? "გიორგი მელაძე" : "Giorgi Meladze",
+      role: locale === "ka" ? "ინტერიერის დიზაინერი" : "Interior Designer",
+      text: locale === "ka" 
+        ? "Elite-მ სრულიად შეცვალა ჩემი ბიზნესი. თვეში 3-ჯერ მეტ მომხმარებელს ვიღებ!"
+        : "Elite completely transformed my business. I get 3x more clients per month!",
+      rating: 5,
+      avatar: "გმ",
+      tier: "elite",
+    },
+    {
+      name: locale === "ka" ? "ნინო წერეთელი" : "Nino Tsereteli",
+      role: locale === "ka" ? "არქიტექტორი" : "Architect",
+      text: locale === "ka"
+        ? "პრო გეგმა საუკეთესო ინვესტიციაა. პორტფოლიო უფრო მეტ ადამიანს აჩვენებს."
+        : "Pro plan is the best investment. My portfolio reaches so many more people now.",
+      rating: 5,
+      avatar: "ნწ",
+      tier: "pro",
+    },
+    {
+      name: locale === "ka" ? "დავით ჩხეიძე" : "David Chkheidze",
+      role: locale === "ka" ? "მშენებელი" : "Builder",
+      text: locale === "ka"
+        ? "პრიორიტეტული ძიება ნამდვილად მუშაობს. ახლა პირველ გვერდზე ვარ!"
+        : "Priority search really works. I'm now on the first page of results!",
+      rating: 5,
+      avatar: "დჩ",
+      tier: "premium",
+    },
+  ];
 
   const faqs = [
     {
@@ -422,316 +625,284 @@ export default function PremiumPlansPage() {
       q: { en: "How does the 7-day guarantee work?", ka: "როგორ მუშაობს 7 დღიანი გარანტია?" },
       a: { en: "If you're not satisfied within the first 7 days, contact us for a full refund. No questions asked.", ka: "თუ პირველი 7 დღის განმავლობაში არ ხარ კმაყოფილი, დაგიბრუნებთ 100%-ს." },
     },
+    {
+      q: { en: "What happens when my subscription ends?", ka: "რა ხდება როცა გამოწერა მთავრდება?" },
+      a: { en: "Your profile reverts to the free tier. All your data and portfolio remain intact.", ka: "შენი პროფილი უფასო ვერსიაზე გადაიტანება. მონაცემები და პორტფოლიო შენარჩუნებულია." },
+    },
   ];
 
   return (
-    <div className="min-h-screen" style={{ background: TERRACOTTA.cream }}>
-      {/* Custom font import */}
+    <div className="min-h-screen bg-gradient-to-b from-white via-neutral-50/50 to-white dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
+      {/* Custom Styles */}
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap');
+        
+        @keyframes float {
+          0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
+          50% { transform: translateY(-20px) rotate(10deg); opacity: 0.6; }
+        }
+        
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+        
+        .animate-shimmer {
+          animation: shimmer 3s ease-in-out infinite;
+        }
       `}</style>
 
       <Header />
       <HeaderSpacer />
 
       <main className={`relative transition-all duration-1000 ${isVisible ? "opacity-100" : "opacity-0"}`}>
-
-        {/* Hero Section */}
+        
+        {/* ========== HERO SECTION ========== */}
         <section className="relative pt-16 pb-24 overflow-hidden">
-          {/* Background Effects */}
-          <div className="absolute inset-0 pointer-events-none">
-            {/* Soft gradient orbs */}
-            <div
-              className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full blur-[150px]"
-              style={{ background: `${TERRACOTTA.primary}10` }}
+          {/* Animated Background */}
+          <AnimatedSparkles />
+          
+          {/* Gradient Orbs */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div 
+              className="absolute top-0 left-1/4 w-[800px] h-[800px] rounded-full blur-[200px] opacity-30"
+              style={{ background: `radial-gradient(circle, ${COLORS.terracotta}40 0%, transparent 70%)` }}
             />
-            <div
-              className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full blur-[120px]"
-              style={{ background: `${TERRACOTTA.light}10` }}
-            />
-
-            {/* Decorative lines */}
-            <div
-              className="absolute top-32 left-0 w-1/3 h-px"
-              style={{ background: `linear-gradient(to right, transparent, ${TERRACOTTA.primary}20, transparent)` }}
-            />
-            <div
-              className="absolute top-32 right-0 w-1/3 h-px"
-              style={{ background: `linear-gradient(to left, transparent, ${TERRACOTTA.primary}20, transparent)` }}
+            <div 
+              className="absolute bottom-0 right-1/4 w-[600px] h-[600px] rounded-full blur-[150px] opacity-20"
+              style={{ background: `radial-gradient(circle, ${COLORS.gold}40 0%, transparent 70%)` }}
             />
           </div>
 
+          {/* Decorative Lines */}
+          <div 
+            className="absolute top-1/4 left-0 right-0 h-px opacity-30"
+            style={{ background: `linear-gradient(to right, transparent, ${COLORS.terracotta}40, transparent)` }}
+          />
+
           <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
+            
             {/* Trust Badge */}
-            <div className="flex justify-center mb-8">
-              <div
-                className="flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm"
-                style={{ background: 'white', border: `1px solid ${TERRACOTTA.sand}` }}
-              >
+            <div className="flex justify-center mb-10">
+              <div className="flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/80 backdrop-blur-sm border border-neutral-200/50 shadow-lg">
                 <div className="flex -space-x-2">
-                  {[1,2,3,4].map((i) => (
+                  {["NM", "GT", "DK", "LS"].map((initials, i) => (
                     <div
                       key={i}
-                      className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-xs font-bold text-white"
-                      style={{ background: `linear-gradient(135deg, ${TERRACOTTA.primary}, ${TERRACOTTA.dark})` }}
+                      className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-xs font-bold text-white shadow-md"
+                      style={{ 
+                        background: i === 0 
+                          ? `linear-gradient(135deg, ${COLORS.gold}, ${COLORS.goldDark})` 
+                          : `linear-gradient(135deg, ${COLORS.terracotta}, ${COLORS.terracottaDark})`,
+                        zIndex: 4 - i,
+                      }}
                     >
-                      {String.fromCharCode(64 + i)}
+                      {initials}
                     </div>
                   ))}
                 </div>
-                <span className="text-neutral-500 text-sm ml-2">
-                  <span className="text-neutral-800 font-semibold">500+</span> {locale === "ka" ? "პროფესიონალი" : "professionals"}
-                </span>
+                <div className="text-sm">
+                  <span className="font-bold text-neutral-900">500+</span>{" "}
+                  <span className="text-neutral-500">{locale === "ka" ? "პროფესიონალი" : "professionals trust us"}</span>
+                </div>
               </div>
             </div>
 
             {/* Main Headline */}
             <div className="text-center max-w-4xl mx-auto mb-16">
               <h1
-                className="text-5xl sm:text-6xl lg:text-7xl font-semibold text-neutral-800 mb-6 leading-[1.1]"
+                className="text-5xl sm:text-6xl lg:text-7xl font-bold text-neutral-900 mb-6 leading-[1.1]"
                 style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
               >
                 {locale === "ka" ? (
                   <>
-                    შენი ბიზნესი იმსახურებს{" "}
+                    გახადე შენი ბიზნესი{" "}
                     <span className="relative inline-block">
-                      <span style={{ color: TERRACOTTA.primary }}>
-                        განსაკუთრებულს
+                      <span 
+                        style={{ 
+                          background: `linear-gradient(135deg, ${COLORS.gold}, ${COLORS.terracotta})`,
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                        }}
+                      >
+                        ლეგენდა
                       </span>
-                      <svg className="absolute -bottom-2 left-0 w-full h-3" viewBox="0 0 200 12" fill="none" preserveAspectRatio="none">
-                        <path d="M0 8C40 4 80 6 120 4C160 2 180 6 200 5" stroke={TERRACOTTA.primary} strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.4" />
-                      </svg>
+                      <div 
+                        className="absolute -bottom-2 left-0 right-0 h-1 rounded-full"
+                        style={{ background: `linear-gradient(to right, ${COLORS.gold}, ${COLORS.terracotta})` }}
+                      />
                     </span>
                   </>
                 ) : (
                   <>
-                    Your Business Deserves{" "}
+                    Make Your Business{" "}
                     <span className="relative inline-block">
-                      <span style={{ color: TERRACOTTA.primary }}>
-                        Extraordinary
+                      <span 
+                        style={{ 
+                          background: `linear-gradient(135deg, ${COLORS.gold}, ${COLORS.terracotta})`,
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                        }}
+                      >
+                        Legendary
                       </span>
-                      <svg className="absolute -bottom-2 left-0 w-full h-3" viewBox="0 0 200 12" fill="none" preserveAspectRatio="none">
-                        <path d="M0 8C40 4 80 6 120 4C160 2 180 6 200 5" stroke={TERRACOTTA.primary} strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.4" />
-                      </svg>
+                      <div 
+                        className="absolute -bottom-2 left-0 right-0 h-1 rounded-full"
+                        style={{ background: `linear-gradient(to right, ${COLORS.gold}, ${COLORS.terracotta})` }}
+                      />
                     </span>
                   </>
                 )}
               </h1>
               <p className="text-lg sm:text-xl text-neutral-500 max-w-2xl mx-auto leading-relaxed">
                 {locale === "ka"
-                  ? "შეუერთდი ელიტა პროფესიონალებს და გახსენი ახალი შესაძლებლობები"
-                  : "Join elite professionals and unlock opportunities that transform your career"}
+                  ? "შეუერთდი ელიტა პროფესიონალებს და გახსენი ახალი შესაძლებლობები რომლებიც შენს კარიერას შეცვლის"
+                  : "Join elite professionals and unlock opportunities that transform your career forever"}
               </p>
             </div>
 
             {/* Billing Toggle */}
-            <div className="flex items-center justify-center mb-12">
-              <div
-                className="flex items-center gap-1 p-1 rounded-full"
-                style={{ background: 'white', border: `1px solid ${TERRACOTTA.sand}` }}
-              >
+            <div className="flex items-center justify-center mb-14">
+              <div className="relative flex items-center gap-1 p-1.5 rounded-full bg-white border border-neutral-200 shadow-lg">
                 <button
                   onClick={() => setBillingPeriod("monthly")}
-                  className={`relative px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
+                  className={`relative px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${
                     billingPeriod === "monthly" ? "text-white" : "text-neutral-500 hover:text-neutral-700"
                   }`}
                 >
                   {billingPeriod === "monthly" && (
                     <div
-                      className="absolute inset-0 rounded-full"
-                      style={{ background: `linear-gradient(135deg, ${TERRACOTTA.primary}, ${TERRACOTTA.dark})` }}
+                      className="absolute inset-0 rounded-full shadow-lg"
+                      style={{ background: `linear-gradient(135deg, ${COLORS.terracotta}, ${COLORS.terracottaDark})` }}
                     />
                   )}
                   <span className="relative z-10">{locale === "ka" ? "თვიური" : "Monthly"}</span>
                 </button>
                 <button
                   onClick={() => setBillingPeriod("yearly")}
-                  className={`relative px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
+                  className={`relative px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${
                     billingPeriod === "yearly" ? "text-white" : "text-neutral-500 hover:text-neutral-700"
                   }`}
                 >
                   {billingPeriod === "yearly" && (
                     <div
-                      className="absolute inset-0 rounded-full"
-                      style={{ background: `linear-gradient(135deg, ${TERRACOTTA.primary}, ${TERRACOTTA.dark})` }}
+                      className="absolute inset-0 rounded-full shadow-lg"
+                      style={{ background: `linear-gradient(135deg, ${COLORS.terracotta}, ${COLORS.terracottaDark})` }}
                     />
                   )}
                   <span className="relative z-10 flex items-center gap-2">
                     {locale === "ka" ? "წლიური" : "Yearly"}
-                    <Badge variant="success" size="xs">-17%</Badge>
                   </span>
                 </button>
+                {/* Save badge */}
+                <div 
+                  className="absolute -top-3 -right-2 px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-lg animate-pulse"
+                  style={{ background: `linear-gradient(135deg, #10B981, #059669)` }}
+                >
+                  -17%
+                </div>
               </div>
             </div>
 
             {/* Pricing Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
-              {Object.values(PREMIUM_TIERS).map((tier, index) => {
-                const TierIcon = tier.icon;
-                const isSelected = selectedTier === tier.id;
-                const isElite = tier.id === "elite";
-                const price = tier.price[billingPeriod];
+              {Object.values(PREMIUM_TIERS).map((tier, index) => (
+                <PremiumCard
+                  key={tier.id}
+                  tier={tier}
+                  isSelected={selectedTier === tier.id}
+                  billingPeriod={billingPeriod}
+                  currentTier={currentTier}
+                  locale={locale}
+                  onSelect={() => setSelectedTier(tier.id)}
+                  onChoose={() => handleSelectPlan(tier.id)}
+                  index={index}
+                />
+              ))}
+            </div>
 
-                return (
-                  <div
-                    key={tier.id}
-                    onClick={() => setSelectedTier(tier.id)}
-                    className={`relative rounded-2xl p-px cursor-pointer transition-all duration-500 ${
-                      isSelected
-                        ? isElite
-                          ? "scale-[1.02] shadow-2xl"
-                          : "scale-[1.02] shadow-xl"
-                        : "hover:scale-[1.01]"
-                    }`}
-                    style={{
-                      background: isSelected
-                        ? `linear-gradient(135deg, ${tier.gradientFrom}, ${tier.gradientTo})`
-                        : 'transparent',
-                      animationDelay: `${index * 150}ms`,
-                    }}
-                  >
-                    {/* Card inner */}
-                    <div
-                      className="relative rounded-2xl p-6 h-full"
-                      style={{
-                        background: 'white',
-                        border: isSelected ? 'none' : `1px solid ${TERRACOTTA.sand}`,
-                      }}
-                    >
-
-                      {/* Popular badge */}
-                      {tier.popular && (
-                        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                          <span
-                            className="px-3 py-1 rounded-full text-xs font-bold text-white shadow-lg"
-                            style={{ background: `linear-gradient(135deg, ${TERRACOTTA.primary}, ${TERRACOTTA.dark})` }}
-                          >
-                            {tier.highlight?.[locale === "ka" ? "ka" : "en"]}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Header */}
-                      <div className="mb-6">
-                        <div
-                          className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
-                          style={{
-                            background: `linear-gradient(135deg, ${tier.gradientFrom}15, ${tier.gradientTo}08)`,
-                          }}
-                        >
-                          <TierIcon className="w-6 h-6" style={{ color: tier.accentColor }} />
-                        </div>
-                        <h3 className="text-xl font-semibold text-neutral-800 mb-1" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                          {tier.name[locale === "ka" ? "ka" : "en"]}
-                        </h3>
-                        <p className="text-neutral-500 text-sm">
-                          {tier.tagline[locale === "ka" ? "ka" : "en"]}
-                        </p>
-                      </div>
-
-                      {/* Price */}
-                      <div className="mb-6">
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-4xl font-bold text-neutral-800" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                            {tier.currency}{price}
-                          </span>
-                          <span className="text-neutral-400">
-                            /{billingPeriod === "monthly" ? (locale === "ka" ? "თვე" : "mo") : (locale === "ka" ? "წელი" : "yr")}
-                          </span>
-                        </div>
-                        {billingPeriod === "yearly" && (
-                          <p className="text-emerald-600 text-sm mt-1 flex items-center gap-1">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            {locale === "ka" ? `დაზოგე ₾${tier.price.monthly * 12 - tier.price.yearly}` : `Save ₾${tier.price.monthly * 12 - tier.price.yearly}`}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Features */}
-                      <ul className="space-y-3 mb-6">
-                        {tier.features.map((feature, i) => {
-                          const FeatureIcon = feature.icon;
-                          return (
-                            <li key={i} className={`flex items-center gap-3 ${feature.included ? "opacity-50" : ""}`}>
-                              <div
-                                className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0"
-                                style={{ backgroundColor: feature.included ? '#F3F4F6' : `${tier.accentColor}15` }}
-                              >
-                                {feature.included ? (
-                                  <Check className="w-3 h-3 text-neutral-400" />
-                                ) : (
-                                  <FeatureIcon className="w-3 h-3" style={{ color: tier.accentColor }} />
-                                )}
-                              </div>
-                              <span className={`text-sm ${feature.included ? "text-neutral-400" : "text-neutral-600"}`}>
-                                {feature.text[locale === "ka" ? "ka" : "en"]}
-                              </span>
-                            </li>
-                          );
-                        })}
-                      </ul>
-
-                      {/* CTA */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectPlan(tier.id);
-                        }}
-                        disabled={currentTier === tier.id}
-                        className={`w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
-                          currentTier === tier.id
-                            ? "bg-neutral-100 text-neutral-400 cursor-not-allowed"
-                            : isSelected
-                              ? "text-white hover:opacity-90"
-                              : "text-neutral-700 hover:bg-neutral-100"
-                        }`}
-                        style={{
-                          background: isSelected && currentTier !== tier.id
-                            ? `linear-gradient(135deg, ${tier.gradientFrom}, ${tier.gradientTo})`
-                            : currentTier === tier.id ? undefined : TERRACOTTA.sand,
-                        }}
-                      >
-                        {currentTier === tier.id ? (
-                          <>{locale === "ka" ? "მიმდინარე გეგმა" : "Current Plan"}</>
-                        ) : (
-                          <>
-                            {locale === "ka" ? "აირჩიე" : "Get Started"}
-                            <ArrowRight className="w-4 h-4" />
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+            {/* Guarantee Badge */}
+            <div className="flex justify-center mt-12">
+              <div className="flex items-center gap-3 px-6 py-3 rounded-full bg-emerald-50 border border-emerald-100">
+                <Shield className="w-5 h-5 text-emerald-600" />
+                <span className="text-sm font-medium text-emerald-700">
+                  {locale === "ka" ? "7 დღიანი გარანტია - 100% თანხის დაბრუნება" : "7-Day Money-Back Guarantee - No Questions Asked"}
+                </span>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Elite Showcase Section */}
-        <section ref={showcaseRef} className="py-24" style={{ background: 'white' }}>
+        {/* ========== TESTIMONIALS SECTION ========== */}
+        <section 
+          ref={testimonialsRef}
+          className="py-24 bg-gradient-to-b from-neutral-50 to-white"
+        >
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <EliteShowcase locale={locale} isVisible={showcaseVisible} />
+            <div className="text-center mb-14">
+              <Badge variant="premium" size="sm" className="mb-4">
+                <Star className="w-3.5 h-3.5" />
+                {locale === "ka" ? "რეალური შედეგები" : "Real Results"}
+              </Badge>
+              <h2 
+                className="text-4xl font-bold text-neutral-900 mb-4"
+                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+              >
+                {locale === "ka" ? "რას ამბობენ ჩვენი წევრები" : "What Our Members Say"}
+              </h2>
+              <p className="text-neutral-500 max-w-xl mx-auto">
+                {locale === "ka" 
+                  ? "შეუერთდი ასობით წარმატებულ პროფესიონალს რომლებმაც უკვე გააუმჯობესეს თავიანთი ბიზნესი"
+                  : "Join hundreds of successful professionals who have already transformed their business"}
+              </p>
+            </div>
+
+            <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-1000 ${
+              testimonialsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            }`}>
+              {testimonials.map((testimonial, i) => (
+                <TestimonialCard key={i} {...testimonial} index={i} />
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* Trust Section */}
-        <section className="py-20" style={{ background: TERRACOTTA.cream }}>
+        {/* ========== STATS SECTION ========== */}
+        <section className="py-20 bg-white">
           <div className="max-w-5xl mx-auto px-4 sm:px-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[
-                { icon: Shield, value: "7", label: locale === "ka" ? "დღის გარანტია" : "Day Guarantee" },
-                { icon: Crown, value: "500+", label: locale === "ka" ? "ელიტა წევრი" : "Elite Members" },
-                { icon: Star, value: "4.9", label: locale === "ka" ? "საშუალო რეიტინგი" : "Avg Rating" },
-                { icon: TrendingUp, value: "10x", label: locale === "ka" ? "მეტი ნახვა" : "More Views" },
+                { icon: Shield, value: "7", label: locale === "ka" ? "დღის გარანტია" : "Day Guarantee", color: "#10B981" },
+                { icon: Crown, value: "500+", label: locale === "ka" ? "ელიტა წევრი" : "Elite Members", color: COLORS.gold },
+                { icon: Star, value: "4.9", label: locale === "ka" ? "საშუალო რეიტინგი" : "Avg Rating", color: "#F59E0B" },
+                { icon: TrendingUp, value: "10x", label: locale === "ka" ? "მეტი ნახვა" : "More Views", color: COLORS.terracotta },
               ].map((stat, i) => (
                 <div
                   key={i}
-                  className="text-center p-6 rounded-2xl transition-all hover:shadow-lg"
-                  style={{ background: 'white', border: `1px solid ${TERRACOTTA.sand}` }}
+                  className="relative text-center p-8 rounded-2xl bg-white border border-neutral-100 shadow-sm hover:shadow-xl transition-all duration-500 group overflow-hidden"
                 >
-                  <stat.icon className="w-6 h-6 mx-auto mb-3" style={{ color: TERRACOTTA.primary }} />
-                  <p className="text-3xl font-bold text-neutral-800 mb-1" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{stat.value}</p>
+                  {/* Hover glow */}
+                  <div 
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                    style={{ background: `radial-gradient(circle at center, ${stat.color}10 0%, transparent 70%)` }}
+                  />
+                  
+                  <div 
+                    className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
+                    style={{ background: `${stat.color}15` }}
+                  >
+                    <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
+                  </div>
+                  <p 
+                    className="text-4xl font-bold text-neutral-900 mb-2"
+                    style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                  >
+                    {stat.value}
+                  </p>
                   <p className="text-neutral-500 text-sm">{stat.label}</p>
                 </div>
               ))}
@@ -739,19 +910,19 @@ export default function PremiumPlansPage() {
           </div>
         </section>
 
-        {/* FAQ Section */}
-        <section className="py-20" style={{ background: 'white' }}>
+        {/* ========== FAQ SECTION ========== */}
+        <section className="py-24 bg-neutral-50">
           <div className="max-w-3xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-semibold text-neutral-800 mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+              <h2 
+                className="text-3xl font-bold text-neutral-900 mb-4"
+                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+              >
                 {locale === "ka" ? "ხშირად დასმული კითხვები" : "Frequently Asked Questions"}
               </h2>
             </div>
 
-            <div
-              className="rounded-2xl p-6 sm:p-8"
-              style={{ background: TERRACOTTA.cream, border: `1px solid ${TERRACOTTA.sand}` }}
-            >
+            <div className="rounded-2xl bg-white p-8 border border-neutral-100 shadow-sm">
               {faqs.map((faq, i) => (
                 <FAQItem
                   key={i}
@@ -765,40 +936,68 @@ export default function PremiumPlansPage() {
           </div>
         </section>
 
-        {/* Final CTA */}
-        <section className="py-24" style={{ background: TERRACOTTA.cream }}>
-          <div className="max-w-4xl mx-auto px-4 sm:px-6">
-            <div className="relative rounded-3xl overflow-hidden">
-              {/* Background */}
-              <div
-                className="absolute inset-0"
-                style={{ background: `linear-gradient(135deg, ${TERRACOTTA.primary}, ${TERRACOTTA.dark})` }}
-              />
-              <div className="absolute inset-0 opacity-20" style={{
-                backgroundImage: 'radial-gradient(circle at 30% 40%, rgba(255,255,255,0.3) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(0,0,0,0.1) 0%, transparent 40%)'
-              }} />
+        {/* ========== FINAL CTA ========== */}
+        <section className="py-24 relative overflow-hidden">
+          {/* Background */}
+          <div 
+            className="absolute inset-0"
+            style={{ background: `linear-gradient(135deg, ${COLORS.terracotta}, ${COLORS.terracottaDark})` }}
+          />
+          <div 
+            className="absolute inset-0 opacity-20"
+            style={{ 
+              backgroundImage: `radial-gradient(circle at 20% 30%, ${COLORS.gold}60 0%, transparent 40%), 
+                               radial-gradient(circle at 80% 70%, rgba(255,255,255,0.2) 0%, transparent 40%)`,
+            }}
+          />
+          <AnimatedSparkles />
 
-              <div className="relative p-12 text-center">
-                <Crown className="w-12 h-12 text-white/20 mx-auto mb-6" />
-                <h2 className="text-4xl font-semibold text-white mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                  {locale === "ka" ? "მზად ხარ ელიტა გახდე?" : "Ready to Go Elite?"}
-                </h2>
-                <p className="text-white/80 text-lg max-w-xl mx-auto mb-8">
-                  {locale === "ka"
-                    ? "შეუერთდი საუკეთესო პროფესიონალებს და გახსენი ახალი შესაძლებლობები"
-                    : "Join the best professionals and unlock new opportunities for your business"}
-                </p>
-                <Button
-                  onClick={() => handleSelectPlan("elite")}
-                  variant="secondary"
-                  size="lg"
-                  rightIcon={<ArrowRight className="w-5 h-5" />}
-                  className="shadow-2xl mx-auto"
-                >
-                  {locale === "ka" ? "დაიწყე ელიტათი" : "Start with Elite"}
-                </Button>
-              </div>
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 relative text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm mb-8">
+              <Gem className="w-4 h-4 text-white" />
+              <span className="text-white/90 text-sm font-medium">
+                {locale === "ka" ? "გახდი ელიტა დღეს" : "Become Elite Today"}
+              </span>
             </div>
+
+            <h2 
+              className="text-4xl sm:text-5xl font-bold text-white mb-6"
+              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+            >
+              {locale === "ka" ? "მზად ხარ წარმატებისთვის?" : "Ready for Success?"}
+            </h2>
+            <p className="text-white/80 text-lg max-w-xl mx-auto mb-10">
+              {locale === "ka"
+                ? "შეუერთდი საუკეთესო პროფესიონალებს და გააორმაგე შენი შემოსავალი"
+                : "Join the best professionals and double your income potential"}
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button
+                onClick={() => handleSelectPlan("elite")}
+                variant="secondary"
+                size="lg"
+                rightIcon={<Crown className="w-5 h-5" />}
+                className="shadow-2xl hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              >
+                {locale === "ka" ? "ელიტას არჩევა" : "Choose Elite"}
+              </Button>
+              <Button
+                onClick={() => handleSelectPlan("pro")}
+                variant="ghost"
+                size="lg"
+                className="text-white border-white/30 hover:bg-white/10"
+                rightIcon={<ArrowRight className="w-5 h-5" />}
+              >
+                {locale === "ka" ? "პრო გეგმა" : "Pro Plan"}
+              </Button>
+            </div>
+
+            {/* Final guarantee */}
+            <p className="text-white/60 text-sm mt-8 flex items-center justify-center gap-2">
+              <Shield className="w-4 h-4" />
+              {locale === "ka" ? "7 დღიანი გარანტია" : "7-Day Money-Back Guarantee"}
+            </p>
           </div>
         </section>
       </main>

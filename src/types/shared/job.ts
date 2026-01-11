@@ -122,10 +122,11 @@ export interface Job extends BaseEntity {
   // Hired pro (when job is in progress)
   hiredPro?: {
     id: string;
-    userId?: { id: string; name: string; avatar?: string };
+    userId?: { id: string; name: string; avatar?: string; phone?: string };
     name?: string;
     avatar?: string;
     title?: string;
+    phone?: string;
   };
   
   // Additional stats (returned in some views)

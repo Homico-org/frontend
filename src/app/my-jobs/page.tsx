@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useCategoryLabels } from '@/hooks/useCategoryLabels';
 import { api } from '@/lib/api';
+import { isMVPMode } from '@/lib/mvp';
 import { storage } from '@/services/storage';
 import type { Job, ProjectStage, ProjectTracking } from '@/types/shared';
 
@@ -36,7 +37,8 @@ import {
   RefreshCw,
   Sparkles,
   Trash2,
-  Users
+  Users,
+  Phone
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -425,7 +427,79 @@ function MyJobsPageContent() {
               const isExpired = job.status === 'expired';
 
               // Show ProjectTrackerCard for in_progress jobs with tracking data
+              // In MVP mode, show a simplified hired card instead
               if (isHired && job.projectTracking) {
+                if (isMVPMode()) {
+                  // Simplified MVP card - just shows hired status and phone
+                  const hiredPro = job.hiredPro;
+                  const proName = hiredPro?.userId?.name || hiredPro?.name || (locale === 'ka' ? 'სპეციალისტი' : 'Professional');
+                  const proPhone = hiredPro?.userId?.phone || hiredPro?.phone;
+                  const proAvatar = hiredPro?.userId?.avatar || hiredPro?.avatar;
+                  
+                  return (
+                    <div
+                      key={job.id}
+                      className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100 dark:border-neutral-800 overflow-hidden"
+                    >
+                      {/* Header */}
+                      <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-emerald-50 dark:bg-emerald-900/20">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-800/50 flex items-center justify-center">
+                            <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                          </div>
+                          <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                            {locale === 'ka' ? 'დაქირავებულია' : 'Hired'}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Content */}
+                      <div className="p-4">
+                        <h3 className="font-semibold text-neutral-900 dark:text-white mb-4 line-clamp-2">
+                          {job.title}
+                        </h3>
+                        
+                        {/* Pro Info */}
+                        <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50">
+                          <div className="flex items-center gap-3">
+                            <Avatar src={proAvatar} name={proName} size="md" className="w-10 h-10" />
+                            <div>
+                              <p className="font-medium text-neutral-900 dark:text-white">{proName}</p>
+                              <p className="text-xs text-neutral-500">{locale === 'ka' ? 'სპეციალისტი' : 'Professional'}</p>
+                            </div>
+                          </div>
+                          
+                          {/* Phone Button */}
+                          {proPhone && (
+                            <a
+                              href={`tel:${proPhone}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 text-white font-medium text-sm hover:bg-emerald-600 transition-colors"
+                            >
+                              <Phone className="w-4 h-4" />
+                              {proPhone}
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Footer */}
+                      <div className="p-4 border-t border-neutral-100 dark:border-neutral-800">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => router.push(`/jobs/${job.id}`)}
+                          rightIcon={<ChevronRight className="w-4 h-4" />}
+                          className="w-full"
+                        >
+                          {locale === 'ka' ? 'ნახვა' : 'View Details'}
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                }
+                
+                // Full project tracker for non-MVP mode
                 return (
                   <ProjectTrackerCard
                     key={job.id}

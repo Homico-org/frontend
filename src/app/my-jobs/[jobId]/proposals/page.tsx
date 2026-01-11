@@ -18,6 +18,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { useCategoryLabels } from '@/hooks/useCategoryLabels';
 import { api } from '@/lib/api';
 import type { Proposal } from '@/types/shared';
+import { isMVPMode } from '@/lib/mvp';
 import { isHighLevelCategory } from '@/utils/categoryHelpers';
 import { formatTimeAgoCompact } from '@/utils/dateUtils';
 import {
@@ -106,10 +107,43 @@ function ProposalsPageContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId]);
 
-  const handleShortlist = useCallback((proposal: Proposal) => {
+  const handleShortlist = useCallback(async (proposal: Proposal) => {
+    // In MVP mode, skip the modal and go directly to phone reveal
+    if (isMVPMode()) {
+      setIsProcessing(true);
+      try {
+        const response = await api.post(`/jobs/proposals/${proposal.id}/shortlist`, {
+          hiringChoice: 'direct',
+        });
+
+        setProposals(prev =>
+          prev.map(p =>
+            p.id === proposal.id
+              ? { ...p, status: 'shortlisted', hiringChoice: 'direct', contactRevealed: true, proId: response.data.proId || p.proId }
+              : p
+          )
+        );
+
+        toast.success(
+          locale === 'ka' ? 'წარმატება' : 'Success',
+          locale === 'ka' ? 'ტელეფონის ნომერი გამოჩნდა' : 'Phone number revealed'
+        );
+      } catch (error) {
+        const apiErr = error as { response?: { data?: { message?: string } } };
+        toast.error(
+          locale === 'ka' ? 'შეცდომა' : 'Error',
+          apiErr.response?.data?.message || (locale === 'ka' ? 'ვერ მოხერხდა' : 'Failed to process')
+        );
+      } finally {
+        setIsProcessing(false);
+      }
+      return;
+    }
+    
+    // Normal mode: show the hiring choice modal
     setSelectedProposal(proposal);
     setShowHiringModal(true);
-  }, []);
+  }, [locale, toast]);
 
   const handleHiringChoice = useCallback(async (choice: 'homico' | 'direct') => {
     if (!selectedProposal) return;
