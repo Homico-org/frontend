@@ -281,7 +281,19 @@ function PostJobPageContent() {
     if (!selectedCategory || !selectedSubcategory || !formData.propertyType) return false;
     return true;
   };
-  const canProceedFromLocation = () => formData.location && (formData.budgetType === "negotiable" || formData.budgetMin);
+  const canProceedFromLocation = () => {
+    if (!formData.location) return false;
+    if (formData.budgetType === "negotiable") return true;
+    // Budget must be greater than 0
+    const minBudget = parseFloat(formData.budgetMin);
+    if (isNaN(minBudget) || minBudget <= 0) return false;
+    // For range, max must also be > 0 and >= min
+    if (formData.budgetType === "range") {
+      const maxBudget = parseFloat(formData.budgetMax);
+      if (isNaN(maxBudget) || maxBudget <= 0 || maxBudget < minBudget) return false;
+    }
+    return true;
+  };
   const canProceedFromDetails = () => formData.title.trim() && formData.description.trim();
 
   const handleNext = () => {

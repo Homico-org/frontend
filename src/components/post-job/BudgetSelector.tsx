@@ -82,7 +82,7 @@ export default function BudgetSelector({
               inputMode="numeric"
               value={formatNumber(budgetMin)}
               onChange={(e) => onBudgetMinChange(parseNumber(e.target.value))}
-              placeholder={budgetType === 'range' ? (locale === 'ka' ? 'მინ.' : 'Min') : '0'}
+              placeholder={budgetType === 'range' ? (locale === 'ka' ? 'მინ. 1' : 'Min 1') : '1'}
               className="w-full pl-8 pr-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B] transition-all"
             />
           </div>

@@ -24,7 +24,7 @@ export default function SpecCard({ icon, label, value, className = '' }: SpecCar
           {label}
         </span>
       </div>
-      <p className="font-display text-lg font-semibold text-neutral-900 dark:text-white">
+      <p className="font-display text-lg font-semibold text-neutral-900 dark:text-white break-all">
         {value}
       </p>
     </div>

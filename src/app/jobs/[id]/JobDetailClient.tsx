@@ -752,6 +752,42 @@ export default function JobDetailClient() {
   const [showDescriptionEdit, setShowDescriptionEdit] = useState(false);
   const [editDescription, setEditDescription] = useState("");
   const [isSavingDescription, setIsSavingDescription] = useState(false);
+  
+  // Property details inline edit
+  const [showPropertyEdit, setShowPropertyEdit] = useState(false);
+  const [editPropertyData, setEditPropertyData] = useState({
+    propertyType: "",
+    propertyTypeOther: "",
+    currentCondition: "",
+    areaSize: "",
+    landArea: "",
+    roomCount: "",
+    floorCount: "",
+    pointsCount: "",
+    cadastralId: "",
+    deadline: "",
+  });
+  const [isSavingProperty, setIsSavingProperty] = useState(false);
+  
+  // Work types inline edit
+  const [showWorkTypesEdit, setShowWorkTypesEdit] = useState(false);
+  const [editWorkTypes, setEditWorkTypes] = useState<string[]>([]);
+  const [isSavingWorkTypes, setIsSavingWorkTypes] = useState(false);
+  
+  // Requirements inline edit
+  const [showRequirementsEdit, setShowRequirementsEdit] = useState(false);
+  const [editRequirements, setEditRequirements] = useState({
+    furnitureIncluded: false,
+    visualizationNeeded: false,
+    materialsProvided: false,
+    occupiedDuringWork: false,
+  });
+  const [isSavingRequirements, setIsSavingRequirements] = useState(false);
+  
+  // Title inline edit
+  const [showTitleEdit, setShowTitleEdit] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [isSavingTitle, setIsSavingTitle] = useState(false);
 
   const isOwner = user && job?.clientId && user.id === job.clientId.id;
   const isPro = user?.role === "pro" || user?.role === "admin";
@@ -1351,6 +1387,125 @@ export default function JobDetailClient() {
       setIsSavingDescription(false);
     }
   };
+
+  const handleSaveTitle = async () => {
+    if (!job?.id || !editTitle.trim()) return;
+    setIsSavingTitle(true);
+    try {
+      await api.put(`/jobs/${job.id}`, { title: editTitle });
+      setJob((prev) => prev ? { ...prev, title: editTitle } : prev);
+      setShowTitleEdit(false);
+      toast.success(locale === "ka" ? "შენახულია" : "Saved");
+    } catch (err) {
+      console.error("Failed to save title:", err);
+      toast.error(locale === "ka" ? "შენახვა ვერ მოხერხდა" : "Failed to save");
+    } finally {
+      setIsSavingTitle(false);
+    }
+  };
+
+  const handleSavePropertyDetails = async () => {
+    if (!job?.id) return;
+    setIsSavingProperty(true);
+    try {
+      const updateData: Record<string, unknown> = {};
+      if (editPropertyData.propertyType) updateData.propertyType = editPropertyData.propertyType;
+      if (editPropertyData.propertyTypeOther) updateData.propertyTypeOther = editPropertyData.propertyTypeOther;
+      if (editPropertyData.currentCondition) updateData.currentCondition = editPropertyData.currentCondition;
+      if (editPropertyData.areaSize) updateData.areaSize = Number(editPropertyData.areaSize);
+      if (editPropertyData.landArea) updateData.landArea = Number(editPropertyData.landArea);
+      if (editPropertyData.roomCount) updateData.roomCount = Number(editPropertyData.roomCount);
+      if (editPropertyData.floorCount) updateData.floorCount = Number(editPropertyData.floorCount);
+      if (editPropertyData.pointsCount) updateData.pointsCount = Number(editPropertyData.pointsCount);
+      if (editPropertyData.cadastralId) updateData.cadastralId = editPropertyData.cadastralId;
+      if (editPropertyData.deadline) updateData.deadline = editPropertyData.deadline;
+      
+      await api.put(`/jobs/${job.id}`, updateData);
+      setJob((prev) => prev ? { 
+        ...prev, 
+        ...updateData,
+      } as PageJob : prev);
+      setShowPropertyEdit(false);
+      toast.success(locale === "ka" ? "შენახულია" : "Saved");
+    } catch (err) {
+      console.error("Failed to save property details:", err);
+      toast.error(locale === "ka" ? "შენახვა ვერ მოხერხდა" : "Failed to save");
+    } finally {
+      setIsSavingProperty(false);
+    }
+  };
+
+  const handleSaveWorkTypes = async () => {
+    if (!job?.id) return;
+    setIsSavingWorkTypes(true);
+    try {
+      await api.put(`/jobs/${job.id}`, { workTypes: editWorkTypes });
+      setJob((prev) => prev ? { ...prev, workTypes: editWorkTypes } : prev);
+      setShowWorkTypesEdit(false);
+      toast.success(locale === "ka" ? "შენახულია" : "Saved");
+    } catch (err) {
+      console.error("Failed to save work types:", err);
+      toast.error(locale === "ka" ? "შენახვა ვერ მოხერხდა" : "Failed to save");
+    } finally {
+      setIsSavingWorkTypes(false);
+    }
+  };
+
+  const handleSaveRequirements = async () => {
+    if (!job?.id) return;
+    setIsSavingRequirements(true);
+    try {
+      await api.put(`/jobs/${job.id}`, editRequirements);
+      setJob((prev) => prev ? { ...prev, ...editRequirements } : prev);
+      setShowRequirementsEdit(false);
+      toast.success(locale === "ka" ? "შენახულია" : "Saved");
+    } catch (err) {
+      console.error("Failed to save requirements:", err);
+      toast.error(locale === "ka" ? "შენახვა ვერ მოხერხდა" : "Failed to save");
+    } finally {
+      setIsSavingRequirements(false);
+    }
+  };
+
+  // Helper to open property edit modal with current values
+  const openPropertyEditModal = () => {
+    if (!job) return;
+    setEditPropertyData({
+      propertyType: job.propertyType || "",
+      propertyTypeOther: job.propertyTypeOther || "",
+      currentCondition: job.currentCondition || "",
+      areaSize: job.areaSize?.toString() || "",
+      landArea: job.landArea?.toString() || "",
+      roomCount: job.roomCount?.toString() || "",
+      floorCount: job.floorCount?.toString() || "",
+      pointsCount: job.pointsCount?.toString() || "",
+      cadastralId: job.cadastralId || "",
+      deadline: job.deadline ? new Date(job.deadline).toISOString().split('T')[0] : "",
+    });
+    setShowPropertyEdit(true);
+  };
+
+  // Helper to open work types edit modal
+  const openWorkTypesEditModal = () => {
+    if (!job) return;
+    setEditWorkTypes(job.workTypes || []);
+    setShowWorkTypesEdit(true);
+  };
+
+  // Helper to open requirements edit modal
+  const openRequirementsEditModal = () => {
+    if (!job) return;
+    setEditRequirements({
+      furnitureIncluded: job.furnitureIncluded || false,
+      visualizationNeeded: job.visualizationNeeded || false,
+      materialsProvided: job.materialsProvided || false,
+      occupiedDuringWork: job.occupiedDuringWork || false,
+    });
+    setShowRequirementsEdit(true);
+  };
+
+  // All available work types for selection
+  const allWorkTypes = Object.keys(workTypeLabels);
 
   const formatBudget = (job: Job) => {
     // Handle negotiable type explicitly
@@ -2009,13 +2164,13 @@ export default function JobDetailClient() {
                       {locale === "ka" ? "დეტალები" : "Property Details"}
                     </h2>
                     {isOwner && !isHired && (
-                      <Link
-                        href={`/post-job?edit=${job.id}`}
+                      <button
+                        onClick={openPropertyEditModal}
                         className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
                         title={locale === "ka" ? "რედაქტირება" : "Edit"}
                       >
                         <Edit3 className="w-4 h-4" />
-                      </Link>
+                      </button>
                     )}
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -2107,13 +2262,13 @@ export default function JobDetailClient() {
                       {locale === "ka" ? "სამუშაოს ტიპები" : "Work Types"}
                     </h2>
                     {isOwner && !isHired && (
-                      <Link
-                        href={`/post-job?edit=${job.id}`}
+                      <button
+                        onClick={openWorkTypesEditModal}
                         className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
                         title={locale === "ka" ? "რედაქტირება" : "Edit"}
                       >
                         <Edit3 className="w-4 h-4" />
-                      </Link>
+                      </button>
                     )}
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -2150,13 +2305,13 @@ export default function JobDetailClient() {
                       {locale === "ka" ? "მოთხოვნები" : "Requirements"}
                     </h2>
                     {isOwner && !isHired && (
-                      <Link
-                        href={`/post-job?edit=${job.id}`}
+                      <button
+                        onClick={openRequirementsEditModal}
                         className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
                         title={locale === "ka" ? "რედაქტირება" : "Edit"}
                       >
                         <Edit3 className="w-4 h-4" />
-                      </Link>
+                      </button>
                     )}
                   </div>
                   <div className="grid sm:grid-cols-2 gap-3">
@@ -2803,6 +2958,348 @@ export default function JobDetailClient() {
             <Button
               onClick={handleSaveDescription}
               loading={isSavingDescription}
+            >
+              {locale === "ka" ? "შენახვა" : "Save"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Title Edit Modal */}
+      <Modal
+        isOpen={showTitleEdit}
+        onClose={() => setShowTitleEdit(false)}
+        size="md"
+      >
+        <div className="p-6">
+          <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-4">
+            {locale === "ka" ? "სათაურის რედაქტირება" : "Edit Title"}
+          </h2>
+          <input
+            type="text"
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50 focus:border-[#C4735B]"
+            placeholder={locale === "ka" ? "სათაური..." : "Job title..."}
+          />
+          <div className="flex justify-end gap-3 mt-4">
+            <Button
+              variant="ghost"
+              onClick={() => setShowTitleEdit(false)}
+              disabled={isSavingTitle}
+            >
+              {locale === "ka" ? "გაუქმება" : "Cancel"}
+            </Button>
+            <Button
+              onClick={handleSaveTitle}
+              loading={isSavingTitle}
+              disabled={!editTitle.trim()}
+            >
+              {locale === "ka" ? "შენახვა" : "Save"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Property Details Edit Modal */}
+      <Modal
+        isOpen={showPropertyEdit}
+        onClose={() => setShowPropertyEdit(false)}
+        size="lg"
+      >
+        <div className="p-6">
+          <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-6">
+            {locale === "ka" ? "დეტალების რედაქტირება" : "Edit Property Details"}
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
+            {/* Property Type */}
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                {locale === "ka" ? "ტიპი" : "Property Type"}
+              </label>
+              <select
+                value={editPropertyData.propertyType}
+                onChange={(e) => setEditPropertyData(prev => ({ ...prev, propertyType: e.target.value }))}
+                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50"
+              >
+                <option value="">{locale === "ka" ? "აირჩიეთ..." : "Select..."}</option>
+                {Object.entries(propertyTypeLabels).map(([key, label]) => (
+                  <option key={key} value={key}>{locale === "ka" ? label.ka : label.en}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Current Condition */}
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                {locale === "ka" ? "მდგომარეობა" : "Current Condition"}
+              </label>
+              <select
+                value={editPropertyData.currentCondition}
+                onChange={(e) => setEditPropertyData(prev => ({ ...prev, currentCondition: e.target.value }))}
+                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50"
+              >
+                <option value="">{locale === "ka" ? "აირჩიეთ..." : "Select..."}</option>
+                {Object.entries(conditionLabels).map(([key, label]) => (
+                  <option key={key} value={key}>{locale === "ka" ? label.ka : label.en}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Area Size */}
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                {locale === "ka" ? "ფართი (მ²)" : "Area Size (m²)"}
+              </label>
+              <input
+                type="number"
+                value={editPropertyData.areaSize}
+                onChange={(e) => setEditPropertyData(prev => ({ ...prev, areaSize: e.target.value }))}
+                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50"
+                placeholder="100"
+              />
+            </div>
+
+            {/* Land Area */}
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                {locale === "ka" ? "მიწის ფართი (მ²)" : "Land Area (m²)"}
+              </label>
+              <input
+                type="number"
+                value={editPropertyData.landArea}
+                onChange={(e) => setEditPropertyData(prev => ({ ...prev, landArea: e.target.value }))}
+                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50"
+                placeholder="500"
+              />
+            </div>
+
+            {/* Room Count */}
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                {locale === "ka" ? "ოთახების რაოდენობა" : "Room Count"}
+              </label>
+              <input
+                type="number"
+                value={editPropertyData.roomCount}
+                onChange={(e) => setEditPropertyData(prev => ({ ...prev, roomCount: e.target.value }))}
+                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50"
+                placeholder="3"
+              />
+            </div>
+
+            {/* Floor Count */}
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                {locale === "ka" ? "სართულები" : "Floor Count"}
+              </label>
+              <input
+                type="number"
+                value={editPropertyData.floorCount}
+                onChange={(e) => setEditPropertyData(prev => ({ ...prev, floorCount: e.target.value }))}
+                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50"
+                placeholder="2"
+              />
+            </div>
+
+            {/* Points Count */}
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                {locale === "ka" ? "წერტილების რაოდენობა" : "Points Count"}
+              </label>
+              <input
+                type="number"
+                value={editPropertyData.pointsCount}
+                onChange={(e) => setEditPropertyData(prev => ({ ...prev, pointsCount: e.target.value }))}
+                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50"
+                placeholder="10"
+              />
+            </div>
+
+            {/* Cadastral ID */}
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                {locale === "ka" ? "საკადასტრო კოდი" : "Cadastral ID"}
+              </label>
+              <input
+                type="text"
+                value={editPropertyData.cadastralId}
+                onChange={(e) => setEditPropertyData(prev => ({ ...prev, cadastralId: e.target.value }))}
+                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50"
+                placeholder="XX.XX.XX.XXX.XXX.XX.XXX"
+              />
+            </div>
+
+            {/* Deadline */}
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                {locale === "ka" ? "ვადა" : "Deadline"}
+              </label>
+              <input
+                type="date"
+                value={editPropertyData.deadline}
+                onChange={(e) => setEditPropertyData(prev => ({ ...prev, deadline: e.target.value }))}
+                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-3 mt-6">
+            <Button
+              variant="ghost"
+              onClick={() => setShowPropertyEdit(false)}
+              disabled={isSavingProperty}
+            >
+              {locale === "ka" ? "გაუქმება" : "Cancel"}
+            </Button>
+            <Button
+              onClick={handleSavePropertyDetails}
+              loading={isSavingProperty}
+            >
+              {locale === "ka" ? "შენახვა" : "Save"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Work Types Edit Modal */}
+      <Modal
+        isOpen={showWorkTypesEdit}
+        onClose={() => setShowWorkTypesEdit(false)}
+        size="lg"
+      >
+        <div className="p-6">
+          <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-6">
+            {locale === "ka" ? "სამუშაოს ტიპები" : "Work Types"}
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[50vh] overflow-y-auto">
+            {allWorkTypes.map((type) => {
+              const isSelected = editWorkTypes.includes(type);
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => {
+                    setEditWorkTypes(prev => 
+                      isSelected 
+                        ? prev.filter(t => t !== type)
+                        : [...prev, type]
+                    );
+                  }}
+                  className={`px-4 py-3 rounded-xl text-sm font-medium transition-all border ${
+                    isSelected
+                      ? "border-[#C4735B] bg-[#C4735B]/10 text-[#C4735B]"
+                      : "border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-[#C4735B]/50"
+                  }`}
+                >
+                  {locale === "ka" ? workTypeLabels[type]?.ka : workTypeLabels[type]?.en}
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex justify-end gap-3 mt-6">
+            <Button
+              variant="ghost"
+              onClick={() => setShowWorkTypesEdit(false)}
+              disabled={isSavingWorkTypes}
+            >
+              {locale === "ka" ? "გაუქმება" : "Cancel"}
+            </Button>
+            <Button
+              onClick={handleSaveWorkTypes}
+              loading={isSavingWorkTypes}
+            >
+              {locale === "ka" ? "შენახვა" : "Save"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Requirements Edit Modal */}
+      <Modal
+        isOpen={showRequirementsEdit}
+        onClose={() => setShowRequirementsEdit(false)}
+        size="md"
+      >
+        <div className="p-6">
+          <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-6">
+            {locale === "ka" ? "მოთხოვნები" : "Requirements"}
+          </h2>
+          <div className="space-y-4">
+            {/* Furniture Included */}
+            <label className="flex items-center gap-3 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
+              <input
+                type="checkbox"
+                checked={editRequirements.furnitureIncluded}
+                onChange={(e) => setEditRequirements(prev => ({ ...prev, furnitureIncluded: e.target.checked }))}
+                className="w-5 h-5 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
+              />
+              <div className="flex items-center gap-2">
+                <Armchair className="w-5 h-5 text-neutral-500" />
+                <span className="text-neutral-900 dark:text-white">
+                  {locale === "ka" ? "ავეჯის შერჩევა" : "Furniture Selection"}
+                </span>
+              </div>
+            </label>
+
+            {/* Visualization Needed */}
+            <label className="flex items-center gap-3 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
+              <input
+                type="checkbox"
+                checked={editRequirements.visualizationNeeded}
+                onChange={(e) => setEditRequirements(prev => ({ ...prev, visualizationNeeded: e.target.checked }))}
+                className="w-5 h-5 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
+              />
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-neutral-500" />
+                <span className="text-neutral-900 dark:text-white">
+                  {locale === "ka" ? "3D ვიზუალიზაცია" : "3D Visualization"}
+                </span>
+              </div>
+            </label>
+
+            {/* Materials Provided */}
+            <label className="flex items-center gap-3 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
+              <input
+                type="checkbox"
+                checked={editRequirements.materialsProvided}
+                onChange={(e) => setEditRequirements(prev => ({ ...prev, materialsProvided: e.target.checked }))}
+                className="w-5 h-5 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
+              />
+              <div className="flex items-center gap-2">
+                <Package className="w-5 h-5 text-neutral-500" />
+                <span className="text-neutral-900 dark:text-white">
+                  {locale === "ka" ? "მასალები უზრუნველყოფილია" : "Materials Provided"}
+                </span>
+              </div>
+            </label>
+
+            {/* Occupied During Work */}
+            <label className="flex items-center gap-3 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
+              <input
+                type="checkbox"
+                checked={editRequirements.occupiedDuringWork}
+                onChange={(e) => setEditRequirements(prev => ({ ...prev, occupiedDuringWork: e.target.checked }))}
+                className="w-5 h-5 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
+              />
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-neutral-500" />
+                <span className="text-neutral-900 dark:text-white">
+                  {locale === "ka" ? "დაკავებული სამუშაოს დროს" : "Occupied During Work"}
+                </span>
+              </div>
+            </label>
+          </div>
+          <div className="flex justify-end gap-3 mt-6">
+            <Button
+              variant="ghost"
+              onClick={() => setShowRequirementsEdit(false)}
+              disabled={isSavingRequirements}
+            >
+              {locale === "ka" ? "გაუქმება" : "Cancel"}
+            </Button>
+            <Button
+              onClick={handleSaveRequirements}
+              loading={isSavingRequirements}
             >
               {locale === "ka" ? "შენახვა" : "Save"}
             </Button>
