@@ -35,7 +35,7 @@ function loadGoogleMapsScript(apiKey: string): Promise<void> {
     isScriptLoading = true;
     loadCallbacks.push(resolve);
 
-    const script = document.createElemen"script";
+    const script = document.createElement("script");
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
     script.async = true;
     script.defer = true;
@@ -304,7 +304,7 @@ export function usePlacesAutocomplete(
     if (!google?.maps?.places) return null;
     if (!placesServiceRef.current) {
       // PlacesService requires a map or div element
-      const div = document.createElemen"div";
+      const div = document.createElement("div");
       placesServiceRef.current = new google.maps.places.PlacesService(div);
     }
     return placesServiceRef.current;

@@ -947,7 +947,7 @@ function SectionModal({
   const ALLOWED_FILE_EXTENSIONS = '.jpg,.jpeg,.png,.webp,.gif,.pdf,.doc,.docx,.xls,.xlsx,.txt';
 
   const getFileType = (fileName: string): string => {
-    const ext = fileName.spli".".pop()?.toLowerCase() || '';
+    const ext = fileName.split(".").pop()?.toLowerCase() || '';
     const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
     const docExts = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt'];
     if (imageExts.includes(ext)) return 'image';
@@ -961,7 +961,7 @@ function SectionModal({
       return true;
     }
     // Fallback to extension check
-    const ext = file.name.spli".".pop()?.toLowerCase() || '';
+    const ext = file.name.split(".").pop()?.toLowerCase() || '';
     const allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt'];
     return allowedExts.includes(ext);
   };
@@ -1191,7 +1191,7 @@ function ItemModal({
 
   const isAllowedImageFile = (file: File): boolean => {
     if (ALLOWED_IMAGE_TYPES.includes(file.type)) return true;
-    const ext = file.name.spli".".pop()?.toLowerCase() || '';
+    const ext = file.name.split(".").pop()?.toLowerCase() || '';
     return ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext);
   };
 
@@ -1214,7 +1214,7 @@ function ItemModal({
       formData.append('file', file);
       const response = await api.post('/upload', formData);
       setFileUrl(response.data.url || response.data.filename);
-      if (!title) setTitle(file.name.spli"."[0]);
+      if (!title) setTitle(file.name.split(".")[0]);
     } catch (error) {
       console.error('Upload failed:', error);
       setUploadError(locale === 'ka' ? 'ატვირთვა ვერ მოხერხდა' : 'Upload failed');
@@ -1346,7 +1346,7 @@ function ItemModal({
                     <FileText className="w-8 h-8 text-[var(--color-text-tertiary)]" />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-[var(--color-text-primary)] truncate">{fileUrl.spli"/".pop()}</p>
+                    <p className="text-sm text-[var(--color-text-primary)] truncate">{fileUrl.split("/").pop()}</p>
                     <button
                       onClick={() => setFileUrl('')}
                       className="text-xs text-red-500 hover:underline"

@@ -48,11 +48,11 @@ interface MediaFile {
   type: "image" | "video";
 }
 
-const STEPS: { id: Step; label: string; labelKa: string }[] = [
-  { id: "category", label: "Category", labelKa: "კატეგორია" },
-  { id: "location", label: "Location & Budget", labelKa: "ლოკაცია და ბიუჯეტი" },
-  { id: "details", label: "Details", labelKa: "დეტალები" },
-  { id: "review", label: "Review", labelKa: "გადახედვა" },
+const STEPS: { id: Step; label: string; labelKa: string; labelRu: string }[] = [
+  { id: "category", label: "Category", labelKa: "კატეგორია", labelRu: "Категория" },
+  { id: "location", label: "Location & Budget", labelKa: "ლოკაცია და ბიუჯეტი", labelRu: "Местоположение и бюджет" },
+  { id: "details", label: "Details", labelKa: "დეტალები", labelRu: "Детали" },
+  { id: "review", label: "Review", labelKa: "გადახედვა", labelRu: "Обзор" },
 ];
 
 // Category icons - Custom illustrated style
@@ -478,7 +478,7 @@ function PostJobPageContent() {
             <div className="flex items-center gap-2 text-xs text-neutral-500">
               <span className="font-medium">{getCurrentStepIndex() + 1}/{STEPS.length}</span>
               <span className="hidden sm:inline">•</span>
-              <span className="hidden sm:inline">{locale === "ka" ? STEPS[getCurrentStepIndex()].labelKa : STEPS[getCurrentStepIndex()].label}</span>
+              <span className="hidden sm:inline">{locale === "ka" ? STEPS[getCurrentStepIndex()].labelKa : locale === "ru" ? STEPS[getCurrentStepIndex()].labelRu : STEPS[getCurrentStepIndex()].label}</span>
             </div>
             <Progress value={progressPercent} size="sm" className="flex-1" />
             <span className="text-xs font-medium text-[#C4735B]">

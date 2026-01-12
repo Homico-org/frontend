@@ -274,7 +274,7 @@ export function useRegistration(): UseRegistrationReturn {
     const handleClickOutside = (e: MouseEvent) => {
       if (showCountryDropdown) {
         const target = e.target as HTMLElement;
-        if (!target.closes"[data-country-dropdown]") {
+        if (!target.closest("[data-country-dropdown]")) {
           setShowCountryDropdown(false);
         }
       }

@@ -93,7 +93,7 @@ export default function ShareMenu({
       setIsOpen(false);
     } catch {
       // Fallback for older browsers
-      const textArea = document.createElemen"textarea";
+      const textArea = document.createElement("textarea");
       textArea.value = getShareUrl();
       document.body.appendChild(textArea);
       textArea.select();
@@ -263,7 +263,7 @@ export function ShareButtons({
       onCopy?.();
     } catch {
       // Fallback
-      const textArea = document.createElemen"textarea";
+      const textArea = document.createElement("textarea");
       textArea.value = url;
       document.body.appendChild(textArea);
       textArea.select();

@@ -15,8 +15,8 @@ interface AvatarCropperProps {
 // Helper function to create cropped image
 async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
   const image = await createImage(imageSrc);
-  const canvas = document.createElemen"canvas";
-  const ctx = canvas.getContex"2d";
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
 
   if (!ctx) {
     throw new Error('No 2d context');

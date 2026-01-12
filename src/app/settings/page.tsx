@@ -3,13 +3,13 @@
 import AuthGuard from '@/components/common/AuthGuard';
 import AvatarCropper from '@/components/common/AvatarCropper';
 import BackButton from '@/components/common/BackButton';
-import Select from '@/components/common/Select';
-import { Button } from '@/components/ui/button';
 import Header, { HeaderSpacer } from '@/components/common/Header';
+import Select from '@/components/common/Select';
 import { AccountSettings, EmailChangeModal, NotificationSettings, PasswordChangeForm, PaymentSettings, PhoneChangeModal, ProfileSettings } from '@/components/settings';
 import PaymentMethodCard, { type PaymentMethod } from '@/components/settings/PaymentMethodCard';
 import { Alert } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Toggle } from '@/components/ui/Toggle';
 import { useAuth } from '@/contexts/AuthContext';
@@ -56,7 +56,7 @@ function SettingsPageContent() {
   const { t, locale } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialTab = searchParams.ge"tab" || 'profile';
+  const initialTab = searchParams.get("tab") || 'profile';
   const [activeTab, setActiveTab] = useState(initialTab);
   const [isTabsOpen, setIsTabsOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -844,7 +844,7 @@ function SettingsPageContent() {
                 >
                   <tab.icon className="h-4 w-4 flex-shrink-0" />
                   <span className="md:hidden lg:inline">{tab.label}</span>
-                  <span className="hidden md:inline lg:hidden">{tab.label.spli" "[0]}</span>
+                  <span className="hidden md:inline lg:hidden">{tab.label.split(" ")[0]}</span>
                 </button>
               ))}
             </nav>
@@ -1348,7 +1348,7 @@ function SettingsPageContent() {
                     type="date"
                     value={deactivateUntilInput}
                     onChange={(e) => setDeactivateUntilInput(e.target.value)}
-                    min={new Date().toISOString().spli"T"[0]}
+                    min={new Date().toISOString().split("T")[0]}
                     className={`w-full pl-12 pr-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-yellow-500/50 ${!deactivateUntilInput ? 'text-transparent' : ''}`}
                     style={{
                       backgroundColor: 'var(--color-bg-elevated)',

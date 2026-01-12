@@ -141,7 +141,7 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
       setError(null);
 
       const [categoriesRes, flatRes] = await Promise.all([
-        api.ge`/categories`,
+        api.get(`/categories`),
         api.get<FlatCategoryItem[]>('/categories/flat'),
       ]);
 

@@ -224,7 +224,7 @@ export default function CompanyProfilePage() {
       return locale === "ka" ? category.nameKa : category.name;
     }
     return categoryKey
-      .spli"-"
+      .split("-")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
   };
@@ -253,7 +253,7 @@ export default function CompanyProfilePage() {
       }
     }
     return subcategoryKey
-      .spli"-"
+      .split("-")
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" ");
   };

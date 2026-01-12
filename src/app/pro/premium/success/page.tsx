@@ -1,13 +1,22 @@
 'use client';
 
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useAnalytics, AnalyticsEvent } from '@/hooks/useAnalytics';
-import Header, { HeaderSpacer } from '@/components/common/Header';
 import AuthGuard from '@/components/common/AuthGuard';
+import Header, { HeaderSpacer } from '@/components/common/Header';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { 
-  CheckCircle2, ArrowRight, Sparkles, Crown, Star, Zap, Gem,
-  BadgeCheck, TrendingUp, Eye, Gift, Share2
+import { useLanguage } from '@/contexts/LanguageContext';
+import { AnalyticsEvent, useAnalytics } from '@/hooks/useAnalytics';
+import {
+    ArrowRight,
+    BadgeCheck,
+    CheckCircle2,
+    Crown,
+    Eye,
+    Gem,
+    Gift, Share2,
+    Sparkles,
+    Star,
+    TrendingUp,
+    Zap
 } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -77,7 +86,7 @@ function SuccessContent() {
   const { t, locale } = useLanguage();
   const { trackEvent } = useAnalytics();
   const searchParams = useSearchParams();
-  const tierId = searchParams.ge"tier" || 'basic';
+  const tierId = searchParams.get("tier") || 'basic';
   const [isVisible, setIsVisible] = useState(false);
   const [showBenefits, setShowBenefits] = useState(false);
 

@@ -107,7 +107,7 @@ export const Saved: Story = {
   args: {
     job: baseJob,
     isSaved: true,
-    onSave: () => aler"Toggle save",
+    onSave: () => alert("Toggle save"),
   },
 };
 

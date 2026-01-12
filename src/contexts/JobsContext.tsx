@@ -62,7 +62,7 @@ export function JobsProvider({ children }: { children: ReactNode }) {
 
     try {
       setIsLoadingSaved(true);
-      const response = await api.ge`/jobs/saved/list`;
+      const response = await api.get(`/jobs/saved/list`);
       const savedIds = response.data || [];
       setSavedJobIds(new Set(savedIds));
     } catch (error) {
@@ -105,7 +105,7 @@ export function JobsProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const response = await api.ge`/jobs/my-proposals/list`;
+        const response = await api.get(`/jobs/my-proposals/list`);
         const data = response.data;
         const proposals = data.data || data.proposals || data || [];
         // Extract job IDs from proposals (handle both _id and id formats from backend)

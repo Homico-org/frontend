@@ -233,7 +233,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
 
   const validateFile = (file: File): string | null => {
     const maxSize = 50 * 1024 * 1024; // 50MB
-    const extension = '.' + file.name.spli".".pop()?.toLowerCase();
+    const extension = '.' + file.name.split(".").pop()?.toLowerCase();
 
     if (!ALLOWED_FILE_TYPES.includes(file.type) && !ALLOWED_EXTENSIONS.includes(extension)) {
       return t('projects.supportedFormatsJpgPngGif');
@@ -544,7 +544,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                                       className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
                                     >
                                       <FileText className="w-4 h-4 text-neutral-400" />
-                                      <span className="text-xs truncate max-w-[120px]">{attachment.spli"/".pop()}</span>
+                                      <span className="text-xs truncate max-w-[120px]">{attachment.split("/").pop()}</span>
                                     </a>
                                   )}
                                 </div>

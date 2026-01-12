@@ -107,7 +107,7 @@ function AdminSupportPageContent() {
     socketRef.current.on('connect', () => {
       console.log('Admin connected to support WebSocket');
       // Join admin support room for ticket updates
-      socketRef.current?.emi"joinAdminSupport";
+      socketRef.current?.emit("joinAdminSupport");
     });
 
     socketRef.current.on('disconnect', () => {
@@ -185,7 +185,7 @@ function AdminSupportPageContent() {
     });
 
     return () => {
-      socketRef.current?.emi"leaveAdminSupport";
+      socketRef.current?.emit("leaveAdminSupport");
       socketRef.current?.disconnect();
     };
   }, [token, user?.role]);

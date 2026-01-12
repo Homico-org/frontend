@@ -41,7 +41,7 @@ const sampleCard: PaymentMethod = {
 export const Default: Story = {
   args: {
     method: sampleCard,
-    onSetDefault: () => aler"Set as default",
+    onSetDefault: () => alert("Set as default"),
     onDelete: async () => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
     },
@@ -173,13 +173,13 @@ export const MultipleCards: Story = {
 // EmptyPaymentMethods stories
 export const Empty: Story = {
   render: () => (
-    <EmptyPaymentMethods onAddCard={() => aler"Add card clicked"} />
+    <EmptyPaymentMethods onAddCard={() => alert("Add card clicked")} />
   ),
 };
 
 export const EmptyGeorgian: Story = {
   render: () => (
-    <EmptyPaymentMethods onAddCard={() => aler"Add card clicked"} locale="ka" />
+    <EmptyPaymentMethods onAddCard={() => alert("Add card clicked")} locale="ka" />
   ),
 };
 

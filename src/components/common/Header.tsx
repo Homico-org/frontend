@@ -1,9 +1,12 @@
 "use client";
 
+import { Skeleton } from "@/components/ui/Skeleton";
+import { Button } from "@/components/ui/button";
+import { ACCENT_COLOR } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useCategories } from "@/contexts/CategoriesContext";
-import { useLanguage, Locale } from "@/contexts/LanguageContext";
+import { Locale, useLanguage } from "@/contexts/LanguageContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import api from "@/lib/api";
@@ -13,10 +16,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Avatar from "./Avatar";
-import { Skeleton } from "@/components/ui/Skeleton";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ACCENT_COLOR } from "@/constants/theme";
 
 export default function Header() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -58,9 +57,9 @@ export default function Header() {
         const promises: Promise<any>[] = [];
 
         if (user.role === 'pro' || user.role === 'admin') {
-          promises.push(api.ge`/jobs/counters/proposal-updates`);
+          promises.push(api.get(`/jobs/counters/proposal-updates`));
         }
-        promises.push(api.ge`/jobs/counters/unviewed-proposals`);
+        promises.push(api.get(`/jobs/counters/unviewed-proposals`));
 
         const results = await Promise.all(promises);
 

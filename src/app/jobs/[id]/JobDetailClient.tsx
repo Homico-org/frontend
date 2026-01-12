@@ -1482,7 +1482,7 @@ export default function JobDetailClient() {
       floorCount: job.floorCount?.toString() || "",
       pointsCount: job.pointsCount?.toString() || "",
       cadastralId: job.cadastralId || "",
-      deadline: job.deadline ? new Date(job.deadline).toISOString().spli"T"[0] : "",
+      deadline: job.deadline ? new Date(job.deadline).toISOString().split("T")[0] : "",
     });
     setShowPropertyEdit(true);
   };

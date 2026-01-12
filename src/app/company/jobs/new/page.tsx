@@ -108,7 +108,7 @@ export default function CreateCompanyJobPage() {
 
   const fetchEmployees = async () => {
     try {
-      const response = await api.ge`/companies/my/company/employees?status=active`;
+      const response = await api.get(`/companies/my/company/employees?status=active`);
       setEmployees(response.data);
     } catch (err) {
       console.error('Failed to fetch employees:', err);

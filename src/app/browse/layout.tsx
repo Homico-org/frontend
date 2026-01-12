@@ -3,6 +3,9 @@
 import BrowseFiltersSidebar from "@/components/browse/BrowseFiltersSidebar";
 import JobsFiltersSidebar from "@/components/browse/JobsFiltersSidebar";
 import Header, { HeaderSpacer } from "@/components/common/Header";
+import MobileBottomNav from "@/components/common/MobileBottomNav";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { ACCENT_COLOR } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { BrowseProvider, useBrowseContext } from "@/contexts/BrowseContext";
 import { JobsProvider, useJobsContext } from "@/contexts/JobsContext";
@@ -16,12 +19,9 @@ import {
   Users,
   X,
 } from "lucide-react";
-import MobileBottomNav from "@/components/common/MobileBottomNav";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ReactNode, Suspense, useEffect, useRef, useState } from "react";
-import { ACCENT_COLOR } from "@/constants/theme";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 function JobsSidebar() {
   const { filters, setFilters, savedJobIds } = useJobsContext();
@@ -186,6 +186,7 @@ const TABS = [
     route: "/browse/jobs",
     label: "Jobs",
     labelKa: "სამუშაო",
+    labelRu: "Работы",
     icon: Briefcase,
     showFor: "pro" as const,
   },
@@ -194,6 +195,7 @@ const TABS = [
     route: "/browse/portfolio",
     label: "Portfolio",
     labelKa: "ნამუშევრები",
+    labelRu: "Портфолио",
     icon: Images,
     showFor: "all" as const,
   },
@@ -202,6 +204,7 @@ const TABS = [
     route: "/browse/professionals",
     label: "Professionals",
     labelKa: "სპეციალისტები",
+    labelRu: "Специалисты",
     icon: Users,
     showFor: "all" as const,
   },
@@ -366,7 +369,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                     }
                   >
                     <Icon className="w-5 h-5" />
-                    <span>{locale === "ka" ? tab.labelKa : tab.label}</span>
+                    <span>{locale === "ka" ? tab.labelKa : locale === "ru" ? tab.labelRu : tab.label}</span>
                   </Link>
                 );
               })}

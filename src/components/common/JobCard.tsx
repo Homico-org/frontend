@@ -275,7 +275,7 @@ const JobCard = React.memo(function JobCard({
               />
               <div className="min-w-0">
                 <p className="text-[13px] font-medium text-neutral-900 dark:text-white truncate">
-                  {job.clientId?.name?.spli" "[0] || (t('card.client'))}
+                  {job.clientId?.name?.split(" ")[0] || (t('card.client'))}
                 </p>
                 <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
                   {truncateLocation(job.location || '')}

@@ -57,7 +57,7 @@ export const NoDocuments: Story = {
     title: 'No documents yet',
     description: 'Upload your first document to get started.',
     actionLabel: 'Upload Document',
-    onAction: () => aler"Upload clicked",
+    onAction: () => alert("Upload clicked"),
   },
 };
 

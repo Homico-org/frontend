@@ -7,7 +7,7 @@ import ProProfileGuard from './ProProfileGuard';
 import { useLanguage } from "@/contexts/LanguageContext";
 
 // Dynamically import LoginModal to reduce initial bundle size
-const LoginModal = dynamic(() => impor"@/components/auth/LoginModal", {
+const LoginModal = dynamic(() => import("@/components/auth/LoginModal"), {
   ssr: false, // Modal doesn't need SSR
 });
 

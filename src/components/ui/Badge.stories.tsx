@@ -91,7 +91,7 @@ export const WithDot: Story = {
 export const Removable: Story = {
   render: () => (
     <div className="flex flex-wrap gap-2">
-      <Badge removable onRemove={() => aler"Removed!"}>Removable</Badge>
+      <Badge removable onRemove={() => alert("Removed!")}>Removable</Badge>
       <Badge removable variant="success" onRemove={() => {}}>Tag</Badge>
       <Badge removable variant="info" onRemove={() => {}}>Filter</Badge>
     </div>

@@ -1,13 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import AvatarCropper from "@/components/common/AvatarCropper";
 import BackButton from "@/components/common/BackButton";
 import Header, { HeaderSpacer } from "@/components/common/Header";
 import AboutStep from "@/components/pro/steps/AboutStep";
 import CategoriesStep from "@/components/pro/steps/CategoriesStep";
 import ProjectsStep, {
-    PortfolioProject,
+  PortfolioProject,
 } from "@/components/pro/steps/ProjectsStep";
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/badge";
@@ -19,21 +18,22 @@ import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
-    ArrowRight,
-    Briefcase,
-    CheckCircle2,
-    ChevronLeft,
-    ChevronRight,
-    Facebook,
-    FileText,
-    Globe,
-    Images,
-    Instagram,
-    Linkedin,
-    MessageCircle,
-    Send,
-    Sparkles,
+  ArrowRight,
+  Briefcase,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Facebook,
+  FileText,
+  Globe,
+  Images,
+  Instagram,
+  Linkedin,
+  MessageCircle,
+  Send,
+  Sparkles,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -51,32 +51,32 @@ type Step = "intro" | "category" | "about" | "contact" | "projects" | "review";
 
 const STEPS: {
   id: Step;
-  title: { en: string; ka: string };
+  title: { en: string; ka: string; ru: string };
   icon: React.ReactNode;
 }[] = [
   {
     id: "category",
-    title: { en: "Specialty", ka: "აირჩიე შენი სპეციალობა" },
+    title: { en: "Specialty", ka: "აირჩიე შენი სპეციალობა", ru: "Специальность" },
     icon: <Briefcase className="w-4 h-4" />,
   },
   {
     id: "about",
-    title: { en: "About You", ka: "შეავსე შენს შესახებ ინფორმაცია" },
+    title: { en: "About You", ka: "შეავსე შენს შესახებ ინფორმაცია", ru: "О вас" },
     icon: <FileText className="w-4 h-4" />,
   },
   {
     id: "contact",
-    title: { en: "Contact", ka: "შეავსე შენს საკონტაქტო ინფორმაცია" },
+    title: { en: "Contact", ka: "შეავსე შენს საკონტაქტო ინფორმაცია", ru: "Контакты" },
     icon: <MessageCircle className="w-4 h-4" />,
   },
   {
     id: "projects",
-    title: { en: "Portfolio", ka: "დაამატე შენი ნამუშევრები" },
+    title: { en: "Portfolio", ka: "დაამატე შენი ნამუშევრები", ru: "Портфолио" },
     icon: <Images className="w-4 h-4" />,
   },
   {
     id: "review",
-    title: { en: "Review", ka: "გადახედე და გახდი სპეციალისტი" },
+    title: { en: "Review", ka: "გადახედე და გახდი სპეციალისტი", ru: "Обзор" },
     icon: <CheckCircle2 className="w-4 h-4" />,
   },
 ];
@@ -579,6 +579,10 @@ export default function BecomeProPage() {
                     <>
                       გახდი <span>სპეციალისტი</span>
                     </>
+                  ) : locale === "ru" ? (
+                    <>
+                      Стать <span>Специалистом</span>
+                    </>
                   ) : (
                     <>
                       Become a <span>Professional</span>
@@ -610,7 +614,7 @@ export default function BecomeProPage() {
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                          {locale === "ka" ? step.title.ka : step.title.en}
+                          {locale === "ka" ? step.title.ka : locale === "ru" ? step.title.ru : step.title.en}
                         </p>
                       </div>
                       {step.icon}
@@ -672,7 +676,9 @@ export default function BecomeProPage() {
                   <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
                     {locale === "ka"
                       ? STEPS[getCurrentStepIndex()].title.ka
-                      : STEPS[getCurrentStepIndex()].title.en}
+                      : locale === "ru"
+                        ? STEPS[getCurrentStepIndex()].title.ru
+                        : STEPS[getCurrentStepIndex()].title.en}
                   </h2>
                 </div>
               </div>

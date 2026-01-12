@@ -147,7 +147,7 @@ function MyWorkPageContent() {
   const fetchAllProposals = useCallback(async () => {
     try {
       setIsInitialLoading(true);
-      const response = await api.ge`/jobs/my-proposals/list`;
+      const response = await api.get(`/jobs/my-proposals/list`);
       const data = Array.isArray(response.data) ? response.data : [];
       setAllProposals(data);
       setError(null);
@@ -165,7 +165,7 @@ function MyWorkPageContent() {
       hasFetched.current = true;
       fetchAllProposals();
 
-      api.pos`/jobs/counters/mark-proposal-updates-viewed`.catch(() => {});
+      api.post(`/jobs/counters/mark-proposal-updates-viewed`).catch(() => {});
     }
   }, [isAuthenticated, user, fetchAllProposals]);
 

@@ -94,7 +94,7 @@ function AdminJobsPageContent() {
       if (statusFilter !== 'all') params.set('status', statusFilter);
 
       // Fetch stats first (this always works)
-      const statsRes = await api.ge`/admin/stats`.catch((err) => {
+      const statsRes = await api.get(`/admin/stats`).catch((err) => {
         console.error('Failed to fetch /admin/stats:', err.response?.status, err.response?.data || err.message);
         return { data: { jobs: {} } };
       });
@@ -113,7 +113,7 @@ function AdminJobsPageContent() {
         console.error('Failed to fetch /admin/jobs:', apiErr.response?.status, apiErr.response?.data || apiErr.message);
         // Fallback: use recent-jobs endpoint if paginated endpoint fails
         try {
-          const recentRes = await api.ge`/admin/recent-jobs?limit=50`;
+          const recentRes = await api.get(`/admin/recent-jobs?limit=50`);
           console.log('Fallback to recent-jobs:', recentRes.data);
           jobsData = recentRes.data || [];
         } catch (fallbackErr) {
