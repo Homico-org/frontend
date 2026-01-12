@@ -21,7 +21,7 @@ interface BrowseSearchBarProps {
 }
 
 export default function BrowseSearchBar({ placeholder }: BrowseSearchBarProps) {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const { searchQuery, setSearchQuery } = useBrowseContext();
   const [inputValue, setInputValue] = useState(searchQuery);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -74,9 +74,7 @@ export default function BrowseSearchBar({ placeholder }: BrowseSearchBarProps) {
     localStorage.setItem('recentProSearches', JSON.stringify(updated));
   };
 
-  const defaultPlaceholder = locale === 'ka'
-    ? 'მოძებნე სპეციალისტი...'
-    : 'Search professionals...';
+  const defaultPlaceholder = t('browse.searchProfessionals');
 
   return (
     <div ref={containerRef} className="relative w-full max-w-md">
@@ -128,7 +126,7 @@ export default function BrowseSearchBar({ placeholder }: BrowseSearchBarProps) {
           {recentSearches.length > 0 && (
             <div className="p-2 border-b border-[var(--color-border-subtle)]">
               <span className="text-[10px] font-medium text-[var(--color-text-tertiary)] uppercase tracking-wide px-2">
-                {locale === 'ka' ? 'ბოლო' : 'Recent'}
+                {t('browse.recent')}
               </span>
               <div className="mt-1 flex flex-wrap gap-1">
                 {recentSearches.map((search, idx) => (
@@ -160,7 +158,7 @@ export default function BrowseSearchBar({ placeholder }: BrowseSearchBarProps) {
           {/* Suggestions */}
           <div className="p-2">
             <span className="text-[10px] font-medium text-[var(--color-text-tertiary)] uppercase tracking-wide px-2">
-              {locale === 'ka' ? 'პოპულარული' : 'Popular'}
+              {t('browse.popular')}
             </span>
             <div className="mt-1 space-y-0.5">
               {SEARCH_SUGGESTIONS.slice(0, 4).map((suggestion) => (

@@ -22,7 +22,7 @@ const sections = [
 ];
 
 export default function PrivacyPage() {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const [activeSection, setActiveSection] = useState('introduction');
   const [showMobileToc, setShowMobileToc] = useState(false);
 
@@ -60,7 +60,7 @@ export default function PrivacyPage() {
     setShowMobileToc(false);
   };
 
-  const lastUpdated = locale === 'ka' ? '21 დეკემბერი, 2024' : 'December 21, 2024';
+  const lastUpdated = t('privacy.december');
 
   return (
     <div className="min-h-screen bg-cream-50 dark:bg-dark-bg">
@@ -85,16 +85,14 @@ export default function PrivacyPage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
               </svg>
-              {locale === 'ka' ? 'კონფიდენციალურობა' : 'Your Privacy Matters'}
+              {t('privacy.yourPrivacyMatters')}
             </span>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-medium text-white mb-4 tracking-tight">
-              {locale === 'ka' ? 'კონფიდენციალურობის პოლიტიკა' : 'Privacy Policy'}
+              {t('privacy.privacyPolicy')}
             </h1>
             <p className="text-base sm:text-lg text-white/70 max-w-2xl mx-auto leading-relaxed mb-6">
-              {locale === 'ka'
-                ? 'გაიგეთ, როგორ ვაგროვებთ, ვიყენებთ და ვიცავთ თქვენს პერსონალურ მონაცემებს.'
-                : 'Learn how we collect, use, and protect your personal information.'}
+              {t('privacy.learnHowWeCollectUse')}
             </p>
 
             {/* Last updated badge */}
@@ -102,7 +100,7 @@ export default function PrivacyPage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              {locale === 'ka' ? 'ბოლო განახლება:' : 'Last updated:'} {lastUpdated}
+              {t('privacy.lastUpdated')} {lastUpdated}
             </div>
           </div>
         </div>
@@ -116,7 +114,7 @@ export default function PrivacyPage() {
             <div className="sticky top-24 max-h-[calc(100vh-120px)] overflow-hidden">
               <div className="bg-white/70 dark:bg-dark-card/70 backdrop-blur-sm rounded-2xl border border-neutral-100 dark:border-dark-border p-5 max-h-[calc(100vh-180px)] overflow-y-auto">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-4">
-                  {locale === 'ka' ? 'სარჩევი' : 'Table of Contents'}
+                  {t('privacy.tableOfContents')}
                 </h3>
                 <nav className="space-y-1">
                   {sections.map((section, index) => (
@@ -147,13 +145,13 @@ export default function PrivacyPage() {
               {/* Quick links */}
               <div className="mt-4 p-5 bg-gradient-to-br from-[#C4735B]/10 to-[#C4735B]/5 dark:from-[#C4735B]/20 dark:to-[#C4735B]/10 rounded-2xl border border-[#C4735B]/20 dark:border-[#C4735B]/30">
                 <p className="text-sm text-[#A85A45] dark:text-[#E8956A] mb-3">
-                  {locale === 'ka' ? 'კითხვები გაქვთ?' : 'Have questions?'}
+                  {t('privacy.haveQuestions')}
                 </p>
                 <Link
                   href="/help"
                   className="inline-flex items-center gap-2 text-sm font-medium text-[#C4735B] dark:text-[#E8956A] hover:text-[#A85A45] dark:hover:text-[#F0A070] transition-colors"
                 >
-                  {locale === 'ka' ? 'დაგვიკავშირდით' : 'Contact us'}
+                  {t('privacy.contactUs')}
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
@@ -236,17 +234,13 @@ export default function PrivacyPage() {
                 <section id="introduction" className="scroll-mt-28 pb-10 border-b border-neutral-100 dark:border-dark-border">
                   <div className="flex items-center gap-3 mb-6">
                     <span className="w-8 h-8 rounded-lg bg-[#C4735B] text-white text-sm font-semibold flex items-center justify-center">1</span>
-                    <h2 className="!mb-0">{locale === 'ka' ? 'შესავალი' : 'Introduction'}</h2>
+                    <h2 className="!mb-0">{t('privacy.introduction')}</h2>
                   </div>
                   <p>
-                    {locale === 'ka'
-                      ? 'Homico.ge-ში ჩვენ ვაფასებთ თქვენს კონფიდენციალურობას. ეს პოლიტიკა აღწერს, თუ როგორ ვაგროვებთ, ვიყენებთ და ვიცავთ თქვენს პერსონალურ ინფორმაციას.'
-                      : 'At Homico.ge, we value your privacy. This policy describes how we collect, use, and protect your personal information.'}
+                    {t('privacy.atHomicogeWeValueYour')}
                   </p>
                   <p>
-                    {locale === 'ka'
-                      ? 'ჩვენი პლატფორმის გამოყენებით, თქვენ ეთანხმებით ამ კონფიდენციალურობის პოლიტიკაში აღწერილ პრაქტიკას.'
-                      : 'By using our platform, you agree to the practices described in this Privacy Policy.'}
+                    {t('privacy.byUsingOurPlatformYou')}
                   </p>
                 </section>
 
@@ -254,36 +248,34 @@ export default function PrivacyPage() {
                 <section id="collection" className="scroll-mt-28 py-10 border-b border-neutral-100 dark:border-dark-border">
                   <div className="flex items-center gap-3 mb-6">
                     <span className="w-8 h-8 rounded-lg bg-[#C4735B] text-white text-sm font-semibold flex items-center justify-center">2</span>
-                    <h2 className="!mb-0">{locale === 'ka' ? 'შეგროვებული ინფორმაცია' : 'Information We Collect'}</h2>
+                    <h2 className="!mb-0">{t('privacy.informationWeCollect')}</h2>
                   </div>
                   <p>
-                    {locale === 'ka'
-                      ? 'ჩვენ ვაგროვებთ შემდეგი ტიპის ინფორმაციას:'
-                      : 'We collect the following types of information:'}
+                    {t('privacy.weCollectTheFollowingTypes')}
                   </p>
 
-                  <h3>{locale === 'ka' ? 'პირადი ინფორმაცია' : 'Personal Information'}</h3>
+                  <h3>{t('privacy.personalInformation')}</h3>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>{locale === 'ka' ? 'სახელი და გვარი' : 'Name and surname'}</li>
-                    <li>{locale === 'ka' ? 'ელექტრონული ფოსტის მისამართი' : 'Email address'}</li>
-                    <li>{locale === 'ka' ? 'ტელეფონის ნომერი' : 'Phone number'}</li>
-                    <li>{locale === 'ka' ? 'მისამართი და ადგილმდებარეობა' : 'Address and location'}</li>
-                    <li>{locale === 'ka' ? 'პროფილის ფოტო' : 'Profile photo'}</li>
+                    <li>{t('privacy.nameAndSurname')}</li>
+                    <li>{t('privacy.emailAddress')}</li>
+                    <li>{t('privacy.phoneNumber')}</li>
+                    <li>{t('privacy.addressAndLocation')}</li>
+                    <li>{t('privacy.profilePhoto')}</li>
                   </ul>
 
-                  <h3>{locale === 'ka' ? 'პროფესიონალური ინფორმაცია' : 'Professional Information'}</h3>
+                  <h3>{t('privacy.professionalInformation')}</h3>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>{locale === 'ka' ? 'სამუშაო გამოცდილება და პორტფოლიო' : 'Work experience and portfolio'}</li>
-                    <li>{locale === 'ka' ? 'კვალიფიკაცია და სერთიფიკატები' : 'Qualifications and certifications'}</li>
-                    <li>{locale === 'ka' ? 'შეფასებები და მიმოხილვები' : 'Ratings and reviews'}</li>
+                    <li>{t('privacy.workExperienceAndPortfolio')}</li>
+                    <li>{t('privacy.qualificationsAndCertifications')}</li>
+                    <li>{t('privacy.ratingsAndReviews')}</li>
                   </ul>
 
-                  <h3>{locale === 'ka' ? 'ტექნიკური ინფორმაცია' : 'Technical Information'}</h3>
+                  <h3>{t('privacy.technicalInformation')}</h3>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>{locale === 'ka' ? 'IP მისამართი' : 'IP address'}</li>
-                    <li>{locale === 'ka' ? 'ბრაუზერის ტიპი და ვერსია' : 'Browser type and version'}</li>
-                    <li>{locale === 'ka' ? 'მოწყობილობის ინფორმაცია' : 'Device information'}</li>
-                    <li>{locale === 'ka' ? 'გამოყენების მონაცემები' : 'Usage data'}</li>
+                    <li>{t('privacy.ipAddress')}</li>
+                    <li>{t('privacy.browserTypeAndVersion')}</li>
+                    <li>{t('privacy.deviceInformation')}</li>
+                    <li>{t('privacy.usageData')}</li>
                   </ul>
                 </section>
 
@@ -291,21 +283,19 @@ export default function PrivacyPage() {
                 <section id="usage" className="scroll-mt-28 py-10 border-b border-neutral-100 dark:border-dark-border">
                   <div className="flex items-center gap-3 mb-6">
                     <span className="w-8 h-8 rounded-lg bg-[#C4735B] text-white text-sm font-semibold flex items-center justify-center">3</span>
-                    <h2 className="!mb-0">{locale === 'ka' ? 'ინფორმაციის გამოყენება' : 'How We Use Information'}</h2>
+                    <h2 className="!mb-0">{t('privacy.howWeUseInformation')}</h2>
                   </div>
                   <p>
-                    {locale === 'ka'
-                      ? 'თქვენს ინფორმაციას ვიყენებთ შემდეგი მიზნებისთვის:'
-                      : 'We use your information for the following purposes:'}
+                    {t('privacy.weUseYourInformationFor')}
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>{locale === 'ka' ? 'ანგარიშის შექმნა და მართვა' : 'Account creation and management'}</li>
-                    <li>{locale === 'ka' ? 'კლიენტებისა და პროფესიონალების დაკავშირება' : 'Connecting clients with professionals'}</li>
-                    <li>{locale === 'ka' ? 'კომუნიკაციის უზრუნველყოფა' : 'Facilitating communication'}</li>
-                    <li>{locale === 'ka' ? 'პლატფორმის გაუმჯობესება' : 'Improving the platform'}</li>
-                    <li>{locale === 'ka' ? 'მხარდაჭერის სერვისების მიწოდება' : 'Providing support services'}</li>
-                    <li>{locale === 'ka' ? 'თაღლითობის პრევენცია' : 'Fraud prevention'}</li>
-                    <li>{locale === 'ka' ? 'იურიდიული ვალდებულებების შესრულება' : 'Legal compliance'}</li>
+                    <li>{t('privacy.accountCreationAndManagement')}</li>
+                    <li>{t('privacy.connectingClientsWithProfessionals')}</li>
+                    <li>{t('privacy.facilitatingCommunication')}</li>
+                    <li>{t('privacy.improvingThePlatform')}</li>
+                    <li>{t('privacy.providingSupportServices')}</li>
+                    <li>{t('privacy.fraudPrevention')}</li>
+                    <li>{t('privacy.legalCompliance')}</li>
                   </ul>
                 </section>
 
@@ -313,23 +303,19 @@ export default function PrivacyPage() {
                 <section id="sharing" className="scroll-mt-28 py-10 border-b border-neutral-100 dark:border-dark-border">
                   <div className="flex items-center gap-3 mb-6">
                     <span className="w-8 h-8 rounded-lg bg-[#C4735B] text-white text-sm font-semibold flex items-center justify-center">4</span>
-                    <h2 className="!mb-0">{locale === 'ka' ? 'ინფორმაციის გაზიარება' : 'Information Sharing'}</h2>
+                    <h2 className="!mb-0">{t('privacy.informationSharing')}</h2>
                   </div>
                   <p>
-                    {locale === 'ka'
-                      ? 'თქვენს ინფორმაციას შეიძლება გავუზიაროთ:'
-                      : 'We may share your information with:'}
+                    {t('privacy.weMayShareYourInformation')}
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>{locale === 'ka' ? 'სხვა მომხმარებლებს (თქვენი თანხმობით)' : 'Other users (with your consent)'}</li>
-                    <li>{locale === 'ka' ? 'სერვის პროვაიდერებს (ტექნიკური მხარდაჭერისთვის)' : 'Service providers (for technical support)'}</li>
-                    <li>{locale === 'ka' ? 'სამართალდამცავ ორგანოებს (კანონის მოთხოვნით)' : 'Law enforcement (when required by law)'}</li>
+                    <li>{t('privacy.otherUsersWithYourConsent')}</li>
+                    <li>{t('privacy.serviceProvidersForTechnicalSupport')}</li>
+                    <li>{t('privacy.lawEnforcementWhenRequiredBy')}</li>
                   </ul>
                   <div className="mt-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800/30">
                     <p className="text-sm text-emerald-800 dark:text-emerald-300 !mb-0">
-                      <strong>{locale === 'ka' ? 'დაცვა:' : 'Protection:'}</strong> {locale === 'ka'
-                        ? 'ჩვენ არასოდეს ვყიდით თქვენს პერსონალურ ინფორმაციას მესამე პირებს.'
-                        : 'We never sell your personal information to third parties.'}
+                      <strong>{t('privacy.protection')}</strong> {t('privacy.weNeverSellYourPersonal')}
                     </p>
                   </div>
                 </section>
@@ -338,23 +324,19 @@ export default function PrivacyPage() {
                 <section id="cookies" className="scroll-mt-28 py-10 border-b border-neutral-100 dark:border-dark-border">
                   <div className="flex items-center gap-3 mb-6">
                     <span className="w-8 h-8 rounded-lg bg-[#C4735B] text-white text-sm font-semibold flex items-center justify-center">5</span>
-                    <h2 className="!mb-0">{locale === 'ka' ? 'Cookies და თვალყურის დევნება' : 'Cookies & Tracking'}</h2>
+                    <h2 className="!mb-0">{t('privacy.cookiesTracking')}</h2>
                   </div>
                   <p>
-                    {locale === 'ka'
-                      ? 'ჩვენ ვიყენებთ cookies და მსგავს ტექნოლოგიებს:'
-                      : 'We use cookies and similar technologies for:'}
+                    {t('privacy.weUseCookiesAndSimilar')}
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>{locale === 'ka' ? 'სესიის მართვა და ავტორიზაცია' : 'Session management and authentication'}</li>
-                    <li>{locale === 'ka' ? 'თქვენი პრეფერენციების შენახვა' : 'Storing your preferences'}</li>
-                    <li>{locale === 'ka' ? 'ანალიტიკა და გაუმჯობესება' : 'Analytics and improvements'}</li>
-                    <li>{locale === 'ka' ? 'უსაფრთხოების უზრუნველყოფა' : 'Security purposes'}</li>
+                    <li>{t('privacy.sessionManagementAndAuthentication')}</li>
+                    <li>{t('privacy.storingYourPreferences')}</li>
+                    <li>{t('privacy.analyticsAndImprovements')}</li>
+                    <li>{t('privacy.securityPurposes')}</li>
                   </ul>
                   <p className="mt-4">
-                    {locale === 'ka'
-                      ? 'თქვენ შეგიძლიათ მართოთ cookie პარამეტრები თქვენი ბრაუზერის მეშვეობით.'
-                      : 'You can manage cookie settings through your browser.'}
+                    {t('privacy.youCanManageCookieSettings')}
                   </p>
                 </section>
 
@@ -362,24 +344,20 @@ export default function PrivacyPage() {
                 <section id="security" className="scroll-mt-28 py-10 border-b border-neutral-100 dark:border-dark-border">
                   <div className="flex items-center gap-3 mb-6">
                     <span className="w-8 h-8 rounded-lg bg-[#C4735B] text-white text-sm font-semibold flex items-center justify-center">6</span>
-                    <h2 className="!mb-0">{locale === 'ka' ? 'მონაცემების უსაფრთხოება' : 'Data Security'}</h2>
+                    <h2 className="!mb-0">{t('privacy.dataSecurity')}</h2>
                   </div>
                   <p>
-                    {locale === 'ka'
-                      ? 'თქვენი მონაცემების დაცვისთვის ვიყენებთ:'
-                      : 'We protect your data using:'}
+                    {t('privacy.weProtectYourDataUsing')}
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>{locale === 'ka' ? 'SSL/TLS დაშიფვრა' : 'SSL/TLS encryption'}</li>
-                    <li>{locale === 'ka' ? 'უსაფრთხო სერვერები' : 'Secure servers'}</li>
-                    <li>{locale === 'ka' ? 'რეგულარული უსაფრთხოების აუდიტი' : 'Regular security audits'}</li>
-                    <li>{locale === 'ka' ? 'წვდომის კონტროლი' : 'Access controls'}</li>
+                    <li>{t('privacy.ssltlsEncryption')}</li>
+                    <li>{t('privacy.secureServers')}</li>
+                    <li>{t('privacy.regularSecurityAudits')}</li>
+                    <li>{t('privacy.accessControls')}</li>
                   </ul>
                   <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800/30">
                     <p className="text-sm text-amber-800 dark:text-amber-300 !mb-0">
-                      <strong>{locale === 'ka' ? 'შენიშვნა:' : 'Note:'}</strong> {locale === 'ka'
-                        ? 'მიუხედავად ჩვენი მცდელობებისა, ინტერნეტით გადაცემა 100% უსაფრთხო არ არის.'
-                        : 'Despite our efforts, no internet transmission is 100% secure.'}
+                      <strong>{t('privacy.note')}</strong> {t('privacy.despiteOurEffortsNoInternet')}
                     </p>
                   </div>
                 </section>
@@ -388,22 +366,18 @@ export default function PrivacyPage() {
                 <section id="retention" className="scroll-mt-28 py-10 border-b border-neutral-100 dark:border-dark-border">
                   <div className="flex items-center gap-3 mb-6">
                     <span className="w-8 h-8 rounded-lg bg-[#C4735B] text-white text-sm font-semibold flex items-center justify-center">7</span>
-                    <h2 className="!mb-0">{locale === 'ka' ? 'მონაცემების შენახვა' : 'Data Retention'}</h2>
+                    <h2 className="!mb-0">{t('privacy.dataRetention')}</h2>
                   </div>
                   <p>
-                    {locale === 'ka'
-                      ? 'თქვენს მონაცემებს ვინახავთ:'
-                      : 'We retain your data:'}
+                    {t('privacy.weRetainYourData')}
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>{locale === 'ka' ? 'ანგარიშის მონაცემები - ანგარიშის აქტიურობის განმავლობაში' : 'Account data - while account is active'}</li>
-                    <li>{locale === 'ka' ? 'ტრანზაქციის ისტორია - 5 წელი' : 'Transaction history - 5 years'}</li>
-                    <li>{locale === 'ka' ? 'კომუნიკაციის ჩანაწერები - 2 წელი' : 'Communication records - 2 years'}</li>
+                    <li>{t('privacy.accountDataWhileAccountIs')}</li>
+                    <li>{t('privacy.transactionHistory5Years')}</li>
+                    <li>{t('privacy.communicationRecords2Years')}</li>
                   </ul>
                   <p className="mt-4">
-                    {locale === 'ka'
-                      ? 'ანგარიშის წაშლის შემდეგ, თქვენი მონაცემები წაიშლება 30 დღის განმავლობაში.'
-                      : 'After account deletion, your data will be removed within 30 days.'}
+                    {t('privacy.afterAccountDeletionYourData')}
                   </p>
                 </section>
 
@@ -411,25 +385,21 @@ export default function PrivacyPage() {
                 <section id="rights" className="scroll-mt-28 py-10 border-b border-neutral-100 dark:border-dark-border">
                   <div className="flex items-center gap-3 mb-6">
                     <span className="w-8 h-8 rounded-lg bg-[#C4735B] text-white text-sm font-semibold flex items-center justify-center">8</span>
-                    <h2 className="!mb-0">{locale === 'ka' ? 'თქვენი უფლებები' : 'Your Rights'}</h2>
+                    <h2 className="!mb-0">{t('privacy.yourRights')}</h2>
                   </div>
                   <p>
-                    {locale === 'ka'
-                      ? 'თქვენ გაქვთ შემდეგი უფლებები:'
-                      : 'You have the following rights:'}
+                    {t('privacy.youHaveTheFollowingRights')}
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>{locale === 'ka' ? 'წვდომა თქვენს მონაცემებზე' : 'Access your data'}</li>
-                    <li>{locale === 'ka' ? 'მონაცემების შესწორება' : 'Correct your data'}</li>
-                    <li>{locale === 'ka' ? 'მონაცემების წაშლა' : 'Delete your data'}</li>
-                    <li>{locale === 'ka' ? 'მონაცემების გადატანა' : 'Data portability'}</li>
-                    <li>{locale === 'ka' ? 'დამუშავების შეზღუდვა' : 'Restrict processing'}</li>
-                    <li>{locale === 'ka' ? 'წინააღმდეგობის გამოთქმა' : 'Object to processing'}</li>
+                    <li>{t('privacy.accessYourData')}</li>
+                    <li>{t('privacy.correctYourData')}</li>
+                    <li>{t('privacy.deleteYourData')}</li>
+                    <li>{t('privacy.dataPortability')}</li>
+                    <li>{t('privacy.restrictProcessing')}</li>
+                    <li>{t('privacy.objectToProcessing')}</li>
                   </ul>
                   <p className="mt-4">
-                    {locale === 'ka'
-                      ? 'ამ უფლებების გამოსაყენებლად დაგვიკავშირდით ელ-ფოსტით.'
-                      : 'To exercise these rights, contact us by email.'}
+                    {t('privacy.toExerciseTheseRightsContact')}
                   </p>
                 </section>
 
@@ -440,14 +410,10 @@ export default function PrivacyPage() {
                     <h2 className="!mb-0">{locale === 'ka' ? 'ბავშვთა კონფიდენციალურობა' : 'Children\'s Privacy'}</h2>
                   </div>
                   <p>
-                    {locale === 'ka'
-                      ? 'Homico არ არის განკუთვნილი 18 წელზე ნაკლები ასაკის პირებისთვის. ჩვენ შეგნებულად არ ვაგროვებთ არასრულწლოვანთა მონაცემებს.'
-                      : 'Homico is not intended for individuals under 18 years of age. We do not knowingly collect data from minors.'}
+                    {t('privacy.homicoIsNotIntendedFor')}
                   </p>
                   <p>
-                    {locale === 'ka'
-                      ? 'თუ აღმოვაჩენთ, რომ შემთხვევით შევაგროვეთ არასრულწლოვანის მონაცემები, ისინი დაუყოვნებლივ წაიშლება.'
-                      : 'If we discover that we have inadvertently collected data from a minor, it will be deleted immediately.'}
+                    {t('privacy.ifWeDiscoverThatWe')}
                   </p>
                 </section>
 
@@ -455,17 +421,15 @@ export default function PrivacyPage() {
                 <section id="international" className="scroll-mt-28 py-10 border-b border-neutral-100 dark:border-dark-border">
                   <div className="flex items-center gap-3 mb-6">
                     <span className="w-8 h-8 rounded-lg bg-[#C4735B] text-white text-sm font-semibold flex items-center justify-center">10</span>
-                    <h2 className="!mb-0">{locale === 'ka' ? 'საერთაშორისო გადაცემები' : 'International Transfers'}</h2>
+                    <h2 className="!mb-0">{t('privacy.internationalTransfers')}</h2>
                   </div>
                   <p>
-                    {locale === 'ka'
-                      ? 'თქვენი მონაცემები შეიძლება დამუშავდეს საქართველოს ფარგლებს გარეთ. ასეთ შემთხვევებში:'
-                      : 'Your data may be processed outside of Georgia. In such cases:'}
+                    {t('privacy.yourDataMayBeProcessed')}
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>{locale === 'ka' ? 'ვუზრუნველყოფთ ადეკვატურ დაცვას' : 'We ensure adequate protection'}</li>
-                    <li>{locale === 'ka' ? 'ვიყენებთ სტანდარტულ ხელშეკრულების პირობებს' : 'We use standard contractual clauses'}</li>
-                    <li>{locale === 'ka' ? 'ვმუშაობთ მხოლოდ სანდო პარტნიორებთან' : 'We work only with trusted partners'}</li>
+                    <li>{t('privacy.weEnsureAdequateProtection')}</li>
+                    <li>{t('privacy.weUseStandardContractualClauses')}</li>
+                    <li>{t('privacy.weWorkOnlyWithTrusted')}</li>
                   </ul>
                 </section>
 
@@ -473,17 +437,15 @@ export default function PrivacyPage() {
                 <section id="changes" className="scroll-mt-28 py-10 border-b border-neutral-100 dark:border-dark-border">
                   <div className="flex items-center gap-3 mb-6">
                     <span className="w-8 h-8 rounded-lg bg-[#C4735B] text-white text-sm font-semibold flex items-center justify-center">11</span>
-                    <h2 className="!mb-0">{locale === 'ka' ? 'პოლიტიკის ცვლილებები' : 'Policy Changes'}</h2>
+                    <h2 className="!mb-0">{t('privacy.policyChanges')}</h2>
                   </div>
                   <p>
-                    {locale === 'ka'
-                      ? 'ჩვენ შეიძლება პერიოდულად განვაახლოთ ეს პოლიტიკა. ცვლილებების შემთხვევაში:'
-                      : 'We may update this policy periodically. When changes are made:'}
+                    {t('privacy.weMayUpdateThisPolicy')}
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>{locale === 'ka' ? 'გამოვაქვეყნებთ განახლებულ ვერსიას' : 'We will post the updated version'}</li>
-                    <li>{locale === 'ka' ? 'განვაახლებთ "ბოლო განახლების" თარიღს' : 'We will update the "last updated" date'}</li>
-                    <li>{locale === 'ka' ? 'მნიშვნელოვანი ცვლილებებისას შეგატყობინებთ' : 'We will notify you of significant changes'}</li>
+                    <li>{t('privacy.weWillPostTheUpdated')}</li>
+                    <li>{t('privacy.weWillUpdateTheLast')}</li>
+                    <li>{t('privacy.weWillNotifyYouOf')}</li>
                   </ul>
                 </section>
 
@@ -491,12 +453,10 @@ export default function PrivacyPage() {
                 <section id="contact" className="scroll-mt-28 pt-10">
                   <div className="flex items-center gap-3 mb-6">
                     <span className="w-8 h-8 rounded-lg bg-[#C4735B] text-white text-sm font-semibold flex items-center justify-center">12</span>
-                    <h2 className="!mb-0">{locale === 'ka' ? 'დაგვიკავშირდით' : 'Contact Us'}</h2>
+                    <h2 className="!mb-0">{t('privacy.contactUs')}</h2>
                   </div>
                   <p>
-                    {locale === 'ka'
-                      ? 'კონფიდენციალურობასთან დაკავშირებული კითხვებისთვის დაგვიკავშირდით:'
-                      : 'For privacy-related questions, contact us:'}
+                    {t('privacy.forPrivacyrelatedQuestionsContactUs')}
                   </p>
                   <div className="mt-4 p-6 bg-gradient-to-br from-[#C4735B]/10 to-[#C4735B]/5 dark:from-[#C4735B]/20 dark:to-[#C4735B]/10 rounded-xl border border-[#C4735B]/20 dark:border-[#C4735B]/30">
                     <div className="space-y-3">
@@ -507,7 +467,7 @@ export default function PrivacyPage() {
                           </svg>
                         </div>
                         <div>
-                          <p className="text-sm text-neutral-500 dark:text-neutral-400 !mb-0">{locale === 'ka' ? 'ელ-ფოსტა' : 'Email'}</p>
+                          <p className="text-sm text-neutral-500 dark:text-neutral-400 !mb-0">{t('common.email')}</p>
                           <a href="mailto:info@homico.ge" className="font-medium">info@homico.ge</a>
                         </div>
                       </div>
@@ -519,8 +479,8 @@ export default function PrivacyPage() {
                           </svg>
                         </div>
                         <div>
-                          <p className="text-sm text-neutral-500 dark:text-neutral-400 !mb-0">{locale === 'ka' ? 'მისამართი' : 'Address'}</p>
-                          <p className="font-medium !mb-0">{locale === 'ka' ? 'თბილისი, საქართველო' : 'Tbilisi, Georgia'}</p>
+                          <p className="text-sm text-neutral-500 dark:text-neutral-400 !mb-0">{t('common.address')}</p>
+                          <p className="font-medium !mb-0">{t('privacy.tbilisiGeorgia')}</p>
                         </div>
                       </div>
                     </div>
@@ -533,14 +493,14 @@ export default function PrivacyPage() {
             {/* Footer navigation */}
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 p-6 bg-white/60 dark:bg-dark-card/60 backdrop-blur-sm rounded-2xl border border-neutral-100 dark:border-dark-border">
               <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                {locale === 'ka' ? 'ასევე იხილეთ:' : 'Also see:'}
+                {t('privacy.alsoSee')}
               </p>
               <div className="flex items-center gap-4">
                 <Link
                   href="/terms"
                   className="inline-flex items-center gap-2 text-sm font-medium text-[#C4735B] dark:text-[#E8956A] hover:text-[#A85A45] dark:hover:text-[#F0A070] transition-colors"
                 >
-                  {locale === 'ka' ? 'მომსახურების პირობები' : 'Terms of Service'}
+                  {t('privacy.termsOfService')}
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
@@ -549,7 +509,7 @@ export default function PrivacyPage() {
                   href="/help"
                   className="inline-flex items-center gap-2 text-sm font-medium text-[#C4735B] dark:text-[#E8956A] hover:text-[#A85A45] dark:hover:text-[#F0A070] transition-colors"
                 >
-                  {locale === 'ka' ? 'დახმარების ცენტრი' : 'Help Center'}
+                  {t('privacy.helpCenter')}
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>

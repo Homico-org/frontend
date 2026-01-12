@@ -156,12 +156,12 @@ function AdminJobsPageContent() {
       return `₾${budget.min} - ₾${budget.max}`;
     }
     if (budget.min) return `₾${budget.min}+`;
-    if (budget.max) return `${locale === 'ka' ? 'მდე' : 'Up to'} ₾${budget.max}`;
+    if (budget.max) return `${t('admin.upTo')} ₾${budget.max}`;
     return '-';
   };
 
   const getStatusColor = (status: string) => getAdminJobStatusColor(status);
-  const getStatusLabel = (status: string) => getJobStatusLabel(status, locale as 'en' | 'ka');
+  const getStatusLabel = (status: string) => getJobStatusLabel(status, locale as 'en' | 'ka' | 'ru');
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -174,10 +174,10 @@ function AdminJobsPageContent() {
   };
 
   const statCards = [
-    { label: locale === 'ka' ? 'სულ სამუშაო' : 'Total Jobs', value: stats?.total || 0, icon: Briefcase, color: THEME.primary },
-    { label: locale === 'ka' ? 'ღია' : 'Open', value: stats?.open || 0, icon: Play, color: THEME.success },
-    { label: locale === 'ka' ? 'მიმდინარე' : 'In Progress', value: stats?.inProgress || 0, icon: Clock, color: THEME.warning },
-    { label: locale === 'ka' ? 'დასრულებული' : 'Completed', value: stats?.completed || 0, icon: CheckCircle, color: THEME.info },
+    { label: t('admin.totalJobs'), value: stats?.total || 0, icon: Briefcase, color: THEME.primary },
+    { label: t('common.open'), value: stats?.open || 0, icon: Play, color: THEME.success },
+    { label: t('common.inProgress'), value: stats?.inProgress || 0, icon: Clock, color: THEME.warning },
+    { label: t('common.completed'), value: stats?.completed || 0, icon: CheckCircle, color: THEME.info },
   ];
 
   if (isLoading) {
@@ -191,7 +191,7 @@ function AdminJobsPageContent() {
             <Briefcase className="w-8 h-8 text-white" />
           </div>
           <p className="mt-4 text-sm" style={{ color: THEME.textMuted }}>
-            {locale === 'ka' ? 'იტვირთება...' : 'Loading jobs...'}
+            {t('admin.loadingJobs')}
           </p>
         </div>
       </div>
@@ -228,10 +228,10 @@ function AdminJobsPageContent() {
                   className="text-xl font-semibold tracking-tight"
                   style={{ color: THEME.text, fontFamily: "'Inter', sans-serif" }}
                 >
-                  {locale === 'ka' ? 'სამუშაოების მართვა' : 'Job Management'}
+                  {t('admin.jobManagement')}
                 </h1>
                 <p className="text-sm mt-0.5" style={{ color: THEME.textMuted }}>
-                  {stats?.total.toLocaleString() || 0} {locale === 'ka' ? 'სამუშაო' : 'jobs total'}
+                  {stats?.total.toLocaleString() || 0} {t('admin.jobsTotal')}
                 </p>
               </div>
             </div>
@@ -247,7 +247,7 @@ function AdminJobsPageContent() {
               }}
             >
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">{locale === 'ka' ? 'განახლება' : 'Refresh'}</span>
+              <span className="hidden sm:inline">{t('admin.refresh')}</span>
             </button>
           </div>
         </div>
@@ -297,7 +297,7 @@ function AdminJobsPageContent() {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: THEME.textDim }} />
               <input
                 type="text"
-                placeholder={locale === 'ka' ? 'სათაური ან კატეგორია...' : 'Search by title or category...'}
+                placeholder={t('admin.searchByTitleOrCategory')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-all"
@@ -313,11 +313,11 @@ function AdminJobsPageContent() {
               onChange={setStatusFilter}
               size="sm"
               options={[
-                { value: 'all', label: locale === 'ka' ? 'ყველა სტატუსი' : 'All Status' },
+                { value: 'all', label: t('admin.allStatus') },
                 { value: 'open', label: locale === 'ka' ? 'ღია' : 'Open' },
                 { value: 'in_progress', label: locale === 'ka' ? 'მიმდინარე' : 'In Progress' },
                 { value: 'completed', label: locale === 'ka' ? 'დასრულებული' : 'Completed' },
-                { value: 'cancelled', label: locale === 'ka' ? 'გაუქმებული' : 'Cancelled' },
+                { value: 'cancelled', label: t('common.cancelled') },
               ]}
             />
           </div>
@@ -333,11 +333,11 @@ function AdminJobsPageContent() {
             className="px-6 py-4 grid grid-cols-12 gap-4 text-xs font-medium uppercase tracking-wider"
             style={{ borderBottom: `1px solid ${THEME.border}`, color: THEME.textDim }}
           >
-            <div className="col-span-4">{locale === 'ka' ? 'სამუშაო' : 'Job'}</div>
-            <div className="col-span-2">{locale === 'ka' ? 'კლიენტი' : 'Client'}</div>
-            <div className="col-span-2 hidden lg:block">{locale === 'ka' ? 'სტატუსი' : 'Status'}</div>
-            <div className="col-span-2 hidden md:block">{locale === 'ka' ? 'თარიღი' : 'Posted'}</div>
-            <div className="col-span-2 text-right">{locale === 'ka' ? 'მოქმედებები' : 'Actions'}</div>
+            <div className="col-span-4">{t('admin.job')}</div>
+            <div className="col-span-2">{t('admin.client')}</div>
+            <div className="col-span-2 hidden lg:block">{t('common.status')}</div>
+            <div className="col-span-2 hidden md:block">{t('admin.posted')}</div>
+            <div className="col-span-2 text-right">{t('admin.actions')}</div>
           </div>
 
           {/* Table Body */}
@@ -345,10 +345,10 @@ function AdminJobsPageContent() {
             <div className="p-12 text-center">
               <Briefcase className="w-16 h-16 mx-auto mb-4" style={{ color: THEME.textDim }} />
               <p className="text-lg font-medium" style={{ color: THEME.textMuted }}>
-                {locale === 'ka' ? 'სამუშაოები არ მოიძებნა' : 'No jobs found'}
+                {t('admin.noJobsFound')}
               </p>
               <p className="text-sm mt-1" style={{ color: THEME.textDim }}>
-                {locale === 'ka' ? 'სცადეთ სხვა ძებნა' : 'Try adjusting your search or filters'}
+                {t('admin.tryAdjustingYourSearchOr')}
               </p>
             </div>
           ) : (
@@ -420,12 +420,12 @@ function AdminJobsPageContent() {
                       className="text-sm"
                       style={{ color: THEME.textMuted, fontFamily: "'JetBrains Mono', monospace" }}
                     >
-                      {formatDateShort(job.createdAt, locale as 'en' | 'ka')}
+                      {formatDateShort(job.createdAt, locale as 'en' | 'ka' | 'ru')}
                     </p>
                     {job.proposalCount !== undefined && (
                       <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: THEME.textDim }}>
                         <FileText className="w-3 h-3" />
-                        {job.proposalCount} {locale === 'ka' ? 'შეთავაზება' : 'proposals'}
+                        {job.proposalCount} {t('admin.proposals')}
                       </p>
                     )}
                   </div>
@@ -436,7 +436,7 @@ function AdminJobsPageContent() {
                       onClick={() => router.push(`/jobs/${job.id}`)}
                       className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
                       style={{ background: `${THEME.info}20` }}
-                      title={locale === 'ka' ? 'ნახვა' : 'View Job'}
+                      title={t('admin.viewJob')}
                     >
                       <Eye className="w-4 h-4" style={{ color: THEME.info }} />
                     </button>
@@ -464,7 +464,7 @@ function AdminJobsPageContent() {
                             }}
                           >
                             <Eye className="w-4 h-4" style={{ color: THEME.info }} />
-                            {locale === 'ka' ? 'დეტალების ნახვა' : 'View Details'}
+                            {t('admin.viewDetails')}
                           </button>
                           <button
                             className="w-full px-4 py-3 text-left text-sm flex items-center gap-3 transition-colors"
@@ -477,7 +477,7 @@ function AdminJobsPageContent() {
                             }}
                           >
                             <User className="w-4 h-4" style={{ color: THEME.warning }} />
-                            {locale === 'ka' ? 'კლიენტის პროფილი' : 'View Client'}
+                            {t('admin.viewClient')}
                           </button>
                           <div style={{ borderTop: `1px solid ${THEME.border}` }} />
                           {job.status === 'open' && (
@@ -489,7 +489,7 @@ function AdminJobsPageContent() {
                               onClick={() => setActionMenuJob(null)}
                             >
                               <Pause className="w-4 h-4" />
-                              {locale === 'ka' ? 'შეჩერება' : 'Pause Job'}
+                              {t('admin.pauseJob')}
                             </button>
                           )}
                           <button
@@ -500,7 +500,7 @@ function AdminJobsPageContent() {
                             onClick={() => setActionMenuJob(null)}
                           >
                             <Trash2 className="w-4 h-4" />
-                            {locale === 'ka' ? 'წაშლა' : 'Delete Job'}
+                            {t('admin.deleteJob')}
                           </button>
                         </div>
                       )}

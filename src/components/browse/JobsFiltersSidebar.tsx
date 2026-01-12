@@ -168,7 +168,7 @@ function CollapsibleSection({
 }
 
 export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCount = 0 }: JobsFiltersSidebarProps) {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
 
   // Local state for budget inputs (to allow typing without immediate filtering)
   const [minInput, setMinInput] = useState<string>(filters.budgetMin?.toString() || '');
@@ -227,7 +227,7 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
               className="flex items-center gap-1 text-[11px] font-medium text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
             >
               <RotateCcw className="w-3 h-3" />
-              {locale === 'ka' ? 'გასუფთავება' : 'Clear all'}
+              {t('browse.clearAll')}
             </button>
           </div>
         )}
@@ -243,7 +243,7 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
         >
           <Bookmark className={`w-4 h-4 ${filters.showFavoritesOnly ? 'fill-white' : ''}`} />
           <span className="text-[13px] font-medium flex-1">
-            {locale === 'ka' ? 'შენახულები' : 'Saved'}
+            {t('browse.saved')}
           </span>
           <input
             type="checkbox"
@@ -266,14 +266,14 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
 
         {/* Budget Section - Range Inputs */}
         <CollapsibleSection
-          title={locale === 'ka' ? 'ბიუჯეტი' : 'Budget'}
+          title={t('common.budget')}
           activeCount={(filters.budgetMin !== null || filters.budgetMax !== null) ? 1 : 0}
         >
           <div className="flex items-center gap-2">
             <div className="flex-1">
               <input
                 type="number"
-                placeholder={locale === 'ka' ? 'მინ' : 'Min'}
+                placeholder={t('browse.min')}
                 value={minInput}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -292,7 +292,7 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
             <div className="flex-1">
               <input
                 type="number"
-                placeholder={locale === 'ka' ? 'მაქს' : 'Max'}
+                placeholder={t('browse.max')}
                 value={maxInput}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -309,7 +309,7 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
             </div>
           </div>
           <p className="text-[10px] text-neutral-400 mt-1.5 px-1">
-            {locale === 'ka' ? '₾ ლარში' : 'In ₾ GEL'}
+            {t('browse.inGel')}
           </p>
         </CollapsibleSection>
 
@@ -318,7 +318,7 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
 
         {/* Property Type Section */}
         <CollapsibleSection
-          title={locale === 'ka' ? 'ტიპი' : 'Property'}
+          title={t('browse.property')}
           activeCount={filters.propertyType !== 'all' ? 1 : 0}
         >
           {PROPERTY_TYPES.filter(o => o.key !== 'all').map(option => (
@@ -336,7 +336,7 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
 
         {/* Deadline Section */}
         <CollapsibleSection
-          title={locale === 'ka' ? 'ვადა' : 'Deadline'}
+          title={t('browse.deadline')}
           activeCount={filters.deadline !== 'all' ? 1 : 0}
         >
           {DEADLINE_FILTERS.filter(o => o.key !== 'all').map(option => (

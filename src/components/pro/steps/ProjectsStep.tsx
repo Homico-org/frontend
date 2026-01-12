@@ -168,7 +168,7 @@ export default function ProjectsStep({
   maxProjects = 20,
   maxVisibleInBrowse = 6,
 }: ProjectsStepProps) {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const beforeAfterInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -562,7 +562,7 @@ export default function ProjectsStep({
           </div>
           <div>
             <h3 className="text-lg font-bold text-neutral-900">
-              {locale === "ka" ? "პორტფოლიო" : "Portfolio"}
+              {t('common.portfolio')}
             </h3>
             <p className="text-xs text-neutral-500">
               {locale === "ka"
@@ -582,7 +582,7 @@ export default function ProjectsStep({
               </svg>
             }
           >
-            {locale === "ka" ? "ახალი პროექტი" : "Add Project"}
+            {t('common.addProject')}
           </Button>
         )}
       </div>
@@ -680,7 +680,7 @@ export default function ProjectsStep({
                           </h4>
                           {willShowInBrowse && (
                             <Badge variant="warning" size="xs" className="flex-shrink-0">
-                              {locale === "ka" ? "ხილვადი" : "Visible"}
+                              {t('common.visible')}
                             </Badge>
                           )}
                         </div>
@@ -718,7 +718,7 @@ export default function ProjectsStep({
                               />
                             )}
                             <span className="text-xs text-emerald-700">
-                              {locale === "ka" ? "კლიენტი:" : "Client:"}{" "}
+                              {t('common.client')}{" "}
                               {project.clientName}
                             </span>
                             {project.rating && (
@@ -927,14 +927,10 @@ export default function ProjectsStep({
             </div>
             <div className="text-center">
               <p className="font-semibold text-neutral-600 group-hover:text-[#C4735B] transition-colors">
-                {locale === "ka"
-                  ? "დაამატე პირველი პროექტი"
-                  : "Add your first project"}
+                {t('common.addYourFirstProject')}
               </p>
               <p className="text-xs text-neutral-400 mt-1 max-w-[280px]">
-                {locale === "ka"
-                  ? "აჩვენე შენი ნამუშევრები ფოტოებით ან Before/After შედარებით"
-                  : "Showcase your work with photos or Before/After comparisons"}
+                {t('common.showcaseYourWorkWithPhotos')}
               </p>
             </div>
           </div>
@@ -949,12 +945,8 @@ export default function ProjectsStep({
             <h4 className="font-semibold text-neutral-900 flex items-center gap-2.5">
               <span className="w-2 h-2 rounded-full bg-[#C4735B] animate-pulse"></span>
               {editingProjectId
-                ? locale === "ka"
-                  ? "პროექტის რედაქტირება"
-                  : "Edit Project"
-                : locale === "ka"
-                  ? "ახალი პროექტი"
-                  : "New Project"}
+                ? t('common.editProject')
+                : t('common.newProject')}
             </h4>
             <button
               type="button"
@@ -981,7 +973,7 @@ export default function ProjectsStep({
             {/* Project Title */}
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-2">
-                {locale === "ka" ? "პროექტის სახელი" : "Project Title"}{" "}
+                {t('common.projectTitle')}{" "}
                 <span className="text-red-500">*</span>
               </label>
               <Input
@@ -994,9 +986,7 @@ export default function ProjectsStep({
                   }))
                 }
                 placeholder={
-                  locale === "ka"
-                    ? "მაგ: აპარტამენტის რემონტი ვაკეში"
-                    : "e.g., Apartment Renovation"
+                  t('common.egApartmentRenovation')
                 }
                 inputSize="lg"
               />
@@ -1009,8 +999,8 @@ export default function ProjectsStep({
                 onChange={(value) =>
                   setCurrentProject((prev) => ({ ...prev, location: value }))
                 }
-                locale={locale as "ka" | "en"}
-                label={locale === "ka" ? "მდებარეობა" : "Location"}
+                locale={locale as "ka" | "en" | "ru"}
+                label={t('common.location')}
                 required={false}
               />
             </div>
@@ -1018,7 +1008,7 @@ export default function ProjectsStep({
             {/* Description */}
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-2">
-                {locale === "ka" ? "აღწერა" : "Description"}
+                {t('common.description')}
               </label>
               <Textarea
                 value={currentProject.description}
@@ -1029,9 +1019,7 @@ export default function ProjectsStep({
                   }))
                 }
                 placeholder={
-                  locale === "ka"
-                    ? "მოკლედ აღწერე რა გააკეთე..."
-                    : "Briefly describe what you did..."
+                  t('common.brieflyDescribeWhatYouDid')
                 }
                 rows={2}
                 textareaSize="sm"
@@ -1042,12 +1030,12 @@ export default function ProjectsStep({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <label className="block text-sm font-medium text-neutral-700">
-                  {locale === "ka" ? "მედია" : "Media"}{" "}
+                  {t('common.media')}{" "}
                   <span className="text-red-500">*</span>
                 </label>
                 {totalMedia > 0 && (
                   <span className="text-xs text-neutral-500">
-                    {totalMedia} {locale === "ka" ? "ელემენტი" : "item(s)"}
+                    {totalMedia} {t('common.items')}
                   </span>
                 )}
               </div>
@@ -1211,10 +1199,10 @@ export default function ProjectsStep({
                         </svg>
                       </div>
                       <span className="text-sm font-medium">
-                        {locale === "ka" ? "ფოტოები" : "Photos"}
+                        {t('common.photos')}
                       </span>
                       <span className="text-[10px] text-neutral-400">
-                        {locale === "ka" ? "რამდენიმე ფოტო" : "Multiple photos"}
+                        {t('common.multiplePhotos')}
                       </span>
                     </>
                   )}
@@ -1257,10 +1245,10 @@ export default function ProjectsStep({
                         </svg>
                       </div>
                       <span className="text-sm font-medium">
-                        {locale === "ka" ? "ვიდეოები" : "Videos"}
+                        {t('common.videos')}
                       </span>
                       <span className="text-[10px] text-neutral-400">
-                        {locale === "ka" ? "მაქს. 100MB" : "Max 100MB each"}
+                        {t('common.max100mbEach')}
                       </span>
                     </>
                   )}
@@ -1303,12 +1291,10 @@ export default function ProjectsStep({
                         </svg>
                       </div>
                       <span className="text-sm font-medium">
-                        {locale === "ka" ? "სანამ/შემდეგ" : "Before/After"}
+                        {t('common.beforeafter')}
                       </span>
                       <span className="text-[10px] text-neutral-400">
-                        {locale === "ka"
-                          ? "აირჩიეთ 2 სურათი"
-                          : "Select exactly 2 images"}
+                        {t('common.selectExactly2Images')}
                       </span>
                     </>
                   )}
@@ -1324,7 +1310,7 @@ export default function ProjectsStep({
                 onClick={resetForm}
                 className="flex-1"
               >
-                {locale === "ka" ? "გაუქმება" : "Cancel"}
+                {t('common.cancel')}
               </Button>
               <Button
                 type="button"
@@ -1333,12 +1319,8 @@ export default function ProjectsStep({
                 className="flex-1"
               >
                 {editingProjectId
-                  ? locale === "ka"
-                    ? "შენახვა"
-                    : "Save Changes"
-                  : locale === "ka"
-                    ? "პროექტის დამატება"
-                    : "Add Project"}
+                  ? t('common.saveChanges')
+                  : t('common.addProject')}
               </Button>
             </div>
           </div>
@@ -1353,7 +1335,7 @@ export default function ProjectsStep({
               {projects.length}
             </div>
             <div className="text-xs text-neutral-500">
-              {locale === "ka" ? "სულ" : "Total"}
+              {t('common.total')}
             </div>
           </div>
           <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-100 text-center">
@@ -1361,7 +1343,7 @@ export default function ProjectsStep({
               {homicoProjects.length}
             </div>
             <div className="text-xs text-emerald-600">
-              {locale === "ka" ? "Homico-დან" : "From Homico"}
+              {t('common.fromHomico')}
             </div>
           </div>
           <div className="p-4 rounded-xl bg-amber-50 border border-amber-100 text-center">
@@ -1369,7 +1351,7 @@ export default function ProjectsStep({
               {Math.min(visibleProjects.length, maxVisibleInBrowse)}
             </div>
             <div className="text-xs text-amber-600">
-              {locale === "ka" ? "მთავარ გვერდზე" : "On Browse"}
+              {t('common.onBrowse')}
             </div>
           </div>
         </div>

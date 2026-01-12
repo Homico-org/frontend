@@ -5,6 +5,7 @@ import { MultiStarDisplay } from '@/components/ui/StarRating';
 import { storage } from '@/services/storage';
 import { formatTimeAgo } from '@/utils/dateUtils';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 export interface Review {
   id: string;
   clientId: {
@@ -24,7 +25,7 @@ export interface ReviewItemProps {
   /** Review data */
   review: Review;
   /** Locale for translations */
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   /** Handler for opening a photo */
   onPhotoClick?: (photo: string) => void;
   /** Custom className */
@@ -37,10 +38,9 @@ export default function ReviewItem({
   onPhotoClick,
   className = '',
 }: ReviewItemProps) {
+  const { t } = useLanguage();
   const displayName = review.isAnonymous
-    ? locale === 'ka'
-      ? 'ანონიმური'
-      : 'Anonymous'
+    ? t('common.anonymous')
     : review.clientId.name;
 
   return (
@@ -107,7 +107,7 @@ export interface RatingSummaryProps {
   /** Total number of reviews */
   totalReviews: number;
   /** Locale for translations */
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   /** Custom className */
   className?: string;
 }
@@ -118,6 +118,7 @@ export function RatingSummary({
   locale = 'en',
   className = '',
 }: RatingSummaryProps) {
+  const { t } = useLanguage();
   return (
     <div
       className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-sm border border-neutral-100 dark:border-neutral-800 text-center ${className}`}
@@ -129,7 +130,7 @@ export function RatingSummary({
         <MultiStarDisplay rating={avgRating} size="lg" />
       </div>
       <p className="text-sm text-neutral-500">
-        {totalReviews} {locale === 'ka' ? 'შეფასება' : 'reviews'}
+        {totalReviews} {t('professional.reviews')}
       </p>
     </div>
   );

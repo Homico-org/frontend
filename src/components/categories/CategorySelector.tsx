@@ -68,7 +68,7 @@ export default function CategorySelector({
   compact = false,
   columns = 4,
 }: CategorySelectorProps) {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const { categories, loading } = useCategories();
   const [subcategorySearch, setSubcategorySearch] = useState('');
 
@@ -223,7 +223,7 @@ export default function CategorySelector({
                 <CategoryIcon type={selectedCategoryData.icon || selectedCategoryData.key} className="w-3.5 h-3.5 text-[#C4735B]" />
               </div>
               <span className="font-medium text-sm text-neutral-900">
-                {locale === 'ka' ? 'სერვისი' : 'Service'} <span className="text-[#C4735B]">*</span>
+                {t('common.service')} <span className="text-[#C4735B]">*</span>
               </span>
             </div>
             {showSubcategorySearch && (
@@ -231,7 +231,7 @@ export default function CategorySelector({
                 <Input
                   value={subcategorySearch}
                   onChange={(e) => setSubcategorySearch(e.target.value)}
-                  placeholder={locale === 'ka' ? 'ძებნა...' : 'Search...'}
+                  placeholder={t('common.search')}
                   className="pl-8 pr-3 py-1.5 w-36 h-8 text-xs"
                   leftIcon={<Search className="w-3.5 h-3.5" />}
                 />

@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import AppBackground from './AppBackground';
 import AppLayout from './AppLayout';
 import ProProfileGuard from './ProProfileGuard';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // Dynamically import LoginModal to reduce initial bundle size
 const LoginModal = dynamic(() => import('@/components/auth/LoginModal'), {

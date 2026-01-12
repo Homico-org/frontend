@@ -7,6 +7,7 @@ import Avatar from '@/components/common/Avatar';
 import { Modal } from '@/components/ui/Modal';
 import { StarRatingInput } from '@/components/ui/StarRating';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 interface ReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -49,22 +50,21 @@ export default function ReviewModal({
   customTitle,
   customSubmitText,
 }: ReviewModalProps) {
-  const t = {
-    title: customTitle || (locale === 'ka' ? 'შეაფასეთ სპეციალისტი' : 'Rate the Professional'),
-    completionTitle: locale === 'ka' ? 'დაასრულეთ და შეაფასეთ' : 'Complete & Review',
-    ratingLabel: locale === 'ka' ? 'თქვენი შეფასება' : 'Your Rating',
-    commentLabel: locale === 'ka' ? 'თქვენი კომენტარი (არასავალდებულო)' : 'Your Comment (Optional)',
-    placeholder: locale === 'ka' ? 'დაწერეთ თქვენი გამოცდილება...' : 'Share your experience...',
-    cancel: locale === 'ka' ? 'გაუქმება' : 'Cancel',
-    submit: customSubmitText || (locale === 'ka' ? 'გაგზავნა' : 'Submit'),
-    completionSubmit: locale === 'ka' ? 'დადასტურება და შეფასება' : 'Confirm & Review',
-    mandatoryNote: locale === 'ka' 
-      ? 'შეფასების დატოვება სავალდებულოა პროექტის დასასრულებლად'
-      : 'A review is required to complete the project',
+  const { t } = useLanguage();
+  const texts = {
+    title: customTitle || (t('job.rateTheProfessional')),
+    completionTitle: t('job.completeReview'),
+    ratingLabel: t('job.yourRating'),
+    commentLabel: t('job.yourCommentOptional'),
+    placeholder: t('job.shareYourExperience'),
+    cancel: t('common.cancel'),
+    submit: customSubmitText || (t('common.submit')),
+    completionSubmit: t('job.confirmReview'),
+    mandatoryNote: t('job.aReviewIsRequiredTo'),
   };
 
-  const title = isCompletionFlow ? t.completionTitle : t.title;
-  const submitText = isCompletionFlow ? t.completionSubmit : t.submit;
+  const title = isCompletionFlow ? texts.completionTitle : texts.title;
+  const submitText = isCompletionFlow ? texts.completionSubmit : texts.submit;
 
   return (
     <Modal 
@@ -92,7 +92,7 @@ export default function ReviewModal({
       {isCompletionFlow && (
         <div className="mx-5 mt-4 px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
           <p className="text-sm text-amber-700 dark:text-amber-300">
-            {t.mandatoryNote}
+            {texts.mandatoryNote}
           </p>
         </div>
       )}
@@ -116,7 +116,7 @@ export default function ReviewModal({
 
         {/* Star Rating */}
         <div className="space-y-2">
-          <Label>{t.ratingLabel} <span className="text-red-500">*</span></Label>
+          <Label>{texts.ratingLabel} <span className="text-red-500">*</span></Label>
           <StarRatingInput
             value={rating}
             onChange={onRatingChange}
@@ -126,11 +126,11 @@ export default function ReviewModal({
 
         {/* Review Text */}
         <div className="space-y-2">
-          <Label>{t.commentLabel}</Label>
+          <Label>{texts.commentLabel}</Label>
           <Textarea
             value={text}
             onChange={(e) => onTextChange(e.target.value)}
-            placeholder={t.placeholder}
+            placeholder={texts.placeholder}
             rows={4}
             variant="filled"
           />
@@ -145,7 +145,7 @@ export default function ReviewModal({
             onClick={onClose}
             className="flex-1"
           >
-            {t.cancel}
+            {texts.cancel}
           </Button>
         )}
         <Button

@@ -61,7 +61,7 @@ interface PremiumTier {
     included?: boolean;
   }[];
   popular: boolean;
-  highlight?: { en: string; ka: string };
+  highlightKey?: string;
 }
 
 const PREMIUM_TIERS: Record<string, PremiumTier> = {
@@ -96,7 +96,7 @@ const PREMIUM_TIERS: Record<string, PremiumTier> = {
     gradientFrom: COLORS.terracotta,
     gradientTo: COLORS.terracottaDark,
     glowColor: "rgba(196, 115, 91, 0.35)",
-    highlight: { en: "Most Popular", ka: "პოპულარული" },
+    highlightKey: "premium.mostPopular",
     features: [
       { icon: BadgeCheck, text: { en: "Everything in Premium", ka: "ყველაფერი პრემიუმიდან" }, included: true },
       { icon: Crown, text: { en: "Pro Badge", ka: "პრო ბეჯი" } },
@@ -183,6 +183,7 @@ function PremiumCard({
   onChoose: () => void;
   index: number;
 }) {
+  const { t } = useLanguage();
   const TierIcon = tier.icon;
   const isElite = tier.id === "elite";
   const price = tier.price[billingPeriod];
@@ -256,7 +257,7 @@ function PremiumCard({
               style={{ background: `linear-gradient(135deg, ${tier.gradientFrom}, ${tier.gradientTo})` }}
             >
               <Sparkles className="w-3 h-3" />
-              {tier.highlight?.[locale === "ka" ? "ka" : "en"]}
+              {tier.highlightKey ? t(tier.highlightKey) : ''}
             </div>
           </div>
         )}
@@ -312,7 +313,7 @@ function PremiumCard({
               {tier.currency}{price}
             </span>
             <span className="text-neutral-400 text-lg">
-              /{billingPeriod === "monthly" ? (locale === "ka" ? "თვე" : "mo") : (locale === "ka" ? "წელი" : "yr")}
+              /{billingPeriod === "monthly" ? (t('premium.mo')) : (t('premium.yr'))}
             </span>
           </div>
           {billingPeriod === "yearly" && (
@@ -394,11 +395,11 @@ function PremiumCard({
           )}
           <span className="relative z-10 flex items-center gap-2">
             {isCurrent ? (
-              <>{locale === "ka" ? "მიმდინარე გეგმა" : "Current Plan"}</>
+              <>{t('premium.currentPlan')}</>
             ) : (
               <>
                 {isElite && <Crown className="w-4 h-4" />}
-                {locale === "ka" ? "აირჩიე" : "Get Started"}
+                {t('premium.getStarted')}
                 <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
               </>
             )}
@@ -530,7 +531,7 @@ function FAQItem({
 
 export default function PremiumPlansPage() {
   const { user, isAuthenticated } = useAuth();
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const router = useRouter();
   const { trackEvent } = useAnalytics();
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("yearly");
@@ -581,31 +582,25 @@ export default function PremiumPlansPage() {
 
   const testimonials = [
     {
-      name: locale === "ka" ? "გიორგი მელაძე" : "Giorgi Meladze",
-      role: locale === "ka" ? "ინტერიერის დიზაინერი" : "Interior Designer",
-      text: locale === "ka" 
-        ? "Elite-მ სრულიად შეცვალა ჩემი ბიზნესი. თვეში 3-ჯერ მეტ მომხმარებელს ვიღებ!"
-        : "Elite completely transformed my business. I get 3x more clients per month!",
+      name: t('premium.giorgiMeladze'),
+      role: t('premium.interiorDesigner'),
+      text: t('premium.eliteCompletelyTransformedMyBusiness'),
       rating: 5,
       avatar: "გმ",
       tier: "elite",
     },
     {
-      name: locale === "ka" ? "ნინო წერეთელი" : "Nino Tsereteli",
-      role: locale === "ka" ? "არქიტექტორი" : "Architect",
-      text: locale === "ka"
-        ? "პრო გეგმა საუკეთესო ინვესტიციაა. პორტფოლიო უფრო მეტ ადამიანს აჩვენებს."
-        : "Pro plan is the best investment. My portfolio reaches so many more people now.",
+      name: t('premium.ninoTsereteli'),
+      role: t('premium.architect'),
+      text: t('premium.proPlanIsTheBest'),
       rating: 5,
       avatar: "ნწ",
       tier: "pro",
     },
     {
-      name: locale === "ka" ? "დავით ჩხეიძე" : "David Chkheidze",
-      role: locale === "ka" ? "მშენებელი" : "Builder",
-      text: locale === "ka"
-        ? "პრიორიტეტული ძიება ნამდვილად მუშაობს. ახლა პირველ გვერდზე ვარ!"
-        : "Priority search really works. I'm now on the first page of results!",
+      name: t('premium.davidChkheidze'),
+      role: t('premium.builder'),
+      text: t('premium.prioritySearchReallyWorksIm'),
       rating: 5,
       avatar: "დჩ",
       tier: "premium",
@@ -707,7 +702,7 @@ export default function PremiumPlansPage() {
                 </div>
                 <div className="text-sm">
                   <span className="font-bold text-neutral-900">500+</span>{" "}
-                  <span className="text-neutral-500">{locale === "ka" ? "პროფესიონალი" : "professionals trust us"}</span>
+                  <span className="text-neutral-500">{t('premium.professionalsTrustUs')}</span>
                 </div>
               </div>
             </div>
@@ -759,9 +754,7 @@ export default function PremiumPlansPage() {
                 )}
               </h1>
               <p className="text-lg sm:text-xl text-neutral-500 max-w-2xl mx-auto leading-relaxed">
-                {locale === "ka"
-                  ? "შეუერთდი ელიტა პროფესიონალებს და გახსენი ახალი შესაძლებლობები რომლებიც შენს კარიერას შეცვლის"
-                  : "Join elite professionals and unlock opportunities that transform your career forever"}
+                {t('premium.joinEliteProfessionalsAndUnlock')}
               </p>
             </div>
 
@@ -780,7 +773,7 @@ export default function PremiumPlansPage() {
                       style={{ background: `linear-gradient(135deg, ${COLORS.terracotta}, ${COLORS.terracottaDark})` }}
                     />
                   )}
-                  <span className="relative z-10">{locale === "ka" ? "თვიური" : "Monthly"}</span>
+                  <span className="relative z-10">{t('premium.monthly')}</span>
                 </button>
                 <button
                   onClick={() => setBillingPeriod("yearly")}
@@ -795,7 +788,7 @@ export default function PremiumPlansPage() {
                     />
                   )}
                   <span className="relative z-10 flex items-center gap-2">
-                    {locale === "ka" ? "წლიური" : "Yearly"}
+                    {t('premium.yearly')}
                   </span>
                 </button>
                 {/* Save badge */}
@@ -830,7 +823,7 @@ export default function PremiumPlansPage() {
               <div className="flex items-center gap-3 px-6 py-3 rounded-full bg-emerald-50 border border-emerald-100">
                 <Shield className="w-5 h-5 text-emerald-600" />
                 <span className="text-sm font-medium text-emerald-700">
-                  {locale === "ka" ? "7 დღიანი გარანტია - 100% თანხის დაბრუნება" : "7-Day Money-Back Guarantee - No Questions Asked"}
+                  {t('premium.7dayMoneybackGuaranteeNoQuestions')}
                 </span>
               </div>
             </div>
@@ -846,18 +839,16 @@ export default function PremiumPlansPage() {
             <div className="text-center mb-14">
               <Badge variant="premium" size="sm" className="mb-4">
                 <Star className="w-3.5 h-3.5" />
-                {locale === "ka" ? "რეალური შედეგები" : "Real Results"}
+                {t('premium.realResults')}
               </Badge>
               <h2 
                 className="text-4xl font-bold text-neutral-900 mb-4"
                 style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
               >
-                {locale === "ka" ? "რას ამბობენ ჩვენი წევრები" : "What Our Members Say"}
+                {t('premium.whatOurMembersSay')}
               </h2>
               <p className="text-neutral-500 max-w-xl mx-auto">
-                {locale === "ka" 
-                  ? "შეუერთდი ასობით წარმატებულ პროფესიონალს რომლებმაც უკვე გააუმჯობესეს თავიანთი ბიზნესი"
-                  : "Join hundreds of successful professionals who have already transformed their business"}
+                {t('premium.joinHundredsOfSuccessfulProfessionals')}
               </p>
             </div>
 
@@ -876,10 +867,10 @@ export default function PremiumPlansPage() {
           <div className="max-w-5xl mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[
-                { icon: Shield, value: "7", label: locale === "ka" ? "დღის გარანტია" : "Day Guarantee", color: "#10B981" },
-                { icon: Crown, value: "500+", label: locale === "ka" ? "ელიტა წევრი" : "Elite Members", color: COLORS.gold },
-                { icon: Star, value: "4.9", label: locale === "ka" ? "საშუალო რეიტინგი" : "Avg Rating", color: "#F59E0B" },
-                { icon: TrendingUp, value: "10x", label: locale === "ka" ? "მეტი ნახვა" : "More Views", color: COLORS.terracotta },
+                { icon: Shield, value: "7", label: t('premium.dayGuarantee'), color: "#10B981" },
+                { icon: Crown, value: "500+", label: t('premium.eliteMembers'), color: COLORS.gold },
+                { icon: Star, value: "4.9", label: t('premium.avgRating'), color: "#F59E0B" },
+                { icon: TrendingUp, value: "10x", label: t('premium.moreViews'), color: COLORS.terracotta },
               ].map((stat, i) => (
                 <div
                   key={i}
@@ -918,7 +909,7 @@ export default function PremiumPlansPage() {
                 className="text-3xl font-bold text-neutral-900 mb-4"
                 style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
               >
-                {locale === "ka" ? "ხშირად დასმული კითხვები" : "Frequently Asked Questions"}
+                {t('premium.frequentlyAskedQuestions')}
               </h2>
             </div>
 
@@ -956,7 +947,7 @@ export default function PremiumPlansPage() {
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm mb-8">
               <Gem className="w-4 h-4 text-white" />
               <span className="text-white/90 text-sm font-medium">
-                {locale === "ka" ? "გახდი ელიტა დღეს" : "Become Elite Today"}
+                {t('premium.becomeEliteToday')}
               </span>
             </div>
 
@@ -964,12 +955,10 @@ export default function PremiumPlansPage() {
               className="text-4xl sm:text-5xl font-bold text-white mb-6"
               style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
             >
-              {locale === "ka" ? "მზად ხარ წარმატებისთვის?" : "Ready for Success?"}
+              {t('premium.readyForSuccess')}
             </h2>
             <p className="text-white/80 text-lg max-w-xl mx-auto mb-10">
-              {locale === "ka"
-                ? "შეუერთდი საუკეთესო პროფესიონალებს და გააორმაგე შენი შემოსავალი"
-                : "Join the best professionals and double your income potential"}
+              {t('premium.joinTheBestProfessionalsAnd')}
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -980,7 +969,7 @@ export default function PremiumPlansPage() {
                 rightIcon={<Crown className="w-5 h-5" />}
                 className="shadow-2xl hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
               >
-                {locale === "ka" ? "ელიტას არჩევა" : "Choose Elite"}
+                {t('premium.chooseElite')}
               </Button>
               <Button
                 onClick={() => handleSelectPlan("pro")}
@@ -989,14 +978,14 @@ export default function PremiumPlansPage() {
                 className="text-white border-white/30 hover:bg-white/10"
                 rightIcon={<ArrowRight className="w-5 h-5" />}
               >
-                {locale === "ka" ? "პრო გეგმა" : "Pro Plan"}
+                {t('premium.proPlan')}
               </Button>
             </div>
 
             {/* Final guarantee */}
             <p className="text-white/60 text-sm mt-8 flex items-center justify-center gap-2">
               <Shield className="w-4 h-4" />
-              {locale === "ka" ? "7 დღიანი გარანტია" : "7-Day Money-Back Guarantee"}
+              {t('premium.7dayMoneybackGuarantee')}
             </p>
           </div>
         </section>

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/input';
 import { Modal } from '@/components/ui/Modal';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 interface PortfolioCompletionModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -32,18 +33,17 @@ export default function PortfolioCompletionModal({
   isUploading,
   onUpload,
 }: PortfolioCompletionModalProps) {
+  const { t } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const t = {
-    title: locale === 'ka' ? 'პროექტის დასრულება' : 'Complete Project',
+  const texts = {
+    title: t('projects.completeProject'),
     info:
-      locale === 'ka'
-        ? 'ატვირთეთ დასრულებული პროექტის ფოტოები თქვენს პორტფოლიოში დასამატებლად. ეს სურათები გამოჩნდება თქვენს პროფილზე და ხელს შეუწყობს ახალი კლიენტების მოზიდვას.'
-        : 'Upload photos of the completed project to add to your portfolio. These images will appear on your profile and help attract new clients.',
-    imagesLabel: locale === 'ka' ? 'პორტფოლიოს სურათები' : 'Portfolio Images',
-    uploadBtn: locale === 'ka' ? 'სურათების ატვირთვა' : 'Upload Images',
-    cancel: locale === 'ka' ? 'გაუქმება' : 'Cancel',
-    complete: locale === 'ka' ? 'დასრულება' : 'Complete',
+      t('projects.uploadPhotosOfTheCompleted'),
+    imagesLabel: t('projects.portfolioImages'),
+    uploadBtn: t('projects.uploadImages'),
+    cancel: t('common.cancel'),
+    complete: t('projects.complete'),
   };
 
   const removeImage = (index: number) => {
@@ -55,14 +55,14 @@ export default function PortfolioCompletionModal({
       {/* Modal Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
         <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
-          {t.title}
+          {texts.title}
         </h3>
       </div>
 
       {/* Modal Content */}
       <div className="p-5 space-y-5">
         {/* Info text */}
-        <Alert variant="info">{t.info}</Alert>
+        <Alert variant="info">{texts.info}</Alert>
 
         {/* Hidden file input */}
         <input
@@ -76,7 +76,7 @@ export default function PortfolioCompletionModal({
 
         {/* Upload area */}
         <div className="space-y-3">
-          <Label optional>{t.imagesLabel}</Label>
+          <Label optional>{texts.imagesLabel}</Label>
 
           {/* Uploaded images grid */}
           {portfolioImages.length > 0 && (
@@ -113,7 +113,7 @@ export default function PortfolioCompletionModal({
             ) : (
               <>
                 <Upload className="w-5 h-5" />
-                <span className="text-sm font-medium">{t.uploadBtn}</span>
+                <span className="text-sm font-medium">{texts.uploadBtn}</span>
               </>
             )}
           </button>
@@ -127,7 +127,7 @@ export default function PortfolioCompletionModal({
           onClick={onClose}
           className="flex-1"
         >
-          {t.cancel}
+          {texts.cancel}
         </Button>
         <Button
           onClick={onComplete}
@@ -135,7 +135,7 @@ export default function PortfolioCompletionModal({
           leftIcon={!isLoading ? <CheckCircle2 className="w-4 h-4" /> : undefined}
           className="flex-1"
         >
-          {t.complete}
+          {texts.complete}
         </Button>
       </div>
     </Modal>

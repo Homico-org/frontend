@@ -102,7 +102,7 @@ export default function CompanyProfilePage() {
   const router = useRouter();
   const { user } = useAuth();
   const { openLoginModal } = useAuthModal();
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const toast = useToast();
   const { categories: CATEGORIES } = useCategories();
 
@@ -205,13 +205,13 @@ export default function CompanyProfilePage() {
         setShowContactModal(false);
         setMessage("");
         toast.success(
-          locale === "ka" ? "შეტყობინება გაგზავნილია!" : "Message sent!"
+          t('common.messageSent')
         );
       } else {
         throw new Error("Failed to send message");
       }
     } catch (err) {
-      toast.error(locale === "ka" ? "შეცდომა" : "Error");
+      toast.error(t('common.error'));
     } finally {
       setIsSending(false);
     }
@@ -313,7 +313,7 @@ export default function CompanyProfilePage() {
           <div className="flex flex-col items-center gap-4">
             <LoadingSpinner size="xl" color={ACCENT} />
             <p className="text-sm text-[var(--color-text-tertiary)]">
-              {locale === "ka" ? "იტვირთება..." : "Loading..."}
+              {t('common.loading')}
             </p>
           </div>
         </div>
@@ -333,18 +333,16 @@ export default function CompanyProfilePage() {
               <Building2 className="w-12 h-12 text-[var(--color-text-muted)]" />
             </div>
             <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-3">
-              {locale === "ka" ? "კომპანია ვერ მოიძებნა" : "Company not found"}
+              {t('companies.companyNotFound')}
             </h2>
             <p className="text-[var(--color-text-secondary)] mb-8">
-              {locale === "ka"
-                ? "სამწუხაროდ, ეს კომპანია არ არსებობს"
-                : "Sorry, this company doesn't exist"}
+              {t('companies.sorryThisCompanyDoesntExist')}
             </p>
             <Button
               onClick={() => router.push("/browse")}
               size="lg"
             >
-              {locale === "ka" ? "კომპანიების ნახვა" : "Browse Companies"}
+              {t('companies.browseCompanies')}
             </Button>
           </div>
         </div>
@@ -358,15 +356,13 @@ export default function CompanyProfilePage() {
   const getCompanyTypeLabel = () => {
     switch (profile.companyType) {
       case "construction":
-        return locale === "ka" ? "სამშენებლო კომპანია" : "Construction Company";
+        return t('companies.constructionCompany');
       case "service_agency":
-        return locale === "ka" ? "სერვისის სააგენტო" : "Service Agency";
+        return t('companies.serviceAgency');
       case "both":
-        return locale === "ka"
-          ? "სამშენებლო & სერვისი"
-          : "Construction & Service";
+        return t('companies.constructionService');
       default:
-        return locale === "ka" ? "კომპანია" : "Company";
+        return t('common.company');
     }
   };
 
@@ -440,7 +436,7 @@ export default function CompanyProfilePage() {
                       </h1>
                       {profile.isVerified && (
                         <Badge variant="info" size="sm" icon={<BadgeCheck className="w-3.5 h-3.5" />}>
-                          {locale === "ka" ? "დადასტურებული" : "Verified"}
+                          {t('common.verified')}
                         </Badge>
                       )}
                     </div>
@@ -466,7 +462,7 @@ export default function CompanyProfilePage() {
                           </div>
                           <span className="text-[var(--color-text-tertiary)]">
                             ({profile.totalReviews}{" "}
-                            {locale === "ka" ? "შეფასება" : "reviews"})
+                            {t('common.reviews')})
                           </span>
                         </div>
                       )}
@@ -489,7 +485,7 @@ export default function CompanyProfilePage() {
                           <Users className="w-4 h-4 text-[var(--color-text-tertiary)]" />
                           <span>
                             {profile.teamSize}{" "}
-                            {locale === "ka" ? "თანამშრომელი" : "employees"}
+                            {t('companies.employees')}
                           </span>
                         </div>
                       )}
@@ -501,7 +497,7 @@ export default function CompanyProfilePage() {
                             <CheckCircle className="w-4 h-4 text-emerald-500" />
                             <span>
                               {profile.completedProjects}{" "}
-                              {locale === "ka" ? "პროექტი" : "projects"}
+                              {t('common.projects')}
                             </span>
                           </div>
                         )}
@@ -528,7 +524,7 @@ export default function CompanyProfilePage() {
                     className="flex-1"
                     leftIcon={<MessageSquare className="w-4 h-4" />}
                   >
-                    {locale === "ka" ? "შეტყობინება" : "Message"}
+                    {t('common.message')}
                   </Button>
                 </div>
               </div>
@@ -553,7 +549,7 @@ export default function CompanyProfilePage() {
                     <Building2 className="w-5 h-5" style={{ color: ACCENT }} />
                   </div>
                   <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-                    {locale === "ka" ? "კომპანიის შესახებ" : "About Company"}
+                    {t('companies.aboutCompany')}
                   </h2>
                 </div>
                 <div className="text-[var(--color-text-secondary)] leading-relaxed text-[15px] whitespace-pre-wrap">
@@ -570,7 +566,7 @@ export default function CompanyProfilePage() {
                     <Briefcase className="w-5 h-5 text-[#4A9B9B]" />
                   </div>
                   <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-                    {locale === "ka" ? "სერვისები" : "Services"}
+                    {t('common.services')}
                   </h2>
                 </div>
 
@@ -624,7 +620,7 @@ export default function CompanyProfilePage() {
                     <Users className="w-5 h-5 text-purple-500" />
                   </div>
                   <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-                    {locale === "ka" ? "გუნდი" : "Our Team"}
+                    {t('companies.ourTeam')}
                   </h2>
                 </div>
 
@@ -698,7 +694,7 @@ export default function CompanyProfilePage() {
                       </svg>
                     </div>
                     <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-                      {locale === "ka" ? "პორტფოლიო" : "Portfolio"}
+                      {t('companies.portfolio')}
                     </h2>
                   </div>
                   {portfolioImages.length > 6 && (
@@ -706,7 +702,7 @@ export default function CompanyProfilePage() {
                       className="text-sm font-semibold flex items-center gap-1 transition-colors hover:gap-2"
                       style={{ color: ACCENT }}
                     >
-                      {locale === "ka" ? "ყველას ნახვა" : "View All"}
+                      {t('common.viewAll')}
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   )}
@@ -775,7 +771,7 @@ export default function CompanyProfilePage() {
                     </div>
                     <div>
                       <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-                        {locale === "ka" ? "შეფასებები" : "Reviews"}
+                        {t('common.reviews')}
                       </h2>
                       <p className="text-sm text-[var(--color-text-tertiary)]">
                         {profile.totalReviews}{" "}
@@ -826,13 +822,11 @@ export default function CompanyProfilePage() {
                             <div>
                               <p className="font-semibold text-[var(--color-text-primary)]">
                                 {review.isAnonymous
-                                  ? locale === "ka"
-                                    ? "ანონიმური"
-                                    : "Anonymous"
+                                  ? t('common.anonymous')
                                   : review.clientId.name}
                               </p>
                               <p className="text-xs text-[var(--color-text-muted)]">
-                                {formatTimeAgo(review.createdAt, locale as 'en' | 'ka')}
+                                {formatTimeAgo(review.createdAt, locale as 'en' | 'ka' | 'ru')}
                               </p>
                             </div>
                             {/* Stars */}
@@ -902,7 +896,7 @@ export default function CompanyProfilePage() {
                   size="lg"
                   leftIcon={<MessageSquare className="w-4 h-4" />}
                 >
-                  {locale === "ka" ? "შეტყობინება" : "Contact Us"}
+                  {t('companies.contactUs')}
                 </Button>
 
                 {/* Contact Info */}
@@ -917,7 +911,7 @@ export default function CompanyProfilePage() {
                       </div>
                       <div>
                         <p className="text-xs text-[var(--color-text-muted)]">
-                          {locale === "ka" ? "ტელეფონი" : "Phone"}
+                          {t('common.phone')}
                         </p>
                         <p className="font-semibold text-[var(--color-text-primary)]">
                           {profile.phone}
@@ -936,7 +930,7 @@ export default function CompanyProfilePage() {
                       </div>
                       <div>
                         <p className="text-xs text-[var(--color-text-muted)]">
-                          {locale === "ka" ? "ელფოსტა" : "Email"}
+                          {t('common.email')}
                         </p>
                         <p className="font-semibold text-[var(--color-text-primary)] truncate">
                           {profile.email}
@@ -961,7 +955,7 @@ export default function CompanyProfilePage() {
                       </div>
                       <div>
                         <p className="text-xs text-[var(--color-text-muted)]">
-                          {locale === "ka" ? "ვებსაიტი" : "Website"}
+                          {t('common.website')}
                         </p>
                         <p className="font-semibold text-[var(--color-text-primary)] truncate">
                           {profile.website}
@@ -976,16 +970,16 @@ export default function CompanyProfilePage() {
                   <div className="p-4 rounded-xl bg-[var(--color-bg-tertiary)]">
                     <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)] mb-1">
                       <Clock className="w-3.5 h-3.5" />
-                      <span>{locale === "ka" ? "პასუხი" : "Response"}</span>
+                      <span>{t('companies.response')}</span>
                     </div>
                     <p className="font-bold text-[var(--color-text-primary)]">
-                      &lt;1 {locale === "ka" ? "სთ" : "hour"}
+                      &lt;1 {t('companies.hour')}
                     </p>
                   </div>
                   <div className="p-4 rounded-xl bg-[var(--color-bg-tertiary)]">
                     <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)] mb-1">
                       <Calendar className="w-3.5 h-3.5" />
-                      <span>{locale === "ka" ? "წევრობა" : "Member"}</span>
+                      <span>{t('common.member')}</span>
                     </div>
                     <p className="font-bold text-[var(--color-text-primary)]">
                       {profile.createdAt
@@ -999,7 +993,7 @@ export default function CompanyProfilePage() {
               {/* Trust Badges */}
               <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 shadow-sm">
                 <h3 className="text-sm font-bold text-[var(--color-text-primary)] mb-4">
-                  {locale === "ka" ? "სანდოობა" : "Trust & Safety"}
+                  {t('companies.trustSafety')}
                 </h3>
 
                 <div className="space-y-3">
@@ -1011,14 +1005,10 @@ export default function CompanyProfilePage() {
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-                          {locale === "ka"
-                            ? "ვერიფიცირებული კომპანია"
-                            : "Verified Company"}
+                          {t('companies.verifiedCompany')}
                         </p>
                         <p className="text-xs text-[var(--color-text-tertiary)]">
-                          {locale === "ka"
-                            ? "კომპანია შემოწმებულია"
-                            : "Company verified by Homico"}
+                          {t('companies.companyVerifiedByHomico')}
                         </p>
                       </div>
                     </div>
@@ -1032,14 +1022,10 @@ export default function CompanyProfilePage() {
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-                          {locale === "ka"
-                            ? "პრემიუმ კომპანია"
-                            : "Premium Company"}
+                          {t('companies.premiumCompany')}
                         </p>
                         <p className="text-xs text-[var(--color-text-tertiary)]">
-                          {locale === "ka"
-                            ? "სანდო და გამოცდილი"
-                            : "Trusted & experienced"}
+                          {t('companies.trustedExperienced')}
                         </p>
                       </div>
                     </div>
@@ -1053,7 +1039,7 @@ export default function CompanyProfilePage() {
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-                          {locale === "ka" ? "ტოპ რეიტინგი" : "Top Rated"}
+                          {t('common.topRated')}
                         </p>
                         <p className="text-xs text-[var(--color-text-tertiary)]">
                           {locale === "ka"
@@ -1073,9 +1059,7 @@ export default function CompanyProfilePage() {
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-                            {locale === "ka"
-                              ? "გამოცდილი კომპანია"
-                              : "Experienced Company"}
+                            {t('companies.experiencedCompany')}
                           </p>
                           <p className="text-xs text-[var(--color-text-tertiary)]">
                             {locale === "ka"
@@ -1159,9 +1143,7 @@ export default function CompanyProfilePage() {
                   {profile.serviceAreas.length > 1 && (
                     <div className="p-4 border-t border-[var(--color-border-subtle)]">
                       <p className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
-                        {locale === "ka"
-                          ? "მომსახურების ზონები"
-                          : "Service Areas"}
+                        {t('companies.serviceAreas')}
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {profile.serviceAreas.slice(0, 5).map((area, idx) => (
@@ -1195,7 +1177,7 @@ export default function CompanyProfilePage() {
         onClose={closeLightbox}
         onIndexChange={setLightboxIndex}
         getImageUrl={storage.getFileUrl}
-        locale={locale as "en" | "ka"}
+        locale={locale as "en" | "ka" | "ru"}
         showThumbnails={false}
       />
 
@@ -1215,7 +1197,7 @@ export default function CompanyProfilePage() {
             <div className="p-6 sm:p-8">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-[var(--color-text-primary)]">
-                  {locale === "ka" ? "შეტყობინება" : "Send Message"}
+                  {t('common.sendMessage')}
                 </h3>
                 <Button
                   variant="ghost"
@@ -1260,9 +1242,7 @@ export default function CompanyProfilePage() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder={
-                  locale === "ka"
-                    ? "გამარჯობა! მაინტერესებს თქვენი მომსახურება..."
-                    : "Hello! I'm interested in your services..."
+                  t('companies.helloImInterestedInYour')
                 }
                 className="w-full px-4 py-4 text-[15px] rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] resize-none focus:outline-none focus:border-[var(--color-border-hover)] transition-colors"
                 rows={4}
@@ -1274,7 +1254,7 @@ export default function CompanyProfilePage() {
                   onClick={() => setShowContactModal(false)}
                   className="flex-1"
                 >
-                  {locale === "ka" ? "გაუქმება" : "Cancel"}
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   onClick={handleSendMessage}
@@ -1283,8 +1263,8 @@ export default function CompanyProfilePage() {
                   className="flex-1"
                 >
                   {isSending
-                    ? (locale === "ka" ? "იგზავნება..." : "Sending...")
-                    : (locale === "ka" ? "გაგზავნა" : "Send")}
+                    ? (t('common.sending'))
+                    : (t('common.send'))}
                 </Button>
               </div>
             </div>

@@ -176,7 +176,7 @@ function AdminReportsPageContent() {
   }, [searchQuery, statusFilter, typeFilter]);
 
   const getStatusColor = (status: string) => getAdminReportStatusColor(status);
-  const getStatusLabel = (status: string) => getAdminReportStatusLabel(status, locale as 'en' | 'ka');
+  const getStatusLabel = (status: string) => getAdminReportStatusLabel(status, locale as 'en' | 'ka' | 'ru');
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -200,10 +200,10 @@ function AdminReportsPageContent() {
 
   const getPriorityLabel = (priority: string) => {
     switch (priority) {
-      case 'urgent': return locale === 'ka' ? 'გადაუდებელი' : 'Urgent';
-      case 'high': return locale === 'ka' ? 'მაღალი' : 'High';
-      case 'medium': return locale === 'ka' ? 'საშუალო' : 'Medium';
-      case 'low': return locale === 'ka' ? 'დაბალი' : 'Low';
+      case 'urgent': return t('admin.urgent');
+      case 'high': return t('admin.high');
+      case 'medium': return t('admin.medium');
+      case 'low': return t('admin.low');
       default: return priority;
     }
   };
@@ -220,18 +220,18 @@ function AdminReportsPageContent() {
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case 'user': return locale === 'ka' ? 'მომხმარებელი' : 'User';
-      case 'job': return locale === 'ka' ? 'სამუშაო' : 'Job';
-      case 'order': return locale === 'ka' ? 'შეკვეთა' : 'Order';
-      case 'payment': return locale === 'ka' ? 'გადახდა' : 'Payment';
+      case 'user': return t('admin.user');
+      case 'job': return t('admin.job');
+      case 'order': return t('admin.order');
+      case 'payment': return t('admin.payment');
       default: return type;
     }
   };
 
   const statCards = [
-    { label: locale === 'ka' ? 'სულ რეპორტი' : 'Total Reports', value: stats?.total || 0, icon: Flag, color: THEME.primary },
-    { label: locale === 'ka' ? 'მოლოდინში' : 'Pending', value: stats?.pending || 0, icon: Clock, color: THEME.warning },
-    { label: locale === 'ka' ? 'გადაჭრილი' : 'Resolved', value: stats?.resolved || 0, icon: CheckCircle, color: THEME.success },
+    { label: t('admin.totalReports'), value: stats?.total || 0, icon: Flag, color: THEME.primary },
+    { label: t('common.pending'), value: stats?.pending || 0, icon: Clock, color: THEME.warning },
+    { label: t('admin.resolved'), value: stats?.resolved || 0, icon: CheckCircle, color: THEME.success },
     { label: locale === 'ka' ? 'გადაუდებელი' : 'Urgent', value: stats?.urgent || 0, icon: AlertTriangle, color: THEME.error },
   ];
 
@@ -246,7 +246,7 @@ function AdminReportsPageContent() {
             <Flag className="w-8 h-8 text-white" />
           </div>
           <p className="mt-4 text-sm" style={{ color: THEME.textMuted }}>
-            {locale === 'ka' ? 'იტვირთება...' : 'Loading reports...'}
+            {t('admin.loadingReports')}
           </p>
         </div>
       </div>
@@ -283,10 +283,10 @@ function AdminReportsPageContent() {
                   className="text-xl font-semibold tracking-tight"
                   style={{ color: THEME.text, fontFamily: "'Inter', sans-serif" }}
                 >
-                  {locale === 'ka' ? 'რეპორტების მართვა' : 'Report Management'}
+                  {t('admin.reportManagement')}
                 </h1>
                 <p className="text-sm mt-0.5" style={{ color: THEME.textMuted }}>
-                  {stats?.total.toLocaleString() || 0} {locale === 'ka' ? 'რეპორტი' : 'reports total'}
+                  {stats?.total.toLocaleString() || 0} {t('admin.reportsTotal')}
                 </p>
               </div>
             </div>
@@ -302,7 +302,7 @@ function AdminReportsPageContent() {
               }}
             >
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">{locale === 'ka' ? 'განახლება' : 'Refresh'}</span>
+              <span className="hidden sm:inline">{t('admin.refresh')}</span>
             </button>
           </div>
         </div>
@@ -352,7 +352,7 @@ function AdminReportsPageContent() {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: THEME.textDim }} />
               <input
                 type="text"
-                placeholder={locale === 'ka' ? 'ძებნა...' : 'Search reports...'}
+                placeholder={t('admin.searchReports')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-all"
@@ -368,7 +368,7 @@ function AdminReportsPageContent() {
               onChange={setTypeFilter}
               size="sm"
               options={[
-                { value: 'all', label: locale === 'ka' ? 'ყველა ტიპი' : 'All Types' },
+                { value: 'all', label: t('admin.allTypes') },
                 { value: 'user', label: locale === 'ka' ? 'მომხმარებელი' : 'User' },
                 { value: 'job', label: locale === 'ka' ? 'სამუშაო' : 'Job' },
                 { value: 'order', label: locale === 'ka' ? 'შეკვეთა' : 'Order' },
@@ -380,11 +380,11 @@ function AdminReportsPageContent() {
               onChange={setStatusFilter}
               size="sm"
               options={[
-                { value: 'all', label: locale === 'ka' ? 'ყველა სტატუსი' : 'All Status' },
+                { value: 'all', label: t('admin.allStatus') },
                 { value: 'pending', label: locale === 'ka' ? 'მოლოდინში' : 'Pending' },
-                { value: 'investigating', label: locale === 'ka' ? 'გამოძიება' : 'Investigating' },
+                { value: 'investigating', label: t('admin.investigating') },
                 { value: 'resolved', label: locale === 'ka' ? 'გადაჭრილი' : 'Resolved' },
-                { value: 'dismissed', label: locale === 'ka' ? 'უარყოფილი' : 'Dismissed' },
+                { value: 'dismissed', label: t('admin.dismissed') },
               ]}
             />
           </div>
@@ -400,12 +400,12 @@ function AdminReportsPageContent() {
             className="px-6 py-4 grid grid-cols-12 gap-4 text-xs font-medium uppercase tracking-wider"
             style={{ borderBottom: `1px solid ${THEME.border}`, color: THEME.textDim }}
           >
-            <div className="col-span-3">{locale === 'ka' ? 'რეპორტი' : 'Report'}</div>
-            <div className="col-span-2">{locale === 'ka' ? 'ტიპი' : 'Type'}</div>
-            <div className="col-span-2">{locale === 'ka' ? 'რეპორტერი' : 'Reporter'}</div>
-            <div className="col-span-2 hidden lg:block">{locale === 'ka' ? 'სტატუსი' : 'Status'}</div>
-            <div className="col-span-1 hidden md:block">{locale === 'ka' ? 'პრიორიტეტი' : 'Priority'}</div>
-            <div className="col-span-2 text-right">{locale === 'ka' ? 'მოქმედებები' : 'Actions'}</div>
+            <div className="col-span-3">{t('admin.report')}</div>
+            <div className="col-span-2">{t('common.type')}</div>
+            <div className="col-span-2">{t('admin.reporter')}</div>
+            <div className="col-span-2 hidden lg:block">{t('common.status')}</div>
+            <div className="col-span-1 hidden md:block">{t('common.priority')}</div>
+            <div className="col-span-2 text-right">{t('admin.actions')}</div>
           </div>
 
           {/* Table Body */}
@@ -413,10 +413,10 @@ function AdminReportsPageContent() {
             <div className="p-12 text-center">
               <Flag className="w-16 h-16 mx-auto mb-4" style={{ color: THEME.textDim }} />
               <p className="text-lg font-medium" style={{ color: THEME.textMuted }}>
-                {locale === 'ka' ? 'რეპორტები არ მოიძებნა' : 'No reports found'}
+                {t('admin.noReportsFound')}
               </p>
               <p className="text-sm mt-1" style={{ color: THEME.textDim }}>
-                {locale === 'ka' ? 'რეპორტები ჯერ არ არის' : 'No reports have been submitted yet'}
+                {t('admin.noReportsHaveBeenSubmitted')}
               </p>
             </div>
           ) : (
@@ -444,7 +444,7 @@ function AdminReportsPageContent() {
                       </p>
                     )}
                     <p className="text-xs mt-1" style={{ color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace" }}>
-                      {formatDateShort(report.createdAt, locale as 'en' | 'ka')}
+                      {formatDateShort(report.createdAt, locale as 'en' | 'ka' | 'ru')}
                     </p>
                   </div>
 
@@ -502,7 +502,7 @@ function AdminReportsPageContent() {
                     <button
                       className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
                       style={{ background: `${THEME.info}20` }}
-                      title={locale === 'ka' ? 'ნახვა' : 'View Details'}
+                      title={t('admin.viewDetails')}
                     >
                       <Eye className="w-4 h-4" style={{ color: THEME.info }} />
                     </button>
@@ -527,7 +527,7 @@ function AdminReportsPageContent() {
                             onClick={() => setActionMenuReport(null)}
                           >
                             <Eye className="w-4 h-4" style={{ color: THEME.info }} />
-                            {locale === 'ka' ? 'დეტალების ნახვა' : 'View Details'}
+                            {t('admin.viewDetails')}
                           </button>
                           {report.status === 'pending' && (
                             <button
@@ -538,7 +538,7 @@ function AdminReportsPageContent() {
                               onClick={() => setActionMenuReport(null)}
                             >
                               <ShieldAlert className="w-4 h-4" />
-                              {locale === 'ka' ? 'გამოძიების დაწყება' : 'Start Investigation'}
+                              {t('admin.startInvestigation')}
                             </button>
                           )}
                           <button
@@ -549,7 +549,7 @@ function AdminReportsPageContent() {
                             onClick={() => setActionMenuReport(null)}
                           >
                             <CheckCircle className="w-4 h-4" />
-                            {locale === 'ka' ? 'გადაჭრა' : 'Mark Resolved'}
+                            {t('admin.markResolved')}
                           </button>
                           <div style={{ borderTop: `1px solid ${THEME.border}` }} />
                           <button
@@ -560,7 +560,7 @@ function AdminReportsPageContent() {
                             onClick={() => setActionMenuReport(null)}
                           >
                             <Archive className="w-4 h-4" />
-                            {locale === 'ka' ? 'უარყოფა' : 'Dismiss'}
+                            {t('admin.dismiss')}
                           </button>
                         </div>
                       )}

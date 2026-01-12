@@ -125,12 +125,12 @@ export default function VerifyResetCodePage() {
 
         {/* Title */}
         <h2 className="text-[26px] font-bold text-center text-neutral-900 dark:text-white mb-2">
-          {locale === 'ka' ? 'კოდის დადასტურება' : 'Verify Code'}
+          {t('forgotPassword.verifyCode')}
         </h2>
 
         {/* Subtitle */}
         <p className="text-center text-neutral-500 dark:text-neutral-400 text-[15px] mb-8">
-          {locale === 'ka' ? 'კოდი გაგზავნილია' : 'Code sent to'}{' '}
+          {t('forgotPassword.codeSentTo')}{' '}
           <span className="font-medium text-neutral-700 dark:text-neutral-300">{maskedPhone}</span>
         </p>
 
@@ -145,7 +145,7 @@ export default function VerifyResetCodePage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* OTP Input */}
           <OTPInput
-            label={locale === 'ka' ? 'შეიყვანეთ 4-ნიშნა კოდი' : 'Enter 4-digit code'}
+            label={t('forgotPassword.enter4digitCode')}
             length={4}
             value={code}
             onChange={setCode}
@@ -164,12 +164,12 @@ export default function VerifyResetCodePage() {
                 className="p-0 h-auto"
               >
                 {isResending
-                  ? (locale === 'ka' ? 'იგზავნება...' : 'Resending...')
-                  : (locale === 'ka' ? 'კოდის ხელახლა გაგზავნა' : 'Resend Code')}
+                  ? (t('forgotPassword.resending'))
+                  : (t('forgotPassword.resendCode'))}
               </Button>
             ) : (
               <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                {locale === 'ka' ? 'ხელახლა გაგზავნა' : 'Resend in'}{' '}
+                {t('forgotPassword.resendIn')}{' '}
                 <span className="font-medium text-[#C47B65]">{countdown}s</span>
               </p>
             )}
@@ -196,7 +196,7 @@ export default function VerifyResetCodePage() {
 
         {/* Change Phone Link */}
         <p className="text-center text-[15px] text-neutral-600 dark:text-neutral-400">
-          {locale === 'ka' ? 'სხვა ნომერი?' : 'Wrong number?'}{' '}
+          {t('forgotPassword.wrongNumber')}{' '}
           <Button
             variant="link"
             onClick={() => {
@@ -211,7 +211,7 @@ export default function VerifyResetCodePage() {
             }}
             className="p-0 h-auto font-semibold"
           >
-            {locale === 'ka' ? 'შეცვლა' : 'Change Number'}
+            {t('forgotPassword.changeNumber')}
           </Button>
         </p>
       </Card>

@@ -2,7 +2,7 @@
 
 import NextImage from 'next/image';
 import React from 'react';
-import { countries, CountryCode } from '@/contexts/LanguageContext';
+import { countries, CountryCode, useLanguage } from '@/contexts/LanguageContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/Card';
@@ -37,6 +37,7 @@ export default function StepReview({
   phoneCountry,
   goToStep,
 }: ReviewStepProps) {
+  const { t } = useLanguage();
   const validProjects = portfolioProjects.filter(p => 
     p.images.length > 0 || p.videos.length > 0 || p.beforeAfterPairs.length > 0
   );
@@ -53,7 +54,7 @@ export default function StepReview({
           {/* Header label */}
           <div className="flex items-center justify-between mb-6">
             <Badge variant="premium" size="xs" className="uppercase tracking-wider">
-              {locale === 'ka' ? 'პროფილის გადახედვა' : 'Profile Preview'}
+              {t('register.profilePreview')}
             </Badge>
             <Button
               variant="ghost"
@@ -62,7 +63,7 @@ export default function StepReview({
               leftIcon={<Edit2 className="w-3 h-3" />}
               className="text-[#C4735B]"
             >
-              {locale === 'ka' ? 'რედაქტირება' : 'Edit Profile'}
+              {t('register.editProfile')}
             </Button>
           </div>
 
@@ -90,7 +91,7 @@ export default function StepReview({
             {/* Info */}
             <div className="flex-1 text-center sm:text-left">
               <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-1">
-                {formData.fullName || (locale === 'ka' ? 'თქვენი სახელი' : 'Your Name')}
+                {formData.fullName || (t('register.yourName'))}
               </h2>
               {formData.city && (
                 <p className="text-neutral-500 text-sm mb-3">
@@ -121,13 +122,13 @@ export default function StepReview({
             <div className="text-center">
               <p className="text-2xl font-bold text-neutral-900">{validProjects.length}</p>
               <p className="text-[11px] text-neutral-500 uppercase tracking-wider">
-                {locale === 'ka' ? 'პროექტი' : 'Projects'}
+                {t('common.projects')}
               </p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-neutral-900">{customServices.length}</p>
               <p className="text-[11px] text-neutral-500 uppercase tracking-wider">
-                {locale === 'ka' ? 'სერვისი' : 'Services'}
+                {t('common.services')}
               </p>
             </div>
           </div>
@@ -140,7 +141,7 @@ export default function StepReview({
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
               <IconBadge icon={ImageIcon} variant="accent" size="sm" />
-              {locale === 'ka' ? 'პორტფოლიო' : 'Portfolio'}
+              {t('register.portfolio')}
             </h3>
             <Button
               variant="link"
@@ -148,7 +149,7 @@ export default function StepReview({
               onClick={() => goToStep('services')}
               className="text-[#C4735B]"
             >
-              {locale === 'ka' ? 'რედაქტირება' : 'Edit'}
+              {t('common.edit')}
             </Button>
           </div>
 
@@ -169,11 +170,11 @@ export default function StepReview({
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <div className="absolute bottom-0 left-0 right-0 p-3">
                           <p className="text-white text-sm font-medium truncate">
-                            {project.title || (locale === 'ka' ? 'უსათაურო' : 'Untitled')}
+                            {project.title || (t('register.untitled'))}
                           </p>
                           {totalMedia > 1 && (
                             <p className="text-white/60 text-xs mt-0.5">
-                              +{totalMedia - 1} {locale === 'ka' ? 'მედია' : 'more'}
+                              +{totalMedia - 1} {t('register.more')}
                             </p>
                           )}
                         </div>
@@ -206,7 +207,7 @@ export default function StepReview({
                     <div className="aspect-[4/3] rounded-xl bg-neutral-100 flex items-center justify-center">
                       <div className="text-center">
                         <IconBadge icon={ImageIcon} variant="neutral" size="lg" className="mx-auto mb-1" />
-                        <p className="text-xs text-neutral-400">{locale === 'ka' ? 'მედია არ არის' : 'No media'}</p>
+                        <p className="text-xs text-neutral-400">{t('register.noMedia')}</p>
                       </div>
                     </div>
                   )}
@@ -223,7 +224,7 @@ export default function StepReview({
         <Card className="p-4 hover:border-[#C4735B]/30 hover:shadow-sm transition-all">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-              {locale === 'ka' ? 'საკონტაქტო' : 'Contact'}
+              {t('register.contact')}
             </h3>
             <Button
               variant="link"
@@ -231,14 +232,14 @@ export default function StepReview({
               onClick={() => goToStep('account')}
               className="text-[#C4735B] text-[10px]"
             >
-              {locale === 'ka' ? 'შეცვლა' : 'Change'}
+              {t('register.change')}
             </Button>
           </div>
           <div className="space-y-2">
             <div className="flex items-center gap-3">
               <IconBadge icon={Phone} variant="neutral" size="sm" />
               <div className="min-w-0">
-                <p className="text-xs text-neutral-400">{locale === 'ka' ? 'ტელეფონი' : 'Phone'}</p>
+                <p className="text-xs text-neutral-400">{t('common.phone')}</p>
                 <p className="text-sm font-medium text-neutral-900 truncate">
                   {countries[phoneCountry].phonePrefix}{formData.phone || '-'}
                 </p>
@@ -248,7 +249,7 @@ export default function StepReview({
               <div className="flex items-center gap-3">
                 <IconBadge icon={Mail} variant="neutral" size="sm" />
                 <div className="min-w-0">
-                  <p className="text-xs text-neutral-400">{locale === 'ka' ? 'ელ-ფოსტა' : 'Email'}</p>
+                  <p className="text-xs text-neutral-400">{t('common.email')}</p>
                   <p className="text-sm font-medium text-neutral-900 truncate">{formData.email}</p>
                 </div>
               </div>
@@ -261,7 +262,7 @@ export default function StepReview({
           <Card className="p-4 hover:border-[#C4735B]/30 hover:shadow-sm transition-all">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-                {locale === 'ka' ? 'სერვისები' : 'Services'}
+                {t('common.services')}
               </h3>
               <Button
                 variant="link"

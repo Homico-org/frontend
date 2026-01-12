@@ -174,13 +174,13 @@ function SettingsPageContent() {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      setMessage({ type: 'error', text: locale === 'ka' ? 'მხოლოდ სურათები არის დაშვებული' : 'Only image files are allowed' });
+      setMessage({ type: 'error', text: t('settings.onlyImageFilesAreAllowed') });
       return;
     }
 
     // Validate file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
-      setMessage({ type: 'error', text: locale === 'ka' ? 'ფაილი ძალიან დიდია (მაქს. 10MB)' : 'File is too large (max 10MB)' });
+      setMessage({ type: 'error', text: t('settings.fileIsTooLargeMax') });
       return;
     }
 
@@ -224,9 +224,9 @@ function SettingsPageContent() {
       setFormData(prev => ({ ...prev, avatar: data.url }));
       // Update AuthContext immediately so avatar reflects everywhere (header, etc.)
       updateUser({ avatar: data.url });
-      setMessage({ type: 'success', text: locale === 'ka' ? 'სურათი აიტვირთა' : 'Image uploaded successfully' });
+      setMessage({ type: 'success', text: t('settings.imageUploadedSuccessfully') });
     } catch {
-      setMessage({ type: 'error', text: locale === 'ka' ? 'სურათის ატვირთვა ვერ მოხერხდა' : 'Failed to upload image' });
+      setMessage({ type: 'error', text: t('settings.failedToUploadImage') });
       // Revert to previous avatar on error
       setFormData(prev => ({ ...prev, avatar: user?.avatar || '' }));
       URL.revokeObjectURL(previewUrl);
@@ -360,7 +360,7 @@ function SettingsPageContent() {
         setCardFormData({ cardNumber: '', cardExpiry: '', cardholderName: '', setAsDefault: false });
         setPaymentMessage({
           type: 'success',
-          text: locale === 'ka' ? 'ბარათი წარმატებით დაემატა' : 'Card added successfully'
+          text: t('settings.cardAddedSuccessfully')
         });
       } else {
         throw new Error('Failed to add card');
@@ -368,7 +368,7 @@ function SettingsPageContent() {
     } catch (error) {
       setPaymentMessage({
         type: 'error',
-        text: locale === 'ka' ? 'ბარათის დამატება ვერ მოხერხდა' : 'Failed to add card'
+        text: t('settings.failedToAddCard')
       });
     } finally {
       setIsAddingCard(false);
@@ -389,13 +389,13 @@ function SettingsPageContent() {
         setPaymentMethods(prev => prev.filter(pm => pm.id !== cardId));
         setPaymentMessage({
           type: 'success',
-          text: locale === 'ka' ? 'ბარათი წაიშალა' : 'Card deleted'
+          text: t('settings.cardDeleted')
         });
       }
     } catch (error) {
       setPaymentMessage({
         type: 'error',
-        text: locale === 'ka' ? 'წაშლა ვერ მოხერხდა' : 'Failed to delete'
+        text: t('settings.failedToDelete')
       });
     }
   };
@@ -539,7 +539,7 @@ function SettingsPageContent() {
     } catch (error) {
       setVerificationMessage({
         type: 'error',
-        text: locale === 'ka' ? 'ატვირთვა ვერ მოხერხდა' : 'Upload failed',
+        text: t('common.uploadFailed'),
       });
     } finally {
       setUploadingField(null);
@@ -580,7 +580,7 @@ function SettingsPageContent() {
         }
         setVerificationMessage({
           type: 'success',
-          text: locale === 'ka' ? 'წარმატებით შეინახა' : 'Saved successfully',
+          text: t('settings.savedSuccessfully'),
         });
       } else {
         throw new Error('Save failed');
@@ -588,7 +588,7 @@ function SettingsPageContent() {
     } catch (error) {
       setVerificationMessage({
         type: 'error',
-        text: locale === 'ka' ? 'შენახვა ვერ მოხერხდა' : 'Save failed',
+        text: t('settings.saveFailed'),
       });
     } finally {
       setIsSavingVerification(false);
@@ -636,7 +636,7 @@ function SettingsPageContent() {
         // Show success briefly
         setNotificationMessage({
           type: 'success',
-          text: locale === 'ka' ? 'შენახულია' : 'Saved',
+          text: t('settings.saved'),
         });
         setTimeout(() => setNotificationMessage(null), 1500);
       } else {
@@ -654,7 +654,7 @@ function SettingsPageContent() {
 
   // Delete account handler
   const handleDeleteAccount = async () => {
-    const confirmWord = locale === 'ka' ? 'წაშლა' : 'DELETE';
+    const confirmWord = t('common.delete');
     if (deleteConfirmText !== confirmWord) {
       setDeleteError(locale === 'ka' ? `გთხოვთ ჩაწეროთ "${confirmWord}" დასადასტურებლად` : `Please type "${confirmWord}" to confirm`);
       return;
@@ -683,7 +683,7 @@ function SettingsPageContent() {
       }
     } catch (error) {
       const err = error as { message?: string };
-      setDeleteError(err.message || (locale === 'ka' ? 'ანგარიშის წაშლა ვერ მოხერხდა' : 'Failed to delete account'));
+      setDeleteError(err.message || (t('settings.failedToDeleteAccount')));
     } finally {
       setIsDeletingAccount(false);
     }
@@ -747,7 +747,7 @@ function SettingsPageContent() {
       }
     } catch (error) {
       const err = error as { message?: string };
-      setDeactivationError(err.message || (locale === 'ka' ? 'დეაქტივაცია ვერ მოხერხდა' : 'Failed to deactivate profile'));
+      setDeactivationError(err.message || (t('settings.failedToDeactivateProfile')));
     } finally {
       setIsDeactivating(false);
     }
@@ -784,12 +784,12 @@ function SettingsPageContent() {
   }
 
   const tabs = [
-    { id: 'profile', label: t('settings.tabs.profile'), icon: User },
-    { id: 'notifications', label: t('settings.tabs.notifications'), icon: Bell },
-    { id: 'security', label: locale === 'ka' ? 'პაროლის შეცვლა' : 'Password', icon: Lock },
+    { id: 'profile', label: t('common.profile'), icon: User },
+    { id: 'notifications', label: t('common.notifications'), icon: Bell },
+    { id: 'security', label: t('common.password'), icon: Lock },
     // Payments tab - only visible in development
     ...(process.env.NODE_ENV === 'development' ? [{ id: 'payments', label: t('settings.tabs.payments'), icon: CreditCard }] : []),
-    { id: 'account', label: locale === 'ka' ? 'ანგარიში' : 'Account', icon: Shield },
+    { id: 'account', label: t('settings.account'), icon: Shield },
   ];
 
   return (
@@ -873,7 +873,7 @@ function SettingsPageContent() {
 
             {activeTab === 'security' && (
               <PasswordChangeForm
-                locale={locale as 'en' | 'ka'}
+                locale={locale as 'en' | 'ka' | 'ru'}
                 onSubmit={async (currentPassword, newPassword) => {
                   try {
                     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -893,7 +893,7 @@ function SettingsPageContent() {
                     } else {
                       const data = await res.json();
                       if (res.status === 409) {
-                        return { success: false, error: locale === 'ka' ? 'მიმდინარე პაროლი არასწორია' : 'Current password is incorrect' };
+                        return { success: false, error: t('settings.currentPasswordIsIncorrect') };
                       }
                       return { success: false, error: data.message };
                     }
@@ -967,11 +967,11 @@ function SettingsPageContent() {
                                   <div className="flex items-center gap-2">
                                     <Mail className="w-4 h-4 text-[#E07B4F]" />
                                     <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                                      {locale === 'ka' ? 'ელ-ფოსტა' : 'Email'}
+                                      {t('common.email')}
                                     </span>
                                     {notificationData.email && (
                                       <Badge variant={notificationData.isEmailVerified ? "success" : "warning"} size="xs">
-                                        {notificationData.isEmailVerified ? (locale === 'ka' ? 'დადასტურებული' : 'Verified') : (locale === 'ka' ? 'დასადასტურებელი' : 'Unverified')}
+                                        {notificationData.isEmailVerified ? (t('common.verified')) : (t('settings.unverified'))}
                                       </Badge>
                                     )}
                                   </div>
@@ -989,7 +989,7 @@ function SettingsPageContent() {
                                       onClick={() => setShowAddEmailModal(true)}
                                       className="text-xs h-auto p-0"
                                     >
-                                      {locale === 'ka' ? 'დამატება' : 'Add'}
+                                      {t('common.add')}
                                     </Button>
                                   )}
                                 </div>
@@ -1001,7 +1001,7 @@ function SettingsPageContent() {
                                   <div className="flex items-center gap-2">
                                     <Bell className="w-4 h-4 text-violet-500" />
                                     <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                                      {locale === 'ka' ? 'Push შეტყობინებები' : 'Push Notifications'}
+                                      {t('settings.pushNotifications')}
                                     </span>
                                   </div>
                                   <Toggle
@@ -1019,7 +1019,7 @@ function SettingsPageContent() {
                                   <div className="flex items-center gap-2">
                                     <Smartphone className="w-4 h-4 text-green-500" />
                                     <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                                      {locale === 'ka' ? 'SMS შეტყობინებები' : 'SMS Notifications'}
+                                      {t('settings.smsNotifications')}
                                     </span>
                                   </div>
                                   <Toggle
@@ -1045,14 +1045,14 @@ function SettingsPageContent() {
                             <div className="text-center py-6">
                               <CreditCard className="w-10 h-10 mx-auto text-neutral-300 dark:text-neutral-600 mb-3" />
                               <p className="text-sm text-neutral-500 mb-4">
-                                {locale === 'ka' ? 'ბარათები არ არის დამატებული' : 'No cards added yet'}
+                                {t('settings.noCardsAddedYet')}
                               </p>
                               <Button
                                 onClick={() => setShowAddCardModal(true)}
                                 size="sm"
                                 leftIcon={<CreditCard className="w-4 h-4" />}
                               >
-                                {locale === 'ka' ? 'ბარათის დამატება' : 'Add Card'}
+                                {t('settings.addCard')}
                               </Button>
                             </div>
                           ) : (
@@ -1062,7 +1062,7 @@ function SettingsPageContent() {
                                   <PaymentMethodCard
                                     key={method.id}
                                     method={method}
-                                    locale={locale as 'en' | 'ka'}
+                                    locale={locale as 'en' | 'ka' | 'ru'}
                                     onSetDefault={handleSetDefaultCard}
                                     onDelete={handleDeleteCard}
                                   />
@@ -1075,7 +1075,7 @@ function SettingsPageContent() {
                                 className="w-full border-dashed"
                                 leftIcon={<CreditCard className="w-4 h-4" />}
                               >
-                                {locale === 'ka' ? 'ახალი ბარათის დამატება' : 'Add New Card'}
+                                {t('settings.addNewCard')}
                               </Button>
                             </>
                           )}
@@ -1084,7 +1084,7 @@ function SettingsPageContent() {
 
                       {tab.id === 'security' && (
                         <PasswordChangeForm
-                          locale={locale as 'en' | 'ka'}
+                          locale={locale as 'en' | 'ka' | 'ru'}
                           onSubmit={async (currentPassword, newPassword) => {
                             try {
                               const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -1135,7 +1135,7 @@ function SettingsPageContent() {
                                 {user?.email || user?.phone}
                               </p>
                               <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-                                {locale === 'ka' ? 'ანგარიშის ID:' : 'Account ID:'} #{user?.uid || 'N/A'}
+                                {t('settings.accountId')} #{user?.uid || 'N/A'}
                               </p>
                             </div>
                           </div>
@@ -1147,7 +1147,7 @@ function SettingsPageContent() {
                             className="w-full"
                             leftIcon={<Trash2 className="w-4 h-4" />}
                           >
-                            {locale === 'ka' ? 'ანგარიშის წაშლა' : 'Delete Account'}
+                            {t('settings.deleteAccount')}
                           </Button>
                         </div>
                       )}
@@ -1195,9 +1195,7 @@ function SettingsPageContent() {
                 {locale === 'ka' ? 'ანგარიშის წაშლა' : 'Delete Account'}
               </h3>
               <p className="text-sm mt-2" style={{ color: 'var(--color-text-secondary)' }}>
-                {locale === 'ka'
-                  ? 'ეს მოქმედება შეუქცევადია და წაშლის თქვენს ყველა მონაცემს.'
-                  : 'This action is irreversible and will delete all your data.'}
+                {t('settings.thisActionIsIrreversibleAnd')}
               </p>
             </div>
 
@@ -1206,24 +1204,24 @@ function SettingsPageContent() {
               {/* Warning list */}
               <div className="space-y-2.5">
                 <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                  {locale === 'ka' ? 'ეს მოქმედება წაშლის:' : 'This will permanently delete:'}
+                  {t('settings.thisWillPermanentlyDelete')}
                 </p>
                 <ul className="space-y-2 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                   <li className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                    {locale === 'ka' ? 'თქვენი პროფილი და პირადი ინფორმაცია' : 'Your profile and personal information'}
+                    {t('settings.yourProfileAndPersonalInformation')}
                   </li>
                   <li className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                    {locale === 'ka' ? 'ყველა განთავსებული სამუშაო და წინადადება' : 'All posted jobs and proposals'}
+                    {t('settings.allPostedJobsAndProposals')}
                   </li>
                   <li className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                    {locale === 'ka' ? 'შეტყობინებები და შეფასებები' : 'Messages and reviews'}
+                    {t('settings.messagesAndReviews')}
                   </li>
                   <li className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                    {locale === 'ka' ? 'შენახული ბარათები და გადახდის ისტორია' : 'Saved cards and payment history'}
+                    {t('settings.savedCardsAndPaymentHistory')}
                   </li>
                 </ul>
               </div>
@@ -1231,9 +1229,7 @@ function SettingsPageContent() {
               {/* Confirmation input */}
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
-                  {locale === 'ka'
-                    ? 'ჩაწერეთ "წაშლა" დასადასტურებლად'
-                    : 'Type "DELETE" to confirm'}
+                  {t('settings.typeDeleteToConfirm')}
                 </label>
                 <input
                   type="text"
@@ -1269,7 +1265,7 @@ function SettingsPageContent() {
                   disabled={isDeletingAccount}
                   className="flex-1"
                 >
-                  {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   variant="destructive"
@@ -1280,8 +1276,8 @@ function SettingsPageContent() {
                   leftIcon={!isDeletingAccount ? <Trash2 className="w-4 h-4" /> : undefined}
                 >
                   {isDeletingAccount
-                    ? (locale === 'ka' ? 'იშლება...' : 'Deleting...')
-                    : (locale === 'ka' ? 'წაშლა' : 'Delete')}
+                    ? (t('common.deleting'))
+                    : (t('common.delete'))}
                 </Button>
               </div>
             </div>
@@ -1322,12 +1318,10 @@ function SettingsPageContent() {
                 <BriefcaseBusiness className="w-8 h-8 text-yellow-600" />
               </div>
               <h3 className="text-xl font-bold text-yellow-600 dark:text-yellow-500">
-                {locale === 'ka' ? 'პროფილის დამალვა' : 'Pause Profile'}
+                {t('settings.pauseProfile')}
               </h3>
               <p className="text-sm mt-2" style={{ color: 'var(--color-text-secondary)' }}>
-                {locale === 'ka'
-                  ? 'თქვენი პროფილი დროებით დაიმალება კლიენტებისგან'
-                  : 'Your profile will be temporarily hidden from clients'}
+                {t('settings.yourProfileWillBeTemporarily')}
               </p>
             </div>
 
@@ -1336,7 +1330,7 @@ function SettingsPageContent() {
               {/* Until date (optional) */}
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
-                  {locale === 'ka' ? 'დაბრუნების თარიღი (არასავალდებულო)' : 'Return date (optional)'}
+                  {t('settings.returnDateOptional')}
                 </label>
                 <div className="relative">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
@@ -1347,7 +1341,7 @@ function SettingsPageContent() {
                       className="absolute left-12 top-1/2 -translate-y-1/2 pointer-events-none text-sm"
                       style={{ color: 'var(--color-text-tertiary)' }}
                     >
-                      {locale === 'ka' ? 'აირჩიეთ თარიღი' : 'Select date'}
+                      {t('settings.selectDate')}
                     </div>
                   )}
                   <input
@@ -1364,26 +1358,24 @@ function SettingsPageContent() {
                   />
                 </div>
                 <p className="text-xs mt-1.5" style={{ color: 'var(--color-text-tertiary)' }}>
-                  {locale === 'ka'
-                    ? 'თუ არ აირჩევთ, შეგიძლიათ ხელით გააქტიუროთ'
-                    : 'If not set, you can manually reactivate anytime'}
+                  {t('settings.ifNotSetYouCan')}
                 </p>
               </div>
 
               {/* Reason (optional) */}
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
-                  {locale === 'ka' ? 'მიზეზი (არასავალდებულო)' : 'Reason (optional)'}
+                  {t('settings.reasonOptional')}
                 </label>
                 <Select
                   value={deactivateReasonInput}
                   onChange={setDeactivateReasonInput}
-                  placeholder={locale === 'ka' ? 'აირჩიეთ მიზეზი' : 'Select reason'}
+                  placeholder={t('settings.selectReason')}
                   options={[
-                    { value: 'vacation', label: locale === 'ka' ? 'შვებულება' : 'Vacation' },
-                    { value: 'busy', label: locale === 'ka' ? 'დატვირთული გრაფიკი' : 'Busy schedule' },
-                    { value: 'personal', label: locale === 'ka' ? 'პირადი მიზეზები' : 'Personal reasons' },
-                    { value: 'other', label: locale === 'ka' ? 'სხვა' : 'Other' },
+                    { value: 'vacation', label: t('settings.vacation') },
+                    { value: 'busy', label: t('settings.busySchedule') },
+                    { value: 'personal', label: t('settings.personalReasons') },
+                    { value: 'other', label: t('common.other') },
                   ]}
                 />
               </div>
@@ -1391,7 +1383,7 @@ function SettingsPageContent() {
               {/* Info */}
               <div className="p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/50">
                 <p className="font-medium text-yellow-700 dark:text-yellow-500 text-sm mb-3">
-                  {locale === 'ka' ? 'რა მოხდება?' : 'What happens?'}
+                  {t('settings.whatHappens')}
                 </p>
                 <div className="space-y-2.5">
                   <div className="flex items-center gap-3">
@@ -1407,7 +1399,7 @@ function SettingsPageContent() {
                       <MessageCircle className="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-500" />
                     </div>
                     <span className="text-sm text-yellow-700/90 dark:text-yellow-500/90">
-                      {locale === 'ka' ? 'არსებული შეტყობინებები შენარჩუნდება' : 'Existing messages will be preserved'}
+                      {t('settings.existingMessagesWillBePreserved')}
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
@@ -1415,7 +1407,7 @@ function SettingsPageContent() {
                       <RefreshCw className="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-500" />
                     </div>
                     <span className="text-sm text-yellow-700/90 dark:text-yellow-500/90">
-                      {locale === 'ka' ? 'ნებისმიერ დროს შეგიძლიათ გააქტიურება' : 'You can reactivate anytime'}
+                      {t('settings.youCanReactivateAnytime')}
                     </span>
                   </div>
                 </div>
@@ -1451,7 +1443,7 @@ function SettingsPageContent() {
                   leftIcon={!isDeactivating ? <BriefcaseBusiness className="w-4 h-4" /> : undefined}
                 >
                   {isDeactivating
-                    ? (locale === 'ka' ? 'იმალება...' : 'Pausing...')
+                    ? (t('settings.pausing'))
                     : (locale === 'ka' ? 'პროფილის დამალვა' : 'Pause Profile')}
                 </Button>
               </div>
@@ -1507,7 +1499,7 @@ function SettingsPageContent() {
                       {locale === 'ka' ? 'ბარათის დამატება' : 'Add Card'}
                     </h3>
                     <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
-                      {locale === 'ka' ? 'შეიყვანეთ ბარათის მონაცემები' : 'Enter your card details'}
+                      {t('settings.enterYourCardDetails')}
                     </p>
                   </div>
                 </div>
@@ -1529,7 +1521,7 @@ function SettingsPageContent() {
               {/* Card Number */}
               <div>
                 <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
-                  {locale === 'ka' ? 'ბარათის ნომერი' : 'Card Number'}
+                  {t('settings.cardNumber')}
                 </label>
                 <input
                   type="text"
@@ -1554,7 +1546,7 @@ function SettingsPageContent() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
-                    {locale === 'ka' ? 'ვადა' : 'Expiry'}
+                    {t('settings.expiry')}
                   </label>
                   <input
                     type="text"
@@ -1576,7 +1568,7 @@ function SettingsPageContent() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
-                    {locale === 'ka' ? 'CVV' : 'CVV'}
+                    {t('settings.cvv')}
                   </label>
                   <input
                     type="text"
@@ -1596,7 +1588,7 @@ function SettingsPageContent() {
               {/* Cardholder Name */}
               <div>
                 <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
-                  {locale === 'ka' ? 'ბარათის მფლობელი' : 'Cardholder Name'}
+                  {t('settings.cardholderName')}
                 </label>
                 <input
                   type="text"
@@ -1624,7 +1616,7 @@ function SettingsPageContent() {
                   className="w-5 h-5 rounded border-neutral-300 text-[#E07B4F] focus:ring-[#E07B4F]"
                 />
                 <span className="text-sm" style={{ color: 'var(--color-text-primary)' }}>
-                  {locale === 'ka' ? 'მთავარ ბარათად დაყენება' : 'Set as default card'}
+                  {t('settings.setAsDefaultCard')}
                 </span>
               </label>
 
@@ -1637,7 +1629,7 @@ function SettingsPageContent() {
                 leftIcon={!isAddingCard ? <CreditCard className="w-4 h-4" /> : undefined}
               >
                 {isAddingCard
-                  ? (locale === 'ka' ? 'ემატება...' : 'Adding...')
+                  ? (t('settings.adding'))
                   : (locale === 'ka' ? 'ბარათის დამატება' : 'Add Card')}
               </Button>
 
@@ -1645,7 +1637,7 @@ function SettingsPageContent() {
               <div className="flex items-center gap-2 justify-center pt-2">
                 <Lock className="w-3.5 h-3.5" style={{ color: 'var(--color-text-tertiary)' }} />
                 <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                  {locale === 'ka' ? 'თქვენი მონაცემები დაცულია' : 'Your data is secure'}
+                  {t('settings.yourDataIsSecure')}
                 </span>
               </div>
             </div>

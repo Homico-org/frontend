@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import React from "react";
 
+import { useLanguage } from "@/contexts/LanguageContext";
 export type ProjectSidebarTab = "details" | "chat" | "polls" | "resources" | "history";
 
 interface ProjectSidebarProps {
@@ -41,6 +42,7 @@ export default function ProjectSidebar({
   unreadResourcesCount = 0,
   isProjectStarted = true,
 }: ProjectSidebarProps) {
+  const { t } = useLanguage();
   const menuItems: SidebarMenuItem[] = [
     {
       key: "details",
@@ -148,9 +150,7 @@ export default function ProjectSidebar({
       {/* Helper text for disabled items */}
       {!isProjectStarted && (
         <p className="px-4 py-2 text-xs text-neutral-400 dark:text-neutral-500 italic">
-          {locale === "ka"
-            ? "ჩატი, გამოკითხვები და მასალები ხელმისაწვდომია პროექტის დაწყების შემდეგ"
-            : "Chat, polls & resources available after project starts"}
+          {t('job.chatPollsResourcesAvailableAfter')}
         </p>
       )}
     </nav>

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 export interface MediaItem {
   url: string;
   title?: string;
@@ -31,7 +32,7 @@ export interface MediaLightboxProps {
   /** Custom image URL transformer */
   getImageUrl?: (url: string) => string;
   /** Locale for translations */
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   /** Custom class for the container */
   className?: string;
 }
@@ -50,6 +51,8 @@ export default function MediaLightbox({
   className = '',
 }: MediaLightboxProps) {
   const [internalIndex, setInternalIndex] = useState(externalIndex);
+
+  const { t } = useLanguage();
   const [isZoomed, setIsZoomed] = useState(false);
 
   // Sync internal index with external
@@ -154,7 +157,7 @@ export default function MediaLightbox({
             size="icon"
             onClick={onClose}
             className="rounded-full bg-white/10 text-white hover:bg-white/20"
-            aria-label={locale === 'ka' ? 'დახურვა' : 'Close'}
+            aria-label={t('common.close')}
           >
             <X className="w-5 h-5" />
           </Button>
@@ -177,7 +180,7 @@ export default function MediaLightbox({
                 goToPrev();
               }}
               className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 z-10"
-              aria-label={locale === 'ka' ? 'წინა' : 'Previous'}
+              aria-label={t('common.previous')}
             >
               <ChevronLeft className="w-6 h-6" />
             </Button>
@@ -189,7 +192,7 @@ export default function MediaLightbox({
                 goToNext();
               }}
               className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 z-10"
-              aria-label={locale === 'ka' ? 'შემდეგი' : 'Next'}
+              aria-label={t('common.next')}
             >
               <ChevronRight className="w-6 h-6" />
             </Button>

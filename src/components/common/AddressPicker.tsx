@@ -7,12 +7,13 @@ import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 interface AddressPickerProps {
   value: string;
   onChange: (value: string, coordinates?: { lat: number; lng: number }) => void;
-  locale?: 'ka' | 'en';
+  locale?: 'ka' | 'en' | 'ru';
   className?: string;
   label?: string;
   required?: boolean;
@@ -68,6 +69,8 @@ export default function AddressPicker({
   required = false
 }: AddressPickerProps) {
   const { isLoaded: mapLoaded } = useGoogleMaps();
+
+  const { t } = useLanguage();
   const [selectedAddress, setSelectedAddress] = useState(value);
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -401,7 +404,7 @@ export default function AddressPicker({
                     value={searchQuery}
                     onChange={(e) => handleSearch(e.target.value)}
                     onFocus={() => searchQuery && setShowSearchResults(true)}
-                    placeholder={locale === 'ka' ? 'მოძებნე მისამართი...' : 'Search address...'}
+                    placeholder={t('common.searchAddress')}
                     className="w-full pl-10 pr-10 py-2.5 rounded-xl text-sm bg-white dark:bg-neutral-900 border-0 outline-none placeholder:text-neutral-400 text-neutral-900 dark:text-white"
                     style={{
                       boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
@@ -466,7 +469,7 @@ export default function AddressPicker({
                   size="icon-sm"
                   onClick={() => setIsFullscreen(true)}
                   className="shadow-md"
-                  title={locale === 'ka' ? 'სრული ეკრანი' : 'Fullscreen'}
+                  title={t('common.fullscreen')}
                 >
                   <Maximize2 className="w-4 h-4" />
                 </Button>
@@ -478,7 +481,7 @@ export default function AddressPicker({
                   size="icon-sm"
                   onClick={getCurrentLocation}
                   className="shadow-md"
-                  title={locale === 'ka' ? 'ჩემი მდებარეობა' : 'My location'}
+                  title={t('common.myLocation')}
                 >
                   <Navigation className="w-4 h-4" />
                 </Button>
@@ -519,7 +522,7 @@ export default function AddressPicker({
                 >
                   <span className="flex items-center gap-2">
                     <MapPin className="w-3.5 h-3.5 text-[#E07B4F]" />
-                    {locale === 'ka' ? 'დააკლიკეთ ან გადაათრიეთ მარკერი' : 'Click or drag marker'}
+                    {t('common.clickOrDragMarker')}
                   </span>
                 </div>
               )}
@@ -528,7 +531,7 @@ export default function AddressPicker({
             <div className="w-full h-full flex flex-col items-center justify-center gap-3">
               <LoadingSpinner size="lg" color="#E07B4F" />
               <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
-                {locale === 'ka' ? 'რუკა იტვირთება...' : 'Loading map...'}
+                {t('common.loadingMap')}
               </p>
             </div>
           )}
@@ -542,7 +545,7 @@ export default function AddressPicker({
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 mb-0.5">
-                {locale === 'ka' ? 'არჩეული მისამართი' : 'Selected Address'}
+                {t('common.selectedAddress')}
               </p>
               <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                 {selectedAddress}
@@ -556,10 +559,10 @@ export default function AddressPicker({
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-[#C4735B]">
-                {locale === 'ka' ? 'გთხოვთ აირჩიოთ მისამართი რუკაზე' : 'Please select an address on the map'}
+                {t('common.pleaseSelectAnAddressOn')}
               </p>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {locale === 'ka' ? 'დააკლიკეთ რუკაზე ან მოძებნეთ მისამართი' : 'Click on the map or search for an address'}
+                {t('common.clickOnTheMapOr')}
               </p>
             </div>
           </div>
@@ -720,7 +723,7 @@ export default function AddressPicker({
             >
               <span className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-[#E07B4F]" />
-                {locale === 'ka' ? 'დააკლიკეთ რუკაზე ან მოძებნეთ მისამართი' : 'Click on map or search for address'}
+                {t('common.clickOnMapOrSearch')}
               </span>
             </div>
           )}

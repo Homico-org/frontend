@@ -1,6 +1,7 @@
 'use client';
 
 import { Star } from 'lucide-react';
+import { useLanguage } from "@/contexts/LanguageContext";
 import ReviewItem, { Review, RatingSummary } from './ReviewItem';
 
 export interface ReviewsTabProps {
@@ -13,7 +14,7 @@ export interface ReviewsTabProps {
   /** Handler when a photo is clicked */
   onPhotoClick?: (photo: string) => void;
   /** Locale for translations */
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
 }
 
 export default function ReviewsTab({
@@ -23,13 +24,14 @@ export default function ReviewsTab({
   onPhotoClick,
   locale = 'en',
 }: ReviewsTabProps) {
+  const { t } = useLanguage();
   if (reviews.length === 0) {
     return (
       <div className="animate-in fade-in duration-300">
         <div className="text-center py-16">
           <Star className="w-12 h-12 text-neutral-300 dark:text-neutral-700 mx-auto mb-4" />
           <p className="text-neutral-500">
-            {locale === 'ka' ? 'შეფასებები არ არის' : 'No reviews yet'}
+            {t('professional.noReviewsYet')}
           </p>
         </div>
       </div>

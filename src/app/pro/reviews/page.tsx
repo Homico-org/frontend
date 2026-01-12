@@ -6,17 +6,17 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Star, TrendingUp, MessageSquare } from 'lucide-react';
 
 function ProReviewsPageContent() {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
 
   return (
     <div className="min-h-screen bg-cream-50 dark:bg-dark-bg py-6 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-serif font-medium text-neutral-900 dark:text-neutral-50">
-            {locale === 'ka' ? 'შეფასებები' : 'Reviews'}
+            {t('common.reviews')}
           </h1>
           <p className="mt-1 sm:mt-2 text-sm sm:text-base text-neutral-500 dark:text-neutral-400">
-            {locale === 'ka' ? 'ნახე რას ამბობენ კლიენტები შენს სამუშაოზე' : 'See what clients are saying about your work'}
+            {t('reviews.seeWhatClientsAreSaying')}
           </p>
         </div>
 
@@ -29,7 +29,7 @@ function ProReviewsPageContent() {
               </div>
               <div className="ml-3 sm:ml-4">
                 <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
-                  {locale === 'ka' ? 'საშუალო რეიტინგი' : 'Average Rating'}
+                  {t('reviews.averageRating')}
                 </p>
                 <p className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-neutral-50">-</p>
               </div>
@@ -42,7 +42,7 @@ function ProReviewsPageContent() {
               </div>
               <div className="ml-3 sm:ml-4">
                 <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
-                  {locale === 'ka' ? 'სულ შეფასებები' : 'Total Reviews'}
+                  {t('reviews.totalReviews')}
                 </p>
                 <p className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-neutral-50">0</p>
               </div>
@@ -55,7 +55,7 @@ function ProReviewsPageContent() {
               </div>
               <div className="ml-3 sm:ml-4">
                 <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
-                  {locale === 'ka' ? 'პასუხის მაჩვენებელი' : 'Response Rate'}
+                  {t('reviews.responseRate')}
                 </p>
                 <p className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-neutral-50">-</p>
               </div>

@@ -207,7 +207,7 @@ export default function BrowseFiltersSidebar({
   showBudgetFilter = true,
   showRatingFilter = true,
 }: BrowseFiltersSidebarProps) {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const { categories, getSubcategoriesForCategory } = useCategories();
   const {
     selectedCategory,
@@ -307,7 +307,7 @@ export default function BrowseFiltersSidebar({
               onClick={clearAllFilters}
               className="text-xs p-0 h-auto"
             >
-              {locale === 'ka' ? 'გასუფთავება' : 'Clear All'}
+              {t('browse.clearAll')}
             </Button>
           </div>
         )}
@@ -342,7 +342,7 @@ export default function BrowseFiltersSidebar({
         {/* Price Range Zone */}
         {showBudgetFilter && (
           <CollapsibleCard
-            title={locale === 'ka' ? 'ფასი (₾)' : 'Price (₾)'}
+            title={t('common.price')}
             activeCount={(budgetMin !== null || budgetMax !== null) ? 1 : 0}
           >
             <div className="flex items-center gap-2">
@@ -381,7 +381,7 @@ export default function BrowseFiltersSidebar({
         {/* Rating Zone */}
         {showRatingFilter && (
           <CollapsibleCard
-            title={locale === 'ka' ? 'რეიტინგი' : 'Rating'}
+            title={t('common.rating')}
             activeCount={minRating > 0 ? 1 : 0}
           >
             <div className="space-y-1.5">
@@ -392,7 +392,7 @@ export default function BrowseFiltersSidebar({
                     key={star}
                     onClick={() => handleRatingToggle(star)}
                     className="p-0.5 transition-transform hover:scale-110 focus:outline-none"
-                    title={`${star}+ ${locale === 'ka' ? 'ვარსკვლავი' : 'stars'}`}
+                    title={`${star}+ ${t('browse.stars')}`}
                   >
                     <svg
                       className={`w-4 h-4 transition-colors ${
@@ -412,7 +412,7 @@ export default function BrowseFiltersSidebar({
               <p className="text-[10px] text-neutral-500">
                 {minRating > 0
                   ? `${minRating}+ ${locale === 'ka' ? 'ვარსკვლავი' : 'stars'}`
-                  : locale === 'ka' ? 'აირჩიეთ მინიმუმი' : 'Select minimum'}
+                  : t('browse.selectMinimum')}
               </p>
             </div>
           </CollapsibleCard>

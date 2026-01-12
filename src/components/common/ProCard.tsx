@@ -13,17 +13,17 @@ import { useMemo, useState } from "react";
 
 const STATUS_CONFIG = {
   [ProStatus.ACTIVE]: {
-    label: { en: "Available", ka: "თავისუფალი" },
+    labelKey: "status.available",
     color: "bg-emerald-500",
     ringColor: "ring-emerald-500/30",
   },
   [ProStatus.BUSY]: {
-    label: { en: "Busy", ka: "დაკავებული" },
+    labelKey: "status.busy",
     color: "bg-amber-500",
     ringColor: "ring-amber-500/30",
   },
   [ProStatus.AWAY]: {
-    label: { en: "Away", ka: "არ არის" },
+    labelKey: "status.away",
     color: "bg-neutral-400",
     ringColor: "ring-neutral-400/30",
   },
@@ -40,7 +40,7 @@ export default function ProCard({
   profile,
   variant = "default",
 }: ProCardProps) {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const { getCategoryLabel } = useCategoryLabels();
   const { getSubcategoriesForCategory } = useCategories();
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -124,7 +124,7 @@ export default function ProCard({
               <div className="flex items-center gap-1.5">
                 <span className={`w-2 h-2 rounded-full ${currentStatus.color} animate-pulse`} />
                 <span className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400">
-                  {currentStatus.label[locale as 'en' | 'ka'] || currentStatus.label.en}
+                  {t(currentStatus.labelKey)}
                 </span>
               </div>
             </div>
@@ -180,7 +180,7 @@ export default function ProCard({
                 />
               ) : (
                 <Badge variant="success" size="xs" icon={<Sparkles className="w-3 h-3" />}>
-                  {locale === "ka" ? "ახალი" : "New"}
+                  {t('card.new')}
                 </Badge>
               )}
             </div>
@@ -190,13 +190,13 @@ export default function ProCard({
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-50 dark:bg-neutral-800/50 group-hover:bg-[#C4735B]/5 transition-colors duration-300">
                 <Clock className="w-3.5 h-3.5 text-neutral-400 group-hover:text-[#C4735B]/70 transition-colors" />
                 <span className="text-[12px] font-medium text-neutral-600 dark:text-neutral-400">
-                  {profile.yearsExperience || 0} {locale === "ka" ? "წ" : "yr"}
+                  {profile.yearsExperience || 0} {t('timeUnits.year')}
                 </span>
               </div>
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-50 dark:bg-neutral-800/50 group-hover:bg-[#C4735B]/5 transition-colors duration-300">
                 <Briefcase className="w-3.5 h-3.5 text-neutral-400 group-hover:text-[#C4735B]/70 transition-colors" />
                 <span className="text-[12px] font-medium text-neutral-600 dark:text-neutral-400">
-                  {completedJobs} {locale === "ka" ? "პრ" : "jobs"}
+                  {completedJobs} {t('common.jobs')}
                 </span>
               </div>
             </div>

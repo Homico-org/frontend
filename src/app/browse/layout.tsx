@@ -36,7 +36,7 @@ function JobsSidebar() {
 
 // Search input for Jobs tab
 function JobsSearchInput() {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const { filters, setFilters } = useJobsContext();
   const [localSearch, setLocalSearch] = useState(filters.searchQuery);
   const [isFocused, setIsFocused] = useState(false);
@@ -83,7 +83,7 @@ function JobsSearchInput() {
           onChange={(e) => handleSearchChange(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          placeholder={locale === "ka" ? "სამუშაოს ძებნა..." : "Search jobs..."}
+          placeholder={t('browse.searchJobs')}
           className="flex-1 h-10 pr-9 bg-transparent text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none"
         />
         {localSearch ? (
@@ -274,7 +274,7 @@ function BrowseFilterButton({ onClick }: { onClick: () => void }) {
 function BrowseLayoutContent({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const { user, isLoading: isAuthLoading } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -329,7 +329,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
             >
               <Plus className="w-4 h-4" />
               <span>
-                {locale === "ka" ? "განცხადების დამატება" : "Post a Job"}
+                {t('browse.postAJob')}
               </span>
             </Link>
           </div>
@@ -337,7 +337,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
           {/* BROWSE Label */}
           <div className="px-5 pt-3 pb-2">
             <span className="text-xs font-semibold tracking-wider text-neutral-400 uppercase">
-              {locale === "ka" ? "დათვალიერება" : "Browse"}
+              {t('browse.browse')}
             </span>
           </div>
 
@@ -398,17 +398,13 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                 ) : isProfessionalsPage ? (
                   <BrowseSearchInput
                     placeholder={
-                      locale === "ka"
-                        ? "სპეციალისტის ძებნა..."
-                        : "Search professionals..."
+                      t('browse.searchProfessionals')
                     }
                   />
                 ) : (
                   <BrowseSearchInput
                     placeholder={
-                      locale === "ka"
-                        ? "ნამუშევრის ძებნა..."
-                        : "Search portfolio..."
+                      t('browse.searchPortfolio')
                     }
                   />
                 )}
@@ -435,17 +431,13 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                     ) : isProfessionalsPage ? (
                       <BrowseSearchInput
                         placeholder={
-                          locale === "ka"
-                            ? "სპეციალისტის ძებნა..."
-                            : "Search professionals..."
+                          t('browse.searchProfessionals')
                         }
                       />
                     ) : (
                       <BrowseSearchInput
                         placeholder={
-                          locale === "ka"
-                            ? "ნამუშევრის ძებნა..."
-                            : "Search portfolio..."
+                          t('browse.searchPortfolio')
                         }
                       />
                     )}
@@ -473,7 +465,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
           <div className="absolute left-0 top-0 bottom-0 w-72 max-w-[80vw] bg-white dark:bg-[#0a0a0a] shadow-2xl animate-slide-in-left">
             <div className="flex items-center justify-between p-3 border-b border-neutral-200 dark:border-neutral-800">
               <h3 className="font-semibold text-sm text-neutral-900 dark:text-white">
-                {locale === "ka" ? "ფილტრები" : "Filters"}
+                {t('common.filters')}
               </h3>
               <button
                 onClick={() => setShowMobileFilters(false)}
@@ -501,6 +493,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
 }
 
 function BrowseLayoutWithParams({ children }: { children: ReactNode }) {
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const isJobsPage = pathname.includes("/browse/jobs");

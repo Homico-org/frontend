@@ -40,14 +40,14 @@ export function hasValidRating(
  */
 export function getRatingLabel(
   rating: number,
-  locale: 'en' | 'ka' = 'en'
+  locale: 'en' | 'ka' | 'ru' = 'en'
 ): string {
   const labels = {
-    excellent: { en: 'Excellent', ka: 'შესანიშნავი' },
-    veryGood: { en: 'Very Good', ka: 'ძალიან კარგი' },
-    good: { en: 'Good', ka: 'კარგი' },
-    fair: { en: 'Fair', ka: 'საშუალო' },
-    poor: { en: 'Poor', ka: 'ცუდი' },
+    excellent: { en: 'Excellent', ka: 'შესანიშნავი', ru: 'Отлично' },
+    veryGood: { en: 'Very Good', ka: 'ძალიან კარგი', ru: 'Очень хорошо' },
+    good: { en: 'Good', ka: 'კარგი', ru: 'Хорошо' },
+    fair: { en: 'Fair', ka: 'საშუალო', ru: 'Нормально' },
+    poor: { en: 'Poor', ka: 'ცუდი', ru: 'Плохо' },
   };
 
   if (rating >= 4.5) return labels.excellent[locale];
@@ -76,14 +76,19 @@ export function calculateRatingPercentage(count: number, total: number): number 
  */
 export function formatReviewCount(
   count: number | undefined,
-  locale: 'en' | 'ka' = 'en'
+  locale: 'en' | 'ka' | 'ru' = 'en'
 ): string {
   if (!count || count === 0) {
-    return locale === 'ka' ? 'შეფასებები არ არის' : 'No reviews';
+    if (locale === 'ka') return 'შეფასებები არ არის';
+    if (locale === 'ru') return 'Нет отзывов';
+    return 'No reviews';
   }
 
   if (locale === 'ka') {
     return `${count} შეფასება`;
+  }
+  if (locale === 'ru') {
+    return `${count} отзыв${count !== 1 ? 'ов' : ''}`;
   }
 
   return `${count} review${count !== 1 ? 's' : ''}`;

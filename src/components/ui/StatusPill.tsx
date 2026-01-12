@@ -26,7 +26,7 @@ interface StatusPillProps {
   /** Custom label (overrides default) */
   label?: string;
   /** Language locale */
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   /** Whether to show the icon */
   showIcon?: boolean;
   /** Additional class names */
@@ -196,7 +196,7 @@ export function VerifiedBadge({
   size = 'sm',
   className,
 }: {
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   size?: StatusPillSize;
   className?: string;
 }) {
@@ -211,7 +211,7 @@ export function TopRatedBadge({
   size = 'sm',
   className,
 }: {
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   size?: StatusPillSize;
   className?: string;
 }) {
@@ -226,7 +226,7 @@ export function NewBadge({
   size = 'sm',
   className,
 }: {
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   size?: StatusPillSize;
   className?: string;
 }) {

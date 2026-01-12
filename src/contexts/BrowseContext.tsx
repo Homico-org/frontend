@@ -60,7 +60,7 @@ export function BrowseProvider({
     setSelectedCategory(null);
     setSelectedSubcategory(null);
     setMinRating(0);
-    setSelectedBudget('all');
+    setSelectedBudget('common.all');
     setBudgetMin(null);
     setBudgetMax(null);
     setSelectedCity('tbilisi');

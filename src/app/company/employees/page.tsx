@@ -54,7 +54,7 @@ interface Employee {
 export default function CompanyEmployeesPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { openLoginModal } = useAuthModal();
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const router = useRouter();
 
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -163,10 +163,10 @@ export default function CompanyEmployeesPage() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl lg:text-3xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-              {locale === 'ka' ? 'გუნდის წევრები' : 'Team Members'}
+              {t('company.teamMembers')}
             </h1>
             <p className="mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-              {locale === 'ka' ? 'მართეთ თქვენი თანამშრომლები' : 'Manage your company employees'}
+              {t('company.manageYourCompanyEmployees')}
             </p>
           </div>
           <Link
@@ -177,7 +177,7 @@ export default function CompanyEmployeesPage() {
             onMouseLeave={(e) => e.currentTarget.style.background = ACCENT}
           >
             <UserPlus className="w-4 h-4" />
-            {locale === 'ka' ? 'მოწვევა' : 'Invite Employee'}
+            {t('company.inviteEmployee')}
           </Link>
         </div>
 
@@ -198,7 +198,7 @@ export default function CompanyEmployeesPage() {
               <div>
                 <div className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>{stats.total}</div>
                 <div className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                  {locale === 'ka' ? 'სულ' : 'Total'}
+                  {t('company.total')}
                 </div>
               </div>
             </div>
@@ -218,7 +218,7 @@ export default function CompanyEmployeesPage() {
               <div>
                 <div className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>{stats.active}</div>
                 <div className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                  {locale === 'ka' ? 'აქტიური' : 'Active'}
+                  {t('common.active')}
                 </div>
               </div>
             </div>
@@ -238,7 +238,7 @@ export default function CompanyEmployeesPage() {
               <div>
                 <div className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>{stats.pending}</div>
                 <div className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                  {locale === 'ka' ? 'მოლოდინში' : 'Pending'}
+                  {t('common.pending')}
                 </div>
               </div>
             </div>
@@ -258,7 +258,7 @@ export default function CompanyEmployeesPage() {
               <div>
                 <div className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>{stats.managers}</div>
                 <div className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                  {locale === 'ka' ? 'მენეჯერები' : 'Managers'}
+                  {t('company.managers')}
                 </div>
               </div>
             </div>
@@ -279,7 +279,7 @@ export default function CompanyEmployeesPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--color-text-muted)' }} />
               <input
                 type="text"
-                placeholder={locale === 'ka' ? 'ძიება სახელით, ელ-ფოსტით...' : 'Search by name, email...'}
+                placeholder={t('company.searchByNameEmail')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 transition-all"
@@ -294,25 +294,25 @@ export default function CompanyEmployeesPage() {
               <Select
                 value={roleFilter}
                 onChange={setRoleFilter}
-                placeholder={locale === 'ka' ? 'ყველა როლი' : 'All Roles'}
+                placeholder={t('company.allRoles')}
                 size="sm"
                 options={[
                   { value: '', label: locale === 'ka' ? 'ყველა როლი' : 'All Roles' },
-                  { value: 'owner', label: locale === 'ka' ? 'მფლობელი' : 'Owner' },
-                  { value: 'manager', label: locale === 'ka' ? 'მენეჯერი' : 'Manager' },
-                  { value: 'worker', label: locale === 'ka' ? 'თანამშრომელი' : 'Worker' },
+                  { value: 'owner', label: t('company.owner') },
+                  { value: 'manager', label: t('company.manager') },
+                  { value: 'worker', label: t('company.worker') },
                 ]}
               />
               <Select
                 value={statusFilter}
                 onChange={setStatusFilter}
-                placeholder={locale === 'ka' ? 'ყველა სტატუსი' : 'All Status'}
+                placeholder={t('company.allStatus')}
                 size="sm"
                 options={[
                   { value: '', label: locale === 'ka' ? 'ყველა სტატუსი' : 'All Status' },
                   { value: 'active', label: locale === 'ka' ? 'აქტიური' : 'Active' },
                   { value: 'pending', label: locale === 'ka' ? 'მოლოდინში' : 'Pending' },
-                  { value: 'inactive', label: locale === 'ka' ? 'არააქტიური' : 'Inactive' },
+                  { value: 'inactive', label: t('company.inactive') },
                 ]}
               />
               <button
@@ -320,7 +320,7 @@ export default function CompanyEmployeesPage() {
                 className="px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
                 style={{ background: ACCENT, color: 'white' }}
               >
-                {locale === 'ka' ? 'ძიება' : 'Search'}
+                {t('common.search')}
               </button>
             </div>
           </div>
@@ -368,7 +368,7 @@ export default function CompanyEmployeesPage() {
                             style={{ color: 'var(--color-text-primary)' }}
                           >
                             <User className="w-4 h-4" />
-                            {locale === 'ka' ? 'პროფილის ნახვა' : 'View Profile'}
+                            {t('common.viewProfile')}
                           </Link>
                         )}
                         <button
@@ -376,14 +376,14 @@ export default function CompanyEmployeesPage() {
                           style={{ color: 'var(--color-text-primary)' }}
                         >
                           <Mail className="w-4 h-4" />
-                          {locale === 'ka' ? 'შეტყობინება' : 'Send Message'}
+                          {t('common.sendMessage')}
                         </button>
                         {employee.role !== 'owner' && (
                           <button
                             className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
                           >
                             <X className="w-4 h-4" />
-                            {locale === 'ka' ? 'წაშლა' : 'Remove'}
+                            {t('common.remove')}
                           </button>
                         )}
                       </div>
@@ -428,7 +428,7 @@ export default function CompanyEmployeesPage() {
                       <div className="flex items-center gap-1.5">
                         <Briefcase className="w-4 h-4" style={{ color: 'var(--color-text-muted)' }} />
                         <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                          {employee.completedJobs || 0} {locale === 'ka' ? 'სამუშაო' : 'jobs'}
+                          {employee.completedJobs || 0} {t('common.jobs')}
                         </span>
                       </div>
                       {employee.avgRating && (
@@ -444,8 +444,8 @@ export default function CompanyEmployeesPage() {
                           <div className={`w-2 h-2 rounded-full ${employee.isAvailable ? 'bg-emerald-500' : 'bg-neutral-400'}`} />
                           <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
                             {employee.isAvailable
-                              ? (locale === 'ka' ? 'ხელმისაწვდომი' : 'Available')
-                              : (locale === 'ka' ? 'დაკავებული' : 'Busy')
+                              ? (t('common.available'))
+                              : (t('common.busy'))
                             }
                           </span>
                         </div>
@@ -472,12 +472,10 @@ export default function CompanyEmployeesPage() {
           >
             <Users className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--color-text-muted)' }} />
             <h3 className="font-semibold mb-2" style={{ color: 'var(--color-text-primary)' }}>
-              {locale === 'ka' ? 'თანამშრომლები არ მოიძებნა' : 'No employees found'}
+              {t('company.noEmployeesFound')}
             </h3>
             <p className="text-sm mb-4" style={{ color: 'var(--color-text-tertiary)' }}>
-              {locale === 'ka'
-                ? 'მოიწვიეთ თქვენი პირველი თანამშრომელი გუნდში'
-                : 'Invite your first team member to get started'
+              {t('company.inviteYourFirstTeamMember')
               }
             </p>
             <Link

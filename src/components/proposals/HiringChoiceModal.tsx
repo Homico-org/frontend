@@ -35,7 +35,7 @@ export default function HiringChoiceModal({
   proName,
   isLoading = false,
 }: HiringChoiceModalProps) {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const [isAnimating, setIsAnimating] = useState(false);
   const [hoveredOption, setHoveredOption] = useState<'homico' | 'direct' | null>(null);
 
@@ -50,42 +50,34 @@ export default function HiringChoiceModal({
   const homicoFeatures = [
     {
       icon: ShieldCheck,
-      title: locale === 'ka' ? 'სამუშაოს გარანტია' : 'Work Guarantee',
-      description: locale === 'ka'
-        ? 'პრობლემის შემთხვევაში უფასოდ გამოვასწორებთ'
-        : 'Free fixes if anything goes wrong',
+      title: t('proposal.workGuarantee'),
+      description: t('proposal.freeFixesIfAnythingGoes'),
       highlight: true,
     },
     {
       icon: Zap,
-      title: locale === 'ka' ? 'უსაფრთხო გადახდა' : 'Secure Escrow',
-      description: locale === 'ka'
-        ? 'თანხა დაცულია სამუშაოს დასრულებამდე'
-        : 'Payment held until work is complete',
+      title: t('proposal.secureEscrow'),
+      description: t('proposal.paymentHeldUntilWorkIs'),
       highlight: true,
     },
     {
       icon: MessageSquare,
-      title: locale === 'ka' ? 'პლატფორმაზე ჩატი' : 'In-App Messaging',
-      description: locale === 'ka'
-        ? 'ყველა კომუნიკაცია შენახული და დაცული'
-        : 'All communication saved & protected',
+      title: t('proposal.inappMessaging'),
+      description: t('proposal.allCommunicationSavedProtected'),
       highlight: false,
     },
     {
       icon: Star,
-      title: locale === 'ka' ? 'მიმოხილვის დატოვება' : 'Leave Reviews',
-      description: locale === 'ka'
-        ? 'დაეხმარე სხვებს სწორი არჩევანის გაკეთებაში'
-        : 'Help others make informed decisions',
+      title: t('proposal.leaveReviews'),
+      description: t('proposal.helpOthersMakeInformedDecisions'),
       highlight: false,
     },
   ];
 
   const directRisks = [
-    locale === 'ka' ? 'გარანტიის გარეშე' : 'No work guarantee',
-    locale === 'ka' ? 'დაუცველი გადახდა' : 'Unprotected payment',
-    locale === 'ka' ? 'დავის შემთხვევაში დახმარების გარეშე' : 'No dispute resolution',
+    t('proposal.noWorkGuarantee'),
+    t('proposal.unprotectedPayment'),
+    t('proposal.noDisputeResolution'),
   ];
 
   return (
@@ -153,7 +145,7 @@ export default function HiringChoiceModal({
                   className="text-xl font-semibold tracking-tight text-white"
                   style={{ fontFamily: 'var(--font-sans)' }}
                 >
-                  {locale === 'ka' ? 'აირჩიე როგორ გაგრძელდეს' : 'Choose How to Proceed'}
+                  {t('proposal.chooseHowToProceed')}
                 </h2>
                 <p className="text-sm text-white/60">
                   {locale === 'ka'
@@ -193,7 +185,7 @@ export default function HiringChoiceModal({
                 className="absolute -right-8 top-4 rotate-45 px-10 py-1 text-[10px] font-bold uppercase tracking-wider text-white"
                 style={{ background: 'var(--color-accent)' }}
               >
-                {locale === 'ka' ? 'რეკომენდებული' : 'Recommended'}
+                {t('proposal.recommended')}
               </div>
 
               {/* Header */}
@@ -212,7 +204,7 @@ export default function HiringChoiceModal({
                     className="text-lg font-semibold"
                     style={{ color: 'var(--color-text-primary)' }}
                   >
-                    {locale === 'ka' ? 'Homico-ზე დაქირავება' : 'Hire through Homico'}
+                    {t('proposal.hireThroughHomico')}
                   </h3>
                   <div className="flex items-center gap-1.5">
                     <Sparkles className="h-3.5 w-3.5 text-terracotta-500" />
@@ -220,7 +212,7 @@ export default function HiringChoiceModal({
                       className="text-xs font-medium"
                       style={{ color: 'var(--color-accent)' }}
                     >
-                      {locale === 'ka' ? 'სრული დაცვა' : 'Full Protection'}
+                      {t('proposal.fullProtection')}
                     </span>
                   </div>
                 </div>
@@ -284,7 +276,7 @@ export default function HiringChoiceModal({
                     color: hoveredOption === 'homico' ? 'white' : 'var(--color-accent)',
                   }}
                 >
-                  {locale === 'ka' ? 'დაქირავება გარანტიით →' : 'Hire with guarantee →'}
+                  {t('proposal.hireWithGuarantee')}
                 </span>
               </div>
             </button>
@@ -321,13 +313,13 @@ export default function HiringChoiceModal({
                     className="text-lg font-semibold"
                     style={{ color: 'var(--color-text-primary)' }}
                   >
-                    {locale === 'ka' ? 'პირდაპირ დაკავშირება' : 'Contact Directly'}
+                    {t('proposal.contactDirectly')}
                   </h3>
                   <span
                     className="text-xs"
                     style={{ color: 'var(--color-text-muted)' }}
                   >
-                    {locale === 'ka' ? 'პლატფორმის გარეშე' : 'Off-platform'}
+                    {t('proposal.offplatform')}
                   </span>
                 </div>
               </div>
@@ -339,7 +331,7 @@ export default function HiringChoiceModal({
                   style={{ color: 'var(--color-text-muted)' }}
                 >
                   <AlertTriangle className="h-3.5 w-3.5" />
-                  {locale === 'ka' ? 'გაითვალისწინე' : 'Be aware'}
+                  {t('proposal.beAware')}
                 </p>
                 {directRisks.map((risk, index) => (
                   <div
@@ -375,7 +367,7 @@ export default function HiringChoiceModal({
                   className="text-sm font-medium"
                   style={{ color: 'var(--color-text-secondary)' }}
                 >
-                  {locale === 'ka' ? 'მაინც პირდაპირ →' : 'Continue anyway →'}
+                  {t('proposal.continueAnyway')}
                 </span>
               </div>
             </button>
@@ -391,9 +383,7 @@ export default function HiringChoiceModal({
               className="text-xs"
               style={{ color: 'var(--color-text-tertiary)' }}
             >
-              {locale === 'ka'
-                ? '1000+ წარმატებული პროექტი Homico-ზე დასრულებული'
-                : '1000+ successful projects completed through Homico'}
+              {t('proposal.1000SuccessfulProjectsCompletedThrough')}
             </p>
           </div>
         </div>

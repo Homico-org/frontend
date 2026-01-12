@@ -9,6 +9,7 @@ import { LoadingSpinnerCentered } from '@/components/ui/LoadingSpinner';
 import { api } from '@/lib/api';
 import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 // Helper to get ID from object (handles both id and _id)
 const getId = (obj: { id?: string; _id?: string } | undefined): string => {
   if (!obj) return '';
@@ -33,6 +34,8 @@ export default function PollsTab({
   embedded = false,
 }: PollsTabProps) {
   const [polls, setPolls] = useState<Poll[]>([]);
+
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [error, setError] = useState('');
@@ -47,7 +50,7 @@ export default function PollsTab({
       setHasLoaded(true);
     } catch (err) {
       console.error('Failed to fetch polls:', err);
-      setError(locale === 'ka' ? 'გამოკითხვების ჩატვირთვა ვერ მოხერხდა' : 'Failed to load polls');
+      setError(t('polls.failedToLoadPolls'));
       setHasLoaded(true);
     } finally {
       setIsLoading(false);
@@ -126,12 +129,12 @@ export default function PollsTab({
           <div className="flex flex-col items-center justify-center py-8 text-[var(--color-text-tertiary)]">
             <BarChart3 className="w-10 h-10 mb-2 opacity-40" />
             <p className="text-sm font-medium">
-              {locale === 'ka' ? 'გამოკითხვები არ არის' : 'No polls yet'}
+              {t('polls.noPollsYet')}
             </p>
             <p className="text-xs mt-1">
               {isPro
-                ? (locale === 'ka' ? 'შექმენით გამოკითხვა კლიენტის არჩევანისთვის' : 'Create a poll for client to choose from')
-                : (locale === 'ka' ? 'პროფესიონალი შექმნის გამოკითხვას' : 'Professional will create polls for your decisions')}
+                ? (t('polls.createAPollForClient'))
+                : (t('polls.professionalWillCreatePollsFor'))}
             </p>
             {isPro && (
               <button
@@ -140,7 +143,7 @@ export default function PollsTab({
                 style={{ backgroundColor: ACCENT }}
               >
                 <Plus className="w-4 h-4" />
-                {locale === 'ka' ? 'შექმნა' : 'Create Poll'}
+                {t('polls.createPoll')}
               </button>
             )}
           </div>
@@ -176,7 +179,7 @@ export default function PollsTab({
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ backgroundColor: `${ACCENT}15` }}>
             <BarChart3 className="w-4 h-4" style={{ color: ACCENT }} />
             <span className="text-sm font-semibold" style={{ color: ACCENT }}>
-              {locale === 'ka' ? 'გამოკითხვები' : 'Polls'}
+              {t('polls.polls')}
             </span>
             {polls.length > 0 && (
               <span className="w-5 h-5 rounded-full text-[10px] font-bold text-white flex items-center justify-center" style={{ backgroundColor: ACCENT }}>
@@ -186,7 +189,7 @@ export default function PollsTab({
           </div>
           {activePollsCount > 0 && (
             <span className="text-xs text-[var(--color-text-tertiary)] hidden sm:inline">
-              {activePollsCount} {locale === 'ka' ? 'აქტიური' : 'active'}
+              {activePollsCount} {t('polls.active')}
             </span>
           )}
         </div>

@@ -8,7 +8,7 @@ export type PropertyCondition = 'shell' | 'black-frame' | 'needs-renovation' | '
 export interface ConditionSelectorProps {
   value: PropertyCondition | '';
   onChange: (value: PropertyCondition) => void;
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   className?: string;
   /** Category to customize options displayed */
   category?: string;
@@ -140,7 +140,7 @@ export default function ConditionSelector({
 }
 
 // Helper to get condition label
-export function getConditionLabel(condition: PropertyCondition | string, locale: 'en' | 'ka'): string {
+export function getConditionLabel(condition: PropertyCondition | string, locale: 'en' | 'ka' | 'ru'): string {
   const found = allConditions.find((c) => c.value === condition);
   if (!found) return condition;
   return locale === 'ka' ? found.labelKa : found.labelEn;

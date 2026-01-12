@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { OTPInput } from '@/components/ui/OTPInput';
 import PhoneInput, { CountryCode } from '@/components/ui/PhoneInput';
-import { countries } from '@/contexts/LanguageContext';
+import { countries, useLanguage } from '@/contexts/LanguageContext';
 import { Check, CheckCircle2, ChevronRight, Phone, Send, X } from 'lucide-react';
 import { useState } from 'react';
 
@@ -25,6 +25,8 @@ export default function PhoneChangeModal({
   onSuccess,
 }: PhoneChangeModalProps) {
   const [step, setStep] = useState<'phone' | 'otp' | 'success'>('phone');
+
+  const { t } = useLanguage();
   const [newPhone, setNewPhone] = useState('');
   const [phoneCountry, setPhoneCountry] = useState({ code: '+995', flag: '🇬🇪' });
   const [otpCode, setOtpCode] = useState('');
@@ -36,7 +38,7 @@ export default function PhoneChangeModal({
 
   const handleSendOtp = async () => {
     if (!newPhone || newPhone.length < 6) {
-      setError(locale === 'ka' ? 'შეიყვანეთ სწორი ნომერი' : 'Enter a valid phone number');
+      setError(t('settings.enterAValidPhoneNumber'));
       return;
     }
 
@@ -60,10 +62,10 @@ export default function PhoneChangeModal({
         setStep('otp');
       } else {
         const data = await res.json();
-        setError(data.message || (locale === 'ka' ? 'კოდის გაგზავნა ვერ მოხერხდა' : 'Failed to send code'));
+        setError(data.message || (t('settings.failedToSendCode')));
       }
     } catch {
-      setError(locale === 'ka' ? 'კავშირის შეცდომა' : 'Connection error');
+      setError(t('settings.connectionError'));
     } finally {
       setIsLoading(false);
     }
@@ -96,7 +98,7 @@ export default function PhoneChangeModal({
         }, 2000);
       } else {
         const data = await res.json();
-        setError(data.message || (locale === 'ka' ? 'არასწორი კოდი' : 'Invalid code'));
+        setError(data.message || (t('settings.invalidCode')));
       }
     } catch {
       setError(locale === 'ka' ? 'კავშირის შეცდომა' : 'Connection error');
@@ -157,10 +159,10 @@ export default function PhoneChangeModal({
               <div>
                 <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                   {step === 'success'
-                    ? (locale === 'ka' ? 'წარმატებით შეიცვალა!' : 'Successfully Updated!')
+                    ? (t('settings.successfullyUpdated'))
                     : step === 'otp'
-                      ? (locale === 'ka' ? 'დაადასტურე ნომერი' : 'Verify Phone')
-                      : (locale === 'ka' ? 'ნომრის შეცვლა' : 'Change Phone')}
+                      ? (t('settings.verifyPhone'))
+                      : (t('settings.changePhone'))}
                 </h3>
                 {step === 'otp' && (
                   <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
@@ -185,9 +187,7 @@ export default function PhoneChangeModal({
                 <CheckCircle2 className="w-8 h-8 text-green-500" />
               </div>
               <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                {locale === 'ka'
-                  ? 'თქვენი ნომერი წარმატებით განახლდა'
-                  : 'Your phone number has been updated successfully'}
+                {t('settings.yourPhoneNumberHasBeen')}
               </p>
             </div>
           ) : step === 'otp' ? (
@@ -200,7 +200,7 @@ export default function PhoneChangeModal({
 
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-                  {locale === 'ka' ? '4-ნიშნა კოდი' : '4-digit code'}
+                  {t('settings.4digitCode')}
                 </label>
                 <OTPInput
                   length={4}
@@ -218,7 +218,7 @@ export default function PhoneChangeModal({
                   disabled={isSendingOtp}
                   leftIcon={isSendingOtp ? <LoadingSpinner size="sm" color="#E07B4F" /> : <Send className="w-4 h-4" />}
                 >
-                  {locale === 'ka' ? 'ხელახლა გაგზავნა' : 'Resend code'}
+                  {t('settings.resendCode')}
                 </Button>
                 <Button
                   variant="ghost"
@@ -228,7 +228,7 @@ export default function PhoneChangeModal({
                     setOtpCode('');
                   }}
                 >
-                  {locale === 'ka' ? 'ნომრის შეცვლა' : 'Change number'}
+                  {t('settings.changeNumber')}
                 </Button>
               </div>
 
@@ -239,15 +239,13 @@ export default function PhoneChangeModal({
                 className="w-full"
                 leftIcon={<Check className="w-4 h-4" />}
               >
-                {locale === 'ka' ? 'დადასტურება' : 'Verify'}
+                {t('settings.verify')}
               </Button>
             </div>
           ) : (
             <div className="space-y-4">
               <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                {locale === 'ka'
-                  ? 'შეიყვანე ახალი ნომერი. ვერიფიკაციის კოდი გაიგზავნება SMS-ით.'
-                  : 'Enter your new phone number. A verification code will be sent via SMS.'}
+                {t('settings.enterYourNewPhoneNumber')}
               </p>
 
               {currentPhone && (
@@ -255,7 +253,7 @@ export default function PhoneChangeModal({
                   <Phone className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--color-text-tertiary)' }} />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                      {locale === 'ka' ? 'მიმდინარე ნომერი' : 'Current number'}
+                      {t('settings.currentNumber')}
                     </p>
                     <p className="text-sm truncate" style={{ color: 'var(--color-text-primary)' }}>
                       {currentPhone}
@@ -275,7 +273,7 @@ export default function PhoneChangeModal({
                 onChange={setNewPhone}
                 country={phoneCountry.code as CountryCode}
                 onCountryChange={(country: CountryCode) => setPhoneCountry({ code: country, flag: countries[country].flag })}
-                placeholder={locale === 'ka' ? 'ახალი ნომერი' : 'New phone number'}
+                placeholder={t('settings.newPhoneNumber')}
               />
 
               <Button
@@ -285,7 +283,7 @@ export default function PhoneChangeModal({
                 className="w-full"
                 rightIcon={<ChevronRight className="w-4 h-4" />}
               >
-                {locale === 'ka' ? 'გაგრძელება' : 'Continue'}
+                {t('common.continue')}
               </Button>
             </div>
           )}

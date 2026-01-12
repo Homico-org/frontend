@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { Share2, Facebook, Link2, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 export interface ShareMenuProps {
   /** URL to share. Defaults to current page URL */
   url?: string;
@@ -18,7 +19,7 @@ export interface ShareMenuProps {
   /** Callback when link is copied */
   onCopy?: () => void;
   /** Locale for translations */
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   /** Custom button render */
   renderButton?: (props: { onClick: () => void; isOpen: boolean }) => React.ReactNode;
   /** Size variant */
@@ -55,6 +56,8 @@ export default function ShareMenu({
   size = 'md',
 }: ShareMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  const { t } = useLanguage();
   const [copySuccess, setCopySuccess] = useState(false);
 
   const getShareUrl = useCallback(() => {
@@ -181,7 +184,7 @@ export default function ShareMenu({
                   <Link2 className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
                 )}
               </div>
-              <span>{locale === 'ka' ? 'ლინკის კოპირება' : 'Copy Link'}</span>
+              <span>{t('common.copyLink')}</span>
             </button>
           </div>
         </>
@@ -198,7 +201,7 @@ export default function ShareMenu({
               ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rotate-45'
               : 'bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700'
           }`}
-          aria-label={locale === 'ka' ? 'გაზიარება' : 'Share'}
+          aria-label={t('common.share')}
         >
           {isOpen ? (
             <X className={iconSizes[size]} />
@@ -216,7 +219,7 @@ export interface ShareButtonsProps {
   url: string;
   title: string;
   description?: string;
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   onCopy?: () => void;
   className?: string;
 }
@@ -229,6 +232,7 @@ export function ShareButtons({
   onCopy,
   className = '',
 }: ShareButtonsProps) {
+  const { t } = useLanguage();
   const handleShareFacebook = () => {
     window.open(
       `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(title)}`,
@@ -291,7 +295,7 @@ export function ShareButtons({
         size="icon"
         variant="secondary"
         onClick={handleCopyLink}
-        title={locale === 'ka' ? 'ლინკის კოპირება' : 'Copy link'}
+        title={t('common.copyLink')}
       >
         <Link2 className="w-5 h-5" />
       </Button>

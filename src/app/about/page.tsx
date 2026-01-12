@@ -10,7 +10,7 @@ import { Mail, HelpCircle, Shield, Star, Users, Lightbulb } from 'lucide-react';
 // Note: For SEO, metadata is defined in layout.tsx for this route
 
 export default function AboutPage() {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
 
   const stats = [
     {
@@ -87,13 +87,11 @@ export default function AboutPage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
               </svg>
-              {locale === 'ka' ? 'ჩვენს შესახებ' : 'About Us'}
+              {t('about.aboutUs')}
             </span>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-medium text-white mb-6 tracking-tight">
-              {locale === 'ka'
-                ? 'ვაკავშირებთ ადამიანებს საუკეთესო ხელოსნებთან'
-                : 'Connecting People with the Best Professionals'}
+              {t('about.connectingPeopleWithTheBest')}
             </h1>
             <p className="text-base sm:text-lg text-white/70 max-w-2xl mx-auto leading-relaxed">
               {locale === 'ka'
@@ -124,7 +122,7 @@ export default function AboutPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl font-serif font-medium text-neutral-900 dark:text-white mb-4">
-              {locale === 'ka' ? 'ჩვენი მისია' : 'Our Mission'}
+              {t('about.ourMission')}
             </h2>
             <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed">
               {locale === 'ka'
@@ -136,23 +134,17 @@ export default function AboutPage() {
           {/* Story */}
           <div className="bg-white dark:bg-dark-card rounded-2xl p-8 border border-neutral-100 dark:border-dark-border">
             <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-4">
-              {locale === 'ka' ? 'ჩვენი ისტორია' : 'Our Story'}
+              {t('about.ourStory')}
             </h3>
             <div className="prose prose-neutral dark:prose-invert max-w-none">
               <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed mb-4">
-                {locale === 'ka'
-                  ? 'Homico დაიბადა მარტივი იდეიდან: რატომ არის ასე რთული კარგი ხელოსნის პოვნა? ჩვენ შევამჩნიეთ, რომ ადამიანებს უწევთ ხანგრძლივი ძებნა, რეკომენდაციების კითხვა ნაცნობებისგან, და მაინც ხშირად რჩებოდნენ უკმაყოფილონი შედეგით.'
-                  : 'Homico was born from a simple question: why is it so hard to find a good professional? We noticed people spending hours searching, asking friends for recommendations, and still often ending up disappointed with the results.'}
+                {t('about.homicoWasBornFromA')}
               </p>
               <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed mb-4">
-                {locale === 'ka'
-                  ? 'ჩვენ გადავწყვიტეთ შეგვექმნა პლატფორმა, სადაც კლიენტებს შეეძლებათ მარტივად იპოვონ ვერიფიცირებული პროფესიონალები, ნახონ მათი რეალური სამუშაოები და წაიკითხონ სხვა კლიენტების შეფასებები.'
-                  : 'We decided to create a platform where clients can easily find verified professionals, see their real work, and read reviews from other customers.'}
+                {t('about.weDecidedToCreateA')}
               </p>
               <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                {locale === 'ka'
-                  ? 'დღეს Homico აერთიანებს ათასობით პროფესიონალს და კლიენტს თბილისში. ჩვენ ვაგრძელებთ გაუმჯობესებას, რათა ყოველი გამოცდილება იყოს უკეთესი წინაზე.'
-                  : 'Today, Homico connects thousands of professionals and clients in Tbilisi. We continue improving to make every experience better than the last.'}
+                {t('about.todayHomicoConnectsThousandsOf')}
               </p>
             </div>
           </div>
@@ -163,7 +155,7 @@ export default function AboutPage() {
       <section className="py-16 bg-neutral-50 dark:bg-dark-elevated">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl sm:text-3xl font-serif font-medium text-center text-neutral-900 dark:text-white mb-12">
-            {locale === 'ka' ? 'ჩვენი ღირებულებები' : 'Our Values'}
+            {t('about.ourValues')}
           </h2>
 
           <div className="grid sm:grid-cols-2 gap-6">
@@ -183,7 +175,7 @@ export default function AboutPage() {
       <section className="py-16 sm:py-24">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl sm:text-3xl font-serif font-medium text-neutral-900 dark:text-white mb-4">
-            {locale === 'ka' ? 'დაგვიკავშირდით' : 'Get in Touch'}
+            {t('about.getInTouch')}
           </h2>
           <p className="text-neutral-600 dark:text-neutral-400 mb-8">
             {locale === 'ka'
@@ -209,14 +201,14 @@ export default function AboutPage() {
             >
               <Link href="/help" className="flex items-center gap-2">
                 <HelpCircle className="w-5 h-5" />
-                {locale === 'ka' ? 'დახმარების ცენტრი' : 'Help Center'}
+                {t('about.helpCenter')}
               </Link>
             </Button>
           </div>
 
           <div className="mt-12 pt-8 border-t border-neutral-100 dark:border-dark-border">
             <p className="text-sm text-neutral-500 dark:text-neutral-400">
-              {locale === 'ka' ? 'თბილისი, საქართველო' : 'Tbilisi, Georgia'}
+              {t('about.tbilisiGeorgia')}
             </p>
           </div>
         </div>
@@ -227,13 +219,13 @@ export default function AboutPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-sm">
             <Link href="/terms" className="text-neutral-600 dark:text-neutral-400 hover:text-[#C4735B] transition-colors">
-              {locale === 'ka' ? 'მომსახურების პირობები' : 'Terms of Service'}
+              {t('about.termsOfService')}
             </Link>
             <Link href="/privacy" className="text-neutral-600 dark:text-neutral-400 hover:text-[#C4735B] transition-colors">
-              {locale === 'ka' ? 'კონფიდენციალურობა' : 'Privacy Policy'}
+              {t('about.privacyPolicy')}
             </Link>
             <Link href="/how-it-works" className="text-neutral-600 dark:text-neutral-400 hover:text-[#C4735B] transition-colors">
-              {locale === 'ka' ? 'როგორ მუშაობს' : 'How it Works'}
+              {t('about.howItWorks')}
             </Link>
           </div>
         </div>

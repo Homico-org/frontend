@@ -4,6 +4,7 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
+import { useLanguage } from "@/contexts/LanguageContext";
 const inputVariants = cva(
   "flex w-full rounded-xl text-[var(--color-text-primary)] transition-all duration-300 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-[var(--color-text-muted)] disabled:cursor-not-allowed disabled:opacity-50",
   {
@@ -51,6 +52,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
     // Handle change to prevent negative values for number inputs
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const { t } = useLanguage();
       if (type === 'number') {
         const value = e.target.value;
         // Allow empty string for clearing
@@ -167,13 +169,13 @@ export interface LabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> 
   required?: boolean;
   optional?: boolean;
   hint?: string;
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
 }
 
 const Label = React.forwardRef<HTMLLabelElement, LabelProps>(
   ({ className, children, required, optional, hint, locale = 'en', ...props }, ref) => {
-    const requiredText = locale === 'ka' ? 'სავალდებულო' : 'Required';
-    const optionalText = locale === 'ka' ? 'არასავალდებულო' : 'Optional';
+    const requiredText = locale === 'ka' ? '*' : '*';
+    const optionalText = locale === 'ka' ? 'არასავალდებულო' : 'optional';
     
     return (
       <div className="flex items-center justify-between mb-2">

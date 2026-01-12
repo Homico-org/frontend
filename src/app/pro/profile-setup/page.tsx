@@ -44,7 +44,7 @@ function Logo({ className = "" }: { className?: string }) {
 function ProProfileSetupPageContent() {
   const router = useRouter();
   const { user, isLoading: authLoading, updateUser } = useAuth();
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const { categories: allCategories, getCategoryByKey } = useCategories();
 
   // Step state
@@ -562,7 +562,7 @@ function ProProfileSetupPageContent() {
           <div className="h-14 sm:h-12 flex items-center justify-between">
             <Logo />
             <Link href="/help" className="text-xs text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors">
-              {locale === "ka" ? "დახმარება" : "Help"}
+              {t('common.help')}
             </Link>
           </div>
 
@@ -573,7 +573,7 @@ function ProProfileSetupPageContent() {
                 {locale === "ka" ? `${getCurrentStepIndex() + 1}/${STEPS.length}` : `STEP ${getCurrentStepIndex() + 1}/${STEPS.length}`}
               </span>
               <span className="text-[10px] sm:text-[10px] font-medium text-[#C4735B]">
-                {STEPS[getCurrentStepIndex()].title[locale === "ka" ? "ka" : "en"]}
+                {STEPS[getCurrentStepIndex()].title[locale === 'ka' ? 'ka' : 'en']}
               </span>
             </div>
             <Progress value={getProgressPercentage()} size="sm" indicatorVariant="gradient" />
@@ -595,10 +595,10 @@ function ProProfileSetupPageContent() {
             <div className="space-y-4">
               <div>
                 <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
-                  {locale === "ka" ? "შენს შესახებ" : "About You"}
+                  {t('becomePro.aboutYou')}
                 </h1>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                  {locale === "ka" ? "შეავსე ძირითადი ინფორმაცია" : "Fill in your basic information"}
+                  {t('becomePro.fillInYourBasicInformation')}
                 </p>
               </div>
 
@@ -632,10 +632,10 @@ function ProProfileSetupPageContent() {
             <div className="space-y-4">
               <div>
                 <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
-                  {locale === "ka" ? "რა სერვისებს გთავაზობთ?" : "What services do you provide?"}
+                  {t('becomePro.whatServicesDoYouProvide')}
                 </h1>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                  {locale === "ka" ? "აირჩიეთ კატეგორია და უნარები" : "Select your profession and skills"}
+                  {t('becomePro.selectYourProfessionAndSkills')}
                 </p>
               </div>
 
@@ -655,10 +655,10 @@ function ProProfileSetupPageContent() {
             <div className="space-y-4">
               <div>
                 <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
-                  {locale === "ka" ? "ფასები და ზონები" : "Pricing & Areas"}
+                  {t('becomePro.pricingAreas')}
                 </h1>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                  {locale === "ka" ? "განსაზღვრე ტარიფები და სამუშაო ზონები" : "Set your rates and work areas"}
+                  {t('becomePro.setYourRatesAndWork')}
                 </p>
               </div>
 
@@ -708,10 +708,10 @@ function ProProfileSetupPageContent() {
             <div className="space-y-4">
               <div>
                 <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
-                  {locale === "ka" ? "პორტფოლიო" : "Portfolio"}
+                  {t('becomePro.portfolio')}
                 </h1>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                  {locale === "ka" ? "აჩვენე შენი ნამუშევრები" : "Showcase your work"}
+                  {t('becomePro.showcaseYourWork')}
                 </p>
               </div>
 
@@ -729,10 +729,10 @@ function ProProfileSetupPageContent() {
             <div className="space-y-4">
               <div>
                 <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
-                  {locale === "ka" ? "გადახედვა" : "Review"}
+                  {t('becomePro.review')}
                 </h1>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                  {locale === "ka" ? "გადახედე შენს პროფილს" : "Review your profile"}
+                  {t('becomePro.reviewYourProfile')}
                 </p>
               </div>
 
@@ -768,7 +768,7 @@ function ProProfileSetupPageContent() {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
-                <span className="hidden sm:inline">{locale === "ka" ? "უკან" : "Back"}</span>
+                <span className="hidden sm:inline">{t('common.back')}</span>
               </button>
             ) : (
               <div />
@@ -782,14 +782,14 @@ function ProProfileSetupPageContent() {
               {isLoading ? (
                 <>
                   <LoadingSpinner size="sm" color="white" />
-                  <span>{locale === "ka" ? "..." : "..."}</span>
+                  <span>{t('becomePro.text')}</span>
                 </>
               ) : currentStep === 'review' ? (
                 <>
                   <span>
                     {isEditMode
-                      ? (locale === "ka" ? "შენახვა" : "Save")
-                      : (locale === "ka" ? "დასრულება" : "Complete")
+                      ? (t('common.save'))
+                      : (t('becomePro.complete'))
                     }
                   </span>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -798,7 +798,7 @@ function ProProfileSetupPageContent() {
                 </>
               ) : (
                 <>
-                  <span>{locale === "ka" ? "გაგრძელება" : "Continue"}</span>
+                  <span>{t('common.continue')}</span>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>

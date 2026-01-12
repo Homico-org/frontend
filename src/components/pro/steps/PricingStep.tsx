@@ -88,7 +88,7 @@ export default function PricingStep({
   onFormChange,
   validation,
 }: PricingStepProps) {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
 
   const selectedOption = pricingOptions.find(
     (o) => o.key === formData.pricingModel
@@ -100,7 +100,7 @@ export default function PricingStep({
       {/* Pricing Type Selection */}
       <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 shadow-sm">
         <h3 className="font-semibold text-[var(--color-text-primary)] mb-4">
-          {locale === "ka" ? "ფასის ტიპი" : "Pricing Type"}
+          {t('common.pricingType')}
         </h3>
 
         <div className="grid grid-cols-2 gap-3">
@@ -158,11 +158,11 @@ export default function PricingStep({
       <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-[var(--color-text-primary)]">
-            {locale === "ka" ? "ფასის დიაპაზონი" : "Price Range"}
+            {t('common.priceRange')}
           </h3>
           {validation.pricing && (
             <Badge variant="success" size="xs" icon={<Check className="w-3 h-3" />}>
-              {locale === "ka" ? "შევსებულია" : "Completed"}
+              {t('common.completed')}
             </Badge>
           )}
         </div>
@@ -171,7 +171,7 @@ export default function PricingStep({
           {/* Min Price */}
           <div className="flex-1">
             <label className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2 block">
-              {locale === "ka" ? "მინიმალური" : "Starting Price"}
+              {t('common.startingPrice')}
             </label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#E07B4F] font-semibold">
@@ -212,7 +212,7 @@ export default function PricingStep({
           {/* Max Price */}
           <div className="flex-1">
             <label className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2 block">
-              {locale === "ka" ? "მაქსიმალური" : "Maximum Price"}
+              {t('common.maximumPrice')}
             </label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] font-semibold">
@@ -246,7 +246,7 @@ export default function PricingStep({
         {formData.basePrice && (
           <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-[#E07B4F]/5 to-[#E8956A]/5 border border-[#E07B4F]/10">
             <p className="text-sm text-[var(--color-text-secondary)]">
-              {locale === "ka" ? "კლიენტები დაინახავენ:" : "Clients will see:"}
+              {t('common.clientsWillSee')}
             </p>
             <p className="text-xl font-bold text-[#E07B4F] mt-1">
               {formData.basePrice}

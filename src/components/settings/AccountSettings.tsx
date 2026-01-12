@@ -17,7 +17,7 @@ interface AccountSettingsProps {
 
 export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateModal }: AccountSettingsProps) {
   const { user, logout } = useAuth();
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
 
   // Profile deactivation state
   const [isProfileDeactivated, setIsProfileDeactivated] = useState(false);
@@ -81,10 +81,10 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
     <div className="space-y-6">
       <div>
         <h2 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-white">
-          {locale === 'ka' ? 'ანგარიშის მართვა' : 'Account Management'}
+          {t('settings.accountManagement')}
         </h2>
         <p className="text-sm mt-1 text-neutral-500">
-          {locale === 'ka' ? 'მართეთ თქვენი ანგარიშის პარამეტრები' : 'Manage your account settings'}
+          {t('settings.manageYourAccountSettings')}
         </p>
       </div>
 
@@ -97,7 +97,7 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
             <div className="flex items-center gap-2">
               <BriefcaseBusiness className={`w-5 h-5 ${isProfileDeactivated ? 'text-yellow-600' : 'text-[#E07B4F]'}`} />
               <h3 className={`font-semibold ${isProfileDeactivated ? 'text-yellow-600 dark:text-yellow-500' : 'text-neutral-900 dark:text-white'}`}>
-                {locale === 'ka' ? 'პროფესიონალის პროფილი' : 'Professional Profile'}
+                {t('settings.professionalProfile')}
               </h3>
             </div>
           </div>
@@ -108,19 +108,19 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
                 <Alert variant="warning" showIcon>
                   <div>
                     <p className="font-medium">
-                      {locale === 'ka' ? 'პროფილი დეაქტივირებულია' : 'Profile is deactivated'}
+                      {t('settings.profileIsDeactivated')}
                     </p>
                     <p className="text-sm mt-1 opacity-80">
-                      {locale === 'ka' ? 'თქვენი პროფილი არ ჩანს კლიენტებისთვის' : 'Your profile is hidden from clients'}
+                      {t('settings.yourProfileIsHiddenFrom')}
                     </p>
                     {deactivatedUntil && (
                       <p className="text-sm mt-2 opacity-80">
-                        {locale === 'ka' ? 'დაბრუნდება:' : 'Returns:'} {deactivatedUntil.toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                        {t('settings.returns')} {deactivatedUntil.toLocaleDateString(t('settings.enus8'), { year: 'numeric', month: 'long', day: 'numeric' })}
                       </p>
                     )}
                     {deactivationReason && (
                       <p className="text-sm mt-1 opacity-60">
-                        {locale === 'ka' ? 'მიზეზი:' : 'Reason:'} {deactivationReason}
+                        {t('settings.reason')} {deactivationReason}
                       </p>
                     )}
                   </div>
@@ -131,19 +131,17 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
                   leftIcon={<Check className="w-4 h-4" />}
                   className="w-full"
                 >
-                  {locale === 'ka' ? 'პროფილის გააქტიურება' : 'Reactivate Profile'}
+                  {t('settings.reactivateProfile')}
                 </Button>
               </div>
             ) : (
               <div className="space-y-4">
                 <div>
                   <h4 className="font-medium text-neutral-900 dark:text-white">
-                    {locale === 'ka' ? 'დროებით გამორთვა' : 'Temporarily Pause'}
+                    {t('settings.temporarilyPause')}
                   </h4>
                   <p className="text-sm mt-1 text-neutral-500">
-                    {locale === 'ka'
-                      ? 'დროებით დამალეთ თქვენი პროფილი კლიენტებისგან. შეგიძლიათ ნებისმიერ დროს გააქტიუროთ.'
-                      : 'Temporarily hide your profile from clients. You can reactivate anytime.'}
+                    {t('settings.temporarilyHideYourProfileFrom')}
                   </p>
                 </div>
                 <Button
@@ -152,7 +150,7 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
                   leftIcon={<BriefcaseBusiness className="w-4 h-4" />}
                   className="w-full sm:w-auto border-yellow-500 text-yellow-600 hover:bg-yellow-500/10"
                 >
-                  {locale === 'ka' ? 'დამალვა' : 'Pause Profile'}
+                  {t('settings.pauseProfile')}
                 </Button>
               </div>
             )}
@@ -166,7 +164,7 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-red-500" />
             <h3 className="font-semibold text-red-600 dark:text-red-400">
-              {locale === 'ka' ? 'საშიში ზონა' : 'Danger Zone'}
+              {t('settings.dangerZone')}
             </h3>
           </div>
         </div>
@@ -175,12 +173,10 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
           <div className="space-y-4">
             <div>
               <h4 className="font-medium text-neutral-900 dark:text-white">
-                {locale === 'ka' ? 'ანგარიშის წაშლა' : 'Delete Account'}
+                {t('settings.deleteAccount')}
               </h4>
               <p className="text-sm mt-1 text-neutral-500">
-                {locale === 'ka'
-                  ? 'სამუდამოდ წაშალეთ თქვენი ანგარიში და ყველა მონაცემი. ეს მოქმედება შეუქცევადია.'
-                  : 'Permanently delete your account and all data. This action cannot be undone.'}
+                {t('settings.permanentlyDeleteYourAccountAnd')}
               </p>
             </div>
             <Button
@@ -189,7 +185,7 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
               leftIcon={<Trash2 className="w-4 h-4" />}
               className="w-full sm:w-auto"
             >
-              {locale === 'ka' ? 'წაშლა' : 'Delete Account'}
+              {t('settings.deleteAccount')}
             </Button>
           </div>
         </div>
@@ -207,7 +203,7 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
               {user?.email || user?.phone}
             </p>
             <p className="text-xs mt-1 text-neutral-400">
-              {locale === 'ka' ? 'ანგარიშის ID:' : 'Account ID:'} #{user?.uid || 'N/A'}
+              {t('settings.accountId')} #{user?.uid || 'N/A'}
             </p>
           </div>
         </div>

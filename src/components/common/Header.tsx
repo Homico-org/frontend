@@ -3,7 +3,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useCategories } from "@/contexts/CategoriesContext";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, Locale } from "@/contexts/LanguageContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import api from "@/lib/api";
@@ -22,11 +22,13 @@ export default function Header() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const { openLoginModal } = useAuthModal();
   const { flatCategories } = useCategories();
-  const { t, locale } = useLanguage();
+  const { t, locale, setLocale } = useLanguage();
   const { unreadCount } = useNotifications();
   const pathname = usePathname();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showLangDropdown, setShowLangDropdown] = useState(false);
+  const langDropdownRef = useClickOutside<HTMLDivElement>(() => setShowLangDropdown(false), showLangDropdown);
   const dropdownRef = useClickOutside<HTMLDivElement>(() => setShowDropdown(false), showDropdown);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
@@ -147,7 +149,7 @@ export default function Header() {
                     style={{ color: ACCENT_COLOR }}
                   >
                     <FileText className="w-4 h-4" />
-                    <span>{locale === 'ka' ? 'ჩემი სამუშაო' : 'My Work'}</span>
+                    <span>{t('header.myWork')}</span>
                     {proposalUpdatesCount > 0 && (
                       <span
                         className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white rounded-full shadow-sm"
@@ -174,7 +176,7 @@ export default function Header() {
                 style={{ color: ACCENT_COLOR }}
               >
                 <Hammer className="w-4 h-4" />
-                <span>{locale === 'ka' ? 'ჩემი განცხადებები' : 'My Jobs'}</span>
+                <span>{t('header.myJobs')}</span>
                 {unviewedProposalsCount > 0 && (
                   <span
                     className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white rounded-full shadow-sm"
@@ -245,6 +247,68 @@ export default function Header() {
               </Link>
             </div>
           )}
+
+          {/* Language Selector */}
+          <div className="relative" ref={langDropdownRef}>
+            <button
+              onClick={() => setShowLangDropdown(!showLangDropdown)}
+              className="flex items-center justify-center w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all"
+              title={locale === 'ka' ? 'ენის შეცვლა' : 'Change language'}
+            >
+              <span className="text-base">
+                {locale === 'ka' ? '🇬🇪' : locale === 'en' ? '🇺🇸' : '🇷🇺'}
+              </span>
+            </button>
+
+            {showLangDropdown && (
+              <div className="absolute right-0 top-full mt-2 w-40 rounded-xl overflow-hidden z-[70] animate-scale-in bg-white dark:bg-neutral-800 shadow-xl border border-neutral-200 dark:border-neutral-700">
+                <div className="py-1">
+                  <button
+                    onClick={() => {
+                      setLocale('ka' as Locale);
+                      setShowLangDropdown(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                      locale === 'ka' 
+                        ? 'bg-neutral-100 dark:bg-neutral-700 text-neutral-900 dark:text-white font-medium' 
+                        : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700'
+                    }`}
+                  >
+                    <span className="text-lg">🇬🇪</span>
+                    <span>ქართული</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLocale('en' as Locale);
+                      setShowLangDropdown(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                      locale === 'en' 
+                        ? 'bg-neutral-100 dark:bg-neutral-700 text-neutral-900 dark:text-white font-medium' 
+                        : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700'
+                    }`}
+                  >
+                    <span className="text-lg">🇺🇸</span>
+                    <span>English</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLocale('ru' as Locale);
+                      setShowLangDropdown(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                      locale === 'ru' 
+                        ? 'bg-neutral-100 dark:bg-neutral-700 text-neutral-900 dark:text-white font-medium' 
+                        : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700'
+                    }`}
+                  >
+                    <span className="text-lg">🇷🇺</span>
+                    <span>Русский</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           {isLoading ? (
             <Skeleton className="w-9 h-9 rounded-xl" />
@@ -393,8 +457,8 @@ export default function Header() {
                                 </svg>
                               </div>
                               <div className="flex-1 min-w-0">
-                                <span className="font-semibold block" style={{ color: ACCENT_COLOR }}>{locale === 'ka' ? 'პრემიუმ გეგმები' : 'Premium Plans'}</span>
-                                <span className="text-[10px]" style={{ color: `${ACCENT_COLOR}99` }}>{locale === 'ka' ? 'გაზარდე ხილვადობა' : 'Boost visibility'}</span>
+                                <span className="font-semibold block" style={{ color: ACCENT_COLOR }}>{t('header.premiumPlans')}</span>
+                                <span className="text-[10px]" style={{ color: `${ACCENT_COLOR}99` }}>{t('header.boostVisibility')}</span>
                               </div>
                             </Link>
                           )}
@@ -408,7 +472,7 @@ export default function Header() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                               </svg>
                             </div>
-                            <span>{locale === 'ka' ? 'პროფილის რედაქტირება' : 'Profile Setup'}</span>
+                            <span>{t('header.profileSetup')}</span>
                           </Link>
                         </>
                       )}
@@ -429,8 +493,8 @@ export default function Header() {
                             </svg>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <span className="font-semibold block" style={{ color: ACCENT_COLOR }}>{locale === 'ka' ? 'დასაქმდი' : 'Become Pro'}</span>
-                            <span className="text-[10px] text-neutral-500">{locale === 'ka' ? 'დაიწყე გამომუშავება' : 'Start earning'}</span>
+                            <span className="font-semibold block" style={{ color: ACCENT_COLOR }}>{t('header.becomePro')}</span>
+                            <span className="text-[10px] text-neutral-500">{t('header.startEarning')}</span>
                           </div>
                         </Link>
                       )}
@@ -450,7 +514,7 @@ export default function Header() {
                               <rect x="14" y="14" width="7" height="7" rx="1.5" strokeWidth={1.5} />
                             </svg>
                           </div>
-                          <span>{locale === 'ka' ? 'ადმინ პანელი' : 'Admin Panel'}</span>
+                          <span>{t('header.adminPanel')}</span>
                         </Link>
                       )}
 
@@ -472,8 +536,8 @@ export default function Header() {
                               </svg>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <span className="font-semibold block" style={{ color: ACCENT_COLOR }}>{locale === 'ka' ? 'მართვის პანელი' : 'Dashboard'}</span>
-                              <span className="text-[10px]" style={{ color: `${ACCENT_COLOR}99` }}>{locale === 'ka' ? 'კომპანიის მთავარი' : 'Company overview'}</span>
+                              <span className="font-semibold block" style={{ color: ACCENT_COLOR }}>{t('header.dashboard')}</span>
+                              <span className="text-[10px]" style={{ color: `${ACCENT_COLOR}99` }}>{t('header.companyOverview')}</span>
                             </div>
                           </Link>
                           <Link
@@ -487,7 +551,7 @@ export default function Header() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21h18M9 7h1M9 11h1M14 7h1M14 11h1M9 21v-4h6v4" />
                               </svg>
                             </div>
-                            <span>{locale === 'ka' ? 'სამუშაოები' : 'Jobs'}</span>
+                            <span>{t('header.jobs')}</span>
                           </Link>
                           <Link
                             href="/company/proposals"
@@ -499,7 +563,7 @@ export default function Header() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                               </svg>
                             </div>
-                            <span>{locale === 'ka' ? 'შეთავაზებები' : 'Proposals'}</span>
+                            <span>{t('header.proposals')}</span>
                           </Link>
                           <Link
                             href="/company/employees"
@@ -514,7 +578,7 @@ export default function Header() {
                                 <path strokeLinecap="round" strokeWidth={1.5} d="M12 9v3M12 12H5v2.5M12 12h7v2.5" />
                               </svg>
                             </div>
-                            <span>{locale === 'ka' ? 'თანამშრომლები' : 'Employees'}</span>
+                            <span>{t('header.employees')}</span>
                           </Link>
                           <Link
                             href="/company/settings"
@@ -527,7 +591,7 @@ export default function Header() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                               </svg>
                             </div>
-                            <span>{locale === 'ka' ? 'პარამეტრები' : 'Settings'}</span>
+                            <span>{t('common.settings')}</span>
                           </Link>
                         </>
                       )}
@@ -548,7 +612,7 @@ export default function Header() {
                             <circle cx="8" cy="18" r="2" strokeWidth={1.5} />
                           </svg>
                         </div>
-                        <span>{t("nav.settings")}</span>
+                        <span>{t("common.settings")}</span>
                       </Link>
 
                       <div className="my-2 mx-4 h-px bg-neutral-200 dark:bg-neutral-700" />
@@ -569,7 +633,7 @@ export default function Header() {
                             <path strokeLinecap="round" strokeWidth={1.75} d="M21 12H9" />
                           </svg>
                         </div>
-                        <span>{t("nav.signOut")}</span>
+                        <span>{t("header.signOut")}</span>
                       </Button>
                     </div>
                   </div>
@@ -585,7 +649,7 @@ export default function Header() {
                   size="sm"
                   onClick={() => openLoginModal()}
                 >
-                  {t("nav.login")}
+                  {t("common.login")}
                 </Button>
                 <Button
                   variant="outline"
@@ -593,7 +657,7 @@ export default function Header() {
                   asChild
                 >
                   <Link href="/register">
-                    {t("nav.signUp")}
+                    {t("header.signUp")}
                   </Link>
                 </Button>
               </div>
@@ -604,14 +668,14 @@ export default function Header() {
                   variant="secondary"
                   size="icon-sm"
                   onClick={() => openLoginModal()}
-                  title={t("nav.login")}
+                  title={t("common.login")}
                 >
                   <LogIn className="w-4 h-4" />
                 </Button>
                 <Button
                   size="icon-sm"
                   asChild
-                  title={t("nav.signUp")}
+                  title={t("header.signUp")}
                 >
                   <Link href="/register">
                     <UserPlus className="w-4 h-4" />
@@ -679,10 +743,10 @@ export default function Header() {
               {/* Welcome text */}
               <div className="mb-4">
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                  {locale === 'ka' ? 'კეთილი იყოს შენი მობრძანება' : 'Welcome to Homico'}
+                  {t('header.welcomeToHomico')}
                 </p>
                 <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
-                  {locale === 'ka' ? 'შედი ან შექმენი ანგარიში' : 'Sign in or create an account'}
+                  {t('header.signInOrCreateAn')}
                 </p>
               </div>
 
@@ -703,10 +767,10 @@ export default function Header() {
                 </div>
                 <div className="flex-1 text-left">
                   <span className="block font-medium text-neutral-900 dark:text-white">
-                    {t("nav.login")}
+                    {t("common.login")}
                   </span>
                   <span className="block text-xs text-neutral-500 dark:text-neutral-400">
-                    {locale === 'ka' ? 'უკვე გაქვს ანგარიში?' : 'Already have an account?'}
+                    {t('header.alreadyHaveAnAccount')}
                   </span>
                 </div>
                 <svg className="w-5 h-5 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -729,10 +793,10 @@ export default function Header() {
                 </div>
                 <div className="flex-1 text-left">
                   <span className="block font-medium text-white">
-                    {t("nav.signUp")}
+                    {t("header.signUp")}
                   </span>
                   <span className="block text-xs text-white/70">
-                    {locale === 'ka' ? 'შექმენი უფასო ანგარიში' : 'Create a free account'}
+                    {t('header.createAFreeAccount')}
                   </span>
                 </div>
                 <svg className="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -744,7 +808,7 @@ export default function Header() {
               <div className="flex items-center gap-3 my-4">
                 <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
                 <span className="text-xs text-neutral-400 dark:text-neutral-500">
-                  {locale === 'ka' ? 'ან' : 'or'}
+                  {t('header.or')}
                 </span>
                 <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
               </div>
@@ -760,10 +824,10 @@ export default function Header() {
                 </div>
                 <div className="flex-1 text-left">
                   <span className="block font-medium text-neutral-700 dark:text-neutral-300">
-                    {locale === 'ka' ? 'განცხადების დამატება' : 'Post a Job'}
+                    {t('header.postAJob')}
                   </span>
                   <span className="block text-xs text-neutral-500 dark:text-neutral-500">
-                    {locale === 'ka' ? 'იპოვე სპეციალისტი' : 'Find professionals'}
+                    {t('header.findProfessionals')}
                   </span>
                 </div>
               </Link>
@@ -778,7 +842,7 @@ export default function Header() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                  {locale === 'ka' ? 'სპეციალისტების დათვალიერება' : 'Browse Professionals'}
+                  {t('header.browseProfessionals')}
                 </span>
               </Link>
             </div>
@@ -786,9 +850,7 @@ export default function Header() {
             {/* Footer */}
             <div className="absolute bottom-0 left-0 right-0 px-5 py-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50">
               <p className="text-xs text-neutral-400 dark:text-neutral-500 text-center">
-                {locale === 'ka'
-                  ? 'იპოვე საუკეთესო სპეციალისტები საქართველოში'
-                  : 'Find the best professionals in Georgia'}
+                {t('header.findTheBestProfessionalsIn')}
               </p>
             </div>
           </div>

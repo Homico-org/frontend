@@ -153,7 +153,7 @@ export default function PortfolioProjectsInput({
   onChange,
   maxProjects = 999,
 }: PortfolioProjectsInputProps) {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const beforeAfterInputRef = useRef<HTMLInputElement>(null);
 
@@ -336,10 +336,10 @@ export default function PortfolioProjectsInput({
           </div>
           <div>
             <h3 className="font-semibold text-[var(--color-text-primary)]">
-              {locale === 'ka' ? 'პორტფოლიო პროექტები' : 'Portfolio Projects'}
+              {t('input.portfolioProjects')}
             </h3>
             <p className="text-xs text-[var(--color-text-tertiary)]">
-              {locale === 'ka' ? 'არასავალდებულო' : 'Optional'}
+              {t('common.optional')}
             </p>
           </div>
         </div>
@@ -351,7 +351,7 @@ export default function PortfolioProjectsInput({
             onClick={handleAddProject}
             leftIcon={<Plus className="w-4 h-4" />}
           >
-            {locale === 'ka' ? 'დამატება' : 'Add'}
+            {t('common.add')}
           </Button>
         )}
       </div>
@@ -454,10 +454,10 @@ export default function PortfolioProjectsInput({
             </div>
             <div className="text-center">
               <p className="font-semibold text-[var(--color-text-secondary)] group-hover:text-[#E07B4F] dark:group-hover:text-[#E8956A] transition-colors">
-                {locale === 'ka' ? 'დაამატე პროექტი' : 'Add a project'}
+                {t('input.addAProject')}
               </p>
               <p className="text-xs text-[var(--color-text-muted)] mt-1 max-w-[220px]">
-                {locale === 'ka' ? 'აჩვენე შენი ნამუშევრები ჩვეულებრივი ფოტოებით ან Before/After შედარებით' : 'Showcase your work with photos or Before/After comparisons'}
+                {t('input.showcaseYourWorkWithPhotos')}
               </p>
             </div>
           </div>
@@ -472,8 +472,8 @@ export default function PortfolioProjectsInput({
             <h4 className="font-semibold text-[var(--color-text-primary)] flex items-center gap-2.5">
               <span className="w-2 h-2 rounded-full bg-[#E07B4F] animate-pulse"></span>
               {editingProjectId
-                ? (locale === 'ka' ? 'პროექტის რედაქტირება' : 'Edit Project')
-                : (locale === 'ka' ? 'ახალი პროექტი' : 'New Project')
+                ? (t('input.editProject'))
+                : (t('input.newProject'))
               }
             </h4>
             <Button
@@ -490,13 +490,13 @@ export default function PortfolioProjectsInput({
             {/* Project Title */}
             <div>
               <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                {locale === 'ka' ? 'პროექტის სახელი' : 'Project Title'} <span className="text-red-500">*</span>
+                {t('input.projectTitle')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={currentProject.title}
                 onChange={(e) => setCurrentProject(prev => ({ ...prev, title: e.target.value }))}
-                placeholder={locale === 'ka' ? 'მაგ: აპარტამენტის რემონტი ვაკეში' : 'e.g., Apartment Renovation'}
+                placeholder={t('input.egApartmentRenovation')}
                 className="w-full px-4 py-3 rounded-xl border-2 bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[#E07B4F]/50 transition-all"
                 style={{ borderColor: 'var(--color-border)' }}
               />
@@ -507,8 +507,8 @@ export default function PortfolioProjectsInput({
               <AddressPicker
                 value={currentProject.location || ''}
                 onChange={(value) => setCurrentProject(prev => ({ ...prev, location: value }))}
-                locale={locale as 'ka' | 'en'}
-                label={locale === 'ka' ? 'მდებარეობა' : 'Location'}
+                locale={locale as 'ka' | 'en' | 'ru'}
+                label={t('input.location')}
                 required={false}
               />
             </div>
@@ -516,12 +516,12 @@ export default function PortfolioProjectsInput({
             {/* Description */}
             <div>
               <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                {locale === 'ka' ? 'აღწერა' : 'Description'}
+                {t('input.description')}
               </label>
               <textarea
                 value={currentProject.description}
                 onChange={(e) => setCurrentProject(prev => ({ ...prev, description: e.target.value }))}
-                placeholder={locale === 'ka' ? 'მოკლედ აღწერე რა გააკეთე...' : 'Briefly describe what you did...'}
+                placeholder={t('input.brieflyDescribeWhatYouDid')}
                 rows={2}
                 className="w-full px-4 py-3 rounded-xl border-2 bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[#E07B4F]/50 transition-all resize-none"
                 style={{ borderColor: 'var(--color-border)' }}
@@ -532,11 +532,11 @@ export default function PortfolioProjectsInput({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <label className="block text-sm font-medium text-[var(--color-text-secondary)]">
-                  {locale === 'ka' ? 'მედია' : 'Media'} <span className="text-red-500">*</span>
+                  {t('input.media')} <span className="text-red-500">*</span>
                 </label>
                 {totalMedia > 0 && (
                   <span className="text-xs text-[var(--color-text-tertiary)]">
-                    {totalMedia} {locale === 'ka' ? 'ელემენტი' : 'item(s)'}
+                    {totalMedia} {t('common.items')}
                   </span>
                 )}
               </div>
@@ -619,8 +619,8 @@ export default function PortfolioProjectsInput({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
                         </div>
-                        <span className="text-sm font-medium">{locale === 'ka' ? 'ფოტოები' : 'Photos'}</span>
-                        <span className="text-[10px] text-[var(--color-text-muted)]">{locale === 'ka' ? 'რამდენიმე ფოტო' : 'Multiple photos'}</span>
+                        <span className="text-sm font-medium">{t('input.photos')}</span>
+                        <span className="text-[10px] text-[var(--color-text-muted)]">{t('input.multiplePhotos')}</span>
                       </>
                     )}
                   </button>
@@ -654,8 +654,8 @@ export default function PortfolioProjectsInput({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
                           </svg>
                         </div>
-                        <span className="text-sm font-medium">{locale === 'ka' ? 'სანამ/შემდეგ' : 'Before/After'}</span>
-                        <span className="text-[10px] text-[var(--color-text-muted)]">{locale === 'ka' ? 'აირჩიეთ 2 სურათი' : 'Select exactly 2 images'}</span>
+                        <span className="text-sm font-medium">{t('input.beforeafter')}</span>
+                        <span className="text-[10px] text-[var(--color-text-muted)]">{t('input.selectExactly2Images')}</span>
                       </>
                     )}
                   </button>
@@ -671,7 +671,7 @@ export default function PortfolioProjectsInput({
                 onClick={resetForm}
                 className="flex-1"
               >
-                {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+                {t('common.cancel')}
               </Button>
               <Button
                 type="button"
@@ -680,8 +680,8 @@ export default function PortfolioProjectsInput({
                 className="flex-1"
               >
                 {editingProjectId
-                  ? (locale === 'ka' ? 'შენახვა' : 'Save Changes')
-                  : (locale === 'ka' ? 'პროექტის დამატება' : 'Add Project')
+                  ? (t('input.saveChanges'))
+                  : (t('input.addProject'))
                 }
               </Button>
             </div>

@@ -45,7 +45,7 @@ export default function ResetPasswordPage() {
     setError('');
 
     if (!passwordStrengthData.isValid) {
-      setError(locale === 'ka' ? 'პაროლი უნდა შეიცავდეს მინიმუმ 6 სიმბოლოს' : 'Password must be at least 6 characters');
+      setError(t('forgotPassword.passwordMustBeAtLeast'));
       return;
     }
 
@@ -85,7 +85,7 @@ export default function ResetPasswordPage() {
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : t('forgotPassword.resetFailed');
       if (errorMessage.includes('session expired') || errorMessage.includes('verify your phone')) {
-        setError(locale === 'ka' ? 'სესია ამოიწურა. გთხოვთ დაიწყოთ თავიდან.' : 'Session expired. Please start over.');
+        setError(t('forgotPassword.sessionExpiredPleaseStartOver'));
         setTimeout(() => {
           try {
             if (typeof window !== 'undefined') {
@@ -116,12 +116,12 @@ export default function ResetPasswordPage() {
 
           {/* Title */}
           <h2 className="text-[26px] font-bold text-center text-neutral-900 dark:text-white mb-2">
-            {locale === 'ka' ? 'პაროლი შეიცვალა!' : 'Password Reset!'}
+            {t('forgotPassword.passwordReset')}
           </h2>
 
           {/* Subtitle */}
           <p className="text-center text-neutral-500 dark:text-neutral-400 text-[15px] mb-8">
-            {locale === 'ka' ? 'თქვენი პაროლი წარმატებით შეიცვალა. ახლა შეგიძლიათ შეხვიდეთ ანგარიშზე.' : 'Your password has been successfully reset. You can now sign in with your new password.'}
+            {t('forgotPassword.yourPasswordHasBeenSuccessfully')}
           </p>
 
           {/* Sign In Button */}
@@ -133,7 +133,7 @@ export default function ResetPasswordPage() {
             size="lg"
             className="w-full"
           >
-            {locale === 'ka' ? 'შესვლა' : 'Sign In'}
+            {t('forgotPassword.signIn')}
           </Button>
         </Card>
       </div>
@@ -157,12 +157,12 @@ export default function ResetPasswordPage() {
 
         {/* Title */}
         <h2 className="text-[26px] font-bold text-center text-neutral-900 dark:text-white mb-2">
-          {locale === 'ka' ? 'ახალი პაროლი' : 'New Password'}
+          {t('forgotPassword.newPassword')}
         </h2>
 
         {/* Subtitle */}
         <p className="text-center text-neutral-500 dark:text-neutral-400 text-[15px] mb-8">
-          {locale === 'ka' ? 'შეიყვანეთ ახალი პაროლი თქვენი ანგარიშისთვის.' : 'Enter a new password for your account.'}
+          {t('forgotPassword.enterANewPasswordFor')}
         </p>
 
         {/* Error Message */}
@@ -180,7 +180,7 @@ export default function ResetPasswordPage() {
               label={locale === 'ka' ? 'ახალი პაროლი' : 'New Password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder={locale === 'ka' ? 'შეიყვანეთ ახალი პაროლი' : 'Enter new password'}
+              placeholder={t('forgotPassword.enterNewPassword')}
               size="lg"
               autoComplete="new-password"
               autoFocus
@@ -208,21 +208,21 @@ export default function ResetPasswordPage() {
           {/* Confirm Password */}
           <div>
             <PasswordInput
-              label={locale === 'ka' ? 'პაროლის დადასტურება' : 'Confirm Password'}
+              label={t('forgotPassword.confirmPassword')}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder={locale === 'ka' ? 'გაიმეორეთ პაროლი' : 'Confirm new password'}
+              placeholder={t('forgotPassword.confirmNewPassword')}
               size="lg"
               autoComplete="new-password"
               variant={confirmPassword && password !== confirmPassword ? 'error' : 'default'}
             />
             {confirmPassword && password !== confirmPassword && (
-              <p className="mt-2 text-xs text-red-500">{locale === 'ka' ? 'პაროლები არ ემთხვევა' : 'Passwords do not match'}</p>
+              <p className="mt-2 text-xs text-red-500">{t('forgotPassword.passwordsDoNotMatch')}</p>
             )}
             {confirmPassword && password === confirmPassword && password.length > 0 && (
               <p className="mt-2 text-xs text-green-500 flex items-center gap-1">
                 <Check className="w-4 h-4" />
-                {locale === 'ka' ? 'პაროლები ემთხვევა' : 'Passwords match'}
+                {t('forgotPassword.passwordsMatch')}
               </p>
             )}
           </div>
@@ -235,7 +235,7 @@ export default function ResetPasswordPage() {
             size="lg"
             className="w-full"
           >
-            {locale === 'ka' ? 'პაროლის შეცვლა' : 'Reset Password'}
+            {t('forgotPassword.resetPassword')}
           </Button>
         </form>
       </Card>

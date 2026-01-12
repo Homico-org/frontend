@@ -13,6 +13,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { useLanguage } from "@/contexts/LanguageContext";
 interface MediaItem {
   url: string;
   type: "image" | "video";
@@ -42,6 +43,8 @@ export default function JobDetailHero({
   categoryIllustration,
 }: JobDetailHeroProps) {
   const [activeIndex, setActiveIndex] = useState(0);
+
+  const { t } = useLanguage();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -147,7 +150,7 @@ export default function JobDetailHero({
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span className="font-medium text-sm">
-            {locale === "ka" ? "უკან" : "Back"}
+            {t('common.back')}
           </span>
         </Link>
       </div>
@@ -162,7 +165,7 @@ export default function JobDetailHero({
             className="rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white hover:bg-white/25 hover:text-white"
             leftIcon={<Maximize2 className="w-4 h-4" />}
           >
-            {media.length} {locale === "ka" ? "ფოტო" : "photos"}
+            {media.length} {t('heroes.photos')}
           </Button>
         </div>
       )}
@@ -215,7 +218,7 @@ export default function JobDetailHero({
             <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 backdrop-blur-md border border-emerald-500/30 shadow-lg">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-emerald-300 text-xs font-semibold uppercase tracking-wider">
-                {locale === "ka" ? "აქტიური" : "Active"}
+                {t('heroes.active')}
               </span>
             </span>
           )}
@@ -232,7 +235,7 @@ export default function JobDetailHero({
                 className="text-xs font-semibold uppercase tracking-wider"
                 style={{ color: ACCENT_LIGHT }}
               >
-                {locale === "ka" ? "დაქირავებული" : "Hired"}
+                {t('heroes.hired')}
               </span>
             </span>
           )}

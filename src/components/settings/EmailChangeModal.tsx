@@ -9,6 +9,7 @@ import { validateEmail } from '@/utils/validationUtils';
 import { Check, CheckCircle2, ChevronRight, Mail, Send, X } from 'lucide-react';
 import { useState } from 'react';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 interface EmailChangeModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -25,6 +26,8 @@ export default function EmailChangeModal({
   onSuccess,
 }: EmailChangeModalProps) {
   const [step, setStep] = useState<'email' | 'otp' | 'success'>('email');
+
+  const { t } = useLanguage();
   const [newEmail, setNewEmail] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [error, setError] = useState('');
@@ -33,7 +36,7 @@ export default function EmailChangeModal({
 
   const handleSendOtp = async () => {
     if (!validateEmail(newEmail)) {
-      setError(locale === 'ka' ? 'არასწორი ელ-ფოსტის ფორმატი' : 'Invalid email format');
+      setError(t('settings.invalidEmailFormat'));
       return;
     }
 
@@ -56,7 +59,7 @@ export default function EmailChangeModal({
 
       if (!addRes.ok) {
         const data = await addRes.json();
-        setError(data.message || (locale === 'ka' ? 'ელ-ფოსტის დამატება ვერ მოხერხდა' : 'Failed to add email'));
+        setError(data.message || (t('settings.failedToAddEmail')));
         return;
       }
 
@@ -73,10 +76,10 @@ export default function EmailChangeModal({
         setStep('otp');
       } else {
         const data = await otpRes.json();
-        setError(data.message || (locale === 'ka' ? 'კოდის გაგზავნა ვერ მოხერხდა' : 'Failed to send code'));
+        setError(data.message || (t('settings.failedToSendCode')));
       }
     } catch {
-      setError(locale === 'ka' ? 'კავშირის შეცდომა' : 'Connection error');
+      setError(t('settings.connectionError'));
     } finally {
       setIsLoading(false);
     }
@@ -103,7 +106,7 @@ export default function EmailChangeModal({
 
       if (!verifyRes.ok) {
         const data = await verifyRes.json();
-        setError(data.message || (locale === 'ka' ? 'არასწორი კოდი' : 'Invalid code'));
+        setError(data.message || (t('settings.invalidCode')));
         return;
       }
 
@@ -124,7 +127,7 @@ export default function EmailChangeModal({
         }, 2000);
       } else {
         const data = await confirmRes.json();
-        setError(data.message || (locale === 'ka' ? 'ელ-ფოსტის დადასტურება ვერ მოხერხდა' : 'Failed to confirm email'));
+        setError(data.message || (t('settings.failedToConfirmEmail')));
       }
     } catch {
       setError(locale === 'ka' ? 'კავშირის შეცდომა' : 'Connection error');
@@ -183,12 +186,12 @@ export default function EmailChangeModal({
               <div>
                 <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                   {step === 'success'
-                    ? (locale === 'ka' ? 'წარმატებით შეიცვალა!' : 'Successfully Updated!')
+                    ? (t('settings.successfullyUpdated'))
                     : step === 'otp'
-                      ? (locale === 'ka' ? 'დაადასტურე ელ-ფოსტა' : 'Verify Email')
+                      ? (t('settings.verifyEmail'))
                       : currentEmail
-                        ? (locale === 'ka' ? 'ელ-ფოსტის შეცვლა' : 'Change Email')
-                        : (locale === 'ka' ? 'ელ-ფოსტის დამატება' : 'Add Email')}
+                        ? (t('settings.changeEmail'))
+                        : (t('settings.addEmail'))}
                 </h3>
                 {step === 'otp' && (
                   <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
@@ -213,9 +216,7 @@ export default function EmailChangeModal({
                 <CheckCircle2 className="w-8 h-8 text-green-500" />
               </div>
               <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                {locale === 'ka'
-                  ? 'თქვენი ელ-ფოსტა წარმატებით განახლდა'
-                  : 'Your email has been updated successfully'}
+                {t('settings.yourEmailHasBeenUpdated')}
               </p>
             </div>
           ) : step === 'otp' ? (
@@ -228,7 +229,7 @@ export default function EmailChangeModal({
 
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-                  {locale === 'ka' ? '4-ნიშნა კოდი' : '4-digit code'}
+                  {t('settings.4digitCode')}
                 </label>
                 <OTPInput
                   length={4}
@@ -246,7 +247,7 @@ export default function EmailChangeModal({
                   disabled={isSendingOtp}
                   leftIcon={isSendingOtp ? <LoadingSpinner size="sm" color="#E07B4F" /> : <Send className="w-4 h-4" />}
                 >
-                  {locale === 'ka' ? 'ხელახლა გაგზავნა' : 'Resend code'}
+                  {t('settings.resendCode')}
                 </Button>
                 <Button
                   variant="ghost"
@@ -256,7 +257,7 @@ export default function EmailChangeModal({
                     setOtpCode('');
                   }}
                 >
-                  {locale === 'ka' ? 'ელ-ფოსტის შეცვლა' : 'Change email'}
+                  {t('settings.changeEmail')}
                 </Button>
               </div>
 
@@ -267,19 +268,15 @@ export default function EmailChangeModal({
                 className="w-full"
                 leftIcon={<Check className="w-4 h-4" />}
               >
-                {locale === 'ka' ? 'დადასტურება' : 'Verify'}
+                {t('settings.verify')}
               </Button>
             </div>
           ) : (
             <div className="space-y-4">
               <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                 {currentEmail
-                  ? (locale === 'ka'
-                    ? 'შეიყვანე ახალი ელ-ფოსტა. ვერიფიკაციის კოდი გაიგზავნება ახალ მისამართზე.'
-                    : 'Enter your new email. A verification code will be sent to the new address.')
-                  : (locale === 'ka'
-                    ? 'დაამატე ელ-ფოსტა რომ მიიღო შეტყობინებები ელ-ფოსტით'
-                    : 'Add your email to receive notifications via email')}
+                  ? (t('settings.enterYourNewEmailA'))
+                  : (t('settings.addYourEmailToReceive'))}
               </p>
 
               {currentEmail && (
@@ -287,7 +284,7 @@ export default function EmailChangeModal({
                   <Mail className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--color-text-tertiary)' }} />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                      {locale === 'ka' ? 'მიმდინარე ელ-ფოსტა' : 'Current email'}
+                      {t('settings.currentEmail')}
                     </p>
                     <p className="text-sm truncate" style={{ color: 'var(--color-text-primary)' }}>
                       {currentEmail}
@@ -306,7 +303,7 @@ export default function EmailChangeModal({
                 type="email"
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
-                placeholder={locale === 'ka' ? 'შეიყვანე ელ-ფოსტა' : 'Enter your email'}
+                placeholder={t('settings.enterYourEmail')}
                 autoFocus
               />
 
@@ -317,7 +314,7 @@ export default function EmailChangeModal({
                 className="w-full"
                 rightIcon={<ChevronRight className="w-4 h-4" />}
               >
-                {locale === 'ka' ? 'გაგრძელება' : 'Continue'}
+                {t('common.continue')}
               </Button>
             </div>
           )}

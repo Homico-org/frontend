@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function JobsPage() {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const { user, isLoading: isAuthLoading } = useAuth();
   const { trackEvent } = useAnalytics();
   const router = useRouter();
@@ -253,7 +253,7 @@ export default function JobsPage() {
               <div className="flex items-center gap-3">
                 <LoadingSpinner size="md" variant="border" color={ACCENT_COLOR} />
                 <span className="text-sm text-neutral-500">
-                  {locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
+                  {t('common.loading')}
                 </span>
               </div>
             )}

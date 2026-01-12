@@ -155,7 +155,7 @@ export default function BecomeProPage() {
     updateUser,
   } = useAuth();
   const { openLoginModal } = useAuthModal();
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const { categories } = useCategories();
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -304,9 +304,7 @@ export default function BecomeProPage() {
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         alert(
-          locale === "ka"
-            ? "სურათი უნდა იყოს 5MB-ზე ნაკლები"
-            : "Image must be less than 5MB"
+          t('becomePro.imageMustBeLessThan')
         );
         return;
       }
@@ -494,19 +492,15 @@ export default function BecomeProPage() {
             </div>
 
             <h2 className="text-3xl md:text-4xl font-bold text-[var(--color-text-primary)] tracking-tight mb-3">
-              {locale === "ka" ? "გილოცავთ!" : "Congratulations!"}
+              {t('becomePro.congratulations')}
             </h2>
 
             <p className="text-lg text-[var(--color-text-secondary)] mb-2">
-              {locale === "ka"
-                ? "შენ ახლა პროფესიონალი ხარ"
-                : "You are now a professional"}
+              {t('becomePro.youAreNowAProfessional')}
             </p>
 
             <p className="text-sm text-[var(--color-text-tertiary)] mb-10 max-w-xs mx-auto">
-              {locale === "ka"
-                ? "დაიწყე სამუშაოების მიღება და გაზარდე შენი კლიენტების ბაზა"
-                : "Start receiving jobs and grow your client base"}
+              {t('becomePro.startReceivingJobsAndGrow')}
             </p>
 
             <div className="space-y-3">
@@ -518,14 +512,14 @@ export default function BecomeProPage() {
                   style={{ backgroundColor: TERRACOTTA.primary }}
                 >
                   <span>
-                    {locale === "ka" ? "სამუშაოების ნახვა" : "Browse Jobs"}
+                    {t('becomePro.browseJobs')}
                   </span>
                   <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
               <Link href="/pro/profile-setup">
                 <Button variant="secondary" size="xl" className="w-full">
-                  {locale === "ka" ? "პროფილის დასრულება" : "Complete Profile"}
+                  {t('becomePro.completeProfile')}
                 </Button>
               </Link>
             </div>
@@ -576,7 +570,7 @@ export default function BecomeProPage() {
                     className="text-xs font-semibold uppercase tracking-wider"
                     style={{ color: TERRACOTTA.primary }}
                   >
-                    {locale === "ka" ? "უფასო რეგისტრაცია" : "Free to join"}
+                    {t('becomePro.freeToJoin')}
                   </span>
                 </div>
 
@@ -593,16 +587,14 @@ export default function BecomeProPage() {
                 </h1>
 
                 <p className="become-pro-hero-subtitle">
-                  {locale === "ka"
-                    ? "შემოუერთდი საქართველოს წამყვან პლატფორმას და მიიღე მეტი სამუშაო"
-                    : "Join Georgia's leading platform and get more work opportunities"}
+                  {t('becomePro.joinGeorgiasLeadingPlatformAnd')}
                 </p>
               </section>
 
               {/* Steps Preview */}
               <section className="bg-[var(--color-bg-elevated)] rounded-2xl p-6 border border-[var(--color-border-subtle)] mb-8">
                 <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-4">
-                  {locale === "ka" ? "რა გელოდება?" : "What to expect?"}
+                  {t('becomePro.whatToExpect')}
                 </h3>
                 <div className="space-y-3">
                   {STEPS.map((step, i) => (
@@ -640,7 +632,7 @@ export default function BecomeProPage() {
               className="w-full group"
               style={{ backgroundColor: TERRACOTTA.primary }}
             >
-              <span>{locale === "ka" ? "დაწყება" : "Get Started"}</span>
+              <span>{t('becomePro.getStarted')}</span>
               <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
             </Button>
           </div>
@@ -674,7 +666,7 @@ export default function BecomeProPage() {
                 </button>
                 <div className="flex-1">
                   <p className="text-xs text-[var(--color-text-tertiary)] uppercase tracking-wider">
-                    {locale === "ka" ? "ნაბიჯი" : "Step"}{" "}
+                    {t('becomePro.step')}{" "}
                     {getCurrentStepIndex() + 1} / {STEPS.length}
                   </p>
                   <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
@@ -756,17 +748,13 @@ export default function BecomeProPage() {
                           style={{ color: TERRACOTTA.primary }}
                         />
                         <h3 className="font-semibold text-[var(--color-text-primary)]">
-                          {locale === "ka"
-                            ? "საკონტაქტო ინფორმაცია"
-                            : "Contact Information"}
+                          {t('becomePro.contactInformation')}
                         </h3>
                       </div>
                     </div>
 
                     <p className="text-sm text-[var(--color-text-secondary)] mb-6">
-                      {locale === "ka"
-                        ? "დაამატე სოციალური ქსელები კლიენტებთან კომუნიკაციისთვის"
-                        : "Add social links for client communication"}
+                      {t('becomePro.addSocialLinksForClient')}
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -869,7 +857,7 @@ export default function BecomeProPage() {
                       {/* Website */}
                       <div>
                         <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
-                          {locale === "ka" ? "ვებსაიტი" : "Website"}
+                          {t('common.website')}
                         </label>
                         <Input
                           type="url"
@@ -903,9 +891,7 @@ export default function BecomeProPage() {
                   {portfolioProjects.length === 0 && (
                     <div className="bg-[var(--color-bg-tertiary)] rounded-xl p-4 text-center">
                       <p className="text-sm text-[var(--color-text-secondary)]">
-                        {locale === "ka"
-                          ? "პროექტების დამატება არ არის სავალდებულო. შეგიძლია მოგვიანებით დაამატო."
-                          : "Adding projects is optional. You can add them later."}
+                        {t('becomePro.addingProjectsIsOptionalYou')}
                       </p>
                     </div>
                   )}
@@ -918,9 +904,7 @@ export default function BecomeProPage() {
                   {/* Summary Card */}
                   <div className="bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 border border-[var(--color-border-subtle)]">
                     <h3 className="font-semibold text-[var(--color-text-primary)] mb-6">
-                      {locale === "ka"
-                        ? "პროფილის მიმოხილვა"
-                        : "Profile Summary"}
+                      {t('becomePro.profileSummary')}
                     </h3>
 
                     {/* Profile Preview */}
@@ -942,9 +926,7 @@ export default function BecomeProPage() {
                         {yearsExperience && (
                           <p className="text-sm text-[var(--color-text-secondary)]">
                             {yearsExperience}{" "}
-                            {locale === "ka"
-                              ? "წლის გამოცდილება"
-                              : "years experience"}
+                            {t('becomePro.yearsExperience')}
                           </p>
                         )}
                       </div>
@@ -953,7 +935,7 @@ export default function BecomeProPage() {
                     {/* Categories */}
                     <div className="mb-6">
                       <p className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2">
-                        {locale === "ka" ? "კატეგორიები" : "Categories"}
+                        {t('common.categories')}
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {selectedCategories.map((catKey) => {
@@ -979,7 +961,7 @@ export default function BecomeProPage() {
                     {selectedSubcategories.length > 0 && (
                       <div className="mb-6">
                         <p className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2">
-                          {locale === "ka" ? "უნარები" : "Skills"}
+                          {t('common.skills')}
                         </p>
                         <div className="flex flex-wrap gap-2">
                           {selectedSubcategories.map((subKey) => {
@@ -1013,7 +995,7 @@ export default function BecomeProPage() {
                     {/* Bio */}
                     <div className="mb-6">
                       <p className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2">
-                        {locale === "ka" ? "შენს შესახებ" : "About"}
+                        {t('becomePro.about')}
                       </p>
                       <p className="text-sm text-[var(--color-text-secondary)]">
                         {bio}
@@ -1023,7 +1005,7 @@ export default function BecomeProPage() {
                     {/* Contact */}
                     <div>
                       <p className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2">
-                        {locale === "ka" ? "კონტაქტი" : "Contact"}
+                        {t('becomePro.contact')}
                       </p>
                       <div className="flex flex-wrap gap-3">
                         {whatsapp && (
@@ -1075,7 +1057,7 @@ export default function BecomeProPage() {
                     {portfolioProjects.length > 0 && (
                       <div className="mt-6 pt-6 border-t border-[var(--color-border-subtle)]">
                         <p className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-3">
-                          {locale === "ka" ? "პორტფოლიო" : "Portfolio"}
+                          {t('becomePro.portfolio')}
                         </p>
                         <div className="grid grid-cols-3 gap-2">
                           {portfolioProjects.slice(0, 6).map((project) => {
@@ -1111,7 +1093,7 @@ export default function BecomeProPage() {
                         {portfolioProjects.length > 6 && (
                           <p className="text-xs text-[var(--color-text-muted)] mt-2 text-center">
                             +{portfolioProjects.length - 6}{" "}
-                            {locale === "ka" ? "სხვა პროექტი" : "more projects"}
+                            {t('becomePro.moreProjects')}
                           </p>
                         )}
                       </div>
@@ -1157,7 +1139,7 @@ export default function BecomeProPage() {
                 style={{ backgroundColor: TERRACOTTA.primary }}
               >
                 <span>
-                  {locale === "ka" ? "გახდი სპეციალისტი" : "Become a Pro"}
+                  {t('becomePro.becomeAPro')}
                 </span>
                 {!isSubmitting && <Sparkles className="w-5 h-5" />}
               </Button>
@@ -1174,7 +1156,7 @@ export default function BecomeProPage() {
                     : undefined,
                 }}
               >
-                <span>{locale === "ka" ? "გაგრძელება" : "Continue"}</span>
+                <span>{t('common.continue')}</span>
                 <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </Button>
             )}

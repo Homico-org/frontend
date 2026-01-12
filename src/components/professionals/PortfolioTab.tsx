@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Edit3, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { useLanguage } from "@/contexts/LanguageContext";
 import PortfolioCard, { EmptyPortfolio, PortfolioProject } from './PortfolioCard';
 
 export interface PortfolioTabProps {
@@ -11,7 +12,7 @@ export interface PortfolioTabProps {
   /** Handler when a project is clicked */
   onProjectClick?: (project: { images: string[]; videos?: string[]; title: string; currentIndex: number }) => void;
   /** Locale for translations */
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   /** Is current user viewing their own profile */
   isOwner?: boolean;
   /** Handler to add new project */
@@ -34,6 +35,8 @@ export default function PortfolioTab({
   // Track which image index each card is previewing
   const [activeIndexes, setActiveIndexes] = useState<Record<string, number>>({});
 
+  const { t } = useLanguage();
+
   if (projects.length === 0) {
     return (
       <div className="animate-in fade-in duration-300">
@@ -44,15 +47,13 @@ export default function PortfolioTab({
                 <Plus className="w-8 h-8 text-amber-600 dark:text-amber-400" />
               </div>
               <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
-                {locale === 'ka' ? 'დაამატეთ თქვენი პირველი პროექტი' : 'Add Your First Project'}
+                {t('professional.addYourFirstProject')}
               </h3>
               <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4 max-w-sm mx-auto">
-                {locale === 'ka' 
-                  ? 'აჩვენეთ თქვენი საუკეთესო სამუშაოები კლიენტებს' 
-                  : 'Showcase your best work to potential clients'}
+                {t('professional.showcaseYourBestWorkTo')}
               </p>
               <Button onClick={onAddProject} leftIcon={<Plus className="w-4 h-4" />}>
-                {locale === 'ka' ? 'პროექტის დამატება' : 'Add Project'}
+                {t('professional.addProject')}
               </Button>
             </div>
           </div>
@@ -104,7 +105,7 @@ export default function PortfolioTab({
                     onEditProject?.(project);
                   }}
                   className="w-8 h-8 rounded-full bg-white/95 dark:bg-neutral-800/95 shadow-lg border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-600 dark:text-neutral-300 hover:text-[#C4735B] hover:border-[#C4735B] hover:scale-110 transition-all"
-                  title={locale === 'ka' ? 'რედაქტირება' : 'Edit'}
+                  title={t('common.edit')}
                 >
                   <Edit3 className="w-3.5 h-3.5" />
                 </button>
@@ -115,7 +116,7 @@ export default function PortfolioTab({
                     onDeleteProject?.(project.id);
                   }}
                   className="w-8 h-8 rounded-full bg-white/95 dark:bg-neutral-800/95 shadow-lg border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-600 dark:text-neutral-300 hover:text-red-500 hover:border-red-500 hover:scale-110 transition-all"
-                  title={locale === 'ka' ? 'წაშლა' : 'Delete'}
+                  title={t('common.delete')}
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>

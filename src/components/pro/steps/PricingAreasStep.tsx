@@ -33,24 +33,25 @@ function PriceTypeSelector({
   onChange: (type: "hourly" | "fixed" | "project") => void;
   locale: string;
 }) {
+  const { t } = useLanguage();
   const types = [
     {
       id: "fixed" as const,
-      label: locale === "ka" ? "ფიქსირებული" : "Fixed",
+      label: t('common.fixed'),
       icon: Banknote,
-      description: locale === "ka" ? "ერთჯერადი ფასი" : "One-time price",
+      description: t('common.onetimePrice'),
     },
     {
       id: "project" as const,
-      label: locale === "ka" ? "პროექტით" : "Per Project",
+      label: t('common.perProject'),
       icon: FolderKanban,
-      description: locale === "ka" ? "ფასის დიაპაზონი" : "Price range",
+      description: t('common.priceRange'),
     },
     {
       id: "hourly" as const,
-      label: locale === "ka" ? "შეთანხმებით" : "By Agreement",
+      label: t('common.byAgreement'),
       icon: Handshake,
-      description: locale === "ka" ? "მოლაპარაკებით" : "Negotiable",
+      description: t('common.negotiable'),
     },
   ];
 
@@ -106,7 +107,7 @@ export default function PricingAreasStep({
   locationData,
   onFormChange,
 }: PricingAreasStepProps) {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
 
   const toggleServiceArea = (area: string) => {
     const newAreas = formData.serviceAreas.includes(area)
@@ -136,12 +137,10 @@ export default function PricingAreasStep({
           </div>
           <div>
             <h3 className="font-bold text-neutral-900 text-sm">
-              {locale === "ka" ? "ფასები" : "Pricing"}
+              {t('common.pricing')}
             </h3>
             <p className="text-xs text-neutral-500">
-              {locale === "ka"
-                ? "მომსახურების ღირებულება"
-                : "Service cost range"}
+              {t('common.serviceCostRange')}
             </p>
           </div>
         </div>
@@ -162,14 +161,10 @@ export default function PricingAreasStep({
                 <Handshake className="w-5 h-5 text-[#C4735B]" strokeWidth={1.5} />
               </div>
               <p className="text-sm text-neutral-600 font-medium">
-                {locale === "ka"
-                  ? "ფასი განისაზღვრება კლიენტთან შეთანხმებით"
-                  : "Price will be determined by agreement with client"}
+                {t('common.priceWillBeDeterminedBy')}
               </p>
               <p className="text-xs text-neutral-400 mt-1">
-                {locale === "ka"
-                  ? "მოქნილი ფასწარმოქმნა"
-                  : "Flexible pricing"}
+                {t('common.flexiblePricing')}
               </p>
             </div>
           ) : formData.priceType === "fixed" ? (
@@ -190,7 +185,7 @@ export default function PricingAreasStep({
                     },
                   });
                 }}
-                placeholder={locale === "ka" ? "ფასი" : "Price"}
+                placeholder={t('common.price')}
                 variant="filled"
                 inputSize="default"
                 leftIcon={<span className="text-sm">₾</span>}
@@ -215,7 +210,7 @@ export default function PricingAreasStep({
                       },
                     });
                   }}
-                  placeholder={locale === "ka" ? "მინ" : "Min"}
+                  placeholder={t('common.min')}
                   variant="filled"
                   inputSize="default"
                   leftIcon={<span className="text-sm">₾</span>}
@@ -238,7 +233,7 @@ export default function PricingAreasStep({
                       },
                     });
                   }}
-                  placeholder={locale === "ka" ? "მაქს" : "Max"}
+                  placeholder={t('common.max')}
                   variant="filled"
                   inputSize="default"
                   leftIcon={<span className="text-sm">₾</span>}
@@ -261,10 +256,10 @@ export default function PricingAreasStep({
           </div>
           <div>
             <h3 className="font-bold text-neutral-900 text-sm">
-              {locale === "ka" ? "მომსახურების ზონები" : "Service Areas"}
+              {t('common.serviceAreas')}
             </h3>
             <p className="text-xs text-neutral-500">
-              {locale === "ka" ? "სად მუშაობ" : "Where you work"}
+              {t('common.whereYouWork')}
             </p>
           </div>
         </div>
@@ -299,12 +294,12 @@ export default function PricingAreasStep({
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className={`text-sm font-semibold transition-colors duration-300 ${formData.nationwide ? "text-[#C4735B]" : "text-neutral-700 group-hover:text-[#C4735B]"}`}>
-                    {locale === "ka" ? "მთელი ქვეყნის მასშტაბით" : "Nationwide"}
+                    {t('common.nationwide')}
                   </span>
                   <span className="text-lg">{locationData.emoji}</span>
                 </div>
                 <p className="text-xs text-neutral-500 mt-0.5">
-                  {locale === "ka" ? "მომსახურება ყველა რეგიონში" : "Service in all regions"}
+                  {t('common.serviceInAllRegions')}
                 </p>
               </div>
               
@@ -329,7 +324,7 @@ export default function PricingAreasStep({
           <div className="flex items-center gap-3 mb-4">
             <div className="flex-1 h-px bg-neutral-200" />
             <span className="text-[10px] text-neutral-400 px-2">
-              {locale === "ka" ? "ან აირჩიე ქალაქები" : "Or select cities"}
+              {t('common.orSelectCities')}
             </span>
             <div className="flex-1 h-px bg-neutral-200" />
           </div>
@@ -347,7 +342,7 @@ export default function PricingAreasStep({
                     </div>
                     {regionName}
                     <span className="text-[10px] text-neutral-400 font-normal ml-auto">
-                      {cities.length} {locale === "ka" ? "ქალაქი" : "cities"}
+                      {cities.length} {t('common.cities')}
                     </span>
                   </h4>
                   <div className="flex flex-wrap gap-2">
@@ -389,14 +384,12 @@ export default function PricingAreasStep({
                   <Check className="w-4 h-4 text-[#C4735B]" strokeWidth={2} />
                 </div>
                 <span className="text-xs text-neutral-600 font-medium">
-                  {locale === "ka" ? "არჩეული ზონები" : "Selected areas"}
+                  {t('common.selectedAreas')}
                 </span>
               </div>
               <span className="text-sm font-bold text-[#C4735B] px-3 py-1 rounded-full bg-[#C4735B]/10">
                 {formData.nationwide
-                  ? locale === "ka"
-                    ? "🇬🇪 მთელი ქვეყანა"
-                    : "🇬🇪 Nationwide"
+                  ? t('common.nationwide')
                   : `${formData.serviceAreas.length} ${locale === "ka" ? "ქალაქი" : "cities"}`}
               </span>
             </div>

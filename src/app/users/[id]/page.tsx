@@ -111,12 +111,12 @@ export default function UserProfilePage() {
       if (response.ok) {
         setShowContactModal(false);
         setMessage('');
-        toast.success(locale === 'ka' ? 'შეტყობინება გაგზავნილია!' : 'Message sent!');
+        toast.success(t('common.messageSent'));
       } else {
         throw new Error('Failed to send message');
       }
     } catch (err) {
-      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error');
+      toast.error(t('common.error'));
     } finally {
       setIsSending(false);
     }
@@ -132,24 +132,24 @@ export default function UserProfilePage() {
       } catch (err) {}
     } else {
       navigator.clipboard.writeText(window.location.href);
-      toast.success(locale === 'ka' ? 'ბმული დაკოპირებულია!' : 'Link copied!');
+      toast.success(t('common.linkCopied'));
     }
   };
 
   const getMemberSince = () => {
     if (profile?.createdAt) {
       const date = new Date(profile.createdAt);
-      return date.toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', { month: 'long', year: 'numeric' });
+      return date.toLocaleDateString(t('users.enus3'), { month: 'long', year: 'numeric' });
     }
     return '';
   };
 
   const getRoleLabel = () => {
     if (profile?.role === 'client') {
-      return locale === 'ka' ? 'მაძიებელი' : 'Client';
+      return t('users.client');
     }
     if (profile?.role === 'pro') {
-      return locale === 'ka' ? 'პროფესიონალი' : 'Professional';
+      return t('users.professional');
     }
     return profile?.role || '';
   };
@@ -181,13 +181,13 @@ export default function UserProfilePage() {
               </svg>
             </div>
             <h2 className="text-xl font-semibold text-[var(--color-text-primary)] mb-2">
-              {locale === 'ka' ? 'მომხმარებელი ვერ მოიძებნა' : 'User not found'}
+              {t('users.userNotFound')}
             </h2>
             <p className="text-[var(--color-text-tertiary)] mb-6">
               {locale === 'ka' ? 'სამწუხაროდ, ეს გვერდი არ არსებობს' : 'Sorry, this page doesn\'t exist'}
             </p>
             <button onClick={() => router.push('/browse')} className="px-6 py-3 text-sm font-semibold rounded-xl bg-[var(--color-accent)] text-white hover:opacity-90 transition-opacity">
-              {locale === 'ka' ? 'დაბრუნება' : 'Go Back'}
+              {t('common.goBack')}
             </button>
           </div>
         </div>
@@ -337,7 +337,7 @@ export default function UserProfilePage() {
                 <div className="stat-item">
                   <span className="font-display text-xl font-bold text-[var(--color-text-primary)]">{jobs.length}</span>
                   <span className="text-[11px] text-[var(--color-text-tertiary)] uppercase tracking-wider">
-                    {locale === 'ka' ? 'განცხადება' : 'Jobs'}
+                    {t('common.jobs')}
                   </span>
                 </div>
                 <div className="w-px h-8 bg-[var(--color-border-subtle)]" />
@@ -346,7 +346,7 @@ export default function UserProfilePage() {
                     {getMemberSince()}
                   </span>
                   <span className="text-[11px] text-[var(--color-text-tertiary)] uppercase tracking-wider">
-                    {locale === 'ka' ? 'წევრი' : 'Member'}
+                    {t('common.member')}
                   </span>
                 </div>
               </div>
@@ -360,7 +360,7 @@ export default function UserProfilePage() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
                   </svg>
-                  {locale === 'ka' ? 'მიწერა' : 'Message'}
+                  {t('common.message')}
                 </button>
 
                 <button
@@ -370,7 +370,7 @@ export default function UserProfilePage() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
                   </svg>
-                  {locale === 'ka' ? 'გაზიარება' : 'Share'}
+                  {t('common.share')}
                 </button>
               </div>
             </div>
@@ -385,7 +385,7 @@ export default function UserProfilePage() {
                     <rect x="2" y="7" width="20" height="14" rx="2" />
                     <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
                   </svg>
-                  {locale === 'ka' ? 'აქტიური განცხადებები' : 'Active Jobs'}
+                  {t('users.activeJobs')}
                 </h2>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -414,7 +414,7 @@ export default function UserProfilePage() {
                   </svg>
                 </div>
                 <p className="text-sm text-[var(--color-text-tertiary)]">
-                  {locale === 'ka' ? 'ამ მომხმარებელს ჯერ არ აქვს აქტიური განცხადებები' : 'No active job postings yet'}
+                  {t('users.noActiveJobPostingsYet')}
                 </p>
               </div>
             </div>
@@ -449,7 +449,7 @@ export default function UserProfilePage() {
               <div>
                 <h3 className="font-semibold text-[var(--color-text-primary)]">{profile.name}</h3>
                 <p className="text-sm text-[var(--color-text-tertiary)]">
-                  {locale === 'ka' ? 'შეტყობინების გაგზავნა' : 'Send a message'}
+                  {t('users.sendAMessage')}
                 </p>
               </div>
             </div>
@@ -457,7 +457,7 @@ export default function UserProfilePage() {
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder={locale === 'ka' ? 'დაწერეთ შეტყობინება...' : 'Write your message...'}
+              placeholder={t('users.writeYourMessage')}
               className="w-full h-32 px-4 py-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[var(--color-accent)] resize-none text-sm"
             />
 
@@ -473,7 +473,7 @@ export default function UserProfilePage() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
                   </svg>
-                  {locale === 'ka' ? 'გაგზავნა' : 'Send'}
+                  {t('common.send')}
                 </>
               )}
             </button>

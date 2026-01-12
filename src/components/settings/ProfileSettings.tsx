@@ -64,12 +64,12 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setMessage({ type: 'error', text: locale === 'ka' ? 'მხოლოდ სურათები არის დაშვებული' : 'Only image files are allowed' });
+      setMessage({ type: 'error', text: t('settings.onlyImageFilesAreAllowed') });
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      setMessage({ type: 'error', text: locale === 'ka' ? 'ფაილი ძალიან დიდია (მაქს. 10MB)' : 'File is too large (max 10MB)' });
+      setMessage({ type: 'error', text: t('settings.fileIsTooLargeMax') });
       return;
     }
 
@@ -106,9 +106,9 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
       const data = await response.json();
       setFormData(prev => ({ ...prev, avatar: data.url }));
       updateUser({ avatar: data.url });
-      setMessage({ type: 'success', text: locale === 'ka' ? 'სურათი აიტვირთა' : 'Image uploaded successfully' });
+      setMessage({ type: 'success', text: t('settings.imageUploadedSuccessfully') });
     } catch {
-      setMessage({ type: 'error', text: locale === 'ka' ? 'სურათის ატვირთვა ვერ მოხერხდა' : 'Failed to upload image' });
+      setMessage({ type: 'error', text: t('settings.failedToUploadImage') });
       setFormData(prev => ({ ...prev, avatar: user?.avatar || '' }));
       URL.revokeObjectURL(previewUrl);
     } finally {
@@ -177,7 +177,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
 
       <div className="space-y-6">
         <h2 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-white">
-          {t('settings.profile.title')}
+          {t('common.title')}
         </h2>
 
         {message && (
@@ -237,7 +237,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
                 className="mt-2 p-0 h-auto"
               >
                 {isUploadingAvatar
-                  ? (locale === 'ka' ? 'იტვირთება...' : 'Uploading...')
+                  ? (t('common.uploading'))
                   : t('settings.profile.uploadPhoto')}
               </Button>
             </div>
@@ -247,7 +247,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
         <div className="border-t border-neutral-200 dark:border-neutral-800 pt-5 sm:pt-6">
           <div className="grid gap-3 sm:gap-4">
             <FormGroup>
-              <Label locale={locale === 'ka' ? 'ka' : 'en'}>{t('settings.profile.fullName')}</Label>
+              <Label locale={locale}>{t('common.fullName')}</Label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
@@ -255,34 +255,34 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
             </FormGroup>
 
             <FormGroup>
-              <Label locale={locale === 'ka' ? 'ka' : 'en'}>{t('settings.profile.email')}</Label>
+              <Label locale={locale === 'ka' ? 'ka' : 'en'}>{t('common.email')}</Label>
               <div className="flex gap-2">
                 <div className="flex-1">
                   <Input
                     type="email"
                     value={formData.email}
                     disabled
-                    placeholder={locale === 'ka' ? 'ელ-ფოსტა არ არის დამატებული' : 'No email added'}
+                    placeholder={t('settings.noEmailAdded')}
                     rightIcon={formData.email ? (
                       <Badge variant="success" size="xs" icon={<Check className="w-3 h-3" />}>
-                        {locale === 'ka' ? 'დადასტურებული' : 'Verified'}
+                        {t('common.verified')}
                       </Badge>
                     ) : undefined}
                   />
                 </div>
                 <Button variant="outline" onClick={onOpenEmailModal}>
                   {formData.email
-                    ? (locale === 'ka' ? 'შეცვლა' : 'Change')
-                    : (locale === 'ka' ? 'დამატება' : 'Add')}
+                    ? (t('settings.change'))
+                    : (t('common.add'))}
                 </Button>
               </div>
               <p className="mt-1 text-xs text-neutral-400">
-                {locale === 'ka' ? 'ელ-ფოსტის შეცვლა მოითხოვს ვერიფიკაციას' : 'Changing your email requires verification'}
+                {t('settings.changingYourEmailRequiresVerification')}
               </p>
             </FormGroup>
 
             <FormGroup>
-              <Label locale={locale === 'ka' ? 'ka' : 'en'}>{t('settings.profile.phone')}</Label>
+              <Label locale={locale === 'ka' ? 'ka' : 'en'}>{t('common.phone')}</Label>
               <div className="flex gap-2">
                 <div className="flex-1">
                   <Input
@@ -304,7 +304,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
                 </Button>
               </div>
               <p className="mt-1 text-xs text-neutral-400">
-                {locale === 'ka' ? 'ნომრის შეცვლა მოითხოვს ვერიფიკაციას' : 'Changing your number requires verification'}
+                {t('settings.changingYourNumberRequiresVerification')}
               </p>
             </FormGroup>
 
@@ -314,7 +314,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
                 value={formData.city}
                 onChange={(value: string) => setFormData(prev => ({ ...prev, city: value }))}
                 options={[
-                  { value: '', label: locale === 'ka' ? 'არ მითითება' : 'Not specified' },
+                  { value: '', label: t('settings.notSpecified') },
                   ...cityOptions,
                 ]}
                 placeholder={t('settings.profile.cityPlaceholder')}

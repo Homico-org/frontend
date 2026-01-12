@@ -65,7 +65,7 @@ interface RecentProposal {
 export default function CompanyDashboardPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { openLoginModal } = useAuthModal();
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const router = useRouter();
 
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -143,7 +143,7 @@ export default function CompanyDashboardPage() {
         <div className="flex flex-col items-center gap-4">
           <LoadingSpinner size="xl" variant="border" color={ACCENT} />
           <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
-            {locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
+            {t('common.loading')}
           </p>
         </div>
       </div>
@@ -162,10 +162,10 @@ export default function CompanyDashboardPage() {
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl lg:text-3xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                {locale === 'ka' ? 'კომპანიის პანელი' : 'Company Dashboard'}
+                {t('company.companyDashboard')}
               </h1>
               <p className="mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-                {locale === 'ka' ? 'მართეთ თქვენი კომპანია და გუნდი' : 'Manage your company and team'}
+                {t('company.manageYourCompanyAndTeam')}
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -179,7 +179,7 @@ export default function CompanyDashboardPage() {
                 }}
               >
                 <UserPlus className="w-4 h-4" />
-                <span className="hidden sm:inline">{locale === 'ka' ? 'მოწვევა' : 'Invite'}</span>
+                <span className="hidden sm:inline">{t('company.invite')}</span>
               </Link>
               <Link
                 href="/browse/jobs"
@@ -189,7 +189,7 @@ export default function CompanyDashboardPage() {
                 onMouseLeave={(e) => e.currentTarget.style.background = ACCENT}
               >
                 <Briefcase className="w-4 h-4" />
-                <span>{locale === 'ka' ? 'სამუშაოების ნახვა' : 'Browse Jobs'}</span>
+                <span>{t('company.browseJobs')}</span>
               </Link>
             </div>
           </div>
@@ -211,14 +211,14 @@ export default function CompanyDashboardPage() {
                 <Briefcase className="w-5 h-5" style={{ color: ACCENT }} />
               </div>
               <span className="text-xs font-medium px-2 py-1 rounded-full" style={{ background: `${ACCENT}15`, color: ACCENT }}>
-                {locale === 'ka' ? 'აქტიური' : 'Active'}
+                {t('common.active')}
               </span>
             </div>
             <div className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
               {stats?.activeJobs || 0}
             </div>
             <p className="text-sm mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-              {locale === 'ka' ? 'მიმდინარე სამუშაოები' : 'Active Jobs'}
+              {t('company.activeJobs')}
             </p>
           </div>
 
@@ -236,14 +236,14 @@ export default function CompanyDashboardPage() {
                 <Users className="w-5 h-5 text-blue-500" />
               </div>
               <Badge variant="info" size="xs">
-                {stats?.activeEmployees || 0} {locale === 'ka' ? 'აქტიური' : 'active'}
+                {stats?.activeEmployees || 0} {t('common.active')}
               </Badge>
             </div>
             <div className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
               {stats?.totalEmployees || 0}
             </div>
             <p className="text-sm mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-              {locale === 'ka' ? 'გუნდის წევრები' : 'Team Members'}
+              {t('company.teamMembers')}
             </p>
           </div>
 
@@ -262,7 +262,7 @@ export default function CompanyDashboardPage() {
               </div>
               {(stats?.pendingProposals || 0) > 0 && (
                 <Badge variant="warning" size="xs">
-                  {locale === 'ka' ? 'ახალი' : 'New'}
+                  {t('common.new')}
                 </Badge>
               )}
             </div>
@@ -270,7 +270,7 @@ export default function CompanyDashboardPage() {
               {stats?.pendingProposals || 0}
             </div>
             <p className="text-sm mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-              {locale === 'ka' ? 'მოლოდინში' : 'Pending Proposals'}
+              {t('company.pendingProposals')}
             </p>
           </div>
 
@@ -288,14 +288,14 @@ export default function CompanyDashboardPage() {
                 <Star className="w-5 h-5 text-emerald-500" />
               </div>
               <Badge variant="success" size="xs">
-                {stats?.reviewCount || 0} {locale === 'ka' ? 'შეფასება' : 'reviews'}
+                {stats?.reviewCount || 0} {t('common.reviews')}
               </Badge>
             </div>
             <div className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
               {stats?.avgRating?.toFixed(1) || '0.0'}
             </div>
             <p className="text-sm mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-              {locale === 'ka' ? 'საშუალო რეიტინგი' : 'Average Rating'}
+              {t('company.averageRating')}
             </p>
           </div>
         </div>
@@ -312,7 +312,7 @@ export default function CompanyDashboardPage() {
             }}
           >
             <h2 className="font-semibold mb-4" style={{ color: 'var(--color-text-primary)' }}>
-              {locale === 'ka' ? 'სწრაფი მოქმედებები' : 'Quick Actions'}
+              {t('company.quickActions')}
             </h2>
             <div className="space-y-2">
               <Link
@@ -325,7 +325,7 @@ export default function CompanyDashboardPage() {
                 </div>
                 <div className="flex-1">
                   <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                    {locale === 'ka' ? 'სამუშაოების ძიება' : 'Find Jobs'}
+                    {t('company.findJobs')}
                   </span>
                 </div>
                 <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--color-text-tertiary)' }} />
@@ -341,7 +341,7 @@ export default function CompanyDashboardPage() {
                 </div>
                 <div className="flex-1">
                   <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                    {locale === 'ka' ? 'თანამშრომლის მოწვევა' : 'Invite Employee'}
+                    {t('company.inviteEmployee')}
                   </span>
                 </div>
                 <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--color-text-tertiary)' }} />
@@ -357,7 +357,7 @@ export default function CompanyDashboardPage() {
                 </div>
                 <div className="flex-1">
                   <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                    {locale === 'ka' ? 'შეთავაზებები' : 'View Proposals'}
+                    {t('company.viewProposals')}
                   </span>
                 </div>
                 <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--color-text-tertiary)' }} />
@@ -373,7 +373,7 @@ export default function CompanyDashboardPage() {
                 </div>
                 <div className="flex-1">
                   <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                    {locale === 'ka' ? 'პარამეტრები' : 'Company Settings'}
+                    {t('company.companySettings')}
                   </span>
                 </div>
                 <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--color-text-tertiary)' }} />
@@ -392,14 +392,14 @@ export default function CompanyDashboardPage() {
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                {locale === 'ka' ? 'შესრულების მიმოხილვა' : 'Performance Overview'}
+                {t('company.performanceOverview')}
               </h2>
               <Link
                 href="/company/analytics"
                 className="text-sm font-medium flex items-center gap-1 transition-colors"
                 style={{ color: ACCENT }}
               >
-                {locale === 'ka' ? 'სრულად' : 'View All'}
+                {t('common.viewAll')}
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -410,7 +410,7 @@ export default function CompanyDashboardPage() {
                   {stats?.completedJobs || 0}
                 </div>
                 <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-                  {locale === 'ka' ? 'დასრულებული' : 'Completed'}
+                  {t('common.completed')}
                 </p>
               </div>
               <div className="text-center p-4 rounded-xl" style={{ background: 'var(--color-bg-secondary)' }}>
@@ -418,7 +418,7 @@ export default function CompanyDashboardPage() {
                   {stats?.acceptedProposals || 0}
                 </div>
                 <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-                  {locale === 'ka' ? 'მიღებული' : 'Won Bids'}
+                  {t('company.wonBids')}
                 </p>
               </div>
               <div className="text-center p-4 rounded-xl" style={{ background: 'var(--color-bg-secondary)' }}>
@@ -426,7 +426,7 @@ export default function CompanyDashboardPage() {
                   {stats?.totalRevenue ? `₾${(stats.totalRevenue / 1000).toFixed(1)}K` : '₾0'}
                 </div>
                 <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-                  {locale === 'ka' ? 'შემოსავალი' : 'Revenue'}
+                  {t('company.revenue')}
                 </p>
               </div>
               <div className="text-center p-4 rounded-xl" style={{ background: 'var(--color-bg-secondary)' }}>
@@ -434,7 +434,7 @@ export default function CompanyDashboardPage() {
                   {stats?.totalJobs ? Math.round((stats.completedJobs / stats.totalJobs) * 100) : 0}%
                 </div>
                 <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-                  {locale === 'ka' ? 'წარმატება' : 'Success Rate'}
+                  {t('company.successRate')}
                 </p>
               </div>
             </div>
@@ -454,14 +454,14 @@ export default function CompanyDashboardPage() {
           >
             <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: 'var(--color-border)' }}>
               <h2 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                {locale === 'ka' ? 'ბოლო სამუშაოები' : 'Recent Jobs'}
+                {t('company.recentJobs')}
               </h2>
               <Link
                 href="/company/jobs"
                 className="text-sm font-medium flex items-center gap-1"
                 style={{ color: ACCENT }}
               >
-                {locale === 'ka' ? 'ყველა' : 'View All'}
+                {t('common.viewAll')}
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -507,7 +507,7 @@ export default function CompanyDashboardPage() {
                 <div className="p-8 text-center">
                   <Briefcase className="w-10 h-10 mx-auto mb-3" style={{ color: 'var(--color-text-muted)' }} />
                   <p style={{ color: 'var(--color-text-tertiary)' }}>
-                    {locale === 'ka' ? 'სამუშაოები არ მოიძებნა' : 'No jobs yet'}
+                    {t('company.noJobsYet')}
                   </p>
                   <Link
                     href="/browse/jobs"
@@ -515,7 +515,7 @@ export default function CompanyDashboardPage() {
                     style={{ color: ACCENT }}
                   >
                     <Plus className="w-4 h-4" />
-                    {locale === 'ka' ? 'სამუშაოების ძიება' : 'Browse Jobs'}
+                    {t('company.browseJobs')}
                   </Link>
                 </div>
               )}
@@ -533,7 +533,7 @@ export default function CompanyDashboardPage() {
           >
             <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: 'var(--color-border)' }}>
               <h2 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                {locale === 'ka' ? 'ბოლო შეთავაზებები' : 'Recent Proposals'}
+                {t('company.recentProposals')}
               </h2>
               <Link
                 href="/company/proposals"
@@ -582,7 +582,7 @@ export default function CompanyDashboardPage() {
                 <div className="p-8 text-center">
                   <FileText className="w-10 h-10 mx-auto mb-3" style={{ color: 'var(--color-text-muted)' }} />
                   <p style={{ color: 'var(--color-text-tertiary)' }}>
-                    {locale === 'ka' ? 'შეთავაზებები არ მოიძებნა' : 'No proposals yet'}
+                    {t('company.noProposalsYet')}
                   </p>
                   <Link
                     href="/browse/jobs"
@@ -590,7 +590,7 @@ export default function CompanyDashboardPage() {
                     style={{ color: ACCENT }}
                   >
                     <Plus className="w-4 h-4" />
-                    {locale === 'ka' ? 'შეთავაზების გაგზავნა' : 'Submit Proposal'}
+                    {t('company.submitProposal')}
                   </Link>
                 </div>
               )}
@@ -613,12 +613,10 @@ export default function CompanyDashboardPage() {
               </div>
               <div>
                 <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                  {locale === 'ka' ? 'განაახლეთ პრემიუმზე' : 'Upgrade to Premium'}
+                  {t('company.upgradeToPremium')}
                 </h3>
                 <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
-                  {locale === 'ka'
-                    ? 'მიიღეთ მეტი ხილვადობა და პრიორიტეტული ადგილი სამუშაოებზე'
-                    : 'Get more visibility and priority placement on jobs'}
+                  {t('company.getMoreVisibilityAndPriority')}
                 </p>
               </div>
             </div>
@@ -629,7 +627,7 @@ export default function CompanyDashboardPage() {
               onMouseEnter={(e) => e.currentTarget.style.background = ACCENT_HOVER}
               onMouseLeave={(e) => e.currentTarget.style.background = ACCENT}
             >
-              {locale === 'ka' ? 'გეგმების ნახვა' : 'View Plans'}
+              {t('company.viewPlans')}
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

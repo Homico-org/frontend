@@ -1,17 +1,18 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import en from '@/locales/en.json';
 import ka from '@/locales/ka.json';
+import ru from '@/locales/ru.json';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-type Locale = 'en' | 'ka';
+export type Locale = 'en' | 'ka' | 'ru';
 
 // Translation types for JSON locale files
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TranslationValue = any;
 type Translations = Record<string, TranslationValue>;
 
-const translations: Record<Locale, Translations> = { en, ka };
+const translations: Record<Locale, Translations> = { en, ka, ru };
 
 interface LanguageContextType {
   locale: Locale;
@@ -160,9 +161,22 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    // Always use Georgian for now
-    setCountry('GE');
-    setLocale('ka');
+    // Read saved preferences from localStorage
+    try {
+      const savedLocale = localStorage.getItem('locale') as Locale | null;
+      const savedCountry = localStorage.getItem('country') as CountryCode | null;
+      
+      if (savedLocale && ['en', 'ka', 'ru'].includes(savedLocale)) {
+        setLocale(savedLocale);
+      }
+      
+      if (savedCountry && countries[savedCountry]) {
+        setCountry(savedCountry);
+      }
+    } catch {
+      // localStorage not available, use defaults
+    }
+    
     setIsInitialized(true);
   }, []);
 

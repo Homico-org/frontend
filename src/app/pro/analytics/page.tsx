@@ -8,13 +8,13 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { BarChart3, Eye, LucideIcon, MousePointer, TrendingUp } from 'lucide-react';
 
 function ProAnalyticsPageContent() {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
 
   const stats: { label: string; value: string; icon: LucideIcon; variant: 'success' | 'accent' | 'info' | 'warning' }[] = [
-    { label: locale === 'ka' ? 'პროფილის ნახვები' : 'Profile Views', value: '0', icon: Eye, variant: 'success' },
-    { label: locale === 'ka' ? 'შთაბეჭდილებები' : 'Impressions', value: '0', icon: BarChart3, variant: 'accent' },
-    { label: locale === 'ka' ? 'დაკლიკების მაჩვ.' : 'Click Rate', value: '0%', icon: MousePointer, variant: 'info' },
-    { label: locale === 'ka' ? 'კონვერსია' : 'Conversion', value: '0%', icon: TrendingUp, variant: 'warning' },
+    { label: t('analytics.profileViews'), value: '0', icon: Eye, variant: 'success' },
+    { label: t('analytics.impressions'), value: '0', icon: BarChart3, variant: 'accent' },
+    { label: t('analytics.clickRate'), value: '0%', icon: MousePointer, variant: 'info' },
+    { label: t('analytics.conversion'), value: '0%', icon: TrendingUp, variant: 'warning' },
   ];
 
   return (
@@ -22,10 +22,10 @@ function ProAnalyticsPageContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-serif font-medium text-neutral-900 dark:text-neutral-50">
-            {locale === 'ka' ? 'ანალიტიკა' : 'Analytics'}
+            {t('analytics.analytics')}
           </h1>
           <p className="mt-1 sm:mt-2 text-sm sm:text-base text-neutral-500 dark:text-neutral-400">
-            {locale === 'ka' ? 'გაიგე შენი შედეგები და ზრდა' : 'Understand your performance and growth'}
+            {t('analytics.understandYourPerformanceAndGrowth')}
           </p>
         </div>
 
@@ -47,13 +47,13 @@ function ProAnalyticsPageContent() {
         {/* Chart Placeholder */}
         <Card variant="elevated" size="lg" className="mb-6 sm:mb-8">
           <h3 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-50 mb-3 sm:mb-4">
-            {locale === 'ka' ? 'შედეგების მიმოხილვა' : 'Performance Overview'}
+            {t('analytics.performanceOverview')}
           </h3>
           <div className="h-48 sm:h-64 flex items-center justify-center border-2 border-dashed border-neutral-200 dark:border-dark-border rounded-xl">
             <div className="text-center px-4">
               <BarChart3 className="h-10 sm:h-12 w-10 sm:w-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-2" />
               <p className="text-sm sm:text-base text-neutral-500 dark:text-neutral-400">
-                {locale === 'ka' ? 'გრაფიკი გამოჩნდება მონაცემების არსებობისას' : 'Charts will appear once you have data'}
+                {t('analytics.chartsWillAppearOnceYou')}
               </p>
             </div>
           </div>

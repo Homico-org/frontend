@@ -17,7 +17,7 @@ interface PaymentSettingsProps {
 
 export default function PaymentSettings({ onOpenAddCardModal }: PaymentSettingsProps) {
   const { isAuthenticated } = useAuth();
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
 
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -64,10 +64,10 @@ export default function PaymentSettings({ onOpenAddCardModal }: PaymentSettingsP
         setPaymentMethods(prev =>
           prev.map(m => ({ ...m, isDefault: m.id === id }))
         );
-        setMessage({ type: 'success', text: locale === 'ka' ? 'ნაგულისხმევი ბარათი შეიცვალა' : 'Default card updated' });
+        setMessage({ type: 'success', text: t('settings.defaultCardUpdated') });
       }
     } catch {
-      setMessage({ type: 'error', text: locale === 'ka' ? 'შეცდომა' : 'Error updating card' });
+      setMessage({ type: 'error', text: t('settings.errorUpdatingCard') });
     }
   };
 
@@ -83,10 +83,10 @@ export default function PaymentSettings({ onOpenAddCardModal }: PaymentSettingsP
 
       if (res.ok) {
         setPaymentMethods(prev => prev.filter(m => m.id !== id));
-        setMessage({ type: 'success', text: locale === 'ka' ? 'ბარათი წაიშალა' : 'Card deleted' });
+        setMessage({ type: 'success', text: t('settings.cardDeleted') });
       }
     } catch {
-      setMessage({ type: 'error', text: locale === 'ka' ? 'შეცდომა' : 'Error deleting card' });
+      setMessage({ type: 'error', text: t('settings.errorDeletingCard') });
     }
   };
 
@@ -95,17 +95,17 @@ export default function PaymentSettings({ onOpenAddCardModal }: PaymentSettingsP
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-white">
-            {locale === 'ka' ? 'გადახდის მეთოდები' : 'Payment Methods'}
+            {t('settings.paymentMethods')}
           </h2>
           <p className="text-sm mt-1 text-neutral-500">
-            {locale === 'ka' ? 'მართეთ თქვენი შენახული ბარათები' : 'Manage your saved cards'}
+            {t('settings.manageYourSavedCards')}
           </p>
         </div>
         <Button
           onClick={onOpenAddCardModal}
           leftIcon={<CreditCard className="w-4 h-4" />}
         >
-          {locale === 'ka' ? 'ბარათის დამატება' : 'Add Card'}
+          {t('settings.addCard')}
         </Button>
       </div>
 
@@ -123,12 +123,12 @@ export default function PaymentSettings({ onOpenAddCardModal }: PaymentSettingsP
         <div className="py-12 flex flex-col items-center gap-3">
           <LoadingSpinner size="lg" />
           <span className="text-sm text-neutral-400">
-            {locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
+            {t('common.loading')}
           </span>
         </div>
       ) : paymentMethods.length === 0 ? (
         <EmptyPaymentMethods
-          locale={locale as 'en' | 'ka'}
+          locale={locale as 'en' | 'ka' | 'ru'}
           onAddCard={onOpenAddCardModal}
         />
       ) : (
@@ -137,7 +137,7 @@ export default function PaymentSettings({ onOpenAddCardModal }: PaymentSettingsP
             <PaymentMethodCard
               key={method.id}
               method={method}
-              locale={locale as 'en' | 'ka'}
+              locale={locale as 'en' | 'ka' | 'ru'}
               onSetDefault={handleSetDefaultCard}
               onDelete={handleDeleteCard}
             />
@@ -151,12 +151,10 @@ export default function PaymentSettings({ onOpenAddCardModal }: PaymentSettingsP
           <IconBadge icon={Shield} variant="info" size="md" />
           <div>
             <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
-              {locale === 'ka' ? 'უსაფრთხო გადახდა' : 'Secure Payments'}
+              {t('settings.securePayments')}
             </p>
             <p className="text-xs mt-1 text-blue-600/70 dark:text-blue-400/70">
-              {locale === 'ka'
-                ? 'თქვენი ბარათის ინფორმაცია დაშიფრულია და უსაფრთხოდ ინახება'
-                : 'Your card information is encrypted and securely stored'}
+              {t('settings.yourCardInformationIsEncrypted')}
             </p>
           </div>
         </div>

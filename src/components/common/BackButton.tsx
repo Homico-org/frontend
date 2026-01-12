@@ -25,9 +25,9 @@ export default function BackButton({
   variant = "default",
 }: BackButtonProps) {
   const router = useRouter();
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
 
-  const defaultLabel = locale === "ka" ? "უკან" : "Back";
+  const defaultLabel = t('common.back');
   const displayLabel = label || defaultLabel;
 
   const handleClick = () => {

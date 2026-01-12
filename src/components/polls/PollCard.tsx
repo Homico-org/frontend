@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { formatTimeAgoCompact } from '@/utils/dateUtils';
 import { Check, Clock, MoreVertical, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
+import { useLanguage } from "@/contexts/LanguageContext";
 import PollOptionCard, { PollOption } from './PollOptionCard';
 
 // Helper to get ID from object (handles both id and _id)
@@ -59,6 +60,8 @@ export default function PollCard({
   onDelete,
 }: PollCardProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(poll.clientVote || null);
+
+  const { t } = useLanguage();
   const [isApproving, setIsApproving] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -125,17 +128,17 @@ export default function PollCard({
               {/* Status badge */}
               {isApproved && (
                 <Badge variant="success" size="xs" icon={<Check className="w-3 h-3" />}>
-                  {locale === 'ka' ? 'არჩეული' : 'Approved'}
+                  {t('polls.approved')}
                 </Badge>
               )}
               {isClosed && (
                 <Badge variant="default" size="xs" icon={<X className="w-3 h-3" />}>
-                  {locale === 'ka' ? 'დახურული' : 'Closed'}
+                  {t('polls.closed')}
                 </Badge>
               )}
               {isActive && (
                 <Badge variant="warning" size="xs" icon={<Clock className="w-3 h-3" />}>
-                  {locale === 'ka' ? 'აქტიური' : 'Active'}
+                  {t('polls.active')}
                 </Badge>
               )}
             </div>
@@ -171,7 +174,7 @@ export default function PollCard({
                       className="w-full px-3 py-2 text-left text-sm text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2"
                     >
                       {isClosing ? <LoadingSpinner size="sm" color="currentColor" /> : <X className="w-4 h-4" />}
-                      {locale === 'ka' ? 'დახურვა' : 'Close Poll'}
+                      {t('polls.closePoll')}
                     </button>
                     <button
                       onClick={handleDelete}
@@ -179,7 +182,7 @@ export default function PollCard({
                       className="w-full px-3 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
                     >
                       {isDeleting ? <LoadingSpinner size="sm" color="currentColor" /> : <Trash2 className="w-4 h-4" />}
-                      {locale === 'ka' ? 'წაშლა' : 'Delete'}
+                      {t('common.delete')}
                     </button>
                   </div>
                 </>
@@ -226,12 +229,12 @@ export default function PollCard({
             {isApproving ? (
               <>
                 <LoadingSpinner size="sm" color="white" />
-                {locale === 'ka' ? 'მტკიცდება...' : 'Approving...'}
+                {t('polls.approving')}
               </>
             ) : (
               <>
                 <Check className="w-3.5 h-3.5" />
-                {locale === 'ka' ? 'დამტკიცება' : 'Approve'}
+                {t('polls.approve')}
               </>
             )}
           </button>
@@ -247,7 +250,7 @@ export default function PollCard({
             size="xs"
           />
           <span className="text-xs text-neutral-500 dark:text-neutral-400">
-            {poll.createdBy.name} • {formatTimeAgoCompact(poll.createdAt, locale as 'en' | 'ka')}
+            {poll.createdBy.name} • {formatTimeAgoCompact(poll.createdAt, locale as 'en' | 'ka' | 'ru')}
           </span>
         </div>
       </div>

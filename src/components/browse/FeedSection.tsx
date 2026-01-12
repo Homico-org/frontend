@@ -19,7 +19,7 @@ interface FeedSectionProps {
 }
 
 export default function FeedSection({ selectedCategory, topRatedActive }: FeedSectionProps) {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const { isAuthenticated } = useAuth();
   const { searchQuery, sortBy, selectedCity } = useBrowseContext();
   const { toggleLike, initializeLikeStates, likeStates } = useLikes();
@@ -252,7 +252,7 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
               <div className="flex items-center gap-3">
                 <LoadingSpinner size="md" color={ACCENT_COLOR} />
                 <span className="text-sm text-neutral-500">
-                  {locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
+                  {t('common.loading')}
                 </span>
               </div>
             )}

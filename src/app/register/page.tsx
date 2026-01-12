@@ -14,7 +14,7 @@ import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { countries, CountryCode } from '@/contexts/LanguageContext';
+import { countries, CountryCode, useLanguage } from '@/contexts/LanguageContext';
 
 // Generate country options for Select component
 const countryOptions = Object.entries(countries).map(([code, data]) => ({
@@ -34,6 +34,8 @@ function Logo({ className = '' }: { className?: string }) {
 
 function RegisterContent() {
   const reg = useRegistration();
+
+  const { t } = useLanguage();
   
   // Show loading while auth is checking
   if (reg.authLoading) {
@@ -52,14 +54,14 @@ function RegisterContent() {
           <Logo />
           <div className="flex items-center gap-3">
             <Link href="/help" className="text-xs text-neutral-500 hover:text-neutral-800 transition-colors">
-              {reg.locale === 'ka' ? 'დახმარება' : 'Help'}
+              {t('common.help')}
             </Link>
             <Button
               variant="outline"
               size="sm"
               onClick={() => reg.openLoginModal()}
             >
-              {reg.locale === 'ka' ? 'შესვლა' : 'Log In'}
+              {t('register.logIn')}
             </Button>
               </div>
         </header>
@@ -67,10 +69,10 @@ function RegisterContent() {
         <main className="flex-1 flex items-center justify-center px-4 py-8">
           <div className="w-full max-w-3xl text-center">
             <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-2">
-              {reg.locale === 'ka' ? 'გაწევრიანდი Homico-ში' : 'Join Homico'}
+              {t('register.joinHomico')}
             </h1>
             <p className="text-neutral-500 mb-8">
-              {reg.locale === 'ka' ? 'აირჩიე როგორ გინდა გამოიყენო პლატფორმა' : 'Choose how you want to use the platform'}
+              {t('register.chooseHowYouWantTo')}
             </p>
             
             <UserTypeSelector
@@ -79,7 +81,7 @@ function RegisterContent() {
                 reg.setUserType(type);
                 reg.setShowTypeSelection(false);
               }}
-              locale={reg.locale as 'en' | 'ka'}
+              locale={reg.locale as 'en' | 'ka' | 'ru'}
             />
           </div>
         </main>
@@ -101,7 +103,7 @@ function RegisterContent() {
               />
             )}
             <h2 className="text-xl font-bold text-neutral-900 mb-1">
-              {reg.locale === 'ka' ? 'თითქმის მზადაა!' : 'Almost there!'}
+              {t('register.almostThere')}
             </h2>
             <p className="text-sm text-neutral-500">
               {reg.locale === 'ka' 
@@ -121,7 +123,7 @@ function RegisterContent() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-2">
-                {reg.locale === 'ka' ? 'ტელეფონი' : 'Phone Number'}
+                {t('register.phoneNumber')}
               </label>
               <div className="flex gap-2">
                 <div className="w-32 flex-shrink-0">
@@ -174,7 +176,7 @@ function RegisterContent() {
               disabled={reg.isLoading || !reg.formData.phone || reg.formData.phone.length < 9}
               loading={reg.isLoading}
             >
-              {reg.locale === 'ka' ? 'კოდის გაგზავნა' : 'Send Code'}
+              {t('register.sendCode')}
             </Button>
 
             <Button
@@ -185,7 +187,7 @@ function RegisterContent() {
                 reg.setGoogleUser(null);
               }}
             >
-              {reg.locale === 'ka' ? '← უკან' : '← Back'}
+              {t('common.back')}
             </Button>
           </div>
         </Card>
@@ -199,7 +201,7 @@ function RegisterContent() {
       <div className="min-h-screen flex items-center justify-center bg-[#FAFAF9] px-4">
         <Card className="w-full max-w-md p-6 text-center">
           <h2 className="text-xl font-bold text-neutral-900 mb-2">
-            {reg.locale === 'ka' ? 'ვერიფიკაცია' : 'Verification'}
+            {t('register.verification')}
               </h2>
           <p className="text-sm text-neutral-500 mb-6">
             {reg.locale === 'ka' 
@@ -233,7 +235,7 @@ function RegisterContent() {
                 onClick={() => reg.sendOtp()}
                 disabled={reg.isLoading}
               >
-                {reg.locale === 'ka' ? 'ხელახლა გაგზავნა' : 'Resend Code'}
+                {t('register.resendCode')}
               </Button>
             )}
           </div>
@@ -452,7 +454,7 @@ function RegisterContent() {
                   variant="ghost"
                   onClick={reg.handleBack}
                 >
-                  ← {reg.locale === 'ka' ? 'უკან' : 'Back'}
+                  ← {t('common.back')}
                 </Button>
             ) : (
               <div />
@@ -469,8 +471,8 @@ function RegisterContent() {
                 loading={reg.isLoading}
               >
                 {reg.currentStep === 'review' 
-                  ? (reg.locale === 'ka' ? 'დასრულება ✓' : 'Complete ✓')
-                  : (reg.locale === 'ka' ? 'გაგრძელება →' : 'Continue →')
+                  ? (t('register.complete'))
+                  : (t('common.continue'))
                 }
               </Button>
           </div>

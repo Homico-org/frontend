@@ -213,13 +213,13 @@ function AdminDashboardPageContent() {
   const getActivityMessage = (activity: Activity) => {
     switch (activity.type) {
       case 'user_signup':
-        return { name: activity.data.name, action: locale === 'ka' ? 'დარეგისტრირდა' : 'signed up', extra: activity.data.role };
+        return { name: activity.data.name, action: t('admin.signedUp'), extra: activity.data.role };
       case 'job_created':
-        return { name: activity.data.clientId?.name || 'Client', action: locale === 'ka' ? 'გამოაქვეყნა' : 'posted', extra: activity.data.title };
+        return { name: activity.data.clientId?.name || 'Client', action: t('admin.posted'), extra: activity.data.title };
       case 'proposal_sent':
-        return { name: activity.data.proId?.name || 'Pro', action: locale === 'ka' ? 'გაგზავნა' : 'sent proposal', extra: '' };
+        return { name: activity.data.proId?.name || 'Pro', action: t('admin.sentProposal'), extra: '' };
       case 'ticket_created':
-        return { name: activity.data.userId?.name || 'User', action: locale === 'ka' ? 'გახსნა' : 'opened ticket', extra: '' };
+        return { name: activity.data.userId?.name || 'User', action: t('admin.openedTicket'), extra: '' };
       default:
         return { name: 'System', action: 'activity', extra: '' };
     }
@@ -265,7 +265,7 @@ function AdminDashboardPageContent() {
             </div>
           </div>
           <p className="mt-6 text-sm" style={{ color: THEME.textMuted }}>
-            {locale === 'ka' ? 'იტვირთება...' : 'Loading dashboard...'}
+            {t('admin.loadingDashboard')}
           </p>
         </div>
       </div>
@@ -283,7 +283,7 @@ function AdminDashboardPageContent() {
             <AlertCircle className="w-10 h-10" style={{ color: THEME.error }} />
           </div>
           <h2 className="text-xl font-semibold mb-2" style={{ color: THEME.text }}>
-            {locale === 'ka' ? 'შეცდომა' : 'Error Loading Dashboard'}
+            {t('admin.errorLoadingDashboard')}
           </h2>
           <p className="text-sm mb-6" style={{ color: THEME.textMuted }}>
             {error}
@@ -293,7 +293,7 @@ function AdminDashboardPageContent() {
             className="px-6 py-3 rounded-xl text-white font-medium transition-all hover:opacity-90"
             style={{ background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primaryDark})` }}
           >
-            {locale === 'ka' ? 'ხელახლა ცდა' : 'Try Again'}
+            {t('common.tryAgain')}
           </button>
         </div>
       </div>
@@ -333,12 +333,12 @@ function AdminDashboardPageContent() {
                   className="text-xl font-semibold tracking-tight"
                   style={{ color: THEME.text, fontFamily: "'Inter', sans-serif" }}
                 >
-                  {locale === 'ka' ? 'მართვის პანელი' : 'Control Center'}
+                  {t('admin.controlCenter')}
                 </h1>
                 <div className="flex items-center gap-2 mt-0.5">
                   <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: THEME.success }} />
                   <span className="text-xs" style={{ color: THEME.textMuted, fontFamily: "'JetBrains Mono', monospace" }}>
-                    {lastUpdated ? formatTimeAgoCompact(lastUpdated.toISOString(), locale as 'en' | 'ka') : 'syncing...'}
+                    {lastUpdated ? formatTimeAgoCompact(lastUpdated.toISOString(), locale as 'en' | 'ka' | 'ru') : 'syncing...'}
                   </span>
                 </div>
               </div>
@@ -354,7 +354,7 @@ function AdminDashboardPageContent() {
                   >
                     <AlertCircle className="w-3.5 h-3.5" style={{ color: THEME.error }} />
                     <span className="text-xs font-medium" style={{ color: THEME.error }}>
-                      {stats.support.unread} {locale === 'ka' ? 'წაუკითხავი' : 'unread'}
+                      {stats.support.unread} {t('admin.unread')}
                     </span>
                   </div>
                 )}
@@ -371,7 +371,7 @@ function AdminDashboardPageContent() {
                 }}
               >
                 <Globe className="w-4 h-4" />
-                <span className="hidden sm:inline">{locale === 'ka' ? 'საიტი' : 'Site'}</span>
+                <span className="hidden sm:inline">{t('admin.site')}</span>
               </Link>
               <button
                 onClick={() => fetchDashboardData(true)}
@@ -384,7 +384,7 @@ function AdminDashboardPageContent() {
                 }}
               >
                 <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                <span className="hidden sm:inline">{locale === 'ka' ? 'განახლება' : 'Refresh'}</span>
+                <span className="hidden sm:inline">{t('admin.refresh')}</span>
               </button>
             </div>
           </div>
@@ -395,10 +395,10 @@ function AdminDashboardPageContent() {
         {/* Quick Actions - Prominent at top */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
           {[
-            { label: locale === 'ka' ? 'მომხმარებლები' : 'Users', icon: Users, href: '/admin/users', color: THEME.primary, count: stats?.users.total },
-            { label: locale === 'ka' ? 'სამუშაოები' : 'Jobs', icon: Briefcase, href: '/admin/jobs', color: THEME.info, count: stats?.jobs.total },
-            { label: locale === 'ka' ? 'მხარდაჭერა' : 'Support', icon: MessageCircle, href: '/admin/support', color: THEME.warning, count: stats?.support.open, badge: stats?.support.unread },
-            { label: locale === 'ka' ? 'ლოგები' : 'Activity Logs', icon: ActivityIcon, href: '/admin/activity-logs', color: THEME.success },
+            { label: t('admin.users'), icon: Users, href: '/admin/users', color: THEME.primary, count: stats?.users.total },
+            { label: t('admin.jobs'), icon: Briefcase, href: '/admin/jobs', color: THEME.info, count: stats?.jobs.total },
+            { label: t('admin.support'), icon: MessageCircle, href: '/admin/support', color: THEME.warning, count: stats?.support.open, badge: stats?.support.unread },
+            { label: t('admin.activityLogs'), icon: ActivityIcon, href: '/admin/activity-logs', color: THEME.success },
           ].map((action) => (
             <Link
               key={action.label}
@@ -494,14 +494,14 @@ function AdminDashboardPageContent() {
                 {stats?.users.total.toLocaleString() || '0'}
               </p>
               <p className="text-sm mt-1" style={{ color: THEME.textMuted }}>
-                {locale === 'ka' ? 'სულ მომხმარებელი' : 'Total Users'}
+                {t('admin.totalUsers')}
               </p>
               <div
                 className="flex items-center gap-4 mt-4 pt-4 text-xs"
                 style={{ borderTop: `1px solid ${THEME.border}` }}
               >
-                <span style={{ color: THEME.success }}>+{stats?.users.today || 0} {locale === 'ka' ? 'დღეს' : 'today'}</span>
-                <span style={{ color: THEME.textDim }}>+{stats?.users.thisWeek || 0} {locale === 'ka' ? 'კვირაში' : 'week'}</span>
+                <span style={{ color: THEME.success }}>+{stats?.users.today || 0} {t('common.today')}</span>
+                <span style={{ color: THEME.textDim }}>+{stats?.users.thisWeek || 0} {t('admin.week')}</span>
               </div>
             </div>
           </div>
@@ -543,14 +543,14 @@ function AdminDashboardPageContent() {
                 {stats?.jobs.total.toLocaleString() || '0'}
               </p>
               <p className="text-sm mt-1" style={{ color: THEME.textMuted }}>
-                {locale === 'ka' ? 'სულ სამუშაო' : 'Total Jobs'}
+                {t('admin.totalJobs')}
               </p>
               <div
                 className="flex items-center gap-4 mt-4 pt-4 text-xs"
                 style={{ borderTop: `1px solid ${THEME.border}` }}
               >
-                <span style={{ color: THEME.success }}>{stats?.jobs.open || 0} {locale === 'ka' ? 'ღია' : 'open'}</span>
-                <span style={{ color: THEME.warning }}>{stats?.jobs.inProgress || 0} {locale === 'ka' ? 'აქტიური' : 'active'}</span>
+                <span style={{ color: THEME.success }}>{stats?.jobs.open || 0} {t('common.open')}</span>
+                <span style={{ color: THEME.warning }}>{stats?.jobs.inProgress || 0} {t('common.active')}</span>
               </div>
             </div>
           </div>
@@ -587,14 +587,14 @@ function AdminDashboardPageContent() {
                 {stats?.proposals.total.toLocaleString() || '0'}
               </p>
               <p className="text-sm mt-1" style={{ color: THEME.textMuted }}>
-                {locale === 'ka' ? 'სულ შეთავაზება' : 'Total Proposals'}
+                {t('admin.totalProposals')}
               </p>
               <div
                 className="flex items-center gap-4 mt-4 pt-4 text-xs"
                 style={{ borderTop: `1px solid ${THEME.border}` }}
               >
-                <span style={{ color: THEME.warning }}>{stats?.proposals.pending || 0} {locale === 'ka' ? 'მოლოდინში' : 'pending'}</span>
-                <span style={{ color: THEME.success }}>{stats?.proposals.accepted || 0} {locale === 'ka' ? 'მიღებული' : 'accepted'}</span>
+                <span style={{ color: THEME.warning }}>{stats?.proposals.pending || 0} {t('common.pending')}</span>
+                <span style={{ color: THEME.success }}>{stats?.proposals.accepted || 0} {t('common.accepted')}</span>
               </div>
             </div>
           </div>
@@ -633,14 +633,14 @@ function AdminDashboardPageContent() {
                 {stats?.support.total.toLocaleString() || '0'}
               </p>
               <p className="text-sm mt-1" style={{ color: THEME.textMuted }}>
-                {locale === 'ka' ? 'მხარდაჭერა' : 'Support Tickets'}
+                {t('admin.supportTickets')}
               </p>
               <div
                 className="flex items-center gap-4 mt-4 pt-4 text-xs"
                 style={{ borderTop: `1px solid ${THEME.border}` }}
               >
                 <span style={{ color: THEME.error }}>{stats?.support.open || 0} {locale === 'ka' ? 'ღია' : 'open'}</span>
-                <span style={{ color: THEME.success }}>{stats?.support.resolved || 0} {locale === 'ka' ? 'გადაჭრილი' : 'resolved'}</span>
+                <span style={{ color: THEME.success }}>{stats?.support.resolved || 0} {t('admin.resolved')}</span>
               </div>
             </div>
           </div>
@@ -656,10 +656,10 @@ function AdminDashboardPageContent() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-lg font-semibold" style={{ color: THEME.text }}>
-                  {locale === 'ka' ? 'აქტივობა' : 'Activity Overview'}
+                  {t('admin.activityOverview')}
                 </h3>
                 <p className="text-sm mt-0.5" style={{ color: THEME.textMuted }}>
-                  {locale === 'ka' ? 'ბოლო 14 დღე' : 'Last 14 days'}
+                  {t('admin.last14Days')}
                 </p>
               </div>
               <div
@@ -667,9 +667,9 @@ function AdminDashboardPageContent() {
                 style={{ background: THEME.surface }}
               >
                 {[
-                  { id: 'signups', label: locale === 'ka' ? 'რეგ.' : 'Signups', color: THEME.primary },
-                  { id: 'jobs', label: locale === 'ka' ? 'სამ.' : 'Jobs', color: THEME.info },
-                  { id: 'proposals', label: locale === 'ka' ? 'შეთ.' : 'Proposals', color: THEME.warning },
+                  { id: 'signups', label: t('admin.signups'), color: THEME.primary },
+                  { id: 'jobs', label: t('admin.jobs'), color: THEME.info },
+                  { id: 'proposals', label: t('admin.proposals'), color: THEME.warning },
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -743,17 +743,17 @@ function AdminDashboardPageContent() {
           >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold" style={{ color: THEME.text }}>
-                {locale === 'ka' ? 'მომხმარებლები' : 'User Breakdown'}
+                {t('admin.userBreakdown')}
               </h3>
               <PieChart className="w-5 h-5" style={{ color: THEME.textMuted }} />
             </div>
 
             <div className="space-y-4">
               {[
-                { label: locale === 'ka' ? 'კლიენტები' : 'Clients', value: stats?.users.clients || 0, icon: Users, color: THEME.primary },
-                { label: locale === 'ka' ? 'პროფესიონალები' : 'Professionals', value: stats?.users.pros || 0, icon: Shield, color: THEME.info },
-                { label: locale === 'ka' ? 'კომპანიები' : 'Companies', value: stats?.users.companies || 0, icon: Building2, color: '#8B5CF6' },
-                { label: locale === 'ka' ? 'ვერიფიცირებული' : 'Verified Pros', value: stats?.users.verifiedPros || 0, icon: UserCheck, color: THEME.success },
+                { label: t('admin.clients'), value: stats?.users.clients || 0, icon: Users, color: THEME.primary },
+                { label: t('admin.professionals'), value: stats?.users.pros || 0, icon: Shield, color: THEME.info },
+                { label: t('admin.companies'), value: stats?.users.companies || 0, icon: Building2, color: '#8B5CF6' },
+                { label: t('admin.verifiedPros'), value: stats?.users.verifiedPros || 0, icon: UserCheck, color: THEME.success },
               ].map((item) => {
                 const percentage = stats?.users.total ? Math.round((item.value / stats.users.total) * 100) : 0;
                 return (
@@ -808,18 +808,18 @@ function AdminDashboardPageContent() {
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: THEME.success }} />
                 <h3 className="font-semibold" style={{ color: THEME.text }}>
-                  {locale === 'ka' ? 'ცოცხალი აქტივობა' : 'Live Activity'}
+                  {t('admin.liveActivity')}
                 </h3>
               </div>
               <span className="text-xs" style={{ color: THEME.textDim }}>
-                {activities.length} {locale === 'ka' ? 'მოვლენა' : 'events'}
+                {activities.length} {t('admin.events')}
               </span>
             </div>
             <div className="max-h-[400px] overflow-y-auto">
               {activities.length === 0 ? (
                 <div className="p-12 text-center">
                   <ActivityIcon className="w-12 h-12 mx-auto mb-3" style={{ color: THEME.textDim }} />
-                  <p style={{ color: THEME.textMuted }}>{locale === 'ka' ? 'აქტივობა არ არის' : 'No recent activity'}</p>
+                  <p style={{ color: THEME.textMuted }}>{t('admin.noRecentActivity')}</p>
                 </div>
               ) : (
                 activities.slice(0, 12).map((activity, i) => {
@@ -853,7 +853,7 @@ function AdminDashboardPageContent() {
                         className="text-xs flex-shrink-0"
                         style={{ color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace" }}
                       >
-                        {formatTimeAgoCompact(activity.date, locale as 'en' | 'ka')}
+                        {formatTimeAgoCompact(activity.date, locale as 'en' | 'ka' | 'ru')}
                       </span>
                     </div>
                   );
@@ -876,14 +876,14 @@ function AdminDashboardPageContent() {
                 <div className="flex items-center gap-2">
                   <Tag className="w-4 h-4" style={{ color: THEME.textMuted }} />
                   <h3 className="font-semibold text-sm" style={{ color: THEME.text }}>
-                    {locale === 'ka' ? 'კატეგორიები' : 'Categories'}
+                    {t('common.categories')}
                   </h3>
                 </div>
               </div>
               <div className="p-4 space-y-3">
                 {jobsByCategory.length === 0 ? (
                   <p className="text-center py-4 text-sm" style={{ color: THEME.textMuted }}>
-                    {locale === 'ka' ? 'მონაცემები არ არის' : 'No data'}
+                    {t('admin.noData')}
                   </p>
                 ) : (
                   jobsByCategory.slice(0, 5).map((cat) => (
@@ -929,7 +929,7 @@ function AdminDashboardPageContent() {
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4" style={{ color: THEME.textMuted }} />
                   <h3 className="font-semibold text-sm" style={{ color: THEME.text }}>
-                    {locale === 'ka' ? 'ლოკაციები' : 'Locations'}
+                    {t('admin.locations')}
                   </h3>
                 </div>
               </div>
@@ -986,7 +986,7 @@ function AdminDashboardPageContent() {
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4" style={{ color: THEME.textMuted }} />
                 <h3 className="font-semibold" style={{ color: THEME.text }}>
-                  {locale === 'ka' ? 'ახალი მომხმარებლები' : 'Recent Users'}
+                  {t('admin.recentUsers')}
                 </h3>
               </div>
               <Link
@@ -994,7 +994,7 @@ function AdminDashboardPageContent() {
                 className="flex items-center gap-1 text-xs font-medium transition-colors hover:opacity-80"
                 style={{ color: THEME.primary }}
               >
-                {locale === 'ka' ? 'ყველა' : 'View all'}
+                {t('common.viewAll')}
                 <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -1002,7 +1002,7 @@ function AdminDashboardPageContent() {
               {recentUsers.length === 0 ? (
                 <div className="p-12 text-center">
                   <Users className="w-12 h-12 mx-auto mb-3" style={{ color: THEME.textDim }} />
-                  <p style={{ color: THEME.textMuted }}>{locale === 'ka' ? 'მომხმარებლები არ არის' : 'No users yet'}</p>
+                  <p style={{ color: THEME.textMuted }}>{t('admin.noUsersYet')}</p>
                 </div>
               ) : (
                 recentUsers.map((user, i) => (
@@ -1051,7 +1051,7 @@ function AdminDashboardPageContent() {
               <div className="flex items-center gap-2">
                 <Briefcase className="w-4 h-4" style={{ color: THEME.textMuted }} />
                 <h3 className="font-semibold" style={{ color: THEME.text }}>
-                  {locale === 'ka' ? 'ახალი სამუშაოები' : 'Recent Jobs'}
+                  {t('admin.recentJobs')}
                 </h3>
               </div>
               <Link
@@ -1067,7 +1067,7 @@ function AdminDashboardPageContent() {
               {recentJobs.length === 0 ? (
                 <div className="p-12 text-center">
                   <Briefcase className="w-12 h-12 mx-auto mb-3" style={{ color: THEME.textDim }} />
-                  <p style={{ color: THEME.textMuted }}>{locale === 'ka' ? 'სამუშაოები არ არის' : 'No jobs yet'}</p>
+                  <p style={{ color: THEME.textMuted }}>{t('admin.noJobsYet')}</p>
                 </div>
               ) : (
                 recentJobs.map((job, i) => (

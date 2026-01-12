@@ -98,6 +98,7 @@ function SwipeableNotificationCard({
   onClick: () => void;
   locale: string;
 }) {
+  const { t } = useLanguage();
   const [translateX, setTranslateX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const startXRef = useRef(0);
@@ -183,11 +184,11 @@ function SwipeableNotificationCard({
             </p>
             <div className="mt-2 flex items-center justify-between">
               <span className="text-[11px] text-neutral-400 dark:text-neutral-600">
-                {formatTimeAgoCompact(notification.createdAt, locale as 'en' | 'ka')}
+                {formatTimeAgoCompact(notification.createdAt, locale as 'en' | 'ka' | 'ru')}
               </span>
               {notification.link && (
                 <span className="text-[11px] text-[#C4735B] flex items-center gap-0.5">
-                  {locale === 'ka' ? 'ნახვა' : 'View'}
+                  {t('common.view')}
                   <ChevronRight className="w-3 h-3" />
                 </span>
               )}
@@ -201,6 +202,7 @@ function SwipeableNotificationCard({
 
 // Group notifications by date
 function groupNotificationsByDate(notifications: Notification[], locale: string) {
+  const { t } = useLanguage();
   const groups: { label: string; notifications: Notification[] }[] = [];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -230,16 +232,16 @@ function groupNotificationsByDate(notifications: Notification[], locale: string)
   });
 
   if (todayGroup.length > 0) {
-    groups.push({ label: locale === 'ka' ? 'დღეს' : 'Today', notifications: todayGroup });
+    groups.push({ label: t('common.today'), notifications: todayGroup });
   }
   if (yesterdayGroup.length > 0) {
-    groups.push({ label: locale === 'ka' ? 'გუშინ' : 'Yesterday', notifications: yesterdayGroup });
+    groups.push({ label: t('common.yesterday'), notifications: yesterdayGroup });
   }
   if (thisWeekGroup.length > 0) {
-    groups.push({ label: locale === 'ka' ? 'ამ კვირაში' : 'This Week', notifications: thisWeekGroup });
+    groups.push({ label: t('common.thisWeek'), notifications: thisWeekGroup });
   }
   if (olderGroup.length > 0) {
-    groups.push({ label: locale === 'ka' ? 'ძველი' : 'Older', notifications: olderGroup });
+    groups.push({ label: t('notifications.older'), notifications: olderGroup });
   }
 
   return groups;
@@ -248,7 +250,7 @@ function groupNotificationsByDate(notifications: Notification[], locale: string)
 function NotificationsPageContent() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { openLoginModal } = useAuthModal();
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const router = useRouter();
   const {
     notifications,
@@ -339,7 +341,7 @@ function NotificationsPageContent() {
           <div className="px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <h1 className="text-lg font-semibold text-neutral-900 dark:text-white">
-                {locale === 'ka' ? 'შეტყობინებები' : 'Notifications'}
+                {t('common.notifications')}
               </h1>
               {unreadCount > 0 && (
                 <Badge variant="premium" size="xs">
@@ -355,7 +357,7 @@ function NotificationsPageContent() {
                   variant="ghost"
                   size="icon"
                   onClick={handleMarkAllRead}
-                  title={locale === 'ka' ? 'ყველას წაკითხვა' : 'Mark all read'}
+                  title={t('notifications.markAllRead')}
                 >
                   <CheckCheck className="w-5 h-5 text-[#C4735B]" />
                 </Button>
@@ -365,7 +367,7 @@ function NotificationsPageContent() {
                   variant="ghost"
                   size="icon"
                   onClick={handleDeleteAll}
-                  title={locale === 'ka' ? 'ყველას წაშლა' : 'Clear all'}
+                  title={t('notifications.clearAll')}
                   className="hover:text-red-500"
                 >
                   <Trash2 className="w-5 h-5 text-neutral-400" />
@@ -429,7 +431,7 @@ function NotificationsPageContent() {
             <div className="p-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
-                  {locale === 'ka' ? 'ფილტრი' : 'Filter'}
+                  {t('common.filter')}
                 </h3>
                 <button
                   onClick={() => setShowFilterMenu(false)}
@@ -497,8 +499,8 @@ function NotificationsPageContent() {
             </div>
             <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-2">
               {activeFilter === 'unread'
-                ? locale === 'ka' ? 'წაუკითხავი არ არის' : 'All caught up!'
-                : locale === 'ka' ? 'შეტყობინებები არ არის' : 'No notifications'}
+                ? t('notifications.allCaughtUp')
+                : t('notifications.noNotifications')}
             </h3>
             <p className="text-sm text-neutral-500 dark:text-neutral-500 max-w-xs mx-auto">
               {activeFilter === 'unread'
@@ -538,7 +540,7 @@ function NotificationsPageContent() {
         {filteredNotifications.length > 0 && (
           <div className="sm:hidden px-4 py-6 text-center">
             <p className="text-xs text-neutral-400 dark:text-neutral-600">
-              {locale === 'ka' ? 'გადაასრიალე მარცხნივ წასაშლელად' : 'Swipe left to delete'}
+              {t('notifications.swipeLeftToDelete')}
             </p>
           </div>
         )}

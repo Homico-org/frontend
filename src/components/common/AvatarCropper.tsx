@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import Cropper, { Area } from 'react-easy-crop';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 interface AvatarCropperProps {
   image: string;
   onCropComplete: (croppedImageBlob: Blob) => void;
@@ -67,6 +68,8 @@ function createImage(url: string): Promise<HTMLImageElement> {
 
 export default function AvatarCropper({ image, onCropComplete, onCancel, locale = 'en' }: AvatarCropperProps) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
+
+  const { t } = useLanguage();
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -103,10 +106,10 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, locale 
         {/* Header */}
         <div className="px-4 py-3 border-b border-neutral-100">
           <h3 className="text-base font-semibold text-neutral-900">
-            {locale === 'ka' ? 'ფოტოს მორგება' : 'Adjust Photo'}
+            {t('common.adjustPhoto')}
           </h3>
           <p className="text-xs text-neutral-500 mt-0.5">
-            {locale === 'ka' ? 'გადაადგილე და შეცვალე ზომა' : 'Drag to reposition, pinch or scroll to zoom'}
+            {t('common.dragToRepositionPinchOr')}
           </p>
         </div>
 
@@ -153,7 +156,7 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, locale 
             disabled={isProcessing}
             className="flex-1 py-2.5 rounded-lg border border-neutral-200 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 transition-colors"
           >
-            {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+            {t('common.cancel')}
           </button>
           <button
             onClick={handleSave}
@@ -163,10 +166,10 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, locale 
             {isProcessing ? (
               <>
                 <LoadingSpinner size="sm" color="white" />
-                <span>{locale === 'ka' ? '...' : '...'}</span>
+                <span>{t('common.text')}</span>
               </>
             ) : (
-              <span>{locale === 'ka' ? 'შენახვა' : 'Save'}</span>
+              <span>{t('common.save')}</span>
             )}
           </button>
         </div>

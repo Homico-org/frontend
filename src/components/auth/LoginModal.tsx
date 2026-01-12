@@ -160,9 +160,9 @@ export default function LoginModal() {
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : '';
       if (errorMessage.includes('not found') || errorMessage.includes('not registered')) {
-        setError(locale === 'ka' ? 'ანგარიში ვერ მოიძებნა. გთხოვთ დარეგისტრირდეთ.' : 'Account not found. Please register first.');
+        setError(t('auth.accountNotFoundPleaseRegister'));
       } else {
-        setError(locale === 'ka' ? 'Google-ით შესვლა ვერ მოხერხდა' : 'Failed to sign in with Google');
+        setError(t('auth.failedToSignInWith'));
       }
     } finally {
       setIsGoogleLoading(false);
@@ -281,10 +281,10 @@ export default function LoginModal() {
                   className="mx-auto mb-3"
                 />
                 <h2 className="text-lg font-bold text-neutral-900">
-                  {locale === 'ka' ? 'შესვლა' : 'Welcome back'}
+                  {t('auth.welcomeBack')}
                 </h2>
                 <p className="text-sm text-neutral-500 mt-0.5">
-                  {locale === 'ka' ? 'აირჩიეთ შესვლის მეთოდი' : 'Choose your login method'}
+                  {t('auth.chooseYourLoginMethod')}
                 </p>
               </div>
 
@@ -306,8 +306,8 @@ export default function LoginModal() {
                   },
                   {
                     id: 'mobile',
-                    label: locale === 'ka' ? 'ტელეფონი' : 'Mobile',
-                    shortLabel: locale === 'ka' ? 'მობილური' : 'Phone',
+                    label: t('auth.mobile'),
+                    shortLabel: t('common.phone'),
                     icon: (
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
@@ -317,8 +317,8 @@ export default function LoginModal() {
                   },
                   {
                     id: 'email',
-                    label: locale === 'ka' ? 'ელ-ფოსტა' : 'Email',
-                    shortLabel: locale === 'ka' ? 'მეილი' : 'Email',
+                    label: t('common.email'),
+                    shortLabel: t('common.email'),
                     icon: (
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
@@ -352,7 +352,7 @@ export default function LoginModal() {
               {/* Info Message */}
               {!savedAuthMethod && (
                 <p className="text-xs text-neutral-500 text-center mb-4">
-                  {locale === 'ka' ? 'შედით იმავე მეთოდით რომლითაც დარეგისტრირდით' : 'Login with the same method you registered with'}
+                  {t('auth.loginWithTheSameMethod')}
                 </p>
               )}
 
@@ -372,7 +372,7 @@ export default function LoginModal() {
                     onSuccess={handleGoogleSuccess}
                     onError={handleGoogleError}
                     isActive={activeTab === 'google' && isLoginModalOpen}
-                    loadingText={locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
+                    loadingText={t('common.loading')}
                   />
                   {isGoogleLoading && (
                     <div className="flex justify-center">
@@ -386,8 +386,8 @@ export default function LoginModal() {
               {activeTab === 'mobile' && (
                 <form onSubmit={handleSubmit} className="space-y-3">
                   <FormGroup>
-                    <Label locale={locale === 'ka' ? 'ka' : 'en'}>
-                      {locale === 'ka' ? 'ტელეფონის ნომერი' : 'Phone Number'}
+                    <Label locale={locale}>
+                      {t('auth.phoneNumber')}
                     </Label>
                     <PhoneInput
                       value={phone}
@@ -401,12 +401,12 @@ export default function LoginModal() {
 
                   <FormGroup>
                     <Label locale={locale === 'ka' ? 'ka' : 'en'}>
-                      {locale === 'ka' ? 'პაროლი' : 'Password'}
+                      {t('common.password')}
                     </Label>
                     <PasswordInput
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder={locale === 'ka' ? 'შეიყვანეთ პაროლი' : 'Enter your password'}
+                      placeholder={t('auth.enterYourPassword')}
                       required
                     />
                   </FormGroup>
@@ -417,7 +417,7 @@ export default function LoginModal() {
                       onClick={closeLoginModal}
                       className="text-xs font-medium text-[#E07B4F] hover:text-[#C4735B] transition-colors"
                     >
-                      {locale === 'ka' ? 'დაგავიწყდა პაროლი?' : 'Forgot Password?'}
+                      {t('auth.forgotPassword')}
                     </Link>
                   </div>
 
@@ -427,7 +427,7 @@ export default function LoginModal() {
                     loading={isLoading}
                     className="w-full"
                   >
-                    {locale === 'ka' ? 'შესვლა' : 'Sign In'}
+                    {t('auth.signIn')}
                   </Button>
                 </form>
               )}
@@ -443,7 +443,7 @@ export default function LoginModal() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder={locale === 'ka' ? 'შეიყვანეთ ელ-ფოსტა' : 'Enter your email'}
+                      placeholder={t('auth.enterYourEmail')}
                       required
                     />
                   </FormGroup>
@@ -489,7 +489,7 @@ export default function LoginModal() {
                   onClick={closeLoginModal}
                   className="font-semibold text-[#E07B4F] hover:text-[#C4735B] transition-colors"
                 >
-                  {locale === 'ka' ? 'დარეგისტრირდი' : 'Sign Up'}
+                  {t('auth.signUp')}
                 </Link>
               </p>
             </div>

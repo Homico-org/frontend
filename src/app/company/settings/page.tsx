@@ -61,7 +61,7 @@ interface CompanySettings {
 export default function CompanySettingsPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { openLoginModal } = useAuthModal();
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const toast = useToast();
   const router = useRouter();
 
@@ -144,12 +144,12 @@ export default function CompanySettingsPage() {
       });
 
       if (res.ok) {
-        toast.success(locale === 'ka' ? 'პარამეტრები შენახულია!' : 'Settings saved!');
+        toast.success(t('settings.settingsSaved'));
       } else {
         throw new Error('Failed to save settings');
       }
     } catch (error) {
-      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error saving settings');
+      toast.error(t('settings.errorSavingSettings'));
     } finally {
       setIsSaving(false);
     }
@@ -181,17 +181,17 @@ export default function CompanySettingsPage() {
       });
 
       if (res.ok) {
-        toast.success(locale === 'ka' ? 'ლოგო ატვირთულია!' : 'Logo uploaded!');
+        toast.success(t('settings.logoUploaded'));
       }
     } catch (error) {
-      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error uploading logo');
+      toast.error(t('settings.errorUploadingLogo'));
     }
   };
 
   const tabs = [
-    { id: 'profile', label: locale === 'ka' ? 'პროფილი' : 'Profile', icon: Building2 },
-    { id: 'notifications', label: locale === 'ka' ? 'შეტყობინებები' : 'Notifications', icon: Bell },
-    { id: 'billing', label: locale === 'ka' ? 'გადახდა' : 'Billing', icon: CreditCard },
+    { id: 'profile', label: t('settings.profile'), icon: Building2 },
+    { id: 'notifications', label: t('settings.notifications'), icon: Bell },
+    { id: 'billing', label: t('settings.billing'), icon: CreditCard },
   ] as const;
 
   if (authLoading || isLoading) {
@@ -208,10 +208,10 @@ export default function CompanySettingsPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
-            {locale === 'ka' ? 'პარამეტრები' : 'Settings'}
+            {t('common.settings')}
           </h1>
           <p className="text-[var(--color-text-secondary)] mt-1">
-            {locale === 'ka' ? 'მართეთ კომპანიის პროფილი და პარამეტრები' : 'Manage your company profile and preferences'}
+            {t('settings.manageYourCompanyProfileAnd')}
           </p>
         </div>
 
@@ -264,10 +264,10 @@ export default function CompanySettingsPage() {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-[var(--color-text-primary)] mb-1">
-                    {locale === 'ka' ? 'კომპანიის ლოგო' : 'Company Logo'}
+                    {t('settings.companyLogo')}
                   </h3>
                   <p className="text-sm text-[var(--color-text-secondary)] mb-3">
-                    {locale === 'ka' ? 'ატვირთეთ კომპანიის ლოგო. რეკომენდებულია 400x400 პიქსელი.' : 'Upload your company logo. Recommended size: 400x400px.'}
+                    {t('settings.uploadYourCompanyLogoRecommended')}
                   </p>
                 </div>
               </div>
@@ -275,13 +275,13 @@ export default function CompanySettingsPage() {
               {/* Basic Info */}
               <div className="space-y-6">
                 <h3 className="font-semibold text-[var(--color-text-primary)]">
-                  {locale === 'ka' ? 'ძირითადი ინფორმაცია' : 'Basic Information'}
+                  {t('settings.basicInformation')}
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                      {locale === 'ka' ? 'კომპანიის სახელი' : 'Company Name'}
+                      {t('settings.companyName')}
                     </label>
                     <Input
                       type="text"
@@ -292,19 +292,19 @@ export default function CompanySettingsPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                      {locale === 'ka' ? 'სლოგანი' : 'Tagline'}
+                      {t('settings.tagline')}
                     </label>
                     <Input
                       type="text"
                       value={settings.tagline || ''}
                       onChange={(e) => setSettings({ ...settings, tagline: e.target.value })}
-                      placeholder={locale === 'ka' ? 'მოკლე აღწერა' : 'Short description'}
+                      placeholder={t('settings.shortDescription')}
                     />
                   </div>
 
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                      {locale === 'ka' ? 'აღწერა' : 'Description'}
+                      {t('common.description')}
                     </label>
                     <Textarea
                       value={settings.description || ''}
@@ -315,22 +315,22 @@ export default function CompanySettingsPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                      {locale === 'ka' ? 'კომპანიის ტიპი' : 'Company Type'}
+                      {t('settings.companyType')}
                     </label>
                     <Select
                       value={settings.companyType}
                       onChange={(value) => setSettings({ ...settings, companyType: value as typeof settings.companyType })}
                       options={[
-                        { value: 'construction', label: locale === 'ka' ? 'სამშენებლო' : 'Construction' },
-                        { value: 'service_agency', label: locale === 'ka' ? 'სერვისის სააგენტო' : 'Service Agency' },
-                        { value: 'both', label: locale === 'ka' ? 'ორივე' : 'Both' },
+                        { value: 'construction', label: t('settings.construction') },
+                        { value: 'service_agency', label: t('settings.serviceAgency') },
+                        { value: 'both', label: t('settings.both') },
                       ]}
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                      {locale === 'ka' ? 'დაარსების წელი' : 'Founded Year'}
+                      {t('settings.foundedYear')}
                     </label>
                     <Input
                       type="number"
@@ -352,14 +352,14 @@ export default function CompanySettingsPage() {
               {/* Contact Info */}
               <div className="space-y-6 pt-8 border-t border-[var(--color-border-primary)]">
                 <h3 className="font-semibold text-[var(--color-text-primary)]">
-                  {locale === 'ka' ? 'საკონტაქტო ინფორმაცია' : 'Contact Information'}
+                  {t('settings.contactInformation')}
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                       <Mail className="w-4 h-4 inline mr-2" />
-                      {locale === 'ka' ? 'ელფოსტა' : 'Email'}
+                      {t('common.email')}
                     </label>
                     <Input
                       type="email"
@@ -371,7 +371,7 @@ export default function CompanySettingsPage() {
                   <div>
                     <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                       <Phone className="w-4 h-4 inline mr-2" />
-                      {locale === 'ka' ? 'ტელეფონი' : 'Phone'}
+                      {t('common.phone')}
                     </label>
                     <Input
                       type="tel"
@@ -383,7 +383,7 @@ export default function CompanySettingsPage() {
                   <div>
                     <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                       <Globe className="w-4 h-4 inline mr-2" />
-                      {locale === 'ka' ? 'ვებსაიტი' : 'Website'}
+                      {t('common.website')}
                     </label>
                     <Input
                       type="url"
@@ -396,7 +396,7 @@ export default function CompanySettingsPage() {
                   <div>
                     <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                       <MapPin className="w-4 h-4 inline mr-2" />
-                      {locale === 'ka' ? 'ქალაქი' : 'City'}
+                      {t('settings.city')}
                     </label>
                     <Input
                       type="text"
@@ -407,7 +407,7 @@ export default function CompanySettingsPage() {
 
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                      {locale === 'ka' ? 'მისამართი' : 'Address'}
+                      {t('common.address')}
                     </label>
                     <Input
                       type="text"
@@ -418,13 +418,13 @@ export default function CompanySettingsPage() {
 
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                      {locale === 'ka' ? 'სამუშაო საათები' : 'Working Hours'}
+                      {t('settings.workingHours')}
                     </label>
                     <Input
                       type="text"
                       value={settings.workingHours || ''}
                       onChange={(e) => setSettings({ ...settings, workingHours: e.target.value })}
-                      placeholder={locale === 'ka' ? 'მაგ: ორშ-პარ, 09:00-18:00' : 'e.g., Mon-Fri, 9AM-6PM'}
+                      placeholder={t('settings.egMonfri9am6pm')}
                     />
                   </div>
                 </div>
@@ -435,17 +435,17 @@ export default function CompanySettingsPage() {
           {activeTab === 'notifications' && (
             <div className="p-6 sm:p-8 space-y-6">
               <h3 className="font-semibold text-[var(--color-text-primary)] mb-6">
-                {locale === 'ka' ? 'შეტყობინებების პარამეტრები' : 'Notification Preferences'}
+                {t('settings.notificationPreferences')}
               </h3>
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 rounded-xl bg-[var(--color-bg-secondary)]">
                   <div>
                     <p className="font-medium text-[var(--color-text-primary)]">
-                      {locale === 'ka' ? 'ელფოსტის შეტყობინებები' : 'Email Notifications'}
+                      {t('settings.emailNotifications')}
                     </p>
                     <p className="text-sm text-[var(--color-text-tertiary)]">
-                      {locale === 'ka' ? 'მიიღეთ შეტყობინებები ელფოსტით' : 'Receive notifications via email'}
+                      {t('settings.receiveNotificationsViaEmail')}
                     </p>
                   </div>
                   <Toggle
@@ -457,10 +457,10 @@ export default function CompanySettingsPage() {
                 <div className="flex items-center justify-between p-4 rounded-xl bg-[var(--color-bg-secondary)]">
                   <div>
                     <p className="font-medium text-[var(--color-text-primary)]">
-                      {locale === 'ka' ? 'შეთავაზების შეტყობინებები' : 'Proposal Notifications'}
+                      {t('settings.proposalNotifications')}
                     </p>
                     <p className="text-sm text-[var(--color-text-tertiary)]">
-                      {locale === 'ka' ? 'შეტყობინებები შეთავაზებების სტატუსის შესახებ' : 'Updates on your proposals'}
+                      {t('settings.updatesOnYourProposals')}
                     </p>
                   </div>
                   <Toggle
@@ -472,10 +472,10 @@ export default function CompanySettingsPage() {
                 <div className="flex items-center justify-between p-4 rounded-xl bg-[var(--color-bg-secondary)]">
                   <div>
                     <p className="font-medium text-[var(--color-text-primary)]">
-                      {locale === 'ka' ? 'ახალი სამუშაოები' : 'Job Alerts'}
+                      {t('settings.jobAlerts')}
                     </p>
                     <p className="text-sm text-[var(--color-text-tertiary)]">
-                      {locale === 'ka' ? 'შეტყობინებები ახალი სამუშაოების შესახებ' : 'New job opportunities matching your profile'}
+                      {t('settings.newJobOpportunitiesMatchingYour')}
                     </p>
                   </div>
                   <Toggle
@@ -487,10 +487,10 @@ export default function CompanySettingsPage() {
                 <div className="flex items-center justify-between p-4 rounded-xl bg-[var(--color-bg-secondary)]">
                   <div>
                     <p className="font-medium text-[var(--color-text-primary)]">
-                      {locale === 'ka' ? 'ყოველკვირეული რეპორტი' : 'Weekly Report'}
+                      {t('settings.weeklyReport')}
                     </p>
                     <p className="text-sm text-[var(--color-text-tertiary)]">
-                      {locale === 'ka' ? 'ყოველკვირეული შეჯამება' : 'Weekly summary of your activity'}
+                      {t('settings.weeklySummaryOfYourActivity')}
                     </p>
                   </div>
                   <Toggle
@@ -505,7 +505,7 @@ export default function CompanySettingsPage() {
           {activeTab === 'billing' && (
             <div className="p-6 sm:p-8">
               <h3 className="font-semibold text-[var(--color-text-primary)] mb-6">
-                {locale === 'ka' ? 'გადახდის პარამეტრები' : 'Billing & Subscription'}
+                {t('settings.billingSubscription')}
               </h3>
 
               {/* Current Plan */}
@@ -513,38 +513,38 @@ export default function CompanySettingsPage() {
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <p className="text-sm text-[var(--color-text-tertiary)] mb-1">
-                      {locale === 'ka' ? 'მიმდინარე გეგმა' : 'Current Plan'}
+                      {t('settings.currentPlan')}
                     </p>
                     <h4 className="text-xl font-bold text-[var(--color-text-primary)]">
-                      {locale === 'ka' ? 'უფასო' : 'Free Plan'}
+                      {t('settings.freePlan')}
                     </h4>
                   </div>
                   <Badge variant="success" size="sm">
-                    {locale === 'ka' ? 'აქტიური' : 'Active'}
+                    {t('common.active')}
                   </Badge>
                 </div>
                 <p className="text-sm text-[var(--color-text-secondary)] mb-4">
-                  {locale === 'ka' ? 'ძირითადი ფუნქციები უფასოდ' : 'Basic features for free'}
+                  {t('settings.basicFeaturesForFree')}
                 </p>
                 <Button rightIcon={<ExternalLink className="w-4 h-4" />}>
-                  {locale === 'ka' ? 'განაახლე პრემიუმზე' : 'Upgrade to Premium'}
+                  {t('settings.upgradeToPremium')}
                 </Button>
               </div>
 
               {/* Payment Method */}
               <div className="p-6 rounded-2xl border border-[var(--color-border-primary)]">
                 <h4 className="font-medium text-[var(--color-text-primary)] mb-4">
-                  {locale === 'ka' ? 'გადახდის მეთოდი' : 'Payment Method'}
+                  {t('settings.paymentMethod')}
                 </h4>
                 <p className="text-sm text-[var(--color-text-tertiary)]">
-                  {locale === 'ka' ? 'გადახდის მეთოდი არ არის დამატებული' : 'No payment method added'}
+                  {t('settings.noPaymentMethodAdded')}
                 </p>
                 <Button
                   variant="link"
                   className="mt-4 p-0"
                   leftIcon={<CreditCard className="w-4 h-4" />}
                 >
-                  {locale === 'ka' ? 'დაამატე გადახდის მეთოდი' : 'Add Payment Method'}
+                  {t('settings.addPaymentMethod')}
                 </Button>
               </div>
             </div>
@@ -560,8 +560,8 @@ export default function CompanySettingsPage() {
                 leftIcon={!isSaving ? <Save className="w-4 h-4" /> : undefined}
               >
                 {isSaving
-                  ? (locale === 'ka' ? 'ინახება...' : 'Saving...')
-                  : (locale === 'ka' ? 'შენახვა' : 'Save Changes')}
+                  ? (t('common.saving'))
+                  : (t('settings.saveChanges'))}
               </Button>
             </div>
           </div>

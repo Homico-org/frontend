@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
 
-type Locale = 'en' | 'ka';
+type Locale = 'en' | 'ka' | 'ru';
 
 interface LanguageContextType {
   locale: Locale;

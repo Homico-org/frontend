@@ -24,14 +24,14 @@ export default function CategorySection({
   onRatingChange,
   showRatingFilter = false,
 }: CategorySectionProps) {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const { categories } = useCategories();
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
 
   const activeCategory = categories.find(c => c.key === selectedCategory);
 
   const ratingOptions = [
-    { value: 0, label: locale === 'ka' ? 'ყველა' : 'All' },
+    { value: 0, label: t('common.all') },
     { value: 4, label: '4+' },
     { value: 4.5, label: '4.5+' },
   ];
@@ -117,7 +117,7 @@ export default function CategorySection({
       {activeCategory?.subcategories && (
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none -mx-1 px-1 sm:mx-0 sm:px-0 sm:flex-wrap animate-fade-in">
           <span className="text-[11px] text-[var(--color-text-muted)] mr-1 flex-shrink-0 font-medium">
-            {locale === 'ka' ? 'სპეც:' : 'Spec:'}
+            {t('browse.spec')}
           </span>
           {activeCategory.subcategories.map((sub, index) => {
             const isSubSelected = selectedSubcategory === sub.key;

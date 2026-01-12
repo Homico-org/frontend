@@ -8,6 +8,7 @@ import type { ProProfile } from "@/types/shared";
 import { ChevronLeft, ChevronRight, Users } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useLanguage } from "@/contexts/LanguageContext";
 interface SimilarProfessionalsProps {
   categories: string[];
   currentProId: string;
@@ -20,6 +21,8 @@ export default function SimilarProfessionals({
   locale,
 }: SimilarProfessionalsProps) {
   const [professionals, setProfessionals] = useState<ProProfile[]>([]);
+
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -113,12 +116,10 @@ export default function SimilarProfessionals({
           </div>
           <div>
             <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
-              {locale === "ka" ? "მსგავსი სპეციალისტები" : "Similar Professionals"}
+              {t('professional.similarProfessionals')}
             </h2>
             <p className="text-sm text-neutral-500">
-              {locale === "ka" 
-                ? "იგივე კატეგორიიდან" 
-                : "From the same category"}
+              {t('professional.fromTheSameCategory')}
             </p>
           </div>
         </div>
@@ -193,7 +194,7 @@ export default function SimilarProfessionals({
             href={`/browse/professionals?category=${categories[0] || ""}`}
             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
           >
-            {locale === "ka" ? "ყველას ნახვა" : "View All"}
+            {t('common.viewAll')}
             <ChevronRight className="w-4 h-4" />
           </a>
         </div>

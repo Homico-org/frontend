@@ -4,13 +4,14 @@ import { useState, useEffect } from 'react';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useClickOutside } from '@/hooks/useClickOutside';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 interface DatePickerProps {
   value: string;
   onChange: (value: string) => void;
   min?: string;
   max?: string;
   placeholder?: string;
-  locale?: 'ka' | 'en';
+  locale?: 'ka' | 'en' | 'ru';
   className?: string;
 }
 
@@ -37,6 +38,8 @@ export default function DatePicker({
   className = ''
 }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  const { t } = useLanguage();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const containerRef = useClickOutside<HTMLDivElement>(() => setIsOpen(false), isOpen);
 
@@ -137,7 +140,7 @@ export default function DatePicker({
           className="flex-1 text-base"
           style={{ color: value ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)' }}
         >
-          {value ? formatDisplayDate(value) : (placeholder || (locale === 'ka' ? 'დღ.თთ.წწწწ' : 'dd.mm.yyyy'))}
+          {value ? formatDisplayDate(value) : (placeholder || (t('common.ddmmyyyy')))}
         </span>
         {value && (
           <button
@@ -247,7 +250,7 @@ export default function DatePicker({
               className="w-full py-2 text-sm font-medium rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
               style={{ color: 'var(--color-text-secondary)' }}
             >
-              {locale === 'ka' ? 'დღეს' : 'Today'}
+              {t('common.today')}
             </button>
           </div>
         </div>

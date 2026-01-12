@@ -9,6 +9,7 @@ import { IconBadge } from '@/components/ui/IconBadge';
 import { Input, Textarea } from '@/components/ui/input';
 import { ArrowLeftRight, Image as ImageIcon, Plus, Trash2, Video, X } from 'lucide-react';
 import { useRef } from 'react';
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { PortfolioProject } from '../hooks/useRegistration';
 
 export interface ServicesStepProps {
@@ -38,6 +39,7 @@ export default function StepServices({
   handleBeforeAfterUpload,
   removeBeforeAfterPair,
 }: ServicesStepProps) {
+  const { t } = useLanguage();
   const hasValidProject = portfolioProjects.length > 0 && 
     portfolioProjects.some(p => p.images.length > 0 || p.videos.length > 0 || p.beforeAfterPairs.length > 0);
 
@@ -45,16 +47,16 @@ export default function StepServices({
     <div className="space-y-4">
       <div>
         <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
-          {locale === 'ka' ? 'პორტფოლიო' : 'Portfolio'}
+          {t('register.portfolio')}
         </h1>
         <p className="text-sm text-neutral-500">
-          {locale === 'ka' ? 'აჩვენე შენი ნამუშევრები (მინიმუმ 1 პროექტი სავალდებულოა)' : 'Showcase your work (minimum 1 project required)'}
+          {t('register.showcaseYourWorkMinimum')}
         </p>
       </div>
 
       {/* Required notice */}
       <Alert variant="warning" size="sm">
-        {locale === 'ka' ? 'მინიმუმ 1 პროექტი სავალდებულოა რეგისტრაციისთვის' : 'At least 1 project is required to complete registration'}
+        {t('register.atLeast1ProjectIs')}
       </Alert>
 
       {/* Portfolio Projects Section */}
@@ -67,16 +69,16 @@ export default function StepServices({
           <div className="flex items-center gap-2">
             <h2 className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
               <IconBadge icon={ImageIcon} variant="accent" size="sm" />
-              {locale === 'ka' ? 'პროექტები' : 'Projects'}
+              {t('common.projects')}
               <span className="text-[#C4735B]">*</span>
             </h2>
             {hasValidProject ? (
               <Badge variant="success" size="xs">
-                {locale === 'ka' ? 'შევსებულია' : 'Completed'}
+                {t('common.completed')}
               </Badge>
             ) : (
               <Badge variant="default" size="xs">
-                {locale === 'ka' ? 'სავალდებულო' : 'Required'}
+                {t('common.required')}
               </Badge>
             )}
           </div>
@@ -86,7 +88,7 @@ export default function StepServices({
             size="sm"
             leftIcon={<Plus className="w-3.5 h-3.5" />}
           >
-            {locale === 'ka' ? 'დამატება' : 'Add'}
+            {t('common.add')}
           </Button>
         </div>
 
@@ -97,10 +99,10 @@ export default function StepServices({
           >
             <IconBadge icon={Plus} variant="accent" size="lg" className="mx-auto mb-3" />
             <p className="text-sm font-medium text-neutral-900 mb-1">
-              {locale === 'ka' ? 'დაამატე პირველი პროექტი' : 'Add your first project'}
+              {t('register.addYourFirstProject')}
             </p>
             <p className="text-xs text-neutral-500">
-              {locale === 'ka' ? 'აჩვენე შენი ნამუშევრები' : 'Showcase your work'}
+              {t('register.showcaseYourWork')}
             </p>
           </div>
         ) : (
@@ -130,16 +132,14 @@ export default function StepServices({
               className="w-full border-2 border-dashed border-[#C4735B]/20 text-[#C4735B] hover:border-[#C4735B]/40 hover:bg-[#C4735B]/5"
               leftIcon={<Plus className="w-4 h-4" />}
             >
-              {locale === 'ka' ? 'კიდევ ერთი პროექტი' : 'Add another project'}
+              {t('register.addAnotherProject')}
             </Button>
           </div>
         )}
       </Card>
 
       <p className="text-xs text-neutral-400 text-center">
-        {locale === 'ka'
-          ? 'ეს ინფორმაცია შეგიძლია მოგვიანებით შეცვალო პროფილის პარამეტრებში'
-          : 'You can update this information later in your profile settings'}
+        {t('register.youCanUpdateThisInformation')}
       </p>
     </div>
   );
@@ -173,6 +173,7 @@ function ProjectCard({
   onBeforeAfterUpload,
   onRemoveBeforeAfterPair,
 }: ProjectCardProps) {
+  const { t } = useLanguage();
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const beforeInputRef = useRef<HTMLInputElement>(null);
@@ -201,7 +202,7 @@ function ProjectCard({
       <Textarea
         value={project.description}
         onChange={(e) => onUpdate('description', e.target.value)}
-        placeholder={locale === 'ka' ? 'აღწერა (არასავალდებულო)' : 'Description (optional)'}
+        placeholder={t('register.descriptionOptional')}
         rows={2}
         className="mb-2 text-xs"
       />
@@ -271,13 +272,13 @@ function ProjectCard({
                 <div className="w-1/2 h-full relative">
                   <NextImage src={pair.beforeImage} alt="Before" fill className="object-cover" sizes="100px" unoptimized />
                   <span className="absolute bottom-0 left-0 text-[8px] bg-black/60 text-white px-1">
-                    {locale === 'ka' ? 'მანამდე' : 'Before'}
+                    {t('common.before')}
                   </span>
                 </div>
                 <div className="w-1/2 h-full relative">
                   <NextImage src={pair.afterImage} alt="After" fill className="object-cover" sizes="100px" unoptimized />
                   <span className="absolute bottom-0 right-0 text-[8px] bg-emerald-500/80 text-white px-1">
-                    {locale === 'ka' ? 'შემდეგ' : 'After'}
+                    {t('common.after')}
                   </span>
                 </div>
               </div>
@@ -305,7 +306,7 @@ function ProjectCard({
           leftIcon={<ImageIcon className="w-3 h-3" />}
           className="text-[#C4735B] border-[#C4735B]/30 hover:bg-[#C4735B]/5"
         >
-          {locale === 'ka' ? 'ფოტო' : 'Photo'}
+          {t('register.photo')}
         </Button>
         <Button
           type="button"
@@ -315,7 +316,7 @@ function ProjectCard({
           leftIcon={<Video className="w-3 h-3" />}
           className="text-indigo-600 border-indigo-300 hover:bg-indigo-50"
         >
-          {locale === 'ka' ? 'ვიდეო' : 'Video'}
+          {t('common.video')}
         </Button>
         <Button
           type="button"
@@ -325,7 +326,7 @@ function ProjectCard({
           leftIcon={<ArrowLeftRight className="w-3 h-3" />}
           className="text-emerald-600 border-emerald-300 hover:bg-emerald-50"
         >
-          {locale === 'ka' ? 'მანამდე/შემდეგ' : 'Before/After'}
+          {t('register.beforeafter')}
         </Button>
       </div>
 

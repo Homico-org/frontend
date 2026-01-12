@@ -2,7 +2,7 @@
  * Utility functions for date formatting and manipulation
  */
 
-export type Locale = 'en' | 'ka';
+export type Locale = 'en' | 'ka' | 'ru';
 
 /**
  * Format a date as relative time (e.g., "3 days ago", "2 weeks ago")
@@ -21,6 +21,14 @@ export function formatTimeAgo(dateString: string, locale: Locale = 'en'): string
     if (diffDays < 7) return `${diffDays} დღის წინ`;
     if (diffWeeks < 4) return `${diffWeeks} კვირის წინ`;
     return `${diffMonths} თვის წინ`;
+  }
+
+  if (locale === 'ru') {
+    if (diffDays < 1) return 'сегодня';
+    if (diffDays === 1) return 'вчера';
+    if (diffDays < 7) return `${diffDays} дней назад`;
+    if (diffWeeks < 4) return `${diffWeeks} недель назад`;
+    return `${diffMonths} месяцев назад`;
   }
 
   if (diffDays < 1) return 'today';
@@ -44,6 +52,14 @@ export function formatDate(dateString: string, locale: Locale = 'en'): string {
     return `${date.getDate()} ${months[date.getMonth()]}, ${date.getFullYear()}`;
   }
 
+  if (locale === 'ru') {
+    const months = [
+      'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+      'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+    ];
+    return `${date.getDate()} ${months[date.getMonth()]}, ${date.getFullYear()}`;
+  }
+
   return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -59,19 +75,29 @@ export function formatTimeAgoCompact(dateString: string, locale: Locale = 'en'):
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
+  const msgs = {
+    justNow: { en: 'Just now', ka: 'ახლახანს', ru: 'Только что' },
+  };
+
   if (diffInSeconds < 60) {
-    return locale === 'ka' ? 'ახლახანს' : 'Just now';
+    return msgs.justNow[locale];
   }
   if (diffInSeconds < 3600) {
     const mins = Math.floor(diffInSeconds / 60);
-    return locale === 'ka' ? `${mins} წთ წინ` : `${mins}m`;
+    if (locale === 'ka') return `${mins} წთ წინ`;
+    if (locale === 'ru') return `${mins} мин`;
+    return `${mins}m`;
   }
   if (diffInSeconds < 86400) {
     const hours = Math.floor(diffInSeconds / 3600);
-    return locale === 'ka' ? `${hours} სთ წინ` : `${hours}h`;
+    if (locale === 'ka') return `${hours} სთ წინ`;
+    if (locale === 'ru') return `${hours} ч`;
+    return `${hours}h`;
   }
   const days = Math.floor(diffInSeconds / 86400);
-  return locale === 'ka' ? `${days} დღე` : `${days}d`;
+  if (locale === 'ka') return `${days} დღე`;
+  if (locale === 'ru') return `${days} д`;
+  return `${days}d`;
 }
 
 /**
@@ -79,7 +105,8 @@ export function formatTimeAgoCompact(dateString: string, locale: Locale = 'en'):
  * This uses the native locale formatting for consistency
  */
 export function formatDateShort(dateString: string, locale: Locale = 'en'): string {
-  return new Date(dateString).toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', {
+  const localeMap = { en: 'en-US', ka: 'ka-GE', ru: 'ru-RU' };
+  return new Date(dateString).toLocaleDateString(localeMap[locale], {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -90,7 +117,8 @@ export function formatDateShort(dateString: string, locale: Locale = 'en'): stri
  * Format a date with time using toLocaleDateString (e.g., "Jan 15, 2024, 3:30 PM")
  */
 export function formatDateTimeShort(dateString: string, locale: Locale = 'en'): string {
-  return new Date(dateString).toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', {
+  const localeMap = { en: 'en-US', ka: 'ka-GE', ru: 'ru-RU' };
+  return new Date(dateString).toLocaleDateString(localeMap[locale], {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -108,9 +136,15 @@ export function formatDateRelative(dateString: string, locale: Locale = 'en'): s
   const diff = now.getTime() - date.getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-  if (days === 0) return locale === 'ka' ? 'დღეს' : 'Today';
-  if (days === 1) return locale === 'ka' ? 'გუშინ' : 'Yesterday';
-  return date.toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US');
+  const msgs = {
+    today: { en: 'Today', ka: 'დღეს', ru: 'Сегодня' },
+    yesterday: { en: 'Yesterday', ka: 'გუშინ', ru: 'Вчера' },
+  };
+
+  if (days === 0) return msgs.today[locale];
+  if (days === 1) return msgs.yesterday[locale];
+  const localeMap = { en: 'en-US', ka: 'ka-GE', ru: 'ru-RU' };
+  return date.toLocaleDateString(localeMap[locale]);
 }
 
 /**
@@ -123,6 +157,16 @@ export function formatDateTime(dateString: string, locale: Locale = 'en'): strin
     const months = [
       'იან', 'თებ', 'მარ', 'აპრ', 'მაი', 'ივნ',
       'ივლ', 'აგვ', 'სექ', 'ოქტ', 'ნოე', 'დეკ'
+    ];
+    const hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${date.getDate()} ${months[date.getMonth()]}, ${date.getFullYear()} ${hours}:${minutes}`;
+  }
+
+  if (locale === 'ru') {
+    const months = [
+      'янв', 'фев', 'мар', 'апр', 'май', 'июн',
+      'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'
     ];
     const hours = date.getHours();
     const minutes = date.getMinutes().toString().padStart(2, '0');
@@ -153,7 +197,8 @@ export function formatDateUK(dateString: string): string {
  * Format a date as month and day only (e.g., "Jan 15" or "15 იან")
  */
 export function formatDateMonthDay(dateString: string, locale: Locale = 'en'): string {
-  return new Date(dateString).toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', {
+  const localeMap = { en: 'en-US', ka: 'ka-GE', ru: 'ru-RU' };
+  return new Date(dateString).toLocaleDateString(localeMap[locale], {
     month: 'short',
     day: 'numeric',
   });
@@ -163,7 +208,8 @@ export function formatDateMonthDay(dateString: string, locale: Locale = 'en'): s
  * Format a date with weekday for chat separators (e.g., "Monday, January 15")
  */
 export function formatDateLong(dateString: string, locale: Locale = 'en'): string {
-  return new Date(dateString).toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', {
+  const localeMap = { en: 'en-US', ka: 'ka-GE', ru: 'ru-RU' };
+  return new Date(dateString).toLocaleDateString(localeMap[locale], {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
@@ -187,6 +233,16 @@ const GEORGIAN_MONTHS_SHORT = [
   'იან', 'თებ', 'მარ', 'აპრ', 'მაი', 'ივნ', 'ივლ', 'აგვ', 'სექ', 'ოქტ', 'ნოე', 'დეკ'
 ];
 
+// Russian weekday names
+const RUSSIAN_WEEKDAYS = [
+  'Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'
+];
+
+// Russian month names (short)
+const RUSSIAN_MONTHS_SHORT = [
+  'янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'
+];
+
 /**
  * Format a date separator for chat (Today/Yesterday/weekday + date)
  */
@@ -199,16 +255,28 @@ export function formatChatDateSeparator(dateString: string, locale: Locale = 'en
   const isToday = date.toDateString() === today.toDateString();
   const isYesterday = date.toDateString() === yesterday.toDateString();
 
+  const msgs = {
+    today: { en: 'Today', ka: 'დღეს', ru: 'Сегодня' },
+    yesterday: { en: 'Yesterday', ka: 'გუშინ', ru: 'Вчера' },
+  };
+
   if (isToday) {
-    return locale === 'ka' ? 'დღეს' : 'Today';
+    return msgs.today[locale];
   }
   if (isYesterday) {
-    return locale === 'ka' ? 'გუშინ' : 'Yesterday';
+    return msgs.yesterday[locale];
   }
 
   if (locale === 'ka') {
     const weekday = GEORGIAN_WEEKDAYS[date.getDay()];
     const month = GEORGIAN_MONTHS_SHORT[date.getMonth()];
+    const day = date.getDate();
+    return `${weekday}, ${day} ${month}`;
+  }
+
+  if (locale === 'ru') {
+    const weekday = RUSSIAN_WEEKDAYS[date.getDay()];
+    const month = RUSSIAN_MONTHS_SHORT[date.getMonth()];
     const day = date.getDate();
     return `${weekday}, ${day} ${month}`;
   }

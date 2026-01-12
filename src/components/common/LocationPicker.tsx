@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // Local type definitions for Google Maps API
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,6 +36,7 @@ interface LocationPickerProps {
 // Types declared in src/types/google.d.ts
 
 export default function LocationPicker({ value, onChange, placeholder = 'Enter address' }: LocationPickerProps) {
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState(value);
   const [predictions, setPredictions] = useState<AutocompletePrediction[]>([]);

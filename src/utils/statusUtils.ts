@@ -50,15 +50,15 @@ export function getAdminStatusColor(status: string): string {
  * Get status label with localization
  */
 export function getJobStatusLabel(status: string, locale: Locale = 'en'): string {
-  const labels: Record<string, { en: string; ka: string }> = {
-    open: { en: 'Open', ka: 'ღია' },
-    pending: { en: 'Pending', ka: 'მოლოდინში' },
-    assigned: { en: 'Assigned', ka: 'დანიშნული' },
-    in_progress: { en: 'In Progress', ka: 'მიმდინარე' },
-    review: { en: 'Review', ka: 'შემოწმება' },
-    completed: { en: 'Completed', ka: 'დასრულებული' },
-    cancelled: { en: 'Cancelled', ka: 'გაუქმებული' },
-    closed: { en: 'Closed', ka: 'დახურული' },
+  const labels: Record<string, { en: string; ka: string; ru: string }> = {
+    open: { en: 'Open', ka: 'ღია', ru: 'Открыто' },
+    pending: { en: 'Pending', ka: 'მოლოდინში', ru: 'Ожидает' },
+    assigned: { en: 'Assigned', ka: 'დანიშნული', ru: 'Назначено' },
+    in_progress: { en: 'In Progress', ka: 'მიმდინარე', ru: 'В процессе' },
+    review: { en: 'Review', ka: 'შემოწმება', ru: 'Проверка' },
+    completed: { en: 'Completed', ka: 'დასრულებული', ru: 'Завершено' },
+    cancelled: { en: 'Cancelled', ka: 'გაუქმებული', ru: 'Отменено' },
+    closed: { en: 'Closed', ka: 'დახურული', ru: 'Закрыто' },
   };
   return labels[status]?.[locale] || status;
 }
@@ -67,11 +67,11 @@ export function getJobStatusLabel(status: string, locale: Locale = 'en'): string
  * Get proposal status label with localization
  */
 export function getProposalStatusLabel(status: string, locale: Locale = 'en'): string {
-  const labels: Record<string, { en: string; ka: string }> = {
-    pending: { en: 'Pending', ka: 'მოლოდინში' },
-    accepted: { en: 'Accepted', ka: 'მიღებული' },
-    rejected: { en: 'Rejected', ka: 'უარყოფილი' },
-    withdrawn: { en: 'Withdrawn', ka: 'გატანილი' },
+  const labels: Record<string, { en: string; ka: string; ru: string }> = {
+    pending: { en: 'Pending', ka: 'მოლოდინში', ru: 'Ожидает' },
+    accepted: { en: 'Accepted', ka: 'მიღებული', ru: 'Принято' },
+    rejected: { en: 'Rejected', ka: 'უარყოფილი', ru: 'Отклонено' },
+    withdrawn: { en: 'Withdrawn', ka: 'გატანილი', ru: 'Отозвано' },
   };
   return labels[status]?.[locale] || status;
 }
@@ -80,11 +80,11 @@ export function getProposalStatusLabel(status: string, locale: Locale = 'en'): s
  * Get ticket status label with localization
  */
 export function getTicketStatusLabel(status: string, locale: Locale = 'en'): string {
-  const labels: Record<string, { en: string; ka: string }> = {
-    open: { en: 'Open', ka: 'ღია' },
-    in_progress: { en: 'In Progress', ka: 'მიმდინარე' },
-    resolved: { en: 'Resolved', ka: 'მოგვარებული' },
-    closed: { en: 'Closed', ka: 'დახურული' },
+  const labels: Record<string, { en: string; ka: string; ru: string }> = {
+    open: { en: 'Open', ka: 'ღია', ru: 'Открыто' },
+    in_progress: { en: 'In Progress', ka: 'მიმდინარე', ru: 'В работе' },
+    resolved: { en: 'Resolved', ka: 'მოგვარებული', ru: 'Решено' },
+    closed: { en: 'Closed', ka: 'დახურული', ru: 'Закрыто' },
   };
   return labels[status]?.[locale] || status;
 }
@@ -176,11 +176,11 @@ export function getAdminRoleColor(role: string): string {
  * Get admin role label with localization
  */
 export function getAdminRoleLabel(role: string, locale: Locale = 'en'): string {
-  const labels: Record<string, { en: string; ka: string }> = {
-    admin: { en: 'Admin', ka: 'ადმინი' },
-    pro: { en: 'Pro', ka: 'პროფესიონალი' },
-    company: { en: 'Company', ka: 'კომპანია' },
-    client: { en: 'Client', ka: 'კლიენტი' },
+  const labels: Record<string, { en: string; ka: string; ru: string }> = {
+    admin: { en: 'Admin', ka: 'ადმინი', ru: 'Админ' },
+    pro: { en: 'Pro', ka: 'პროფესიონალი', ru: 'Специалист' },
+    company: { en: 'Company', ka: 'კომპანია', ru: 'Компания' },
+    client: { en: 'Client', ka: 'კლიენტი', ru: 'Клиент' },
   };
   return labels[role]?.[locale] || role;
 }
@@ -267,11 +267,11 @@ export function getAdminReportStatusColor(status: string): string {
  * Get admin report status label with localization
  */
 export function getAdminReportStatusLabel(status: string, locale: Locale = 'en'): string {
-  const labels: Record<string, { en: string; ka: string }> = {
-    pending: { en: 'Pending', ka: 'მოლოდინში' },
-    investigating: { en: 'Investigating', ka: 'გამოძიება' },
-    resolved: { en: 'Resolved', ka: 'გადაჭრილი' },
-    dismissed: { en: 'Dismissed', ka: 'უარყოფილი' },
+  const labels: Record<string, { en: string; ka: string; ru: string }> = {
+    pending: { en: 'Pending', ka: 'მოლოდინში', ru: 'Ожидает' },
+    investigating: { en: 'Investigating', ka: 'გამოძიება', ru: 'Расследование' },
+    resolved: { en: 'Resolved', ka: 'გადაჭრილი', ru: 'Решено' },
+    dismissed: { en: 'Dismissed', ka: 'უარყოფილი', ru: 'Отклонено' },
   };
   return labels[status]?.[locale] || status;
 }

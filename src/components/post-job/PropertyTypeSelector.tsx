@@ -11,7 +11,7 @@ export interface PropertyTypeSelectorProps {
   /** Change handler */
   onChange: (value: PropertyType) => void;
   /** Locale for translations */
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   /** Custom className */
   className?: string;
 }

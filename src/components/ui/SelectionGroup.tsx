@@ -31,7 +31,7 @@ interface SelectionGroupProps<T = string> {
   /** Number of columns for grid layout */
   columns?: 2 | 3 | 4;
   /** Language locale */
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   /** Whether selection is required (shows visual indicator) */
   required?: boolean;
   /** Additional class names */

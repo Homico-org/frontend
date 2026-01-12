@@ -17,6 +17,7 @@ import { Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Employee {
   _id: string;
@@ -31,6 +32,7 @@ interface Employee {
 }
 
 export default function CreateCompanyJobPage() {
+  const { t } = useLanguage();
   const { user, isAuthenticated, isLoading } = useAuth();
   const { openLoginModal } = useAuthModal();
   const router = useRouter();

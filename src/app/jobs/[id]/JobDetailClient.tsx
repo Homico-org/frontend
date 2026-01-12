@@ -76,6 +76,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
+import { useLanguage } from "@/contexts/LanguageContext";
 const STAGES: {
   key: ProjectStage;
   label: string;
@@ -100,33 +101,34 @@ interface PageJob extends Omit<Job, 'clientId'> {
   updatedAt?: string;
 }
 
-const propertyTypeLabels: Record<string, { en: string; ka: string }> = {
-  apartment: { en: "Apartment", ka: "ბინა" },
-  house: { en: "House", ka: "სახლი" },
-  office: { en: "Office", ka: "ოფისი" },
-  building: { en: "Building", ka: "შენობა" },
-  other: { en: "Other", ka: "სხვა" },
+// i18n translation keys for property types, conditions, and work types
+const propertyTypeKeys: Record<string, string> = {
+  apartment: "jobDetail.propertyType.apartment",
+  house: "jobDetail.propertyType.house",
+  office: "jobDetail.propertyType.office",
+  building: "jobDetail.propertyType.building",
+  other: "jobDetail.propertyType.other",
 };
 
-const conditionLabels: Record<string, { en: string; ka: string }> = {
-  "shell": { en: "Shell / White Frame", ka: "თეთრი კარკასი" },
-  "black-frame": { en: "Black Frame", ka: "შავი კარკასი" },
-  "needs-renovation": { en: "Needs Full Renovation", ka: "სრული რემონტი სჭირდება" },
-  "partial-renovation": { en: "Partial Renovation", ka: "ნაწილობრივი რემონტი" },
-  "good": { en: "Good Condition", ka: "კარგ მდგომარეობაში" },
+const conditionKeys: Record<string, string> = {
+  "shell": "jobDetail.condition.shell",
+  "black-frame": "jobDetail.condition.blackFrame",
+  "needs-renovation": "jobDetail.condition.needsRenovation",
+  "partial-renovation": "jobDetail.condition.partialRenovation",
+  "good": "jobDetail.condition.good",
 };
 
-const workTypeLabels: Record<string, { en: string; ka: string }> = {
-  Demolition: { en: "Demolition", ka: "დემონტაჟი" },
-  "Wall Construction": { en: "Wall Construction", ka: "კედლების აშენება" },
-  Electrical: { en: "Electrical", ka: "ელექტროობა" },
-  Plumbing: { en: "Plumbing", ka: "სანტექნიკა" },
-  Flooring: { en: "Flooring", ka: "იატაკი" },
-  Painting: { en: "Painting", ka: "შეღებვა" },
-  Tiling: { en: "Tiling", ka: "კაფელი" },
-  Ceiling: { en: "Ceiling", ka: "ჭერი" },
-  "Windows & Doors": { en: "Windows & Doors", ka: "ფანჯრები და კარები" },
-  HVAC: { en: "HVAC", ka: "კონდიცირება/გათბობა" },
+const workTypeKeys: Record<string, string> = {
+  Demolition: "jobDetail.workType.demolition",
+  "Wall Construction": "jobDetail.workType.wallConstruction",
+  Electrical: "jobDetail.workType.electrical",
+  Plumbing: "jobDetail.workType.plumbing",
+  Flooring: "jobDetail.workType.flooring",
+  Painting: "jobDetail.workType.painting",
+  Tiling: "jobDetail.workType.tiling",
+  Ceiling: "jobDetail.workType.ceiling",
+  "Windows & Doors": "jobDetail.workType.windowsDoors",
+  HVAC: "jobDetail.workType.hvac",
 };
 
 // Category illustrations for jobs without images
@@ -648,6 +650,8 @@ export default function JobDetailClient() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
+
+  const { t } = useLanguage();
   const { getCategoryLabel, locale } = useCategoryLabels();
   const { trackEvent } = useAnalytics();
   const toast = useToast();
@@ -1011,11 +1015,11 @@ export default function JobDetailClient() {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return locale === "ka" ? "ახლახანს" : "Just now";
+    if (diffMins < 1) return t('common.justNow');
     if (diffMins < 60) return locale === "ka" ? `${diffMins} წთ წინ` : `${diffMins}m ago`;
     if (diffHours < 24) return locale === "ka" ? `${diffHours} სთ წინ` : `${diffHours}h ago`;
     if (diffDays < 7) return locale === "ka" ? `${diffDays} დღე წინ` : `${diffDays}d ago`;
-    return date.toLocaleDateString(locale === "ka" ? "ka-GE" : "en-US", { month: "short", day: "numeric" });
+    return date.toLocaleDateString(t('jobDetail.enus8'), { month: "short", day: "numeric" });
   };
 
   const filteredHistory = historyFilter === "all"
@@ -1047,7 +1051,7 @@ export default function JobDetailClient() {
     // Validate proId
     if (!proId) {
       console.error('[handleSubmitReview] No proId found!', job.hiredPro);
-      setError(locale === "ka" ? "სპეციალისტის ID ვერ მოიძებნა" : "Professional ID not found");
+      setError(t('jobDetail.professionalIdNotFound'));
       setTimeout(() => setError(""), 3000);
       return;
     }
@@ -1076,8 +1080,8 @@ export default function JobDetailClient() {
       setHasSubmittedReview(true);
       setSuccess(
         isCompletionFlow
-          ? (locale === "ka" ? "პროექტი დასრულდა და შეფასება გაიგზავნა" : "Project completed and review submitted")
-          : (locale === "ka" ? "შეფასება გაიგზავნა" : "Review submitted successfully")
+          ? (t('jobDetail.projectCompletedAndReviewSubmitted'))
+          : (t('jobDetail.reviewSubmittedSuccessfully'))
       );
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
@@ -1089,10 +1093,10 @@ export default function JobDetailClient() {
           try {
             await api.post(`/jobs/projects/${job.id}/confirm-completion`);
             setIsClientConfirmed(true);
-            setSuccess(locale === "ka" ? "პროექტი დასრულდა" : "Project completed");
+            setSuccess(t('jobDetail.projectCompleted'));
             setTimeout(() => setSuccess(""), 3000);
           } catch {
-            setError(locale === "ka" ? "პროექტი ვერ დაიხურა" : "Failed to close project");
+            setError(t('jobDetail.failedToCloseProject'));
             setTimeout(() => setError(""), 3000);
           }
         }
@@ -1100,7 +1104,7 @@ export default function JobDetailClient() {
         setShowReviewModal(false);
         setIsCompletionFlow(false);
       } else {
-      setError(locale === "ka" ? "შეფასება ვერ გაიგზავნა" : "Failed to submit review");
+      setError(t('jobDetail.failedToSubmitReview'));
       setTimeout(() => setError(""), 3000);
       }
     } finally {
@@ -1261,14 +1265,14 @@ export default function JobDetailClient() {
     try {
       await api.patch(`/jobs/projects/${job.id}/stage`, { stage: newStage });
       toast.success(
-        locale === "ka" ? "წარმატება" : "Success",
-        locale === "ka" ? "სტატუსი განახლდა" : "Stage updated"
+        t('common.success'),
+        t('jobDetail.stageUpdated')
       );
     } catch (err) {
       setProjectStage(previousStage);
       toast.error(
-        locale === "ka" ? "შეცდომა" : "Error",
-        locale === "ka" ? "სტატუსი ვერ განახლდა" : "Failed to update stage"
+        t('common.error'),
+        t('jobDetail.failedToUpdateStage')
       );
     } finally {
       setIsUpdatingStage(false);
@@ -1295,13 +1299,13 @@ export default function JobDetailClient() {
       await api.patch(`/jobs/projects/${job.id}/stage`, { stage: "review" });
       toast.success(
         locale === "ka" ? "წარმატება" : "Success",
-        locale === "ka" ? "მოთხოვნა გაიგზავნა" : "Request sent"
+        t('jobDetail.requestSent')
       );
     } catch (err) {
       setProjectStage(previousStage);
       toast.error(
         locale === "ka" ? "შეცდომა" : "Error",
-        locale === "ka" ? "მოთხოვნა ვერ გაიგზავნა" : "Failed to send request"
+        t('jobDetail.failedToSendRequest')
       );
     } finally {
       setIsUpdatingStage(false);
@@ -1325,9 +1329,7 @@ export default function JobDetailClient() {
       });
 
       setSuccess(
-        locale === "ka"
-          ? "წინადადება წარმატებით გაიგზავნა"
-          : "Proposal submitted successfully"
+        t('jobDetail.proposalSubmittedSuccessfully')
       );
       setShowProposalForm(false);
       setMyProposal(response.data);
@@ -1364,7 +1366,7 @@ export default function JobDetailClient() {
       const errorMessage =
         apiErr.response?.data?.message ||
         apiErr.message ||
-        (locale === "ka" ? "წაშლა ვერ მოხერხდა" : "Failed to delete");
+        (t('jobDetail.failedToDelete'));
       setDeleteError(errorMessage);
     } finally {
       setIsDeleting(false);
@@ -1379,10 +1381,10 @@ export default function JobDetailClient() {
       await api.put(`/jobs/${job.id}`, { description: editDescription });
       setJob((prev) => prev ? { ...prev, description: editDescription } : prev);
       setShowDescriptionEdit(false);
-      toast.success(locale === "ka" ? "შენახულია" : "Saved");
+      toast.success(t('jobDetail.saved'));
     } catch (err) {
       console.error("Failed to save description:", err);
-      toast.error(locale === "ka" ? "შენახვა ვერ მოხერხდა" : "Failed to save");
+      toast.error(t('jobDetail.failedToSave'));
     } finally {
       setIsSavingDescription(false);
     }
@@ -1505,31 +1507,31 @@ export default function JobDetailClient() {
   };
 
   // All available work types for selection
-  const allWorkTypes = Object.keys(workTypeLabels);
+  const allWorkTypes = Object.keys(workTypeKeys);
 
   const formatBudget = (job: Job) => {
     // Handle negotiable type explicitly
     if (job.budgetType === "negotiable") {
-      return locale === "ka" ? "შეთანხმებით" : "Negotiable";
+      return t('common.negotiable');
     }
-    return formatBudgetUtil(job, locale as "en" | "ka");
+    return formatBudgetUtil(job, locale as "en" | "ka" | "ru");
   };
 
-  const getTimeAgo = (dateString: string) => formatTimeAgoCompact(dateString, locale as "en" | "ka");
+  const getTimeAgo = (dateString: string) => formatTimeAgoCompact(dateString, locale as "en" | "ka" | "ru");
 
   const getPropertyTypeLabel = (type: string) => {
-    const label = propertyTypeLabels[type];
-    return label ? label[locale as "en" | "ka"] : type;
+    const key = propertyTypeKeys[type];
+    return key ? t(key) : type;
   };
 
   const getConditionLabel = (condition: string) => {
-    const label = conditionLabels[condition];
-    return label ? label[locale as "en" | "ka"] : condition;
+    const key = conditionKeys[condition];
+    return key ? t(key) : condition;
   };
 
   const getWorkTypeLabel = (type: string) => {
-    const label = workTypeLabels[type];
-    return label ? label[locale as "en" | "ka"] : type;
+    const key = workTypeKeys[type];
+    return key ? t(key) : type;
   };
 
   // Loading state with elegant skeleton
@@ -1596,7 +1598,7 @@ export default function JobDetailClient() {
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
                   className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
-                  title={locale === "ka" ? "წაშლა" : "Delete"}
+                  title={t('common.delete')}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -1613,7 +1615,7 @@ export default function JobDetailClient() {
                 <Link
                   href={`/post-job?edit=${job.id}`}
                   className="absolute top-3 left-3 z-10 w-9 h-9 rounded-full bg-white/95 dark:bg-neutral-800/95 shadow-lg border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-600 dark:text-neutral-300 hover:text-[#C4735B] hover:border-[#C4735B] transition-all"
-                  title={locale === "ka" ? "მედიის რედაქტირება" : "Edit Media"}
+                  title={t('jobDetail.editMedia')}
                 >
                   <Edit3 className="w-4 h-4" />
                 </Link>
@@ -1702,7 +1704,7 @@ export default function JobDetailClient() {
                       </svg>
                     </div>
                     <span className="text-xs font-medium text-white/70 tracking-wider uppercase">
-                      {locale === "ka" ? "ფოტო არ არის" : "No photo"}
+                      {t('common.noPhoto')}
                     </span>
                   </div>
           </div>
@@ -1717,7 +1719,7 @@ export default function JobDetailClient() {
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="text-xs font-semibold">
-                    {locale === "ka" ? "აქტიური" : "Active"}
+                    {t('common.active')}
                   </span>
                 </span>
               )}
@@ -1728,7 +1730,7 @@ export default function JobDetailClient() {
                   >
                     <Check className="w-3 h-3" />
                     <span className="text-xs font-semibold">
-                    {locale === "ka" ? "დაქირავებული" : "Hired"}
+                    {t('common.hired')}
                   </span>
                 </span>
               )}
@@ -1775,7 +1777,7 @@ export default function JobDetailClient() {
           </div>
                 <div>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                    {locale === "ka" ? "ბიუჯეტი" : "Budget"}
+                    {t('common.budget')}
                   </p>
                   <p className="text-xl font-bold text-neutral-900 dark:text-white">
                     {budgetDisplay}
@@ -1787,7 +1789,7 @@ export default function JobDetailClient() {
               <div className="flex items-center gap-6 text-sm mb-3">
                 <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
                   <Eye className="w-4 h-4" />
-                  <span>{job.viewCount || 0} {locale === "ka" ? "ნახვა" : "views"}</span>
+                  <span>{job.viewCount || 0} {t('jobDetail.views')}</span>
                 </div>
                 {!isHired && (
               isOwner ? (
@@ -1796,7 +1798,7 @@ export default function JobDetailClient() {
                       className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-[#C4735B] transition-colors"
                   >
                       <Users className="w-4 h-4" />
-                      <span className="underline underline-offset-2">{job.proposalCount || 0} {locale === "ka" ? "შეთავაზება" : "proposals"}</span>
+                      <span className="underline underline-offset-2">{job.proposalCount || 0} {t('jobDetail.proposals')}</span>
                   </Link>
                   ) : (
                     <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
@@ -1839,7 +1841,7 @@ export default function JobDetailClient() {
                   onClick={() => setShowProposalForm(true)}
                   leftIcon={<Send className="w-4 h-4" />}
                 >
-                  {locale === "ka" ? "შეთავაზების გაგზავნა" : "Submit Proposal"}
+                  {t('jobDetail.submitProposal')}
                 </Button>
             </div>
           )}
@@ -1859,7 +1861,7 @@ export default function JobDetailClient() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-purple-800 dark:text-purple-200">
-                  {locale === "ka" ? "თქვენ დაგიქირავეს ამ სამუშაოზე!" : "You've been hired for this job!"}
+                  {t('jobDetail.youveBeenHiredForThis')}
                 </p>
                 <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">
                   {locale === "ka" 
@@ -1902,12 +1904,12 @@ export default function JobDetailClient() {
                   </div>
                   <div>
                   <h3 className="font-semibold text-neutral-900 dark:text-white">
-                    {locale === "ka" ? "დაქირავებულია" : "Hired"}
+                    {t('common.hired')}
                     </h3>
                   <p className="text-sm text-neutral-500">
                     {isOwner 
-                      ? (locale === "ka" ? "თქვენ დაიქირავეთ სპეციალისტი" : "You hired the professional")
-                      : (locale === "ka" ? "კლიენტმა დაგიქირავათ" : "The client hired you")
+                      ? (t('jobDetail.youHiredTheProfessional'))
+                      : (t('jobDetail.theClientHiredYou'))
                     }
                     </p>
                   </div>
@@ -1926,7 +1928,7 @@ export default function JobDetailClient() {
                       {isOwner ? (job.hiredPro?.userId?.name || "Professional") : (job.clientId?.name || "Client")}
                     </p>
                     <p className="text-xs text-neutral-500">
-                      {isOwner ? (locale === "ka" ? "სპეციალისტი" : "Professional") : (locale === "ka" ? "კლიენტი" : "Client")}
+                      {isOwner ? (t('common.professional')) : (t('common.client'))}
                     </p>
                   </div>
                 </div>
@@ -2047,7 +2049,7 @@ export default function JobDetailClient() {
                       <div className="text-center py-8 text-neutral-500 dark:text-neutral-400">
                         <History className="w-12 h-12 mx-auto mb-3 opacity-30" />
                         <p className="text-sm">
-                          {locale === "ka" ? "ისტორია ცარიელია" : "No activity yet"}
+                          {t('jobDetail.noActivityYet')}
                         </p>
                       </div>
                     ) : (
@@ -2075,7 +2077,7 @@ export default function JobDetailClient() {
                                     <Badge variant={event.userRole === "client" ? "info" : "success"} size="xs">
                                       {event.userRole === "client"
                                         ? (locale === "ka" ? "კლიენტი" : "Client")
-                                        : (locale === "ka" ? "სპეც." : "Pro")}
+                                        : (t('jobDetail.pro'))}
                                     </Badge>
                                   </div>
                                   <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
@@ -2122,7 +2124,7 @@ export default function JobDetailClient() {
               >
                     <div className="flex items-center justify-between mb-4">
                       <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
-                  {locale === "ka" ? "აღწერა" : "Description"}
+                  {t('common.description')}
                 </h2>
                       {isOwner && !isHired && (
                         <button
@@ -2131,7 +2133,7 @@ export default function JobDetailClient() {
                             setShowDescriptionEdit(true);
                           }}
                           className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                          title={locale === "ka" ? "რედაქტირება" : "Edit"}
+                          title={t('common.edit')}
                         >
                           <Edit3 className="w-4 h-4" />
                         </button>
@@ -2161,7 +2163,7 @@ export default function JobDetailClient() {
                 >
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
-                      {locale === "ka" ? "დეტალები" : "Property Details"}
+                      {t('jobDetail.propertyDetails')}
                     </h2>
                     {isOwner && !isHired && (
                       <button
@@ -2177,63 +2179,63 @@ export default function JobDetailClient() {
                     {job.propertyType && (
                       <SpecCard
                         icon={<Home className="w-5 h-5" />}
-                        label={locale === "ka" ? "ტიპი" : "Type"}
+                        label={t('common.type')}
                         value={getPropertyTypeLabel(job.propertyType)}
                       />
                     )}
                     {job.currentCondition && (
                       <SpecCard
                         icon={<Hammer className="w-5 h-5" />}
-                        label={locale === "ka" ? "მდგომარეობა" : "Condition"}
+                        label={t('jobDetail.condition8')}
                         value={getConditionLabel(job.currentCondition)}
                       />
                     )}
                     {job.areaSize && (
                       <SpecCard
                         icon={<Ruler className="w-5 h-5" />}
-                        label={locale === "ka" ? "ფართი" : "Area"}
+                        label={t('jobDetail.area')}
                         value={`${job.areaSize} მ²`}
                       />
                     )}
                     {job.landArea && (
                       <SpecCard
                         icon={<Mountain className="w-5 h-5" />}
-                        label={locale === "ka" ? "მიწის ფართი" : "Land Area"}
+                        label={t('jobDetail.landArea')}
                         value={`${job.landArea} მ²`}
                       />
                     )}
                     {job.roomCount && (
                       <SpecCard
                         icon={<DoorOpen className="w-5 h-5" />}
-                        label={locale === "ka" ? "ოთახები" : "Rooms"}
+                        label={t('jobDetail.rooms')}
                         value={job.roomCount.toString()}
                       />
                     )}
                     {job.pointsCount && (
                       <SpecCard
                         icon={<Zap className="w-5 h-5" />}
-                        label={locale === "ka" ? "წერტილები" : "Points"}
+                        label={t('jobDetail.points')}
                         value={job.pointsCount.toString()}
                       />
                     )}
                     {job.floorCount && (
                       <SpecCard
                         icon={<Layers className="w-5 h-5" />}
-                        label={locale === "ka" ? "სართულები" : "Floors"}
+                        label={t('jobDetail.floors')}
                         value={job.floorCount.toString()}
                       />
                     )}
                     {job.cadastralId && (
                       <SpecCard
                         icon={<Map className="w-5 h-5" />}
-                        label={locale === "ka" ? "საკადასტრო" : "Cadastral"}
+                        label={t('jobDetail.cadastral')}
                         value={job.cadastralId}
                       />
                     )}
                     {job.deadline && (
                       <SpecCard
                         icon={<Calendar className="w-5 h-5" />}
-                        label={locale === "ka" ? "ვადა" : "Deadline"}
+                        label={t('jobDetail.deadline')}
                         value={(() => {
                           const date = new Date(job.deadline);
                           if (locale === "ka") {
@@ -2259,7 +2261,7 @@ export default function JobDetailClient() {
                 >
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
-                      {locale === "ka" ? "სამუშაოს ტიპები" : "Work Types"}
+                      {t('jobDetail.workTypes')}
                     </h2>
                     {isOwner && !isHired && (
                       <button
@@ -2302,7 +2304,7 @@ export default function JobDetailClient() {
                 >
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
-                      {locale === "ka" ? "მოთხოვნები" : "Requirements"}
+                      {t('jobDetail.requirements')}
                     </h2>
                     {isOwner && !isHired && (
                       <button
@@ -2319,9 +2321,7 @@ export default function JobDetailClient() {
                       <RequirementBadge
                         icon={<Armchair className="w-4 h-4" />}
                         text={
-                          locale === "ka"
-                            ? "ავეჯის შერჩევა"
-                            : "Furniture Selection"
+                          t('jobDetail.furnitureSelection')
                         }
                       />
                     )}
@@ -2329,9 +2329,7 @@ export default function JobDetailClient() {
                       <RequirementBadge
                         icon={<Sparkles className="w-4 h-4" />}
                         text={
-                          locale === "ka"
-                            ? "3D ვიზუალიზაცია"
-                            : "3D Visualization"
+                          t('jobDetail.3dVisualization')
                         }
                       />
                     )}
@@ -2339,9 +2337,7 @@ export default function JobDetailClient() {
                       <RequirementBadge
                         icon={<Package className="w-4 h-4" />}
                         text={
-                          locale === "ka"
-                            ? "მასალები უზრუნველყოფილია"
-                            : "Materials Provided"
+                          t('jobDetail.materialsProvided')
                         }
                       />
                     )}
@@ -2349,9 +2345,7 @@ export default function JobDetailClient() {
                       <RequirementBadge
                         icon={<Users className="w-4 h-4" />}
                         text={
-                          locale === "ka"
-                            ? "დაკავებული სამუშაოს დროს"
-                            : "Occupied During Work"
+                          t('jobDetail.occupiedDuringWork')
                         }
                       />
                     )}
@@ -2369,7 +2363,7 @@ export default function JobDetailClient() {
                   }`}
                 >
                   <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white mb-4">
-                    {locale === "ka" ? "რეფერენსები" : "References"}
+                    {t('jobDetail.references')}
                   </h2>
                   <div className="space-y-2">
                     {job.references.map((ref, idx) => (
@@ -2432,7 +2426,7 @@ export default function JobDetailClient() {
                     status: myProposal.status as 'pending' | 'accepted' | 'rejected' | 'withdrawn',
                     createdAt: myProposal.createdAt,
                   }}
-                  locale={locale as 'en' | 'ka'}
+                  locale={locale as 'en' | 'ka' | 'ru'}
                 />
               )}
                 </>
@@ -2453,7 +2447,7 @@ export default function JobDetailClient() {
                         </div>
                         <div>
                           <h3 className="font-display text-base font-semibold text-neutral-900 dark:text-white">
-                      {locale === "ka" ? "პროექტის სტატუსი" : "Project Status"}
+                      {t('jobDetail.projectStatus')}
                     </h3>
                           <p className="text-xs text-neutral-500">
                           {locale === "ka" ? STAGES[getStageIndex(projectStage)]?.labelKa : STAGES[getStageIndex(projectStage)]?.label}
@@ -2489,12 +2483,10 @@ export default function JobDetailClient() {
                           </div>
                           <div>
                             <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
-                              {locale === "ka" ? "სამუშაო დასრულებულია!" : "Work Completed!"}
+                              {t('jobDetail.workCompleted')}
                             </p>
                             <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">
-                          {locale === "ka"
-                                ? "გთხოვთ გადაამოწმოთ და დაადასტუროთ."
-                                : "Please review and confirm completion."}
+                          {t('jobDetail.pleaseReviewAndConfirmCompletion')}
                         </p>
                           </div>
                         </div>
@@ -2507,7 +2499,7 @@ export default function JobDetailClient() {
                             className="flex-1 bg-emerald-600 hover:bg-emerald-700"
                             leftIcon={!isUpdatingStage ? <BadgeCheck className="w-4 h-4" /> : undefined}
                           >
-                            {locale === "ka" ? "დადასტურება" : "Confirm"}
+                            {t('common.confirm')}
                           </Button>
                           <Button
                             onClick={handleClientRequestChanges}
@@ -2516,7 +2508,7 @@ export default function JobDetailClient() {
                             size="sm"
                             leftIcon={<RotateCcw className="w-4 h-4" />}
                           >
-                            {locale === "ka" ? "ცვლილება" : "Changes"}
+                            {t('jobDetail.changes')}
                           </Button>
                         </div>
                       </div>
@@ -2531,12 +2523,10 @@ export default function JobDetailClient() {
                           </div>
                           <div>
                             <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
-                              {locale === "ka" ? "დატოვეთ შეფასება" : "Leave a Review"}
+                              {t('jobDetail.leaveAReview')}
                             </p>
                             <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
-                          {locale === "ka"
-                                ? "თქვენი გამოხმაურება მნიშვნელოვანია."
-                                : "Your feedback helps other clients."}
+                          {t('jobDetail.yourFeedbackHelpsOtherClients')}
                         </p>
                           </div>
                         </div>
@@ -2547,7 +2537,7 @@ export default function JobDetailClient() {
                           className="w-full bg-amber-600 hover:bg-amber-700"
                           leftIcon={<Star className="w-4 h-4" />}
                         >
-                          {locale === "ka" ? "შეფასების დატოვება" : "Write a Review"}
+                          {t('jobDetail.writeAReview')}
                         </Button>
                       </div>
                     )}
@@ -2639,13 +2629,13 @@ export default function JobDetailClient() {
                                         className="text-[10px] px-1.5 py-0.5 rounded-full font-medium text-white"
                                         style={{ backgroundColor: ACCENT }}
                                       >
-                                        {locale === "ka" ? "მიმდინარე" : "Current"}
+                                        {t('jobDetail.current')}
                                       </span>
                                     )}
                                   </div>
                             {canAdvance && (
                                     <div className="flex items-center gap-1 text-xs font-medium" style={{ color: ACCENT }}>
-                                      <span>{locale === "ka" ? "შემდეგი" : "Next"}</span>
+                                      <span>{t('common.next')}</span>
                                       <ChevronRight className="w-4 h-4" />
                                     </div>
                             )}
@@ -2676,8 +2666,8 @@ export default function JobDetailClient() {
                     accountType: job.clientId?.accountType,
                     companyName: job.clientId?.companyName,
                   }}
-                  label={locale === "ka" ? "დამკვეთი" : "Client"}
-                  organizationLabel={locale === "ka" ? "ორგანიზაცია" : "Organization"}
+                  label={t('common.client')}
+                  organizationLabel={t('jobDetail.organization')}
                   isVisible={isVisible}
                 />
 
@@ -2759,7 +2749,7 @@ export default function JobDetailClient() {
                       </div>
                       <div className="text-left">
                         <span className="font-body font-semibold text-neutral-900 dark:text-white block">
-                          {locale === "ka" ? "გაზიარება" : "Share"}
+                          {t('common.share')}
                         </span>
                         <span className="text-xs text-neutral-500 dark:text-neutral-400">
                             #{job.jobNumber || job.id.slice(-6)}
@@ -2805,7 +2795,7 @@ export default function JobDetailClient() {
                             setTimeout(() => setCopyToast(false), 2000);
                           }
                         }}
-                        title={locale === 'ka' ? 'გაზიარება' : 'Share'}
+                        title={t('common.share')}
                       >
                         <Share2 className="w-5 h-5" />
                       </Button>
@@ -2818,7 +2808,7 @@ export default function JobDetailClient() {
                           setCopyToast(true);
                           setTimeout(() => setCopyToast(false), 2000);
                         }}
-                        title={locale === 'ka' ? 'ლინკის კოპირება' : 'Copy link'}
+                        title={t('common.copyLink')}
                       >
                         <Copy className="w-5 h-5" />
                       </Button>
@@ -2851,13 +2841,11 @@ export default function JobDetailClient() {
           setDeleteError("");
         }}
         onConfirm={handleDeleteJob}
-        title={locale === "ka" ? "წაშლის დადასტურება" : "Delete this job?"}
-        description={locale === "ka"
-          ? "ეს მოქმედება ვერ გაუქმდება."
-          : "This action cannot be undone."}
+        title={t('jobDetail.deleteThisJob')}
+        description={t('jobDetail.thisActionCannotBeUndone')}
         icon={<Trash2 className="w-6 h-6 text-red-500" />}
         variant="danger"
-        cancelLabel={locale === "ka" ? "გაუქმება" : "Cancel"}
+        cancelLabel={t('common.cancel')}
         confirmLabel={locale === "ka" ? "წაშლა" : "Delete"}
         isLoading={isDeleting}
         loadingLabel="..."
@@ -2893,7 +2881,7 @@ export default function JobDetailClient() {
           <div className="flex items-center gap-3 px-5 py-3 rounded-xl bg-neutral-800 dark:bg-neutral-700 text-white shadow-lg font-body">
             <Check className="w-5 h-5" />
             <span className="font-medium">
-              {locale === "ka" ? "ლინკი დაკოპირდა" : "Link copied"}
+              {t('common.linkCopied')}
             </span>
           </div>
         </div>
@@ -2907,7 +2895,7 @@ export default function JobDetailClient() {
         onClose={() => setSelectedMediaIndex(null)}
         onIndexChange={setSelectedMediaIndex}
         getImageUrl={(url) => storage.getFileUrl(url)}
-        locale={locale as "en" | "ka"}
+        locale={locale as "en" | "ka" | "ru"}
         showThumbnails={false}
         showInfo={false}
       />
@@ -2938,14 +2926,14 @@ export default function JobDetailClient() {
       >
         <div className="p-6">
           <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-4">
-            {locale === "ka" ? "აღწერის რედაქტირება" : "Edit Description"}
+            {t('jobDetail.editDescription')}
           </h2>
           <textarea
             value={editDescription}
             onChange={(e) => setEditDescription(e.target.value)}
             rows={8}
             className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50 focus:border-[#C4735B]"
-            placeholder={locale === "ka" ? "აღწერეთ სამუშაო..." : "Describe the job..."}
+            placeholder={t('jobDetail.describeTheJob')}
           />
           <div className="flex justify-end gap-3 mt-4">
             <Button
@@ -2959,7 +2947,7 @@ export default function JobDetailClient() {
               onClick={handleSaveDescription}
               loading={isSavingDescription}
             >
-              {locale === "ka" ? "შენახვა" : "Save"}
+              {t('common.save')}
             </Button>
           </div>
         </div>
@@ -2973,14 +2961,14 @@ export default function JobDetailClient() {
       >
         <div className="p-6">
           <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-4">
-            {locale === "ka" ? "სათაურის რედაქტირება" : "Edit Title"}
+            {t('jobDetail.editTitle')}
           </h2>
           <input
             type="text"
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
             className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50 focus:border-[#C4735B]"
-            placeholder={locale === "ka" ? "სათაური..." : "Job title..."}
+            placeholder={t('jobDetail.jobTitle')}
           />
           <div className="flex justify-end gap-3 mt-4">
             <Button
@@ -3009,22 +2997,22 @@ export default function JobDetailClient() {
       >
         <div className="p-6">
           <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-6">
-            {locale === "ka" ? "დეტალების რედაქტირება" : "Edit Property Details"}
+            {t('jobDetail.editPropertyDetails')}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
             {/* Property Type */}
             <div>
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                {locale === "ka" ? "ტიპი" : "Property Type"}
+                {t('jobDetail.propertyType8')}
               </label>
               <select
                 value={editPropertyData.propertyType}
                 onChange={(e) => setEditPropertyData(prev => ({ ...prev, propertyType: e.target.value }))}
                 className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50"
               >
-                <option value="">{locale === "ka" ? "აირჩიეთ..." : "Select..."}</option>
-                {Object.entries(propertyTypeLabels).map(([key, label]) => (
-                  <option key={key} value={key}>{locale === "ka" ? label.ka : label.en}</option>
+                <option value="">{t('common.select')}</option>
+                {Object.entries(propertyTypeKeys).map(([key, translationKey]) => (
+                  <option key={key} value={key}>{t(translationKey)}</option>
                 ))}
               </select>
             </div>
@@ -3032,16 +3020,16 @@ export default function JobDetailClient() {
             {/* Current Condition */}
             <div>
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                {locale === "ka" ? "მდგომარეობა" : "Current Condition"}
+                {t('jobDetail.currentCondition')}
               </label>
               <select
                 value={editPropertyData.currentCondition}
                 onChange={(e) => setEditPropertyData(prev => ({ ...prev, currentCondition: e.target.value }))}
                 className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50"
               >
-                <option value="">{locale === "ka" ? "აირჩიეთ..." : "Select..."}</option>
-                {Object.entries(conditionLabels).map(([key, label]) => (
-                  <option key={key} value={key}>{locale === "ka" ? label.ka : label.en}</option>
+                <option value="">{t('common.select')}</option>
+                {Object.entries(conditionKeys).map(([key, translationKey]) => (
+                  <option key={key} value={key}>{t(translationKey)}</option>
                 ))}
               </select>
             </div>
@@ -3049,7 +3037,7 @@ export default function JobDetailClient() {
             {/* Area Size */}
             <div>
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                {locale === "ka" ? "ფართი (მ²)" : "Area Size (m²)"}
+                {t('jobDetail.areaSizeM')}
               </label>
               <input
                 type="number"
@@ -3063,7 +3051,7 @@ export default function JobDetailClient() {
             {/* Land Area */}
             <div>
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                {locale === "ka" ? "მიწის ფართი (მ²)" : "Land Area (m²)"}
+                {t('jobDetail.landAreaM')}
               </label>
               <input
                 type="number"
@@ -3077,7 +3065,7 @@ export default function JobDetailClient() {
             {/* Room Count */}
             <div>
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                {locale === "ka" ? "ოთახების რაოდენობა" : "Room Count"}
+                {t('jobDetail.roomCount')}
               </label>
               <input
                 type="number"
@@ -3091,7 +3079,7 @@ export default function JobDetailClient() {
             {/* Floor Count */}
             <div>
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                {locale === "ka" ? "სართულები" : "Floor Count"}
+                {t('jobDetail.floorCount')}
               </label>
               <input
                 type="number"
@@ -3105,7 +3093,7 @@ export default function JobDetailClient() {
             {/* Points Count */}
             <div>
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                {locale === "ka" ? "წერტილების რაოდენობა" : "Points Count"}
+                {t('jobDetail.pointsCount')}
               </label>
               <input
                 type="number"
@@ -3119,7 +3107,7 @@ export default function JobDetailClient() {
             {/* Cadastral ID */}
             <div>
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                {locale === "ka" ? "საკადასტრო კოდი" : "Cadastral ID"}
+                {t('jobDetail.cadastralId')}
               </label>
               <input
                 type="text"
@@ -3191,7 +3179,7 @@ export default function JobDetailClient() {
                       : "border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-[#C4735B]/50"
                   }`}
                 >
-                  {locale === "ka" ? workTypeLabels[type]?.ka : workTypeLabels[type]?.en}
+                  {t(workTypeKeys[type] || type)}
                 </button>
               );
             })}
@@ -3236,7 +3224,7 @@ export default function JobDetailClient() {
               <div className="flex items-center gap-2">
                 <Armchair className="w-5 h-5 text-neutral-500" />
                 <span className="text-neutral-900 dark:text-white">
-                  {locale === "ka" ? "ავეჯის შერჩევა" : "Furniture Selection"}
+                  {t('jobDetail.furnitureSelection')}
                 </span>
               </div>
             </label>
@@ -3252,7 +3240,7 @@ export default function JobDetailClient() {
               <div className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-neutral-500" />
                 <span className="text-neutral-900 dark:text-white">
-                  {locale === "ka" ? "3D ვიზუალიზაცია" : "3D Visualization"}
+                  {t('jobDetail.3dVisualization')}
                 </span>
               </div>
             </label>
@@ -3268,7 +3256,7 @@ export default function JobDetailClient() {
               <div className="flex items-center gap-2">
                 <Package className="w-5 h-5 text-neutral-500" />
                 <span className="text-neutral-900 dark:text-white">
-                  {locale === "ka" ? "მასალები უზრუნველყოფილია" : "Materials Provided"}
+                  {t('jobDetail.materialsProvided')}
                 </span>
               </div>
             </label>
@@ -3284,7 +3272,7 @@ export default function JobDetailClient() {
               <div className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-neutral-500" />
                 <span className="text-neutral-900 dark:text-white">
-                  {locale === "ka" ? "დაკავებული სამუშაოს დროს" : "Occupied During Work"}
+                  {t('jobDetail.occupiedDuringWork')}
                 </span>
               </div>
             </label>

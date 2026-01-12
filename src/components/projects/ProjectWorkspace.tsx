@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 // User type for workspace components
 interface WorkspaceUser {
   id: string;
@@ -110,6 +111,8 @@ interface ProjectWorkspaceProps {
 
 export default function ProjectWorkspace({ jobId, locale, isClient, embedded = false }: ProjectWorkspaceProps) {
   const { user } = useAuth();
+
+  const { t } = useLanguage();
   const toast = useToast();
 
   const [isExpanded, setIsExpanded] = useState(embedded); // Auto-expand if embedded
@@ -169,13 +172,13 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
       setSections(prev => [...prev, { ...response.data.section, isExpanded: true }]);
       setShowSectionModal(false);
       toast.success(
-        locale === 'ka' ? 'სექცია შეიქმნა' : 'Section created',
-        locale === 'ka' ? 'ახალი სექცია დაემატა' : 'New section has been added'
+        t('projects.sectionCreated'),
+        t('projects.newSectionHasBeenAdded')
       );
     } catch (error) {
       toast.error(
-        locale === 'ka' ? 'შეცდომა' : 'Error',
-        locale === 'ka' ? 'სექციის შექმნა ვერ მოხერხდა' : 'Failed to create section'
+        t('common.error'),
+        t('projects.failedToCreateSection')
       );
     } finally {
       setIsSavingSection(false);
@@ -193,19 +196,19 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
         getId(s) === sectionId ? { ...s, title, description, attachments: response.data.section?.attachments || s.attachments } : s
       ));
       setEditingSection(null);
-      toast.success(locale === 'ka' ? 'შენახულია' : 'Saved');
+      toast.success(t('projects.saved'));
     } catch (error) {
       toast.error(locale === 'ka' ? 'შეცდომა' : 'Error');
     }
   };
 
   const handleDeleteSection = async (sectionId: string) => {
-    if (!confirm(locale === 'ka' ? 'წაშალოთ ეს სექცია?' : 'Delete this section?')) return;
+    if (!confirm(t('projects.deleteThisSection'))) return;
 
     try {
       await api.delete(`/jobs/projects/${jobId}/workspace/sections/${sectionId}`);
       setSections(prev => prev.filter(s => getId(s) !== sectionId));
-      toast.success(locale === 'ka' ? 'წაიშალა' : 'Deleted');
+      toast.success(t('projects.deleted'));
     } catch (error) {
       toast.error(locale === 'ka' ? 'შეცდომა' : 'Error');
     }
@@ -221,7 +224,7 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
           : s
       ));
       setShowItemModal(null);
-      toast.success(locale === 'ka' ? 'დაემატა' : 'Added');
+      toast.success(t('projects.added'));
     } catch (error) {
       toast.error(locale === 'ka' ? 'შეცდომა' : 'Error');
     }
@@ -303,7 +306,7 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
             onClick={() => setShowSectionModal(true)}
             leftIcon={<Plus className="w-4 h-4" />}
           >
-            {locale === 'ka' ? 'სექციის დამატება' : 'Add Section'}
+            {t('projects.addSection')}
           </Button>
         </div>
       )}
@@ -317,11 +320,11 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
         ) : sections.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-[var(--color-text-tertiary)]">
             <FolderPlus className="w-12 h-12 mb-3 opacity-40" />
-            <p className="text-sm font-medium">{locale === 'ka' ? 'ჯერ არ არის მასალები' : 'No materials yet'}</p>
+            <p className="text-sm font-medium">{t('projects.noMaterialsYet')}</p>
             <p className="text-xs mt-1">
               {isClient
-                ? (locale === 'ka' ? 'პროფესიონალი დაამატებს მასალებს' : 'Professional will add materials here')
-                : (locale === 'ka' ? 'დაამატე სექციები პროექტის მასალებისთვის' : 'Add sections to organize project materials')
+                ? (t('projects.professionalWillAddMaterialsHere'))
+                : (t('projects.addSectionsToOrganizeProject'))
               }
             </p>
           </div>
@@ -409,7 +412,7 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--color-bg-tertiary)]">
             <FolderPlus className="w-4 h-4 text-[var(--color-text-secondary)]" />
             <span className="text-sm font-semibold text-[var(--color-text-primary)]">
-              {locale === 'ka' ? 'პროექტის მასალები' : 'Project Materials'}
+              {t('projects.projectMaterials')}
             </span>
             {totalItems > 0 && (
               <span className="w-5 h-5 rounded-full text-[10px] font-bold text-white flex items-center justify-center" style={{ backgroundColor: ACCENT }}>
@@ -419,7 +422,7 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
           </div>
           {sections.length > 0 && (
             <span className="text-xs text-[var(--color-text-tertiary)] hidden sm:inline">
-              {sections.length} {locale === 'ka' ? 'სექცია' : 'sections'}
+              {sections.length} {t('projects.sections')}
             </span>
           )}
         </div>
@@ -476,6 +479,7 @@ function SectionCard({
   setCommentText: (text: string) => void;
   onAddComment: (itemId: string) => void;
 }) {
+  const { t } = useLanguage();
   const [showMenu, setShowMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -518,7 +522,7 @@ function SectionCard({
             </span>
           )}
           <span className="text-xs text-[var(--color-text-tertiary)] px-2 py-0.5 rounded-full bg-[var(--color-bg-tertiary)]">
-            {section.items.length} {locale === 'ka' ? 'ელემენტი' : 'items'}
+            {section.items.length} {t('common.items')}
           </span>
         </div>
 
@@ -546,7 +550,7 @@ function SectionCard({
                     className="w-full justify-start"
                     leftIcon={<Pencil className="w-3.5 h-3.5" />}
                   >
-                    {locale === 'ka' ? 'რედაქტირება' : 'Edit'}
+                    {t('common.edit')}
                   </Button>
                   <Button
                     variant="ghost"
@@ -555,7 +559,7 @@ function SectionCard({
                     className="w-full justify-start text-red-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"
                     leftIcon={<Trash2 className="w-3.5 h-3.5" />}
                   >
-                    {locale === 'ka' ? 'წაშლა' : 'Delete'}
+                    {t('common.delete')}
                   </Button>
                 </div>
               </>
@@ -573,7 +577,7 @@ function SectionCard({
               <div className="flex items-center gap-2 mb-3">
                 <ImageIcon className="w-4 h-4 text-[var(--color-text-tertiary)]" />
                 <span className="text-xs font-medium text-[var(--color-text-secondary)]">
-                  {locale === 'ka' ? 'დანართები' : 'Attachments'} ({section.attachments.length})
+                  {t('projects.attachments')} ({section.attachments.length})
                 </span>
               </div>
               {/* Image Grid */}
@@ -620,7 +624,7 @@ function SectionCard({
           {section.items.length === 0 && (!section.attachments || section.attachments.length === 0) ? (
             <div className="px-4 py-8 text-center">
               <p className="text-xs text-[var(--color-text-tertiary)]">
-                {locale === 'ka' ? 'ცარიელი სექცია' : 'No items in this section'}
+                {t('projects.noItemsInThisSection')}
               </p>
             </div>
           ) : section.items.length > 0 ? (
@@ -653,7 +657,7 @@ function SectionCard({
                 onClick={onAddItem}
                 leftIcon={<Plus className="w-3.5 h-3.5" />}
               >
-                {locale === 'ka' ? 'ელემენტის დამატება' : 'Add item'}
+                {t('projects.addItem')}
               </Button>
             </div>
           )}
@@ -689,6 +693,7 @@ function ItemRow({
   setCommentText: (text: string) => void;
   onAddComment: () => void;
 }) {
+  const { t } = useLanguage();
   const userReaction = item.reactions?.find(r => r.userId === user?.id);
 
   const getItemIcon = () => {
@@ -776,7 +781,7 @@ function ItemRow({
               className="inline-flex items-center gap-1 text-xs text-[#E07B4F] hover:underline mt-1"
             >
               <ExternalLink className="w-3 h-3" />
-              {locale === 'ka' ? 'ბმული' : 'Open link'}
+              {t('projects.openLink')}
             </a>
           )}
 
@@ -895,7 +900,7 @@ function ItemRow({
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && onAddComment()}
-                  placeholder={locale === 'ka' ? 'კომენტარი...' : 'Add comment...'}
+                  placeholder={t('projects.addComment')}
                   className="flex-1 text-xs"
                 />
                 <Button
@@ -928,6 +933,7 @@ function SectionModal({
   onClose: () => void;
   onSave: (title: string, description?: string, attachments?: SectionAttachment[]) => void;
 }) {
+  const { t } = useLanguage();
   const [title, setTitle] = useState(section?.title || '');
   const [description, setDescription] = useState(section?.description || '');
   const [attachments, setAttachments] = useState<SectionAttachment[]>(section?.attachments || []);
@@ -971,9 +977,7 @@ function SectionModal({
       for (const file of Array.from(files)) {
         // Validate file type
         if (!isAllowedFile(file)) {
-          setUploadError(locale === 'ka'
-            ? 'მხოლოდ JPG, PNG, WebP, GIF, PDF, DOC, DOCX, XLS, XLSX და TXT ფორმატებია დაშვებული'
-            : 'Only JPG, PNG, WebP, GIF, PDF, DOC, DOCX, XLS, XLSX and TXT formats are allowed');
+          setUploadError(t('projects.onlyJpgPngWebpGif'));
           continue;
         }
 
@@ -994,7 +998,7 @@ function SectionModal({
       }
     } catch (error) {
       console.error('Upload failed:', error);
-      setUploadError(locale === 'ka' ? 'ატვირთვა ვერ მოხერხდა' : 'Upload failed');
+      setUploadError(t('common.uploadFailed'));
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -1019,8 +1023,8 @@ function SectionModal({
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
             {section
-              ? (locale === 'ka' ? 'სექციის რედაქტირება' : 'Edit Section')
-              : (locale === 'ka' ? 'ახალი სექცია' : 'New Section')
+              ? (t('projects.editSection'))
+              : (t('projects.newSection'))
             }
           </h3>
           <Button variant="ghost" size="icon" onClick={onClose}>
@@ -1031,24 +1035,24 @@ function SectionModal({
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
-              {locale === 'ka' ? 'სათაური' : 'Title'} *
+              {t('projects.title')} *
             </label>
             <Input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder={locale === 'ka' ? 'მაგ: სამზარეულოს მასალები' : 'e.g., Kitchen Materials'}
+              placeholder={t('projects.egKitchenMaterials')}
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
-              {locale === 'ka' ? 'აღწერა' : 'Description'}
+              {t('common.description')}
             </label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder={locale === 'ka' ? 'სურვილისამებრ...' : 'Optional...'}
+              placeholder={t('common.optional')}
               rows={2}
             />
           </div>
@@ -1085,12 +1089,12 @@ function SectionModal({
               {isUploading ? (
                 <>
                   <LoadingSpinner size="sm" color="currentColor" />
-                  {locale === 'ka' ? 'იტვირთება...' : 'Uploading...'}
+                  {t('common.uploading')}
                 </>
               ) : (
                 <>
                   <Upload className="w-4 h-4" />
-                  {locale === 'ka' ? 'ფაილების ატვირთვა' : 'Upload Files'}
+                  {t('projects.uploadFiles')}
                 </>
               )}
             </button>
@@ -1142,14 +1146,14 @@ function SectionModal({
             onClick={onClose}
             disabled={isSaving}
           >
-            {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={() => title.trim() && !isSaving && onSave(title.trim(), description.trim() || undefined, attachments.length > 0 ? attachments : undefined)}
             disabled={!title.trim() || isSaving}
             loading={isSaving}
           >
-            {locale === 'ka' ? 'შენახვა' : 'Save'}
+            {t('common.save')}
           </Button>
         </div>
       </div>
@@ -1167,6 +1171,7 @@ function ItemModal({
   onClose: () => void;
   onSave: (data: Partial<WorkspaceItem>) => void;
 }) {
+  const { t } = useLanguage();
   const [type, setType] = useState<'image' | 'file' | 'link' | 'product'>('image');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -1198,9 +1203,7 @@ function ItemModal({
 
     // Validate image files (no SVG)
     if (type === 'image' && !isAllowedImageFile(file)) {
-      setUploadError(locale === 'ka'
-        ? 'მხოლოდ JPG, PNG, WebP და GIF ფორმატებია დაშვებული'
-        : 'Only JPG, PNG, WebP and GIF formats are allowed');
+      setUploadError(t('projects.onlyJpgPngWebpAnd'));
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
@@ -1247,10 +1250,10 @@ function ItemModal({
   };
 
   const typeOptions = [
-    { value: 'image', label: locale === 'ka' ? 'სურათი' : 'Image', icon: ImageIcon },
-    { value: 'file', label: locale === 'ka' ? 'ფაილი' : 'File', icon: FileText },
-    { value: 'link', label: locale === 'ka' ? 'ბმული' : 'Link', icon: LinkIcon },
-    { value: 'product', label: locale === 'ka' ? 'პროდუქტი' : 'Product', icon: ShoppingBag },
+    { value: 'image', label: t('common.image'), icon: ImageIcon },
+    { value: 'file', label: t('common.file'), icon: FileText },
+    { value: 'link', label: t('projects.link'), icon: LinkIcon },
+    { value: 'product', label: t('projects.product'), icon: ShoppingBag },
   ];
 
   return (
@@ -1259,7 +1262,7 @@ function ItemModal({
       <div className="relative bg-[var(--color-bg-elevated)] rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 shadow-xl">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
-            {locale === 'ka' ? 'ელემენტის დამატება' : 'Add Item'}
+            {t('projects.addItem')}
           </h3>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="w-5 h-5" />
@@ -1270,7 +1273,7 @@ function ItemModal({
           {/* Type Selector */}
           <div>
             <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-              {locale === 'ka' ? 'ტიპი' : 'Type'}
+              {t('common.type')}
             </label>
             <div className="grid grid-cols-4 gap-2">
               {typeOptions.map((opt) => {
@@ -1348,7 +1351,7 @@ function ItemModal({
                       onClick={() => setFileUrl('')}
                       className="text-xs text-red-500 hover:underline"
                     >
-                      {locale === 'ka' ? 'წაშლა' : 'Remove'}
+                      {t('common.remove')}
                     </button>
                   </div>
                 </div>
@@ -1363,7 +1366,7 @@ function ItemModal({
                   ) : (
                     <>
                       <Upload className="w-5 h-5" />
-                      {locale === 'ka' ? 'ატვირთვა' : 'Upload'}
+                      {t('projects.upload')}
                     </>
                   )}
                 </button>
@@ -1375,7 +1378,7 @@ function ItemModal({
           {(type === 'link' || type === 'product') && (
             <div>
               <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
-                {locale === 'ka' ? 'ბმული' : 'URL'}
+                {t('projects.url')}
               </label>
               <Input
                 type="url"
@@ -1392,7 +1395,7 @@ function ItemModal({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
-                    {locale === 'ka' ? 'ფასი' : 'Price'}
+                    {t('common.price')}
                   </label>
                   <Input
                     type="number"
@@ -1409,7 +1412,7 @@ function ItemModal({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
-                    {locale === 'ka' ? 'მაღაზია' : 'Store'}
+                    {t('projects.store')}
                   </label>
                   <Input
                     type="text"
@@ -1420,7 +1423,7 @@ function ItemModal({
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
-                  {locale === 'ka' ? 'მისამართი' : 'Address'}
+                  {t('common.address')}
                 </label>
                 <Input
                   type="text"
@@ -1437,7 +1440,7 @@ function ItemModal({
             {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
           </Button>
           <Button onClick={handleSave} disabled={!title.trim()}>
-            {locale === 'ka' ? 'დამატება' : 'Add'}
+            {t('common.add')}
           </Button>
         </div>
       </div>

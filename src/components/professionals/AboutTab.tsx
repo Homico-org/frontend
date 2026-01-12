@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Check, Edit3, Globe, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 export interface SocialLinks {
   whatsapp?: string;
   telegram?: string;
@@ -39,7 +40,7 @@ export interface AboutTabProps {
   /** Website URL */
   websiteUrl?: string;
   /** Locale for translations */
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   /** Is current user viewing their own profile */
   isOwner?: boolean;
   /** Handler to save description */
@@ -72,6 +73,8 @@ export default function AboutTab({
 
   // Inline editing states
   const [isEditingDescription, setIsEditingDescription] = useState(false);
+
+  const { t } = useLanguage();
   const [editDescription, setEditDescription] = useState(description || '');
   const [isSavingDescription, setIsSavingDescription] = useState(false);
 
@@ -156,7 +159,7 @@ export default function AboutTab({
       <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-sm border border-neutral-100 dark:border-neutral-800 group relative">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider">
-            {locale === 'ka' ? 'შესახებ' : 'About'}
+            {t('professional.about')}
           </h3>
           {isOwner && !isEditingDescription && (
             <button
@@ -176,7 +179,7 @@ export default function AboutTab({
             <textarea
               value={editDescription}
               onChange={(e) => setEditDescription(e.target.value)}
-              placeholder={locale === 'ka' ? 'აღწერეთ თქვენი გამოცდილება და სერვისები...' : 'Describe your experience and services...'}
+              placeholder={t('professional.describeYourExperienceAndServices')}
               rows={5}
               className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent resize-none"
             />
@@ -188,7 +191,7 @@ export default function AboutTab({
                 disabled={isSavingDescription}
               >
                 <X className="w-4 h-4 mr-1" />
-                {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+                {t('common.cancel')}
               </Button>
               <Button
                 size="sm"
@@ -196,7 +199,7 @@ export default function AboutTab({
                 loading={isSavingDescription}
               >
                 <Check className="w-4 h-4 mr-1" />
-                {locale === 'ka' ? 'შენახვა' : 'Save'}
+                {t('common.save')}
               </Button>
             </div>
           </div>
@@ -210,10 +213,10 @@ export default function AboutTab({
             className="w-full py-6 border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-400 hover:text-[#C4735B] hover:border-[#C4735B] transition-colors"
           >
             <Plus className="w-5 h-5 mx-auto mb-1" />
-            <span className="text-sm">{locale === 'ka' ? 'აღწერის დამატება' : 'Add Description'}</span>
+            <span className="text-sm">{t('professional.addDescription')}</span>
           </button>
         ) : (
-          <p className="text-neutral-400 italic">{locale === 'ka' ? 'აღწერა არ არის' : 'No description'}</p>
+          <p className="text-neutral-400 italic">{t('professional.noDescription')}</p>
         )}
       </div>
 
@@ -221,7 +224,7 @@ export default function AboutTab({
       <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-sm border border-neutral-100 dark:border-neutral-800 group relative">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider">
-            {locale === 'ka' ? 'სერვისები' : 'Services'}
+            {t('professional.services')}
           </h3>
           {isOwner && !isEditingServices && (
             <button
@@ -263,7 +266,7 @@ export default function AboutTab({
                 value={newService}
                 onChange={(e) => setNewService(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && addService()}
-                placeholder={locale === 'ka' ? 'ახალი სერვისი...' : 'New service...'}
+                placeholder={t('professional.newService')}
                 className="flex-1 px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent text-sm"
               />
               <Button variant="outline" size="sm" onClick={addService}>
@@ -305,10 +308,10 @@ export default function AboutTab({
             className="w-full py-6 border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-400 hover:text-[#C4735B] hover:border-[#C4735B] transition-colors"
           >
             <Plus className="w-5 h-5 mx-auto mb-1" />
-            <span className="text-sm">{locale === 'ka' ? 'სერვისების დამატება' : 'Add Services'}</span>
+            <span className="text-sm">{t('professional.addServices')}</span>
           </button>
         ) : (
-          <p className="text-neutral-400 italic">{locale === 'ka' ? 'სერვისები არ არის' : 'No services listed'}</p>
+          <p className="text-neutral-400 italic">{t('professional.noServicesListed')}</p>
         )}
       </div>
 
@@ -318,7 +321,7 @@ export default function AboutTab({
       <div className="bg-white dark:bg-neutral-900 rounded-2xl p-5 shadow-sm border border-neutral-100 dark:border-neutral-800 group relative">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider">
-            {locale === 'ka' ? 'კონტაქტი და სოციალური' : 'Contact & Social'}
+            {t('professional.contactSocial')}
           </h3>
           {isOwner && !isEditingSocial && (
             <button
@@ -354,7 +357,7 @@ export default function AboutTab({
                 type="text"
                 value={editSocial.whatsapp || ''}
                 onChange={(e) => setEditSocial({ ...editSocial, whatsapp: e.target.value })}
-                placeholder={locale === 'ka' ? '+995 XXX XXX XXX' : '+995 XXX XXX XXX'}
+                placeholder={t('professional.995XxxXxxXxx')}
                 className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent text-sm"
               />
             </div>
@@ -371,7 +374,7 @@ export default function AboutTab({
                 type="text"
                 value={editSocial.telegram || ''}
                 onChange={(e) => setEditSocial({ ...editSocial, telegram: e.target.value })}
-                placeholder={locale === 'ka' ? '@username' : '@username'}
+                placeholder={t('professional.username')}
                 className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent text-sm"
               />
             </div>
@@ -537,10 +540,10 @@ export default function AboutTab({
             className="w-full py-6 border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-400 hover:text-[#C4735B] hover:border-[#C4735B] transition-colors"
           >
             <Plus className="w-5 h-5 mx-auto mb-1" />
-            <span className="text-sm">{locale === 'ka' ? 'სოციალური ბმულების დამატება' : 'Add Social Links'}</span>
+            <span className="text-sm">{t('professional.addSocialLinks')}</span>
           </button>
         ) : (
-          <p className="text-neutral-400 italic">{locale === 'ka' ? 'სოციალური ბმულები არ არის' : 'No social links'}</p>
+          <p className="text-neutral-400 italic">{t('professional.noSocialLinks')}</p>
         )}
       </div>
     </div>

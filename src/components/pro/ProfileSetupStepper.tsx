@@ -41,7 +41,7 @@ export default function ProfileSetupStepper({
   isLastStep = false,
   isEditMode = false,
 }: ProfileSetupStepperProps) {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
 
   const completedSteps = steps.filter(s => s.isComplete).length;
   const progressPercentage = Math.round((completedSteps / steps.length) * 100);
@@ -60,10 +60,10 @@ export default function ProfileSetupStepper({
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
               <span className="text-xs font-semibold tracking-wider text-[var(--color-text-tertiary)] uppercase">
-                {locale === 'ka' ? 'ნაბიჯი' : 'Step'} {currentStep + 1} {locale === 'ka' ? '-დან' : 'of'} {steps.length}
+                {t('common.step')} {currentStep + 1} {t('common.of')} {steps.length}
                 {currentStepData?.isOptional && (
                   <span className="ml-2 text-[var(--color-text-muted)]">
-                    ({locale === 'ka' ? 'არასავალდებულო' : 'Optional'})
+                    ({t('common.optional')})
                   </span>
                 )}
               </span>
@@ -185,7 +185,7 @@ export default function ProfileSetupStepper({
               `}
             >
               <ChevronLeft className="w-4 h-4" />
-              <span>{locale === 'ka' ? 'უკან' : 'Back'}</span>
+              <span>{t('common.back')}</span>
             </button>
 
             {/* Right side buttons */}
@@ -197,7 +197,7 @@ export default function ProfileSetupStepper({
                   disabled={isLoading}
                   className="px-4 py-2.5 rounded-xl text-sm font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-all duration-200"
                 >
-                  {locale === 'ka' ? 'დრაფტად შენახვა' : 'Save as Draft'}
+                  {t('common.saveAsDraft')}
                 </button>
               )}
 
@@ -217,21 +217,21 @@ export default function ProfileSetupStepper({
                 {isLoading ? (
                   <>
                     <LoadingSpinner size="sm" color="white" />
-                    <span>{locale === 'ka' ? 'იტვირთება...' : 'Loading...'}</span>
+                    <span>{t('common.loading')}</span>
                   </>
                 ) : isLastStep ? (
                   <>
                     <span>
                       {isEditMode
-                        ? (locale === 'ka' ? 'ცვლილებების შენახვა' : 'Save Changes')
-                        : (locale === 'ka' ? 'პროფილის შექმნა' : 'Create Profile')
+                        ? (t('common.saveChanges'))
+                        : (t('common.createProfile'))
                       }
                     </span>
                     <Check className="w-4 h-4" />
                   </>
                 ) : (
                   <>
-                    <span>{locale === 'ka' ? 'გაგრძელება' : 'Continue'}</span>
+                    <span>{t('common.continue')}</span>
                     <ChevronRight className="w-4 h-4" />
                   </>
                 )}

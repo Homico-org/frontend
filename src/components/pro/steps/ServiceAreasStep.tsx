@@ -26,7 +26,7 @@ export default function ServiceAreasStep({
   onFormChange,
   validation,
 }: ServiceAreasStepProps) {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
 
   const toggleServiceArea = (area: string) => {
     const newAreas = formData.serviceAreas.includes(area)
@@ -79,9 +79,7 @@ export default function ServiceAreasStep({
                 <span className="text-lg">{locationData.emoji}</span>
               </div>
               <p className="text-sm text-[var(--color-text-secondary)]">
-                {locale === "ka"
-                  ? "მომსახურება მთელი ქვეყნის მასშტაბით"
-                  : "Serve clients across the entire country"}
+                {t('common.serveClientsAcrossTheEntire')}
               </p>
             </div>
             <div
@@ -107,7 +105,7 @@ export default function ServiceAreasStep({
         <div className="flex items-center gap-4">
           <div className="flex-1 h-px bg-[var(--color-border-subtle)]" />
           <span className="text-sm text-[var(--color-text-muted)] px-2">
-            {locale === "ka" ? "ან აირჩიე ქალაქები" : "Or select cities"}
+            {t('common.orSelectCities')}
           </span>
           <div className="flex-1 h-px bg-[var(--color-border-subtle)]" />
         </div>

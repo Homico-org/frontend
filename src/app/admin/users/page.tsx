@@ -176,7 +176,7 @@ function AdminUsersPageContent() {
   }, [searchQuery, roleFilter, verificationFilter]);
 
   const getRoleColor = (role: string) => getAdminRoleColor(role);
-  const getRoleLabel = (role: string) => getAdminRoleLabel(role, locale as 'en' | 'ka');
+  const getRoleLabel = (role: string) => getAdminRoleLabel(role, locale as 'en' | 'ka' | 'ru');
 
   const handleVerificationAction = async (action: 'approve' | 'reject') => {
     if (!showVerificationModal) return;
@@ -206,10 +206,10 @@ function AdminUsersPageContent() {
   };
 
   const statCards = [
-    { label: locale === 'ka' ? 'სულ მომხმარებელი' : 'Total Users', value: stats?.total || 0, icon: Users, color: THEME.primary },
-    { label: locale === 'ka' ? 'კლიენტები' : 'Clients', value: stats?.clients || 0, icon: UserCheck, color: THEME.success },
-    { label: locale === 'ka' ? 'პროფესიონალები' : 'Professionals', value: stats?.pros || 0, icon: Shield, color: THEME.info },
-    { label: locale === 'ka' ? 'კომპანიები' : 'Companies', value: stats?.companies || 0, icon: Building2, color: '#8B5CF6' },
+    { label: t('admin.totalUsers'), value: stats?.total || 0, icon: Users, color: THEME.primary },
+    { label: t('admin.clients'), value: stats?.clients || 0, icon: UserCheck, color: THEME.success },
+    { label: t('admin.professionals'), value: stats?.pros || 0, icon: Shield, color: THEME.info },
+    { label: t('admin.companies'), value: stats?.companies || 0, icon: Building2, color: '#8B5CF6' },
   ];
 
   if (isLoading) {
@@ -223,7 +223,7 @@ function AdminUsersPageContent() {
             <Users className="w-8 h-8 text-white" />
           </div>
           <p className="mt-4 text-sm" style={{ color: THEME.textMuted }}>
-            {locale === 'ka' ? 'იტვირთება...' : 'Loading users...'}
+            {t('admin.loadingUsers')}
           </p>
         </div>
       </div>
@@ -261,10 +261,10 @@ function AdminUsersPageContent() {
                   className="text-xl font-semibold tracking-tight"
                   style={{ color: THEME.text, fontFamily: "'Inter', sans-serif" }}
                 >
-                  {locale === 'ka' ? 'მომხმარებლების მართვა' : 'User Management'}
+                  {t('admin.userManagement')}
                 </h1>
                 <p className="text-sm mt-0.5" style={{ color: THEME.textMuted }}>
-                  {stats?.total.toLocaleString() || 0} {locale === 'ka' ? 'მომხმარებელი' : 'users total'}
+                  {stats?.total.toLocaleString() || 0} {t('admin.usersTotal')}
                 </p>
               </div>
             </div>
@@ -279,7 +279,7 @@ function AdminUsersPageContent() {
                 boxShadow: `0 4px 16px ${THEME.primary}40`,
               }}
             >
-              <span className="hidden sm:inline">{locale === 'ka' ? 'განახლება' : 'Refresh'}</span>
+              <span className="hidden sm:inline">{t('admin.refresh')}</span>
             </Button>
           </div>
         </div>
@@ -329,7 +329,7 @@ function AdminUsersPageContent() {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 z-10" style={{ color: THEME.textDim }} />
               <Input
                 type="text"
-                placeholder={locale === 'ka' ? 'სახელი, ემაილი ან ტელეფონი...' : 'Search by name, email or phone...'}
+                placeholder={t('admin.searchByNameEmailOr')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-12"
@@ -345,11 +345,11 @@ function AdminUsersPageContent() {
               onChange={setRoleFilter}
               size="sm"
               options={[
-                { value: 'all', label: locale === 'ka' ? 'ყველა როლი' : 'All Roles' },
+                { value: 'all', label: t('admin.allRoles') },
                 { value: 'client', label: locale === 'ka' ? 'კლიენტები' : 'Clients' },
                 { value: 'pro', label: locale === 'ka' ? 'პროფესიონალები' : 'Professionals' },
                 { value: 'company', label: locale === 'ka' ? 'კომპანიები' : 'Companies' },
-                { value: 'admin', label: locale === 'ka' ? 'ადმინები' : 'Admins' },
+                { value: 'admin', label: t('admin.admins') },
               ]}
             />
             <Select
@@ -357,11 +357,11 @@ function AdminUsersPageContent() {
               onChange={setVerificationFilter}
               size="sm"
               options={[
-                { value: 'all', label: locale === 'ka' ? 'ყველა ვერიფიკაცია' : 'All Verification' },
-                { value: 'submitted', label: locale === 'ka' ? '⏳ მოლოდინში' : '⏳ Pending Review' },
-                { value: 'verified', label: locale === 'ka' ? '✓ ვერიფიცირებული' : '✓ Verified' },
-                { value: 'rejected', label: locale === 'ka' ? '✗ უარყოფილი' : '✗ Rejected' },
-                { value: 'pending', label: locale === 'ka' ? 'არ გაგზავნილა' : 'Not Submitted' },
+                { value: 'all', label: t('admin.allVerification') },
+                { value: 'submitted', label: t('admin.pendingReview') },
+                { value: 'verified', label: t('admin.verified') },
+                { value: 'rejected', label: t('common.rejected') },
+                { value: 'pending', label: t('admin.notSubmitted') },
               ]}
             />
           </div>
@@ -377,11 +377,11 @@ function AdminUsersPageContent() {
             className="px-6 py-4 grid grid-cols-12 gap-4 text-xs font-medium uppercase tracking-wider"
             style={{ borderBottom: `1px solid ${THEME.border}`, color: THEME.textDim }}
           >
-            <div className="col-span-4">{locale === 'ka' ? 'მომხმარებელი' : 'User'}</div>
-            <div className="col-span-2">{locale === 'ka' ? 'როლი' : 'Role'}</div>
-            <div className="col-span-2 hidden lg:block">{locale === 'ka' ? 'სტატუსი' : 'Status'}</div>
-            <div className="col-span-2 hidden md:block">{locale === 'ka' ? 'რეგისტრაცია' : 'Joined'}</div>
-            <div className="col-span-2 text-right">{locale === 'ka' ? 'მოქმედებები' : 'Actions'}</div>
+            <div className="col-span-4">{t('admin.user')}</div>
+            <div className="col-span-2">{t('admin.role')}</div>
+            <div className="col-span-2 hidden lg:block">{t('common.status')}</div>
+            <div className="col-span-2 hidden md:block">{t('admin.joined')}</div>
+            <div className="col-span-2 text-right">{t('admin.actions')}</div>
           </div>
 
           {/* Table Body */}
@@ -389,10 +389,10 @@ function AdminUsersPageContent() {
             <div className="p-12 text-center">
               <Users className="w-16 h-16 mx-auto mb-4" style={{ color: THEME.textDim }} />
               <p className="text-lg font-medium" style={{ color: THEME.textMuted }}>
-                {locale === 'ka' ? 'მომხმარებლები არ მოიძებნა' : 'No users found'}
+                {t('admin.noUsersFound')}
               </p>
               <p className="text-sm mt-1" style={{ color: THEME.textDim }}>
-                {locale === 'ka' ? 'სცადეთ სხვა ძებნა' : 'Try adjusting your search or filters'}
+                {t('admin.tryAdjustingYourSearchOr')}
               </p>
             </div>
           ) : (
@@ -444,7 +444,7 @@ function AdminUsersPageContent() {
                       style={{ background: `${THEME.error}20`, color: THEME.error }}
                     >
                       <Ban className="w-3 h-3" />
-                      {locale === 'ka' ? 'დაბლოკილი' : 'Suspended'}
+                      {t('admin.suspended')}
                     </span>
                   ) : user.role === 'pro' || user.role === 'company' ? (
                     // Show verification status for pros/companies
@@ -458,7 +458,7 @@ function AdminUsersPageContent() {
                         style={{ background: `${THEME.warning}20`, color: THEME.warning }}
                       >
                         <Clock className="w-3 h-3" />
-                        {locale === 'ka' ? 'გადასამოწმებელი' : 'Review'}
+                        {t('admin.review')}
                       </button>
                     ) : user.verificationStatus === 'verified' ? (
                       <span
@@ -466,7 +466,7 @@ function AdminUsersPageContent() {
                         style={{ background: `${THEME.success}20`, color: THEME.success }}
                       >
                         <BadgeCheck className="w-3 h-3" />
-                        {locale === 'ka' ? 'დადასტურებული' : 'Verified'}
+                        {t('admin.verified')}
                       </span>
                     ) : user.verificationStatus === 'rejected' ? (
                       <span
@@ -474,7 +474,7 @@ function AdminUsersPageContent() {
                         style={{ background: `${THEME.error}20`, color: THEME.error }}
                       >
                         <XCircle className="w-3 h-3" />
-                        {locale === 'ka' ? 'უარყოფილი' : 'Rejected'}
+                        {t('common.rejected')}
                       </span>
                     ) : (
                       <span
@@ -491,7 +491,7 @@ function AdminUsersPageContent() {
                       style={{ background: `${THEME.success}20`, color: THEME.success }}
                     >
                       <CheckCircle className="w-3 h-3" />
-                      {locale === 'ka' ? 'აქტიური' : 'Active'}
+                      {t('common.active')}
                     </span>
                   )}
                 </div>
@@ -502,7 +502,7 @@ function AdminUsersPageContent() {
                     className="text-sm"
                     style={{ color: THEME.textMuted, fontFamily: "'JetBrains Mono', monospace" }}
                   >
-                    {formatDateShort(user.createdAt, locale as 'en' | 'ka')}
+                    {formatDateShort(user.createdAt, locale as 'en' | 'ka' | 'ru')}
                   </p>
                 </div>
 
@@ -512,7 +512,7 @@ function AdminUsersPageContent() {
                     onClick={() => router.push(`/profile/${user._id}`)}
                     className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
                     style={{ background: `${THEME.info}20` }}
-                    title={locale === 'ka' ? 'პროფილის ნახვა' : 'View Profile'}
+                    title={t('admin.viewProfile')}
                   >
                     <Eye className="w-4 h-4" style={{ color: THEME.info }} />
                   </button>
@@ -550,7 +550,7 @@ function AdminUsersPageContent() {
                           onClick={() => setActionMenuUser(null)}
                         >
                           <Mail className="w-4 h-4" style={{ color: THEME.warning }} />
-                          {locale === 'ka' ? 'ემაილის გაგზავნა' : 'Send Email'}
+                          {t('admin.sendEmail')}
                         </button>
                         <div style={{ borderTop: `1px solid ${THEME.border}` }} />
                         <button
@@ -563,12 +563,12 @@ function AdminUsersPageContent() {
                           {user.isSuspended ? (
                             <>
                               <CheckCircle className="w-4 h-4" />
-                              {locale === 'ka' ? 'განბლოკვა' : 'Unsuspend'}
+                              {t('admin.unsuspend')}
                             </>
                           ) : (
                             <>
                               <Ban className="w-4 h-4" />
-                              {locale === 'ka' ? 'დაბლოკვა' : 'Suspend'}
+                              {t('admin.suspend')}
                             </>
                           )}
                         </button>
@@ -669,7 +669,7 @@ function AdminUsersPageContent() {
               <div>
                 <h4 className="text-sm font-medium mb-3 flex items-center gap-2" style={{ color: THEME.text }}>
                   <Image className="w-4 h-4" style={{ color: THEME.primary }} />
-                  {locale === 'ka' ? 'საიდენტიფიკაციო დოკუმენტები' : 'ID Documents'}
+                  {t('admin.idDocuments')}
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* ID Front */}
@@ -678,7 +678,7 @@ function AdminUsersPageContent() {
                     style={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
                   >
                     <p className="text-xs mb-2" style={{ color: THEME.textDim }}>
-                      {locale === 'ka' ? 'პირადობის წინა მხარე' : 'ID Front'}
+                      {t('admin.idFront')}
                     </p>
                     {showVerificationModal.idDocumentUrl ? (
                       <a
@@ -699,7 +699,7 @@ function AdminUsersPageContent() {
                         style={{ background: THEME.surfaceHover }}
                       >
                         <p className="text-xs" style={{ color: THEME.textDim }}>
-                          {locale === 'ka' ? 'არ არის ატვირთული' : 'Not uploaded'}
+                          {t('admin.notUploaded')}
                         </p>
                       </div>
                     )}
@@ -711,7 +711,7 @@ function AdminUsersPageContent() {
                     style={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
                   >
                     <p className="text-xs mb-2" style={{ color: THEME.textDim }}>
-                      {locale === 'ka' ? 'პირადობის უკანა მხარე' : 'ID Back'}
+                      {t('admin.idBack')}
                     </p>
                     {showVerificationModal.idDocumentBackUrl ? (
                       <a
@@ -744,7 +744,7 @@ function AdminUsersPageContent() {
                     style={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
                   >
                     <p className="text-xs mb-2" style={{ color: THEME.textDim }}>
-                      {locale === 'ka' ? 'სელფი პირადობით' : 'Selfie with ID'}
+                      {t('admin.selfieWithId')}
                     </p>
                     {showVerificationModal.selfieWithIdUrl ? (
                       <a
@@ -777,7 +777,7 @@ function AdminUsersPageContent() {
               <div>
                 <h4 className="text-sm font-medium mb-3 flex items-center gap-2" style={{ color: THEME.text }}>
                   <Globe className="w-4 h-4" style={{ color: THEME.primary }} />
-                  {locale === 'ka' ? 'სოციალური ბმულები' : 'Social Links'}
+                  {t('admin.socialLinks')}
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
                   {showVerificationModal.facebookUrl && (
@@ -834,7 +834,7 @@ function AdminUsersPageContent() {
                   )}
                   {!showVerificationModal.facebookUrl && !showVerificationModal.instagramUrl && !showVerificationModal.linkedinUrl && !showVerificationModal.websiteUrl && (
                     <p className="col-span-2 text-sm py-4 text-center" style={{ color: THEME.textDim }}>
-                      {locale === 'ka' ? 'სოციალური ბმულები არ არის დამატებული' : 'No social links added'}
+                      {t('admin.noSocialLinksAdded')}
                     </p>
                   )}
                 </div>
@@ -844,12 +844,12 @@ function AdminUsersPageContent() {
               {verificationAction === 'reject' && (
                 <div>
                   <h4 className="text-sm font-medium mb-3" style={{ color: THEME.text }}>
-                    {locale === 'ka' ? 'უარყოფის მიზეზი' : 'Rejection Reason'}
+                    {t('admin.rejectionReason')}
                   </h4>
                   <Textarea
                     value={rejectionNote}
                     onChange={(e) => setRejectionNote(e.target.value)}
-                    placeholder={locale === 'ka' ? 'მიუთითეთ უარყოფის მიზეზი...' : 'Enter rejection reason...'}
+                    placeholder={t('admin.enterRejectionReason')}
                     rows={3}
                     style={{
                       background: THEME.surface,
@@ -863,8 +863,8 @@ function AdminUsersPageContent() {
               {/* Submitted Date */}
               {showVerificationModal.verificationSubmittedAt && (
                 <p className="text-xs" style={{ color: THEME.textDim }}>
-                  {locale === 'ka' ? 'გაგზავნილია: ' : 'Submitted: '}
-                  {formatDateShort(showVerificationModal.verificationSubmittedAt, locale as 'en' | 'ka')}
+                  {t('admin.submitted')}
+                  {formatDateShort(showVerificationModal.verificationSubmittedAt, locale as 'en' | 'ka' | 'ru')}
                 </p>
               )}
             </div>
@@ -881,7 +881,7 @@ function AdminUsersPageContent() {
                     onClick={() => setVerificationAction(null)}
                     style={{ background: THEME.surface, color: THEME.textMuted }}
                   >
-                    {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+                    {t('common.cancel')}
                   </Button>
                   <Button
                     variant="destructive"
@@ -889,7 +889,7 @@ function AdminUsersPageContent() {
                     disabled={isProcessingVerification || !rejectionNote.trim()}
                     loading={isProcessingVerification}
                   >
-                    {locale === 'ka' ? 'უარყოფა' : 'Confirm Reject'}
+                    {t('admin.confirmReject')}
                   </Button>
                 </>
               ) : (
@@ -900,7 +900,7 @@ function AdminUsersPageContent() {
                     leftIcon={<XCircle className="w-4 h-4" />}
                     style={{ background: `${THEME.error}20`, color: THEME.error, borderColor: THEME.error }}
                   >
-                    {locale === 'ka' ? 'უარყოფა' : 'Reject'}
+                    {t('admin.reject')}
                   </Button>
                   <Button
                     onClick={() => handleVerificationAction('approve')}
@@ -912,7 +912,7 @@ function AdminUsersPageContent() {
                       boxShadow: `0 4px 16px ${THEME.success}40`,
                     }}
                   >
-                    {locale === 'ka' ? 'დადასტურება' : 'Approve'}
+                    {t('admin.approve')}
                   </Button>
                 </>
               )}

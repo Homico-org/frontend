@@ -10,7 +10,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export default function ClientOrdersPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const router = useRouter();
 
   useEffect(() => {
@@ -28,10 +28,10 @@ export default function ClientOrdersPage() {
   }
 
   const stats = [
-    { label: locale === 'ka' ? 'სულ შეკვეთები' : 'Total Orders', value: '0', icon: Package, color: 'bg-forest-800' },
-    { label: locale === 'ka' ? 'მიმდინარე' : 'In Progress', value: '0', icon: Clock, color: 'bg-terracotta-400' },
-    { label: locale === 'ka' ? 'დასრულებული' : 'Completed', value: '0', icon: CheckCircle, color: 'bg-primary-500' },
-    { label: locale === 'ka' ? 'მოქმედება საჭირო' : 'Requires Action', value: '0', icon: AlertCircle, color: 'bg-terracotta-500' },
+    { label: t('orders.totalOrders'), value: '0', icon: Package, color: 'bg-forest-800' },
+    { label: t('orders.inProgress'), value: '0', icon: Clock, color: 'bg-terracotta-400' },
+    { label: t('orders.completed'), value: '0', icon: CheckCircle, color: 'bg-primary-500' },
+    { label: t('orders.requiresAction'), value: '0', icon: AlertCircle, color: 'bg-terracotta-500' },
   ];
 
   return (
@@ -39,10 +39,10 @@ export default function ClientOrdersPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-serif font-medium text-neutral-900 dark:text-neutral-50">
-            {locale === 'ka' ? 'ჩემი შეკვეთები' : 'My Orders'}
+            {t('orders.myOrders')}
           </h1>
           <p className="mt-1 sm:mt-2 text-sm sm:text-base text-neutral-500 dark:text-neutral-400">
-            {locale === 'ka' ? 'თვალყური ადევნე მიმდინარე და დასრულებულ შეკვეთებს' : 'Track your ongoing and completed orders'}
+            {t('orders.trackYourOngoingAndCompleted')}
           </p>
         </div>
 

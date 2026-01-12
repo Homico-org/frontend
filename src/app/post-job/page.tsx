@@ -59,7 +59,7 @@ const STEPS: { id: Step; label: string; labelKa: string }[] = [
 function PostJobPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { openLoginModal } = useAuthModal();
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const { categories } = useCategories();
   const toast = useToast();
   const { trackEvent } = useAnalytics();
@@ -67,7 +67,7 @@ function PostJobPageContent() {
   const searchParams = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const editJobId = searchParams.get("edit");
+  const editJobId = searchParams.get("common.edit");
   const isEditMode = !!editJobId;
 
   // Step state
@@ -203,9 +203,7 @@ function PostJobPageContent() {
         ? categoryFieldsConfig[selectedCategory].hintKa
         : categoryFieldsConfig[selectedCategory].hintEn;
     }
-    return locale === "ka"
-      ? "დეტალურად აღწერე რა გინდა გაკეთდეს - რაც მეტი ინფორმაცია მიაწვდი, მით უფრო ზუსტ შეთავაზებებს მიიღებ."
-      : "Describe in detail what you need - the more information you provide, the more accurate quotes you'll receive.";
+    return t('job.describeInDetailWhatYou');
   };
 
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
@@ -428,11 +426,11 @@ function PostJobPageContent() {
 
       toast.success(
         isEditMode
-          ? locale === "ka" ? "პროექტი განახლდა" : "Project updated"
-          : locale === "ka" ? "პროექტი შეიქმნა" : "Project created",
+          ? t('job.projectUpdated')
+          : t('job.projectCreated'),
         isEditMode
-          ? locale === "ka" ? "თქვენი პროექტი წარმატებით განახლდა" : "Your project has been successfully updated"
-          : locale === "ka" ? "თქვენი პროექტი წარმატებით გამოქვეყნდა" : "Your project has been successfully posted"
+          ? t('job.yourProjectHasBeenSuccessfully')
+          : t('job.yourProjectHasBeenSuccessfully')
       );
 
       trackEvent(isEditMode ? AnalyticsEvent.JOB_EDIT : AnalyticsEvent.JOB_POST, {
@@ -446,8 +444,8 @@ function PostJobPageContent() {
       const errorMessage = err instanceof Error ? err.message : "Failed to save project";
       setError(errorMessage);
       toast.error(
-        locale === "ka" ? "შეცდომა" : "Error",
-        locale === "ka" ? "პროექტის შენახვა ვერ მოხერხდა" : "Failed to save project"
+        t('common.error'),
+        t('job.failedToSaveProject')
       );
     } finally {
       setIsSubmitting(false);
@@ -505,31 +503,29 @@ function PostJobPageContent() {
               <div className="lg:col-span-2 space-y-4">
                 <div>
                   <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
-                    {locale === "ka" ? "პროექტის დეტალები" : "Project Details"}
+                    {t('job.projectDetails')}
                   </h1>
                   <p className="text-sm text-neutral-500">
-                    {locale === "ka"
-                      ? "აირჩიე ობიექტის ტიპი, კატეგორია და სერვისი"
-                      : "Select property type, category and service"}
+                    {t('job.selectPropertyTypeCategoryAnd')}
                   </p>
                 </div>
 
                 {/* Property Type Selection with Icons */}
                 <div>
                   <label className="block text-xs font-medium text-neutral-600 mb-2">
-                    {locale === "ka" ? "ობიექტის ტიპი" : "Property Type"} <span className="text-[#C4735B]">*</span>
+                    {t('job.propertyType')} <span className="text-[#C4735B]">*</span>
                   </label>
                   <PropertyTypeSelector
                     value={formData.propertyType}
                     onChange={(value) => updateFormData("propertyType", value)}
-                    locale={locale as "en" | "ka"}
+                    locale={locale as "en" | "ka" | "ru"}
                   />
                 </div>
 
                 {/* Category & Subcategory Selection */}
                 <div>
                   <label className="block text-xs font-medium text-neutral-600 mb-2">
-                    {locale === "ka" ? "კატეგორია და სერვისი" : "Category & Service"} <span className="text-[#C4735B]">*</span>
+                    {t('job.categoryService')} <span className="text-[#C4735B]">*</span>
                   </label>
                   <CategorySelector
                     mode="single"
@@ -548,7 +544,7 @@ function PostJobPageContent() {
                 {selectedSubcategory && getActiveFields().length > 0 && (
                   <div className="bg-white rounded-xl border border-neutral-200 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
                     <h3 className="text-sm font-medium text-neutral-900 mb-3">
-                      {locale === "ka" ? "დამატებითი დეტალები" : "Additional Details"}
+                      {t('job.additionalDetails')}
                     </h3>
                     <div className="grid grid-cols-2 gap-3">
                       {getActiveFields().map((field) => (
@@ -592,7 +588,7 @@ function PostJobPageContent() {
                 {(selectedCategory === "architecture" || selectedCategory === "design") && (
                   <div className="bg-white rounded-xl border border-neutral-200 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
                     <label className="block text-sm font-medium text-neutral-900 mb-2">
-                      {locale === "ka" ? "საკადასტრო კოდი" : "Cadastral Code"} <span className="text-neutral-400 font-normal">({locale === "ka" ? "არასავალდებულო" : "optional"})</span>
+                      {t('job.cadastralCode')} <span className="text-neutral-400 font-normal">({t('common.optional')})</span>
                     </label>
                     <Input
                       value={formData.cadastralId}
@@ -600,9 +596,7 @@ function PostJobPageContent() {
                       placeholder="XX.XX.XX.XXX.XXX"
                     />
                     <p className="mt-2 text-[11px] text-neutral-500 leading-relaxed">
-                      {locale === "ka"
-                        ? "საკადასტრო კოდი გვეხმარება ობიექტის იდენტიფიცირებაში."
-                        : "Cadastral code helps identify the property."}
+                      {t('job.cadastralCodeHelpsIdentifyThe')}
                     </p>
                   </div>
                 )}
@@ -611,7 +605,7 @@ function PostJobPageContent() {
                 {(formData.propertyType === "house" || formData.propertyType === "building") && (selectedCategory === "architecture" || selectedCategory === "design") && (
                   <div className="bg-white rounded-xl border border-neutral-200 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
                     <label className="block text-sm font-medium text-neutral-900 mb-2">
-                      {locale === "ka" ? "მიწის ფართობი" : "Land Area"}
+                      {t('job.landArea')}
                     </label>
                     <div className="relative">
                       <input
@@ -624,7 +618,7 @@ function PostJobPageContent() {
                             updateFormData("landArea", value);
                           }
                         }}
-                        placeholder={locale === "ka" ? "500" : "500"}
+                        placeholder={t('postJob.5007')}
                         className="w-full px-3 py-2.5 pr-12 rounded-lg border border-neutral-200 bg-white text-sm placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]"
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-400">
@@ -632,9 +626,7 @@ function PostJobPageContent() {
                       </span>
                     </div>
                     <p className="mt-2 text-[11px] text-neutral-500 leading-relaxed">
-                      {locale === "ka"
-                        ? "მიუთითე მიწის ნაკვეთის ფართობი კვადრატულ მეტრებში."
-                        : "Specify the land plot area in square meters."}
+                      {t('job.specifyTheLandPlotArea')}
                     </p>
                   </div>
                 )}
@@ -643,18 +635,16 @@ function PostJobPageContent() {
                 {selectedCategory && categoriesNeedingCondition.includes(selectedCategory) && (
                   <div className="bg-white rounded-xl border border-neutral-200 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
                     <label className="block text-sm font-medium text-neutral-900 mb-3">
-                      {locale === "ka" ? "ობიექტის მდგომარეობა" : "Property Condition"}
+                      {t('job.propertyCondition')}
                     </label>
                     <ConditionSelector
                       value={formData.propertyCondition}
                       onChange={(value) => updateFormData("propertyCondition", value)}
-                      locale={locale as "en" | "ka"}
+                      locale={locale as "en" | "ka" | "ru"}
                       category={selectedCategory}
                     />
                     <p className="mt-3 text-[11px] text-neutral-500 leading-relaxed">
-                      {locale === "ka"
-                        ? "ობიექტის მდგომარეობა დაგვეხმარება ზუსტი შეფასების მომზადებაში."
-                        : "Property condition helps professionals provide accurate estimates."}
+                      {t('job.propertyConditionHelpsProfessionalsProvide')}
                     </p>
                   </div>
                 )}
@@ -672,7 +662,7 @@ function PostJobPageContent() {
                         </svg>
                       </div>
                       <h3 className="font-medium text-sm text-[#C4735B]">
-                        {locale === "ka" ? "რჩევა" : "Tip"}
+                        {t('job.tip')}
                       </h3>
                     </div>
                     <p className="text-xs text-neutral-600 leading-relaxed">
@@ -690,14 +680,14 @@ function PostJobPageContent() {
             <div className="max-w-2xl mx-auto">
               <div className="bg-white rounded-xl border border-neutral-200 p-4">
                 <h2 className="text-lg font-bold text-neutral-900 mb-3">
-                  {locale === "ka" ? "ლოკაცია და ბიუჯეტი" : "Location & Budget"}
+                  {t('job.locationBudget')}
                 </h2>
 
                 <div className="space-y-4">
                   {/* Address */}
                   <div>
                     <label className="block text-xs font-medium text-neutral-600 mb-1.5">
-                      {locale === "ka" ? "სამუშაო მისამართი" : "Job Address"} <span className="text-[#C4735B]">*</span>
+                      {t('job.jobAddress')} <span className="text-[#C4735B]">*</span>
                     </label>
                     <AddressPicker
                       value={formData.location}
@@ -710,7 +700,7 @@ function PostJobPageContent() {
                   {/* Budget Type Selection and Inputs */}
                   <div>
                     <label className="block text-xs font-medium text-neutral-600 mb-2">
-                      {locale === "ka" ? "ბიუჯეტი" : "Budget"} <span className="text-[#C4735B]">*</span>
+                      {t('common.budget')} <span className="text-[#C4735B]">*</span>
                     </label>
                     <BudgetSelector
                       budgetType={formData.budgetType}
@@ -726,19 +716,19 @@ function PostJobPageContent() {
                       onBudgetMinChange={(value) => updateFormData("budgetMin", value)}
                       budgetMax={formData.budgetMax}
                       onBudgetMaxChange={(value) => updateFormData("budgetMax", value)}
-                      locale={locale as "en" | "ka"}
+                      locale={locale as "en" | "ka" | "ru"}
                     />
                   </div>
 
                   {/* Timing Selection */}
                   <div>
                     <label className="block text-xs font-medium text-neutral-600 mb-2">
-                      {locale === "ka" ? "როდის გჭირდება?" : "When do you need it?"} <span className="text-[#C4735B]">*</span>
+                      {t('job.whenDoYouNeedIt')} <span className="text-[#C4735B]">*</span>
                     </label>
                     <TimingSelector
                       value={formData.timing}
                       onChange={(value) => updateFormData("timing", value)}
-                      locale={locale as "en" | "ka"}
+                      locale={locale as "en" | "ka" | "ru"}
                     />
                   </div>
                 </div>
@@ -754,7 +744,7 @@ function PostJobPageContent() {
                   {locale === "ka" ? "პროექტის დეტალები" : "Project Details"}
                 </h1>
                 <p className="text-sm text-neutral-500">
-                  {locale === "ka" ? "აღწერე რა გინდა გაკეთდეს" : "Describe what needs to be done"}
+                  {t('job.describeWhatNeedsToBe')}
                 </p>
               </div>
 
@@ -762,27 +752,25 @@ function PostJobPageContent() {
                 {/* Title */}
                 <div>
                   <label className="block text-xs font-medium text-neutral-600 mb-1.5">
-                    {locale === "ka" ? "სათაური" : "Title"} <span className="text-[#C4735B]">*</span>
+                    {t('common.title')} <span className="text-[#C4735B]">*</span>
                   </label>
                   <Input
                     value={formData.title}
                     onChange={(e) => updateFormData("title", e.target.value)}
-                    placeholder={locale === "ka" ? "მაგ: მილების შეკეთება" : "e.g. Kitchen pipe repair"}
+                    placeholder={t('job.egKitchenPipeRepair')}
                   />
                 </div>
 
                 {/* Description */}
                 <div>
                   <label className="block text-xs font-medium text-neutral-600 mb-1.5">
-                    {locale === "ka" ? "აღწერა" : "Description"} <span className="text-[#C4735B]">*</span>
+                    {t('common.description')} <span className="text-[#C4735B]">*</span>
                   </label>
                   <Textarea
                     value={formData.description}
                     onChange={(e) => updateFormData("description", e.target.value)}
                     rows={3}
-                    placeholder={locale === "ka"
-                      ? "აღწერე პრობლემა ან რა გინდა გაკეთდეს..."
-                      : "Describe the problem or what needs to be done..."}
+                    placeholder={t('job.describeTheProblemOrWhat')}
                   />
                 </div>
 
@@ -807,15 +795,13 @@ function PostJobPageContent() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <label className="block text-sm font-semibold text-neutral-800 mb-0.5">
-                        {locale === "ka" ? "დაამატე ფოტოები" : "Add Photos"}
+                        {t('job.addPhotos')}
                         <span className="ml-1.5 text-xs font-normal text-neutral-400">
-                          ({locale === "ka" ? "რეკომენდირებული" : "recommended"})
+                          ({t('job.recommended')})
                         </span>
                       </label>
                       <p className="text-xs text-neutral-500 leading-relaxed">
-                        {locale === "ka"
-                          ? "ფოტოები ეხმარება პროფესიონალებს უკეთ გაიგონ რა გჭირდება და მოგცენ ზუსტი შეფასება"
-                          : "Photos help professionals better understand what you need and give you accurate quotes"}
+                        {t('job.photosHelpProfessionalsBetterUnderstand')}
                       </p>
                     </div>
                   </div>
@@ -824,9 +810,9 @@ function PostJobPageContent() {
                   {(existingMedia.length + mediaFiles.length) === 0 && (
                     <div className="mb-3 flex flex-wrap gap-1.5">
                       {[
-                        { icon: <Camera className="w-3.5 h-3.5" />, text: locale === "ka" ? "პრობლემის ადგილი" : "Problem area" },
-                        { icon: <Ruler className="w-3.5 h-3.5" />, text: locale === "ka" ? "ზომები" : "Dimensions" },
-                        { icon: <Palette className="w-3.5 h-3.5" />, text: locale === "ka" ? "სასურველი სტილი" : "Desired style" },
+                        { icon: <Camera className="w-3.5 h-3.5" />, text: t('job.problemArea') },
+                        { icon: <Ruler className="w-3.5 h-3.5" />, text: t('job.dimensions') },
+                        { icon: <Palette className="w-3.5 h-3.5" />, text: t('job.desiredStyle') },
                       ].map((tip, i) => (
                         <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/80 border border-neutral-200 text-xs text-neutral-600">
                           <span className="text-[#C4735B]">{tip.icon}</span>
@@ -860,7 +846,7 @@ function PostJobPageContent() {
                       <span className={`text-[10px] font-medium mt-0.5 ${
                         (existingMedia.length + mediaFiles.length) > 0 ? 'text-emerald-600' : 'text-amber-600'
                       }`}>
-                        {locale === "ka" ? "დამატება" : "Add"}
+                        {t('common.add')}
                       </span>
                     </button>
 
@@ -912,12 +898,10 @@ function PostJobPageContent() {
             <div className="max-w-2xl mx-auto space-y-3">
               <div className="mb-2">
                 <h1 className="text-lg font-bold text-neutral-900">
-                  {locale === "ka" ? "გადახედე შენს პროექტს" : "Review your Job Post"}
+                  {t('job.reviewYourJobPost')}
                 </h1>
                 <p className="text-xs text-neutral-500">
-                  {locale === "ka"
-                    ? "გთხოვთ დარწმუნდეთ რომ ყველა დეტალი სწორია."
-                    : "Please ensure all details are correct before publishing."}
+                  {t('job.pleaseEnsureAllDetailsAre')}
                 </p>
               </div>
 
@@ -928,7 +912,7 @@ function PostJobPageContent() {
                     <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
                       <CategoryIcon type={selectedCategoryData?.icon || ""} className="w-3 h-3 text-[#C4735B]" />
                     </div>
-                    {locale === "ka" ? "სერვისი" : "Service"}
+                    {t('job.service')}
                   </h3>
                   <Button variant="ghost" size="icon-sm" onClick={() => goToStep("category")} className="text-[#C4735B] w-6 h-6">
                     <Pencil className="w-3 h-3" />
@@ -936,13 +920,13 @@ function PostJobPageContent() {
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
-                    <p className="text-neutral-400 mb-0.5">{locale === "ka" ? "კატეგორია" : "Category"}</p>
+                    <p className="text-neutral-400 mb-0.5">{t('job.category')}</p>
                     <p className="font-medium text-neutral-900">
                       {locale === "ka" ? selectedCategoryData?.nameKa : selectedCategoryData?.name}
                     </p>
                   </div>
                   <div>
-                    <p className="text-neutral-400 mb-0.5">{locale === "ka" ? "ტიპი" : "Type"}</p>
+                    <p className="text-neutral-400 mb-0.5">{t('common.type')}</p>
                     <p className="font-medium text-neutral-900">
                       {(() => {
                         const sub = selectedCategoryData?.subcategories.find((s) => s.key === selectedSubcategory);
@@ -961,7 +945,7 @@ function PostJobPageContent() {
                       <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
                         <MapPin className="w-3 h-3 text-[#C4735B]" />
                       </div>
-                      {locale === "ka" ? "ლოკაცია" : "Location"}
+                      {t('common.location')}
                     </h3>
 <Button variant="ghost" size="icon-sm" onClick={() => goToStep("location")} className="text-[#C4735B] w-6 h-6">
                     <Pencil className="w-3 h-3" />
@@ -970,19 +954,19 @@ function PostJobPageContent() {
                   <p className="text-xs font-medium text-neutral-900 line-clamp-1">{formData.location}</p>
                   <div className="flex flex-wrap gap-1 mt-1">
                     <Badge variant="secondary" size="xs">
-                      {formData.propertyType === "apartment" && (locale === "ka" ? "ბინა" : "Apartment")}
-                      {formData.propertyType === "house" && (locale === "ka" ? "სახლი" : "House")}
-                      {formData.propertyType === "office" && (locale === "ka" ? "ოფისი" : "Office")}
-                      {formData.propertyType === "building" && (locale === "ka" ? "შენობა" : "Building")}
-                      {formData.propertyType === "other" && (locale === "ka" ? "სხვა" : "Other")}
+                      {formData.propertyType === "apartment" && (t('job.apartment'))}
+                      {formData.propertyType === "house" && (t('job.house'))}
+                      {formData.propertyType === "office" && (t('job.office'))}
+                      {formData.propertyType === "building" && (t('job.building'))}
+                      {formData.propertyType === "other" && (t('common.other'))}
                     </Badge>
                     {formData.propertyCondition && (
                       <Badge variant="premium" size="xs">
-                        {formData.propertyCondition === "shell" && (locale === "ka" ? "თეთრი კარკასი" : "Shell")}
-                        {formData.propertyCondition === "black-frame" && (locale === "ka" ? "შავი კარკასი" : "Black Frame")}
-                        {formData.propertyCondition === "needs-renovation" && (locale === "ka" ? "სრული რემონტი" : "Full Renovation")}
-                        {formData.propertyCondition === "partial-renovation" && (locale === "ka" ? "ნაწილობრივი" : "Partial")}
-                        {formData.propertyCondition === "good" && (locale === "ka" ? "კარგი" : "Good")}
+                        {formData.propertyCondition === "shell" && (t('job.shell'))}
+                        {formData.propertyCondition === "black-frame" && (t('job.blackFrame'))}
+                        {formData.propertyCondition === "needs-renovation" && (t('job.fullRenovation'))}
+                        {formData.propertyCondition === "partial-renovation" && (t('job.partial'))}
+                        {formData.propertyCondition === "good" && (t('job.good'))}
                       </Badge>
                     )}
                   </div>
@@ -1005,7 +989,7 @@ function PostJobPageContent() {
                   </div>
                   <p className="text-xs font-medium text-neutral-900">
                     {formData.budgetType === "negotiable"
-                      ? (locale === "ka" ? "შეთანხმებით" : "Negotiable")
+                      ? (t('common.negotiable'))
                       : formData.budgetType === "range"
                       ? `${formData.budgetMin} - ${formData.budgetMax} GEL`
                       : `${formData.budgetMin} GEL`}
@@ -1019,7 +1003,7 @@ function PostJobPageContent() {
                       <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
                         <Clock className="w-3 h-3 text-[#C4735B]" />
                       </div>
-                      {locale === "ka" ? "როდის გჭირდება" : "When needed"}
+                      {t('job.whenNeeded')}
                     </h3>
                     <Button variant="ghost" size="icon-sm" onClick={() => goToStep("location")} className="text-[#C4735B] w-6 h-6">
                       <Pencil className="w-3 h-3" />
@@ -1029,10 +1013,10 @@ function PostJobPageContent() {
                     variant={formData.timing === "asap" ? "danger" : formData.timing === "this_week" ? "warning" : "default"}
                     size="xs"
                   >
-                    {formData.timing === "flexible" && (locale === "ka" ? "მოქნილი" : "Flexible")}
-                    {formData.timing === "asap" && (locale === "ka" ? "სასწრაფოდ" : "ASAP")}
-                    {formData.timing === "this_week" && (locale === "ka" ? "ამ კვირაში" : "This week")}
-                    {formData.timing === "this_month" && (locale === "ka" ? "ამ თვეში" : "This month")}
+                    {formData.timing === "flexible" && (t('job.flexible'))}
+                    {formData.timing === "asap" && (t('job.asap'))}
+                    {formData.timing === "this_week" && (t('common.thisWeek'))}
+                    {formData.timing === "this_month" && (t('common.thisMonth'))}
                   </Badge>
                 </div>
               </div>
@@ -1045,7 +1029,7 @@ function PostJobPageContent() {
                       <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
                         <Ruler className="w-3 h-3 text-[#C4735B]" />
                       </div>
-                      {locale === "ka" ? "დეტალები" : "Details"}
+                      {t('common.details')}
                     </h3>
                     <Button variant="ghost" size="icon-sm" onClick={() => goToStep("details")} className="text-[#C4735B] w-6 h-6">
                       <Pencil className="w-3 h-3" />
@@ -1054,27 +1038,27 @@ function PostJobPageContent() {
                   <div className="flex flex-wrap gap-2">
                     {formData.areaSize && (
                       <Badge variant="secondary" size="xs">
-                        {locale === "ka" ? "ფართი" : "Area"}: {formData.areaSize} m²
+                        {t('job.area')}: {formData.areaSize} m²
                       </Badge>
                     )}
                     {formData.roomCount && (
                       <Badge variant="secondary" size="xs">
-                        {locale === "ka" ? "ოთახები" : "Rooms"}: {formData.roomCount}
+                        {t('job.rooms')}: {formData.roomCount}
                       </Badge>
                     )}
                     {formData.pointsCount && (
                       <Badge variant="secondary" size="xs">
-                        {locale === "ka" ? "წერტილები" : "Points"}: {formData.pointsCount}
+                        {t('job.points')}: {formData.pointsCount}
                       </Badge>
                     )}
                     {formData.cadastralId && (
                       <Badge variant="secondary" size="xs">
-                        {locale === "ka" ? "საკადასტრო" : "Cadastral"}: {formData.cadastralId}
+                        {t('job.cadastral')}: {formData.cadastralId}
                       </Badge>
                     )}
                     {formData.landArea && (
                       <Badge variant="secondary" size="xs">
-                        {locale === "ka" ? "მიწის ფართი" : "Land"}: {formData.landArea} m²
+                        {t('job.land')}: {formData.landArea} m²
                       </Badge>
                     )}
                   </div>
@@ -1108,7 +1092,7 @@ function PostJobPageContent() {
                       <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
                         <ImageIcon className="w-3 h-3 text-[#C4735B]" />
                       </div>
-                      {locale === "ka" ? "ფოტოები" : "Photos"} ({existingMedia.length + mediaFiles.length})
+                      {t('common.photos')} ({existingMedia.length + mediaFiles.length})
                     </h3>
                     <Button variant="ghost" size="icon-sm" onClick={() => goToStep("details")} className="text-[#C4735B] w-6 h-6">
                       <Pencil className="w-3 h-3" />
@@ -1134,9 +1118,7 @@ function PostJobPageContent() {
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
-                {locale === "ka"
-                  ? "გადაიხილება ადმინისტრატორის მიერ 24 საათში."
-                  : "Will be reviewed by admins within 24 hours."}
+                {t('job.willBeReviewedByAdmins')}
               </div>
             </div>
           )}
@@ -1153,7 +1135,7 @@ function PostJobPageContent() {
               onClick={handleBack}
               leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}
             >
-              {locale === "ka" ? "უკან" : "Back"}
+              {t('common.back')}
             </Button>
 
             <Button
@@ -1168,8 +1150,8 @@ function PostJobPageContent() {
               rightIcon={currentStep === "review" ? <Check className="w-3.5 h-3.5" /> : <ArrowRight className="w-3.5 h-3.5" />}
             >
               {currentStep === "review"
-                ? (locale === "ka" ? "გამოქვეყნება" : "Post Job")
-                : (locale === "ka" ? "გაგრძელება" : "Continue")}
+                ? (t('job.postJob'))
+                : (t('common.continue'))}
             </Button>
           </div>
         </div>

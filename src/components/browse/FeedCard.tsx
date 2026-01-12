@@ -12,6 +12,7 @@ import { FeedItem, FeedItemType } from '@/types';
 import { BadgeCheck, ChevronLeft, ChevronRight, Globe, Play } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useLanguage } from "@/contexts/LanguageContext";
 import React, { useCallback, useMemo, useState } from 'react';
 
 interface FeedCardProps {
@@ -23,6 +24,8 @@ interface FeedCardProps {
 
 const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const { t } = useLanguage();
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -112,12 +115,12 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
                 {item.isVerified ? (
                   <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/90 backdrop-blur-md text-white text-[11px] font-semibold shadow-lg border border-white/20">
                     <BadgeCheck className="w-3.5 h-3.5" />
-                    {locale === 'ka' ? 'Homico-ზე' : 'Via Homico'}
+                    {t('browse.viaHomico')}
                   </div>
                 ) : (
                   <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-md text-white text-[11px] font-medium shadow-lg border border-white/10">
                     <Globe className="w-3.5 h-3.5" />
-                    {locale === 'ka' ? 'გარე პროექტი' : 'External'}
+                    {t('browse.external')}
                   </div>
                 )}
               </div>
@@ -154,10 +157,10 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
 
                 {/* Before/After labels - enhanced */}
                 <div className="absolute bottom-3 left-3 px-3 py-1.5 bg-black/70 backdrop-blur-sm text-white text-[11px] font-semibold rounded-full">
-                  {locale === 'ka' ? 'მდე' : 'Before'}
+                  {t('common.before')}
                 </div>
                 <div className="absolute bottom-3 right-3 px-3 py-1.5 bg-white/95 backdrop-blur-sm text-neutral-900 text-[11px] font-semibold rounded-full shadow-lg">
-                  {locale === 'ka' ? 'შემდეგ' : 'After'}
+                  {t('common.after')}
                 </div>
               </div>
             ) : (
@@ -275,7 +278,7 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
                   className="flex-shrink-0 [&>span]:!text-[#C4735B]"
                 />
               ) : isNew ? (
-                <StatusPill variant="new" size="sm" locale={locale as 'en' | 'ka'} />
+                <StatusPill variant="new" size="sm" locale={locale as 'en' | 'ka' | 'ru'} />
               ) : null}
             </div>
 

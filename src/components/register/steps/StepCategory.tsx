@@ -8,6 +8,7 @@ import { IconBadge } from '@/components/ui/IconBadge';
 import { Input } from '@/components/ui/input';
 import { Briefcase, Plus, X } from 'lucide-react';
 import React from 'react';
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { FormData } from '../hooks/useRegistration';
 
 interface Category {
@@ -44,6 +45,7 @@ export default function StepCategory({
   newCustomService,
   setNewCustomService,
 }: CategoryStepProps) {
+  const { t } = useLanguage();
   const addCustomService = () => {
     if (newCustomService.trim() && customServices.length < 5) {
       setCustomServices(prev => [...prev, newCustomService.trim()]);
@@ -55,17 +57,17 @@ export default function StepCategory({
     <div className="space-y-4">
       <div>
         <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
-          {locale === 'ka' ? 'რა სერვისებს გთავაზობთ?' : 'What services do you provide?'}
+          {t('register.whatServicesDoYouProvide')}
         </h1>
         <p className="text-sm text-neutral-500">
-          {locale === 'ka' ? 'აირჩიეთ კატეგორია და უნარები' : 'Select your profession and skills'}
+          {t('register.selectYourProfessionAndSkills')}
         </p>
       </div>
 
       {/* Category & Subcategory Selection */}
       <div>
         <h2 className="text-sm font-semibold text-neutral-900 mb-2">
-          1. {locale === 'ka' ? 'კატეგორია და უნარები' : 'Category & Skills'} <span className="text-[#C4735B]">*</span>
+          1. {t('register.categorySkills')} <span className="text-[#C4735B]">*</span>
         </h2>
         <CategorySelector
           mode="multi"
@@ -96,8 +98,8 @@ export default function StepCategory({
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
               <IconBadge icon={Briefcase} variant="accent" size="sm" />
-              3. {locale === 'ka' ? 'სერვისები' : 'Services'}
-              <span className="text-neutral-400 font-normal text-[10px]">({locale === 'ka' ? 'არასავალდებულო' : 'optional'})</span>
+              3. {t('common.services')}
+              <span className="text-neutral-400 font-normal text-[10px]">({t('common.optional')})</span>
             </h2>
             {customServices.length > 0 && (
               <Badge variant="premium" size="sm">
@@ -107,9 +109,7 @@ export default function StepCategory({
           </div>
 
           <p className="text-xs text-neutral-500 mb-3">
-            {locale === 'ka'
-              ? 'ჩაწერე რა სერვისებს სთავაზობ კლიენტებს (მაქს. 5)'
-              : 'Write what services you offer to clients (max 5)'}
+            {t('register.writeWhatServicesYouOffer')}
           </p>
 
           {/* Added custom services */}
@@ -146,7 +146,7 @@ export default function StepCategory({
                     addCustomService();
                   }
                 }}
-                placeholder={locale === 'ka' ? 'მაგ: ინტერიერის დიზაინი' : 'e.g: Interior design'}
+                placeholder={t('register.egInteriorDesign')}
                 className="flex-1"
               />
               <Button

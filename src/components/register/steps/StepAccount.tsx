@@ -12,7 +12,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 import { Tabs } from "@/components/ui/Tabs";
-import { CountryCode } from "@/contexts/LanguageContext";
+import { CountryCode, useLanguage } from "@/contexts/LanguageContext";
 import { SocialIcon } from "@/components/icons";
 import { MessageSquare } from "lucide-react";
 import Link from "next/link";
@@ -24,7 +24,7 @@ import type {
 } from "../hooks/useRegistration";
 
 export interface AccountStepProps {
-  locale: "en" | "ka";
+  locale: "en" | "ka" | "ru";
   userType: "client" | "pro";
   authMethod: AuthMethod;
   setAuthMethod: (method: AuthMethod) => void;
@@ -110,6 +110,7 @@ export default function StepAccount({
   onSwitchType,
   showFooter = true,
 }: AccountStepProps) {
+  const { t } = useLanguage();
   const isPro = userType === "pro";
 
   return (
@@ -117,17 +118,11 @@ export default function StepAccount({
       <div>
         <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
           {isPro
-            ? locale === "ka"
-              ? "პროფესიონალური ანგარიში"
-              : "Professional Account"
-            : locale === "ka"
-              ? "ანგარიშის შექმნა"
-              : "Create Account"}
+            ? t('register.professionalAccount')
+            : t('register.createAccount')}
         </h1>
         <p className="text-sm text-neutral-500">
-          {locale === "ka"
-            ? "შეავსე ძირითადი ინფორმაცია"
-            : "Fill in your basic information"}
+          {t('register.fillInYourBasicInformation')}
         </p>
       </div>
 
@@ -161,8 +156,8 @@ export default function StepAccount({
             },
             {
               id: "mobile",
-              label: locale === "ka" ? "ტელეფონი" : "Mobile",
-              shortLabel: locale === "ka" ? "მობილური" : "Phone",
+              label: t('register.mobile'),
+              shortLabel: t('common.phone'),
               icon: (
                 <svg
                   className="w-4 h-4"
@@ -181,8 +176,8 @@ export default function StepAccount({
             },
             {
               id: "email",
-              label: locale === "ka" ? "ელ-ფოსტა" : "Email",
-              shortLabel: locale === "ka" ? "მეილი" : "Email",
+              label: t('common.email'),
+              shortLabel: t('common.email'),
               icon: (
                 <svg
                   className="w-4 h-4"
@@ -209,9 +204,7 @@ export default function StepAccount({
           tabClassName="!px-2 !py-1.5 !text-xs"
         />
         <p className="text-center text-[10px] text-neutral-400 mt-2">
-          {locale === "ka"
-            ? "შემდეგ შესვლისას გამოიყენე იგივე მეთოდი"
-            : "Use the same method when logging in later"}
+          {t('register.useTheSameMethodWhen')}
         </p>
       </Card>
 
@@ -230,16 +223,12 @@ export default function StepAccount({
             onSuccess={handleGoogleSuccess}
             onError={handleGoogleError}
             isActive={authMethod === "google"}
-            loadingText={locale === "ka" ? "იტვირთება..." : "Loading..."}
+            loadingText={t('common.loading')}
           />
           <p className="text-center text-xs text-neutral-500">
             {isPro
-              ? locale === "ka"
-                ? "Google-ით რეგისტრაციის შემდეგ დაგჭირდებათ ტელეფონის ვერიფიკაცია"
-                : "After Google sign-up, you'll need to verify your phone number"
-              : locale === "ka"
-                ? "დააჭირე Google-ით გასაგრძელებლად"
-                : "Click to continue with Google"}
+              ? t('register.afterGoogleSignupYoullNeed')
+              : t('register.clickToContinueWithGoogle')}
           </p>
         </Card>
       )}
@@ -343,20 +332,18 @@ export default function StepAccount({
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="text-sm font-medium text-neutral-900">
-                    {locale === "ka" ? "პროფილის ფოტო" : "Profile Photo"}
+                    {t('register.profilePhoto')}
                   </h3>
                   <span className="text-[10px] text-[#C4735B] font-medium">
-                    {locale === "ka" ? "(სავალდებულო)" : "(required)"}
+                    {t('common.required')}
                   </span>
                 </div>
                 <p className="text-xs text-neutral-500">
-                  {locale === "ka"
-                    ? "ატვირთე რეალური ფოტო"
-                    : "Upload a real photo of yourself"}
+                  {t('register.uploadARealPhotoOf')}
                 </p>
                 {uploadedAvatarUrl && (
                   <Badge variant="success" size="xs" className="mt-1">
-                    {locale === "ka" ? "✓ ატვირთულია" : "✓ Uploaded"}
+                    {t('register.uploaded')}
                   </Badge>
                 )}
               </div>
@@ -367,14 +354,14 @@ export default function StepAccount({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormGroup>
               <Label required locale={locale}>
-                {locale === "ka" ? "სრული სახელი" : "Full Name"}
+                {t('common.fullName')}
               </Label>
               <Input
                 type="text"
                 value={formData.fullName}
                 onChange={(e) => handleInputChange("fullName", e.target.value)}
                 placeholder={
-                  locale === "ka" ? "გიორგი ბერიძე" : "Giorgi Beridze"
+                  t('register.giorgiBeridze')
                 }
                 required
               />
@@ -384,7 +371,7 @@ export default function StepAccount({
                 {locale === "ka" ? "ელ-ფოსტა" : "Email"}
                 {authMethod !== "email" && (
                   <span className="ml-1 text-neutral-400 font-normal">
-                    ({locale === "ka" ? "არასავალდებულო" : "optional"})
+                    ({t('common.optional')})
                   </span>
                 )}
               </Label>
@@ -402,7 +389,7 @@ export default function StepAccount({
           {authMethod === "mobile" && (
             <FormGroup>
               <Label required locale={locale}>
-                {locale === "ka" ? "ტელეფონი" : "Phone"}
+                {t('common.phone')}
               </Label>
 
               {/* Channel toggle */}
@@ -452,13 +439,13 @@ export default function StepAccount({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormGroup>
               <Label required locale={locale}>
-                {locale === "ka" ? "პაროლი" : "Password"}
+                {t('common.password')}
               </Label>
               <PasswordInput
                 value={formData.password}
                 onChange={(e) => handleInputChange("password", e.target.value)}
                 placeholder={
-                  locale === "ka" ? "მინ. 6 სიმბოლო" : "Min. 6 chars"
+                  t('register.min6Chars')
                 }
                 required
                 minLength={6}
@@ -466,12 +453,12 @@ export default function StepAccount({
             </FormGroup>
             <FormGroup>
               <Label required locale={locale}>
-                {locale === "ka" ? "გაიმეორე პაროლი" : "Repeat Password"}
+                {t('register.repeatPassword')}
               </Label>
               <PasswordInput
                 value={repeatPassword}
                 onChange={(e) => setRepeatPassword(e.target.value)}
-                placeholder={locale === "ka" ? "გაიმეორე" : "Repeat"}
+                placeholder={t('register.repeat')}
                 required
                 minLength={6}
                 error={
@@ -540,12 +527,8 @@ export default function StepAccount({
               size="lg"
             >
               {isPro
-                ? locale === "ka"
-                  ? "გაგრძელება"
-                  : "Continue"
-                : locale === "ka"
-                  ? "ანგარიშის შექმნა"
-                  : "Create Account"}
+                ? t('common.continue')
+                : t('register.createAccount')}
               <svg
                 className="w-4 h-4 ml-2"
                 fill="none"
@@ -573,12 +556,8 @@ export default function StepAccount({
           className="text-neutral-500 hover:text-[#C4735B]"
         >
           {isPro
-            ? locale === "ka"
-              ? "← დაბრუნება კლიენტის რეგისტრაციაზე"
-              : "← Back to client registration"
-            : locale === "ka"
-              ? "→ რეგისტრაცია როგორც პროფესიონალი"
-              : "→ Register as professional"}
+            ? t('register.backToClientRegistration')
+            : t('register.registerAsProfessional')}
         </Button>
       </div>
     </div>

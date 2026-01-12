@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
 interface AuthModalContextType {
   isLoginModalOpen: boolean;
@@ -21,6 +21,18 @@ export function AuthModalProvider({ children }: { children: React.ReactNode }) {
       setRedirectPath(path);
     }
     setIsLoginModalOpen(true);
+  }, []);
+
+  // Listen for login modal open events from api interceptor (401 responses)
+  useEffect(() => {
+    const handleOpenLoginModal = () => {
+      setIsLoginModalOpen(true);
+    };
+
+    window.addEventListener('auth:open-login-modal', handleOpenLoginModal);
+    return () => {
+      window.removeEventListener('auth:open-login-modal', handleOpenLoginModal);
+    };
   }, []);
 
   const closeLoginModal = useCallback(() => {

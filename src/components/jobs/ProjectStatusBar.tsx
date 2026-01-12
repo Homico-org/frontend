@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import React from "react";
 
+import { useLanguage } from "@/contexts/LanguageContext";
 const STAGES: {
   key: ProjectStage;
   label: string;
@@ -65,6 +66,7 @@ export default function ProjectStatusBar({
   onLeaveReview,
   compact = false,
 }: ProjectStatusBarProps) {
+  const { t } = useLanguage();
   const currentIndex = getStageIndex(currentStage);
   const progress = STAGES[currentIndex]?.progress || 0;
   const isProjectCompleted = currentStage === "completed";
@@ -79,11 +81,11 @@ export default function ProjectStatusBar({
         </div>
         <div className="flex-1 min-w-0">
           <p className={`${compact ? 'text-xs' : 'text-sm'} font-semibold text-green-800 dark:text-green-200`}>
-            {locale === "ka" ? "პროექტი დასრულებულია" : "Project Completed"}
+            {t('job.projectCompleted')}
           </p>
           {!compact && (
             <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">
-              {locale === "ka" ? "გმადლობთ თანამშრომლობისთვის" : "Thank you for your collaboration"}
+              {t('job.thankYouForYourCollaboration')}
             </p>
           )}
         </div>
@@ -97,13 +99,13 @@ export default function ProjectStatusBar({
             leftIcon={<Star className="w-3.5 h-3.5" />}
             className="flex-shrink-0"
           >
-            {locale === "ka" ? "შეფასება" : "Review"}
+            {t('job.review')}
           </Button>
         )}
         {isClient && hasSubmittedReview && (
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-green-600 bg-green-100 dark:bg-green-800/30 dark:text-green-400 flex-shrink-0">
             <Check className="w-3.5 h-3.5" />
-            {locale === "ka" ? "შეფასებულია" : "Reviewed"}
+            {t('job.reviewed')}
           </div>
         )}
       </div>
@@ -139,9 +141,7 @@ export default function ProjectStatusBar({
       {isClient && isProjectCompleted && !isClientConfirmed && (
         <div className={`flex flex-col sm:flex-row items-stretch sm:items-center gap-2 ${compact ? 'p-2' : 'p-3'} rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800`}>
           <p className={`${compact ? 'text-xs' : 'text-sm'} text-amber-700 dark:text-amber-300 flex-1`}>
-            {locale === "ka"
-              ? "გთხოვთ გადაამოწმოთ."
-              : "Please review and confirm."}
+            {t('job.pleaseReviewAndConfirm')}
           </p>
           <div className="flex gap-2">
             <Button
@@ -152,7 +152,7 @@ export default function ProjectStatusBar({
               loading={isUpdating}
               leftIcon={!isUpdating ? <BadgeCheck className="w-3.5 h-3.5" /> : undefined}
             >
-              {locale === "ka" ? "დადასტურება" : "Confirm"}
+              {t('common.confirm')}
             </Button>
             {!compact && (
               <Button
@@ -162,7 +162,7 @@ export default function ProjectStatusBar({
                 disabled={isUpdating}
                 leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
               >
-                {locale === "ka" ? "ცვლილებები" : "Changes"}
+                {t('job.changes')}
               </Button>
             )}
           </div>
@@ -222,12 +222,12 @@ export default function ProjectStatusBar({
         <div className="flex items-center gap-2">
           {isClient && (
             <Badge variant="info" size="sm">
-              {locale === "ka" ? "თქვენი სამუშაო" : "Your Job"}
+              {t('job.yourJob')}
             </Badge>
           )}
           {isPro && (
             <Badge variant="success" size="sm">
-              {locale === "ka" ? "დაქირავებული ხართ" : "You're Hired"}
+              {t('job.youreHired')}
             </Badge>
           )}
         </div>

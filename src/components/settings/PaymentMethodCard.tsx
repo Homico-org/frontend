@@ -5,6 +5,7 @@ import { CreditCard, X } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Badge } from '@/components/ui/badge';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 export interface PaymentMethod {
   id: string;
   type: 'card' | 'bank';
@@ -26,7 +27,7 @@ export interface PaymentMethodCardProps {
   /** Handler for deletion */
   onDelete?: (id: string) => Promise<void>;
   /** Locale for translations */
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   /** Custom className */
   className?: string;
 }
@@ -39,6 +40,8 @@ export default function PaymentMethodCard({
   className = '',
 }: PaymentMethodCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const { t } = useLanguage();
 
   const handleDelete = async () => {
     if (!onDelete) return;
@@ -104,7 +107,7 @@ export default function PaymentMethodCard({
             </span>
             {method.isDefault && (
               <Badge variant="premium" size="xs">
-                {locale === 'ka' ? 'მთავარი' : 'Default'}
+                {t('common.default')}
               </Badge>
             )}
           </div>
@@ -116,7 +119,7 @@ export default function PaymentMethodCard({
             )}
             {method.cardExpiry && (
               <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                {locale === 'ka' ? 'ვადა' : 'Exp'}: {method.cardExpiry}
+                {t('settings.exp')}: {method.cardExpiry}
               </span>
             )}
           </div>
@@ -129,7 +132,7 @@ export default function PaymentMethodCard({
             className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            {locale === 'ka' ? 'მთავარად დაყენება' : 'Set Default'}
+            {t('settings.setDefault')}
           </button>
         )}
         {onDelete && (
@@ -153,7 +156,7 @@ export default function PaymentMethodCard({
 // Empty state component
 export interface EmptyPaymentMethodsProps {
   onAddCard?: () => void;
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   className?: string;
 }
 
@@ -162,6 +165,7 @@ export function EmptyPaymentMethods({
   locale = 'en',
   className = '',
 }: EmptyPaymentMethodsProps) {
+  const { t } = useLanguage();
   return (
     <div className={`text-center py-10 sm:py-12 ${className}`}>
       <div className="w-16 h-16 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4">
@@ -174,13 +178,13 @@ export function EmptyPaymentMethods({
         className="text-sm sm:text-base font-medium"
         style={{ color: 'var(--color-text-primary)' }}
       >
-        {locale === 'ka' ? 'ბარათები არ არის დამატებული' : 'No cards added yet'}
+        {t('settings.noCardsAddedYet')}
       </p>
       <p
         className="text-sm mt-1"
         style={{ color: 'var(--color-text-secondary)' }}
       >
-        {locale === 'ka' ? 'დაამატეთ ბარათი სწრაფი გადახდისთვის' : 'Add a card for faster checkout'}
+        {t('settings.addACardForFaster')}
       </p>
       {onAddCard && (
         <button
@@ -188,7 +192,7 @@ export function EmptyPaymentMethods({
           className="mt-4 px-6 py-3 bg-[#E07B4F] hover:bg-[#D26B3F] text-white rounded-xl transition-all flex items-center gap-2 mx-auto"
         >
           <CreditCard className="w-4 h-4" />
-          {locale === 'ka' ? 'ბარათის დამატება' : 'Add Card'}
+          {t('settings.addCard')}
         </button>
       )}
     </div>

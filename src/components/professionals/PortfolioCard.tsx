@@ -5,6 +5,7 @@ import { storage } from '@/services/storage';
 import { Camera, Eye, MapPin, Sparkles, Star } from 'lucide-react';
 import { useState } from 'react';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 export interface PortfolioProject {
   id: string;
   title: string;
@@ -24,7 +25,7 @@ export interface PortfolioCardProps {
   /** Click handler to open lightbox */
   onClick?: (imageIndex?: number) => void;
   /** Locale for translations */
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   /** Custom className */
   className?: string;
 }
@@ -36,6 +37,8 @@ export default function PortfolioCard({
   className = '',
 }: PortfolioCardProps) {
   const [activeThumb, setActiveThumb] = useState(0);
+
+  const { t } = useLanguage();
   const [imageLoaded, setImageLoaded] = useState(false);
 
   if (!project.images || project.images.length === 0) return null;
@@ -91,7 +94,7 @@ export default function PortfolioCard({
             {project.isVerified && (
               <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/90 backdrop-blur-sm text-white text-[10px] font-semibold uppercase tracking-wide shadow-lg">
                 <Sparkles className="w-2.5 h-2.5" />
-                <span>{locale === 'ka' ? 'ვერიფიცირებული' : 'Verified'}</span>
+                <span>{t('common.verified')}</span>
               </div>
             )}
             
@@ -113,7 +116,7 @@ export default function PortfolioCard({
             <div className="px-6 py-3 rounded-full bg-white/95 backdrop-blur-sm shadow-2xl transform scale-90 group-hover:scale-100 transition-all duration-300 flex items-center gap-2.5 hover:bg-[#C4735B] hover:text-white group/btn">
               <Eye className="w-4 h-4 transition-transform group-hover/btn:scale-110" />
               <span className="text-sm font-semibold">
-                {locale === 'ka' ? 'ნახვა' : 'View'}
+                {t('common.view')}
               </span>
             </div>
           </div>
@@ -215,12 +218,13 @@ export default function PortfolioCard({
 
 export interface EmptyPortfolioProps {
   /** Locale for translations */
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   /** Custom className */
   className?: string;
 }
 
 export function EmptyPortfolio({ locale = 'en', className = '' }: EmptyPortfolioProps) {
+  const { t } = useLanguage();
   return (
     <div className={`text-center py-20 ${className}`}>
       <div className="relative inline-block">
@@ -232,10 +236,10 @@ export function EmptyPortfolio({ locale = 'en', className = '' }: EmptyPortfolio
         </div>
       </div>
       <p className="text-neutral-500 dark:text-neutral-400 font-medium">
-        {locale === 'ka' ? 'ნამუშევრები არ არის' : 'No portfolio items yet'}
+        {t('professional.noPortfolioItemsYet')}
       </p>
       <p className="text-neutral-400 dark:text-neutral-500 text-sm mt-1">
-        {locale === 'ka' ? 'პროექტები მალე გამოჩნდება' : 'Projects will appear here'}
+        {t('professional.projectsWillAppearHere')}
       </p>
     </div>
   );

@@ -102,7 +102,7 @@ export function formatNumberWithSpaces(value: number | string): string {
  */
 export function formatBudget(
   budget: BudgetInfo,
-  locale: 'en' | 'ka' = 'en',
+  locale: 'en' | 'ka' | 'ru' = 'en',
   currency: Currency = 'GEL'
 ): string | null {
   const symbol = currencySymbols[currency] || '₾';

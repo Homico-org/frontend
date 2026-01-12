@@ -93,11 +93,11 @@ export default function HelpPage() {
   ];
 
   const categories = [
-    { id: 'all', label: t('helpPage.categories.all') },
-    { id: 'getting-started', label: t('helpPage.categories.gettingStarted') },
-    { id: 'jobs', label: t('helpPage.categories.jobs') },
-    { id: 'account', label: t('helpPage.categories.account') },
-    { id: 'support', label: t('helpPage.categories.support') },
+    { id: 'all', label: t('common.all') },
+    { id: 'getting-started', label: t('help.categories.gettingStarted') },
+    { id: 'jobs', label: t('common.jobs') },
+    { id: 'account', label: t('common.account') },
+    { id: 'support', label: t('help.categories.support') },
   ];
 
   const filteredFaqs = activeCategory === 'all'
@@ -149,10 +149,10 @@ export default function HelpPage() {
         setTimeout(() => setSubmitSuccess(false), 5000);
       } else {
         const data = await res.json();
-        setSubmitError(data.message || t('helpPage.contact.error'));
+        setSubmitError(data.message || t('common.error'));
       }
     } catch (err) {
-      setSubmitError(t('helpPage.contact.error'));
+      setSubmitError(t('common.error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -183,10 +183,10 @@ export default function HelpPage() {
         setTimeout(() => setSubmitSuccess(false), 5000);
       } else {
         const data = await res.json();
-        setSubmitError(data.message || t('helpPage.contact.error'));
+        setSubmitError(data.message || t('common.error'));
       }
     } catch (err) {
-      setSubmitError(t('helpPage.contact.error'));
+      setSubmitError(t('common.error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -229,14 +229,14 @@ export default function HelpPage() {
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
-              {t('helpPage.badge')}
+              {t('help.badge')}
             </span>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-medium text-white mb-4 tracking-tight">
-              {t('helpPage.title')}
+              {t('common.title')}
             </h1>
             <p className="text-base sm:text-lg text-white/70 max-w-2xl mx-auto leading-relaxed">
-              {t('helpPage.subtitle')}
+              {t('help.subtitle')}
             </p>
           </div>
         </div>
@@ -249,7 +249,7 @@ export default function HelpPage() {
           <section className="mb-12">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-serif font-medium text-neutral-900 dark:text-neutral-50">
-                {t('helpPage.myTickets.title')}
+                {t('common.title')}
               </h2>
               <Button
                 onClick={() => {
@@ -289,30 +289,30 @@ export default function HelpPage() {
                         value={ticketForm.category}
                         onChange={(value) => setTicketForm({ ...ticketForm, category: value })}
                         options={[
-                          { value: 'account', label: t('helpPage.ticketCategories.account') },
-                          { value: 'job', label: t('helpPage.ticketCategories.job') },
-                          { value: 'payment', label: t('helpPage.ticketCategories.payment') },
-                          { value: 'technical', label: t('helpPage.ticketCategories.technical') },
-                          { value: 'other', label: t('helpPage.ticketCategories.other') },
+                          { value: 'account', label: t('common.account') },
+                          { value: 'job', label: t('help.ticketCategories.job') },
+                          { value: 'payment', label: t('help.ticketCategories.payment') },
+                          { value: 'technical', label: t('help.ticketCategories.technical') },
+                          { value: 'other', label: t('common.other') },
                         ]}
                       />
                     </FormGroup>
                     <FormGroup>
-                      <Label>{t('helpPage.myTickets.priority')}</Label>
+                      <Label>{t('common.priority')}</Label>
                       <Select
                         value={ticketForm.priority}
                         onChange={(value) => setTicketForm({ ...ticketForm, priority: value as 'low' | 'medium' | 'high' })}
                         options={[
-                          { value: 'low', label: t('helpPage.priorities.low') },
-                          { value: 'medium', label: t('helpPage.priorities.medium') },
-                          { value: 'high', label: t('helpPage.priorities.high') },
+                          { value: 'low', label: t('help.priorities.low') },
+                          { value: 'medium', label: t('help.priorities.medium') },
+                          { value: 'high', label: t('help.priorities.high') },
                         ]}
                       />
                     </FormGroup>
                   </div>
 
                   <FormGroup>
-                    <Label>{t('helpPage.myTickets.message')}</Label>
+                    <Label>{t('common.message')}</Label>
                     <Textarea
                       value={ticketForm.message}
                       onChange={(e) => setTicketForm({ ...ticketForm, message: e.target.value })}
@@ -339,7 +339,7 @@ export default function HelpPage() {
                       disabled={isSubmitting}
                       loading={isSubmitting}
                     >
-                      {t('helpPage.myTickets.submit')}
+                      {t('common.submit')}
                     </Button>
                   </div>
                 </form>
@@ -419,10 +419,10 @@ export default function HelpPage() {
         <section className="mb-12">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-serif font-medium text-neutral-900 dark:text-neutral-50 mb-2">
-              {t('helpPage.faq.title')}
+              {t('common.title')}
             </h2>
             <p className="text-neutral-500 dark:text-neutral-400">
-              {t('helpPage.faq.subtitle')}
+              {t('help.faq.subtitle')}
             </p>
           </div>
 
@@ -480,23 +480,23 @@ export default function HelpPage() {
             <div className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border overflow-hidden">
               <div className="p-6 sm:p-8 border-b border-neutral-100 dark:border-dark-border">
                 <h2 className="text-xl font-serif font-medium text-neutral-900 dark:text-neutral-50 mb-2">
-                  {t('helpPage.contact.title')}
+                  {t('common.title')}
                 </h2>
                 <p className="text-neutral-500 dark:text-neutral-400">
-                  {t('helpPage.contact.subtitle')}
+                  {t('help.contact.subtitle')}
                 </p>
               </div>
 
               <form onSubmit={handleContactSubmit} className="p-6 sm:p-8 space-y-5">
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                    {t('helpPage.contact.type')}
+                    {t('common.type')}
                   </label>
                   <div className="grid grid-cols-3 gap-3">
                     {[
-                      { value: 'general', label: t('helpPage.contact.types.general'), icon: 'M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z' },
-                      { value: 'account_issue', label: t('helpPage.contact.types.account'), icon: 'M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z' },
-                      { value: 'feedback', label: t('helpPage.contact.types.feedback'), icon: 'M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z' },
+                      { value: 'general', label: t('help.contact.types.general'), icon: 'M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z' },
+                      { value: 'account_issue', label: t('common.account'), icon: 'M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z' },
+                      { value: 'feedback', label: t('help.contact.types.feedback'), icon: 'M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z' },
                     ].map((type) => (
                       <Button
                         key={type.value}
@@ -521,23 +521,23 @@ export default function HelpPage() {
                 </div>
 
                 <FormGroup>
-                  <Label>{t('helpPage.contact.email')}</Label>
+                  <Label>{t('common.email')}</Label>
                   <Input
                     type="email"
                     value={contactForm.contactEmail}
                     onChange={(e) => setContactForm({ ...contactForm, contactEmail: e.target.value })}
-                    placeholder={t('helpPage.contact.emailPlaceholder')}
+                    placeholder={t('help.contact.emailPlaceholder')}
                   />
                 </FormGroup>
 
                 <FormGroup>
-                  <Label>{t('helpPage.contact.message')}</Label>
+                  <Label>{t('common.message')}</Label>
                   <Textarea
                     value={contactForm.message}
                     onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
                     required
                     rows={4}
-                    placeholder={t('helpPage.contact.messagePlaceholder')}
+                    placeholder={t('help.contact.messagePlaceholder')}
                   />
                 </FormGroup>
 
@@ -559,7 +559,7 @@ export default function HelpPage() {
                     className="w-full"
                     leftIcon={<Send className="w-5 h-5" />}
                   >
-                    {t('helpPage.contact.send')}
+                    {t('common.send')}
                   </Button>
                 )}
               </form>
@@ -568,7 +568,7 @@ export default function HelpPage() {
             {/* Alternative: Sign in prompt */}
             <div className="mt-6 p-5 bg-cream-100 dark:bg-dark-elevated rounded-xl text-center">
               <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-                {t('helpPage.signInPrompt')}
+                {t('help.signInPrompt')}
               </p>
               <Button
                 variant="link"
@@ -590,10 +590,10 @@ export default function HelpPage() {
                   <IconBadge icon={Mail} variant="accent" size="lg" className="group-hover:scale-105 transition-transform duration-300" />
                   <div>
                     <h3 className="font-medium text-neutral-900 dark:text-neutral-50 mb-1">
-                      {t('helpPage.contactCards.email.title')}
+                      {t('common.title')}
                     </h3>
                     <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-2">
-                      {t('helpPage.contactCards.email.description')}
+                      {t('common.description')}
                     </p>
                     <span className="text-[#C4735B] dark:text-[#E8956A] font-medium text-sm">
                       info@homico.ge
@@ -608,13 +608,13 @@ export default function HelpPage() {
                 <IconBadge icon={Clock} variant="accent" size="lg" />
                 <div>
                   <h3 className="font-medium text-neutral-900 dark:text-neutral-50 mb-1">
-                    {t('helpPage.contactCards.response.title')}
+                    {t('common.title')}
                   </h3>
                   <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-2">
-                    {t('helpPage.contactCards.response.description')}
+                    {t('common.description')}
                   </p>
                   <span className="text-[#C4735B] dark:text-[#E8956A] font-medium text-sm">
-                    {t('helpPage.contactCards.response.time')}
+                    {t('common.time')}
                   </span>
                 </div>
               </div>

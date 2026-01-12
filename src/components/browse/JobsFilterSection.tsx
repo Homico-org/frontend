@@ -22,14 +22,14 @@ export default function JobsFilterSection({
   selectedBudget,
   onSelectBudget,
 }: JobsFilterSectionProps) {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
 
   return (
     <div className="w-full">
       {/* Budget Filter - compact styling */}
       <div className="flex items-center gap-1 overflow-x-auto scrollbar-none pb-0.5 -mx-1 px-1 sm:mx-0 sm:px-0 sm:flex-wrap">
         <span className="text-[11px] text-[var(--color-text-muted)] mr-1 flex-shrink-0 font-medium">
-          {locale === 'ka' ? 'ბიუჯეტი:' : 'Budget:'}
+          {t('common.budget')}
         </span>
         {BUDGET_FILTERS.map((budget) => (
           <button

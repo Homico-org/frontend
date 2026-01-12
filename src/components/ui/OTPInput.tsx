@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { ClipboardEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const inputVariants = cva(
   'text-center font-mono font-semibold rounded-xl transition-all focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed',
@@ -54,6 +55,7 @@ export function OTPInput({
   variant = 'default',
   className,
 }: OTPInputProps) {
+  const { t } = useLanguage();
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [localValue, setLocalValue] = useState<string[]>(
     value.split('').slice(0, length).concat(Array(length).fill('')).slice(0, length)

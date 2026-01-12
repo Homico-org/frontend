@@ -25,7 +25,7 @@ export default function ForgotPasswordPage() {
     setError('');
 
     if (!phone || phone.length < 5) {
-      setError(locale === 'ka' ? 'გთხოვთ შეიყვანოთ სწორი ტელეფონის ნომერი' : 'Please enter a valid phone number');
+      setError(t('forgotPassword.pleaseEnterAValidPhone'));
       return;
     }
 
@@ -62,9 +62,9 @@ export default function ForgotPasswordPage() {
       if (errorMessage === 'Failed to fetch' || (err instanceof Error && err.name === 'TypeError')) {
         setError(t('forgotPassword.networkError'));
       } else if (errorMessage.includes('No account found')) {
-        setError(locale === 'ka' ? 'ამ ნომრით ანგარიში ვერ მოიძებნა' : 'No account found with this phone number');
+        setError(t('forgotPassword.noAccountFoundWithThis'));
       } else if (errorMessage.includes('region')) {
-        setError(locale === 'ka' ? 'SMS ვერიფიკაცია ამ რეგიონისთვის მიუწვდომელია' : 'SMS verification is not available for this region');
+        setError(t('forgotPassword.smsVerificationIsNotAvailable'));
       } else {
         setError(errorMessage || t('forgotPassword.sendFailed'));
       }
@@ -84,12 +84,12 @@ export default function ForgotPasswordPage() {
 
         {/* Title */}
         <h2 className="text-[26px] font-bold text-center text-neutral-900 dark:text-white mb-2">
-          {locale === 'ka' ? 'პაროლის აღდგენა' : 'Forgot Password'}
+          {t('forgotPassword.forgotPassword')}
         </h2>
 
         {/* Subtitle */}
         <p className="text-center text-neutral-500 dark:text-neutral-400 text-[15px] mb-8">
-          {locale === 'ka' ? 'შეიყვანეთ თქვენი ტელეფონის ნომერი კოდის მისაღებად.' : 'Enter your phone number to receive a reset code.'}
+          {t('forgotPassword.enterYourPhoneNumberTo')}
         </p>
 
         {/* Error Message */}
@@ -103,7 +103,7 @@ export default function ForgotPasswordPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Phone Input with Country Selector */}
           <PhoneInput
-            label={locale === 'ka' ? 'ტელეფონის ნომერი' : 'Phone Number'}
+            label={t('forgotPassword.phoneNumber')}
             value={phone}
             onChange={setPhone}
             country={phoneCountry}
@@ -120,7 +120,7 @@ export default function ForgotPasswordPage() {
             size="lg"
             className="w-full"
           >
-            {locale === 'ka' ? 'კოდის გაგზავნა' : 'Send Reset Code'}
+            {t('forgotPassword.sendResetCode')}
           </Button>
         </form>
 
@@ -133,7 +133,7 @@ export default function ForgotPasswordPage() {
 
         {/* Back to Login Link */}
         <p className="text-center text-[15px] text-neutral-600 dark:text-neutral-400">
-          {locale === 'ka' ? 'გახსოვს პაროლი?' : 'Remember your password?'}{' '}
+          {t('forgotPassword.rememberYourPassword')}{' '}
           <Button
             variant="link"
             onClick={() => {
@@ -142,7 +142,7 @@ export default function ForgotPasswordPage() {
             }}
             className="p-0 h-auto font-semibold"
           >
-            {locale === 'ka' ? 'შესვლა' : 'Sign In'}
+            {t('forgotPassword.signIn')}
           </Button>
         </p>
       </Card>

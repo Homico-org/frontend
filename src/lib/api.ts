@@ -79,9 +79,9 @@ api.interceptors.response.use(
       // Dispatch custom event so AuthContext can react
       window.dispatchEvent(new CustomEvent('auth:logout'));
 
-      // Only redirect if not already on login page
-      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
+      // Dispatch event to open login modal (handled by AuthModalContext)
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('auth:open-login-modal'));
       }
     }
     return Promise.reject(error);

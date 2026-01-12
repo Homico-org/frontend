@@ -8,7 +8,7 @@ import { useState } from 'react';
 type UserType = 'client' | 'pro';
 
 export default function HowItWorksPage() {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const [activeTab, setActiveTab] = useState<UserType>('client');
 
   const clientSteps = [
@@ -200,16 +200,14 @@ export default function HowItWorksPage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-              {locale === 'ka' ? 'მარტივი და სწრაფი' : 'Simple & Fast'}
+              {t('howItWorks.simpleFast')}
             </span>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-medium text-white mb-4 tracking-tight">
-              {locale === 'ka' ? 'როგორ მუშაობს Homico?' : 'How Does Homico Work?'}
+              {t('howItWorks.howDoesHomicoWork')}
             </h1>
             <p className="text-base sm:text-lg text-white/70 max-w-2xl mx-auto leading-relaxed mb-8">
-              {locale === 'ka'
-                ? 'იპოვეთ სანდო ხელოსნები ან მიიღეთ მეტი კლიენტი - ყველაფერი ერთ პლატფორმაზე.'
-                : 'Find trusted professionals or get more clients - all on one platform.'}
+              {t('howItWorks.findTrustedProfessionalsOrGet')}
             </p>
 
             {/* Tab Switcher */}
@@ -222,7 +220,7 @@ export default function HowItWorksPage() {
                     : 'text-white/80 hover:text-white hover:bg-white/10'
                 }`}
               >
-                {locale === 'ka' ? 'კლიენტებისთვის' : 'For Clients'}
+                {t('howItWorks.forClients')}
               </button>
               <button
                 onClick={() => setActiveTab('pro')}
@@ -232,7 +230,7 @@ export default function HowItWorksPage() {
                     : 'text-white/80 hover:text-white hover:bg-white/10'
                 }`}
               >
-                {locale === 'ka' ? 'პროფესიონალებისთვის' : 'For Professionals'}
+                {t('howItWorks.forProfessionals')}
               </button>
             </div>
           </div>
@@ -287,8 +285,8 @@ export default function HowItWorksPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl sm:text-3xl font-serif font-medium text-center text-neutral-900 dark:text-white mb-12">
             {activeTab === 'client'
-              ? (locale === 'ka' ? 'რატომ Homico?' : 'Why Choose Homico?')
-              : (locale === 'ka' ? 'რატომ შემოგვიერთდით?' : 'Why Join Homico?')}
+              ? (t('howItWorks.whyChooseHomico'))
+              : (t('howItWorks.whyJoinHomico'))}
           </h2>
 
           <div className="grid sm:grid-cols-3 gap-6">
@@ -319,13 +317,13 @@ export default function HowItWorksPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl sm:text-3xl font-serif font-medium text-neutral-900 dark:text-white mb-4">
             {activeTab === 'client'
-              ? (locale === 'ka' ? 'მზად ხართ დასაწყებად?' : 'Ready to Get Started?')
-              : (locale === 'ka' ? 'შემოგვიერთდით დღესვე!' : 'Join Us Today!')}
+              ? (t('howItWorks.readyToGetStarted'))
+              : (t('howItWorks.joinUsToday'))}
           </h2>
           <p className="text-neutral-600 dark:text-neutral-400 mb-8">
             {activeTab === 'client'
-              ? (locale === 'ka' ? 'განათავსეთ თქვენი პროექტი და მიიღეთ შეთავაზებები წუთებში.' : 'Post your project and receive proposals within minutes.')
-              : (locale === 'ka' ? 'შექმენით პროფილი და დაიწყეთ ახალი კლიენტების მოძიება.' : 'Create your profile and start finding new clients.')}
+              ? (t('howItWorks.postYourProjectAndReceive'))
+              : (t('howItWorks.createYourProfileAndStart'))}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
@@ -333,8 +331,8 @@ export default function HowItWorksPage() {
               className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-[#C4735B] to-[#A85A45] text-white font-medium shadow-lg shadow-[#C4735B]/20 hover:shadow-xl hover:shadow-[#C4735B]/30 transition-all hover:scale-105"
             >
               {activeTab === 'client'
-                ? (locale === 'ka' ? 'პროექტის განთავსება' : 'Post a Project')
-                : (locale === 'ka' ? 'რეგისტრაცია პროფესიონალად' : 'Register as Pro')}
+                ? (t('howItWorks.postAProject'))
+                : (t('howItWorks.registerAsPro'))}
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
@@ -343,7 +341,7 @@ export default function HowItWorksPage() {
               href="/browse"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-neutral-100 dark:bg-dark-card text-neutral-700 dark:text-neutral-300 font-medium hover:bg-neutral-200 dark:hover:bg-dark-elevated transition-all"
             >
-              {locale === 'ka' ? 'პროფესიონალების დათვალიერება' : 'Browse Professionals'}
+              {t('howItWorks.browseProfessionals')}
             </Link>
           </div>
         </div>
@@ -353,9 +351,9 @@ export default function HowItWorksPage() {
       <section className="py-8 border-t border-neutral-100 dark:border-dark-border">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-neutral-600 dark:text-neutral-400">
-            {locale === 'ka' ? 'კითხვები გაქვთ?' : 'Have questions?'}{' '}
+            {t('howItWorks.haveQuestions')}{' '}
             <Link href="/help" className="text-[#C4735B] hover:underline font-medium">
-              {locale === 'ka' ? 'ნახეთ ხშირად დასმული კითხვები' : 'Check our FAQ'}
+              {t('howItWorks.checkOurFaq')}
             </Link>
           </p>
         </div>

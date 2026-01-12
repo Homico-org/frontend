@@ -27,7 +27,7 @@ export default function CategoriesStep({
   customServices = [],
   onCustomServicesChange,
 }: CategoriesStepProps) {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const [newCustomService, setNewCustomService] = useState("");
 
   const handleAddCustomService = () => {
@@ -48,7 +48,7 @@ export default function CategoriesStep({
       {/* Category & Subcategory Selection */}
       <div>
         <h2 className="text-sm font-semibold text-neutral-900 mb-2">
-          1. {locale === "ka" ? "კატეგორია და უნარები" : "Category & Skills"} <span className="text-[#C4735B]">*</span>
+          1. {t('common.categorySkills')} <span className="text-[#C4735B]">*</span>
         </h2>
         <CategorySelector
           mode="multi"
@@ -67,8 +67,8 @@ export default function CategoriesStep({
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
               <IconBadge icon={Briefcase} variant="accent" size="sm" />
-              2. {locale === "ka" ? "სერვისები" : "Services"}
-              <span className="text-neutral-400 font-normal text-[10px]">({locale === "ka" ? "არასავალდებულო" : "optional"})</span>
+              2. {t('common.services')}
+              <span className="text-neutral-400 font-normal text-[10px]">({t('common.optional')})</span>
             </h2>
             {customServices.length > 0 && (
               <Badge variant="premium" size="sm">
@@ -78,9 +78,7 @@ export default function CategoriesStep({
           </div>
 
           <p className="text-xs text-neutral-500 mb-3">
-            {locale === "ka"
-              ? "ჩაწერე რა სერვისებს სთავაზობ კლიენტებს (მაქს. 5)"
-              : "Write what services you offer to clients (max 5)"}
+            {t('common.writeWhatServicesYouOffer')}
           </p>
 
           {/* Added custom services */}
@@ -117,7 +115,7 @@ export default function CategoriesStep({
                     handleAddCustomService();
                   }
                 }}
-                placeholder={locale === "ka" ? "მაგ: ინტერიერის დიზაინი" : "e.g: Interior design"}
+                placeholder={t('common.egInteriorDesign')}
                 className="flex-1"
               />
               <Button

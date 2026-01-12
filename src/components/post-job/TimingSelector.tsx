@@ -11,7 +11,7 @@ export interface TimingSelectorProps {
   /** Change handler */
   onChange: (value: Timing) => void;
   /** Locale for translations */
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   /** Custom className */
   className?: string;
 }

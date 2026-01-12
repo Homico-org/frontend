@@ -8,6 +8,7 @@ import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/button';
 import { Input, Textarea } from '@/components/ui/input';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 export interface ProposalFormData {
   coverLetter: string;
   proposedPrice: string;
@@ -25,7 +26,7 @@ export interface ProposalFormProps {
   /** Error message to display */
   error?: string;
   /** Locale for translations */
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
 }
 
 export default function ProposalForm({
@@ -36,6 +37,8 @@ export default function ProposalForm({
   locale = 'en',
 }: ProposalFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { t } = useLanguage();
   const [formData, setFormData] = useState<ProposalFormData>({
     coverLetter: '',
     proposedPrice: '',
@@ -73,7 +76,7 @@ export default function ProposalForm({
         <div className="p-6 border-b border-neutral-100 dark:border-neutral-800">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
-              {locale === 'ka' ? 'წინადადების გაგზავნა' : 'Submit Proposal'}
+              {t('job.submitProposal')}
             </h2>
             <Button
               variant="ghost"
@@ -94,7 +97,7 @@ export default function ProposalForm({
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div>
             <label className="block font-body text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              {locale === 'ka' ? 'სამოტივაციო წერილი' : 'Cover Letter'}
+              {t('job.coverLetter')}
             </label>
             <Textarea
               required
@@ -103,9 +106,7 @@ export default function ProposalForm({
                 setFormData({ ...formData, coverLetter: e.target.value })
               }
               placeholder={
-                locale === 'ka'
-                  ? 'წარმოადგინეთ თქვენი გამოცდილება...'
-                  : 'Describe your experience...'
+                t('job.describeYourExperience')
               }
             />
           </div>
@@ -113,7 +114,7 @@ export default function ProposalForm({
           <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="block font-body text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                {locale === 'ka' ? 'ფასი (₾)' : 'Price (₾)'}
+                {t('common.price')}
               </label>
               <Input
                 type="text"
@@ -128,7 +129,7 @@ export default function ProposalForm({
             </div>
             <div>
               <label className="block font-body text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                {locale === 'ka' ? 'ვადა' : 'Duration'}
+                {t('common.duration')}
               </label>
               <Input
                 type="number"
@@ -145,7 +146,7 @@ export default function ProposalForm({
             </div>
             <div>
               <label className="block font-body text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                {locale === 'ka' ? 'ერთეული' : 'Unit'}
+                {t('job.unit')}
               </label>
               <Select
                 value={formData.estimatedDurationUnit}
@@ -156,9 +157,9 @@ export default function ProposalForm({
                   })
                 }
                 options={[
-                  { value: 'days', label: locale === 'ka' ? 'დღე' : 'Days' },
-                  { value: 'weeks', label: locale === 'ka' ? 'კვირა' : 'Weeks' },
-                  { value: 'months', label: locale === 'ka' ? 'თვე' : 'Months' },
+                  { value: 'days', label: t('common.days') },
+                  { value: 'weeks', label: t('job.weeks') },
+                  { value: 'months', label: t('common.months') },
                 ]}
               />
             </div>
@@ -171,7 +172,7 @@ export default function ProposalForm({
               onClick={onClose}
               className="flex-1"
             >
-              {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
@@ -179,7 +180,7 @@ export default function ProposalForm({
               loading={isSubmitting}
               className="flex-1"
             >
-              {locale === 'ka' ? 'გაგზავნა' : 'Submit'}
+              {t('common.submit')}
             </Button>
           </div>
         </form>

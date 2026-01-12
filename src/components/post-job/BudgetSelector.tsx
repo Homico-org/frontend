@@ -3,6 +3,7 @@
 import { formatNumberWithSpaces, parsePriceInput } from '@/utils/currencyUtils';
 import { ACCENT_COLOR } from '@/constants/theme';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 export type BudgetType = 'fixed' | 'range' | 'negotiable';
 
 export interface BudgetSelectorProps {
@@ -21,7 +22,7 @@ export interface BudgetSelectorProps {
   /** Currency symbol */
   currency?: string;
   /** Locale for translations */
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   /** Custom className */
   className?: string;
 }
@@ -47,6 +48,7 @@ export default function BudgetSelector({
   locale = 'en',
   className = '',
 }: BudgetSelectorProps) {
+  const { t } = useLanguage();
   const formatNumber = (value: string) => formatNumberWithSpaces(value);
   const parseNumber = (value: string) => parsePriceInput(value);
 
@@ -82,7 +84,7 @@ export default function BudgetSelector({
               inputMode="numeric"
               value={formatNumber(budgetMin)}
               onChange={(e) => onBudgetMinChange(parseNumber(e.target.value))}
-              placeholder={budgetType === 'range' ? (locale === 'ka' ? 'მინ. 1' : 'Min 1') : '1'}
+              placeholder={budgetType === 'range' ? (t('job.min')) : '1'}
               className="w-full pl-8 pr-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B] transition-all"
             />
           </div>
@@ -96,7 +98,7 @@ export default function BudgetSelector({
                 inputMode="numeric"
                 value={formatNumber(budgetMax)}
                 onChange={(e) => onBudgetMaxChange(parseNumber(e.target.value))}
-                placeholder={locale === 'ka' ? 'მაქს.' : 'Max'}
+                placeholder={t('job.max')}
                 className="w-full pl-8 pr-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B] transition-all"
               />
             </div>
@@ -106,9 +108,7 @@ export default function BudgetSelector({
 
       {budgetType === 'negotiable' && (
         <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center py-4">
-          {locale === 'ka'
-            ? 'ფასი შეთანხმებით განისაზღვრება პროფესიონალთან კონსულტაციის შემდეგ'
-            : 'Price will be determined after consultation with the professional'}
+          {t('job.priceWillBeDeterminedAfter')}
         </p>
       )}
     </div>

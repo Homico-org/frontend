@@ -2,6 +2,7 @@
 
 import { formatCurrency } from '@/utils/currencyUtils';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 export interface Proposal {
   id: string;
   coverLetter: string;
@@ -16,7 +17,7 @@ export interface MyProposalCardProps {
   /** The proposal data */
   proposal: Proposal;
   /** Locale for translations */
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   /** Custom className */
   className?: string;
 }
@@ -26,27 +27,28 @@ export default function MyProposalCard({
   locale = 'en',
   className = '',
 }: MyProposalCardProps) {
+  const { t } = useLanguage();
   const statusConfig = {
     pending: {
-      label: locale === 'ka' ? 'განხილვაში' : 'Pending',
+      label: t('common.pending'),
       bg: 'bg-amber-50 dark:bg-amber-500/10',
       text: 'text-amber-700 dark:text-amber-400',
       dot: 'bg-amber-500',
     },
     accepted: {
-      label: locale === 'ka' ? 'მიღებული' : 'Accepted',
+      label: t('common.accepted'),
       bg: 'bg-emerald-50 dark:bg-emerald-500/10',
       text: 'text-emerald-700 dark:text-emerald-400',
       dot: 'bg-emerald-500',
     },
     rejected: {
-      label: locale === 'ka' ? 'უარყოფილი' : 'Rejected',
+      label: t('common.rejected'),
       bg: 'bg-red-50 dark:bg-red-500/10',
       text: 'text-red-700 dark:text-red-400',
       dot: 'bg-red-500',
     },
     withdrawn: {
-      label: locale === 'ka' ? 'გაუქმებული' : 'Withdrawn',
+      label: t('job.withdrawn'),
       bg: 'bg-neutral-100 dark:bg-neutral-500/10',
       text: 'text-neutral-600 dark:text-neutral-400',
       dot: 'bg-neutral-400',
@@ -57,9 +59,9 @@ export default function MyProposalCard({
 
   const getDurationLabel = () => {
     const units = {
-      days: locale === 'ka' ? 'დღე' : 'd',
-      weeks: locale === 'ka' ? 'კვირა' : 'w',
-      months: locale === 'ka' ? 'თვე' : 'mo',
+      days: t('jobs.d3'),
+      weeks: t('jobs.w3'),
+      months: t('job.mo'),
     };
     return units[proposal.estimatedDurationUnit || 'days'] || '';
   };
@@ -82,7 +84,7 @@ export default function MyProposalCard({
               </svg>
             </div>
             <span className="text-sm font-semibold text-neutral-900 dark:text-white">
-              {locale === 'ka' ? 'თქვენი შეთავაზება' : 'Your Proposal'}
+              {t('job.yourProposal')}
             </span>
           </div>
 
@@ -107,7 +109,7 @@ export default function MyProposalCard({
                 </div>
                 <div>
                   <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                    {locale === 'ka' ? 'ფასი' : 'Price'}
+                    {t('common.price')}
                   </p>
                   <p className="text-base font-bold text-[#C4735B]">
                     {formatCurrency(proposal.proposedPrice)}
@@ -130,7 +132,7 @@ export default function MyProposalCard({
                 </div>
                 <div>
                   <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                    {locale === 'ka' ? 'ვადა' : 'Duration'}
+                    {t('common.duration')}
                   </p>
                   <p className="text-base font-bold text-neutral-900 dark:text-white">
                     {proposal.estimatedDuration}{getDurationLabel()}

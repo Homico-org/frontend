@@ -97,7 +97,7 @@ export const SideBySide: Story = {
             ctaText="Get Started"
             freeLabel="Free"
             imageUrl="https://res.cloudinary.com/dakcvkodo/image/upload/w_600,h_450,c_pad,q_auto,f_auto/homico/avatars/client.png"
-            onClick={() => alert('Client')}
+            onClick={() => alert('common.client')}
           />
           <UserTypeCard
             type="pro"

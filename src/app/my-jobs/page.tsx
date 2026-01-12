@@ -51,10 +51,13 @@ import { io, Socket } from 'socket.io-client';
 import { Skeleton, SkeletonCard } from '@/components/ui/Skeleton';
 import { Badge } from '@/components/ui/badge';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 type StatusFilter = 'all' | 'open' | 'hired' | 'closed' | 'expired';
 
 function MyJobsPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+
+  const { t } = useLanguage();
   const { getCategoryLabel, locale } = useCategoryLabels();
   const toast = useToast();
   const router = useRouter();
@@ -154,8 +157,8 @@ function MyJobsPageContent() {
     } catch (err) {
       console.error('Failed to fetch jobs:', err);
       toast.error(
-        locale === 'ka' ? 'შეცდომა' : 'Error',
-        locale === 'ka' ? 'პროექტების ჩატვირთვა ვერ მოხერხდა' : 'Failed to load projects'
+        t('common.error'),
+        t('job.failedToLoadProjects')
       );
     } finally {
       setIsInitialLoading(false);
@@ -197,14 +200,14 @@ function MyJobsPageContent() {
       await api.delete(`/jobs/${jobId}`);
       setJobs(prev => prev.filter(j => j.id !== jobId));
       toast.success(
-        locale === 'ka' ? 'წარმატება' : 'Success',
-        locale === 'ka' ? 'პროექტი წაიშალა' : 'Job deleted successfully'
+        t('common.success'),
+        t('job.jobDeletedSuccessfully')
       );
       setDeleteModalJob(null);
     } catch (err) {
       toast.error(
         locale === 'ka' ? 'შეცდომა' : 'Error',
-        locale === 'ka' ? 'წაშლა ვერ მოხერხდა' : 'Failed to delete job'
+        t('job.failedToDeleteJob')
       );
     } finally {
       setDeletingJobId(null);
@@ -224,12 +227,12 @@ function MyJobsPageContent() {
 
       toast.success(
         locale === 'ka' ? 'წარმატება' : 'Success',
-        locale === 'ka' ? 'პროექტი განახლდა 30 დღით' : 'Job renewed for 30 days'
+        t('job.jobRenewedFor30Days')
       );
     } catch (err) {
       toast.error(
         locale === 'ka' ? 'შეცდომა' : 'Error',
-        locale === 'ka' ? 'განახლება ვერ მოხერხდა' : 'Failed to renew job'
+        t('job.failedToRenewJob')
       );
     } finally {
       setRenewingJobId(null);
@@ -280,7 +283,7 @@ function MyJobsPageContent() {
               <div className="flex items-center justify-between gap-3 mb-1">
                 <div className="flex items-center gap-3">
                   <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white tracking-tight">
-                    {locale === 'ka' ? 'ჩემი განცხადებები' : 'My Jobs'}
+                    {t('job.myJobs')}
                   </h1>
                   <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#C4735B]/10 text-[#C4735B]">
                     <Briefcase className="w-3.5 h-3.5" />
@@ -294,14 +297,12 @@ function MyJobsPageContent() {
                   leftIcon={<Plus className="w-4 h-4" />}
                 >
                   <Link href="/post-job">
-                    {locale === 'ka' ? 'დამატება' : 'Add Job'}
+                    {t('job.addJob')}
                   </Link>
                 </Button>
               </div>
               <p className="text-sm text-neutral-500 dark:text-neutral-400 hidden sm:block">
-                {locale === 'ka'
-                  ? 'მართე შენი აქტიური მოთხოვნები და შეთავაზებები.'
-                  : 'Manage your active listings and proposals.'}
+                {t('job.manageYourActiveListingsAnd')}
               </p>
             </div>
           </div>
@@ -310,11 +311,11 @@ function MyJobsPageContent() {
         {/* ==================== TABS FILTER ZONE - Premium Design ==================== */}
         {(() => {
           const tabs = [
-            { key: 'all' as StatusFilter, label: locale === 'ka' ? 'ყველა' : 'All', icon: Briefcase },
-            { key: 'open' as StatusFilter, label: locale === 'ka' ? 'აქტიური' : 'Active', icon: Sparkles },
-            { key: 'hired' as StatusFilter, label: locale === 'ka' ? 'დაქირავებული' : 'Hired', icon: Check },
-            { key: 'closed' as StatusFilter, label: locale === 'ka' ? 'დახურული' : 'Closed', icon: FileText },
-            { key: 'expired' as StatusFilter, label: locale === 'ka' ? 'ვადაგასული' : 'Expired', icon: Clock },
+            { key: 'all' as StatusFilter, label: t('common.all'), icon: Briefcase },
+            { key: 'open' as StatusFilter, label: t('common.active'), icon: Sparkles },
+            { key: 'hired' as StatusFilter, label: t('common.hired'), icon: Check },
+            { key: 'closed' as StatusFilter, label: t('job.closed'), icon: FileText },
+            { key: 'expired' as StatusFilter, label: t('job.expired'), icon: Clock },
           ];
           const activeTab = tabs.find(t => t.key === statusFilter) || tabs[0];
 
@@ -333,7 +334,7 @@ function MyJobsPageContent() {
                     </div>
                     <div className="text-left">
                       <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 block">
-                        {locale === 'ka' ? 'ფილტრი' : 'Filter'}
+                        {t('common.filter')}
                       </span>
                       <span className="text-sm font-medium text-neutral-900 dark:text-white">
                         {activeTab.label}
@@ -445,7 +446,7 @@ function MyJobsPageContent() {
                 if (isMVPMode()) {
                   // Simplified MVP card - just shows hired status and phone
                   const hiredPro = job.hiredPro;
-                  const proName = hiredPro?.userId?.name || hiredPro?.name || (locale === 'ka' ? 'სპეციალისტი' : 'Professional');
+                  const proName = hiredPro?.userId?.name || hiredPro?.name || (t('common.professional'));
                   const proPhone = hiredPro?.userId?.phone || hiredPro?.phone;
                   const proAvatar = hiredPro?.userId?.avatar || hiredPro?.avatar;
                   
@@ -461,7 +462,7 @@ function MyJobsPageContent() {
                             <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                           </div>
                           <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
-                            {locale === 'ka' ? 'დაქირავებულია' : 'Hired'}
+                            {t('common.hired')}
                           </span>
                         </div>
                       </div>
@@ -505,7 +506,7 @@ function MyJobsPageContent() {
                           rightIcon={<ChevronRight className="w-4 h-4" />}
                           className="w-full"
                         >
-                          {locale === 'ka' ? 'ნახვა' : 'View Details'}
+                          {t('job.viewDetails')}
                         </Button>
                       </div>
                     </div>
@@ -559,7 +560,7 @@ function MyJobsPageContent() {
                               <div className="w-14 h-14 rounded-2xl bg-neutral-200/50 dark:bg-neutral-700/50 flex items-center justify-center mx-auto mb-2">
                                 <FileText className="w-6 h-6 text-neutral-400 dark:text-neutral-500" />
                               </div>
-                              <span className="text-xs text-neutral-400">{locale === 'ka' ? 'ფოტო არ არის' : 'No image'}</span>
+                              <span className="text-xs text-neutral-400">{t('job.noImage')}</span>
                             </div>
                           </div>
                         )}
@@ -571,12 +572,12 @@ function MyJobsPageContent() {
                         <div className="absolute top-3 left-3 z-10">
                           {isOpen && (
                             <Badge variant="success" size="sm" dot dotColor="success" className="shadow-lg backdrop-blur-sm">
-                              {locale === 'ka' ? 'ღია' : 'Open'}
+                              {t('common.open')}
                             </Badge>
                           )}
                           {isShortlisted && (
                             <Badge variant="info" size="sm" icon={<Users className="w-3 h-3" />} className="shadow-lg backdrop-blur-sm">
-                              {locale === 'ka' ? 'შორტლისტი' : 'Shortlisted'} ({job.shortlistedCount})
+                              {t('job.shortlisted')} ({job.shortlistedCount})
                             </Badge>
                           )}
                           {isHired && (
@@ -663,7 +664,7 @@ function MyJobsPageContent() {
                               )}
                               <span className="flex items-center gap-1 text-[10px] sm:text-[11px] text-neutral-400">
                                 <Clock className="w-3 h-3" />
-                                {formatTimeAgo(job.createdAt, locale as 'en' | 'ka')}
+                                {formatTimeAgo(job.createdAt, locale as 'en' | 'ka' | 'ru')}
                               </span>
                             </div>
 
@@ -715,7 +716,7 @@ function MyJobsPageContent() {
                                 disabled={renewingJobId === job.id}
                                 loading={renewingJobId === job.id}
                                 className="text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
-                                title={locale === 'ka' ? 'განახლება' : 'Renew'}
+                                title={t('job.renew')}
                               >
                                 <RefreshCw className="w-4 h-4" />
                               </Button>
@@ -768,7 +769,7 @@ function MyJobsPageContent() {
                                   </span>
                                   {job.proposalCount === 1 && job.recentProposals?.[0]?.proId?.name && (
                                     <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                                      {locale === 'ka' ? 'შეთავაზება:' : 'from'} {job.recentProposals[0].proId.name}
+                                      {t('job.from')} {job.recentProposals[0].proId.name}
                                     </span>
                                   )}
                                 </div>
@@ -781,7 +782,7 @@ function MyJobsPageContent() {
                                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
                                 </span>
                                 <span className="text-xs font-medium text-amber-700 dark:text-amber-400">
-                                  {locale === 'ka' ? 'ელოდება შეთავაზებას...' : 'Awaiting proposals...'}
+                                  {t('job.awaitingProposals')}
                                 </span>
                               </div>
                             )}
@@ -800,7 +801,7 @@ function MyJobsPageContent() {
                                 </div>
                                 <div>
                                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#C4735B] block">
-                                    {locale === 'ka' ? 'დაქირავებული' : 'HIRED'}
+                                    {t('common.hired')}
                                   </span>
                                   <span className="text-sm font-semibold text-neutral-900 dark:text-white">
                                     {job.hiredPro.userId?.name || 'Professional'}
@@ -812,7 +813,7 @@ function MyJobsPageContent() {
                               <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30">
                                 <Clock className="w-4 h-4 text-amber-600" />
                                 <span className="text-xs font-medium text-amber-700 dark:text-amber-400">
-                                  {locale === 'ka' ? 'ვადა ამოიწურა' : 'Expired'}
+                                  {t('job.expired')}
                                 </span>
                               </div>
                             )}
@@ -830,7 +831,7 @@ function MyJobsPageContent() {
                               >
                                 <Link href={`/my-jobs/${job.id}/proposals`} className="flex items-center gap-2">
                                   <Eye className="w-4 h-4" />
-                                  {locale === 'ka' ? 'შეთავაზებების ნახვა' : 'View Proposals'}
+                                  {t('job.viewProposals')}
                                   <ArrowRight className="w-3.5 h-3.5 opacity-0 -ml-1 group-hover/btn:opacity-100 group-hover/btn:ml-0 transition-all" />
                                 </Link>
                               </Button>
@@ -845,7 +846,7 @@ function MyJobsPageContent() {
                                 className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-lg shadow-amber-500/20"
                               >
                                 {renewingJobId === job.id
-                                  ? (locale === 'ka' ? 'მიმდინარეობს...' : 'Renewing...')
+                                  ? (t('job.renewing'))
                                   : (locale === 'ka' ? 'განახლება' : 'Renew')}
                               </Button>
                             )}
@@ -866,16 +867,14 @@ function MyJobsPageContent() {
         isOpen={!!deleteModalJob}
         onClose={() => !deletingJobId && setDeleteModalJob(null)}
         onConfirm={handleDeleteJob}
-        title={locale === 'ka' ? 'პროექტის წაშლა' : 'Delete Job'}
-        description={locale === 'ka'
-          ? 'ნამდვილად გსურთ ამ პროექტის წაშლა? ეს მოქმედება შეუქცევადია.'
-          : 'Are you sure you want to delete this job? This action cannot be undone.'}
+        title={t('job.deleteJob')}
+        description={t('job.areYouSureYouWant')}
         icon={<AlertTriangle className="w-6 h-6 text-red-500" />}
         variant="danger"
-        cancelLabel={locale === 'ka' ? 'გაუქმება' : 'Cancel'}
-        confirmLabel={locale === 'ka' ? 'წაშლა' : 'Delete'}
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('common.delete')}
         isLoading={!!deletingJobId}
-        loadingLabel={locale === 'ka' ? 'იშლება...' : 'Deleting...'}
+        loadingLabel={t('common.deleting')}
         confirmIcon={<Trash2 className="w-4 h-4" />}
       >
         {/* Job preview */}

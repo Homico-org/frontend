@@ -21,7 +21,7 @@ export interface UserTypeCardProps {
   /** Click handler */
   onClick: () => void;
   /** Locale for translations */
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   /** Custom className */
   className?: string;
   /** Variant - default is full card, compact is for mobile */

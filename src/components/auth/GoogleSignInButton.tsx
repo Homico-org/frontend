@@ -2,6 +2,7 @@
 
 import Script from 'next/script';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // Google OAuth types declared in src/types/google.d.ts
 

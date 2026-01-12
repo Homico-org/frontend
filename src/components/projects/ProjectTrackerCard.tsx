@@ -47,6 +47,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
+import { useLanguage } from "@/contexts/LanguageContext";
 // Re-export for components that import from here
 export type { ProjectStage };
 
@@ -186,6 +187,7 @@ function InlineStageStepper({
   hasReview?: boolean;
   onLeaveReview?: () => void;
 }) {
+  const { t } = useLanguage();
   const currentIndex = getStageIndex(currentStage);
   const progress = STAGES[currentIndex]?.progress || 0;
   const isClient = !isPro;
@@ -222,9 +224,7 @@ function InlineStageStepper({
       {isClient && isProjectCompleted && !isClientConfirmed && (
         <div className="mb-4 p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
           <p className="text-sm font-medium text-green-800 dark:text-green-300 mb-3">
-            {locale === "ka"
-              ? "სპეციალისტმა დაასრულა სამუშაო. გთხოვთ გადაამოწმოთ და დაადასტუროთ."
-              : "The professional has marked the work as complete. Please review and confirm."}
+            {t('projects.theProfessionalHasMarkedThe')}
           </p>
           <div className="flex gap-2">
             <Button
@@ -235,7 +235,7 @@ function InlineStageStepper({
               leftIcon={!isUpdating ? <BadgeCheck className="w-4 h-4" /> : undefined}
               className="flex-1"
             >
-              {locale === "ka" ? "დადასტურება და დახურვა" : "Confirm & Close"}
+              {t('projects.confirmClose')}
             </Button>
             <Button
               variant="outline"
@@ -243,7 +243,7 @@ function InlineStageStepper({
               disabled={isUpdating}
               leftIcon={<RotateCcw className="w-4 h-4" />}
             >
-              {locale === "ka" ? "ცვლილებები" : "Request Changes"}
+              {t('projects.requestChanges')}
             </Button>
           </div>
         </div>
@@ -253,16 +253,14 @@ function InlineStageStepper({
       {showLeaveReviewButton && (
         <div className="mb-4 p-3 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
           <p className="text-sm font-medium text-yellow-800 dark:text-yellow-300 mb-3">
-            {locale === "ka"
-              ? "პროექტი დასრულებულია. დატოვეთ შეფასება სპეციალისტზე."
-              : "Project is complete. Leave a review for the professional."}
+            {t('projects.projectIsCompleteLeaveA')}
           </p>
           <Button
             onClick={onLeaveReview}
             leftIcon={<Star className="w-4 h-4" />}
             className="w-full"
           >
-            {locale === "ka" ? "შეფასების დატოვება" : "Leave a Review"}
+            {t('projects.leaveAReview')}
           </Button>
         </div>
       )}
@@ -384,6 +382,7 @@ function RoleBanner({
   completedAt?: string;
   locale: string;
 }) {
+  const { t } = useLanguage();
   // Completed state
   if (isCompleted && isConfirmed) {
     return (
@@ -393,10 +392,10 @@ function RoleBanner({
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-semibold text-green-700 dark:text-green-300">
-            {locale === "ka" ? "დასრულებული" : "Completed"}
+            {t('common.completed')}
             {completedAt && (
               <span className="font-normal text-green-600 dark:text-green-400 ml-1">
-                · {new Date(completedAt).toLocaleDateString(locale === "ka" ? "ka-GE" : "en-US", { month: "short", day: "numeric" })}
+                · {new Date(completedAt).toLocaleDateString(t('projects.enus24'), { month: "short", day: "numeric" })}
               </span>
             )}
           </p>
@@ -420,11 +419,11 @@ function RoleBanner({
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-semibold text-amber-700 dark:text-amber-300">
-            {locale === "ka" ? "ელოდება დადასტურებას" : "Pending Confirmation"}
+            {t('projects.pendingConfirmation')}
           </p>
           <p className="text-[11px] text-amber-600 dark:text-amber-400 truncate">
             {isClient
-              ? (locale === "ka" ? "გთხოვთ შეამოწმოთ და დაადასტუროთ სამუშაო" : "Please review and confirm the work")
+              ? (t('projects.pleaseReviewAndConfirmThe'))
               : (locale === "ka" ? `${partnerName} ჯერ არ დაადასტურა` : `Waiting for ${partnerName} to confirm`)
             }
           </p>
@@ -442,7 +441,7 @@ function RoleBanner({
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">
-            {locale === "ka" ? "თქვენი სამუშაო" : "Your Job"}
+            {t('projects.yourJob')}
           </p>
           <p className="text-[11px] text-blue-600 dark:text-blue-400 truncate">
             {locale === "ka" ? `თქვენ დაიქირავეთ ${partnerName}` : `You hired ${partnerName}`}
@@ -460,7 +459,7 @@ function RoleBanner({
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-xs font-semibold text-purple-700 dark:text-purple-300">
-          {locale === "ka" ? "დაქირავებული ხართ" : "Hired Job"}
+          {t('projects.hiredJob')}
         </p>
         <p className="text-[11px] text-purple-600 dark:text-purple-400 truncate">
           {locale === "ka" ? `${partnerName}-მა დაგიქირავათ` : `${partnerName} hired you`}
@@ -490,6 +489,7 @@ function CompletedSummary({
   hasReview: boolean;
   onLeaveReview: () => void;
 }) {
+  const { t } = useLanguage();
   const duration = project.completedAt && project.hiredAt
     ? Math.ceil((new Date(project.completedAt).getTime() - new Date(project.hiredAt).getTime()) / (1000 * 60 * 60 * 24))
     : null;
@@ -503,7 +503,7 @@ function CompletedSummary({
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-green-800 dark:text-green-200">
-            {locale === "ka" ? "პროექტი წარმატებით დასრულდა!" : "Project Successfully Completed!"}
+            {t('projects.projectSuccessfullyCompleted')}
           </p>
           <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">
             {project.completedAt && new Date(project.completedAt).toLocaleDateString(locale === "ka" ? "ka-GE" : "en-US", { 
@@ -522,7 +522,7 @@ function CompletedSummary({
           <div className="flex items-center gap-2 mb-2 text-neutral-500 dark:text-neutral-400">
             <Clock className="w-4 h-4" />
             <span className="text-xs uppercase tracking-wider font-medium">
-              {locale === "ka" ? "ხანგრძლივობა" : "Duration"}
+              {t('common.duration')}
             </span>
           </div>
           <span className="text-lg font-semibold text-neutral-900 dark:text-white">
@@ -538,7 +538,7 @@ function CompletedSummary({
           <div className="flex items-center gap-2 mb-2 text-neutral-500 dark:text-neutral-400">
             <span className="text-xs uppercase tracking-wider font-medium">₾</span>
             <span className="text-xs uppercase tracking-wider font-medium">
-              {locale === "ka" ? "თანხა" : "Amount"}
+              {t('common.amount')}
             </span>
           </div>
           <span className="text-lg font-semibold text-neutral-900 dark:text-white">
@@ -560,7 +560,7 @@ function CompletedSummary({
           className="w-full"
           size="lg"
         >
-          {locale === "ka" ? "დატოვეთ შეფასება" : "Leave a Review"}
+          {t('projects.leaveAReview')}
         </Button>
       )}
 
@@ -569,7 +569,7 @@ function CompletedSummary({
         <div className="flex items-center gap-2 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700">
           <Star className="w-4 h-4 text-yellow-500" />
           <span className="text-sm text-neutral-600 dark:text-neutral-400">
-            {locale === "ka" ? "თქვენ უკვე დატოვეთ შეფასება" : "You have already left a review"}
+            {t('projects.youHaveAlreadyLeftA')}
           </span>
         </div>
       )}
@@ -585,6 +585,8 @@ export default function ProjectTrackerCard({
   onRefresh,
 }: ProjectTrackerCardProps) {
   const { user } = useAuth();
+
+  const { t } = useLanguage();
   const toast = useToast();
 
   // Tab state
@@ -660,9 +662,7 @@ export default function ProjectTrackerCard({
 
   // Check if project has been started (not just hired)
   const isProjectStarted = localStage !== "hired";
-  const notStartedTooltip = locale === "ka"
-    ? "პროექტი ჯერ არ დაწყებულა"
-    : "Project not started yet";
+  const notStartedTooltip = t('projects.projectNotStartedYet');
 
   // Check if project is fully completed (stage = completed AND client confirmed)
   const isProjectCompleted = localStage === "completed";
@@ -975,8 +975,8 @@ export default function ProjectTrackerCard({
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
       setNewMessage(messageContent);
       toast.error(
-        locale === "ka" ? "შეცდომა" : "Error",
-        locale === "ka" ? "შეტყობინება ვერ გაიგზავნა" : "Failed to send message"
+        t('common.error'),
+        t('projects.failedToSendMessage')
       );
     } finally {
       setIsSubmitting(false);
@@ -993,7 +993,7 @@ export default function ProjectTrackerCard({
     if (file.size > maxSize) {
       toast.error(
         locale === "ka" ? "შეცდომა" : "Error",
-        locale === "ka" ? "ფაილი ძალიან დიდია (მაქს. 50MB)" : "File too large (max 50MB)"
+        t('projects.fileTooLargeMax50mb')
       );
       e.target.value = "";
       return;
@@ -1011,7 +1011,7 @@ export default function ProjectTrackerCard({
       const message = error?.response?.data?.message;
       toast.error(
         locale === "ka" ? "შეცდომა" : "Error",
-        message || (locale === "ka" ? "ფაილი ვერ აიტვირთა" : "Failed to upload file")
+        message || (t('projects.failedToUploadFile'))
       );
     } finally {
       setIsUploading(false);
@@ -1034,14 +1034,14 @@ export default function ProjectTrackerCard({
     try {
       await api.patch(`/jobs/projects/${job.id}/stage`, { stage: newStage });
       toast.success(
-        locale === "ka" ? "წარმატება" : "Success",
-        locale === "ka" ? "სტატუსი განახლდა" : "Stage updated"
+        t('common.success'),
+        t('projects.stageUpdated')
       );
     } catch (err) {
       setLocalStage(previousStage);
       toast.error(
         locale === "ka" ? "შეცდომა" : "Error",
-        locale === "ka" ? "სტატუსი ვერ განახლდა" : "Failed to update stage"
+        t('projects.failedToUpdateStage')
       );
     } finally {
       setIsUpdatingStage(false);
@@ -1068,7 +1068,7 @@ export default function ProjectTrackerCard({
     } catch (err) {
       toast.error(
         locale === "ka" ? "შეცდომა" : "Error",
-        locale === "ka" ? "სურათის ატვირთვა ვერ მოხერხდა" : "Failed to upload image"
+        t('projects.failedToUploadImage')
       );
     } finally {
       setIsUploadingPortfolio(false);
@@ -1091,7 +1091,7 @@ export default function ProjectTrackerCard({
       });
       toast.success(
         locale === "ka" ? "წარმატება" : "Success",
-        locale === "ka" ? "პროექტი დასრულდა" : "Project completed"
+        t('projects.projectCompleted')
       );
       setShowCompletionModal(false);
       setPortfolioImages([]);
@@ -1099,7 +1099,7 @@ export default function ProjectTrackerCard({
       setLocalStage(previousStage);
       toast.error(
         locale === "ka" ? "შეცდომა" : "Error",
-        locale === "ka" ? "პროექტი ვერ დასრულდა" : "Failed to complete project"
+        t('projects.failedToCompleteProject')
       );
     } finally {
       setIsUpdatingStage(false);
@@ -1138,8 +1138,8 @@ export default function ProjectTrackerCard({
       toast.success(
         locale === "ka" ? "წარმატება" : "Success",
         isCompletionFlow
-          ? (locale === "ka" ? "პროექტი დასრულდა და შეფასება გაიგზავნა" : "Project completed and review submitted")
-          : (locale === "ka" ? "შეფასება გაიგზავნა" : "Review submitted successfully")
+          ? (t('projects.projectCompletedAndReviewSubmitted'))
+          : (t('projects.reviewSubmittedSuccessfully'))
       );
       setShowReviewModal(false);
       setIsCompletionFlow(false);
@@ -1161,7 +1161,7 @@ export default function ProjectTrackerCard({
           } catch {
             toast.error(
               locale === "ka" ? "შეცდომა" : "Error",
-              locale === "ka" ? "პროექტი ვერ დაიხურა" : "Failed to close project"
+              t('projects.failedToCloseProject')
             );
           }
         }
@@ -1171,7 +1171,7 @@ export default function ProjectTrackerCard({
       } else {
         toast.error(
           locale === "ka" ? "შეცდომა" : "Error",
-          locale === "ka" ? "შეფასება ვერ გაიგზავნა" : "Failed to submit review"
+          t('projects.failedToSubmitReview')
         );
       }
     } finally {
@@ -1189,7 +1189,7 @@ export default function ProjectTrackerCard({
       await api.patch(`/jobs/projects/${job.id}/stage`, { stage: "review" });
       toast.success(
         locale === "ka" ? "წარმატება" : "Success",
-        locale === "ka" ? "პროექტი გადატანილია შემოწმებაზე" : "Project moved back for review"
+        t('projects.projectMovedBackForReview')
       );
     } catch (err) {
       setLocalStage(previousStage);
@@ -1219,16 +1219,12 @@ export default function ProjectTrackerCard({
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-neutral-900 dark:text-white">
-              {locale === "ka" ? "პროექტი ჯერ არ დაწყებულა" : "Project not started yet"}
+              {t('projects.projectNotStartedYet')}
             </p>
             <p className="text-xs text-neutral-500 mt-0.5">
               {isClient
-                ? (locale === "ka"
-                  ? "დაელოდეთ სპეციალისტს პროექტის დასაწყებად"
-                  : "Wait for the professional to start the project")
-                : (locale === "ka"
-                  ? "დააჭირეთ 'დაწყებული' ღილაკს პროექტის დასაწყებად"
-                  : "Click 'Started' button above to begin the project")
+                ? (t('projects.waitForTheProfessionalTo'))
+                : (t('projects.clickStartedButtonAboveTo'))
               }
             </p>
           </div>
@@ -1242,11 +1238,11 @@ export default function ProjectTrackerCard({
           <div className="flex items-center gap-2 mb-2 text-neutral-500 dark:text-neutral-400">
             <Calendar className="w-4 h-4" />
             <span className="text-xs uppercase tracking-wider font-medium">
-              {locale === "ka" ? "დაწყება" : "Started"}
+              {t('projects.started')}
             </span>
           </div>
           <span className="text-lg font-semibold text-neutral-900 dark:text-white">
-            {project.startedAt ? formatDateMonthDay(project.startedAt, locale as 'en' | 'ka') : formatDateMonthDay(project.hiredAt, locale as 'en' | 'ka')}
+            {project.startedAt ? formatDateMonthDay(project.startedAt, locale as 'en' | 'ka' | 'ru') : formatDateMonthDay(project.hiredAt, locale as 'en' | 'ka' | 'ru')}
           </span>
         </div>
 
@@ -1255,12 +1251,12 @@ export default function ProjectTrackerCard({
           <div className="flex items-center gap-2 mb-2 text-neutral-500 dark:text-neutral-400">
             <Clock className="w-4 h-4" />
             <span className="text-xs uppercase tracking-wider font-medium">
-              {locale === "ka" ? "ვადა" : "Due"}
+              {t('projects.due')}
             </span>
           </div>
           <span className="text-lg font-semibold text-neutral-900 dark:text-white">
             {project.expectedEndDate
-              ? formatDateMonthDay(project.expectedEndDate, locale as 'en' | 'ka')
+              ? formatDateMonthDay(project.expectedEndDate, locale as 'en' | 'ka' | 'ru')
               : project.estimatedDuration
                 ? `${project.estimatedDuration} ${project.estimatedDurationUnit || "days"}`
                 : "—"}
@@ -1279,7 +1275,7 @@ export default function ProjectTrackerCard({
         >
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
-              {locale === "ka" ? "შეთანხმებული თანხა" : "Agreed Budget"}
+              {t('projects.agreedBudget')}
             </span>
             <span
               className="text-xl font-bold"
@@ -1310,10 +1306,10 @@ export default function ProjectTrackerCard({
           <div className="flex flex-col items-center justify-center h-full text-neutral-400">
             <MessageCircle className="w-12 h-12 mb-3 opacity-40" />
             <p className="text-sm font-medium">
-              {locale === "ka" ? "ჯერ არ არის შეტყობინება" : "No messages yet"}
+              {t('projects.noMessagesYet')}
             </p>
             <p className="text-xs mt-1">
-              {locale === "ka" ? "დაიწყე საუბარი" : "Start the conversation"}
+              {t('projects.startTheConversation')}
             </p>
           </div>
         ) : (
@@ -1435,7 +1431,7 @@ export default function ProjectTrackerCard({
               emitTyping();
             }}
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
-            placeholder={locale === "ka" ? "დაწერე შეტყობინება..." : "Type a message..."}
+            placeholder={t('projects.typeAMessage')}
             className="flex-1 px-4 py-2.5 text-sm bg-neutral-100 dark:bg-neutral-800 border-0 rounded-full focus:outline-none focus:ring-2 text-neutral-900 dark:text-white placeholder:text-neutral-400"
             style={{ "--tw-ring-color": TERRACOTTA.primary } as React.CSSProperties}
           />
@@ -1545,7 +1541,7 @@ export default function ProjectTrackerCard({
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return locale === "ka" ? "ახლახანს" : "Just now";
+    if (diffMins < 1) return t('common.justNow');
     if (diffMins < 60) return locale === "ka" ? `${diffMins} წთ წინ` : `${diffMins}m ago`;
     if (diffHours < 24) return locale === "ka" ? `${diffHours} სთ წინ` : `${diffHours}h ago`;
     if (diffDays < 7) return locale === "ka" ? `${diffDays} დღე წინ` : `${diffDays}d ago`;
@@ -1590,7 +1586,7 @@ export default function ProjectTrackerCard({
           <div className="flex flex-col items-center justify-center h-full text-neutral-400">
             <History className="w-12 h-12 mb-3 opacity-40" />
             <p className="text-sm font-medium">
-              {locale === "ka" ? "ისტორია ცარიელია" : "No history yet"}
+              {t('projects.noHistoryYet')}
             </p>
           </div>
         ) : (
@@ -1622,8 +1618,8 @@ export default function ProjectTrackerCard({
                         </span>
                         <Badge variant={event.userRole === "client" ? "info" : "success"} size="xs">
                           {event.userRole === "client"
-                            ? (locale === "ka" ? "კლიენტი" : "Client")
-                            : (locale === "ka" ? "სპეც." : "Pro")}
+                            ? (t('common.client'))
+                            : (t('projects.pro'))}
                         </Badge>
                       </div>
                       <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
@@ -1710,13 +1706,13 @@ export default function ProjectTrackerCard({
             active={activeTab === "overview"}
             onClick={() => setActiveTab("overview")}
             icon={<CheckCircle2 className="w-4 h-4" />}
-            label={locale === "ka" ? "შეჯამება" : "Summary"}
+            label={t('projects.summary')}
           />
           <TabButton
             active={activeTab === "history"}
             onClick={() => setActiveTab("history")}
             icon={<History className="w-4 h-4" />}
-            label={locale === "ka" ? "ისტორია" : "History"}
+            label={t('projects.history')}
           />
         </div>
       ) : (
@@ -1726,13 +1722,13 @@ export default function ProjectTrackerCard({
             active={activeTab === "overview"}
             onClick={() => setActiveTab("overview")}
             icon={<Eye className="w-4 h-4" />}
-            label={locale === "ka" ? "მიმოხილვა" : "Overview"}
+            label={t('projects.overview')}
           />
           <TabButton
             active={activeTab === "chat"}
             onClick={() => setActiveTab("chat")}
             icon={<MessageCircle className="w-4 h-4" />}
-            label={locale === "ka" ? "ჩატი" : "Chat"}
+            label={t('projects.chat')}
             badge={unreadCount}
             disabled={!isProjectStarted}
             disabledTooltip={notStartedTooltip}
@@ -1741,7 +1737,7 @@ export default function ProjectTrackerCard({
             active={activeTab === "polls"}
             onClick={() => setActiveTab("polls")}
             icon={<BarChart3 className="w-4 h-4" />}
-            label={locale === "ka" ? "გამოკითხვები" : "Polls"}
+            label={t('projects.polls')}
             badge={unreadPollsCount}
             disabled={!isProjectStarted}
             disabledTooltip={notStartedTooltip}
@@ -1750,7 +1746,7 @@ export default function ProjectTrackerCard({
             active={activeTab === "materials"}
             onClick={() => setActiveTab("materials")}
             icon={<FolderOpen className="w-4 h-4" />}
-            label={locale === "ka" ? "მასალები" : "Materials"}
+            label={t('projects.materials')}
             badge={unreadMaterialsCount}
             disabled={!isProjectStarted}
             disabledTooltip={notStartedTooltip}
@@ -1816,8 +1812,8 @@ export default function ProjectTrackerCard({
               </p>
               <p className="text-xs text-neutral-400 truncate">
                 {isClient
-                  ? (partnerTitle || (locale === 'ka' ? 'სპეციალისტი' : 'Professional'))
-                  : (locale === 'ka' ? 'კლიენტი' : 'Client')
+                  ? (partnerTitle || (t('common.professional')))
+                  : (t('common.client'))
                 }
               </p>
             </div>
@@ -1855,8 +1851,8 @@ export default function ProjectTrackerCard({
               style={!isFullyCompleted ? { backgroundColor: TERRACOTTA.primary } : {}}
             >
               {isFullyCompleted 
-                ? (locale === "ka" ? "ნახვა" : "View")
-                : (locale === "ka" ? "დეტალები" : "Details")
+                ? (t('common.view'))
+                : (t('common.details'))
               }
               <ChevronRight className="w-4 h-4" />
             </Link>
@@ -1875,7 +1871,7 @@ export default function ProjectTrackerCard({
         showCounter={allImageAttachments.length > 1}
         showInfo={false}
         getImageUrl={(url) => url}
-        locale={locale as "en" | "ka"}
+        locale={locale as "en" | "ka" | "ru"}
       />
 
       {/* Review Modal */}

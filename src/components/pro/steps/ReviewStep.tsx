@@ -61,7 +61,7 @@ export default function ReviewStep({
   isEditMode = false,
   portfolioProjects = [],
 }: ReviewStepProps) {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const { getCategoryByKey, categories } = useCategories();
 
   // Helper to find subcategory by key across all categories
@@ -76,9 +76,9 @@ export default function ReviewStep({
   const getPricingSuffix = () => {
     switch (formData.pricingModel) {
       case "hourly":
-        return locale === "ka" ? "₾/სთ" : "₾/hr";
+        return t('common.hr');
       case "daily":
-        return locale === "ka" ? "₾/დღე" : "₾/day";
+        return t('common.day');
       case "sqm":
         return "₾/m²";
       case "from":
@@ -91,15 +91,15 @@ export default function ReviewStep({
   const getPricingLabel = () => {
     switch (formData.pricingModel) {
       case "hourly":
-        return locale === "ka" ? "საათობრივი" : "Hourly";
+        return t('common.hourly');
       case "daily":
-        return locale === "ka" ? "დღიური" : "Daily";
+        return t('common.daily');
       case "sqm":
-        return locale === "ka" ? "კვადრატულ მეტრზე" : "Per square meter";
+        return t('common.perSquareMeter');
       case "from":
-        return locale === "ka" ? "ფიქსირებული" : "Fixed price";
+        return t('common.fixedPrice');
       case "project_based":
-        return locale === "ka" ? "პროექტზე" : "Per project";
+        return t('common.perProject');
       default:
         return "";
     }
@@ -115,7 +115,7 @@ export default function ReviewStep({
             <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
               <User className="w-4 h-4 text-[#E07B4F]" />
               <span className="text-xs font-semibold uppercase tracking-wider">
-                {locale === "ka" ? "შენს შესახებ" : "About"}
+                {t('common.about')}
               </span>
             </div>
             <button
@@ -124,7 +124,7 @@ export default function ReviewStep({
               className="flex items-center gap-1.5 text-sm text-[#E07B4F] hover:text-[#D26B3F] font-medium transition-colors"
             >
               <Pencil className="w-3.5 h-3.5" />
-              {locale === "ka" ? "რედაქტირება" : "Edit"}
+              {t('common.edit')}
             </button>
           </div>
 
@@ -144,12 +144,12 @@ export default function ReviewStep({
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-lg font-semibold text-[var(--color-text-primary)]">
                   {formData.yearsExperience || "0"}{" "}
-                  {locale === "ka" ? "წლის გამოცდილება" : "years experience"}
+                  {t('common.yearsExperience')}
                 </span>
               </div>
               <p className="text-sm text-[var(--color-text-secondary)] line-clamp-3">
                 {formData.bio ||
-                  (locale === "ka" ? "არ არის დამატებული" : "Not added")}
+                  (t('common.notAdded'))}
               </p>
             </div>
           </div>
@@ -158,7 +158,7 @@ export default function ReviewStep({
           {(formData.whatsapp || formData.telegram || formData.instagram || formData.facebook || formData.linkedin || formData.website) && (
             <div className="mt-4 pt-4 border-t border-[var(--color-border-subtle)]">
               <p className="text-xs text-[var(--color-text-tertiary)] mb-2">
-                {locale === "ka" ? "სოციალური ბმულები" : "Social Links"}
+                {t('common.socialLinks')}
               </p>
               <div className="flex flex-wrap gap-2">
                 {formData.whatsapp && (
@@ -188,7 +188,7 @@ export default function ReviewStep({
                 )}
                 {formData.website && (
                   <Badge variant="default" size="sm" icon={<Globe className="w-3 h-3" />}>
-                    {locale === "ka" ? "ვებსაიტი" : "Website"}
+                    {t('common.website')}
                   </Badge>
                 )}
               </div>
@@ -202,7 +202,7 @@ export default function ReviewStep({
             <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
               <Briefcase className="w-4 h-4 text-[#E07B4F]" />
               <span className="text-xs font-semibold uppercase tracking-wider">
-                {locale === "ka" ? "სერვისები" : "Services"}
+                {t('common.services')}
               </span>
             </div>
             <button
@@ -218,7 +218,7 @@ export default function ReviewStep({
           {/* Categories */}
           <div className="mb-4">
             <p className="text-xs text-[var(--color-text-tertiary)] mb-2">
-              {locale === "ka" ? "კატეგორიები" : "Categories"}
+              {t('common.categories')}
             </p>
             <div className="flex flex-wrap gap-2">
               {selectedCategories.map((catKey) => {
@@ -239,7 +239,7 @@ export default function ReviewStep({
           {selectedSubcategories.length > 0 && (
             <div>
               <p className="text-xs text-[var(--color-text-tertiary)] mb-2">
-                {locale === "ka" ? "უნარები" : "Skills"}
+                {t('common.skills')}
               </p>
               <div className="flex flex-wrap gap-2">
                 {selectedSubcategories.slice(0, 6).map((subKey) => {
@@ -256,7 +256,7 @@ export default function ReviewStep({
                 {selectedSubcategories.length > 6 && (
                   <span className="px-3 py-1.5 rounded-lg bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] text-sm">
                     +{selectedSubcategories.length - 6}{" "}
-                    {locale === "ka" ? "სხვა" : "more"}
+                    {t('common.more')}
                   </span>
                 )}
               </div>
@@ -267,7 +267,7 @@ export default function ReviewStep({
           {customServices.length > 0 && (
             <div className="mt-4">
               <p className="text-xs text-[var(--color-text-tertiary)] mb-2">
-                {locale === "ka" ? "დამატებითი უნარები" : "Custom Skills"}
+                {t('common.customSkills')}
               </p>
               <div className="flex flex-wrap gap-2">
                 {customServices.slice(0, 6).map((skill, index) => (
@@ -295,7 +295,7 @@ export default function ReviewStep({
             <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
               <DollarSign className="w-4 h-4 text-[#E07B4F]" />
               <span className="text-xs font-semibold uppercase tracking-wider">
-                {locale === "ka" ? "ფასები" : "Pricing"}
+                {t('common.pricing')}
               </span>
             </div>
             <button
@@ -328,7 +328,7 @@ export default function ReviewStep({
             <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
               <Images className="w-4 h-4 text-[#E07B4F]" />
               <span className="text-xs font-semibold uppercase tracking-wider">
-                {locale === "ka" ? "პორტფოლიო" : "Portfolio"}
+                {t('common.portfolio')}
               </span>
             </div>
             <button
@@ -383,7 +383,7 @@ export default function ReviewStep({
                             className="w-full h-full object-cover"
                           />
                           <Badge variant="ghost" size="xs" className="absolute bottom-1 left-1 bg-black/60 text-white">
-                            {locale === "ka" ? "მანამდე" : "Before"}
+                            {t('common.before')}
                           </Badge>
                         </div>
                         <div className="w-1/2 h-full relative">
@@ -393,7 +393,7 @@ export default function ReviewStep({
                             className="w-full h-full object-cover"
                           />
                           <Badge variant="success" size="xs" className="absolute bottom-1 right-1">
-                            {locale === "ka" ? "შემდეგ" : "After"}
+                            {t('common.after')}
                           </Badge>
                         </div>
                       </div>
@@ -419,12 +419,12 @@ export default function ReviewStep({
             </div>
           ) : (
             <span className="text-[var(--color-text-muted)]">
-              {locale === "ka" ? "პროექტები არ არის დამატებული" : "No projects added"}
+              {t('common.noProjectsAdded')}
             </span>
           )}
           {portfolioProjects.length > 6 && (
             <p className="text-sm text-[var(--color-text-tertiary)] mt-3">
-              +{portfolioProjects.length - 6} {locale === "ka" ? "სხვა პროექტი" : "more projects"}
+              +{portfolioProjects.length - 6} {t('common.moreProjects')}
             </p>
           )}
         </div>
@@ -435,7 +435,7 @@ export default function ReviewStep({
             <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
               <MapPin className="w-4 h-4 text-[#E07B4F]" />
               <span className="text-xs font-semibold uppercase tracking-wider">
-                {locale === "ka" ? "მომსახურების ზონა" : "Service Area"}
+                {t('common.serviceArea')}
               </span>
             </div>
             <button
@@ -474,7 +474,7 @@ export default function ReviewStep({
             </div>
           ) : (
             <span className="text-[var(--color-text-muted)]">
-              {locale === "ka" ? "არ არის არჩეული" : "None selected"}
+              {t('common.noneSelected')}
             </span>
           )}
         </div>

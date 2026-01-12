@@ -56,8 +56,8 @@ interface CategoriesContextType {
   getCategoryByKey: (key: string) => Category | undefined;
   getSubcategoriesForCategory: (categoryKey: string) => Subcategory[];
   getSubSubcategoriesForSubcategory: (categoryKey: string, subcategoryKey: string) => SubSubcategory[];
-  getCategoryName: (key: string, locale: 'en' | 'ka') => string;
-  getSubcategoryName: (categoryKey: string, subcategoryKey: string, locale: 'en' | 'ka') => string;
+  getCategoryName: (key: string, locale: 'en' | 'ka' | 'ru') => string;
+  getSubcategoryName: (categoryKey: string, subcategoryKey: string, locale: 'en' | 'ka' | 'ru') => string;
   refetch: () => Promise<void>;
 }
 
@@ -129,12 +129,12 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
       return cat?.subcategories || [];
     },
     getSubSubcategoriesForSubcategory: () => [],
-    getCategoryName: (key: string, locale: 'en' | 'ka') => {
+    getCategoryName: (key: string, locale: 'en' | 'ka' | 'ru') => {
       const cat = mockCategories.find(c => c.key === key);
       if (!cat) return key;
       return locale === 'ka' ? cat.nameKa : cat.name;
     },
-    getSubcategoryName: (categoryKey: string, subcategoryKey: string, locale: 'en' | 'ka') => {
+    getSubcategoryName: (categoryKey: string, subcategoryKey: string, locale: 'en' | 'ka' | 'ru') => {
       const cat = mockCategories.find(c => c.key === categoryKey);
       const sub = cat?.subcategories.find(s => s.key === subcategoryKey);
       if (!sub) return subcategoryKey;

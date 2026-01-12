@@ -19,6 +19,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { useLanguage } from "@/contexts/LanguageContext";
 interface ProfileHeroProps {
   name: string;
   title?: string;
@@ -68,19 +69,21 @@ export default function ProfileHero({
   const heroRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
+  const { t } = useLanguage();
+
   useEffect(() => {
     setIsVisible(true);
   }, []);
 
   const getPricingLabel = () => {
-    const labels: Record<string, { en: string; ka: string }> = {
-      hourly: { en: "/hr", ka: "/სთ" },
-      daily: { en: "/day", ka: "/დღე" },
-      project_based: { en: "", ka: "" },
-      from: { en: "", ka: "" },
-      sqm: { en: "/m²", ka: "/მ²" },
+    const labels: Record<string, string> = {
+      hourly: t('heroes.perHour'),
+      daily: t('heroes.perDay'),
+      project_based: "",
+      from: "",
+      sqm: t('heroes.perSqm'),
     };
-    return pricingModel ? labels[pricingModel]?.[locale === "ka" ? "ka" : "en"] || "" : "";
+    return pricingModel ? labels[pricingModel] || "" : "";
   };
 
   const avatarUrl = avatar || "";
@@ -144,7 +147,7 @@ export default function ProfileHero({
             className="rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm shadow-sm hover:bg-white dark:hover:bg-neutral-800"
             leftIcon={<ChevronLeft className="w-4 h-4" />}
           >
-            {locale === "ka" ? "უკან" : "Back"}
+            {t('common.back')}
           </Button>
 
           {onShare && (
@@ -155,7 +158,7 @@ export default function ProfileHero({
               className="rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm shadow-sm hover:bg-white dark:hover:bg-neutral-800"
               leftIcon={<Share2 className="w-4 h-4" />}
             >
-              {locale === "ka" ? "გაზიარება" : "Share"}
+              {t('common.share')}
             </Button>
           )}
         </div>
@@ -237,7 +240,7 @@ export default function ProfileHero({
                 <div className="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400">
                   <Briefcase className="w-4 h-4" />
                   <span>
-                    {yearsExperience}+ {locale === "ka" ? "წელი" : "yrs"}
+                    {yearsExperience}+ {t('heroes.yrs')}
                   </span>
                 </div>
               )}
@@ -246,7 +249,7 @@ export default function ProfileHero({
                 <div className="flex items-center gap-1.5 text-neutral-500">
                   <span>•</span>
                   <span>
-                    {locale === "ka" ? "წევრი" : "Member"} {memberSince}
+                    {t('common.member')} {memberSince}
                     {locale === "ka" ? "-დან" : ""}
                   </span>
                 </div>
@@ -264,11 +267,11 @@ export default function ProfileHero({
                 </span>
                 {pricingModel && (
                   <Badge variant="secondary" size="sm">
-                    {pricingModel === "hourly" && (locale === "ka" ? "საათობრივი" : "Hourly")}
-                    {pricingModel === "daily" && (locale === "ka" ? "დღიური" : "Daily")}
-                    {pricingModel === "project_based" && (locale === "ka" ? "პროექტით" : "Per Project")}
-                    {pricingModel === "from" && (locale === "ka" ? "საწყისი" : "Starting")}
-                    {pricingModel === "sqm" && (locale === "ka" ? "კვ.მ" : "Per sqm")}
+                    {pricingModel === "hourly" && (t('heroes.hourly'))}
+                    {pricingModel === "daily" && (t('heroes.daily'))}
+                    {pricingModel === "project_based" && (t('heroes.perProject'))}
+                    {pricingModel === "from" && (t('heroes.starting'))}
+                    {pricingModel === "sqm" && (t('heroes.perSqm'))}
                   </Badge>
                 )}
               </div>
@@ -295,8 +298,8 @@ export default function ProfileHero({
                   leftIcon={isBasicTier ? <Phone className="w-4 h-4" /> : <MessageSquare className="w-4 h-4" />}
                 >
                   {isBasicTier
-                    ? locale === "ka" ? "ნომრის ნახვა" : "Show Phone"
-                    : locale === "ka" ? "დაკავშირება" : "Contact"
+                    ? t('heroes.showPhone')
+                    : t('heroes.contact')
                   }
                 </Button>
               )}

@@ -67,7 +67,7 @@ interface CompanyJob {
 export default function CompanyJobsPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { openLoginModal } = useAuthModal();
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const router = useRouter();
 
   const [jobs, setJobs] = useState<CompanyJob[]>([]);
@@ -125,31 +125,31 @@ export default function CompanyJobsPage() {
         return {
           color: 'bg-amber-50 text-amber-700 border-amber-200',
           icon: Clock,
-          label: locale === 'ka' ? 'მოლოდინში' : 'Pending'
+          label: t('common.pending')
         };
       case 'assigned':
         return {
           color: 'bg-blue-50 text-blue-700 border-blue-200',
           icon: UserCheck,
-          label: locale === 'ka' ? 'დანიშნული' : 'Assigned'
+          label: t('company.assigned')
         };
       case 'in_progress':
         return {
           color: 'bg-indigo-50 text-indigo-700 border-indigo-200',
           icon: PlayCircle,
-          label: locale === 'ka' ? 'მიმდინარე' : 'In Progress'
+          label: t('common.inProgress')
         };
       case 'completed':
         return {
           color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
           icon: CheckCircle2,
-          label: locale === 'ka' ? 'დასრულებული' : 'Completed'
+          label: t('common.completed')
         };
       case 'cancelled':
         return {
           color: 'bg-red-50 text-red-700 border-red-200',
           icon: XCircle,
-          label: locale === 'ka' ? 'გაუქმებული' : 'Cancelled'
+          label: t('common.cancelled')
         };
       default:
         return {
@@ -165,22 +165,22 @@ export default function CompanyJobsPage() {
       case 'urgent':
         return {
           color: 'bg-red-50 text-red-600 border-red-200',
-          label: locale === 'ka' ? 'სასწრაფო' : 'Urgent'
+          label: t('company.urgent')
         };
       case 'high':
         return {
           color: 'bg-amber-50 text-amber-600 border-amber-200',
-          label: locale === 'ka' ? 'მაღალი' : 'High'
+          label: t('company.high')
         };
       case 'medium':
         return {
           color: 'bg-blue-50 text-blue-600 border-blue-200',
-          label: locale === 'ka' ? 'საშუალო' : 'Medium'
+          label: t('company.medium')
         };
       case 'low':
         return {
           color: 'bg-neutral-50 text-neutral-500 border-neutral-200',
-          label: locale === 'ka' ? 'დაბალი' : 'Low'
+          label: t('company.low')
         };
       default:
         return {
@@ -223,10 +223,10 @@ export default function CompanyJobsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
-              {locale === 'ka' ? 'სამუშაოები' : 'Jobs'}
+              {t('common.jobs')}
             </h1>
             <p className="text-[var(--color-text-secondary)] mt-1">
-              {locale === 'ka' ? 'მართეთ კომპანიის სამუშაოები და დავალებები' : 'Manage your company jobs and assignments'}
+              {t('company.manageYourCompanyJobsAnd')}
             </p>
           </div>
           <Link
@@ -237,7 +237,7 @@ export default function CompanyJobsPage() {
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ACCENT}
           >
             <Plus className="w-5 h-5" />
-            {locale === 'ka' ? 'ახალი სამუშაო' : 'Create Job'}
+            {t('company.createJob')}
           </Link>
         </div>
 
@@ -258,7 +258,7 @@ export default function CompanyJobsPage() {
             </div>
             <div className="text-2xl font-bold text-[var(--color-text-primary)]">{stats.total}</div>
             <div className="text-sm text-[var(--color-text-secondary)]">
-              {locale === 'ka' ? 'ყველა' : 'All Jobs'}
+              {t('company.allJobs')}
             </div>
           </button>
 
@@ -347,7 +347,7 @@ export default function CompanyJobsPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-tertiary)]" />
               <input
                 type="text"
-                placeholder={locale === 'ka' ? 'მოძებნე სამუშაო...' : 'Search jobs...'}
+                placeholder={t('company.searchJobs')}
                 value={filter.search}
                 onChange={(e) => setFilter({ ...filter, search: e.target.value })}
                 className="w-full pl-10 pr-4 py-2.5 bg-[var(--color-bg-secondary)] border border-[var(--color-border-primary)] rounded-xl text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E07B4F] transition-colors"
@@ -362,7 +362,7 @@ export default function CompanyJobsPage() {
                 leftIcon={<Filter className="w-4 h-4" />}
                 className={showFilters || filter.priority ? 'border-[#E07B4F] bg-[#E07B4F]/5 text-[#E07B4F]' : ''}
               >
-                {locale === 'ka' ? 'ფილტრები' : 'Filters'}
+                {t('common.filters')}
               </Button>
 
               {filter.status && (
@@ -372,7 +372,7 @@ export default function CompanyJobsPage() {
                   onClick={() => setFilter({ ...filter, status: '' })}
                   leftIcon={<XCircle className="w-4 h-4" />}
                 >
-                  {locale === 'ka' ? 'გაწმინდე' : 'Clear'}
+                  {t('common.clear')}
                 </Button>
               )}
             </div>
@@ -383,7 +383,7 @@ export default function CompanyJobsPage() {
             <div className="mt-4 pt-4 border-t border-[var(--color-border-primary)]">
               <div className="flex flex-wrap gap-2">
                 <span className="text-sm text-[var(--color-text-secondary)] mr-2">
-                  {locale === 'ka' ? 'პრიორიტეტი:' : 'Priority:'}
+                  {t('common.priority')}
                 </span>
                 {['urgent', 'high', 'medium', 'low'].map((priority) => {
                   const info = getPriorityInfo(priority);
@@ -476,7 +476,7 @@ export default function CompanyJobsPage() {
                           {job.scheduledDate && (
                             <span className="flex items-center gap-1.5">
                               <Calendar className="w-4 h-4" />
-                              {formatDateShort(job.scheduledDate, locale as 'en' | 'ka')}
+                              {formatDateShort(job.scheduledDate, locale as 'en' | 'ka' | 'ru')}
                               {job.scheduledTime && ` ${job.scheduledTime}`}
                             </span>
                           )}
@@ -561,12 +561,12 @@ export default function CompanyJobsPage() {
                 <Clipboard className="w-8 h-8" style={{ color: ACCENT }} />
               </div>
               <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
-                {locale === 'ka' ? 'სამუშაოები არ მოიძებნა' : 'No jobs found'}
+                {t('company.noJobsFound')}
               </h3>
               <p className="text-[var(--color-text-secondary)] mb-6 max-w-md mx-auto">
                 {filter.status || filter.search
-                  ? (locale === 'ka' ? 'სცადეთ ფილტრების შეცვლა' : 'Try adjusting your filters')
-                  : (locale === 'ka' ? 'შექმენით პირველი სამუშაო თქვენი გუნდისთვის' : 'Create your first job for your team')
+                  ? (t('company.tryAdjustingYourFilters'))
+                  : (t('company.createYourFirstJobFor'))
                 }
               </p>
               <Link
@@ -577,7 +577,7 @@ export default function CompanyJobsPage() {
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ACCENT}
               >
                 <Plus className="w-5 h-5" />
-                {locale === 'ka' ? 'ახალი სამუშაო' : 'Create First Job'}
+                {t('company.createFirstJob')}
               </Link>
             </div>
           )}
@@ -590,7 +590,7 @@ export default function CompanyJobsPage() {
                 onClick={() => fetchJobs(pagination.page + 1)}
                 rightIcon={<ArrowUpRight className="w-4 h-4" />}
               >
-                {locale === 'ka' ? 'მეტის ჩატვირთვა' : 'Load More'}
+                {t('common.loadMore')}
               </Button>
             </div>
           )}

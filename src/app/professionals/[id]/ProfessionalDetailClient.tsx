@@ -64,7 +64,7 @@ export default function ProfessionalDetailClient() {
   const router = useRouter();
   const { user } = useAuth();
   const { openLoginModal } = useAuthModal();
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const toast = useToast();
   const { trackEvent } = useAnalytics();
   const { categories: CATEGORIES } = useCategories();
@@ -239,11 +239,11 @@ export default function ProfessionalDetailClient() {
     try {
       await navigator.clipboard.writeText(getShareUrl());
       setCopySuccess(true);
-      toast.success(locale === "ka" ? "ლინკი დაკოპირდა!" : "Link copied!");
+      toast.success(t('common.linkCopied'));
       setTimeout(() => setCopySuccess(false), 2000);
       setShowShareMenu(false);
     } catch {
-      toast.error(locale === "ka" ? "შეცდომა" : "Error");
+      toast.error(t('common.error'));
     }
   };
 
@@ -255,9 +255,9 @@ export default function ProfessionalDetailClient() {
       await api.patch('/users/me/pro-profile', { description: data.description });
       setProfile(prev => prev ? { ...prev, description: data.description } : prev);
       setShowEditAboutModal(false);
-      toast.success(locale === "ka" ? "შენახულია" : "Saved successfully");
+      toast.success(t('professional.savedSuccessfully'));
     } catch (err) {
-      toast.error(locale === "ka" ? "შეცდომა" : "Failed to save");
+      toast.error(t('professional.failedToSave'));
     } finally {
       setIsSaving(false);
     }
@@ -284,9 +284,9 @@ export default function ProfessionalDetailClient() {
       });
       setPortfolio(prev => [...prev, response.data]);
       setShowAddProjectModal(false);
-      toast.success(locale === "ka" ? "პროექტი დაემატა" : "Project added");
+      toast.success(t('professional.projectAdded'));
     } catch (err) {
-      toast.error(locale === "ka" ? "შეცდომა" : "Failed to add project");
+      toast.error(t('professional.failedToAddProject'));
     } finally {
       setIsSaving(false);
     }
@@ -317,9 +317,9 @@ export default function ProfessionalDetailClient() {
           : p
       ));
       setEditingProject(null);
-      toast.success(locale === "ka" ? "პროექტი განახლდა" : "Project updated");
+      toast.success(t('professional.projectUpdated'));
     } catch (err) {
-      toast.error(locale === "ka" ? "შეცდომა" : "Failed to update project");
+      toast.error(t('professional.failedToUpdateProject'));
     } finally {
       setIsSaving(false);
     }
@@ -332,9 +332,9 @@ export default function ProfessionalDetailClient() {
       await api.delete(`/portfolio/${deleteProjectId}`);
       setPortfolio(prev => prev.filter(p => p.id !== deleteProjectId));
       setDeleteProjectId(null);
-      toast.success(locale === "ka" ? "პროექტი წაიშალა" : "Project deleted");
+      toast.success(t('professional.projectDeleted'));
     } catch (err) {
-      toast.error(locale === "ka" ? "შეცდომა" : "Failed to delete project");
+      toast.error(t('professional.failedToDeleteProject'));
     } finally {
       setIsSaving(false);
     }
@@ -479,9 +479,9 @@ export default function ProfessionalDetailClient() {
   const getPricingLabel = () => {
     switch (profile?.pricingModel) {
       case "hourly":
-        return locale === "ka" ? "/სთ" : "/hr";
+        return t('professional.hr');
       case "daily":
-        return locale === "ka" ? "/დღე" : "/day";
+        return t('professional.day');
       case "sqm":
         return "/m²";
       default:
@@ -599,13 +599,13 @@ export default function ProfessionalDetailClient() {
               <X className="w-8 h-8 text-neutral-400" />
             </div>
             <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
-              {locale === "ka" ? "პროფილი ვერ მოიძებნა" : "Profile not found"}
+              {t('professional.profileNotFound')}
             </h2>
             <Button
               onClick={() => router.push("/browse")}
               className="mt-6"
             >
-              {locale === "ka" ? "უკან დაბრუნება" : "Go Back"}
+              {t('common.goBack')}
             </Button>
           </div>
         </div>
@@ -648,7 +648,7 @@ export default function ProfessionalDetailClient() {
               className="rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm shadow-md hover:bg-white dark:hover:bg-neutral-800"
               leftIcon={<ChevronLeft className="w-4 h-4" />}
             >
-              {locale === "ka" ? "უკან" : "Back"}
+              {t('common.back')}
             </Button>
             
             {/* Share button with dropdown */}
@@ -660,7 +660,7 @@ export default function ProfessionalDetailClient() {
                 className="rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm shadow-md hover:bg-white dark:hover:bg-neutral-800"
                 leftIcon={<Share2 className="w-4 h-4" />}
               >
-                {locale === "ka" ? "გაზიარება" : "Share"}
+                {t('common.share')}
               </Button>
               
               {/* Share dropdown menu */}
@@ -697,7 +697,7 @@ export default function ProfessionalDetailClient() {
                         <Link2 className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
                       )}
                     </div>
-                    <span>{locale === "ka" ? "ლინკის კოპირება" : "Copy Link"}</span>
+                    <span>{t('common.copyLink')}</span>
                   </button>
                 </div>
               )}
@@ -760,7 +760,7 @@ export default function ProfessionalDetailClient() {
                   )}
                   <div className="flex items-center gap-1 text-neutral-600 dark:text-neutral-400">
                     <Briefcase className="w-3.5 h-3.5" />
-                    <span>{profile.yearsExperience}+ {locale === "ka" ? "წელი" : "yrs"}</span>
+                    <span>{profile.yearsExperience}+ {t('professional.yrs')}</span>
                   </div>
                 </div>
 
@@ -797,11 +797,11 @@ export default function ProfessionalDetailClient() {
                       {getPricingLabel()}
                     </span>
                     <Badge variant="secondary" size="xs">
-                      {profile.pricingModel === "hourly" && (locale === "ka" ? "საათობრივი" : "Hourly")}
-                      {profile.pricingModel === "daily" && (locale === "ka" ? "დღიური" : "Daily")}
-                      {profile.pricingModel === "project_based" && (locale === "ka" ? "პროექტით" : "Per Project")}
-                      {profile.pricingModel === "from" && (locale === "ka" ? "საწყისი ფასი" : "Starting Price")}
-                      {profile.pricingModel === "sqm" && (locale === "ka" ? "კვ.მ" : "Per sqm")}
+                      {profile.pricingModel === "hourly" && (t('professional.hourly'))}
+                      {profile.pricingModel === "daily" && (t('professional.daily'))}
+                      {profile.pricingModel === "project_based" && (t('professional.perProject'))}
+                      {profile.pricingModel === "from" && (t('professional.startingPrice'))}
+                      {profile.pricingModel === "sqm" && (t('professional.perSqm'))}
                     </Badge>
                   </div>
                 )}
@@ -824,7 +824,7 @@ export default function ProfessionalDetailClient() {
                       className="rounded-full"
                       leftIcon={isBasicTier ? <Phone className="w-4 h-4" /> : <MessageSquare className="w-4 h-4" />}
                     >
-                      {isBasicTier ? (locale === "ka" ? "ტელეფონის ნახვა" : "Show Phone") : (locale === "ka" ? "დაკავშირება" : "Contact")}
+                      {isBasicTier ? (t('professional.showPhone')) : (t('professional.contact'))}
                     </Button>
                   )
                 )}
@@ -878,12 +878,12 @@ export default function ProfessionalDetailClient() {
                   instagramUrl={profile.instagramUrl}
                   linkedinUrl={profile.linkedinUrl}
                   websiteUrl={profile.websiteUrl}
-                  locale={locale as 'en' | 'ka'}
+                  locale={locale as 'en' | 'ka' | 'ru'}
                   isOwner={isOwner}
                   onSaveDescription={async (description) => {
                     await api.patch('/users/me/pro-profile', { description });
                     setProfile(prev => prev ? { ...prev, description } : prev);
-                    toast.success(locale === "ka" ? "შენახულია" : "Saved");
+                    toast.success(t('professional.saved'));
                   }}
                   onSaveServices={async (customServices) => {
                     await api.patch('/users/me/pro-profile', { customServices });
@@ -913,7 +913,7 @@ export default function ProfessionalDetailClient() {
                     isEditable: p.source !== 'homico', // Only allow edit/delete for non-Homico projects
                   }))}
                   onProjectClick={setSelectedProject}
-                  locale={locale as 'en' | 'ka'}
+                  locale={locale as 'en' | 'ka' | 'ru'}
                   isOwner={isOwner}
                   onAddProject={() => setShowAddProjectModal(true)}
                   onEditProject={(project) => setEditingProject({
@@ -935,7 +935,7 @@ export default function ProfessionalDetailClient() {
                   reviews={reviews}
                   avgRating={profile.avgRating}
                   totalReviews={profile.totalReviews}
-                  locale={locale as 'en' | 'ka'}
+                  locale={locale as 'en' | 'ka' | 'ru'}
                 />
               </div>
             )}
@@ -986,12 +986,8 @@ export default function ProfessionalDetailClient() {
             leftIcon={isBasicTier ? <Phone className="w-5 h-5" /> : <MessageSquare className="w-5 h-5" />}
           >
             {isBasicTier
-              ? locale === "ka"
-                ? "ტელეფონის ნახვა"
-                : "Show Phone"
-              : locale === "ka"
-                ? "დაკავშირება"
-                : "Contact"}
+              ? t('professional.showPhone')
+              : t('professional.contact')}
           </Button>
         )}
       </div>
@@ -1175,7 +1171,7 @@ export default function ProfessionalDetailClient() {
           if (response.ok) {
             setShowContactModal(false);
             toast.success(
-              locale === "ka" ? "შეტყობინება გაგზავნილია!" : "Message sent!"
+              t('common.messageSent')
             );
             trackEvent(AnalyticsEvent.CONVERSATION_START, {
               proId: profile?.id,
@@ -1188,7 +1184,7 @@ export default function ProfessionalDetailClient() {
         name={profile?.name || ""}
         title={profile?.title || ""}
         avatar={avatarUrl}
-        locale={locale as "en" | "ka"}
+        locale={locale as "en" | "ka" | "ru"}
       />
 
       {/* ========== ADD/EDIT PROJECT MODAL ========== */}
@@ -1201,7 +1197,7 @@ export default function ProfessionalDetailClient() {
           }}
           onSubmit={editingProject ? handleUpdateProject : handleAddProject}
           isLoading={isSaving}
-          locale={locale as 'en' | 'ka'}
+          locale={locale as 'en' | 'ka' | 'ru'}
           initialData={editingProject || undefined}
         />
       )}
@@ -1211,11 +1207,9 @@ export default function ProfessionalDetailClient() {
         isOpen={!!deleteProjectId}
         onClose={() => setDeleteProjectId(null)}
         onConfirm={handleDeleteProject}
-        title={locale === "ka" ? "პროექტის წაშლა" : "Delete Project"}
-        description={locale === "ka" 
-          ? "დარწმუნებული ხართ რომ გსურთ ამ პროექტის წაშლა? ეს მოქმედება შეუქცევადია."
-          : "Are you sure you want to delete this project? This action cannot be undone."}
-        confirmLabel={locale === "ka" ? "წაშლა" : "Delete"}
+        title={t('professional.deleteProject')}
+        description={t('professional.areYouSureYouWant')}
+        confirmLabel={t('common.delete')}
         variant="danger"
         isLoading={isSaving}
       />
@@ -1244,7 +1238,7 @@ interface ProjectFormModalProps {
     beforeAfter?: { before: string; after: string }[];
   }) => void;
   isLoading: boolean;
-  locale: 'en' | 'ka';
+  locale: 'en' | 'ka' | 'ru';
   initialData?: { 
     title: string; 
     description?: string; 
@@ -1265,6 +1259,7 @@ function ProjectFormModal({
   locale,
   initialData,
 }: ProjectFormModalProps) {
+  const { t } = useLanguage();
   const [title, setTitle] = useState(initialData?.title || '');
   const [description, setDescription] = useState(initialData?.description || '');
   const [location, setLocation] = useState(initialData?.location || '');
@@ -1312,17 +1307,17 @@ function ProjectFormModal({
   const validateFile = (file: File, type: 'image' | 'video'): string | null => {
     if (type === 'image') {
       if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-        return locale === 'ka' ? 'მხოლოდ JPG, PNG, WebP, GIF ფორმატი' : 'Only JPG, PNG, WebP, GIF allowed';
+        return t('professional.onlyJpgPngWebpGif');
       }
       if (file.size > MAX_IMAGE_SIZE) {
-        return locale === 'ka' ? 'სურათი ძალიან დიდია (მაქს 10MB)' : 'Image too large (max 10MB)';
+        return t('professional.imageTooLargeMax10mb');
       }
     } else {
       if (!ALLOWED_VIDEO_TYPES.includes(file.type)) {
-        return locale === 'ka' ? 'მხოლოდ MP4, MOV, WebM ფორმატი' : 'Only MP4, MOV, WebM allowed';
+        return t('professional.onlyMp4MovWebmAllowed');
       }
       if (file.size > MAX_VIDEO_SIZE) {
-        return locale === 'ka' ? 'ვიდეო ძალიან დიდია (მაქს 100MB)' : 'Video too large (max 100MB)';
+        return t('professional.videoTooLargeMax100mb');
       }
     }
     return null;
@@ -1351,7 +1346,7 @@ function ProjectFormModal({
       for (const file of Array.from(files)) {
         const error = validateFile(file, 'image');
         if (error) {
-          toast.error(locale === 'ka' ? 'შეცდომა' : 'Error', error);
+          toast.error(t('common.error'), error);
           continue;
         }
         const url = await uploadFile(file);
@@ -1361,7 +1356,7 @@ function ProjectFormModal({
         setImages(prev => [...prev, ...newImages]);
       }
     } catch {
-      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error', locale === 'ka' ? 'ატვირთვა ვერ მოხერხდა' : 'Upload failed');
+      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error', t('common.uploadFailed'));
     } finally {
       setIsUploading(false);
       setUploadingType(null);
@@ -1458,11 +1453,11 @@ function ProjectFormModal({
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error', locale === 'ka' ? 'სათაური აუცილებელია' : 'Title is required');
+      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error', t('professional.titleIsRequired'));
       return;
     }
     if (images.length === 0 && videos.length === 0 && beforeAfterPairs.length === 0) {
-      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error', locale === 'ka' ? 'მინიმუმ ერთი მედია აუცილებელია' : 'At least one media item is required');
+      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error', t('professional.atLeastOneMediaItem'));
       return;
     }
     onSubmit({ 
@@ -1476,8 +1471,8 @@ function ProjectFormModal({
   };
 
   const modalTitle = initialData 
-    ? (locale === 'ka' ? 'პროექტის რედაქტირება' : 'Edit Project') 
-    : (locale === 'ka' ? 'პროექტის დამატება' : 'Add Project');
+    ? (t('professional.editProject')) 
+    : (t('professional.addProject'));
 
   const totalMedia = images.length + videos.length + beforeAfterPairs.length;
 
@@ -1496,7 +1491,7 @@ function ProjectFormModal({
                 {modalTitle}
               </h2>
               <p className="text-white/70 text-sm mt-0.5">
-                {locale === 'ka' ? 'აჩვენე შენი საუკეთესო სამუშაო' : 'Showcase your best work'}
+                {t('professional.showcaseYourBestWork')}
               </p>
             </div>
             <button
@@ -1515,24 +1510,24 @@ function ProjectFormModal({
             <div>
               <label className="flex items-center gap-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-2">
                 <span className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center text-[#C4735B] text-xs">1</span>
-                {locale === 'ka' ? 'სათაური' : 'Title'}
+                {t('common.title')}
                 <span className="text-red-400">*</span>
               </label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder={locale === 'ka' ? 'მაგ: სამზარეულოს რემონტი' : 'e.g. Kitchen Renovation'}
+                placeholder={t('professional.egKitchenRenovation')}
               />
             </div>
             <div>
               <label className="flex items-center gap-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-2">
                 <MapPin className="w-4 h-4 text-neutral-400" />
-                {locale === 'ka' ? 'მდებარეობა' : 'Location'}
+                {t('common.location')}
               </label>
               <Input
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder={locale === 'ka' ? 'მაგ: თბილისი' : 'e.g. Tbilisi'}
+                placeholder={t('professional.egTbilisi')}
               />
             </div>
           </div>
@@ -1541,12 +1536,12 @@ function ProjectFormModal({
           <div>
             <label className="flex items-center gap-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-2">
               <span className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center text-[#C4735B] text-xs">2</span>
-              {locale === 'ka' ? 'აღწერა' : 'Description'}
+              {t('common.description')}
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder={locale === 'ka' ? 'რა გააკეთეთ? რა მასალები გამოიყენეთ? რამდენ ხანში დასრულდა?' : 'What did you do? Materials used? How long did it take?'}
+              placeholder={t('professional.whatDidYouDoMaterials')}
               rows={2}
               className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent focus:bg-white dark:focus:bg-neutral-800 resize-none transition-all"
             />
@@ -1557,12 +1552,12 @@ function ProjectFormModal({
             <div className="flex items-center justify-between mb-4">
               <label className="flex items-center gap-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200">
                 <span className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center text-[#C4735B] text-xs">3</span>
-                {locale === 'ka' ? 'მედია ფაილები' : 'Media Files'}
+                {t('professional.mediaFiles')}
                 <span className="text-red-400">*</span>
               </label>
               {totalMedia > 0 && (
                 <span className="px-2.5 py-1 bg-[#C4735B] text-white text-xs font-medium rounded-full">
-                  {totalMedia} {locale === 'ka' ? 'ფაილი' : 'files'}
+                  {totalMedia} {t('common.files')}
                 </span>
               )}
             </div>
@@ -1570,9 +1565,9 @@ function ProjectFormModal({
             {/* Media Type Tabs - Premium Design */}
             <div className="grid grid-cols-3 gap-2 mb-4">
               {[
-                { key: 'images' as const, icon: ImageIcon, label: locale === 'ka' ? 'სურათები' : 'Photos', count: images.length },
-                { key: 'videos' as const, icon: Video, label: locale === 'ka' ? 'ვიდეო' : 'Video', count: videos.length },
-                { key: 'before_after' as const, icon: SplitSquareHorizontal, label: locale === 'ka' ? 'მანამ./შემდ.' : 'B/A', count: beforeAfterPairs.length },
+                { key: 'images' as const, icon: ImageIcon, label: t('common.photos'), count: images.length },
+                { key: 'videos' as const, icon: Video, label: t('common.video'), count: videos.length },
+                { key: 'before_after' as const, icon: SplitSquareHorizontal, label: t('professional.ba'), count: beforeAfterPairs.length },
               ].map(tab => {
                 const Icon = tab.icon;
                 const isActive = activeMediaTab === tab.key;
@@ -1619,8 +1614,8 @@ function ProjectFormModal({
                         <div className="w-14 h-14 rounded-2xl bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center mb-3 group-hover:bg-[#C4735B]/10 group-hover:scale-110 transition-all">
                           <ImageIcon className="w-7 h-7" />
                         </div>
-                        <span className="text-sm font-medium">{locale === 'ka' ? 'აირჩიეთ სურათები' : 'Choose Photos'}</span>
-                        <span className="text-xs mt-1 text-neutral-400">{locale === 'ka' ? 'ან გადმოათრიეთ აქ' : 'or drag and drop'}</span>
+                        <span className="text-sm font-medium">{t('professional.choosePhotos')}</span>
+                        <span className="text-xs mt-1 text-neutral-400">{t('professional.orDragAndDrop')}</span>
                       </>
                     )}
                   </button>
@@ -1656,7 +1651,7 @@ function ProjectFormModal({
                   <span className="w-1 h-1 rounded-full bg-neutral-300" />
                   JPG, PNG, WebP, GIF
                   <span className="w-1 h-1 rounded-full bg-neutral-300" />
-                  {locale === 'ka' ? 'მაქს' : 'Max'} 10MB
+                  {t('professional.max')} 10MB
                 </p>
                 <input
                   ref={imageInputRef}
@@ -1685,7 +1680,7 @@ function ProjectFormModal({
                       <div className="w-14 h-14 rounded-2xl bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center mb-3 group-hover:bg-[#C4735B]/10 group-hover:scale-110 transition-all">
                         <Video className="w-7 h-7" />
                       </div>
-                      <span className="text-sm font-medium">{locale === 'ka' ? 'ატვირთეთ ვიდეო' : 'Upload Video'}</span>
+                      <span className="text-sm font-medium">{t('professional.uploadVideo')}</span>
                       <span className="text-xs mt-1 text-neutral-400">MP4, MOV, WebM</span>
                     </>
                   )}
@@ -1718,7 +1713,7 @@ function ProjectFormModal({
                     ) : (
                       <>
                         <Plus className="w-6 h-6" />
-                        <span className="text-xs mt-1">{locale === 'ka' ? 'დამატება' : 'Add'}</span>
+                        <span className="text-xs mt-1">{t('common.add')}</span>
                       </>
                     )}
                   </button>
@@ -1749,7 +1744,7 @@ function ProjectFormModal({
                   <div className="flex-1 space-y-1.5">
                     <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-full">
                       <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                      {locale === 'ka' ? 'მანამდე' : 'Before'}
+                      {t('common.before')}
                     </span>
                     <div className="aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-neutral-200 dark:ring-neutral-700">
                       <img src={storage.getFileUrl(pair.before)} alt="Before" className="w-full h-full object-cover" />
@@ -1763,7 +1758,7 @@ function ProjectFormModal({
                   <div className="flex-1 space-y-1.5">
                     <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                      {locale === 'ka' ? 'შემდეგ' : 'After'}
+                      {t('common.after')}
                     </span>
                     <div className="aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-neutral-200 dark:ring-neutral-700">
                       <img src={storage.getFileUrl(pair.after)} alt="After" className="w-full h-full object-cover" />
@@ -1808,7 +1803,7 @@ function ProjectFormModal({
                       ) : (
                         <>
                           <Plus className="w-6 h-6" />
-                          <span className="text-xs font-medium mt-1">{locale === 'ka' ? 'აირჩიეთ' : 'Select'}</span>
+                          <span className="text-xs font-medium mt-1">{t('common.select')}</span>
                         </>
                       )}
                     </button>
@@ -1839,8 +1834,8 @@ function ProjectFormModal({
                           <ImageIcon className="w-5 h-5 text-emerald-400" />
                         </div>
                       </div>
-                      <span className="text-sm font-medium">{locale === 'ka' ? 'შედარების დამატება' : 'Add Comparison'}</span>
-                      <span className="text-xs mt-1 text-neutral-400">{locale === 'ka' ? 'ჯერ აირჩიეთ "მანამდე"' : 'Start with "Before" image'}</span>
+                      <span className="text-sm font-medium">{t('professional.addComparison')}</span>
+                      <span className="text-xs mt-1 text-neutral-400">{t('professional.startWithBeforeImage')}</span>
                     </>
                   )}
                 </button>
@@ -1857,13 +1852,13 @@ function ProjectFormModal({
         <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
           <p className="text-xs text-neutral-400 hidden sm:block">
             {totalMedia === 0 
-              ? (locale === 'ka' ? 'დაამატეთ მინიმუმ ერთი ფაილი' : 'Add at least one file')
-              : `${totalMedia} ${locale === 'ka' ? 'ფაილი მზადაა' : 'files ready'}`
+              ? (t('professional.addAtLeastOneFile'))
+              : `${totalMedia} ${t('professional.filesReady')}`
             }
           </p>
           <div className="flex gap-2 ml-auto">
             <Button variant="ghost" onClick={onClose} disabled={isLoading}>
-              {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+              {t('common.cancel')}
             </Button>
             <Button 
               onClick={handleSubmit} 
@@ -1872,8 +1867,8 @@ function ProjectFormModal({
               className="min-w-[120px]"
             >
               {initialData 
-                ? (locale === 'ka' ? 'განახლება' : 'Update')
-                : (locale === 'ka' ? 'დამატება' : 'Add Project')
+                ? (t('common.update'))
+                : (t('professional.addProject'))
               }
             </Button>
           </div>

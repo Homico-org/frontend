@@ -6,13 +6,13 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Package, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 
 function ProOrdersPageContent() {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
 
   const stats = [
-    { label: locale === 'ka' ? 'აქტიური' : 'Active Orders', value: '0', icon: Package, color: 'bg-forest-800' },
-    { label: locale === 'ka' ? 'მიმდინარე' : 'In Progress', value: '0', icon: Clock, color: 'bg-terracotta-500' },
-    { label: locale === 'ka' ? 'დასრულებული' : 'Completed', value: '0', icon: CheckCircle, color: 'bg-primary-500' },
-    { label: locale === 'ka' ? 'მოქმედება საჭირო' : 'Requires Action', value: '0', icon: AlertCircle, color: 'bg-terracotta-400' },
+    { label: t('orders.activeOrders'), value: '0', icon: Package, color: 'bg-forest-800' },
+    { label: t('common.inProgress'), value: '0', icon: Clock, color: 'bg-terracotta-500' },
+    { label: t('common.completed'), value: '0', icon: CheckCircle, color: 'bg-primary-500' },
+    { label: t('orders.requiresAction'), value: '0', icon: AlertCircle, color: 'bg-terracotta-400' },
   ];
 
   return (
@@ -20,10 +20,10 @@ function ProOrdersPageContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-serif font-medium text-neutral-900 dark:text-neutral-50">
-            {locale === 'ka' ? 'აქტიური შეკვეთები' : 'Active Orders'}
+            {t('orders.activeOrders')}
           </h1>
           <p className="mt-1 sm:mt-2 text-sm sm:text-base text-neutral-500 dark:text-neutral-400">
-            {locale === 'ka' ? 'მართე შენი მიმდინარე შეკვეთები' : 'Manage your current orders and deliveries'}
+            {t('orders.manageYourCurrentOrdersAnd')}
           </p>
         </div>
 

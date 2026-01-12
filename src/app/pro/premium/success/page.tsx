@@ -74,7 +74,7 @@ const TIER_CONFIG: Record<string, {
 };
 
 function SuccessContent() {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const { trackEvent } = useAnalytics();
   const searchParams = useSearchParams();
   const tierId = searchParams.get('tier') || 'basic';
@@ -248,7 +248,7 @@ function SuccessContent() {
             className="text-4xl sm:text-5xl font-bold text-neutral-900 dark:text-white mb-4"
             style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
           >
-            {locale === 'ka' ? 'გილოცავთ!' : 'Congratulations!'}
+            {t('premium.congratulations')}
           </h1>
 
           <p className="text-xl text-neutral-600 dark:text-neutral-300 mb-3">
@@ -265,7 +265,7 @@ function SuccessContent() {
             }}
           >
             <TierIcon className="w-5 h-5" />
-            {tier.name[locale === 'ka' ? 'ka' : 'en']} {locale === 'ka' ? 'გეგმა' : 'Plan'}
+            {tier.name[locale === 'ka' ? 'ka' : 'en']} {t('premium.plan')}
           </div>
 
           {/* Benefits Card */}
@@ -275,7 +275,7 @@ function SuccessContent() {
             }`}
           >
             <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-400 mb-6">
-              {locale === 'ka' ? 'თქვენი ახალი შესაძლებლობები' : 'Your New Benefits'}
+              {t('premium.yourNewBenefits')}
             </h2>
             
             <div className="space-y-4">
@@ -323,7 +323,7 @@ function SuccessContent() {
                 }}
               />
               <span className="relative z-10 flex items-center gap-2">
-                {locale === 'ka' ? 'პროფილის განახლება' : 'Update Your Profile'}
+                {t('premium.updateYourProfile')}
                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </span>
             </Link>
@@ -332,7 +332,7 @@ function SuccessContent() {
               href="/browse/jobs"
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl font-semibold text-neutral-700 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all"
             >
-              {locale === 'ka' ? 'სამუშაოების ნახვა' : 'Browse Jobs'}
+              {t('premium.browseJobs')}
             </Link>
           </div>
 
@@ -340,7 +340,7 @@ function SuccessContent() {
           <div className="flex items-center justify-center gap-2 text-neutral-400 mb-8">
             <Share2 className="w-4 h-4" />
             <span className="text-sm">
-              {locale === 'ka' ? 'გაუზიარე შენს კოლეგებს' : 'Share with your colleagues'}
+              {t('premium.shareWithYourColleagues')}
             </span>
           </div>
 
@@ -348,9 +348,7 @@ function SuccessContent() {
           <div className="flex items-center justify-center gap-2 text-sm text-neutral-400">
             <CheckCircle2 className="w-4 h-4 text-emerald-500" />
             <span>
-              {locale === 'ka'
-                ? 'ქვითარი გამოგეგზავნათ ელ-ფოსტაზე'
-                : 'A receipt has been sent to your email'}
+              {t('premium.aReceiptHasBeenSent')}
             </span>
           </div>
         </div>

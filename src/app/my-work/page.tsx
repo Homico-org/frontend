@@ -621,7 +621,7 @@ function MyWorkPageContent() {
                           </Badge>
                         )}
                         <span className="text-xs text-neutral-400 dark:text-neutral-500">
-                          {formatTimeAgo(proposal.createdAt, language as 'en' | 'ka')}
+                          {formatTimeAgo(proposal.createdAt, language as 'en' | 'ka' | 'ru')}
                         </span>
                       </div>
                     </div>
@@ -662,7 +662,7 @@ function MyWorkPageContent() {
                         <div className="w-px h-4 bg-neutral-200 dark:bg-neutral-700" />
                         <span className="flex items-center gap-1.5 text-sm font-semibold text-[#C4735B]">
                           <DollarSign className="w-3.5 h-3.5" />
-                          {formatBudget(job, language as 'en' | 'ka') || (language === 'ka' ? 'შეთანხმებით' : 'Negotiable')}
+                          {formatBudget(job, language as 'en' | 'ka' | 'ru') || (language === 'ka' ? 'შეთანხმებით' : 'Negotiable')}
                         </span>
                       </div>
 
@@ -682,7 +682,7 @@ function MyWorkPageContent() {
                               </p>
                             </div>
                             <span className="text-xs text-neutral-400">
-                              {formatDateShort(proposal.createdAt, language as 'en' | 'ka')}
+                              {formatDateShort(proposal.createdAt, language as 'en' | 'ka' | 'ru')}
                             </span>
                           </div>
                           

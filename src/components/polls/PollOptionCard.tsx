@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Check, ZoomIn } from 'lucide-react';
 import { useState } from 'react';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 export interface PollOption {
   id?: string;
   _id?: string;
@@ -32,6 +33,8 @@ export default function PollOptionCard({
 }: PollOptionCardProps) {
   const hasImage = !!option.imageUrl;
   const [showFullImage, setShowFullImage] = useState(false);
+
+  const { t } = useLanguage();
 
   const imageUrl = option.imageUrl?.startsWith('http')
     ? option.imageUrl
@@ -104,7 +107,7 @@ export default function PollOptionCard({
             {isApproved && (
               <div className="absolute bottom-2 left-2">
                 <Badge variant="success" size="sm" icon={<Check className="w-3 h-3" />} className="shadow-lg">
-                  {locale === 'ka' ? 'არჩეული' : 'Approved'}
+                  {t('polls.approved')}
                 </Badge>
               </div>
             )}
@@ -145,7 +148,7 @@ export default function PollOptionCard({
           {/* Approved badge for text-only */}
           {!hasImage && isApproved && (
             <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-semibold">
-              {locale === 'ka' ? '✓' : '✓'}
+              {t('polls.text')}
             </div>
           )}
         </div>

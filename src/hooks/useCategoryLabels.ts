@@ -2,94 +2,94 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useCallback } from 'react';
 
 // Centralized category labels mapping
-const CATEGORY_LABELS: Record<string, { en: string; ka: string }> = {
+const CATEGORY_LABELS: Record<string, { en: string; ka: string; ru: string }> = {
   // Main categories
-  renovation: { en: 'Renovation', ka: 'რემონტი' },
-  design: { en: 'Design', ka: 'დიზაინი' },
-  architecture: { en: 'Architecture', ka: 'არქიტექტურა' },
-  services: { en: 'Services', ka: 'სერვისები' },
-  craftsmen: { en: 'Craftsmen', ka: 'ხელოსნები' },
-  homecare: { en: 'Home Care', ka: 'სახლის მოვლა' },
-  'home-care': { en: 'Home Care', ka: 'მოვლა' },
+  renovation: { en: 'Renovation', ka: 'რემონტი', ru: 'Ремонт' },
+  design: { en: 'Design', ka: 'დიზაინი', ru: 'Дизайн' },
+  architecture: { en: 'Architecture', ka: 'არქიტექტურა', ru: 'Архитектура' },
+  services: { en: 'Services', ka: 'სერვისები', ru: 'Услуги' },
+  craftsmen: { en: 'Craftsmen', ka: 'ხელოსნები', ru: 'Мастера' },
+  homecare: { en: 'Home Care', ka: 'სახლის მოვლა', ru: 'Уход за домом' },
+  'home-care': { en: 'Home Care', ka: 'მოვლა', ru: 'Уход' },
 
   // Subcategories - Renovation
-  plumbing: { en: 'Plumbing', ka: 'სანტექნიკა' },
-  electrical: { en: 'Electrical', ka: 'ელექტრობა' },
-  electricity: { en: 'Electricity', ka: 'ელექტროსანტექნიკა' },
-  painting: { en: 'Painting', ka: 'შეღებვა' },
-  mural: { en: 'Mural', ka: 'მალიარი' },
-  flooring: { en: 'Flooring', ka: 'იატაკი' },
-  roofing: { en: 'Roofing', ka: 'სახურავი' },
-  tile: { en: 'Tile', ka: 'ჭერი' },
-  tiling: { en: 'Tiling', ka: 'მოპირკეთება' },
-  plastering: { en: 'Plastering', ka: 'მლესავი' },
-  hvac: { en: 'HVAC', ka: 'კონდიცირება/გათბობა' },
-  carpentry: { en: 'Carpentry', ka: 'ხის სამუშაოები' },
-  drywall: { en: 'Drywall', ka: 'თაბაშირმუყაო' },
-  insulation: { en: 'Insulation', ka: 'იზოლაცია' },
-  demolition: { en: 'Demolition', ka: 'დემონტაჟი' },
-  masonry: { en: 'Masonry', ka: 'ქვის სამუშაო' },
-  construction: { en: 'Construction', ka: 'მშენებლობა' },
+  plumbing: { en: 'Plumbing', ka: 'სანტექნიკა', ru: 'Сантехника' },
+  electrical: { en: 'Electrical', ka: 'ელექტრობა', ru: 'Электрика' },
+  electricity: { en: 'Electricity', ka: 'ელექტროსანტექნიკა', ru: 'Электричество' },
+  painting: { en: 'Painting', ka: 'შეღებვა', ru: 'Покраска' },
+  mural: { en: 'Mural', ka: 'მალიარი', ru: 'Роспись' },
+  flooring: { en: 'Flooring', ka: 'იატაკი', ru: 'Полы' },
+  roofing: { en: 'Roofing', ka: 'სახურავი', ru: 'Кровля' },
+  tile: { en: 'Tile', ka: 'ჭერი', ru: 'Плитка' },
+  tiling: { en: 'Tiling', ka: 'მოპირკეთება', ru: 'Укладка плитки' },
+  plastering: { en: 'Plastering', ka: 'მლესავი', ru: 'Штукатурка' },
+  hvac: { en: 'HVAC', ka: 'კონდიცირება/გათბობა', ru: 'Кондиционирование/отопление' },
+  carpentry: { en: 'Carpentry', ka: 'ხის სამუშაოები', ru: 'Столярные работы' },
+  drywall: { en: 'Drywall', ka: 'თაბაშირმუყაო', ru: 'Гипсокартон' },
+  insulation: { en: 'Insulation', ka: 'იზოლაცია', ru: 'Изоляция' },
+  demolition: { en: 'Demolition', ka: 'დემონტაჟი', ru: 'Демонтаж' },
+  masonry: { en: 'Masonry', ka: 'ქვის სამუშაო', ru: 'Каменные работы' },
+  construction: { en: 'Construction', ka: 'მშენებლობა', ru: 'Строительство' },
 
   // Subcategories - Design
-  interior: { en: 'Interior Design', ka: 'ინტერიერი' },
-  'interior-design': { en: 'Interior Design', ka: 'ინტერიერის დიზაინი' },
-  exterior: { en: 'Exterior Design', ka: 'ექსტერიერი' },
-  '3d-design': { en: '3D Design', ka: '3D დიზაინი' },
-  designer: { en: 'Designer', ka: 'დიზაინერი' },
+  interior: { en: 'Interior Design', ka: 'ინტერიერი', ru: 'Дизайн интерьера' },
+  'interior-design': { en: 'Interior Design', ka: 'ინტერიერის დიზაინი', ru: 'Дизайн интерьера' },
+  exterior: { en: 'Exterior Design', ka: 'ექსტერიერი', ru: 'Экстерьер' },
+  '3d-design': { en: '3D Design', ka: '3D დიზაინი', ru: '3D дизайн' },
+  designer: { en: 'Designer', ka: 'დიზაინერი', ru: 'Дизайнер' },
 
   // Subcategories - Architecture
-  residential: { en: 'Residential', ka: 'საცხოვრებელი' },
-  'residential-architecture': { en: 'Residential Architecture', ka: 'საცხოვრებელი' },
-  commercial: { en: 'Commercial', ka: 'კომერციული' },
-  'commercial-architecture': { en: 'Commercial Architecture', ka: 'კომერციული' },
-  'industrial-architecture': { en: 'Industrial Architecture', ka: 'სამრეწველო' },
-  reconstruction: { en: 'Reconstruction', ka: 'რეკონსტრუქცია' },
-  landscape: { en: 'Landscape', ka: 'ლანდშაფტი' },
+  residential: { en: 'Residential', ka: 'საცხოვრებელი', ru: 'Жилой' },
+  'residential-architecture': { en: 'Residential Architecture', ka: 'საცხოვრებელი', ru: 'Жилая архитектура' },
+  commercial: { en: 'Commercial', ka: 'კომერციული', ru: 'Коммерческий' },
+  'commercial-architecture': { en: 'Commercial Architecture', ka: 'კომერციული', ru: 'Коммерческая архитектура' },
+  'industrial-architecture': { en: 'Industrial Architecture', ka: 'სამრეწველო', ru: 'Промышленная архитектура' },
+  reconstruction: { en: 'Reconstruction', ka: 'რეკონსტრუქცია', ru: 'Реконструкция' },
+  landscape: { en: 'Landscape', ka: 'ლანდშაფტი', ru: 'Ландшафт' },
 
   // Subcategories - Services
-  cleaning: { en: 'Cleaning', ka: 'დალაგება' },
-  'deep-cleaning': { en: 'Deep Cleaning', ka: 'გენერალური დალაგება' },
-  'deep-clean': { en: 'Deep Clean', ka: 'ღრმა წმენდა' },
-  moving: { en: 'Moving', ka: 'გადაზიდვა' },
-  gardening: { en: 'Gardening', ka: 'მებაღეობა' },
-  landscaping: { en: 'Landscaping', ka: 'ლანდშაფტი' },
-  'appliance-repair': { en: 'Appliance Repair', ka: 'ტექნიკის შეკეთება' },
-  appliances: { en: 'Appliances', ka: 'ტექნიკა' },
-  'pest-control': { en: 'Pest Control', ka: 'დეზინსექცია' },
-  'window-cleaning': { en: 'Window Cleaning', ka: 'ფანჯრების წმენდა' },
-  security: { en: 'Security', ka: 'უსაფრთხოება' },
-  solar: { en: 'Solar', ka: 'მზის პანელები' },
-  pool: { en: 'Pool', ka: 'აუზი' },
-  'smart-home': { en: 'Smart Home', ka: 'ჭკვიანი სახლი' },
-  lighting: { en: 'Lighting', ka: 'განათება' },
-  windows: { en: 'Windows', ka: 'ფანჯრები' },
-  doors: { en: 'Doors', ka: 'კარები' },
+  cleaning: { en: 'Cleaning', ka: 'დალაგება', ru: 'Уборка' },
+  'deep-cleaning': { en: 'Deep Cleaning', ka: 'გენერალური დალაგება', ru: 'Генеральная уборка' },
+  'deep-clean': { en: 'Deep Clean', ka: 'ღრმა წმენდა', ru: 'Глубокая чистка' },
+  moving: { en: 'Moving', ka: 'გადაზიდვა', ru: 'Переезд' },
+  gardening: { en: 'Gardening', ka: 'მებაღეობა', ru: 'Садоводство' },
+  landscaping: { en: 'Landscaping', ka: 'ლანდშაფტი', ru: 'Ландшафтный дизайн' },
+  'appliance-repair': { en: 'Appliance Repair', ka: 'ტექნიკის შეკეთება', ru: 'Ремонт техники' },
+  appliances: { en: 'Appliances', ka: 'ტექნიკა', ru: 'Техника' },
+  'pest-control': { en: 'Pest Control', ka: 'დეზინსექცია', ru: 'Дезинсекция' },
+  'window-cleaning': { en: 'Window Cleaning', ka: 'ფანჯრების წმენდა', ru: 'Мытьё окон' },
+  security: { en: 'Security', ka: 'უსაფრთხოება', ru: 'Безопасность' },
+  solar: { en: 'Solar', ka: 'მზის პანელები', ru: 'Солнечные панели' },
+  pool: { en: 'Pool', ka: 'აუზი', ru: 'Бассейн' },
+  'smart-home': { en: 'Smart Home', ka: 'ჭკვიანი სახლი', ru: 'Умный дом' },
+  lighting: { en: 'Lighting', ka: 'განათება', ru: 'Освещение' },
+  windows: { en: 'Windows', ka: 'ფანჯრები', ru: 'Окна' },
+  doors: { en: 'Doors', ka: 'კარები', ru: 'Двери' },
 
   // Craftsmen subcategories
-  handyman: { en: 'Handyman', ka: 'ხელოსანი' },
-  welder: { en: 'Welder', ka: 'შემდუღებელი' },
-  locksmith: { en: 'Locksmith', ka: 'საკეტების ოსტატი' },
-  glasswork: { en: 'Glasswork', ka: 'მინის სამუშაოები' },
-  upholstery: { en: 'Upholstery', ka: 'რბილი ავეჯის აღდგენა' },
-  'furniture-repair': { en: 'Furniture Repair', ka: 'ავეჯის შეკეთება' },
-  'furniture-assembly': { en: 'Furniture Assembly', ka: 'ავეჯის აწყობა' },
+  handyman: { en: 'Handyman', ka: 'ხელოსანი', ru: 'Мастер на все руки' },
+  welder: { en: 'Welder', ka: 'შემდუღებელი', ru: 'Сварщик' },
+  locksmith: { en: 'Locksmith', ka: 'საკეტების ოსტატი', ru: 'Слесарь' },
+  glasswork: { en: 'Glasswork', ka: 'მინის სამუშაოები', ru: 'Стекольные работы' },
+  upholstery: { en: 'Upholstery', ka: 'რბილი ავეჯის აღდგენა', ru: 'Обивка мебели' },
+  'furniture-repair': { en: 'Furniture Repair', ka: 'ავეჯის შეკეთება', ru: 'Ремонт мебели' },
+  'furniture-assembly': { en: 'Furniture Assembly', ka: 'ავეჯის აწყობა', ru: 'Сборка мебели' },
 
   // Additional renovation subcategories
-  concrete: { en: 'Concrete', ka: 'ბეტონი' },
-  fencing: { en: 'Fencing', ka: 'ღობე' },
-  decking: { en: 'Decking', ka: 'ტერასა' },
-  waterproofing: { en: 'Waterproofing', ka: 'ჰიდროიზოლაცია' },
+  concrete: { en: 'Concrete', ka: 'ბეტონი', ru: 'Бетон' },
+  fencing: { en: 'Fencing', ka: 'ღობე', ru: 'Забор' },
+  decking: { en: 'Decking', ka: 'ტერასა', ru: 'Терраса' },
+  waterproofing: { en: 'Waterproofing', ka: 'ჰიდროიზოლაცია', ru: 'Гидроизоляция' },
 
   // Kitchen & Bathroom
-  'kitchen-design': { en: 'Kitchen Design', ka: 'სამზარეულოს დიზაინი' },
-  'bathroom-design': { en: 'Bathroom Design', ka: 'აბაზანის დიზაინი' },
-  'kitchen-renovation': { en: 'Kitchen Renovation', ka: 'სამზარეულოს რემონტი' },
-  'bathroom-renovation': { en: 'Bathroom Renovation', ka: 'აბაზანის რემონტი' },
+  'kitchen-design': { en: 'Kitchen Design', ka: 'სამზარეულოს დიზაინი', ru: 'Дизайн кухни' },
+  'bathroom-design': { en: 'Bathroom Design', ka: 'აბაზანის დიზაინი', ru: 'Дизайн ванной' },
+  'kitchen-renovation': { en: 'Kitchen Renovation', ka: 'სამზარეულოს რემონტი', ru: 'Ремонт кухни' },
+  'bathroom-renovation': { en: 'Bathroom Renovation', ka: 'აბაზანის რემონტი', ru: 'Ремонт ванной' },
 
   // Other
-  furniture: { en: 'Furniture', ka: 'ავეჯი' },
-  other: { en: 'Other', ka: 'სხვა' },
+  furniture: { en: 'Furniture', ka: 'ავეჯი', ru: 'Мебель' },
+  other: { en: 'Other', ka: 'სხვა', ru: 'Другое' },
 };
 
 export function useCategoryLabels() {
@@ -100,7 +100,7 @@ export function useCategoryLabels() {
       if (!category) return '';
       const label = CATEGORY_LABELS[category];
       if (label) {
-        return label[locale as 'en' | 'ka'] || label.en;
+        return label[locale as 'en' | 'ka' | 'ru'] || label.en;
       }
       // Fallback: format the category key nicely
       return category
@@ -118,7 +118,7 @@ export function getCategoryLabelStatic(category: string | undefined, locale: str
   if (!category) return '';
   const label = CATEGORY_LABELS[category];
   if (label) {
-    return label[locale as 'en' | 'ka'] || label.en;
+    return label[locale as 'en' | 'ka' | 'ru'] || label.en;
   }
   return category
     .replace(/-/g, ' ')

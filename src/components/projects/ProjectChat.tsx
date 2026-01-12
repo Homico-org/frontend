@@ -22,6 +22,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 interface ProjectMessage {
   _id?: string;
   senderId: string | { _id: string; name: string; avatar?: string };
@@ -51,6 +52,8 @@ function getSenderId(senderId: string | { _id: string } | undefined | null): str
 
 export default function ProjectChat({ jobId, locale, isClient = false }: ProjectChatProps) {
   const { user } = useAuth();
+
+  const { t } = useLanguage();
   const toast = useToast();
   const [isExpanded, setIsExpanded] = useState(false);
   const [newMessage, setNewMessage] = useState('');
@@ -162,8 +165,8 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
       setMessages(prev => prev.filter(m => m._id !== tempId));
       setNewMessage(messageContent);
       toast.error(
-        locale === 'ka' ? 'შეცდომა' : 'Error',
-        locale === 'ka' ? 'შეტყობინება ვერ გაიგზავნა' : 'Failed to send message'
+        t('common.error'),
+        t('projects.failedToSendMessage')
       );
     } finally {
       setIsSubmitting(false);
@@ -233,15 +236,11 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
     const extension = '.' + file.name.split('.').pop()?.toLowerCase();
 
     if (!ALLOWED_FILE_TYPES.includes(file.type) && !ALLOWED_EXTENSIONS.includes(extension)) {
-      return locale === 'ka'
-        ? 'მხარდაჭერილი ფორმატები: JPG, PNG, GIF, WebP, MP4, MOV, PDF, DOC, DOCX, XLS, XLSX, TXT'
-        : 'Supported formats: JPG, PNG, GIF, WebP, MP4, MOV, PDF, DOC, DOCX, XLS, XLSX, TXT';
+      return t('projects.supportedFormatsJpgPngGif');
     }
 
     if (file.size > maxSize) {
-      return locale === 'ka'
-        ? 'ფაილის ზომა არ უნდა აღემატებოდეს 50MB-ს'
-        : 'File size must not exceed 50MB';
+      return t('projects.fileSizeMustNotExceed');
     }
 
     return null;
@@ -255,7 +254,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
     const validationError = validateFile(file);
     if (validationError) {
       toast.error(
-        locale === 'ka' ? 'არასწორი ფაილი' : 'Invalid file',
+        t('projects.invalidFile'),
         validationError
       );
       e.target.value = '';
@@ -274,7 +273,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
     } catch (err) {
       toast.error(
         locale === 'ka' ? 'შეცდომა' : 'Error',
-        locale === 'ka' ? 'ფაილი ვერ აიტვირთა' : 'Failed to upload file'
+        t('projects.failedToUploadFile')
       );
     } finally {
       setIsUploading(false);
@@ -371,14 +370,14 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
         <div className="flex items-center justify-between">
           <h3 className="font-display text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
             <MessageSquare className="w-5 h-5" style={{ color: ACCENT }} />
-            {locale === 'ka' ? 'პროექტის ჩატი' : 'Project Chat'}
+            {t('projects.projectChat')}
             <CountBadge count={unreadCount} />
           </h3>
           <Button
             variant="ghost"
             size="icon-sm"
             onClick={handleSearchToggle}
-            title={locale === 'ka' ? 'ძებნა' : 'Search'}
+            title={t('common.search')}
           >
             <Search className="w-4 h-4" />
           </Button>
@@ -407,13 +406,13 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                     handleSearchToggle();
                   }
                 }}
-                placeholder={locale === 'ka' ? 'ძებნა შეტყობინებებში...' : 'Search messages...'}
+                placeholder={t('projects.searchMessages')}
                 className="w-full pl-9 pr-3 py-2 text-sm bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]/50"
               />
             </div>
             {searchQuery && (
               <span className="text-xs text-neutral-500 whitespace-nowrap">
-                {searchResultCount > 0 ? `${currentSearchIndex + 1}/${searchResultCount}` : locale === 'ka' ? '0 შედეგი' : '0 results'}
+                {searchResultCount > 0 ? `${currentSearchIndex + 1}/${searchResultCount}` : t('projects.0Results')}
               </span>
             )}
             {searchQuery && searchResultCount > 0 && (
@@ -455,14 +454,14 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
             ) : messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-neutral-400">
                 <MessageSquare className="w-10 h-10 mb-2 opacity-50" />
-                <p className="text-sm">{locale === 'ka' ? 'ჯერ არ არის შეტყობინება' : 'No messages yet'}</p>
-                <p className="text-xs mt-1">{locale === 'ka' ? 'დაიწყე საუბარი' : 'Start the conversation'}</p>
+                <p className="text-sm">{t('projects.noMessagesYet')}</p>
+                <p className="text-xs mt-1">{t('projects.startTheConversation')}</p>
               </div>
             ) : searchQuery && filteredMessages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-neutral-400">
                 <Search className="w-10 h-10 mb-2 opacity-50" />
-                <p className="text-sm">{locale === 'ka' ? 'შედეგი ვერ მოიძებნა' : 'No results found'}</p>
-                <p className="text-xs mt-1">{locale === 'ka' ? 'სცადე სხვა საძიებო სიტყვა' : 'Try a different search term'}</p>
+                <p className="text-sm">{t('projects.noResultsFound')}</p>
+                <p className="text-xs mt-1">{t('projects.tryADifferentSearchTerm')}</p>
               </div>
             ) : (
               <>
@@ -630,7 +629,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                     handleSendMessage();
                   }
                 }}
-                placeholder={locale === 'ka' ? 'დაწერე შეტყობინება...' : 'Type a message...'}
+                placeholder={t('projects.typeAMessage')}
                 className="flex-1 px-4 py-2 text-sm bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]/50 focus:ring-2 focus:ring-[#C4735B]/10 transition-all"
               />
 

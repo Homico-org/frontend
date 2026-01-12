@@ -110,7 +110,7 @@ const PREMIUM_TIERS: Record<string, {
 };
 
 function CheckoutContent() {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const { isAuthenticated } = useAuth();
   const { trackEvent } = useAnalytics();
   const router = useRouter();
@@ -264,7 +264,7 @@ function CheckoutContent() {
   if (!tier) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>{locale === 'ka' ? 'გეგმა ვერ მოიძებნა' : 'Plan not found'}</p>
+        <p>{t('premium.planNotFound')}</p>
       </div>
     );
   }
@@ -338,15 +338,15 @@ function CheckoutContent() {
             className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 transition-colors mb-8 group"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            {locale === 'ka' ? 'უკან გეგმებზე' : 'Back to plans'}
+            {t('premium.backToPlans')}
           </Link>
 
           {/* Checkout Steps */}
           <div className="flex items-center justify-center gap-4 mb-10">
             {[
-              { num: 1, label: locale === 'ka' ? 'გეგმა' : 'Plan', done: true },
-              { num: 2, label: locale === 'ka' ? 'გადახდა' : 'Payment', done: false, active: true },
-              { num: 3, label: locale === 'ka' ? 'დასრულება' : 'Complete', done: false },
+              { num: 1, label: t('premium.plan'), done: true },
+              { num: 2, label: t('premium.payment'), done: false, active: true },
+              { num: 3, label: t('premium.complete'), done: false },
             ].map((step, i) => (
               <div key={i} className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
@@ -389,7 +389,7 @@ function CheckoutContent() {
               className="text-3xl sm:text-4xl font-bold text-neutral-900 mb-3"
               style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
             >
-              {locale === 'ka' ? 'დაასრულე შენი შეკვეთა' : 'Complete Your Order'}
+              {t('premium.completeYourOrder')}
             </h1>
             <p className="text-neutral-500">
               {locale === 'ka' ? 'მზად ხარ ბიზნესის გასაზრდელად' : "You're one step away from growing your business"}
@@ -424,10 +424,10 @@ function CheckoutContent() {
                       </div>
                       <div>
                         <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
-                          {locale === 'ka' ? 'გადახდის დეტალები' : 'Payment Details'}
+                          {t('premium.paymentDetails')}
                         </h2>
                         <p className="text-sm text-neutral-500">
-                          {locale === 'ka' ? 'უსაფრთხო გადახდა SSL-ით' : 'Secure payment with SSL encryption'}
+                          {t('premium.securePaymentWithSslEncryption')}
                         </p>
                       </div>
                       <div className="ml-auto flex items-center gap-2">
@@ -447,7 +447,7 @@ function CheckoutContent() {
                       ) : isAuthenticated && savedCards.length > 0 && !useNewCard ? (
                         <div className="space-y-5">
                           <label className="block text-sm font-semibold text-neutral-900 dark:text-white">
-                            {locale === 'ka' ? 'შენახული ბარათები' : 'Saved Cards'}
+                            {t('premium.savedCards')}
                           </label>
 
                           {/* Saved Card Dropdown */}
@@ -481,13 +481,13 @@ function CheckoutContent() {
                                       •••• •••• •••• {savedCards.find(c => c.id === selectedSavedCard)?.cardLast4}
                                     </span>
                                     <p className="text-sm text-neutral-500 mt-0.5">
-                                      {locale === 'ka' ? 'ვადა' : 'Expires'}: {savedCards.find(c => c.id === selectedSavedCard)?.cardExpiry}
+                                      {t('premium.expires')}: {savedCards.find(c => c.id === selectedSavedCard)?.cardExpiry}
                                     </p>
                                   </div>
                                 </div>
                               ) : (
                                 <span className="text-neutral-400">
-                                  {locale === 'ka' ? 'აირჩიეთ ბარათი' : 'Select a card'}
+                                  {t('premium.selectACard')}
                                 </span>
                               )}
                               <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform duration-300 ${showCardDropdown ? 'rotate-180' : ''}`} />
@@ -535,7 +535,7 @@ function CheckoutContent() {
                                         className="text-[10px] font-bold px-2.5 py-1 rounded-full"
                                         style={{ backgroundColor: `${tier.accentColor}15`, color: tier.accentColor }}
                                       >
-                                        {locale === 'ka' ? 'მთავარი' : 'Default'}
+                                        {t('common.default')}
                                       </span>
                                     )}
                                     {selectedSavedCard === card.id && (
@@ -555,7 +555,7 @@ function CheckoutContent() {
                           {/* CVC for saved card */}
                           <div>
                             <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-3">
-                              {locale === 'ka' ? 'უსაფრთხოების კოდი' : 'Security Code'} (CVC)
+                              {t('premium.securityCode')} (CVC)
                             </label>
                             <div className="relative max-w-[160px]">
                               <input
@@ -585,7 +585,7 @@ function CheckoutContent() {
                             style={{ color: tier.accentColor }}
                           >
                             <CreditCard className="w-4 h-4" />
-                            {locale === 'ka' ? 'ახალი ბარათით გადახდა' : 'Use a different card'}
+                            {t('premium.useADifferentCard')}
                             <ArrowRight className="w-4 h-4" />
                           </button>
                         </div>
@@ -600,14 +600,14 @@ function CheckoutContent() {
                               style={{ color: tier.accentColor }}
                             >
                               <ArrowLeft className="w-4 h-4" />
-                              {locale === 'ka' ? 'შენახულ ბარათებზე დაბრუნება' : 'Back to saved cards'}
+                              {t('premium.backToSavedCards')}
                             </button>
                           )}
 
                           {/* Card Number */}
                           <div>
                             <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-3">
-                              {locale === 'ka' ? 'ბარათის ნომერი' : 'Card Number'}
+                              {t('premium.cardNumber')}
                             </label>
                             <div className="relative">
                               <div className="absolute left-0 top-0 bottom-0 w-16 flex items-center justify-center pointer-events-none">
@@ -644,7 +644,7 @@ function CheckoutContent() {
                           <div className="grid grid-cols-2 gap-4">
                             <div>
                               <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-3">
-                                {locale === 'ka' ? 'ვადა' : 'Expiry Date'}
+                                {t('premium.expiryDate')}
                               </label>
                               <input
                                 type="text"
@@ -690,13 +690,13 @@ function CheckoutContent() {
                           {/* Card Name */}
                           <div>
                             <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-3">
-                              {locale === 'ka' ? 'სახელი ბარათზე' : 'Cardholder Name'}
+                              {t('premium.cardholderName')}
                             </label>
                             <input
                               type="text"
                               value={formData.cardName}
                               onChange={(e) => setFormData(prev => ({ ...prev, cardName: e.target.value }))}
-                              placeholder={locale === 'ka' ? 'სახელი გვარი' : 'John Doe'}
+                              placeholder={t('premium.johnDoe')}
                               className="w-full px-5 py-4 rounded-xl border-2 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none transition-all duration-300"
                               style={{
                                 borderColor: focusedField === 'cardName' ? tier.accentColor : 'rgb(229 231 235)',
@@ -736,7 +736,7 @@ function CheckoutContent() {
                               <div className="flex items-center gap-2">
                                 <Shield className="w-4 h-4" style={{ color: tier.accentColor }} />
                                 <span className="text-sm text-neutral-700 dark:text-neutral-300">
-                                  {locale === 'ka' ? 'ბარათის შენახვა მომავალი გადახდებისთვის' : 'Save card for future purchases'}
+                                  {t('premium.saveCardForFuturePurchases')}
                                 </span>
                               </div>
                             </label>
@@ -766,7 +766,7 @@ function CheckoutContent() {
                           {isProcessing ? (
                             <>
                               <LoadingSpinner size="md" color="white" />
-                              <span>{locale === 'ka' ? 'მუშავდება...' : 'Processing...'}</span>
+                              <span>{t('common.processing')}</span>
                             </>
                           ) : (
                             <>
@@ -782,9 +782,7 @@ function CheckoutContent() {
 
                       {/* Terms */}
                       <p className="text-xs text-center text-neutral-400 leading-relaxed">
-                        {locale === 'ka'
-                          ? 'გადახდით თქვენ ეთანხმებით ჩვენს მომსახურების პირობებს და კონფიდენციალურობის პოლიტიკას'
-                          : 'By completing payment, you agree to our Terms of Service and Privacy Policy'}
+                        {t('premium.byCompletingPaymentYouAgree')}
                       </p>
                     </form>
                   </div>
@@ -855,7 +853,7 @@ function CheckoutContent() {
                             {tier.currency}{price}
                           </span>
                           <span className="text-white/70 text-lg">
-                            /{period === 'monthly' ? (locale === 'ka' ? 'თვე' : 'mo') : (locale === 'ka' ? 'წელი' : 'yr')}
+                            /{period === 'monthly' ? (t('premium.mo')) : (t('premium.yr'))}
                           </span>
                         </div>
 
@@ -871,7 +869,7 @@ function CheckoutContent() {
                     {/* Features List */}
                     <div className="p-6">
                       <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-4">
-                        {locale === 'ka' ? 'მოიცავს' : 'Includes'}
+                        {t('premium.includes')}
                       </h4>
                       <ul className="space-y-3">
                         {tier.features.map((feature, i) => (
@@ -936,14 +934,14 @@ function CheckoutContent() {
                   </div>
                   <div className="text-sm">
                     <span className="font-bold text-neutral-900 dark:text-white">500+</span>
-                    <span className="text-neutral-500"> {locale === 'ka' ? 'პროფესიონალი' : 'professionals'}</span>
+                    <span className="text-neutral-500"> {t('premium.professionals')}</span>
                   </div>
                 </div>
 
                 {/* Support */}
                 <div className="text-center">
                   <p className="text-xs text-neutral-400">
-                    {locale === 'ka' ? 'გჭირდებათ დახმარება?' : 'Need help?'}{' '}
+                    {t('premium.needHelp')}{' '}
                     <a href="mailto:support@homico.ge" className="font-medium hover:underline" style={{ color: tier.accentColor }}>
                       support@homico.ge
                     </a>

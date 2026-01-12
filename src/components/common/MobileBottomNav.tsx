@@ -77,7 +77,7 @@ interface MobileBottomNavProps {
 
 export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
   const pathname = usePathname();
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const { user, isLoading } = useAuth();
 
   const isPro = user?.role === 'pro' || user?.role === 'admin';
@@ -186,7 +186,7 @@ export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
               className="text-[10px] font-medium mt-0.5"
               style={{ color: ACCENT_COLOR }}
             >
-              {locale === 'ka' ? 'დამატება' : 'Post'}
+              {t('common.post')}
             </span>
           </Link>
 

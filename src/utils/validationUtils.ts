@@ -2,7 +2,7 @@
  * Validation utilities for forms and inputs
  */
 
-export type Locale = 'en' | 'ka';
+export type Locale = 'en' | 'ka' | 'ru';
 
 // ============================================================================
 // Password Validation
@@ -61,6 +61,7 @@ export function getPasswordStrength(
   const labels = {
     en: ['', 'Weak', 'Weak', 'Medium', 'Good', 'Strong'],
     ka: ['', 'სუსტი', 'სუსტი', 'საშუალო', 'კარგი', 'ძლიერი'],
+    ru: ['', 'Слабый', 'Слабый', 'Средний', 'Хороший', 'Сильный'],
   };
 
   const colors = [
@@ -108,36 +109,43 @@ export function validatePassword(
 
   const errors: string[] = [];
 
+  const msgs = {
+    minLength: {
+      en: `Password must be at least ${minLength} characters`,
+      ka: `პაროლი უნდა იყოს მინიმუმ ${minLength} სიმბოლო`,
+      ru: `Пароль должен содержать минимум ${minLength} символов`,
+    },
+    uppercase: {
+      en: 'Password must contain an uppercase letter',
+      ka: 'პაროლი უნდა შეიცავდეს დიდ ასოს',
+      ru: 'Пароль должен содержать заглавную букву',
+    },
+    number: {
+      en: 'Password must contain a number',
+      ka: 'პაროლი უნდა შეიცავდეს ციფრს',
+      ru: 'Пароль должен содержать цифру',
+    },
+    special: {
+      en: 'Password must contain a special character',
+      ka: 'პაროლი უნდა შეიცავდეს სპეციალურ სიმბოლოს',
+      ru: 'Пароль должен содержать специальный символ',
+    },
+  };
+
   if (password.length < minLength) {
-    errors.push(
-      locale === 'ka'
-        ? `პაროლი უნდა იყოს მინიმუმ ${minLength} სიმბოლო`
-        : `Password must be at least ${minLength} characters`
-    );
+    errors.push(msgs.minLength[locale]);
   }
 
   if (requireUppercase && !/[A-Z]/.test(password)) {
-    errors.push(
-      locale === 'ka'
-        ? 'პაროლი უნდა შეიცავდეს დიდ ასოს'
-        : 'Password must contain an uppercase letter'
-    );
+    errors.push(msgs.uppercase[locale]);
   }
 
   if (requireNumber && !/[0-9]/.test(password)) {
-    errors.push(
-      locale === 'ka'
-        ? 'პაროლი უნდა შეიცავდეს ციფრს'
-        : 'Password must contain a number'
-    );
+    errors.push(msgs.number[locale]);
   }
 
   if (requireSpecial && !/[^A-Za-z0-9]/.test(password)) {
-    errors.push(
-      locale === 'ka'
-        ? 'პაროლი უნდა შეიცავდეს სპეციალურ სიმბოლოს'
-        : 'Password must contain a special character'
-    );
+    errors.push(msgs.special[locale]);
   }
 
   return {
@@ -155,9 +163,14 @@ export function passwordsMatch(
   locale: Locale = 'en'
 ): { isValid: boolean; error?: string } {
   if (password !== confirmPassword) {
+    const msgs = {
+      en: 'Passwords do not match',
+      ka: 'პაროლები არ ემთხვევა',
+      ru: 'Пароли не совпадают',
+    };
     return {
       isValid: false,
-      error: locale === 'ka' ? 'პაროლები არ ემთხვევა' : 'Passwords do not match',
+      error: msgs[locale],
     };
   }
   return { isValid: true };
@@ -176,18 +189,17 @@ export function validateEmail(
   email: string,
   locale: Locale = 'en'
 ): { isValid: boolean; error?: string } {
+  const msgs = {
+    required: { en: 'Email is required', ka: 'ელ-ფოსტა აუცილებელია', ru: 'Email обязателен' },
+    invalid: { en: 'Invalid email format', ka: 'არასწორი ელ-ფოსტის ფორმატი', ru: 'Неверный формат email' },
+  };
+
   if (!email.trim()) {
-    return {
-      isValid: false,
-      error: locale === 'ka' ? 'ელ-ფოსტა აუცილებელია' : 'Email is required',
-    };
+    return { isValid: false, error: msgs.required[locale] };
   }
 
   if (!EMAIL_REGEX.test(email)) {
-    return {
-      isValid: false,
-      error: locale === 'ka' ? 'არასწორი ელ-ფოსტის ფორმატი' : 'Invalid email format',
-    };
+    return { isValid: false, error: msgs.invalid[locale] };
   }
 
   return { isValid: true };
@@ -211,13 +223,12 @@ export function validateGeorgianPhone(
   const isValid = /^5\d{8}$/.test(cleaned);
 
   if (!isValid) {
-    return {
-      isValid: false,
-      error:
-        locale === 'ka'
-          ? 'შეიყვანეთ სწორი ტელეფონის ნომერი'
-          : 'Please enter a valid phone number',
+    const msgs = {
+      en: 'Please enter a valid phone number',
+      ka: 'შეიყვანეთ სწორი ტელეფონის ნომერი',
+      ru: 'Введите корректный номер телефона',
     };
+    return { isValid: false, error: msgs[locale] };
   }
 
   return { isValid: true };
@@ -236,13 +247,12 @@ export function validateRequired(
   locale: Locale = 'en'
 ): { isValid: boolean; error?: string } {
   if (!value?.trim()) {
-    return {
-      isValid: false,
-      error:
-        locale === 'ka'
-          ? `${fieldName} აუცილებელია`
-          : `${fieldName} is required`,
+    const msgs = {
+      en: `${fieldName} is required`,
+      ka: `${fieldName} აუცილებელია`,
+      ru: `${fieldName} обязательно`,
     };
+    return { isValid: false, error: msgs[locale] };
   }
   return { isValid: true };
 }
@@ -257,13 +267,12 @@ export function validateMinLength(
   locale: Locale = 'en'
 ): { isValid: boolean; error?: string } {
   if (value.length < minLength) {
-    return {
-      isValid: false,
-      error:
-        locale === 'ka'
-          ? `${fieldName} უნდა იყოს მინიმუმ ${minLength} სიმბოლო`
-          : `${fieldName} must be at least ${minLength} characters`,
+    const msgs = {
+      en: `${fieldName} must be at least ${minLength} characters`,
+      ka: `${fieldName} უნდა იყოს მინიმუმ ${minLength} სიმბოლო`,
+      ru: `${fieldName} должно быть минимум ${minLength} символов`,
     };
+    return { isValid: false, error: msgs[locale] };
   }
   return { isValid: true };
 }
@@ -278,13 +287,12 @@ export function validateMaxLength(
   locale: Locale = 'en'
 ): { isValid: boolean; error?: string } {
   if (value.length > maxLength) {
-    return {
-      isValid: false,
-      error:
-        locale === 'ka'
-          ? `${fieldName} არ უნდა აღემატებოდეს ${maxLength} სიმბოლოს`
-          : `${fieldName} must not exceed ${maxLength} characters`,
+    const msgs = {
+      en: `${fieldName} must not exceed ${maxLength} characters`,
+      ka: `${fieldName} არ უნდა აღემატებოდეს ${maxLength} სიმბოლოს`,
+      ru: `${fieldName} не должно превышать ${maxLength} символов`,
     };
+    return { isValid: false, error: msgs[locale] };
   }
   return { isValid: true };
 }
@@ -304,13 +312,12 @@ export function validateNumberRange(
   locale: Locale = 'en'
 ): { isValid: boolean; error?: string } {
   if (value < min || value > max) {
-    return {
-      isValid: false,
-      error:
-        locale === 'ka'
-          ? `${fieldName} უნდა იყოს ${min}-${max} შორის`
-          : `${fieldName} must be between ${min} and ${max}`,
+    const msgs = {
+      en: `${fieldName} must be between ${min} and ${max}`,
+      ka: `${fieldName} უნდა იყოს ${min}-${max} შორის`,
+      ru: `${fieldName} должно быть между ${min} и ${max}`,
     };
+    return { isValid: false, error: msgs[locale] };
   }
   return { isValid: true };
 }
@@ -324,13 +331,12 @@ export function validatePositive(
   locale: Locale = 'en'
 ): { isValid: boolean; error?: string } {
   if (value <= 0) {
-    return {
-      isValid: false,
-      error:
-        locale === 'ka'
-          ? `${fieldName} უნდა იყოს დადებითი რიცხვი`
-          : `${fieldName} must be a positive number`,
+    const msgs = {
+      en: `${fieldName} must be a positive number`,
+      ka: `${fieldName} უნდა იყოს დადებითი რიცხვი`,
+      ru: `${fieldName} должно быть положительным числом`,
     };
+    return { isValid: false, error: msgs[locale] };
   }
   return { isValid: true };
 }

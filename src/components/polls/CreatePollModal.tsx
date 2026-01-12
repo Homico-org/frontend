@@ -10,6 +10,7 @@ import { storage } from '@/services/storage';
 import { Image, Plus, Trash2, Type, Upload, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 interface PollOptionInput {
   id: string;
   text: string;
@@ -32,6 +33,8 @@ export default function CreatePollModal({
   locale,
 }: CreatePollModalProps) {
   const [title, setTitle] = useState('');
+
+  const { t } = useLanguage();
   const [description, setDescription] = useState('');
   const [optionType, setOptionType] = useState<'text' | 'image'>('image');
   const [options, setOptions] = useState<PollOptionInput[]>([
@@ -82,7 +85,7 @@ export default function CreatePollModal({
       newOptions[index].imagePreview = URL.createObjectURL(file);
       setOptions(newOptions);
     } catch (err) {
-      setError(locale === 'ka' ? 'სურათის ატვირთვა ვერ მოხერხდა' : 'Failed to upload image');
+      setError(t('polls.failedToUploadImage'));
     } finally {
       setUploadingIndex(null);
     }
@@ -97,9 +100,7 @@ export default function CreatePollModal({
     if (file) {
       // Check file type explicitly (reject SVG, PDF, etc.)
       if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-        setError(locale === 'ka'
-          ? 'მხოლოდ JPG, PNG, WebP და GIF ფორმატებია დაშვებული'
-          : 'Only JPG, PNG, WebP and GIF formats are allowed');
+        setError(t('polls.onlyJpgPngWebpAnd'));
         // Reset input
         e.target.value = '';
         return;
@@ -112,7 +113,7 @@ export default function CreatePollModal({
     setError('');
 
     if (!title.trim()) {
-      setError(locale === 'ka' ? 'სათაური აუცილებელია' : 'Title is required');
+      setError(t('polls.titleIsRequired'));
       return;
     }
 
@@ -121,7 +122,7 @@ export default function CreatePollModal({
     );
 
     if (validOptions.length < 2) {
-      setError(locale === 'ka' ? 'მინიმუმ 2 ვარიანტი საჭიროა' : 'At least 2 options are required');
+      setError(t('polls.atLeast2OptionsAre'));
       return;
     }
 
@@ -146,7 +147,7 @@ export default function CreatePollModal({
       onClose();
     } catch (err) {
       const error = err as { message?: string };
-      setError(error.message || (locale === 'ka' ? 'შეცდომა' : 'Error'));
+      setError(error.message || (t('common.error')));
     } finally {
       setIsSubmitting(false);
     }
@@ -160,10 +161,8 @@ export default function CreatePollModal({
   return (
     <Modal isOpen={isOpen} onClose={handleClose} size="lg" preventClose={isSubmitting} showCloseButton>
       <ModalHeader
-        title={locale === 'ka' ? 'ახალი გამოკითხვა' : 'New Poll'}
-        description={locale === 'ka'
-          ? 'შექმენით გამოკითხვა კლიენტის არჩევანისთვის'
-          : 'Create a poll for client to choose from'}
+        title={t('polls.newPoll')}
+        description={t('polls.createAPollForClient')}
         variant="accent"
         icon={<Image className="w-6 h-6 text-[#C4735B]" />}
       />
@@ -178,24 +177,24 @@ export default function CreatePollModal({
           {/* Title */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-              {locale === 'ka' ? 'სათაური' : 'Title'} *
+              {t('polls.title')} *
             </label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder={locale === 'ka' ? 'მაგ: ფერთა პალიტრა მისაღებისთვის' : 'e.g. Color Palette for Living Room'}
+              placeholder={t('polls.egColorPaletteForLiving')}
             />
           </div>
 
           {/* Description */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-              {locale === 'ka' ? 'აღწერა' : 'Description'} ({locale === 'ka' ? 'არასავალდებულო' : 'optional'})
+              {t('common.description')} ({t('common.optional')})
             </label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder={locale === 'ka' ? 'დამატებითი ინფორმაცია...' : 'Additional information...'}
+              placeholder={t('polls.additionalInformation')}
               textareaSize="sm"
             />
           </div>
@@ -203,7 +202,7 @@ export default function CreatePollModal({
           {/* Option type toggle */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              {locale === 'ka' ? 'ვარიანტების ტიპი' : 'Option Type'}
+              {t('polls.optionType')}
             </label>
             <div className="flex gap-2">
               <Button
@@ -216,7 +215,7 @@ export default function CreatePollModal({
                 )}
                 leftIcon={<Image className="w-4 h-4" />}
               >
-                {locale === 'ka' ? 'სურათი' : 'Image'}
+                {t('polls.image')}
               </Button>
               <Button
                 type="button"
@@ -228,7 +227,7 @@ export default function CreatePollModal({
                 )}
                 leftIcon={<Type className="w-4 h-4" />}
               >
-                {locale === 'ka' ? 'ტექსტი' : 'Text'}
+                {t('polls.text')}
               </Button>
             </div>
           </div>
@@ -237,7 +236,7 @@ export default function CreatePollModal({
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                {locale === 'ka' ? 'ვარიანტები' : 'Options'} ({options.length}/6)
+                {t('polls.options')} ({options.length}/6)
               </label>
               {options.length < 6 && (
                 <Button
@@ -246,7 +245,7 @@ export default function CreatePollModal({
                   onClick={handleAddOption}
                   leftIcon={<Plus className="w-4 h-4" />}
                 >
-                  {locale === 'ka' ? 'დამატება' : 'Add'}
+                  {t('common.add')}
                 </Button>
               )}
             </div>
@@ -295,7 +294,7 @@ export default function CreatePollModal({
                             <>
                               <Upload className="w-6 h-6 mb-1" />
                               <span className="text-xs">
-                                {locale === 'ka' ? 'ატვირთვა' : 'Upload'}
+                                {t('polls.upload')}
                               </span>
                             </>
                           )}
@@ -314,7 +313,7 @@ export default function CreatePollModal({
                         type="text"
                         value={option.text}
                         onChange={(e) => handleOptionTextChange(index, e.target.value)}
-                        placeholder={locale === 'ka' ? 'იარლიყი' : 'Label'}
+                        placeholder={t('polls.label')}
                         className="absolute bottom-0 left-0 right-0 px-2 py-1.5 bg-black/50 text-white text-xs placeholder:text-white/50 border-0 focus:outline-none"
                       />
                     </div>
@@ -323,7 +322,7 @@ export default function CreatePollModal({
                       <Input
                         value={option.text}
                         onChange={(e) => handleOptionTextChange(index, e.target.value)}
-                        placeholder={`${locale === 'ka' ? 'ვარიანტი' : 'Option'} ${index + 1}`}
+                        placeholder={`${t('polls.option')} ${index + 1}`}
                         className="flex-1"
                       />
                       {options.length > 2 && (
@@ -365,7 +364,7 @@ export default function CreatePollModal({
           onClick={handleClose}
           disabled={isSubmitting}
         >
-          {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+          {t('common.cancel')}
         </Button>
         <Button
           onClick={handleSubmit}
@@ -374,8 +373,8 @@ export default function CreatePollModal({
           leftIcon={!isSubmitting ? <Plus className="w-4 h-4" /> : undefined}
         >
           {isSubmitting
-            ? (locale === 'ka' ? 'იქმნება...' : 'Creating...')
-            : (locale === 'ka' ? 'შექმნა' : 'Create Poll')}
+            ? (t('polls.creating'))
+            : (t('polls.createPoll'))}
         </Button>
       </ModalFooter>
     </Modal>

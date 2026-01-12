@@ -9,6 +9,7 @@ import { storage } from "@/services/storage";
 import type { Job } from "@/types/shared";
 import { formatCurrency, formatPriceRange } from "@/utils/currencyUtils";
 import Link from "next/link";
+import { useLanguage } from "@/contexts/LanguageContext";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 export interface JobCardProps {
@@ -26,6 +27,8 @@ const JobCard = React.memo(function JobCard({
   hasApplied = false,
 }: JobCardProps) {
   const { getCategoryLabel, locale } = useCategoryLabels();
+
+  const { t } = useLanguage();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -88,15 +91,15 @@ const JobCard = React.memo(function JobCard({
     } else if (job.budgetType === "range" && job.budgetMin && job.budgetMax) {
       return formatPriceRange(job.budgetMin, job.budgetMax);
     }
-    return locale === 'ka' ? "შეთანხმებით" : "Negotiable";
+    return t('card.negotiable');
   }, [job.budgetType, job.budgetAmount, job.pricePerUnit, job.areaSize, job.budgetMin, job.budgetMax, locale]);
 
   const timeAgo = useMemo(() => {
     const seconds = Math.floor((new Date().getTime() - new Date(job.createdAt).getTime()) / 1000);
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}${locale === 'ka' ? 'წთ' : 'm'}`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}${locale === 'ka' ? 'სთ' : 'h'}`;
-    if (seconds < 604800) return `${Math.floor(seconds / 86400)}${locale === 'ka' ? 'დ' : 'd'}`;
-    return `${Math.floor(seconds / 604800)}${locale === 'ka' ? 'კვ' : 'w'}`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}${t('card.m3')}`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}${t('card.h3')}`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}${t('card.d3')}`;
+    return `${Math.floor(seconds / 604800)}${t('card.w3')}`;
   }, [job.createdAt, locale]);
 
   const truncateLocation = (loc: string) => {
@@ -152,7 +155,7 @@ const JobCard = React.memo(function JobCard({
                     <path d="M10 25 Q23 5 36 25" stroke="white" strokeOpacity="0.9" strokeWidth="10" fill="none" strokeLinecap="round" />
                   </svg>
                 </div>
-                <span className="text-[10px] font-medium text-white/70 tracking-wider uppercase">{locale === 'ka' ? 'ფოტო არ არის' : 'No photo'}</span>
+                <span className="text-[10px] font-medium text-white/70 tracking-wider uppercase">{t('card.noPhoto')}</span>
               </div>
             </div>
           )}
@@ -255,7 +258,7 @@ const JobCard = React.memo(function JobCard({
 
           {/* Description */}
           <p className="text-[13px] text-neutral-500 dark:text-neutral-400 line-clamp-2 mb-3 leading-relaxed">
-            {job.description || (locale === 'ka' ? "დეტალები იხილეთ განცხადებაში" : "See listing for details")}
+            {job.description || (t('card.seeListingForDetails'))}
           </p>
 
           {/* Divider */}
@@ -272,7 +275,7 @@ const JobCard = React.memo(function JobCard({
               />
               <div className="min-w-0">
                 <p className="text-[13px] font-medium text-neutral-900 dark:text-white truncate">
-                  {job.clientId?.name?.split(' ')[0] || (locale === 'ka' ? 'კლიენტი' : 'Client')}
+                  {job.clientId?.name?.split(' ')[0] || (t('card.client'))}
                 </p>
                 <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
                   {truncateLocation(job.location || '')}

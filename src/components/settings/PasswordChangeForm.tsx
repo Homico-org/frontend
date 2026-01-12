@@ -7,11 +7,12 @@ import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 export interface PasswordChangeFormProps {
   /** Handler for password change submission */
   onSubmit: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
   /** Locale for translations */
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   /** Custom className */
   className?: string;
 }
@@ -26,6 +27,8 @@ export default function PasswordChangeForm({
     newPassword: '',
     confirmPassword: '',
   });
+
+  const { t } = useLanguage();
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -41,7 +44,7 @@ export default function PasswordChangeForm({
     if (!passwordData.currentPassword) {
       setMessage({
         type: 'error',
-        text: locale === 'ka' ? 'შეიყვანეთ მიმდინარე პაროლი' : 'Please enter your current password',
+        text: t('settings.pleaseEnterYourCurrentPassword'),
       });
       return;
     }
@@ -49,7 +52,7 @@ export default function PasswordChangeForm({
     if (!passwordStrength.isValid) {
       setMessage({
         type: 'error',
-        text: locale === 'ka' ? 'ახალი პაროლი უნდა იყოს მინიმუმ 6 სიმბოლო' : 'New password must be at least 6 characters',
+        text: t('settings.newPasswordMustBeAt'),
       });
       return;
     }
@@ -71,13 +74,13 @@ export default function PasswordChangeForm({
       if (result.success) {
         setMessage({
           type: 'success',
-          text: locale === 'ka' ? 'პაროლი წარმატებით შეიცვალა' : 'Password changed successfully',
+          text: t('settings.passwordChangedSuccessfully'),
         });
         setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
       } else {
         setMessage({
           type: 'error',
-          text: result.error || (locale === 'ka' ? 'პაროლის შეცვლა ვერ მოხერხდა' : 'Failed to change password'),
+          text: result.error || (t('settings.failedToChangePassword')),
         });
       }
     } catch (error) {
@@ -98,15 +101,13 @@ export default function PasswordChangeForm({
           className="text-base sm:text-lg font-semibold"
           style={{ color: 'var(--color-text-primary)' }}
         >
-          {locale === 'ka' ? 'პაროლის შეცვლა' : 'Change Password'}
+          {t('settings.changePassword')}
         </h2>
         <p
           className="mt-1 text-sm"
           style={{ color: 'var(--color-text-secondary)' }}
         >
-          {locale === 'ka'
-            ? 'შეიყვანეთ მიმდინარე პაროლი და აირჩიეთ ახალი'
-            : 'Enter your current password and choose a new one'}
+          {t('settings.enterYourCurrentPasswordAnd')}
         </p>
       </div>
 
@@ -124,14 +125,14 @@ export default function PasswordChangeForm({
             className="block text-sm font-medium mb-1.5"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            {locale === 'ka' ? 'მიმდინარე პაროლი' : 'Current Password'}
+            {t('settings.currentPassword')}
           </label>
           <div className="relative">
             <input
               type={showCurrentPassword ? 'text' : 'password'}
               value={passwordData.currentPassword}
               onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
-              placeholder={locale === 'ka' ? 'შეიყვანეთ მიმდინარე პაროლი' : 'Enter current password'}
+              placeholder={t('settings.enterCurrentPassword')}
               className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-12 text-base rounded-xl transition-all duration-200"
               style={{
                 backgroundColor: 'var(--color-bg-elevated)',
@@ -157,14 +158,14 @@ export default function PasswordChangeForm({
             className="block text-sm font-medium mb-1.5"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            {locale === 'ka' ? 'ახალი პაროლი' : 'New Password'}
+            {t('settings.newPassword')}
           </label>
           <div className="relative">
             <input
               type={showNewPassword ? 'text' : 'password'}
               value={passwordData.newPassword}
               onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-              placeholder={locale === 'ka' ? 'შეიყვანეთ ახალი პაროლი' : 'Enter new password'}
+              placeholder={t('settings.enterNewPassword')}
               className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-12 text-base rounded-xl transition-all duration-200"
               style={{
                 backgroundColor: 'var(--color-bg-elevated)',
@@ -207,9 +208,7 @@ export default function PasswordChangeForm({
                 className="text-xs mt-1"
                 style={{ color: 'var(--color-text-tertiary)' }}
               >
-                {locale === 'ka'
-                  ? 'გამოიყენეთ მინიმუმ 6 სიმბოლო, დიდი ასოები, ციფრები და სპეციალური სიმბოლოები'
-                  : 'Use at least 6 characters, uppercase letters, numbers and special characters'}
+                {t('settings.useAtLeast6Characters')}
               </p>
             </div>
           )}
@@ -221,14 +220,14 @@ export default function PasswordChangeForm({
             className="block text-sm font-medium mb-1.5"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            {locale === 'ka' ? 'გაიმეორეთ ახალი პაროლი' : 'Confirm New Password'}
+            {t('settings.confirmNewPassword')}
           </label>
           <div className="relative">
             <input
               type={showConfirmPassword ? 'text' : 'password'}
               value={passwordData.confirmPassword}
               onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-              placeholder={locale === 'ka' ? 'გაიმეორეთ ახალი პაროლი' : 'Confirm new password'}
+              placeholder={t('settings.confirmNewPassword')}
               className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-12 text-base rounded-xl transition-all duration-200"
               style={{
                 backgroundColor: 'var(--color-bg-elevated)',
@@ -250,13 +249,13 @@ export default function PasswordChangeForm({
           </div>
           {passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword && (
             <p className="text-xs mt-1 text-red-500">
-              {locale === 'ka' ? 'პაროლები არ ემთხვევა' : 'Passwords do not match'}
+              {t('settings.passwordsDoNotMatch')}
             </p>
           )}
           {passwordData.confirmPassword && passwordData.newPassword === passwordData.confirmPassword && passwordData.newPassword.length >= 6 && (
             <p className="text-xs mt-1 text-green-500 flex items-center gap-1">
               <Check className="w-3 h-3" />
-              {locale === 'ka' ? 'პაროლები ემთხვევა' : 'Passwords match'}
+              {t('settings.passwordsMatch')}
             </p>
           )}
         </div>
@@ -271,7 +270,7 @@ export default function PasswordChangeForm({
             className="w-full sm:w-auto"
           >
             {isChanging
-              ? (locale === 'ka' ? 'იცვლება...' : 'Changing...')
+              ? (t('settings.changing'))
               : (locale === 'ka' ? 'პაროლის შეცვლა' : 'Change Password')}
           </Button>
         </div>

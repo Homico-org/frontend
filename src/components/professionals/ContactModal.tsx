@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/input';
 import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 export interface ContactModalProps {
   /** Whether the modal is open */
   isOpen: boolean;
@@ -20,7 +21,7 @@ export interface ContactModalProps {
   /** Professional's avatar URL */
   avatar?: string;
   /** Locale for translations */
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
 }
 
 export default function ContactModal({
@@ -33,6 +34,8 @@ export default function ContactModal({
   locale = 'en',
 }: ContactModalProps) {
   const [message, setMessage] = useState('');
+
+  const { t } = useLanguage();
   const [isSending, setIsSending] = useState(false);
 
   const handleSend = async () => {
@@ -78,9 +81,7 @@ export default function ContactModal({
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder={
-            locale === 'ka'
-              ? 'დაწერეთ შეტყობინება...'
-              : 'Write a message...'
+            t('professional.writeAMessage')
           }
           rows={3}
         />
@@ -92,7 +93,7 @@ export default function ContactModal({
             onClick={onClose}
             className="flex-1"
           >
-            {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={handleSend}
@@ -100,7 +101,7 @@ export default function ContactModal({
             loading={isSending}
             className="flex-1"
           >
-            {locale === 'ka' ? 'გაგზავნა' : 'Send'}
+            {t('common.send')}
           </Button>
         </div>
       </div>

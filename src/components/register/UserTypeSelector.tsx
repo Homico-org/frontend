@@ -8,7 +8,7 @@ export interface UserTypeSelectorProps {
   /** Called when user type is selected */
   onChange: (type: 'client' | 'pro') => void;
   /** Locale for translations */
-  locale?: 'en' | 'ka';
+  locale?: 'en' | 'ka' | 'ru';
   /** Custom className */
   className?: string;
 }
@@ -52,6 +52,23 @@ const translations = {
       cta: 'შემოგვიერთდი',
       freeLabel: 'დაიწყე შემოსავალი',
       badge: 'პოპულარული',
+    },
+  },
+  ru: {
+    client: {
+      title: 'Клиент',
+      description: 'Найти специалиста',
+      descriptionLong: 'Найдите надёжных специалистов для ваших проектов',
+      cta: 'Начать',
+      freeLabel: 'Бесплатно',
+    },
+    pro: {
+      title: 'Специалист',
+      description: 'Получить заказы',
+      descriptionLong: 'Развивайте бизнес и находите клиентов',
+      cta: 'Присоединиться',
+      freeLabel: 'Начните зарабатывать',
+      badge: 'Популярное',
     },
   },
 };

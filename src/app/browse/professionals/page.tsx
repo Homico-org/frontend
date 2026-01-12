@@ -15,7 +15,7 @@ import { Users } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function ProfessionalsPage() {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const { user } = useAuth();
   const { trackEvent } = useAnalytics();
   const {
@@ -263,7 +263,7 @@ export default function ProfessionalsPage() {
           <div className="flex items-center gap-3 px-4 py-2 sm:gap-4 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl glass-card">
             <LoadingSpinner size="sm" variant="border" color="#E07B4F" />
             <span className="text-xs sm:text-sm font-medium text-[var(--color-text-secondary)]">
-              {locale === "ka" ? "იტვირთება..." : "Loading more..."}
+              {t('browse.loadingMore')}
             </span>
           </div>
         )}

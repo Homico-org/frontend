@@ -7,6 +7,7 @@ import { Input, Textarea, Label } from '@/components/ui/input';
 import Select from '@/components/common/Select';
 import { formatNumberWithSpaces } from '@/utils/currencyUtils';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 interface ProposalData {
   coverLetter: string;
   proposedPrice: string;
@@ -35,20 +36,21 @@ export default function ProposalFormModal({
   proposalData,
   onDataChange,
 }: ProposalFormModalProps) {
+  const { t } = useLanguage();
   if (!isOpen) return null;
 
-  const t = {
-    title: locale === 'ka' ? 'წინადადების გაგზავნა' : 'Submit Proposal',
-    coverLetter: locale === 'ka' ? 'სამოტივაციო წერილი' : 'Cover Letter',
-    coverLetterPlaceholder: locale === 'ka' ? 'წარმოადგინეთ თქვენი გამოცდილება...' : 'Describe your experience...',
-    price: locale === 'ka' ? 'ფასი (₾)' : 'Price (₾)',
-    duration: locale === 'ka' ? 'ვადა' : 'Duration',
-    unit: locale === 'ka' ? 'ერთეული' : 'Unit',
-    days: locale === 'ka' ? 'დღე' : 'Days',
-    weeks: locale === 'ka' ? 'კვირა' : 'Weeks',
-    months: locale === 'ka' ? 'თვე' : 'Months',
-    cancel: locale === 'ka' ? 'გაუქმება' : 'Cancel',
-    submit: locale === 'ka' ? 'გაგზავნა' : 'Submit',
+  const texts = {
+    title: t('job.submitProposal'),
+    coverLetter: t('job.coverLetter'),
+    coverLetterPlaceholder: t('job.describeYourExperience'),
+    price: t('common.price'),
+    duration: t('common.duration'),
+    unit: t('job.unit'),
+    days: t('common.days'),
+    weeks: t('job.weeks'),
+    months: t('common.months'),
+    cancel: t('common.cancel'),
+    submit: t('common.submit'),
   };
 
   const handlePriceChange = (value: string) => {
@@ -76,7 +78,7 @@ export default function ProposalFormModal({
         <div className="p-6 border-b border-neutral-100 dark:border-neutral-800">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
-              {t.title}
+              {texts.title}
             </h2>
             <button
               onClick={onClose}
@@ -98,20 +100,20 @@ export default function ProposalFormModal({
         <form onSubmit={onSubmit} className="p-6 space-y-5">
           {/* Cover Letter */}
           <div>
-            <Label>{t.coverLetter}</Label>
+            <Label>{texts.coverLetter}</Label>
             <Textarea
               rows={4}
               required
               value={proposalData.coverLetter}
               onChange={(e) => onDataChange({ ...proposalData, coverLetter: e.target.value })}
-              placeholder={t.coverLetterPlaceholder}
+              placeholder={texts.coverLetterPlaceholder}
             />
           </div>
 
           {/* Price and Duration */}
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <Label>{t.price}</Label>
+              <Label>{texts.price}</Label>
               <Input
                 type="text"
                 inputMode="numeric"
@@ -121,7 +123,7 @@ export default function ProposalFormModal({
               />
             </div>
             <div>
-              <Label>{t.duration}</Label>
+              <Label>{texts.duration}</Label>
               <Input
                 type="number"
                 min={1}
@@ -131,14 +133,14 @@ export default function ProposalFormModal({
               />
             </div>
             <div>
-              <Label>{t.unit}</Label>
+              <Label>{texts.unit}</Label>
               <Select
                 value={proposalData.estimatedDurationUnit}
                 onChange={(value) => onDataChange({ ...proposalData, estimatedDurationUnit: value })}
                 options={[
-                  { value: 'days', label: t.days },
-                  { value: 'weeks', label: t.weeks },
-                  { value: 'months', label: t.months },
+                  { value: 'days', label: texts.days },
+                  { value: 'weeks', label: texts.weeks },
+                  { value: 'months', label: texts.months },
                 ]}
               />
             </div>
@@ -152,14 +154,14 @@ export default function ProposalFormModal({
               onClick={onClose}
               className="flex-1"
             >
-              {t.cancel}
+              {texts.cancel}
             </Button>
             <Button
               type="submit"
               loading={isSubmitting}
               className="flex-1"
             >
-              {t.submit}
+              {texts.submit}
             </Button>
           </div>
         </form>

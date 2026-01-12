@@ -51,7 +51,7 @@ export interface PortfolioProject {
 export interface UseRegistrationReturn {
   // Router & Context
   router: ReturnType<typeof useRouter>;
-  locale: 'en' | 'ka';
+  locale: 'en' | 'ka' | 'ru';
   country: string;
   categories: ReturnType<typeof useCategories>['categories'];
   openLoginModal: () => void;
@@ -193,7 +193,7 @@ export function useRegistration(): UseRegistrationReturn {
   const { trackEvent } = useAnalytics();
   const { categories } = useCategories();
 
-  const isProRegistration = searchParams.get('type') === 'pro';
+  const isProRegistration = searchParams.get('common.type') === 'pro';
 
   // Multi-step state
   const [currentStep, setCurrentStep] = useState<RegistrationStep>('account');

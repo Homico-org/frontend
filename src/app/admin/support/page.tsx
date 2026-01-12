@@ -447,8 +447,8 @@ function AdminSupportPageContent() {
 
   const statCards = [
     { label: t('admin.reportsPage.totalReports'), value: stats?.total || 0, icon: Inbox, color: THEME.primary },
-    { label: t('admin.open'), value: stats?.open || 0, icon: Clock, color: THEME.warning },
-    { label: t('admin.supportPage.inProgress'), value: stats?.inProgress || 0, icon: MessageSquare, color: THEME.info },
+    { label: t('common.open'), value: stats?.open || 0, icon: Clock, color: THEME.warning },
+    { label: t('common.inProgress'), value: stats?.inProgress || 0, icon: MessageSquare, color: THEME.info },
     { label: t('admin.resolved'), value: stats?.resolved || 0, icon: CheckCircle, color: THEME.success },
     { label: t('admin.unread'), value: stats?.unread || 0, icon: AlertTriangle, color: THEME.error },
   ];
@@ -483,7 +483,7 @@ function AdminSupportPageContent() {
                   className="text-xl font-semibold tracking-tight"
                   style={{ color: THEME.text, fontFamily: "'Inter', sans-serif" }}
                 >
-                  {t('admin.supportPage.title')}
+                  {t('common.title')}
                 </h1>
                 <p className="text-sm mt-0.5" style={{ color: THEME.textMuted }}>
                   {t('admin.supportPage.subtitle')}

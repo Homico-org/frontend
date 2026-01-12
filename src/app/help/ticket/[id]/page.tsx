@@ -87,12 +87,12 @@ export default function TicketDetailPage() {
           markAsRead();
         }
       } else if (res.status === 404) {
-        setError(t('helpPage.ticketDetail.notFound'));
+        setError(t('help.ticketDetail.notFound'));
       } else {
-        setError(t('helpPage.ticketDetail.loadError'));
+        setError(t('help.ticketDetail.loadError'));
       }
     } catch (err) {
-      setError(t('helpPage.ticketDetail.loadError'));
+      setError(t('help.ticketDetail.loadError'));
     } finally {
       setIsLoading(false);
     }
@@ -207,7 +207,7 @@ export default function TicketDetailPage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              {t('helpPage.ticketDetail.backToHelp')}
+              {t('help.ticketDetail.backToHelp')}
             </Link>
           </div>
         </div>
@@ -234,7 +234,7 @@ export default function TicketDetailPage() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            {t('helpPage.ticketDetail.backToHelp')}
+            {t('help.ticketDetail.backToHelp')}
           </Link>
 
           <div className="flex items-start justify-between gap-4">
@@ -296,7 +296,7 @@ export default function TicketDetailPage() {
                         >
                           {msg.isAdmin && (
                             <p className="text-xs font-medium text-forest-800 dark:text-primary-400 mb-1">
-                              {t('helpPage.ticketDetail.supportTeam')}
+                              {t('help.ticketDetail.supportTeam')}
                             </p>
                           )}
                           <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
@@ -327,7 +327,7 @@ export default function TicketDetailPage() {
                       sendMessage();
                     }
                   }}
-                  placeholder={t('helpPage.ticketDetail.placeholder')}
+                  placeholder={t('help.ticketDetail.placeholder')}
                   rows={1}
                   className="flex-1 px-4 py-3 bg-white dark:bg-dark-card border border-neutral-200 dark:border-dark-border rounded-xl text-sm text-neutral-900 dark:text-neutral-50 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-forest-800/20 dark:focus:ring-primary-400/20 focus:border-forest-800 dark:focus:border-primary-400 resize-none transition-all duration-200"
                   style={{ minHeight: '48px', maxHeight: '120px' }}
@@ -347,13 +347,13 @@ export default function TicketDetailPage() {
                 </button>
               </div>
               <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-2">
-                {t('helpPage.ticketDetail.enterHint')}
+                {t('help.ticketDetail.enterHint')}
               </p>
             </div>
           ) : (
             <div className="flex-shrink-0 p-4 border-t border-neutral-100 dark:border-dark-border bg-neutral-50 dark:bg-dark-elevated text-center">
               <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                {t('helpPage.ticketDetail.ticketClosed')}
+                {t('help.ticketDetail.ticketClosed')}
               </p>
             </div>
           )}

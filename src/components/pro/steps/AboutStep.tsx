@@ -38,7 +38,7 @@ export default function AboutStep({
   onAvatarCropped,
   validation,
 }: AboutStepProps) {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   // State for cropper
@@ -51,7 +51,7 @@ export default function AboutStep({
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         // Allow up to 5MB for cropping, final result will be smaller
-        alert(locale === 'ka' ? 'სურათი უნდა იყოს 5MB-ზე ნაკლები' : 'Image must be less than 5MB');
+        alert(t('common.imageMustBeLessThan'));
         return;
       }
 
@@ -113,17 +113,17 @@ export default function AboutStep({
             <div className="flex items-center gap-2">
               <Camera className="w-5 h-5 text-[#C4735B]" />
               <h3 className="font-semibold text-[var(--color-text-primary)]">
-                {locale === 'ka' ? 'პროფილის ფოტო' : 'Profile Photo'}
+                {t('common.profilePhoto')}
                 <span className="text-[#C4735B] ml-1">*</span>
               </h3>
             </div>
             {hasAvatar ? (
               <Badge variant="success" size="xs" icon={<CheckCircle2 className="w-3.5 h-3.5" />}>
-                {locale === 'ka' ? 'ატვირთულია' : 'Uploaded'}
+                {t('common.uploaded')}
               </Badge>
             ) : (
               <Badge variant="premium" size="xs" icon={<AlertCircle className="w-3.5 h-3.5" />}>
-                {locale === 'ka' ? 'სავალდებულო' : 'Required'}
+                {t('common.required')}
               </Badge>
             )}
           </div>
@@ -138,7 +138,7 @@ export default function AboutStep({
                 <div className="text-center">
                   <Camera className="w-8 h-8 text-[#C4735B]/60 group-hover:text-[#C4735B] transition-colors mx-auto mb-1" />
                   <span className="text-xs font-medium text-[#C4735B]/60 group-hover:text-[#C4735B]">
-                    {locale === 'ka' ? 'ატვირთე' : 'Upload'}
+                    {t('common.upload')}
                   </span>
                 </div>
               </button>
@@ -161,9 +161,7 @@ export default function AboutStep({
 
             <div className="flex-1">
               <p className="text-sm text-[var(--color-text-secondary)] mb-3">
-                {locale === 'ka'
-                  ? 'კლიენტები უფრო ენდობიან პროფესიონალებს ფოტოთი. ატვირთე მაღალი ხარისხის ფოტო.'
-                  : 'Clients trust professionals with photos more. Upload a high-quality photo.'}
+                {t('common.clientsTrustProfessionalsWithPhotos')}
               </p>
               <button
                 type="button"
@@ -172,12 +170,12 @@ export default function AboutStep({
               >
                 <Camera className="w-4 h-4" />
                 {avatarPreview
-                  ? (locale === 'ka' ? 'შეცვალე ფოტო' : 'Change Photo')
-                  : (locale === 'ka' ? 'ატვირთე ფოტო' : 'Upload Photo')
+                  ? (t('common.changePhoto'))
+                  : (t('common.uploadPhoto'))
                 }
               </button>
               <p className="text-xs text-[var(--color-text-muted)] mt-2">
-                PNG, JPG {locale === 'ka' ? 'მაქს.' : 'max'} 5MB
+                PNG, JPG {t('common.max')} 5MB
               </p>
             </div>
           </div>
@@ -202,13 +200,13 @@ export default function AboutStep({
             <div className="flex items-center gap-2">
               <Clock className="w-5 h-5 text-[#C4735B]" />
               <span className="font-semibold text-[var(--color-text-primary)]">
-                {locale === 'ka' ? 'გამოცდილება (წელი)' : 'Years of Experience'}
+                {t('common.yearsOfExperience')}
                 <span className="text-[#C4735B] ml-1">*</span>
               </span>
             </div>
             {validation.experience ? (
               <Badge variant="success" size="xs" icon={<CheckCircle2 className="w-3.5 h-3.5" />}>
-                {locale === 'ka' ? 'შევსებულია' : 'Completed'}
+                {t('common.completed')}
               </Badge>
             ) : (
               <Badge variant="secondary" size="xs">
@@ -232,11 +230,11 @@ export default function AboutStep({
             inputSize="lg"
             success={validation.experience}
             placeholder="0"
-            rightIcon={<span className="text-sm">{locale === 'ka' ? 'წელი' : 'years'}</span>}
+            rightIcon={<span className="text-sm">{t('common.years')}</span>}
             className="text-lg font-medium"
           />
           <p className="text-xs text-[var(--color-text-muted)] mt-2">
-            {locale === 'ka' ? 'რამდენი წელია მუშაობ ამ სფეროში?' : 'How many years have you been working in this field?'}
+            {t('common.howManyYearsHaveYou')}
           </p>
         </div>
 
@@ -252,7 +250,7 @@ export default function AboutStep({
             <div className="flex items-center gap-2">
               <FileText className="w-5 h-5 text-[#C4735B]" />
               <span className="font-semibold text-[var(--color-text-primary)]">
-                {locale === 'ka' ? 'შენს შესახებ' : 'About You'}
+                {t('common.aboutYou')}
                 <span className="text-[#C4735B] ml-1">*</span>
               </span>
             </div>
@@ -273,11 +271,11 @@ export default function AboutStep({
             variant="filled"
             textareaSize="lg"
             success={validation.bio}
-            placeholder={locale === 'ka' ? 'მოკლედ აღწერე შენი გამოცდილება და უნარები...' : 'Briefly describe your experience and skills...'}
+            placeholder={t('common.brieflyDescribeYourExperienceAnd')}
           />
           <div className="flex justify-between items-center mt-2">
             <p className="text-xs text-[var(--color-text-muted)]">
-              {locale === 'ka' ? 'მინიმუმ 50 სიმბოლო რეკომენდებულია' : 'Minimum 50 characters recommended'}
+              {t('common.minimum50CharactersRecommended')}
             </p>
             <span className={`text-xs font-medium ${formData.bio.length >= 50 ? 'text-emerald-600' : formData.bio.length > 0 ? 'text-amber-600' : 'text-[var(--color-text-muted)]'}`}>
               {formData.bio.length}/500
@@ -291,17 +289,15 @@ export default function AboutStep({
             <div className="flex items-center gap-2">
               <MessageCircle className="w-5 h-5 text-[#C4735B]" />
               <span className="font-semibold text-[var(--color-text-primary)]">
-                {locale === 'ka' ? 'კონტაქტი და სოციალური ქსელები' : 'Contact & Social Media'}
+                {t('common.contactSocialMedia')}
               </span>
             </div>
             <span className="text-xs font-medium text-[var(--color-text-muted)] bg-[var(--color-bg-tertiary)] px-2.5 py-1 rounded-full">
-              {locale === 'ka' ? 'არასავალდებულო' : 'Optional'}
+              {t('common.optional')}
             </span>
           </div>
           <p className="text-sm text-[var(--color-text-secondary)] mb-4">
-            {locale === 'ka'
-              ? 'დაამატე კონტაქტები რომ კლიენტებმა ადვილად დაგიკავშირდნენ'
-              : 'Add contact info so clients can easily reach you'}
+            {t('common.addContactInfoSoClients')}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -392,7 +388,7 @@ export default function AboutStep({
             {/* Website */}
             <div>
               <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
-                {locale === 'ka' ? 'ვებსაიტი' : 'Website'}
+                {t('common.website')}
               </label>
               <Input
                 type="url"

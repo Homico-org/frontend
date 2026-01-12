@@ -65,7 +65,7 @@ interface CompanyProposal {
 export default function CompanyProposalsPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { openLoginModal } = useAuthModal();
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const router = useRouter();
 
   const [proposals, setProposals] = useState<CompanyProposal[]>([]);
@@ -122,31 +122,31 @@ export default function CompanyProposalsPage() {
         return {
           color: 'bg-amber-50 text-amber-700 border-amber-200',
           icon: Clock,
-          label: locale === 'ka' ? 'მოლოდინში' : 'Pending'
+          label: t('common.pending')
         };
       case 'viewed':
         return {
           color: 'bg-blue-50 text-blue-700 border-blue-200',
           icon: Eye,
-          label: locale === 'ka' ? 'ნანახი' : 'Viewed'
+          label: t('company.viewed')
         };
       case 'accepted':
         return {
           color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
           icon: CheckCircle2,
-          label: locale === 'ka' ? 'მიღებული' : 'Accepted'
+          label: t('common.accepted')
         };
       case 'rejected':
         return {
           color: 'bg-red-50 text-red-700 border-red-200',
           icon: XCircle,
-          label: locale === 'ka' ? 'უარყოფილი' : 'Rejected'
+          label: t('common.rejected')
         };
       case 'withdrawn':
         return {
           color: 'bg-neutral-50 text-neutral-600 border-neutral-200',
           icon: XCircle,
-          label: locale === 'ka' ? 'გაწვეული' : 'Withdrawn'
+          label: t('company.withdrawn')
         };
       default:
         return {
@@ -189,10 +189,10 @@ export default function CompanyProposalsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
-              {locale === 'ka' ? 'შეთავაზებები' : 'Proposals'}
+              {t('company.proposals')}
             </h1>
             <p className="text-[var(--color-text-secondary)] mt-1">
-              {locale === 'ka' ? 'თვალყური ადევნეთ კომპანიის შეთავაზებებს' : 'Track your company proposals and bids'}
+              {t('company.trackYourCompanyProposalsAnd')}
             </p>
           </div>
           <Button
@@ -201,7 +201,7 @@ export default function CompanyProposalsPage() {
           >
             <Link href="/browse/jobs" className="flex items-center gap-2">
               <Briefcase className="w-5 h-5" />
-              {locale === 'ka' ? 'სამუშაოების ნახვა' : 'Browse Jobs'}
+              {t('company.browseJobs')}
             </Link>
           </Button>
         </div>
@@ -223,7 +223,7 @@ export default function CompanyProposalsPage() {
             </div>
             <div className="text-2xl font-bold text-[var(--color-text-primary)]">{stats.total}</div>
             <div className="text-sm text-[var(--color-text-secondary)]">
-              {locale === 'ka' ? 'ყველა' : 'All'}
+              {t('common.all')}
             </div>
           </button>
 
@@ -311,7 +311,7 @@ export default function CompanyProposalsPage() {
             <div className="flex-1">
               <Input
                 type="text"
-                placeholder={locale === 'ka' ? 'მოძებნე შეთავაზება...' : 'Search proposals...'}
+                placeholder={t('company.searchProposals')}
                 value={filter.search}
                 onChange={(e) => setFilter({ ...filter, search: e.target.value })}
                 leftIcon={<Search className="w-5 h-5" />}
@@ -326,7 +326,7 @@ export default function CompanyProposalsPage() {
                 onClick={() => setFilter({ ...filter, status: '' })}
                 leftIcon={<XCircle className="w-4 h-4" />}
               >
-                {locale === 'ka' ? 'გაწმინდე' : 'Clear'}
+                {t('common.clear')}
               </Button>
             )}
           </div>
@@ -385,7 +385,7 @@ export default function CompanyProposalsPage() {
                           )}
                           <span className="flex items-center gap-1.5">
                             <Calendar className="w-4 h-4" />
-                            {formatTimeAgo(proposal.createdAt, locale as 'en' | 'ka')}
+                            {formatTimeAgo(proposal.createdAt, locale as 'en' | 'ka' | 'ru')}
                           </span>
                           {proposal.estimatedDuration && (
                             <span className="flex items-center gap-1.5">
@@ -432,7 +432,7 @@ export default function CompanyProposalsPage() {
                           </div>
                           {proposal.jobId?.budgetAmount && (
                             <div className="text-xs text-[var(--color-text-tertiary)]">
-                              {locale === 'ka' ? 'ბიუჯეტი:' : 'Budget:'} {proposal.jobId.budgetAmount.toLocaleString()}
+                              {t('common.budget')} {proposal.jobId.budgetAmount.toLocaleString()}
                             </div>
                           )}
                         </div>
@@ -471,7 +471,7 @@ export default function CompanyProposalsPage() {
                 onClick={() => fetchProposals(pagination.page + 1)}
                 rightIcon={<ArrowUpRight className="w-4 h-4" />}
               >
-                {locale === 'ka' ? 'მეტის ჩატვირთვა' : 'Load More'}
+                {t('common.loadMore')}
               </Button>
             </div>
           )}

@@ -99,7 +99,7 @@ const ACTIVITY_COLORS: Record<string, string> = {
 
 function AdminActivityLogsPageContent() {
   const { isAuthenticated } = useAuth();
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const router = useRouter();
 
   const [logs, setLogs] = useState<ActivityLog[]>([]);
@@ -167,10 +167,10 @@ function AdminActivityLogsPageContent() {
   };
 
   const statCards = [
-    { label: locale === 'ka' ? 'დღეს' : 'Today', value: stats?.today || 0, icon: Clock, color: THEME.success },
-    { label: locale === 'ka' ? 'ამ კვირაში' : 'This Week', value: stats?.thisWeek || 0, icon: Calendar, color: THEME.info },
-    { label: locale === 'ka' ? 'ამ თვეში' : 'This Month', value: stats?.thisMonth || 0, icon: Activity, color: THEME.primary },
-    { label: locale === 'ka' ? 'სულ ჩანაწერები' : 'Total Logs', value: total, icon: FileText, color: THEME.warning },
+    { label: t('common.today'), value: stats?.today || 0, icon: Clock, color: THEME.success },
+    { label: t('common.thisWeek'), value: stats?.thisWeek || 0, icon: Calendar, color: THEME.info },
+    { label: t('common.thisMonth'), value: stats?.thisMonth || 0, icon: Activity, color: THEME.primary },
+    { label: t('admin.totalLogs'), value: total, icon: FileText, color: THEME.warning },
   ];
 
   if (isLoading) {
@@ -184,7 +184,7 @@ function AdminActivityLogsPageContent() {
             <Activity className="w-8 h-8 text-white" />
           </div>
           <p className="mt-4 text-sm" style={{ color: THEME.textMuted }}>
-            {locale === 'ka' ? 'იტვირთება...' : 'Loading activity logs...'}
+            {t('admin.loadingActivityLogs')}
           </p>
         </div>
       </div>
@@ -221,10 +221,10 @@ function AdminActivityLogsPageContent() {
                   className="text-xl font-semibold tracking-tight"
                   style={{ color: THEME.text, fontFamily: "'Inter', sans-serif" }}
                 >
-                  {locale === 'ka' ? 'აქტივობის ლოგები' : 'Activity Logs'}
+                  {t('admin.activityLogs')}
                 </h1>
                 <p className="text-sm mt-0.5" style={{ color: THEME.textMuted }}>
-                  {total.toLocaleString()} {locale === 'ka' ? 'ჩანაწერი' : 'records'}
+                  {total.toLocaleString()} {t('admin.records')}
                 </p>
               </div>
             </div>
@@ -240,7 +240,7 @@ function AdminActivityLogsPageContent() {
               }}
             >
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">{locale === 'ka' ? 'განახლება' : 'Refresh'}</span>
+              <span className="hidden sm:inline">{t('admin.refresh')}</span>
             </button>
           </div>
         </div>
@@ -290,7 +290,7 @@ function AdminActivityLogsPageContent() {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: THEME.textDim }} />
               <input
                 type="text"
-                placeholder={locale === 'ka' ? 'ძებნა ემაილით...' : 'Search by email...'}
+                placeholder={t('admin.searchByEmail')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-all"
@@ -307,7 +307,7 @@ function AdminActivityLogsPageContent() {
               size="sm"
               className="min-w-[200px]"
               options={[
-                { value: 'all', label: locale === 'ka' ? 'ყველა ტიპი' : 'All Types' },
+                { value: 'all', label: t('admin.allTypes') },
                 ...activityTypes.map((type) => ({
                   value: type,
                   label: formatActivityType(type),
@@ -327,10 +327,10 @@ function AdminActivityLogsPageContent() {
             className="px-6 py-4 grid grid-cols-12 gap-4 text-xs font-medium uppercase tracking-wider"
             style={{ borderBottom: `1px solid ${THEME.border}`, color: THEME.textDim }}
           >
-            <div className="col-span-3">{locale === 'ka' ? 'მოქმედება' : 'Action'}</div>
-            <div className="col-span-3">{locale === 'ka' ? 'მომხმარებელი' : 'User'}</div>
-            <div className="col-span-3 hidden lg:block">{locale === 'ka' ? 'დეტალები' : 'Details'}</div>
-            <div className="col-span-3 text-right">{locale === 'ka' ? 'დრო' : 'Time'}</div>
+            <div className="col-span-3">{t('admin.action')}</div>
+            <div className="col-span-3">{t('admin.user')}</div>
+            <div className="col-span-3 hidden lg:block">{t('common.details')}</div>
+            <div className="col-span-3 text-right">{t('common.time')}</div>
           </div>
 
           {/* Table Body */}
@@ -338,10 +338,10 @@ function AdminActivityLogsPageContent() {
             <div className="p-12 text-center">
               <Activity className="w-16 h-16 mx-auto mb-4" style={{ color: THEME.textDim }} />
               <p className="text-lg font-medium" style={{ color: THEME.textMuted }}>
-                {locale === 'ka' ? 'ლოგები არ მოიძებნა' : 'No logs found'}
+                {t('admin.noLogsFound')}
               </p>
               <p className="text-sm mt-1" style={{ color: THEME.textDim }}>
-                {locale === 'ka' ? 'სცადეთ სხვა ფილტრი' : 'Try adjusting your filters'}
+                {t('admin.tryAdjustingYourFilters')}
               </p>
             </div>
           ) : (
@@ -407,7 +407,7 @@ function AdminActivityLogsPageContent() {
                       className="text-sm"
                       style={{ color: THEME.textMuted, fontFamily: "'JetBrains Mono', monospace" }}
                     >
-                      {formatDateTimeShort(log.timestamp || log.createdAt, locale as 'en' | 'ka')}
+                      {formatDateTimeShort(log.timestamp || log.createdAt, locale as 'en' | 'ka' | 'ru')}
                     </p>
                   </div>
                 </div>
@@ -475,7 +475,7 @@ function AdminActivityLogsPageContent() {
                     {formatActivityType(selectedLog.type)}
                   </h3>
                   <p className="text-sm" style={{ color: THEME.textMuted }}>
-                    {formatDateTimeShort(selectedLog.timestamp || selectedLog.createdAt, locale as 'en' | 'ka')}
+                    {formatDateTimeShort(selectedLog.timestamp || selectedLog.createdAt, locale as 'en' | 'ka' | 'ru')}
                   </p>
                 </div>
               </div>
@@ -503,7 +503,7 @@ function AdminActivityLogsPageContent() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-xs" style={{ color: THEME.textDim }}>
-                        {locale === 'ka' ? 'სახელი' : 'Name'}
+                        {t('common.name')}
                       </p>
                       <p className="text-sm font-medium" style={{ color: THEME.text }}>
                         {selectedLog.userName || 'Unknown'}
@@ -511,7 +511,7 @@ function AdminActivityLogsPageContent() {
                     </div>
                     <div>
                       <p className="text-xs" style={{ color: THEME.textDim }}>
-                        {locale === 'ka' ? 'ემაილი' : 'Email'}
+                        {t('common.email')}
                       </p>
                       <p className="text-sm font-medium" style={{ color: THEME.text }}>
                         {selectedLog.userEmail || 'Unknown'}
@@ -519,7 +519,7 @@ function AdminActivityLogsPageContent() {
                     </div>
                     <div>
                       <p className="text-xs" style={{ color: THEME.textDim }}>
-                        {locale === 'ka' ? 'მომხმარებლის ID' : 'User ID'}
+                        {t('admin.userId')}
                       </p>
                       <p className="text-xs font-mono" style={{ color: THEME.textMuted }}>
                         {selectedLog.userId}
@@ -562,7 +562,7 @@ function AdminActivityLogsPageContent() {
               {selectedLog.userAgent && (
                 <div>
                   <h4 className="text-sm font-medium mb-3" style={{ color: THEME.text }}>
-                    {locale === 'ka' ? 'მოწყობილობა' : 'User Agent'}
+                    {t('admin.userAgent')}
                   </h4>
                   <p className="text-xs break-all" style={{ color: THEME.textDim }}>
                     {selectedLog.userAgent}

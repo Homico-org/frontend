@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { storage } from '@/services/storage';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AvatarProps {
   src?: string | null;
@@ -40,6 +41,7 @@ export default function Avatar({
   rounded = 'full',
   style,
 }: AvatarProps) {
+  const { t } = useLanguage();
   const [imageError, setImageError] = useState(false);
 
   // Reset error state when src changes

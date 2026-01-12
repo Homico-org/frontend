@@ -6,6 +6,7 @@ import { Alert } from '@/components/ui/Alert';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Badge } from '@/components/ui/badge';
 
+import { useLanguage } from "@/contexts/LanguageContext";
 // Types for notification preferences
 interface NotificationPreferences {
   email: {
@@ -144,32 +145,33 @@ export default function NotificationSettings({
   onAddEmail,
   onRetry,
 }: NotificationSettingsProps) {
-  const t = {
-    title: locale === 'ka' ? 'შეტყობინებები' : 'Notifications',
-    subtitle: locale === 'ka' ? 'აირჩიეთ როგორ გსურთ შეტყობინებების მიღება' : 'Choose how you want to receive notifications',
-    loading: locale === 'ka' ? 'იტვირთება...' : 'Loading...',
-    loadFailed: locale === 'ka' ? 'პარამეტრების ჩატვირთვა ვერ მოხერხდა' : 'Failed to load preferences',
-    tryAgain: locale === 'ka' ? 'თავიდან ცდა' : 'Try again',
-    email: locale === 'ka' ? 'ელ-ფოსტა' : 'Email',
-    noEmail: locale === 'ka' ? 'ელ-ფოსტა არ არის დამატებული' : 'No email added',
-    addEmail: locale === 'ka' ? 'დამატება' : 'Add Email',
-    verified: locale === 'ka' ? 'დადასტურებული' : 'Verified',
-    unverified: locale === 'ka' ? 'დასადასტურებელი' : 'Unverified',
-    push: locale === 'ka' ? 'Push შეტყობინებები' : 'Push Notifications',
-    pushDesc: locale === 'ka' ? 'ბრაუზერისა და აპის შეტყობინებები' : 'Browser and app notifications',
-    sms: locale === 'ka' ? 'SMS შეტყობინებები' : 'SMS Notifications',
-    noPhone: locale === 'ka' ? 'ტელეფონი არ არის დამატებული' : 'No phone added',
-    unavailable: locale === 'ka' ? 'მიუწვდომელია' : 'Unavailable',
-    newJobs: locale === 'ka' ? 'ახალი სამუშაოები' : 'New Jobs',
-    newJobsDesc: locale === 'ka' ? 'როცა შენს კატეგორიაში ახალი სამუშაო დაიდება' : 'When new jobs match your categories',
-    proposals: locale === 'ka' ? 'შეთავაზებები' : 'Proposals',
-    proposalsDesc: locale === 'ka' ? 'როცა სპეციალისტი გამოგიგზავნის შეთავაზებას' : 'When a pro sends you a proposal',
-    messages: locale === 'ka' ? 'შეტყობინებები' : 'Messages',
-    messagesDesc: locale === 'ka' ? 'როცა ახალ შეტყობინებას მიიღებ' : 'When you receive a new message',
-    marketing: locale === 'ka' ? 'მარკეტინგი' : 'Marketing',
-    marketingDesc: locale === 'ka' ? 'სიახლეები და სპეციალური შეთავაზებები' : 'News and special offers',
-    dataProtected: locale === 'ka' ? 'თქვენი მონაცემები დაცულია' : 'Your data is protected',
-    dataProtectedDesc: locale === 'ka' ? 'ჩვენ არასდროს გავყიდით თქვენს ინფორმაციას მესამე მხარეს' : 'We never sell your information to third parties',
+  const { t } = useLanguage();
+  const texts = {
+    title: t('settings.notifications'),
+    subtitle: t('settings.chooseHowYouWantTo'),
+    loading: t('common.loading'),
+    loadFailed: t('settings.failedToLoadPreferences'),
+    tryAgain: t('common.tryAgain'),
+    email: t('common.email'),
+    noEmail: t('settings.noEmailAdded'),
+    addEmail: t('settings.addEmail'),
+    verified: t('common.verified'),
+    unverified: t('settings.unverified'),
+    push: t('settings.pushNotifications'),
+    pushDesc: t('settings.browserAndAppNotifications'),
+    sms: t('settings.smsNotifications'),
+    noPhone: t('settings.noPhoneAdded'),
+    unavailable: t('settings.unavailable'),
+    newJobs: t('settings.newJobs'),
+    newJobsDesc: t('settings.whenNewJobsMatchYour'),
+    proposals: t('settings.proposals'),
+    proposalsDesc: t('settings.whenAProSendsYou'),
+    messages: t('settings.messages'),
+    messagesDesc: t('settings.whenYouReceiveANew'),
+    marketing: t('settings.marketing'),
+    marketingDesc: t('settings.newsAndSpecialOffers'),
+    dataProtected: t('settings.yourDataIsProtected'),
+    dataProtectedDesc: t('settings.weNeverSellYourInformation'),
   };
 
   return (
@@ -177,10 +179,10 @@ export default function NotificationSettings({
       {/* Header */}
       <div>
         <h2 className="text-base sm:text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-          {t.title}
+          {texts.title}
         </h2>
         <p className="mt-1 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-          {t.subtitle}
+          {texts.subtitle}
         </p>
       </div>
 
@@ -196,7 +198,7 @@ export default function NotificationSettings({
         <div className="py-12 flex flex-col items-center gap-3">
           <LoadingSpinner size="lg" color="#C4735B" />
           <span className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
-            {t.loading}
+            {texts.loading}
           </span>
         </div>
       ) : notificationData ? (
@@ -205,7 +207,7 @@ export default function NotificationSettings({
           <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
             <NotificationSectionHeader
               icon={Mail}
-              title={t.email}
+              title={texts.email}
               iconBgColor="rgba(210, 105, 30, 0.1)"
               iconColor="text-[#E07B4F]"
               subtitle={
@@ -214,17 +216,17 @@ export default function NotificationSettings({
                     <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{notificationData.email}</span>
                     {notificationData.isEmailVerified ? (
                       <Badge variant="success" size="xs" icon={<CheckCircle2 className="w-3 h-3" />}>
-                        {t.verified}
+                        {texts.verified}
                       </Badge>
                     ) : (
                       <Badge variant="warning" size="xs" icon={<AlertCircle className="w-3 h-3" />}>
-                        {t.unverified}
+                        {texts.unverified}
                       </Badge>
                     )}
                   </div>
                 ) : (
                   <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                    {t.noEmail}
+                    {texts.noEmail}
                   </span>
                 )
               }
@@ -237,7 +239,7 @@ export default function NotificationSettings({
                   className="px-3 py-1.5 text-sm font-medium text-[#E07B4F] bg-[#E07B4F]/10 hover:bg-[#E07B4F]/20 rounded-lg transition-colors flex items-center gap-1.5"
                 >
                   <Mail className="w-4 h-4" />
-                  {t.addEmail}
+                  {texts.addEmail}
                 </button>
               ) : undefined}
             />
@@ -246,32 +248,32 @@ export default function NotificationSettings({
               <div className="divide-y" style={{ borderTop: '1px solid var(--color-border)', borderColor: 'var(--color-border)' }}>
                 <NotificationItem
                   icon={BriefcaseBusiness}
-                  label={t.newJobs}
-                  description={t.newJobsDesc}
+                  label={texts.newJobs}
+                  description={texts.newJobsDesc}
                   checked={notificationData.preferences.email.newJobs}
                   onChange={(v) => onUpdatePreference('email', 'newJobs', v)}
                   variant="primary"
                 />
                 <NotificationItem
                   icon={FileText}
-                  label={t.proposals}
-                  description={t.proposalsDesc}
+                  label={texts.proposals}
+                  description={texts.proposalsDesc}
                   checked={notificationData.preferences.email.proposals}
                   onChange={(v) => onUpdatePreference('email', 'proposals', v)}
                   variant="primary"
                 />
                 <NotificationItem
                   icon={MessageSquare}
-                  label={t.messages}
-                  description={t.messagesDesc}
+                  label={texts.messages}
+                  description={texts.messagesDesc}
                   checked={notificationData.preferences.email.messages}
                   onChange={(v) => onUpdatePreference('email', 'messages', v)}
                   variant="primary"
                 />
                 <NotificationItem
                   icon={Megaphone}
-                  label={t.marketing}
-                  description={t.marketingDesc}
+                  label={texts.marketing}
+                  description={texts.marketingDesc}
                   checked={notificationData.preferences.email.marketing}
                   onChange={(v) => onUpdatePreference('email', 'marketing', v)}
                   variant="primary"
@@ -284,8 +286,8 @@ export default function NotificationSettings({
           <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
             <NotificationSectionHeader
               icon={Bell}
-              title={t.push}
-              subtitle={<span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{t.pushDesc}</span>}
+              title={texts.push}
+              subtitle={<span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{texts.pushDesc}</span>}
               iconBgColor="rgba(139, 92, 246, 0.1)"
               iconColor="text-violet-500"
               enabled={notificationData.preferences.push.enabled}
@@ -297,21 +299,21 @@ export default function NotificationSettings({
               <div className="divide-y" style={{ borderTop: '1px solid var(--color-border)', borderColor: 'var(--color-border)' }}>
                 <NotificationItem
                   icon={BriefcaseBusiness}
-                  label={t.newJobs}
+                  label={texts.newJobs}
                   checked={notificationData.preferences.push.newJobs}
                   onChange={(v) => onUpdatePreference('push', 'newJobs', v)}
                   variant="violet"
                 />
                 <NotificationItem
                   icon={FileText}
-                  label={t.proposals}
+                  label={texts.proposals}
                   checked={notificationData.preferences.push.proposals}
                   onChange={(v) => onUpdatePreference('push', 'proposals', v)}
                   variant="violet"
                 />
                 <NotificationItem
                   icon={MessageSquare}
-                  label={t.messages}
+                  label={texts.messages}
                   checked={notificationData.preferences.push.messages}
                   onChange={(v) => onUpdatePreference('push', 'messages', v)}
                   variant="violet"
@@ -324,7 +326,7 @@ export default function NotificationSettings({
           <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
             <NotificationSectionHeader
               icon={Smartphone}
-              title={t.sms}
+              title={texts.sms}
               iconBgColor="rgba(34, 197, 94, 0.1)"
               iconColor="text-green-500"
               subtitle={
@@ -333,13 +335,13 @@ export default function NotificationSettings({
                     <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{notificationData.phone}</span>
                     {notificationData.isPhoneVerified && (
                       <Badge variant="success" size="xs" icon={<CheckCircle2 className="w-3 h-3" />}>
-                        {t.verified}
+                        {texts.verified}
                       </Badge>
                     )}
                   </div>
                 ) : (
                   <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                    {t.noPhone}
+                    {texts.noPhone}
                   </span>
                 )
               }
@@ -348,7 +350,7 @@ export default function NotificationSettings({
               variant="success"
               action={!notificationData.phone ? (
                 <span className="text-xs px-2 py-1 rounded-lg" style={{ backgroundColor: 'var(--color-bg-muted)', color: 'var(--color-text-tertiary)' }}>
-                  {t.unavailable}
+                  {texts.unavailable}
                 </span>
               ) : undefined}
             />
@@ -357,14 +359,14 @@ export default function NotificationSettings({
               <div className="divide-y" style={{ borderTop: '1px solid var(--color-border)', borderColor: 'var(--color-border)' }}>
                 <NotificationItem
                   icon={FileText}
-                  label={t.proposals}
+                  label={texts.proposals}
                   checked={notificationData.preferences.sms.proposals}
                   onChange={(v) => onUpdatePreference('sms', 'proposals', v)}
                   variant="success"
                 />
                 <NotificationItem
                   icon={MessageSquare}
-                  label={t.messages}
+                  label={texts.messages}
                   checked={notificationData.preferences.sms.messages}
                   onChange={(v) => onUpdatePreference('sms', 'messages', v)}
                   variant="success"
@@ -378,10 +380,10 @@ export default function NotificationSettings({
             <Shield className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
-                {t.dataProtected}
+                {texts.dataProtected}
               </p>
               <p className="text-xs mt-1 text-blue-600/70 dark:text-blue-400/70">
-                {t.dataProtectedDesc}
+                {texts.dataProtectedDesc}
               </p>
             </div>
           </div>
@@ -390,13 +392,13 @@ export default function NotificationSettings({
         <div className="py-12 text-center">
           <AlertCircle className="w-10 h-10 mx-auto mb-3" style={{ color: 'var(--color-text-tertiary)' }} />
           <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-            {t.loadFailed}
+            {texts.loadFailed}
           </p>
           <button
             onClick={onRetry}
             className="mt-3 text-sm font-medium text-[#E07B4F] hover:text-[#D26B3F]"
           >
-            {t.tryAgain}
+            {texts.tryAgain}
           </button>
         </div>
       )}
