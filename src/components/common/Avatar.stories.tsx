@@ -101,6 +101,6 @@ export const Clickable: Story = {
   args: {
     name: 'Click Me',
     size: 'lg',
-    onClick: () => alert('Avatar clicked!'),
+    onClick: () => aler"Avatar clicked!",
   },
 };

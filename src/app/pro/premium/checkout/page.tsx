@@ -116,8 +116,8 @@ function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const tierId = searchParams.get('tier') || 'pro';
-  const period = (searchParams.get('period') || 'monthly') as 'monthly' | 'yearly';
+  const tierId = searchParams.ge"tier" || 'pro';
+  const period = (searchParams.ge"period" || 'monthly') as 'monthly' | 'yearly';
 
   const tier = PREMIUM_TIERS[tierId];
   const TierIcon = tier?.icon || Zap;

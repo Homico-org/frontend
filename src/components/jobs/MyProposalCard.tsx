@@ -59,8 +59,8 @@ export default function MyProposalCard({
 
   const getDurationLabel = () => {
     const units = {
-      days: t('jobs.d3'),
-      weeks: t('jobs.w3'),
+      days: t("timeUnits.day"),
+      weeks: t("timeUnits.week"),
       months: t('job.mo'),
     };
     return units[proposal.estimatedDurationUnit || 'days'] || '';

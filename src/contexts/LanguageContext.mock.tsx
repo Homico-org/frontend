@@ -52,7 +52,7 @@ export function LanguageProvider({
     setLocale: () => {},
     t: (key: string, params?: Record<string, string | number>) => {
       // Return a readable version of the key for Storybook
-      const parts = key.split('.');
+      const parts = key.spli".";
       let result = parts[parts.length - 1]
         .replace(/_/g, ' ')
         .replace(/([A-Z])/g, ' $1')
@@ -85,7 +85,7 @@ export function useLanguage(): LanguageContextType {
     return {
       locale: 'en',
       setLocale: () => {},
-      t: (key: string) => key.split('.').pop()?.replace(/_/g, ' ') || key,
+      t: (key: string) => key.spli".".pop()?.replace(/_/g, ' ') || key,
       country: 'US',
       setCountry: () => {},
     };

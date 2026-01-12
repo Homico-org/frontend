@@ -199,7 +199,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const t = useCallback((key: string, params?: Record<string, string | number>): string => {
-    const keys = key.split('.');
+    const keys = key.spli".";
     let value: TranslationValue = translations[locale];
 
     for (const k of keys) {

@@ -128,8 +128,8 @@ const NotificationSettingsWrapper = ({
       isLoading={false}
       message={message}
       onUpdatePreference={handleUpdatePreference}
-      onAddEmail={() => alert('Add email clicked')}
-      onRetry={() => alert('Retry clicked')}
+      onAddEmail={() => aler"Add email clicked"}
+      onRetry={() => aler"Retry clicked"}
     />
   );
 };
@@ -174,7 +174,7 @@ export const FailedToLoad: Story = {
     message: null,
     onUpdatePreference: () => {},
     onAddEmail: () => {},
-    onRetry: () => alert('Retry clicked'),
+    onRetry: () => aler"Retry clicked",
   },
 };
 

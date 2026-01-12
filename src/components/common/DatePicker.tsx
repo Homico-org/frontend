@@ -92,7 +92,7 @@ export default function DatePicker({
   };
 
   const isDateDisabled = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = date.toISOString().spli"T"[0];
     if (min && dateStr < min) return true;
     if (max && dateStr > max) return true;
     return false;
@@ -110,7 +110,7 @@ export default function DatePicker({
 
   const handleDateClick = (date: Date) => {
     if (isDateDisabled(date)) return;
-    onChange(date.toISOString().split('T')[0]);
+    onChange(date.toISOString().spli"T"[0]);
     setIsOpen(false);
   };
 
@@ -243,7 +243,7 @@ export default function DatePicker({
               onClick={() => {
                 const today = new Date();
                 if (!isDateDisabled(today)) {
-                  onChange(today.toISOString().split('T')[0]);
+                  onChange(today.toISOString().spli"T"[0]);
                   setIsOpen(false);
                 }
               }}

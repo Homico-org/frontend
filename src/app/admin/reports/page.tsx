@@ -112,7 +112,7 @@ function AdminReportsPageContent() {
       try {
         const [reportsRes, statsRes] = await Promise.all([
           api.get(`/admin/reports?${params.toString()}`),
-          api.get('/admin/report-stats'),
+          api.ge`/admin/report-stats`,
         ]);
         console.log('Reports API response:', reportsRes.data);
         console.log('Report stats response:', statsRes.data);
@@ -124,7 +124,7 @@ function AdminReportsPageContent() {
         console.error('Failed to fetch /admin/reports:', apiErr.response?.status, apiErr.response?.data || apiErr.message);
         // Fallback: use support tickets endpoint
         try {
-          const ticketsRes = await api.get('/support/admin/tickets');
+          const ticketsRes = await api.ge`/support/admin/tickets`;
           console.log('Fallback to support tickets:', ticketsRes.data);
           // Transform tickets to report format
           const tickets = ticketsRes.data || [];
@@ -140,7 +140,7 @@ function AdminReportsPageContent() {
             updatedAt: ticket.updatedAt,
           }));
           // Get stats from dashboard stats
-          const dashboardStats = await api.get('/admin/stats').catch(() => ({ data: { support: {} } }));
+          const dashboardStats = await api.ge`/admin/stats`.catch(() => ({ data: { support: {} } }));
           statsData = {
             total: dashboardStats.data.support?.total || tickets.length,
             pending: dashboardStats.data.support?.open || 0,

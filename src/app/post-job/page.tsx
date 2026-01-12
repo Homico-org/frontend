@@ -618,7 +618,7 @@ function PostJobPageContent() {
                             updateFormData("landArea", value);
                           }
                         }}
-                        placeholder={t('postJob.5007')}
+                        placeholder={"5007"}
                         className="w-full px-3 py-2.5 pr-12 rounded-lg border border-neutral-200 bg-white text-sm placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]"
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-400">

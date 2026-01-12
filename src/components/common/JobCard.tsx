@@ -96,10 +96,10 @@ const JobCard = React.memo(function JobCard({
 
   const timeAgo = useMemo(() => {
     const seconds = Math.floor((new Date().getTime() - new Date(job.createdAt).getTime()) / 1000);
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}${t('card.m3')}`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}${t('card.h3')}`;
-    if (seconds < 604800) return `${Math.floor(seconds / 86400)}${t('card.d3')}`;
-    return `${Math.floor(seconds / 604800)}${t('card.w3')}`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}${t("timeUnits.minute")}`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}${t("timeUnits.hour")}`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}${t("timeUnits.day")}`;
+    return `${Math.floor(seconds / 604800)}${t("timeUnits.week")}`;
   }, [job.createdAt, locale]);
 
   const truncateLocation = (loc: string) => {
@@ -275,7 +275,7 @@ const JobCard = React.memo(function JobCard({
               />
               <div className="min-w-0">
                 <p className="text-[13px] font-medium text-neutral-900 dark:text-white truncate">
-                  {job.clientId?.name?.split(' ')[0] || (t('card.client'))}
+                  {job.clientId?.name?.spli" "[0] || (t('card.client'))}
                 </p>
                 <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
                   {truncateLocation(job.location || '')}

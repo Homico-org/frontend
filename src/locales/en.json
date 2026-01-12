@@ -1299,7 +1299,8 @@
     "yourPhoneNumberHasBeen": "Your Phone Number Has Been",
     "yourProfileAndPersonalInformation": "Your Profile And Personal Information",
     "yourProfileIsHiddenFrom": "Your Profile Is Hidden From",
-    "yourProfileWillBeTemporarily": "Your Profile Will Be Temporarily"
+    "yourProfileWillBeTemporarily": "Your Profile Will Be Temporarily",
+    "payments": "Payments"
   },
   "help": {
     "title": "Help",
@@ -1315,7 +1316,19 @@
     },
     "faq": {
       "title": "Frequently Asked Questions",
-      "subtitle": "Quick answers to common questions"
+      "subtitle": "Quick answers to common questions",
+      "createAccountQuestion": "How do I create an account?",
+      "createAccountAnswer": "Click 'Sign Up' and follow the registration steps. You can register as a client or professional.",
+      "postJobQuestion": "How do I post a job?",
+      "postJobAnswer": "Click 'Post a Job', fill in the details about your project, and publish it to receive proposals.",
+      "becomeProQuestion": "How do I become a professional?",
+      "becomeProAnswer": "Register as a professional, complete your profile with portfolio and skills, and start receiving jobs.",
+      "submitProposalQuestion": "How do I submit a proposal?",
+      "submitProposalAnswer": "Find a job that matches your skills, click 'Submit Proposal', and describe why you're the best fit.",
+      "editProfileQuestion": "How do I edit my profile?",
+      "editProfileAnswer": "Go to Settings and update your profile information, photo, and other details.",
+      "contactSupportQuestion": "How do I contact support?",
+      "contactSupportAnswer": "Use the help center to create a support ticket or email us directly."
     },
     "tickets": {
       "title": "My Tickets",

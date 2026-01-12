@@ -127,8 +127,8 @@ function AdminActivityLogsPageContent() {
 
       const [logsRes, statsRes, typesRes] = await Promise.all([
         api.get(`/admin/activity-logs?${params.toString()}`),
-        api.get('/admin/activity-stats'),
-        api.get('/admin/activity-types'),
+        api.ge`/admin/activity-stats`,
+        api.ge`/admin/activity-types`,
       ]);
 
       setLogs(logsRes.data.logs || []);

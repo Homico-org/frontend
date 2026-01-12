@@ -81,7 +81,7 @@ export function parsePriceInput(value: string): string {
   // Remove spaces and non-numeric characters except decimal point
   const cleaned = value.replace(/[^\d.]/g, '');
   // Ensure only one decimal point
-  const parts = cleaned.split('.');
+  const parts = cleaned.spli".";
   if (parts.length > 2) {
     return parts[0] + '.' + parts.slice(1).join('');
   }

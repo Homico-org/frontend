@@ -35,7 +35,7 @@ const HiringChoiceModalWrapper = ({
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsLoading(false);
     setIsOpen(false);
-    alert('Hired through Homico!');
+    aler"Hired through Homico!";
   };
 
   const handleChooseDirect = async () => {

@@ -152,12 +152,12 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
       if (res.ok) {
         const updatedUser = await res.json();
         updateUser(updatedUser);
-        setMessage({ type: 'success', text: t('settings.profile.successMessage') });
+        setMessage({ type: 'success', text: t("settings.profileUpdated") });
       } else {
         throw new Error('Failed to update profile');
       }
     } catch {
-      setMessage({ type: 'error', text: t('settings.profile.errorMessage') });
+      setMessage({ type: 'error', text: t("common.error") });
     } finally {
       setIsSaving(false);
     }
@@ -225,10 +225,10 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
             </div>
             <div className="text-center sm:text-left">
               <h3 className="font-medium text-neutral-900 dark:text-white">
-                {t('settings.profile.profilePhoto')}
+                {t("common.profilePhoto")}
               </h3>
               <p className="text-sm mt-1 text-neutral-500">
-                {t('settings.profile.photoHint')}
+                {t("register.uploadARealPhotoOf")}
               </p>
               <Button
                 variant="link"
@@ -238,7 +238,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
               >
                 {isUploadingAvatar
                   ? (t('common.uploading'))
-                  : t('settings.profile.uploadPhoto')}
+                  : t("common.uploadImage")}
               </Button>
             </div>
           </div>
@@ -289,7 +289,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
                     type="tel"
                     value={formData.phone}
                     disabled
-                    placeholder={t('settings.profile.phonePlaceholder')}
+                    placeholder={t("common.phone")}
                     rightIcon={formData.phone ? (
                       <Badge variant="success" size="xs" icon={<Check className="w-3 h-3" />}>
                         {locale === 'ka' ? 'დადასტურებული' : 'Verified'}
@@ -309,7 +309,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
             </FormGroup>
 
             <FormGroup>
-              <Label locale={locale === 'ka' ? 'ka' : 'en'}>{t('settings.profile.city')}</Label>
+              <Label locale={locale === 'ka' ? 'ka' : 'en'}>{t("settings.city")}</Label>
               <Select
                 value={formData.city}
                 onChange={(value: string) => setFormData(prev => ({ ...prev, city: value }))}
@@ -317,7 +317,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
                   { value: '', label: t('settings.notSpecified') },
                   ...cityOptions,
                 ]}
-                placeholder={t('settings.profile.cityPlaceholder')}
+                placeholder={t("settings.city")}
               />
             </FormGroup>
           </div>
@@ -325,7 +325,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
 
         <div className="flex justify-end pt-4">
           <Button onClick={handleSaveProfile} loading={isSaving} className="w-full sm:w-auto">
-            {t('settings.profile.saveChanges')}
+            {t("common.save")}
           </Button>
         </div>
       </div>

@@ -395,7 +395,7 @@ function RoleBanner({
             {t('common.completed')}
             {completedAt && (
               <span className="font-normal text-green-600 dark:text-green-400 ml-1">
-                · {new Date(completedAt).toLocaleDateString(t('projects.enus24'), { month: "short", day: "numeric" })}
+                · {new Date(completedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
               </span>
             )}
           </p>

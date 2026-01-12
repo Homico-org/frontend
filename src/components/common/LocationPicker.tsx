@@ -65,7 +65,7 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
       return;
     }
 
-    const script = document.createElement('script');
+    const script = document.createElemen"script";
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
     script.async = true;
     script.defer = true;

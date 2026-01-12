@@ -1299,7 +1299,8 @@
     "yourPhoneNumberHasBeen": "Your Phone Number Has Been",
     "yourProfileAndPersonalInformation": "Your Profile And Personal Information",
     "yourProfileIsHiddenFrom": "Your Profile Is Hidden From",
-    "yourProfileWillBeTemporarily": "Your Profile Will Be Temporarily"
+    "yourProfileWillBeTemporarily": "Your Profile Will Be Temporarily",
+    "payments": "გადახდები"
   },
   "help": {
     "title": "დახმარება",
@@ -1315,20 +1316,32 @@
     },
     "faq": {
       "title": "ხშირად დასმული კითხვები",
-      "subtitle": "სწრაფი პასუხები გავრცელებულ კითხვებზე"
+      "subtitle": "სწრაფი პასუხები გავრცელებულ კითხვებზე",
+      "createAccountQuestion": "როგორ შევქმნა ანგარიში?",
+      "createAccountAnswer": "დააჭირეთ 'რეგისტრაცია' და მიჰყევით ნაბიჯებს. შეგიძლიათ დარეგისტრირდეთ როგორც კლიენტი ან პროფესიონალი.",
+      "postJobQuestion": "როგორ განვათავსო სამუშაო?",
+      "postJobAnswer": "დააჭირეთ 'სამუშაოს განთავსება', შეავსეთ დეტალები და გამოაქვეყნეთ წინადადებების მისაღებად.",
+      "becomeProQuestion": "როგორ გავხდე პროფესიონალი?",
+      "becomeProAnswer": "დარეგისტრირდით როგორც პროფესიონალი, შეავსეთ პროფილი პორტფოლიოთი და უნარებით.",
+      "submitProposalQuestion": "როგორ გავაგზავნო წინადადება?",
+      "submitProposalAnswer": "იპოვეთ შესაფერისი სამუშაო, დააჭირეთ 'წინადადების გაგზავნა' და აღწერეთ რატომ ხართ საუკეთესო კანდიდატი.",
+      "editProfileQuestion": "როგორ შევცვალო პროფილი?",
+      "editProfileAnswer": "გადადით პარამეტრებში და განაახლეთ თქვენი ინფორმაცია.",
+      "contactSupportQuestion": "როგორ დავუკავშირდე მხარდაჭერას?",
+      "contactSupportAnswer": "გამოიყენეთ დახმარების ცენტრი ტიკეტის შესაქმნელად ან მოგვწერეთ ელფოსტაზე."
     },
     "tickets": {
       "title": "ჩემი დავალებები",
-      "newTicket": "ახალი დავალება",
-      "createTicket": "დავალების შექმნა",
+      "newTicket": "ახალი ტიკეტი",
+      "createTicket": "ტიკეტის შექმნა",
       "subject": "თემა",
-      "subjectPlaceholder": "მოკლე აღწერა თქვენი საკითხის შესახებ",
+      "subjectPlaceholder": "მოკლედ აღწერეთ პრობლემა",
       "category": "კატეგორია",
       "priority": "პრიორიტეტი",
       "message": "შეტყობინება",
-      "messagePlaceholder": "დეტალურად აღწერეთ თქვენი საკითხი...",
-      "noTickets": "ჯერ არ გაქვთ დავალებები",
-      "noTicketsDesc": "დავალების შექმნისას ის აქ გამოჩნდება"
+      "messagePlaceholder": "დეტალურად აღწერეთ პრობლემა...",
+      "noTickets": "ტიკეტები ჯერ არ არის",
+      "noTicketsDesc": "როცა შექმნით ტიკეტს, ის აქ გამოჩნდება"
     },
     "ticketCategories": {
       "account": "ანგარიში და პროფილი",

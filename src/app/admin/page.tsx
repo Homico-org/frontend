@@ -150,15 +150,15 @@ function AdminDashboardPageContent() {
         dailyJobsRes,
         dailyProposalsRes,
       ] = await Promise.all([
-        api.get('/admin/stats'),
-        api.get('/admin/recent-users?limit=6'),
-        api.get('/admin/recent-jobs?limit=6'),
-        api.get('/admin/activity?limit=20'),
-        api.get('/admin/jobs-by-category'),
-        api.get('/admin/jobs-by-location'),
-        api.get('/admin/daily-signups?days=14'),
-        api.get('/admin/daily-jobs?days=14'),
-        api.get('/admin/daily-proposals?days=14'),
+        api.ge`/admin/stats`,
+        api.ge`/admin/recent-users?limit=6`,
+        api.ge`/admin/recent-jobs?limit=6`,
+        api.ge`/admin/activity?limit=20`,
+        api.ge`/admin/jobs-by-category`,
+        api.ge`/admin/jobs-by-location`,
+        api.ge`/admin/daily-signups?days=14`,
+        api.ge`/admin/daily-jobs?days=14`,
+        api.ge`/admin/daily-proposals?days=14`,
       ]);
 
       setStats(statsRes.data);

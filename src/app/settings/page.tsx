@@ -56,7 +56,7 @@ function SettingsPageContent() {
   const { t, locale } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialTab = searchParams.get('tab') || 'profile';
+  const initialTab = searchParams.ge"tab" || 'profile';
   const [activeTab, setActiveTab] = useState(initialTab);
   const [isTabsOpen, setIsTabsOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -272,12 +272,12 @@ function SettingsPageContent() {
       if (res.ok) {
         const updatedUser = await res.json();
         updateUser(updatedUser);
-        setMessage({ type: 'success', text: t('settings.profile.successMessage') });
+        setMessage({ type: 'success', text: t("settings.profileUpdated") });
       } else {
         throw new Error('Failed to update profile');
       }
     } catch (error) {
-      setMessage({ type: 'error', text: t('settings.profile.errorMessage') });
+      setMessage({ type: 'error', text: t("common.error") });
     } finally {
       setIsSaving(false);
     }
@@ -788,7 +788,7 @@ function SettingsPageContent() {
     { id: 'notifications', label: t('common.notifications'), icon: Bell },
     { id: 'security', label: t('common.password'), icon: Lock },
     // Payments tab - only visible in development
-    ...(process.env.NODE_ENV === 'development' ? [{ id: 'payments', label: t('settings.tabs.payments'), icon: CreditCard }] : []),
+    ...(process.env.NODE_ENV === 'development' ? [{ id: 'payments', label: t("settings.payments"), icon: CreditCard }] : []),
     { id: 'account', label: t('settings.account'), icon: Shield },
   ];
 
@@ -844,7 +844,7 @@ function SettingsPageContent() {
                 >
                   <tab.icon className="h-4 w-4 flex-shrink-0" />
                   <span className="md:hidden lg:inline">{tab.label}</span>
-                  <span className="hidden md:inline lg:hidden">{tab.label.split(' ')[0]}</span>
+                  <span className="hidden md:inline lg:hidden">{tab.label.spli" "[0]}</span>
                 </button>
               ))}
             </nav>
@@ -1348,7 +1348,7 @@ function SettingsPageContent() {
                     type="date"
                     value={deactivateUntilInput}
                     onChange={(e) => setDeactivateUntilInput(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
+                    min={new Date().toISOString().spli"T"[0]}
                     className={`w-full pl-12 pr-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-yellow-500/50 ${!deactivateUntilInput ? 'text-transparent' : ''}`}
                     style={{
                       backgroundColor: 'var(--color-bg-elevated)',

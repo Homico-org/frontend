@@ -77,11 +77,11 @@ api.interceptors.response.use(
       localStorage.removeItem('token'); // Clear old token key too
 
       // Dispatch custom event so AuthContext can react
-      window.dispatchEvent(new CustomEvent('auth:logout'));
+      window.dispatchEvent(new CustomEven"auth:logout");
 
       // Dispatch event to open login modal (handled by AuthModalContext)
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('auth:open-login-modal'));
+        window.dispatchEvent(new CustomEven"auth:open-login-modal");
       }
     }
     return Promise.reject(error);

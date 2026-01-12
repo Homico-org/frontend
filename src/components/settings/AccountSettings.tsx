@@ -115,7 +115,7 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
                     </p>
                     {deactivatedUntil && (
                       <p className="text-sm mt-2 opacity-80">
-                        {t('settings.returns')} {deactivatedUntil.toLocaleDateString(t('settings.enus8'), { year: 'numeric', month: 'long', day: 'numeric' })}
+                        {t('settings.returns')} {deactivatedUntil.toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' })}
                       </p>
                     )}
                     {deactivationReason && (

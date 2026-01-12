@@ -77,7 +77,7 @@ function SuccessContent() {
   const { t, locale } = useLanguage();
   const { trackEvent } = useAnalytics();
   const searchParams = useSearchParams();
-  const tierId = searchParams.get('tier') || 'basic';
+  const tierId = searchParams.ge"tier" || 'basic';
   const [isVisible, setIsVisible] = useState(false);
   const [showBenefits, setShowBenefits] = useState(false);
 

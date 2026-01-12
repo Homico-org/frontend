@@ -152,9 +152,9 @@ export const FilledVariants: Story = {
 export const Clickable: Story = {
   render: () => (
     <div className="flex items-center gap-4">
-      <IconBadge icon={Heart} variant="error" onClick={() => alert('Liked!')} />
-      <IconBadge icon={Share2} variant="info" onClick={() => alert('Shared!')} />
-      <IconBadge icon={Settings} variant="neutral" onClick={() => alert('Settings!')} />
+      <IconBadge icon={Heart} variant="error" onClick={() => aler"Liked!"} />
+      <IconBadge icon={Share2} variant="info" onClick={() => aler"Shared!"} />
+      <IconBadge icon={Settings} variant="neutral" onClick={() => aler"Settings!"} />
     </div>
   ),
 };

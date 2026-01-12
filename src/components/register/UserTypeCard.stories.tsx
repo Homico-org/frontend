@@ -41,7 +41,7 @@ export const ClientCard: Story = {
     ctaText: 'Get Started',
     freeLabel: 'Free',
     imageUrl: 'https://res.cloudinary.com/dakcvkodo/image/upload/w_600,h_450,c_pad,q_auto,f_auto/homico/avatars/client.png',
-    onClick: () => alert('Client card clicked!'),
+    onClick: () => aler"Client card clicked!",
   },
 };
 
@@ -54,7 +54,7 @@ export const ProCard: Story = {
     badge: 'Earn Money',
     freeLabel: 'Free profile',
     imageUrl: 'https://res.cloudinary.com/dakcvkodo/image/upload/w_600,h_450,c_pad,q_auto,f_auto/homico/avatars/pro-plumber.png',
-    onClick: () => alert('Pro card clicked!'),
+    onClick: () => aler"Pro card clicked!",
   },
 };
 
@@ -107,7 +107,7 @@ export const SideBySide: Story = {
             badge="Earn Money"
             freeLabel="Free profile"
             imageUrl="https://res.cloudinary.com/dakcvkodo/image/upload/w_600,h_450,c_pad,q_auto,f_auto/homico/avatars/pro-plumber.png"
-            onClick={() => alert('Pro')}
+            onClick={() => aler"Pro"}
           />
         </div>
       </div>

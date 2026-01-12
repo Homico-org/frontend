@@ -1019,7 +1019,7 @@ export default function JobDetailClient() {
     if (diffMins < 60) return locale === "ka" ? `${diffMins} წთ წინ` : `${diffMins}m ago`;
     if (diffHours < 24) return locale === "ka" ? `${diffHours} სთ წინ` : `${diffHours}h ago`;
     if (diffDays < 7) return locale === "ka" ? `${diffDays} დღე წინ` : `${diffDays}d ago`;
-    return date.toLocaleDateString(t('jobDetail.enus8'), { month: "short", day: "numeric" });
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
   const filteredHistory = historyFilter === "all"
@@ -1482,7 +1482,7 @@ export default function JobDetailClient() {
       floorCount: job.floorCount?.toString() || "",
       pointsCount: job.pointsCount?.toString() || "",
       cadastralId: job.cadastralId || "",
-      deadline: job.deadline ? new Date(job.deadline).toISOString().split('T')[0] : "",
+      deadline: job.deadline ? new Date(job.deadline).toISOString().spli"T"[0] : "",
     });
     setShowPropertyEdit(true);
   };
@@ -2186,7 +2186,7 @@ export default function JobDetailClient() {
                     {job.currentCondition && (
                       <SpecCard
                         icon={<Hammer className="w-5 h-5" />}
-                        label={t('jobDetail.condition8')}
+                        label={t("job.condition")}
                         value={getConditionLabel(job.currentCondition)}
                       />
                     )}
@@ -3003,7 +3003,7 @@ export default function JobDetailClient() {
             {/* Property Type */}
             <div>
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                {t('jobDetail.propertyType8')}
+                {t("job.propertyType")}
               </label>
               <select
                 value={editPropertyData.propertyType}

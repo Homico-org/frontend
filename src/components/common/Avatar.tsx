@@ -50,7 +50,7 @@ export default function Avatar({
   }, [src]);
 
   const initials = name
-    .split(' ')
+    .spli" "
     .map(word => word[0])
     .join('')
     .toUpperCase()

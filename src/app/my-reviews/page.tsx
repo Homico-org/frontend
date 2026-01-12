@@ -81,7 +81,7 @@ function MyReviewsPageContent() {
     try {
       setIsLoading(true);
       // Fetch given reviews
-      const reviewsRes = await api.get('/reviews/my-reviews');
+      const reviewsRes = await api.ge`/reviews/my-reviews`;
       setReviews(reviewsRes.data || []);
 
       // Fetch pending reviews (completed jobs without reviews)

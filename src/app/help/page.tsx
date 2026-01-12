@@ -61,33 +61,33 @@ export default function HelpPage() {
 
   const faqs: FAQ[] = [
     {
-      question: t('helpPage.faq.createAccount.question'),
-      answer: t('helpPage.faq.createAccount.answer'),
+      question: t("help.faq.createAccountQuestion"),
+      answer: t("help.faq.createAccountAnswer"),
       category: 'getting-started',
     },
     {
-      question: t('helpPage.faq.postJob.question'),
-      answer: t('helpPage.faq.postJob.answer'),
+      question: t("help.faq.postJobQuestion"),
+      answer: t("help.faq.postJobAnswer"),
       category: 'jobs',
     },
     {
-      question: t('helpPage.faq.becomePro.question'),
-      answer: t('helpPage.faq.becomePro.answer'),
+      question: t("help.faq.becomeProQuestion"),
+      answer: t("help.faq.becomeProAnswer"),
       category: 'getting-started',
     },
     {
-      question: t('helpPage.faq.submitProposal.question'),
-      answer: t('helpPage.faq.submitProposal.answer'),
+      question: t("help.faq.submitProposalQuestion"),
+      answer: t("help.faq.submitProposalAnswer"),
       category: 'jobs',
     },
     {
-      question: t('helpPage.faq.editProfile.question'),
-      answer: t('helpPage.faq.editProfile.answer'),
+      question: t("help.faq.editProfileQuestion"),
+      answer: t("help.faq.editProfileAnswer"),
       category: 'account',
     },
     {
-      question: t('helpPage.faq.contactSupport.question'),
-      answer: t('helpPage.faq.contactSupport.answer'),
+      question: t("help.faq.contactSupportQuestion"),
+      answer: t("help.faq.contactSupportAnswer"),
       category: 'support',
     },
   ];
@@ -261,7 +261,7 @@ export default function HelpPage() {
                 size="sm"
                 leftIcon={<Plus className="w-4 h-4" />}
               >
-                {t('helpPage.myTickets.newTicket')}
+                {t("help.tickets.newTicket")}
               </Button>
             </div>
 
@@ -269,22 +269,22 @@ export default function HelpPage() {
             {showTicketForm && (
               <Card ref={formRef} variant="elevated" size="lg" className="mb-6 animate-fade-in">
                 <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-50 mb-4">
-                  {t('helpPage.myTickets.createTicket')}
+                  {t("help.tickets.createTicket")}
                 </h3>
                 <form onSubmit={handleTicketSubmit} className="space-y-4">
                   <FormGroup>
-                    <Label>{t('helpPage.myTickets.subject')}</Label>
+                    <Label>{t("help.tickets.subject")}</Label>
                     <Input
                       value={ticketForm.subject}
                       onChange={(e) => setTicketForm({ ...ticketForm, subject: e.target.value })}
                       required
-                      placeholder={t('helpPage.myTickets.subjectPlaceholder')}
+                      placeholder={t("help.tickets.subjectPlaceholder")}
                     />
                   </FormGroup>
 
                   <div className="grid grid-cols-2 gap-4">
                     <FormGroup>
-                      <Label>{t('helpPage.myTickets.category')}</Label>
+                      <Label>{t("help.tickets.category")}</Label>
                       <Select
                         value={ticketForm.category}
                         onChange={(value) => setTicketForm({ ...ticketForm, category: value })}
@@ -318,7 +318,7 @@ export default function HelpPage() {
                       onChange={(e) => setTicketForm({ ...ticketForm, message: e.target.value })}
                       required
                       rows={4}
-                      placeholder={t('helpPage.myTickets.messagePlaceholder')}
+                      placeholder={t("help.tickets.messagePlaceholder")}
                     />
                   </FormGroup>
 
@@ -408,8 +408,8 @@ export default function HelpPage() {
                 <div className="flex justify-center mb-4">
                   <IconBadge icon={MessageCircle} variant="accent" size="lg" />
                 </div>
-                <p className="text-neutral-600 dark:text-neutral-400 mb-1">{t('helpPage.myTickets.noTickets')}</p>
-                <p className="text-sm text-neutral-400 dark:text-neutral-500">{t('helpPage.myTickets.noTicketsDesc')}</p>
+                <p className="text-neutral-600 dark:text-neutral-400 mb-1">{t("help.tickets.noTickets")}</p>
+                <p className="text-sm text-neutral-400 dark:text-neutral-500">{t("help.tickets.noTicketsDesc")}</p>
               </Card>
             )}
           </section>

@@ -107,7 +107,7 @@ function AdminSupportPageContent() {
     socketRef.current.on('connect', () => {
       console.log('Admin connected to support WebSocket');
       // Join admin support room for ticket updates
-      socketRef.current?.emit('joinAdminSupport');
+      socketRef.current?.emi"joinAdminSupport";
     });
 
     socketRef.current.on('disconnect', () => {
@@ -185,7 +185,7 @@ function AdminSupportPageContent() {
     });
 
     return () => {
-      socketRef.current?.emit('leaveAdminSupport');
+      socketRef.current?.emi"leaveAdminSupport";
       socketRef.current?.disconnect();
     };
   }, [token, user?.role]);
@@ -446,7 +446,7 @@ function AdminSupportPageContent() {
   }
 
   const statCards = [
-    { label: t('admin.reportsPage.totalReports'), value: stats?.total || 0, icon: Inbox, color: THEME.primary },
+    { label: t("admin.totalReports"), value: stats?.total || 0, icon: Inbox, color: THEME.primary },
     { label: t('common.open'), value: stats?.open || 0, icon: Clock, color: THEME.warning },
     { label: t('common.inProgress'), value: stats?.inProgress || 0, icon: MessageSquare, color: THEME.info },
     { label: t('admin.resolved'), value: stats?.resolved || 0, icon: CheckCircle, color: THEME.success },
@@ -486,7 +486,7 @@ function AdminSupportPageContent() {
                   {t('common.title')}
                 </h1>
                 <p className="text-sm mt-0.5" style={{ color: THEME.textMuted }}>
-                  {t('admin.supportPage.subtitle')}
+                  {t("admin.supportTickets")}
                 </p>
               </div>
             </div>
@@ -593,7 +593,7 @@ function AdminSupportPageContent() {
               ) : tickets.length === 0 ? (
                 <div className="text-center py-12">
                   <MessageSquare className="w-12 h-12 mx-auto mb-3" style={{ color: THEME.textDim }} />
-                  <p className="text-sm" style={{ color: THEME.textMuted }}>{t('admin.supportPage.noTicketsFound')}</p>
+                  <p className="text-sm" style={{ color: THEME.textMuted }}>{t("common.noResults")}</p>
                 </div>
               ) : (
                 <div>

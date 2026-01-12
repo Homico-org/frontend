@@ -58,9 +58,9 @@ export default function Header() {
         const promises: Promise<any>[] = [];
 
         if (user.role === 'pro' || user.role === 'admin') {
-          promises.push(api.get('/jobs/counters/proposal-updates'));
+          promises.push(api.ge`/jobs/counters/proposal-updates`);
         }
-        promises.push(api.get('/jobs/counters/unviewed-proposals'));
+        promises.push(api.ge`/jobs/counters/unviewed-proposals`);
 
         const results = await Promise.all(promises);
 

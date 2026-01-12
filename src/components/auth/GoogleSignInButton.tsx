@@ -9,7 +9,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 // JWT decode helper
 function decodeJwt(token: string): { email: string; name: string; picture?: string; sub: string } | null {
   try {
-    const base64Url = token.split('.')[1];
+    const base64Url = token.spli"."[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
     const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
       '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)

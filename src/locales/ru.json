@@ -1299,7 +1299,8 @@
     "yourPhoneNumberHasBeen": "Your Phone Number Has Been",
     "yourProfileAndPersonalInformation": "Your Profile And Personal Information",
     "yourProfileIsHiddenFrom": "Your Profile Is Hidden From",
-    "yourProfileWillBeTemporarily": "Your Profile Will Be Temporarily"
+    "yourProfileWillBeTemporarily": "Your Profile Will Be Temporarily",
+    "payments": "Платежи"
   },
   "help": {
     "title": "Помощь",
@@ -1315,18 +1316,30 @@
     },
     "faq": {
       "title": "Часто задаваемые вопросы",
-      "subtitle": "Быстрые ответы на популярные вопросы"
+      "subtitle": "Быстрые ответы на популярные вопросы",
+      "createAccountQuestion": "Как создать аккаунт?",
+      "createAccountAnswer": "Нажмите 'Регистрация' и следуйте инструкциям. Можно зарегистрироваться как клиент или специалист.",
+      "postJobQuestion": "Как разместить работу?",
+      "postJobAnswer": "Нажмите 'Разместить работу', заполните детали проекта и опубликуйте для получения предложений.",
+      "becomeProQuestion": "Как стать специалистом?",
+      "becomeProAnswer": "Зарегистрируйтесь как специалист, заполните профиль с портфолио и навыками.",
+      "submitProposalQuestion": "Как отправить предложение?",
+      "submitProposalAnswer": "Найдите подходящую работу, нажмите 'Отправить предложение' и опишите почему вы лучший кандидат.",
+      "editProfileQuestion": "Как редактировать профиль?",
+      "editProfileAnswer": "Перейдите в настройки и обновите информацию профиля.",
+      "contactSupportQuestion": "Как связаться с поддержкой?",
+      "contactSupportAnswer": "Используйте центр помощи для создания тикета или напишите нам на email."
     },
     "tickets": {
       "title": "Мои тикеты",
       "newTicket": "Новый тикет",
       "createTicket": "Создать тикет",
       "subject": "Тема",
-      "subjectPlaceholder": "Краткое описание вашей проблемы",
+      "subjectPlaceholder": "Краткое описание проблемы",
       "category": "Категория",
       "priority": "Приоритет",
       "message": "Сообщение",
-      "messagePlaceholder": "Опишите вашу проблему подробно...",
+      "messagePlaceholder": "Опишите проблему подробно...",
       "noTickets": "Тикетов пока нет",
       "noTicketsDesc": "Когда вы создадите тикет, он появится здесь"
     },

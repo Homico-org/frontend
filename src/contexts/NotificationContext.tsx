@@ -97,7 +97,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const refreshUnreadCount = useCallback(async () => {
     if (!isAuthenticated) return;
     try {
-      const response = await api.get('/notifications/unread-count');
+      const response = await api.ge`/notifications/unread-count`;
       setUnreadCount(response.data.unreadCount);
     } catch (error) {
       console.error('Failed to fetch unread count:', error);
