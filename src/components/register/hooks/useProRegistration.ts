@@ -254,42 +254,7 @@ export function useProRegistration(): UseProRegistrationReturn {
     setError('');
   }, []);
   
-  const handleNext = useCallback(async () => {
-    setError('');
-    
-    switch (currentStep) {
-      case 'phone':
-        // Phone verification handled by sendOtp/verifyOtp
-        break;
-      case 'profile':
-        if (canProceedFromProfile()) {
-          setCurrentStep('services');
-        }
-        break;
-      case 'services':
-        if (canProceedFromServices()) {
-          await submitRegistration();
-        }
-        break;
-    }
-  }, [currentStep, canProceedFromProfile, canProceedFromServices, submitRegistration]);
-  
-  const handleBack = useCallback(() => {
-    switch (currentStep) {
-      case 'profile':
-        setCurrentStep('phone');
-        setShowOtp(false);
-        break;
-      case 'services':
-        setCurrentStep('profile');
-        break;
-      case 'complete':
-        // Can't go back from complete
-        break;
-    }
-  }, [currentStep]);
-  
-  // Submit registration
+  // Submit registration (defined before handleNext to avoid hoisting issues)
   const submitRegistration = useCallback(async () => {
     setIsLoading(true);
     setError('');
@@ -338,6 +303,41 @@ export function useProRegistration(): UseProRegistrationReturn {
       setIsLoading(false);
     }
   }, [phone, phoneCountry, fullName, city, password, uploadedAvatarUrl, selectedServices, login]);
+  
+  const handleNext = useCallback(async () => {
+    setError('');
+    
+    switch (currentStep) {
+      case 'phone':
+        // Phone verification handled by sendOtp/verifyOtp
+        break;
+      case 'profile':
+        if (canProceedFromProfile()) {
+          setCurrentStep('services');
+        }
+        break;
+      case 'services':
+        if (canProceedFromServices()) {
+          await submitRegistration();
+        }
+        break;
+    }
+  }, [currentStep, canProceedFromProfile, canProceedFromServices, submitRegistration]);
+  
+  const handleBack = useCallback(() => {
+    switch (currentStep) {
+      case 'profile':
+        setCurrentStep('phone');
+        setShowOtp(false);
+        break;
+      case 'services':
+        setCurrentStep('profile');
+        break;
+      case 'complete':
+        // Can't go back from complete
+        break;
+    }
+  }, [currentStep]);
   
   // Completion handlers
   const onGoToProfile = useCallback(() => {
