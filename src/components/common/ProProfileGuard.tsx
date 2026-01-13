@@ -14,6 +14,7 @@ const ALLOWED_PATHS_FOR_INCOMPLETE_PRO = [
   '/pro/profile-setup',
   '/settings',
   '/logout',
+  '/register', // Allow completion screen after registration
 ];
 
 // Check if path starts with any allowed path

@@ -300,20 +300,31 @@ export function useRegistration(): UseRegistrationReturn {
     }
   }, [showVerification]);
 
-  // Redirect authenticated users
+  // Redirect authenticated users (but not during active registration)
   useEffect(() => {
+    // Skip redirect if user is in registration flow (type selection shown or pro registration in progress)
+    if (showTypeSelection) {
+      return;
+    }
+    
+    // Skip redirect for pro users with incomplete profile on register page
+    // They might be completing registration or viewing the success screen
     if (!authLoading && isAuthenticated && user) {
+      // Only redirect if not a pro with incomplete profile
+      // Pro users with incomplete profile should be able to stay on register page
       if (user.role === 'company') {
         router.replace('/company/jobs');
       } else if (user.role === 'admin') {
         router.replace('/admin');
-      } else if (user.role === 'pro' && user.isProfileCompleted === false) {
-        router.replace('/pro/profile-setup');
-      } else {
+      } else if (user.role === 'pro' && user.isProfileCompleted === true) {
+        // Only redirect completed pro users
+        router.replace('/browse');
+      } else if (user.role === 'client') {
         router.replace('/browse');
       }
+      // Pro users with incomplete profile stay on register page
     }
-  }, [authLoading, isAuthenticated, user, router]);
+  }, [authLoading, isAuthenticated, user, router, showTypeSelection]);
 
   // Handlers
   const handleInputChange = useCallback((field: string, value: string) => {

@@ -1,15 +1,15 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRegistration, PRO_STEPS } from '@/components/register/hooks';
-import { StepAccount, StepCategory, StepServices, StepReview } from '@/components/register/steps';
+import { useRegistration } from '@/components/register/hooks';
+import { StepAccount } from '@/components/register/steps';
 import UserTypeSelector from '@/components/register/UserTypeSelector';
-import AvatarCropper from '@/components/common/AvatarCropper';
+import ProRegistration from '@/components/register/ProRegistration';
+import LanguageSelector from '@/components/common/LanguageSelector';
 import Select from '@/components/common/Select';
 import { OTPInput } from '@/components/ui/OTPInput';
-import { Progress } from '@/components/ui/progress';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/Card';
@@ -53,6 +53,7 @@ function RegisterContent() {
         <header className="p-4 flex items-center justify-between">
           <Logo />
           <div className="flex items-center gap-3">
+            <LanguageSelector variant="compact" />
             <Link href="/help" className="text-xs text-neutral-500 hover:text-neutral-800 transition-colors">
               {t('common.help')}
             </Link>
@@ -63,7 +64,7 @@ function RegisterContent() {
             >
               {t('register.logIn')}
             </Button>
-              </div>
+          </div>
         </header>
         
         <main className="flex-1 flex items-center justify-center px-4 py-8">
@@ -76,8 +77,7 @@ function RegisterContent() {
             </p>
             
             <UserTypeSelector
-              value={null}
-              onChange={(type) => {
+              onSelect={(type) => {
                 reg.setUserType(type);
                 reg.setShowTypeSelection(false);
               }}
@@ -257,10 +257,13 @@ function RegisterContent() {
     return (
       <div className="min-h-screen bg-[#FAFAF9] flex flex-col">
         <header className="p-4 flex items-center justify-between">
-            <Logo />
-          <Link href="/help" className="text-xs text-neutral-600 hover:text-neutral-900">
-            {reg.locale === 'ka' ? 'დახმარება' : 'Help'}
-              </Link>
+          <Logo />
+          <div className="flex items-center gap-3">
+            <LanguageSelector variant="compact" />
+            <Link href="/help" className="text-xs text-neutral-600 hover:text-neutral-900">
+              {t('common.help')}
+            </Link>
+          </div>
         </header>
 
         <main className="flex-1 py-4 lg:py-6">
@@ -306,180 +309,11 @@ function RegisterContent() {
     );
   }
 
-  // Pro registration - multi-step wizard
+  // Pro registration - new simplified flow
   return (
-    <>
-      {/* Avatar Cropper Modal */}
-      {reg.showAvatarCropper && reg.rawAvatarImage && (
-        <AvatarCropper
-          image={reg.rawAvatarImage}
-          onCropComplete={reg.handleCroppedAvatar}
-          onCancel={reg.handleCropCancel}
-          locale={reg.locale}
-        />
-      )}
-
-      <div className="min-h-screen bg-[#FAFAF9] flex flex-col">
-      {/* Header with progress */}
-      <header className="sticky top-0 z-50 bg-white border-b border-neutral-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="h-12 flex items-center justify-between">
-            <Logo />
-              <Link href="/help" className="text-xs text-neutral-600 hover:text-neutral-900">
-                {reg.locale === 'ka' ? 'დახმარება' : 'Help'}
-            </Link>
-          </div>
-
-          {/* Progress bar */}
-          <div className="pb-3">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] font-medium text-neutral-500 uppercase tracking-wider">
-                  {reg.locale === 'ka' 
-                    ? `${reg.getCurrentStepIndex() + 1}/${PRO_STEPS.length}` 
-                    : `STEP ${reg.getCurrentStepIndex() + 1}/${PRO_STEPS.length}`
-                  }
-              </span>
-              <span className="text-[10px] font-medium text-[#C4735B]">
-                  {PRO_STEPS[reg.getCurrentStepIndex()].title[reg.locale === 'ka' ? 'ka' : 'en']}
-              </span>
-            </div>
-              <Progress value={reg.getProgressPercentage()} size="sm" indicatorVariant="gradient" />
-          </div>
-        </div>
-      </header>
-
-      {/* Main content */}
-      <main className="flex-1 py-4 lg:py-6">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            {reg.error && (
-              <Alert variant="error" size="sm" className="mb-4" dismissible onDismiss={() => reg.setError('')}>
-                {reg.error}
-            </Alert>
-          )}
-
-            {/* Step 1: Account */}
-            {reg.currentStep === 'account' && (
-              <StepAccount
-                locale={reg.locale}
-                userType="pro"
-                authMethod={reg.authMethod}
-                setAuthMethod={reg.setAuthMethod}
-                formData={reg.formData}
-                handleInputChange={reg.handleInputChange}
-                error=""
-                isLoading={reg.isLoading}
-                repeatPassword={reg.repeatPassword}
-                setRepeatPassword={reg.setRepeatPassword}
-                showPassword={reg.showPassword}
-                setShowPassword={reg.setShowPassword}
-                showRepeatPassword={reg.showRepeatPassword}
-                setShowRepeatPassword={reg.setShowRepeatPassword}
-                agreedToTerms={reg.agreedToTerms}
-                setAgreedToTerms={reg.setAgreedToTerms}
-                phoneCountry={reg.phoneCountry}
-                setPhoneCountry={reg.setPhoneCountry}
-                showCountryDropdown={reg.showCountryDropdown}
-                setShowCountryDropdown={reg.setShowCountryDropdown}
-                verificationChannel={reg.verificationChannel}
-                setVerificationChannel={reg.setVerificationChannel}
-                avatarPreview={reg.avatarPreview}
-                avatarUploading={reg.avatarUploading}
-                uploadedAvatarUrl={reg.uploadedAvatarUrl}
-                avatarInputRef={reg.avatarInputRef}
-                handleAvatarSelect={reg.handleAvatarSelect}
-                removeAvatar={reg.removeAvatar}
-                handleGoogleSuccess={reg.handleGoogleSuccess}
-                handleGoogleError={reg.handleGoogleError}
-                canProceed={reg.canProceedFromAccount()}
-                onNext={reg.handleNext}
-                onSwitchType={() => reg.setUserType('client')}
-                showFooter={false}
-              />
-            )}
-
-            {/* Step 2: Category */}
-            {reg.currentStep === 'category' && (
-              <StepCategory
-                locale={reg.locale}
-                categories={reg.categories}
-                formData={reg.formData}
-                handleCategoryToggle={reg.handleCategoryToggle}
-                handleSubcategoryToggle={reg.handleSubcategoryToggle}
-                customServices={reg.customServices}
-                setCustomServices={reg.setCustomServices}
-                newCustomService={reg.newCustomService}
-                setNewCustomService={reg.setNewCustomService}
-              />
-            )}
-
-            {/* Step 3: Services/Portfolio */}
-            {reg.currentStep === 'services' && (
-              <StepServices
-                locale={reg.locale}
-                portfolioProjects={reg.portfolioProjects}
-                addPortfolioProject={reg.addPortfolioProject}
-                updatePortfolioProject={reg.updatePortfolioProject}
-                removePortfolioProject={reg.removePortfolioProject}
-                handleProjectImageUpload={reg.handleProjectImageUpload}
-                removeProjectImage={reg.removeProjectImage}
-                handleProjectVideoUpload={reg.handleProjectVideoUpload}
-                removeProjectVideo={reg.removeProjectVideo}
-                handleBeforeAfterUpload={reg.handleBeforeAfterUpload}
-                removeBeforeAfterPair={reg.removeBeforeAfterPair}
-              />
-            )}
-
-            {/* Step 4: Review */}
-            {reg.currentStep === 'review' && (
-              <StepReview
-                locale={reg.locale}
-                formData={reg.formData}
-                categories={reg.categories}
-                avatarPreview={reg.avatarPreview}
-                portfolioProjects={reg.portfolioProjects}
-                customServices={reg.customServices}
-                phoneCountry={reg.phoneCountry}
-                goToStep={reg.goToStep}
-              />
-          )}
-        </div>
-      </main>
-
-      {/* Footer with navigation */}
-      <footer className="sticky bottom-0 bg-white border-t border-neutral-100">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center justify-between">
-              {reg.getCurrentStepIndex() > 0 ? (
-                <Button
-                  variant="ghost"
-                  onClick={reg.handleBack}
-                >
-                  ← {t('common.back')}
-                </Button>
-            ) : (
-              <div />
-            )}
-
-              <Button
-                onClick={reg.handleNext}
-              disabled={
-                  reg.isLoading ||
-                  (reg.currentStep === 'account' && !reg.canProceedFromAccount()) ||
-                  (reg.currentStep === 'category' && !reg.canProceedFromCategory()) ||
-                  (reg.currentStep === 'services' && !reg.canProceedFromServices())
-                }
-                loading={reg.isLoading}
-              >
-                {reg.currentStep === 'review' 
-                  ? (t('register.complete'))
-                  : (t('common.continue'))
-                }
-              </Button>
-          </div>
-        </div>
-      </footer>
-    </div>
-    </>
+    <ProRegistration
+      onSwitchToClient={() => reg.setShowTypeSelection(true)}
+    />
   );
 }
 
