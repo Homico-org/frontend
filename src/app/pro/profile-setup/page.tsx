@@ -2,10 +2,10 @@
 
 import AuthGuard from '@/components/common/AuthGuard';
 import AboutStep from '@/components/pro/steps/AboutStep';
-import CategoriesStep from '@/components/pro/steps/CategoriesStep';
 import PricingAreasStep from '@/components/pro/steps/PricingAreasStep';
 import ProjectsStep, { PortfolioProject } from '@/components/pro/steps/ProjectsStep';
 import ReviewStep from '@/components/pro/steps/ReviewStep';
+import StepSelectServices, { ExperienceLevel, SelectedService } from '@/components/register/steps/StepSelectServices';
 import { Alert } from '@/components/ui/Alert';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Progress } from '@/components/ui/progress';
@@ -18,9 +18,27 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 // Raw portfolio project from API (may have _id and imageUrl)
+// API response types for before/after pairs
+interface ApiBeforeAfterPair {
+  before?: string;
+  after?: string;
+  beforeImage?: string;
+  afterImage?: string;
+}
+
+// API response type for selected service
+interface ApiSelectedService {
+  key: string;
+  categoryKey: string;
+  name: string;
+  nameKa: string;
+  experience: string;
+}
+
 interface RawPortfolioProject extends Partial<PortfolioProject> {
   _id?: string;
   imageUrl?: string;
+  beforeAfter?: ApiBeforeAfterPair[];
 }
 
 type ProfileSetupStep = 'about' | 'categories' | 'pricing-areas' | 'projects' | 'review';
@@ -50,10 +68,19 @@ function ProProfileSetupPageContent() {
   // Step state
   const [currentStep, setCurrentStep] = useState<ProfileSetupStep>('about');
 
-  // Form state
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
+  // Form state - use SelectedService[] to match new registration flow
+  const [selectedServices, setSelectedServices] = useState<SelectedService[]>([]);
   const [customServices, setCustomServices] = useState<string[]>([]);
+  
+  // Derived categories and subcategories from selectedServices
+  const selectedCategories = useMemo(() => 
+    [...new Set(selectedServices.map(s => s.categoryKey))],
+    [selectedServices]
+  );
+  const selectedSubcategories = useMemo(() => 
+    selectedServices.map(s => s.key),
+    [selectedServices]
+  );
 
   const [formData, setFormData] = useState({
     title: '',
@@ -145,14 +172,69 @@ function ProProfileSetupPageContent() {
 
       hasFetchedProfile.current = true;
 
+      // Helper to convert subcategories to SelectedService format
+      const convertToSelectedServices = (subcategoryKeys: string[], defaultExperience: ExperienceLevel = '3-5'): SelectedService[] => {
+        const services: SelectedService[] = [];
+        
+        subcategoryKeys.forEach(subKey => {
+          // Find the subcategory in categories
+          for (const category of allCategories) {
+            for (const sub of category.subcategories) {
+              if (sub.key === subKey) {
+                services.push({
+                  key: sub.key,
+                  name: sub.name,
+                  nameKa: sub.nameKa,
+                  categoryKey: category.key,
+                  experience: defaultExperience,
+                });
+                return;
+              }
+              // Check children
+              if (sub.children) {
+                for (const child of sub.children) {
+                  if (child.key === subKey) {
+                    services.push({
+                      key: child.key,
+                      name: child.name,
+                      nameKa: child.nameKa,
+                      categoryKey: category.key,
+                      experience: defaultExperience,
+                    });
+                    return;
+                  }
+                }
+              }
+            }
+          }
+        });
+        
+        return services;
+      };
+      
+      // Helper to map yearsExperience number to ExperienceLevel
+      const yearsToExperienceLevel = (years: number): ExperienceLevel => {
+        if (years >= 10) return '10+';
+        if (years >= 5) return '5-10';
+        if (years >= 3) return '3-5';
+        return '1-2';
+      };
+
       // First check sessionStorage for new registration data
       const storedData = sessionStorage.getItem('proRegistrationData');
       if (storedData) {
         try {
           const parsed = JSON.parse(storedData);
-          const categories = parsed.categories || (parsed.category ? [parsed.category] : ['interior-design']);
-          setSelectedCategories(categories);
-          setSelectedSubcategories(parsed.subcategories || []);
+          const subcategories = parsed.subcategories || [];
+          const yearsExp = parsed.yearsExperience || 3;
+          const expLevel = yearsToExperienceLevel(yearsExp);
+          
+          // Convert to new SelectedService format
+          if (allCategories.length > 0 && subcategories.length > 0) {
+            const services = convertToSelectedServices(subcategories, expLevel);
+            setSelectedServices(services);
+          }
+          
           if (parsed.customServices && Array.isArray(parsed.customServices)) {
             setCustomServices(parsed.customServices);
           }
@@ -170,7 +252,12 @@ function ProProfileSetupPageContent() {
               images: p.images || [],
               videos: p.videos || [],
               location: p.location,
-              beforeAfterPairs: p.beforeAfterPairs || [],
+              // Convert from API format { before, after } to frontend format { beforeImage, afterImage }
+              beforeAfterPairs: (p.beforeAfter || p.beforeAfterPairs || []).map((pair: ApiBeforeAfterPair, pairIdx: number) => ({
+                id: `pair-${Date.now()}-${pairIdx}`,
+                beforeImage: pair.before || pair.beforeImage || '',
+                afterImage: pair.after || pair.afterImage || '',
+              })),
             }));
             setPortfolioProjects(cleanedProjects);
           }
@@ -203,8 +290,35 @@ function ProProfileSetupPageContent() {
           setExistingProfileId(profile._id);
           setIsEditMode(true);
 
-          setSelectedCategories(profile.categories || ['interior-design']);
-          setSelectedSubcategories(profile.subcategories || []);
+          // Load selectedServices - prefer profile.selectedServices if available
+          if (profile.selectedServices && profile.selectedServices.length > 0) {
+            // Use the stored selectedServices with per-service experience
+            const loadedServices: SelectedService[] = profile.selectedServices.map((s: ApiSelectedService) => ({
+              key: s.key,
+              categoryKey: s.categoryKey,
+              name: s.name,
+              nameKa: s.nameKa,
+              experience: (s.experience || '3-5') as ExperienceLevel,
+            }));
+            setSelectedServices(loadedServices);
+          } else {
+            // Fall back to converting subcategories to SelectedService format
+            let subcategories = profile.subcategories || [];
+            
+            // If profile has no subcategories, use user's selectedSubcategories from registration
+            if (subcategories.length === 0 && user?.selectedSubcategories && user.selectedSubcategories.length > 0) {
+              subcategories = user.selectedSubcategories;
+            }
+            
+            const yearsExp = profile.yearsExperience || 3;
+            const expLevel = yearsToExperienceLevel(yearsExp);
+            
+            if (allCategories.length > 0 && subcategories.length > 0) {
+              const services = convertToSelectedServices(subcategories, expLevel);
+              setSelectedServices(services);
+            }
+          }
+          
           if (profile.customServices && Array.isArray(profile.customServices)) {
             setCustomServices(profile.customServices);
           }
@@ -213,7 +327,6 @@ function ProProfileSetupPageContent() {
             ...prev,
             title: profile.title || '',
             bio: profile.description || profile.bio || '',
-            yearsExperience: profile.yearsExperience?.toString() || '',
             avatar: profile.avatar || user?.avatar || '',
             portfolioUrl: profile.pinterestLinks?.[0] || '',
             licenseNumber: profile.architectLicenseNumber || '',
@@ -275,7 +388,12 @@ function ProProfileSetupPageContent() {
               images: p.images || [],
               videos: p.videos || [],
               location: p.location || '',
-              beforeAfterPairs: p.beforeAfterPairs || [],
+              // Convert from API format { before, after } to frontend format { beforeImage, afterImage }
+              beforeAfterPairs: (p.beforeAfter || p.beforeAfterPairs || []).map((pair: ApiBeforeAfterPair, pairIdx: number) => ({
+                id: `pair-${Date.now()}-${pairIdx}`,
+                beforeImage: pair.before || pair.beforeImage || '',
+                afterImage: pair.after || pair.afterImage || '',
+              })),
             }));
           }
 
@@ -291,7 +409,12 @@ function ProProfileSetupPageContent() {
                   images: p.images || [p.imageUrl].filter(Boolean),
                   videos: p.videos || [],
                   location: p.location || '',
-                  beforeAfterPairs: p.beforeAfterPairs || [],
+                  // Convert from API format { before, after } to frontend format { beforeImage, afterImage }
+                  beforeAfterPairs: (p.beforeAfter || p.beforeAfterPairs || []).map((pair: ApiBeforeAfterPair, pairIdx: number) => ({
+                    id: `pair-${Date.now()}-${pairIdx}`,
+                    beforeImage: pair.before || pair.beforeImage || '',
+                    afterImage: pair.after || pair.afterImage || '',
+                  })),
                 }));
                 const existingTitles = new Set(loadedProjects.map(p => p.title));
                 fetchedProjects.forEach((p: PortfolioProject) => {
@@ -309,22 +432,24 @@ function ProProfileSetupPageContent() {
             setPortfolioProjects(loadedProjects);
           }
         } else {
-          if (user?.selectedCategories && user.selectedCategories.length > 0) {
-            setSelectedCategories(user.selectedCategories);
-          } else {
-            setSelectedCategories(['interior-design']);
+          // No existing profile - check if user has subcategories from registration
+          if (user?.selectedSubcategories && user.selectedSubcategories.length > 0 && allCategories.length > 0) {
+            const services = convertToSelectedServices(user.selectedSubcategories, '3-5');
+            setSelectedServices(services);
           }
         }
       } catch (err) {
         console.error('Failed to fetch existing profile:', err);
-        setSelectedCategories(['interior-design']);
       } finally {
         setProfileLoading(false);
       }
     };
 
-    fetchExistingProfile();
-  }, [user]);
+    // Only fetch when categories are loaded
+    if (allCategories.length > 0) {
+      fetchExistingProfile();
+    }
+  }, [user, allCategories]);
 
   // Load user avatar
   const hasSetAvatarFromUser = useRef(false);
@@ -392,18 +517,30 @@ function ProProfileSetupPageContent() {
     }
   }, [user, authLoading, router]);
 
+  // Calculate max experience from selectedServices for API compatibility
+  const maxExperienceYears = useMemo(() => {
+    if (selectedServices.length === 0) return 0;
+    const experienceMap: Record<ExperienceLevel, number> = {
+      '1-2': 2,
+      '3-5': 5,
+      '5-10': 10,
+      '10+': 15,
+    };
+    return Math.max(...selectedServices.map(s => experienceMap[s.experience] || 0));
+  }, [selectedServices]);
+
   // Validation
   const validation = useMemo(() => ({
     avatar: !!avatarPreview && avatarPreview.length > 0,
     bio: !!formData.bio.trim(),
-    experience: !!formData.yearsExperience,
+    experience: selectedServices.length > 0, // Experience is now tied to services
     categories: selectedCategories.length > 0,
     subcategories: selectedSubcategories.length > 0,
     pricing: !!formData.basePrice,
     serviceAreas: formData.nationwide || formData.serviceAreas.length > 0,
-  }), [avatarPreview, formData.bio, formData.yearsExperience, formData.basePrice, formData.nationwide, formData.serviceAreas, selectedCategories.length, selectedSubcategories.length]);
+  }), [avatarPreview, formData.bio, formData.basePrice, formData.nationwide, formData.serviceAreas, selectedCategories.length, selectedSubcategories.length, selectedServices.length]);
 
-  const isFormValid = validation.avatar && validation.bio && validation.experience && validation.categories && validation.subcategories && validation.pricing && validation.serviceAreas;
+  const isFormValid = validation.avatar && validation.bio && validation.categories && validation.subcategories && validation.pricing && validation.serviceAreas;
 
   // Handlers
   const handleAvatarChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
@@ -461,13 +598,18 @@ function ProProfileSetupPageContent() {
         }
       }
 
+      // Transform beforeAfterPairs to the API format
       const cleanedPortfolioProjects = portfolioProjects.map(p => ({
         title: p.title,
         description: p.description,
         images: p.images,
         videos: p.videos || [],
         location: p.location,
-        beforeAfterPairs: p.beforeAfterPairs || [],
+        // Keep { beforeImage, afterImage } format as expected by the backend DTO
+        beforeAfterPairs: (p.beforeAfterPairs || []).map(pair => ({
+          beforeImage: pair.beforeImage,
+          afterImage: pair.afterImage,
+        })),
       }));
 
       const requestBody: Record<string, any> = {
@@ -477,8 +619,16 @@ function ProProfileSetupPageContent() {
         description: formData.bio,
         categories: selectedCategories.length > 0 ? selectedCategories : ['interior-design'],
         subcategories: selectedSubcategories.length > 0 ? selectedSubcategories : (user?.selectedSubcategories || []),
+        // Send selectedServices with per-service experience levels
+        selectedServices: selectedServices.map(s => ({
+          key: s.key,
+          categoryKey: s.categoryKey,
+          name: s.name,
+          nameKa: s.nameKa,
+          experience: s.experience,
+        })),
         customServices: customServices.length > 0 ? customServices : undefined,
-        yearsExperience: parseInt(formData.yearsExperience) || 0,
+        yearsExperience: maxExperienceYears,
         avatar: formData.avatar || user?.avatar,
         pricingModel,
         basePrice: parseFloat(formData.basePrice) || undefined,
@@ -537,14 +687,14 @@ function ProProfileSetupPageContent() {
   // Can proceed to next step validation
   const canProceedToNextStep = useMemo(() => {
     switch (currentStep) {
-      case 'about': return validation.avatar && validation.bio && validation.experience;
-      case 'categories': return validation.categories && validation.subcategories;
+      case 'about': return validation.avatar && validation.bio;
+      case 'categories': return selectedServices.length > 0;
       case 'pricing-areas': return validation.pricing && validation.serviceAreas;
       case 'projects': return true; // Projects are optional, can always proceed
       case 'review': return isFormValid;
       default: return false;
     }
-  }, [currentStep, validation, isFormValid]);
+  }, [currentStep, validation, isFormValid, selectedServices.length]);
 
   if (authLoading || profileLoading) {
     return (
@@ -605,7 +755,7 @@ function ProProfileSetupPageContent() {
               <AboutStep
                 formData={{
                   bio: formData.bio,
-                  yearsExperience: formData.yearsExperience,
+                  yearsExperience: '', // Experience is now per-service in the Services step
                   avatar: formData.avatar,
                   whatsapp: formData.whatsapp,
                   telegram: formData.telegram,
@@ -621,31 +771,19 @@ function ProProfileSetupPageContent() {
                 validation={{
                   avatar: validation.avatar,
                   bio: validation.bio,
-                  experience: validation.experience,
+                  experience: true, // Always valid - experience is set per service
                 }}
+                hideExperience // Hide the experience field
               />
             </div>
           )}
 
-          {/* STEP 2: Categories & Skills */}
+          {/* STEP 2: Services with per-service experience */}
           {currentStep === 'categories' && (
             <div className="space-y-4">
-              <div>
-                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
-                  {t('becomePro.whatServicesDoYouProvide')}
-                </h1>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                  {t('becomePro.selectYourProfessionAndSkills')}
-                </p>
-              </div>
-
-              <CategoriesStep
-                selectedCategories={selectedCategories}
-                selectedSubcategories={selectedSubcategories}
-                onCategoriesChange={setSelectedCategories}
-                onSubcategoriesChange={setSelectedSubcategories}
-                customServices={customServices}
-                onCustomServicesChange={setCustomServices}
+              <StepSelectServices
+                selectedServices={selectedServices}
+                onServicesChange={setSelectedServices}
               />
             </div>
           )}
@@ -737,7 +875,10 @@ function ProProfileSetupPageContent() {
               </div>
 
               <ReviewStep
-                formData={formData}
+                formData={{
+                  ...formData,
+                  yearsExperience: maxExperienceYears.toString(), // Derived from services
+                }}
                 selectedCategories={selectedCategories}
                 selectedSubcategories={selectedSubcategories}
                 customServices={customServices}
@@ -750,6 +891,7 @@ function ProProfileSetupPageContent() {
                 }}
                 isEditMode={isEditMode}
                 portfolioProjects={portfolioProjects}
+                selectedServices={selectedServices}
               />
             </div>
           )}

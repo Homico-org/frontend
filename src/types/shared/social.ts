@@ -97,6 +97,8 @@ export interface PortfolioItem extends BaseEntity {
   description?: string;
   imageUrl: string;
   images?: string[];
+  videos?: string[];
+  beforeAfter?: { before: string; after: string }[];
   tags: string[];
   projectDate?: string;
   completedDate?: string;
@@ -108,6 +110,7 @@ export interface PortfolioItem extends BaseEntity {
   category?: string;
   rating?: number;
   review?: string;
+  // Legacy single before/after fields
   beforeImage?: string;
   afterImage?: string;
 }

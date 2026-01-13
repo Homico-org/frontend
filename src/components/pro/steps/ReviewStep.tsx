@@ -5,6 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Badge } from "@/components/ui/badge";
 import {
   Briefcase,
+  Clock,
   DollarSign,
   Facebook,
   Globe,
@@ -19,6 +20,15 @@ import {
   User
 } from "lucide-react";
 import { PortfolioProject } from "./ProjectsStep";
+import { SelectedService, ExperienceLevel } from "@/components/register/steps/StepSelectServices";
+
+// Experience level labels
+const EXPERIENCE_LABELS: Record<ExperienceLevel, { en: string; ka: string }> = {
+  '1-2': { en: '1-2 years', ka: '1-2 წელი' },
+  '3-5': { en: '3-5 years', ka: '3-5 წელი' },
+  '5-10': { en: '5-10 years', ka: '5-10 წელი' },
+  '10+': { en: '10+ years', ka: '10+ წელი' },
+};
 
 interface ReviewStepProps {
   formData: {
@@ -48,6 +58,7 @@ interface ReviewStepProps {
   onEditStep: (step: number) => void;
   isEditMode?: boolean;
   portfolioProjects?: PortfolioProject[];
+  selectedServices?: SelectedService[]; // New: services with per-service experience
 }
 
 export default function ReviewStep({
@@ -60,6 +71,7 @@ export default function ReviewStep({
   onEditStep,
   isEditMode = false,
   portfolioProjects = [],
+  selectedServices = [],
 }: ReviewStepProps) {
   const { t, locale } = useLanguage();
   const { getCategoryByKey, categories } = useCategories();
@@ -235,8 +247,37 @@ export default function ReviewStep({
             </div>
           </div>
 
-          {/* Subcategories */}
-          {selectedSubcategories.length > 0 && (
+          {/* Services with Experience (new format) */}
+          {selectedServices.length > 0 ? (
+            <div>
+              <p className="text-xs text-[var(--color-text-tertiary)] mb-2">
+                {t('common.skills')}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {selectedServices.slice(0, 6).map((service) => (
+                  <div
+                    key={service.key}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--color-bg-tertiary)] text-sm"
+                  >
+                    <span className="text-[var(--color-text-secondary)]">
+                      {locale === "ka" ? service.nameKa : service.name}
+                    </span>
+                    <span className="flex items-center gap-1 text-xs text-[#C4735B] font-medium">
+                      <Clock className="w-3 h-3" />
+                      {EXPERIENCE_LABELS[service.experience]?.[locale === 'ka' ? 'ka' : 'en'] || service.experience}
+                    </span>
+                  </div>
+                ))}
+                {selectedServices.length > 6 && (
+                  <span className="px-3 py-1.5 rounded-lg bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] text-sm">
+                    +{selectedServices.length - 6}{" "}
+                    {t('common.more')}
+                  </span>
+                )}
+              </div>
+            </div>
+          ) : selectedSubcategories.length > 0 ? (
+            /* Fallback: Old format subcategories */
             <div>
               <p className="text-xs text-[var(--color-text-tertiary)] mb-2">
                 {t('common.skills')}
@@ -261,7 +302,7 @@ export default function ReviewStep({
                 )}
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* Custom Services (Skills) */}
           {customServices.length > 0 && (

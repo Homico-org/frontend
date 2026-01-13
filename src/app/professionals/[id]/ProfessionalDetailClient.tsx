@@ -45,6 +45,31 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+// API response types for before/after pairs (supports both formats)
+interface ApiBeforeAfterPair {
+  before?: string;
+  after?: string;
+  beforeImage?: string;
+  afterImage?: string;
+}
+
+// Extended PortfolioItem with beforeAfterPairs from API
+interface ExtendedPortfolioItem extends PortfolioItem {
+  beforeAfterPairs?: ApiBeforeAfterPair[];
+}
+
+// Extended embedded project type
+interface ExtendedEmbeddedProject {
+  id?: string;
+  title: string;
+  description?: string;
+  location?: string;
+  images?: string[];
+  videos?: string[];
+  beforeAfter?: { before: string; after: string }[];
+  beforeAfterPairs?: ApiBeforeAfterPair[];
+}
+
 // Page-specific review with populated client info
 interface PageReview extends BaseEntity {
   clientId: {
@@ -97,7 +122,15 @@ export default function ProfessionalDetailClient() {
   // Owner edit states
   const [showEditAboutModal, setShowEditAboutModal] = useState(false);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
-  const [editingProject, setEditingProject] = useState<{ id: string; title: string; description?: string; location?: string; images: string[] } | null>(null);
+  const [editingProject, setEditingProject] = useState<{ 
+    id: string; 
+    title: string; 
+    description?: string; 
+    location?: string; 
+    images: string[];
+    videos?: string[];
+    beforeAfter?: { before: string; after: string }[];
+  } | null>(null);
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -377,6 +410,24 @@ export default function ProfessionalDetailClient() {
       .join(" ");
   };
 
+  // Experience level labels - matches StepSelectServices options
+  const getExperienceLabel = (experience: string) => {
+    const labels: Record<string, { en: string; ka: string }> = {
+      '1-2': { en: '1-2y', ka: '1-2წ' },
+      '3-5': { en: '3-5y', ka: '3-5წ' },
+      '5-10': { en: '5-10y', ka: '5-10წ' },
+      '10+': { en: '10+y', ka: '10+წ' },
+    };
+    return labels[experience]?.[locale === 'ka' ? 'ka' : 'en'] || experience;
+  };
+
+  // Get service with experience from selectedServices array
+  const getServiceExperience = (subcategoryKey: string) => {
+    if (!profile?.selectedServices) return null;
+    const service = profile.selectedServices.find(s => s.key === subcategoryKey);
+    return service?.experience || null;
+  };
+
   const getSubcategoryLabel = (subcategoryKey: string) => {
     if (!subcategoryKey) return "";
     if (subcategoryKey.startsWith("custom:"))
@@ -410,6 +461,7 @@ export default function ProfessionalDetailClient() {
     location?: string;
     images: string[];
     videos: string[];
+    beforeAfter?: { before: string; after: string }[];
     date?: string;
     source?: 'external' | 'homico'; // 'homico' = from completed jobs, not editable
   }
@@ -432,14 +484,30 @@ export default function ProfessionalDetailClient() {
         });
       }
 
-      if (images.length > 0) {
+      // Convert beforeAfterPairs (with beforeImage/afterImage) to beforeAfter (with before/after)
+      const beforeAfterData: { before: string; after: string }[] = [];
+      const extendedItem = item as ExtendedPortfolioItem;
+      if (extendedItem.beforeAfterPairs && extendedItem.beforeAfterPairs.length > 0) {
+        extendedItem.beforeAfterPairs.forEach((pair: ApiBeforeAfterPair) => {
+          beforeAfterData.push({
+            before: pair.beforeImage || pair.before || '',
+            after: pair.afterImage || pair.after || '',
+          });
+        });
+      } else if (item.beforeAfter && item.beforeAfter.length > 0) {
+        beforeAfterData.push(...item.beforeAfter);
+      }
+
+      const hasMedia = images.length > 0 || beforeAfterData.length > 0;
+      if (hasMedia) {
         projects.push({
           id: item.id,
           title: item.title,
           description: item.description,
           location: item.location,
           images,
-          videos: [],
+          videos: item.videos || [],
+          beforeAfter: beforeAfterData,
           date: item.completedDate || item.projectDate,
           source: item.source, // Pass through the source field
         });
@@ -453,7 +521,23 @@ export default function ProfessionalDetailClient() {
       if (seenTitles.has(titleKey)) return;
       seenTitles.add(titleKey);
 
-      const hasMedia = (project.images && project.images.length > 0) || (project.videos && project.videos.length > 0);
+      // Convert beforeAfterPairs (with beforeImage/afterImage) to beforeAfter (with before/after)
+      const beforeAfterData: { before: string; after: string }[] = [];
+      const extendedProject = project as ExtendedEmbeddedProject;
+      if (extendedProject.beforeAfterPairs && extendedProject.beforeAfterPairs.length > 0) {
+        extendedProject.beforeAfterPairs.forEach((pair: ApiBeforeAfterPair) => {
+          beforeAfterData.push({
+            before: pair.beforeImage || pair.before || '',
+            after: pair.afterImage || pair.after || '',
+          });
+        });
+      } else if (project.beforeAfter && project.beforeAfter.length > 0) {
+        beforeAfterData.push(...project.beforeAfter);
+      }
+
+      const hasMedia = (project.images && project.images.length > 0) || 
+                       (project.videos && project.videos.length > 0) || 
+                       beforeAfterData.length > 0;
       if (hasMedia) {
         projects.push({
           id: project.id || `embedded-${idx}`,
@@ -462,6 +546,7 @@ export default function ProfessionalDetailClient() {
           location: project.location,
           images: project.images || [],
           videos: project.videos || [],
+          beforeAfter: beforeAfterData,
           source: 'external', // Embedded projects are manual/external
         });
       }
@@ -650,6 +735,59 @@ export default function ProfessionalDetailClient() {
       <Header />
       <HeaderSpacer />
 
+      {/* Pending Approval Banner - Only visible to the pro owner */}
+      {isOwner && profile && profile.isAdminApproved === false && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
+            <div className="p-2 rounded-full bg-amber-100 dark:bg-amber-800/30">
+              <svg className="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-amber-800 dark:text-amber-200">
+                {locale === 'ka' 
+                  ? 'თქვენი პროფილი განხილვის პროცესშია' 
+                  : 'Your profile is pending approval'}
+              </p>
+              <p className="text-sm text-amber-700 dark:text-amber-300">
+                {locale === 'ka'
+                  ? 'ადმინისტრატორი განიხილავს თქვენს პროფილს. დამტკიცების შემდეგ გახდებით ხილული კლიენტებისთვის.'
+                  : 'An administrator is reviewing your profile. Once approved, you will be visible to clients.'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rejected Profile Banner */}
+      {isOwner && profile && profile.adminRejectionReason && (
+        <div className="bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
+            <div className="p-2 rounded-full bg-red-100 dark:bg-red-800/30">
+              <X className="w-5 h-5 text-red-600 dark:text-red-400" />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-red-800 dark:text-red-200">
+                {locale === 'ka' 
+                  ? 'თქვენი პროფილი საჭიროებს გადახედვას' 
+                  : 'Your profile needs updates'}
+              </p>
+              <p className="text-sm text-red-700 dark:text-red-300">
+                {profile.adminRejectionReason}
+              </p>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => router.push('/pro/profile-setup')}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {locale === 'ka' ? 'რედაქტირება' : 'Edit Profile'}
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* ========== COMPACT HERO SECTION ========== */}
       <section
         ref={heroRef}
@@ -785,51 +923,137 @@ export default function ProfessionalDetailClient() {
                       <span>{translateCity(profile.serviceAreas[0])}</span>
                     </div>
                   )}
-                  <div className="flex items-center gap-1 text-neutral-600 dark:text-neutral-400">
-                    <Briefcase className="w-3.5 h-3.5" />
-                    <span>{profile.yearsExperience}+ {t('professional.yrs')}</span>
-                  </div>
+                  {/* Show years of experience - calculated from selectedServices or yearsExperience */}
+                  {(() => {
+                    // Calculate max experience from selectedServices
+                    let maxYears = profile.yearsExperience || 0;
+                    if (profile.selectedServices && profile.selectedServices.length > 0) {
+                      const experienceToYears: Record<string, number> = {
+                        '1-2': 2,
+                        '3-5': 5,
+                        '5-10': 10,
+                        '10+': 15,
+                      };
+                      const calcMax = Math.max(
+                        ...profile.selectedServices.map(s => experienceToYears[s.experience] || 0)
+                      );
+                      if (calcMax > maxYears) maxYears = calcMax;
+                    }
+                    
+                    return maxYears > 0 ? (
+                      <div className="flex items-center gap-1 text-neutral-600 dark:text-neutral-400">
+                        <Briefcase className="w-3.5 h-3.5" />
+                        <span>{maxYears}+ {t('professional.yrs')}</span>
+                      </div>
+                    ) : null;
+                  })()}
                 </div>
 
-                {/* Categories & Subcategories */}
-                {(profile.categories?.length > 0 || profile.subcategories?.length > 0) && (
-                  <div className="flex flex-wrap justify-center sm:justify-start gap-1.5 mt-2">
-                    {profile.categories?.map((cat, idx) => (
-                      <Badge key={`cat-${idx}`} variant="premium" size="xs">
+                {/* Categories - Main expertise areas */}
+                {profile.categories?.length > 0 && (
+                  <div className="flex flex-wrap justify-center sm:justify-start gap-1.5 mt-3">
+                    {profile.categories.map((cat, idx) => (
+                      <span 
+                        key={`cat-${idx}`} 
+                        className="px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-[#C4735B] to-[#D4937B] text-white shadow-sm"
+                      >
                         {getCategoryLabel(cat)}
-                      </Badge>
+                      </span>
                     ))}
-                    {profile.subcategories?.slice(0, 4).map((sub, idx) => (
-                      <Badge key={`sub-${idx}`} variant="secondary" size="xs">
-                        {getSubcategoryLabel(sub)}
-                      </Badge>
-                    ))}
-                    {(profile.subcategories?.length || 0) > 4 && (
-                      <Badge variant="secondary" size="xs">
-                        +{(profile.subcategories?.length || 0) - 4}
-                      </Badge>
-                    )}
+                  </div>
+                )}
+
+                {/* Services with Experience - Detailed skills */}
+                {(profile.selectedServices?.length > 0 || profile.subcategories?.length > 0) && (
+                  <div className="mt-3 p-3 rounded-xl bg-neutral-50/80 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
+                    <p className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold mb-2">
+                      {locale === 'ka' ? 'სერვისები და გამოცდილება' : 'Services & Experience'}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {profile.selectedServices && profile.selectedServices.length > 0 ? (
+                        <>
+                          {profile.selectedServices.slice(0, 6).map((service, idx) => (
+                            <div 
+                              key={`svc-${idx}`} 
+                              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 shadow-sm"
+                            >
+                              <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200">
+                                {locale === 'ka' ? service.nameKa : service.name}
+                              </span>
+                              <span className="text-[10px] font-semibold text-[#C4735B] bg-[#C4735B]/10 px-1.5 py-0.5 rounded">
+                                {getExperienceLabel(service.experience)}
+                              </span>
+                            </div>
+                          ))}
+                          {profile.selectedServices.length > 6 && (
+                            <span className="flex items-center px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-700 text-xs font-medium text-neutral-500">
+                              +{profile.selectedServices.length - 6} {locale === 'ka' ? 'სხვა' : 'more'}
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {profile.subcategories?.slice(0, 6).map((sub, idx) => {
+                            const experience = getServiceExperience(sub);
+                            return (
+                              <div 
+                                key={`sub-${idx}`} 
+                                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 shadow-sm"
+                              >
+                                <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200">
+                                  {getSubcategoryLabel(sub)}
+                                </span>
+                                {experience && (
+                                  <span className="text-[10px] font-semibold text-[#C4735B] bg-[#C4735B]/10 px-1.5 py-0.5 rounded">
+                                    {getExperienceLabel(experience)}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
+                          {(profile.subcategories?.length || 0) > 6 && (
+                            <span className="flex items-center px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-700 text-xs font-medium text-neutral-500">
+                              +{(profile.subcategories?.length || 0) - 6} {locale === 'ka' ? 'სხვა' : 'more'}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
 
               {/* Price & CTA - Right side */}
-              <div className="flex flex-col items-center sm:items-end gap-2 flex-shrink-0">
+              <div className="flex flex-col items-center sm:items-end gap-3 flex-shrink-0">
                 {(profile.basePrice ?? 0) > 0 && (
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-lg font-bold text-neutral-900 dark:text-white">
-                      {profile.pricingModel === "from" && (locale === "ka" ? "" : "from ")}
-                      {profile.basePrice}₾
-                      {profile.pricingModel === "from" && (locale === "ka" ? "-დან" : "")}
-                      {getPricingLabel()}
-                    </span>
-                    <Badge variant="secondary" size="xs">
+                  <div className="text-right">
+                    <div className="flex items-baseline gap-1">
+                      {/* Price range display */}
+                      {profile.maxPrice && profile.maxPrice > profile.basePrice ? (
+                        <>
+                          <span className="text-2xl font-bold text-neutral-900 dark:text-white">
+                            {profile.basePrice}₾
+                          </span>
+                          <span className="text-neutral-400 font-medium">-</span>
+                          <span className="text-2xl font-bold text-neutral-900 dark:text-white">
+                            {profile.maxPrice}₾
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-2xl font-bold text-neutral-900 dark:text-white">
+                          {profile.pricingModel === "from" && (locale === "ka" ? "" : "from ")}
+                          {profile.basePrice}₾
+                          {profile.pricingModel === "from" && (locale === "ka" ? "-დან" : "")}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-neutral-500 mt-0.5">
                       {profile.pricingModel === "hourly" && (t('professional.hourly'))}
                       {profile.pricingModel === "daily" && (t('professional.daily'))}
                       {profile.pricingModel === "project_based" && (t('professional.perProject'))}
                       {profile.pricingModel === "from" && (t('professional.startingPrice'))}
                       {profile.pricingModel === "sqm" && (t('professional.perSqm'))}
-                    </Badge>
+                    </p>
                   </div>
                 )}
                 {/* Visitor: Contact button (no owner edit button - edits are inline now) */}
@@ -937,6 +1161,7 @@ export default function ProfessionalDetailClient() {
                     location: p.location,
                     images: p.images,
                     videos: p.videos,
+                    beforeAfter: p.beforeAfter,
                     isEditable: p.source !== 'homico', // Only allow edit/delete for non-Homico projects
                   }))}
                   onProjectClick={setSelectedProject}
@@ -949,6 +1174,8 @@ export default function ProfessionalDetailClient() {
                     description: project.description,
                     location: project.location,
                     images: project.images,
+                    videos: project.videos,
+                    beforeAfter: project.beforeAfter,
                   })}
                   onDeleteProject={(projectId) => setDeleteProjectId(projectId)}
                 />

@@ -76,6 +76,9 @@ export function useProRegistration(): UseProRegistrationReturn {
   // Step state
   const [currentStep, setCurrentStep] = useState<ProRegistrationStep>('phone');
   
+  // Store registered user ID for profile navigation
+  const [registeredUserId, setRegisteredUserId] = useState<string | null>(null);
+  
   // Phone state
   const [phone, setPhone] = useState('');
   const [phoneCountry, setPhoneCountry] = useState<CountryCode>(country as CountryCode);
@@ -317,6 +320,8 @@ export function useProRegistration(): UseProRegistrationReturn {
       // Login the user
       if (data.access_token && data.user) {
         login(data.access_token, data.user);
+        // Store user ID for profile navigation
+        setRegisteredUserId(data.user._id || data.user.id);
       }
       
       setCurrentStep('complete');
@@ -329,11 +334,15 @@ export function useProRegistration(): UseProRegistrationReturn {
   
   // Completion handlers
   const onGoToProfile = useCallback(() => {
-    router.push('/profile');
-  }, [router]);
+    if (registeredUserId) {
+      router.push(`/professionals/${registeredUserId}`);
+    } else {
+      router.push('/');
+    }
+  }, [router, registeredUserId]);
   
   const onGoToDashboard = useCallback(() => {
-    router.push('/dashboard');
+    router.push('/pro/dashboard');
   }, [router]);
   
   return {

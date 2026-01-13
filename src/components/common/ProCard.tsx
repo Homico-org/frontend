@@ -1,13 +1,13 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
+import { StarRating } from "@/components/ui/StarRating";
+import { StatusPill } from "@/components/ui/StatusPill";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
-import { StarRating } from "@/components/ui/StarRating";
-import { Badge } from "@/components/ui/badge";
-import { StatusPill } from "@/components/ui/StatusPill";
 import { ProProfile, ProStatus } from "@/types";
-import { Briefcase, CheckCircle2, Clock, Plus, Sparkles } from "lucide-react";
+import { Briefcase, CheckCircle2, Clock, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -47,22 +47,67 @@ export default function ProCard({
   const [imageError, setImageError] = useState(false);
 
   // Get the user's categories and subcategories
-  const userCategories = useMemo(() =>
-    (profile.selectedCategories?.length ? profile.selectedCategories : profile.categories) || [],
-    [profile.selectedCategories, profile.categories]
-  );
-
-  const userSubcategories = useMemo(() =>
-    (profile.selectedSubcategories?.length ? profile.selectedSubcategories : profile.subcategories) || [],
-    [profile.selectedSubcategories, profile.subcategories]
-  );
+  // Priority: selectedServices (new flow) > selectedSubcategories (old flow) > subcategories (fallback)
+  const { userCategories, userSubcategories, servicesWithExperience } = useMemo(() => {
+    // Check if user has new selectedServices structure
+    const selectedServices = profile.selectedServices as Array<{
+      key: string;
+      name: string;
+      nameKa: string;
+      categoryKey: string;
+      experience: string;
+    }> | undefined;
+    
+    if (selectedServices && selectedServices.length > 0) {
+      // Extract unique categories from selectedServices
+      const categories = [...new Set(selectedServices.map(s => s.categoryKey))];
+      // Extract subcategory keys
+      const subcategories = selectedServices.map(s => s.key);
+      return { 
+        userCategories: categories, 
+        userSubcategories: subcategories,
+        servicesWithExperience: selectedServices
+      };
+    }
+    
+    // Fallback to old structure
+    const categories = (profile.selectedCategories?.length ? profile.selectedCategories : profile.categories) || [];
+    const subcategories = (profile.selectedSubcategories?.length ? profile.selectedSubcategories : profile.subcategories) || [];
+    return { 
+      userCategories: categories, 
+      userSubcategories: subcategories,
+      servicesWithExperience: null
+    };
+  }, [profile.selectedServices, profile.selectedCategories, profile.categories, profile.selectedSubcategories, profile.subcategories]);
 
   // Filter subcategories that belong to a specific category
   const getSubcatsForCategory = useMemo(() => (categoryKey: string) => {
+    // If using new selectedServices, filter by categoryKey directly
+    if (servicesWithExperience) {
+      return servicesWithExperience
+        .filter(s => s.categoryKey === categoryKey)
+        .map(s => s.key);
+    }
+    // Fallback: filter using category definitions
     const categorySubcats = getSubcategoriesForCategory(categoryKey);
     const categorySubcatKeys = categorySubcats.map(s => s.key);
     return userSubcategories.filter(subKey => categorySubcatKeys.includes(subKey));
-  }, [getSubcategoriesForCategory, userSubcategories]);
+  }, [getSubcategoriesForCategory, userSubcategories, servicesWithExperience]);
+  
+  // Get experience label for a service
+  const getServiceExperience = useMemo(() => (serviceKey: string): string | null => {
+    if (!servicesWithExperience) return null;
+    const service = servicesWithExperience.find(s => s.key === serviceKey);
+    if (!service) return null;
+    
+    const expMap: Record<string, string> = {
+      '1-2': '1-2' + (locale === 'ka' ? 'წ' : 'y'),
+      '3-5': '3-5' + (locale === 'ka' ? 'წ' : 'y'),
+      '5-10': '5-10' + (locale === 'ka' ? 'წ' : 'y'),
+      '10+': '10+' + (locale === 'ka' ? 'წ' : 'y'),
+    };
+    return expMap[service.experience] || null;
+  }, [servicesWithExperience, locale]);
 
   const currentStatus =
     STATUS_CONFIG[profile.status || ProStatus.AWAY] ||
@@ -191,13 +236,21 @@ export default function ProCard({
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-50 dark:bg-neutral-800/50 group-hover:bg-[#C4735B]/5 transition-colors duration-300">
                 <Clock className="w-3.5 h-3.5 text-neutral-400 group-hover:text-[#C4735B]/70 transition-colors" />
                 <span className="text-[12px] font-medium text-neutral-600 dark:text-neutral-400">
-                  {profile.yearsExperience || 0} {t('timeUnits.year')}
+                  {(() => {
+                    // Calculate max years from selectedServices or use yearsExperience
+                    if (servicesWithExperience && servicesWithExperience.length > 0) {
+                      const expToYears: Record<string, number> = { '1-2': 2, '3-5': 5, '5-10': 10, '10+': 15 };
+                      const maxYears = Math.max(...servicesWithExperience.map(s => expToYears[s.experience] || 0));
+                      return maxYears > 0 ? maxYears : (profile.yearsExperience || 0);
+                    }
+                    return profile.yearsExperience || 0;
+                  })()} {t('timeUnits.year')}
                 </span>
               </div>
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-50 dark:bg-neutral-800/50 group-hover:bg-[#C4735B]/5 transition-colors duration-300">
                 <Briefcase className="w-3.5 h-3.5 text-neutral-400 group-hover:text-[#C4735B]/70 transition-colors" />
                 <span className="text-[12px] font-medium text-neutral-600 dark:text-neutral-400">
-                  {completedJobs} {t('common.jobs')}
+                  {completedJobs} {t('admin.job')}
                 </span>
               </div>
             </div>
@@ -207,7 +260,7 @@ export default function ProCard({
 
             {/* Categories with Subcategories - Enhanced */}
             <div className="space-y-2.5">
-              {userCategories.slice(0, 2).map((cat, i) => {
+              {userCategories.slice(0, 3).map((cat, i) => {
                 const subcatsForThisCat = getSubcatsForCategory(cat);
                 const displaySubcats = subcatsForThisCat.slice(0, 3);
 
@@ -218,14 +271,18 @@ export default function ProCard({
                     </span>
                     {displaySubcats.length > 0 && (
                       <div className="flex flex-wrap justify-center gap-1.5 mt-1.5">
-                        {displaySubcats.map((subcat, j) => (
-                          <span
-                            key={j}
-                            className="px-2.5 py-0.5 text-[10px] font-medium text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 rounded-full group-hover:bg-[#C4735B]/10 group-hover:text-[#C4735B]/80 transition-colors duration-300"
-                          >
-                            {getCategoryLabel(subcat)}
-                          </span>
-                        ))}
+                        {displaySubcats.map((subcat, j) => {
+                          const exp = getServiceExperience(subcat);
+                          return (
+                            <span
+                              key={j}
+                              className="px-2.5 py-0.5 text-[10px] font-medium text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 rounded-full group-hover:bg-[#C4735B]/10 group-hover:text-[#C4735B]/80 transition-colors duration-300"
+                            >
+                              {getCategoryLabel(subcat)}
+                              {exp && <span className="ml-1 text-[#C4735B]">{exp}</span>}
+                            </span>
+                          );
+                        })}
                         {subcatsForThisCat.length > 3 && (
                           <span className="text-[10px] font-medium text-neutral-400 px-1.5">
                             +{subcatsForThisCat.length - 3}
@@ -236,6 +293,13 @@ export default function ProCard({
                   </div>
                 );
               })}
+              {userCategories.length > 3 && (
+                <div className="text-center">
+                  <span className="text-[10px] font-medium text-neutral-400">
+                    +{userCategories.length - 3} {locale === 'ka' ? 'კატეგორია' : 'more'}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -314,7 +378,14 @@ export default function ProCard({
                   )}
                   <span className="w-px h-3 bg-neutral-200 dark:bg-neutral-700" />
                   <span className="text-neutral-500 dark:text-neutral-400 font-medium">
-                    {profile.yearsExperience || 0} {locale === "ka" ? "წ" : "yr"}
+                    {(() => {
+                      if (servicesWithExperience && servicesWithExperience.length > 0) {
+                        const expToYears: Record<string, number> = { '1-2': 2, '3-5': 5, '5-10': 10, '10+': 15 };
+                        const maxYears = Math.max(...servicesWithExperience.map(s => expToYears[s.experience] || 0));
+                        return maxYears > 0 ? maxYears : (profile.yearsExperience || 0);
+                      }
+                      return profile.yearsExperience || 0;
+                    })()} {locale === "ka" ? "წ" : "yr"}
                   </span>
                   <span className="text-neutral-500 dark:text-neutral-400 font-medium">
                     {completedJobs} {locale === "ka" ? "პრ" : "jobs"}

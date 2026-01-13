@@ -134,6 +134,13 @@ export interface ProProfile extends BaseEntity {
   subcategories: string[];
   selectedCategories?: string[];
   selectedSubcategories?: string[];
+  selectedServices?: {
+    key: string;
+    categoryKey: string;
+    name: string;
+    nameKa: string;
+    experience: string; // '0-1', '1-3', '3-5', '5-10', '10+'
+  }[];
   customServices?: string[];
   
   // Experience & Stats
@@ -168,6 +175,11 @@ export interface ProProfile extends BaseEntity {
   verificationStatus?: VerificationStatus;
   isPremium: boolean;
   premiumTier?: string;
+  
+  // Admin Approval
+  isAdminApproved?: boolean;
+  adminApprovedAt?: string;
+  adminRejectionReason?: string;
   
   // Design-specific
   designStyles?: string[];

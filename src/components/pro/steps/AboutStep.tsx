@@ -28,6 +28,7 @@ interface AboutStepProps {
     experience: boolean;
     avatar?: boolean;
   };
+  hideExperience?: boolean; // Hide experience field (experience is now per-service)
 }
 
 export default function AboutStep({
@@ -37,6 +38,7 @@ export default function AboutStep({
   onAvatarChange,
   onAvatarCropped,
   validation,
+  hideExperience = false,
 }: AboutStepProps) {
   const { t, locale } = useLanguage();
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -188,55 +190,57 @@ export default function AboutStep({
           />
         </div>
 
-        {/* Years of Experience - REQUIRED */}
-        <div className={`
-          bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm transition-all
-          ${validation.experience
-            ? 'border-2 border-emerald-500/30'
-            : 'border-2 border-[var(--color-border-subtle)]'
-          }
-        `}>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-[#C4735B]" />
-              <span className="font-semibold text-[var(--color-text-primary)]">
-                {t('common.yearsOfExperience')}
-                <span className="text-[#C4735B] ml-1">*</span>
-              </span>
+        {/* Years of Experience - REQUIRED (hidden if experience is per-service) */}
+        {!hideExperience && (
+          <div className={`
+            bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm transition-all
+            ${validation.experience
+              ? 'border-2 border-emerald-500/30'
+              : 'border-2 border-[var(--color-border-subtle)]'
+            }
+          `}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Clock className="w-5 h-5 text-[#C4735B]" />
+                <span className="font-semibold text-[var(--color-text-primary)]">
+                  {t('common.yearsOfExperience')}
+                  <span className="text-[#C4735B] ml-1">*</span>
+                </span>
+              </div>
+              {validation.experience ? (
+                <Badge variant="success" size="xs" icon={<CheckCircle2 className="w-3.5 h-3.5" />}>
+                  {t('common.completed')}
+                </Badge>
+              ) : (
+                <Badge variant="secondary" size="xs">
+                  {locale === 'ka' ? 'სავალდებულო' : 'Required'}
+                </Badge>
+              )}
             </div>
-            {validation.experience ? (
-              <Badge variant="success" size="xs" icon={<CheckCircle2 className="w-3.5 h-3.5" />}>
-                {t('common.completed')}
-              </Badge>
-            ) : (
-              <Badge variant="secondary" size="xs">
-                {locale === 'ka' ? 'სავალდებულო' : 'Required'}
-              </Badge>
-            )}
+            <Input
+              type="number"
+              min={0}
+              max={50}
+              value={formData.yearsExperience}
+              onChange={(e) => {
+                const value = e.target.value;
+                const parsed = parseInt(value);
+                if (value === '' || (parsed >= 0 && parsed <= 50)) {
+                  onFormChange({ yearsExperience: value });
+                }
+              }}
+              variant="filled"
+              inputSize="lg"
+              success={validation.experience}
+              placeholder="0"
+              rightIcon={<span className="text-sm">{t('common.years')}</span>}
+              className="text-lg font-medium"
+            />
+            <p className="text-xs text-[var(--color-text-muted)] mt-2">
+              {t('common.howManyYearsHaveYou')}
+            </p>
           </div>
-          <Input
-            type="number"
-            min={0}
-            max={50}
-            value={formData.yearsExperience}
-            onChange={(e) => {
-              const value = e.target.value;
-              const parsed = parseInt(value);
-              if (value === '' || (parsed >= 0 && parsed <= 50)) {
-                onFormChange({ yearsExperience: value });
-              }
-            }}
-            variant="filled"
-            inputSize="lg"
-            success={validation.experience}
-            placeholder="0"
-            rightIcon={<span className="text-sm">{t('common.years')}</span>}
-            className="text-lg font-medium"
-          />
-          <p className="text-xs text-[var(--color-text-muted)] mt-2">
-            {t('common.howManyYearsHaveYou')}
-          </p>
-        </div>
+        )}
 
         {/* Bio / About - REQUIRED */}
         <div className={`

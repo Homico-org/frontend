@@ -86,8 +86,13 @@ export default function PortfolioTab({
               project={project}
               locale={locale}
               onClick={(imageIndex) => {
+                // Include before/after 'after' images in the images array for lightbox
+                const allImages = [
+                  ...(project.images || []),
+                  ...((project.beforeAfter || []).map(pair => pair.after)),
+                ];
                 onProjectClick?.({
-                  images: project.images,
+                  images: allImages,
                   videos: (project as { videos?: string[] }).videos || [],
                   title: project.title,
                   currentIndex: imageIndex ?? activeIndexes[project.id] ?? 0,

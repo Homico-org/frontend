@@ -12,6 +12,8 @@ export interface PortfolioProject {
   description?: string;
   location?: string;
   images: string[];
+  videos?: string[];
+  beforeAfter?: { before: string; after: string }[];
   date?: string;
   rating?: number;
   isVerified?: boolean;
@@ -41,9 +43,18 @@ export default function PortfolioCard({
   const { t } = useLanguage();
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  if (!project.images || project.images.length === 0) return null;
+  // Combine all images including before/after pairs for display
+  const allImages = [
+    ...(project.images || []),
+    // Add 'after' images from before/after pairs (they're usually more visually appealing)
+    ...(project.beforeAfter || []).map(pair => pair.after),
+  ];
+  
+  const hasBeforeAfter = project.beforeAfter && project.beforeAfter.length > 0;
+  
+  if (allImages.length === 0) return null;
 
-  const currentImage = project.images[activeThumb] || project.images[0];
+  const currentImage = allImages[activeThumb] || allImages[0];
 
   return (
     <div
@@ -99,14 +110,15 @@ export default function PortfolioCard({
             )}
             
             {/* Image count badge */}
-            {project.images.length > 1 && (
+            {allImages.length > 1 && (
               <Badge 
                 variant="ghost" 
                 size="sm" 
                 icon={<Camera className="w-3 h-3" />} 
                 className="bg-black/40 backdrop-blur-md text-white border border-white/20 shadow-lg ml-auto"
               >
-                {project.images.length}
+                {allImages.length}
+                {hasBeforeAfter && ' ✦'}
               </Badge>
             )}
           </div>
@@ -138,9 +150,9 @@ export default function PortfolioCard({
         </button>
 
         {/* Thumbnail Strip - Premium Design */}
-        {project.images.length > 1 && (
+        {allImages.length > 1 && (
           <div className="flex gap-1.5 p-2.5 bg-gradient-to-b from-neutral-50/80 to-white dark:from-neutral-800/50 dark:to-neutral-900 border-t border-neutral-100/50 dark:border-neutral-800/50">
-            {project.images.slice(0, 4).map((img, imgIdx) => (
+            {allImages.slice(0, 4).map((img, imgIdx) => (
               <button
                 key={imgIdx}
                 onClick={(e) => {
@@ -164,10 +176,10 @@ export default function PortfolioCard({
                   <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#C4735B]" />
                 )}
                 {/* +N overlay on last thumbnail */}
-                {imgIdx === 3 && project.images.length > 4 && (
+                {imgIdx === 3 && allImages.length > 4 && (
                   <div className="absolute inset-0 bg-gradient-to-br from-[#C4735B]/85 to-[#A85B44]/95 flex items-center justify-center backdrop-blur-[1px]">
                     <span className="text-white text-sm font-bold">
-                      +{project.images.length - 4}
+                      +{allImages.length - 4}
                     </span>
                   </div>
                 )}

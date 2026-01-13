@@ -123,6 +123,7 @@ function AdminDashboardPageContent() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [jobsByCategory, setJobsByCategory] = useState<CategoryData[]>([]);
   const [jobsByLocation, setJobsByLocation] = useState<LocationData[]>([]);
+  const [pendingProsCount, setPendingProsCount] = useState<number>(0);
   const [dailySignups, setDailySignups] = useState<DailyData[]>([]);
   const [dailyJobs, setDailyJobs] = useState<DailyData[]>([]);
   const [dailyProposals, setDailyProposals] = useState<DailyData[]>([]);
@@ -149,6 +150,7 @@ function AdminDashboardPageContent() {
         signupsRes,
         dailyJobsRes,
         dailyProposalsRes,
+        pendingProsRes,
       ] = await Promise.all([
         api.get(`/admin/stats`),
         api.get(`/admin/recent-users?limit=6`),
@@ -159,6 +161,7 @@ function AdminDashboardPageContent() {
         api.get(`/admin/daily-signups?days=14`),
         api.get(`/admin/daily-jobs?days=14`),
         api.get(`/admin/daily-proposals?days=14`),
+        api.get(`/admin/pending-pros/stats`),
       ]);
 
       setStats(statsRes.data);
@@ -170,6 +173,7 @@ function AdminDashboardPageContent() {
       setDailySignups(signupsRes.data);
       setDailyJobs(dailyJobsRes.data);
       setDailyProposals(dailyProposalsRes.data);
+      setPendingProsCount(pendingProsRes.data.pending || 0);
       setLastUpdated(new Date());
     } catch (err) {
       logApiError('Admin Dashboard', err);
@@ -393,9 +397,10 @@ function AdminDashboardPageContent() {
 
       <main className="max-w-[1800px] mx-auto px-6 py-8">
         {/* Quick Actions - Prominent at top */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
           {[
             { label: t('admin.users'), icon: Users, href: '/admin/users', color: THEME.primary, count: stats?.users.total },
+            { label: locale === 'ka' ? 'დამტკიცება' : 'Approvals', icon: UserCheck, href: '/admin/pending-pros', color: '#f59e0b', count: pendingProsCount, badge: pendingProsCount > 0 ? pendingProsCount : undefined },
             { label: t('admin.jobs'), icon: Briefcase, href: '/admin/jobs', color: THEME.info, count: stats?.jobs.total },
             { label: t('admin.support'), icon: MessageCircle, href: '/admin/support', color: THEME.warning, count: stats?.support.open, badge: stats?.support.unread },
             { label: t('admin.activityLogs'), icon: ActivityIcon, href: '/admin/activity-logs', color: THEME.success },

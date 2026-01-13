@@ -1,6 +1,5 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -20,8 +19,7 @@ export interface SelectedService {
 interface StepSelectServicesProps {
   selectedServices: SelectedService[];
   onServicesChange: (services: SelectedService[]) => void;
-  onNext: () => void;
-  isLoading: boolean;
+  isLoading?: boolean;
 }
 
 const EXPERIENCE_OPTIONS: { value: ExperienceLevel; labelEn: string; labelKa: string }[] = [
@@ -34,11 +32,9 @@ const EXPERIENCE_OPTIONS: { value: ExperienceLevel; labelEn: string; labelKa: st
 export default function StepSelectServices({
   selectedServices,
   onServicesChange,
-  onNext,
-  isLoading,
 }: StepSelectServicesProps) {
   const { t, locale } = useLanguage();
-  const { categories } = useCategories();
+  const { categories, loading: categoriesLoading } = useCategories();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedService, setExpandedService] = useState<string | null>(null);
 
@@ -78,7 +74,7 @@ export default function StepSelectServices({
 
   // Filter services by search
   const filteredServices = useMemo(() => {
-    if (!searchQuery.trim()) return allServices.slice(0, 20); // Show first 20 by default
+    if (!searchQuery.trim()) return allServices.slice(0, 50); // Show first 50 by default
     
     const query = searchQuery.toLowerCase();
     return allServices.filter(
@@ -86,7 +82,7 @@ export default function StepSelectServices({
            s.nameKa.toLowerCase().includes(query) ||
            s.categoryName.toLowerCase().includes(query) ||
            s.categoryNameKa.toLowerCase().includes(query)
-    ).slice(0, 30);
+    ).slice(0, 50);
   }, [allServices, searchQuery]);
 
   const isSelected = (key: string) => selectedServices.some(s => s.key === key);
@@ -195,6 +191,13 @@ export default function StepSelectServices({
         </div>
       )}
 
+      {/* Debug info - remove later */}
+      {process.env.NODE_ENV === 'development' && categories.length === 0 && !categoriesLoading && (
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-800">
+          ⚠️ No categories loaded. Check if /categories API is working.
+        </div>
+      )}
+
       {/* Search */}
       <div className="relative mb-4">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
@@ -208,7 +211,12 @@ export default function StepSelectServices({
 
       {/* Services List */}
       <div className="max-h-[300px] overflow-y-auto rounded-2xl border border-neutral-200 divide-y divide-neutral-100">
-        {filteredServices.length === 0 ? (
+        {categoriesLoading ? (
+          <div className="py-8 text-center">
+            <div className="inline-block w-6 h-6 border-2 border-[#C4735B] border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-neutral-400 mt-2">{t('common.loading')}</p>
+          </div>
+        ) : filteredServices.length === 0 ? (
           <div className="py-8 text-center text-neutral-400">
             {t('common.noResults')}
           </div>
@@ -245,20 +253,9 @@ export default function StepSelectServices({
       </div>
 
       {/* Counter */}
-      <p className="text-center text-sm text-neutral-400 mt-4 mb-6">
+      <p className="text-center text-sm text-neutral-400 mt-4">
         {selectedServices.length} {t('register.servicesSelected')}
       </p>
-
-      {/* Continue Button */}
-      <Button
-        onClick={onNext}
-        disabled={!canProceed || isLoading}
-        loading={isLoading}
-        className="w-full"
-        size="lg"
-      >
-        {t('common.continue')}
-      </Button>
     </div>
   );
 }
