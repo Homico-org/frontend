@@ -189,7 +189,12 @@ export default function ProfessionalDetailClient() {
       try {
         const response = await api.get(`/portfolio/pro/${profile.id}`);
         const portfolioData = Array.isArray(response.data) ? response.data : [];
-        setPortfolio(portfolioData);
+        // Transform _id to id for frontend consistency
+        const transformedData = portfolioData.map((item: any) => ({
+          ...item,
+          id: item.id || item._id,
+        }));
+        setPortfolio(transformedData);
       } catch (err) {
         console.error("Failed to fetch portfolio:", err);
       }
