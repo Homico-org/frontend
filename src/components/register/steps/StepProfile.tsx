@@ -3,8 +3,9 @@
 import Select from '@/components/common/Select';
 import { Button } from '@/components/ui/button';
 import { Input, Label } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { countries, CountryCode, useLanguage } from '@/contexts/LanguageContext';
-import { Camera, MapPin, User, X } from 'lucide-react';
+import { Camera, Lock, MapPin, User, X } from 'lucide-react';
 import Image from 'next/image';
 import { useMemo } from 'react';
 
@@ -13,6 +14,10 @@ interface StepProfileProps {
   onNameChange: (value: string) => void;
   city: string;
   onCityChange: (value: string) => void;
+  password: string;
+  onPasswordChange: (value: string) => void;
+  confirmPassword: string;
+  onConfirmPasswordChange: (value: string) => void;
   phoneCountry: CountryCode;
   avatarPreview: string | null;
   avatarUploading: boolean;
@@ -28,6 +33,10 @@ export default function StepProfile({
   onNameChange,
   city,
   onCityChange,
+  password,
+  onPasswordChange,
+  confirmPassword,
+  onConfirmPasswordChange,
   phoneCountry,
   avatarPreview,
   avatarUploading,
@@ -154,6 +163,35 @@ export default function StepProfile({
             placeholder={t('register.selectCity')}
             searchable
             size="lg"
+          />
+        </div>
+
+        {/* Password */}
+        <div>
+          <Label className="flex items-center gap-2 mb-2">
+            <Lock className="w-4 h-4 text-neutral-400" />
+            {t('common.password')}
+          </Label>
+          <PasswordInput
+            value={password}
+            onChange={(e) => onPasswordChange(e.target.value)}
+            placeholder={t('register.min6Chars')}
+            size="lg"
+          />
+        </div>
+
+        {/* Confirm Password */}
+        <div>
+          <Label className="flex items-center gap-2 mb-2">
+            <Lock className="w-4 h-4 text-neutral-400" />
+            {t('register.repeatPassword')}
+          </Label>
+          <PasswordInput
+            value={confirmPassword}
+            onChange={(e) => onConfirmPasswordChange(e.target.value)}
+            placeholder={t('register.repeat')}
+            size="lg"
+            error={confirmPassword && password !== confirmPassword ? t('register.passwordsNotMatch') : undefined}
           />
         </div>
       </div>

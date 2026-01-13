@@ -130,7 +130,7 @@ export default function StepComplete({
           className="w-full"
           size="lg"
         >
-          {t('register.viewMyProfile')}
+          {t('becomePro.completeProfile')}
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
         <Button

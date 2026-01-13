@@ -150,6 +150,10 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
               onNameChange={reg.setFullName}
               city={reg.city}
               onCityChange={reg.setCity}
+              password={reg.password}
+              onPasswordChange={reg.setPassword}
+              confirmPassword={reg.confirmPassword}
+              onConfirmPasswordChange={reg.setConfirmPassword}
               phoneCountry={reg.phoneCountry}
               avatarPreview={reg.avatarPreview}
               avatarUploading={reg.avatarUploading}

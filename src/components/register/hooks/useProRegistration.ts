@@ -37,6 +37,10 @@ export interface UseProRegistrationReturn {
   setFullName: (value: string) => void;
   city: string;
   setCity: (value: string) => void;
+  password: string;
+  setPassword: (value: string) => void;
+  confirmPassword: string;
+  setConfirmPassword: (value: string) => void;
   avatarPreview: string | null;
   setAvatarPreview: (url: string | null) => void;
   avatarUploading: boolean;
@@ -91,6 +95,8 @@ export function useProRegistration(): UseProRegistrationReturn {
   // Profile state
   const [fullName, setFullName] = useState('');
   const [city, setCity] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [uploadedAvatarUrl, setUploadedAvatarUrl] = useState<string | null>(null);
@@ -230,8 +236,13 @@ export function useProRegistration(): UseProRegistrationReturn {
   
   // Validation
   const canProceedFromProfile = useCallback(() => {
-    return fullName.trim().length >= 2 && city.trim().length >= 2 && !!uploadedAvatarUrl;
-  }, [fullName, city, uploadedAvatarUrl]);
+    const hasValidName = fullName.trim().length >= 2;
+    const hasValidCity = city.trim().length >= 2;
+    const hasAvatar = !!uploadedAvatarUrl;
+    const hasValidPassword = password.length >= 6;
+    const passwordsMatch = password === confirmPassword;
+    return hasValidName && hasValidCity && hasAvatar && hasValidPassword && passwordsMatch;
+  }, [fullName, city, uploadedAvatarUrl, password, confirmPassword]);
   
   const canProceedFromServices = useCallback(() => {
     return selectedServices.length > 0;
@@ -261,7 +272,7 @@ export function useProRegistration(): UseProRegistrationReturn {
         }
         break;
     }
-  }, [currentStep, canProceedFromProfile, canProceedFromServices]);
+  }, [currentStep, canProceedFromProfile, canProceedFromServices, submitRegistration]);
   
   const handleBack = useCallback(() => {
     switch (currentStep) {
@@ -290,10 +301,6 @@ export function useProRegistration(): UseProRegistrationReturn {
       const selectedCategories = [...new Set(selectedServices.map(s => s.categoryKey))];
       const selectedSubcategories = selectedServices.map(s => s.key);
       
-      // Generate a random password for phone-based registration
-      // Users can set their own password later via "forgot password" if needed
-      const generatedPassword = `Homico_${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36)}`;
-      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -303,7 +310,7 @@ export function useProRegistration(): UseProRegistrationReturn {
           city: city.trim(),
           avatar: uploadedAvatarUrl,
           role: 'pro',
-          password: generatedPassword,
+          password: password,
           selectedCategories,
           selectedSubcategories,
           isPhoneVerified: true,
@@ -330,16 +337,14 @@ export function useProRegistration(): UseProRegistrationReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [phone, phoneCountry, fullName, city, uploadedAvatarUrl, selectedServices, login]);
+  }, [phone, phoneCountry, fullName, city, password, uploadedAvatarUrl, selectedServices, login]);
   
   // Completion handlers
   const onGoToProfile = useCallback(() => {
-    if (registeredUserId) {
-      router.push(`/professionals/${registeredUserId}`);
-    } else {
-      router.push('/');
-    }
-  }, [router, registeredUserId]);
+    // Navigate to profile setup since the profile isn't complete yet
+    // After completing profile setup, user will be redirected to their public profile
+    router.push('/pro/profile-setup');
+  }, [router]);
   
   const onGoToDashboard = useCallback(() => {
     router.push('/pro/dashboard');
@@ -372,6 +377,10 @@ export function useProRegistration(): UseProRegistrationReturn {
     setFullName,
     city,
     setCity,
+    password,
+    setPassword,
+    confirmPassword,
+    setConfirmPassword,
     avatarPreview,
     setAvatarPreview,
     avatarUploading,

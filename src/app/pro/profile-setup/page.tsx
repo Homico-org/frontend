@@ -532,7 +532,7 @@ function ProProfileSetupPageContent() {
   // Validation
   const validation = useMemo(() => ({
     avatar: !!avatarPreview && avatarPreview.length > 0,
-    bio: !!formData.bio.trim(),
+    bio: formData.bio.trim().length >= 50, // Minimum 50 characters required
     experience: selectedServices.length > 0, // Experience is now tied to services
     categories: selectedCategories.length > 0,
     subcategories: selectedSubcategories.length > 0,

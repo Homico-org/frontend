@@ -279,7 +279,7 @@ export default function AboutStep({
           />
           <div className="flex justify-between items-center mt-2">
             <p className="text-xs text-[var(--color-text-muted)]">
-              {t('common.minimum50CharactersRecommended')}
+              {t('common.minimum50CharactersRequired')}
             </p>
             <span className={`text-xs font-medium ${formData.bio.length >= 50 ? 'text-emerald-600' : formData.bio.length > 0 ? 'text-amber-600' : 'text-[var(--color-text-muted)]'}`}>
               {formData.bio.length}/500
