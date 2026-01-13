@@ -531,8 +531,8 @@ export default function ProfessionalDetailClient() {
             after: pair.afterImage || pair.after || '',
           });
         });
-      } else if (project.beforeAfter && project.beforeAfter.length > 0) {
-        beforeAfterData.push(...project.beforeAfter);
+      } else if (extendedProject.beforeAfter && extendedProject.beforeAfter.length > 0) {
+        beforeAfterData.push(...extendedProject.beforeAfter);
       }
 
       const hasMedia = (project.images && project.images.length > 0) || 
@@ -964,7 +964,7 @@ export default function ProfessionalDetailClient() {
                 )}
 
                 {/* Services with Experience - Detailed skills */}
-                {(profile.selectedServices?.length > 0 || profile.subcategories?.length > 0) && (
+                {((profile.selectedServices?.length ?? 0) > 0 || (profile.subcategories?.length ?? 0) > 0) && (
                   <div className="mt-3 p-3 rounded-xl bg-neutral-50/80 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
                     <p className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold mb-2">
                       {locale === 'ka' ? 'სერვისები და გამოცდილება' : 'Services & Experience'}
@@ -1029,7 +1029,7 @@ export default function ProfessionalDetailClient() {
                   <div className="text-right">
                     <div className="flex items-baseline gap-1">
                       {/* Price range display */}
-                      {profile.maxPrice && profile.maxPrice > profile.basePrice ? (
+                      {profile.maxPrice && profile.maxPrice > (profile.basePrice ?? 0) ? (
                         <>
                           <span className="text-2xl font-bold text-neutral-900 dark:text-white">
                             {profile.basePrice}₾
