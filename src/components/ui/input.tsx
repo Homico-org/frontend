@@ -1,8 +1,8 @@
 'use client';
 
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
+import { cva, type VariantProps } from "class-variance-authority";
+import * as React from "react";
 const inputVariants = cva(
   "flex w-full rounded-xl text-[var(--color-text-primary)] transition-all duration-300 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-[var(--color-text-muted)] disabled:cursor-not-allowed disabled:opacity-50",
   {
@@ -254,4 +254,5 @@ const FormGroup = ({
   )
 }
 
-export { Input, Textarea, Label, FormGroup, inputVariants, textareaVariants }
+export { FormGroup, Input, inputVariants, Label, Textarea, textareaVariants };
+
