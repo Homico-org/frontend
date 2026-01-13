@@ -1,5 +1,6 @@
 "use client";
 
+import AddressPicker from "@/components/common/AddressPicker";
 import Header, { HeaderSpacer } from "@/components/common/Header";
 import AboutTab from "@/components/professionals/AboutTab";
 import ContactModal from "@/components/professionals/ContactModal";
@@ -300,22 +301,40 @@ export default function ProfessionalDetailClient() {
     videos?: string[];
     beforeAfter?: { before: string; after: string }[];
   }) => {
-    if (!isOwner || !editingProject) return;
+    if (!isOwner || !editingProject || !profile?.id) return;
     setIsSaving(true);
     try {
-      await api.patch(`/portfolio/${editingProject.id}`, {
-        title: data.title,
-        description: data.description,
-        location: data.location,
-        images: data.images,
-        videos: data.videos,
-        beforeAfter: data.beforeAfter,
-      });
-      setPortfolio(prev => prev.map(p => 
-        p.id === editingProject.id 
-          ? { ...p, title: data.title, description: data.description, location: data.location, images: data.images }
-          : p
-      ));
+      // Check if this project exists in the portfolio collection
+      const existsInPortfolio = portfolio.some(p => p.id === editingProject.id);
+      
+      if (existsInPortfolio) {
+        // Update existing portfolio item
+        await api.patch(`/portfolio/${editingProject.id}`, {
+          title: data.title,
+          description: data.description,
+          location: data.location,
+          images: data.images,
+          videos: data.videos,
+          beforeAfter: data.beforeAfter,
+        });
+        setPortfolio(prev => prev.map(p => 
+          p.id === editingProject.id 
+            ? { ...p, title: data.title, description: data.description, location: data.location, images: data.images }
+            : p
+        ));
+      } else {
+        // Project is embedded in profile, create new portfolio item
+        const response = await api.post(`/portfolio?proId=${profile.id}`, {
+          title: data.title,
+          description: data.description,
+          location: data.location,
+          images: data.images,
+          videos: data.videos,
+          beforeAfter: data.beforeAfter,
+        });
+        setPortfolio(prev => [...prev, response.data]);
+      }
+      
       setEditingProject(null);
       toast.success(t('professional.projectUpdated'));
     } catch (err) {
@@ -329,8 +348,16 @@ export default function ProfessionalDetailClient() {
     if (!isOwner || !deleteProjectId) return;
     setIsSaving(true);
     try {
-      await api.delete(`/portfolio/${deleteProjectId}`);
-      setPortfolio(prev => prev.filter(p => p.id !== deleteProjectId));
+      // Check if this project exists in the portfolio collection
+      const existsInPortfolio = portfolio.some(p => p.id === deleteProjectId);
+      
+      if (existsInPortfolio) {
+        await api.delete(`/portfolio/${deleteProjectId}`);
+        setPortfolio(prev => prev.filter(p => p.id !== deleteProjectId));
+      }
+      // If it's an embedded project, we just close the modal
+      // (embedded projects can't be deleted via API, would need profile update)
+      
       setDeleteProjectId(null);
       toast.success(t('professional.projectDeleted'));
     } catch (err) {
@@ -1477,8 +1504,8 @@ function ProjectFormModal({
   const totalMedia = images.length + videos.length + beforeAfterPairs.length;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg">
-      <div className="max-h-[85vh] overflow-hidden flex flex-col -m-6">
+    <Modal isOpen={isOpen} onClose={onClose} size="xl">
+      <div className="max-h-[80vh] overflow-hidden flex flex-col">
         {/* Premium Header with Gradient */}
         <div className="relative px-6 py-5 bg-gradient-to-br from-[#C4735B] via-[#B8654D] to-[#A65D47]">
           <div className="absolute inset-0 overflow-hidden">
@@ -1505,31 +1532,32 @@ function ProjectFormModal({
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto space-y-5 px-6 py-6">
-          {/* Title & Location Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="flex items-center gap-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-2">
-                <span className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center text-[#C4735B] text-xs">1</span>
-                {t('common.title')}
-                <span className="text-red-400">*</span>
-              </label>
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder={t('professional.egKitchenRenovation')}
-              />
-            </div>
-            <div>
-              <label className="flex items-center gap-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-2">
-                <MapPin className="w-4 h-4 text-neutral-400" />
-                {t('common.location')}
-              </label>
-              <Input
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder={t('professional.egTbilisi')}
-              />
-            </div>
+          {/* Title */}
+          <div>
+            <label className="flex items-center gap-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-2">
+              <span className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center text-[#C4735B] text-xs">1</span>
+              {t('common.title')}
+              <span className="text-red-400">*</span>
+            </label>
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={t('professional.egKitchenRenovation')}
+            />
+          </div>
+
+          {/* Location */}
+          <div>
+            <label className="flex items-center gap-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-2">
+              <MapPin className="w-4 h-4 text-[#C4735B]" />
+              {t('common.location')}
+            </label>
+            <AddressPicker
+              value={location}
+              onChange={(address) => setLocation(address)}
+              locale={locale}
+              className="[&_.map-container]:h-40"
+            />
           </div>
 
           {/* Description */}

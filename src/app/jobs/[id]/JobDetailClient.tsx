@@ -2,8 +2,10 @@
 
 import Avatar from "@/components/common/Avatar";
 import BackButton from "@/components/common/BackButton";
+import DatePicker from "@/components/common/DatePicker";
 import Header, { HeaderSpacer } from "@/components/common/Header";
 import MediaLightbox from "@/components/common/MediaLightbox";
+import Select from "@/components/common/Select";
 import ClientCard from "@/components/jobs/ClientCard";
 import MyProposalCard from "@/components/jobs/MyProposalCard";
 import ProjectSidebar, { ProjectSidebarMobile, ProjectSidebarTab } from "@/components/jobs/ProjectSidebar";
@@ -2994,16 +2996,15 @@ export default function JobDetailClient() {
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 {t("job.propertyType")}
               </label>
-              <select
+              <Select
                 value={editPropertyData.propertyType}
-                onChange={(e) => setEditPropertyData(prev => ({ ...prev, propertyType: e.target.value }))}
-                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50"
-              >
-                <option value="">{t('common.select')}</option>
-                {Object.entries(propertyTypeKeys).map(([key, translationKey]) => (
-                  <option key={key} value={key}>{t(translationKey)}</option>
-                ))}
-              </select>
+                onChange={(value) => setEditPropertyData(prev => ({ ...prev, propertyType: value }))}
+                placeholder={t('common.select')}
+                options={Object.entries(propertyTypeKeys).map(([key, translationKey]) => ({
+                  value: key,
+                  label: t(translationKey)
+                }))}
+              />
             </div>
 
             {/* Current Condition */}
@@ -3011,16 +3012,15 @@ export default function JobDetailClient() {
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 {t('jobDetail.currentCondition')}
               </label>
-              <select
+              <Select
                 value={editPropertyData.currentCondition}
-                onChange={(e) => setEditPropertyData(prev => ({ ...prev, currentCondition: e.target.value }))}
-                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50"
-              >
-                <option value="">{t('common.select')}</option>
-                {Object.entries(conditionKeys).map(([key, translationKey]) => (
-                  <option key={key} value={key}>{t(translationKey)}</option>
-                ))}
-              </select>
+                onChange={(value) => setEditPropertyData(prev => ({ ...prev, currentCondition: value }))}
+                placeholder={t('common.select')}
+                options={Object.entries(conditionKeys).map(([key, translationKey]) => ({
+                  value: key,
+                  label: t(translationKey)
+                }))}
+              />
             </div>
 
             {/* Area Size */}
@@ -3110,13 +3110,13 @@ export default function JobDetailClient() {
             {/* Deadline */}
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                {locale === "ka" ? "ვადა" : "Deadline"}
+                {t('jobDetail.deadline')}
               </label>
-              <input
-                type="date"
+              <DatePicker
                 value={editPropertyData.deadline}
-                onChange={(e) => setEditPropertyData(prev => ({ ...prev, deadline: e.target.value }))}
-                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50"
+                onChange={(value) => setEditPropertyData(prev => ({ ...prev, deadline: value }))}
+                min={new Date().toISOString().split('T')[0]}
+                locale={locale as 'ka' | 'en' | 'ru'}
               />
             </div>
           </div>

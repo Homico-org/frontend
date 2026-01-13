@@ -385,7 +385,7 @@ export default function AddressPicker({
               <div ref={mapContainerRef} className="w-full h-full" />
 
               {/* Search Bar Overlay */}
-              <div className="absolute top-3 left-3 right-3 z-10">
+              <div className="absolute top-3 left-3 right-14 z-10">
                 <div
                   className="relative"
                   style={{
