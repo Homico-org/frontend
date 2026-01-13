@@ -135,6 +135,7 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
             ref={ref}
             type="tel"
             inputMode="numeric"
+            autoComplete="tel"
             value={value}
             onChange={handlePhoneChange}
             disabled={disabled}

@@ -38,6 +38,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 interface PendingPro {
   _id: string;
+  uid?: number;
   name: string;
   email?: string;
   phone?: string;
@@ -485,7 +486,7 @@ function AdminPendingProsPageContent() {
                         </>
                       )}
                       <Link
-                        href={`/professionals/${pro._id}`}
+                        href={`/professionals/${pro.uid || pro._id}`}
                         target="_blank"
                         onClick={(e) => e.stopPropagation()}
                         className="p-2 rounded-lg"
@@ -715,7 +716,7 @@ function AdminPendingProsPageContent() {
                 style={{ borderTop: `1px solid ${THEME.border}` }}
               >
                 <Link
-                  href={`/professionals/${selectedPro._id}`}
+                  href={`/professionals/${selectedPro.uid || selectedPro._id}`}
                   target="_blank"
                   className="flex-1"
                 >

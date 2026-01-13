@@ -2,10 +2,13 @@
 
 import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
+import { ADMIN_THEME as THEME } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { api } from '@/lib/api';
+import { formatTimeAgoCompact } from '@/utils/dateUtils';
 import { logApiError } from '@/utils/errorUtils';
+import { getAdminActivityColor } from '@/utils/statusUtils';
 import {
   Activity as ActivityIcon,
   AlertCircle,
@@ -33,9 +36,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
-import { formatTimeAgoCompact } from '@/utils/dateUtils';
-import { ADMIN_THEME as THEME } from '@/constants/theme';
-import { getAdminActivityColor } from '@/utils/statusUtils';
 
 interface DashboardStats {
   users: {
@@ -704,7 +704,7 @@ function AdminDashboardPageContent() {
               <div className="relative h-full flex items-end gap-1 px-1">
                 {chartData.map((day, i) => (
                   <div
-                    key={day._id}
+                    key={day._id || `day-${i}`}
                     className="flex-1 flex flex-col items-center justify-end group cursor-pointer"
                     style={{ height: '100%' }}
                   >
@@ -714,7 +714,7 @@ function AdminDashboardPageContent() {
                       style={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
                     >
                       <p className="text-xs font-medium" style={{ color: THEME.text }}>{day.count}</p>
-                      <p className="text-[10px]" style={{ color: THEME.textDim }}>{day._id.slice(5)}</p>
+                      <p className="text-[10px]" style={{ color: THEME.textDim }}>{day._id?.slice(5) || ''}</p>
                     </div>
 
                     <div

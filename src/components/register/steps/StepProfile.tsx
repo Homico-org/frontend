@@ -147,6 +147,8 @@ export default function StepProfile({
             value={fullName}
             onChange={(e) => onNameChange(e.target.value)}
             placeholder={t('register.enterYourName')}
+            autoComplete="off"
+            data-form-type="other"
           />
         </div>
 
@@ -191,7 +193,7 @@ export default function StepProfile({
             onChange={(e) => onConfirmPasswordChange(e.target.value)}
             placeholder={t('register.repeat')}
             size="lg"
-            error={confirmPassword && password !== confirmPassword ? t('register.passwordsNotMatch') : undefined}
+            error={confirmPassword && password !== confirmPassword ? t('validation.passwordsNotMatch') : undefined}
           />
         </div>
       </div>

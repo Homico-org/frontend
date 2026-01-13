@@ -43,7 +43,7 @@ interface RawPortfolioProject extends Partial<PortfolioProject> {
 
 type ProfileSetupStep = 'about' | 'categories' | 'pricing-areas' | 'projects' | 'review';
 
-const STEPS: { id: ProfileSetupStep; title: { en: string; ka: string } }[] = [
+const ALL_STEPS: { id: ProfileSetupStep; title: { en: string; ka: string } }[] = [
   { id: 'about', title: { en: 'About You', ka: 'შენს შესახებ' } },
   { id: 'categories', title: { en: 'Services', ka: 'სერვისები' } },
   { id: 'pricing-areas', title: { en: 'Pricing & Areas', ka: 'ფასები და ზონები' } },
@@ -71,6 +71,17 @@ function ProProfileSetupPageContent() {
   // Form state - use SelectedService[] to match new registration flow
   const [selectedServices, setSelectedServices] = useState<SelectedService[]>([]);
   const [customServices, setCustomServices] = useState<string[]>([]);
+  
+  // Track if services were pre-selected during registration (to skip categories step)
+  const [hasPreselectedServices, setHasPreselectedServices] = useState(false);
+  
+  // Dynamic steps - skip categories if services were pre-selected during registration
+  const STEPS = useMemo(() => {
+    if (hasPreselectedServices) {
+      return ALL_STEPS.filter(step => step.id !== 'categories');
+    }
+    return ALL_STEPS;
+  }, [hasPreselectedServices]);
   
   // Derived categories and subcategories from selectedServices
   const selectedCategories = useMemo(() => 
@@ -436,6 +447,8 @@ function ProProfileSetupPageContent() {
           if (user?.selectedSubcategories && user.selectedSubcategories.length > 0 && allCategories.length > 0) {
             const services = convertToSelectedServices(user.selectedSubcategories, '3-5');
             setSelectedServices(services);
+            // Mark as having pre-selected services to skip categories step
+            setHasPreselectedServices(true);
           }
         }
       } catch (err) {
