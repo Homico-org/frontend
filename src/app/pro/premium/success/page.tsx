@@ -111,8 +111,6 @@ function SuccessContent() {
     <div className="min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
       {/* Custom Styles */}
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap');
-        
         @keyframes float {
           0%, 100% { transform: translateY(0) rotate(0deg); }
           50% { transform: translateY(-15px) rotate(5deg); }
@@ -255,7 +253,7 @@ function SuccessContent() {
           {/* Title */}
           <h1 
             className="text-4xl sm:text-5xl font-bold text-neutral-900 dark:text-white mb-4"
-            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+            style={{ fontFamily: "var(--font-sans)" }}
           >
             {t('premium.congratulations')}
           </h1>

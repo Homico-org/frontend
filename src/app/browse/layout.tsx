@@ -36,7 +36,7 @@ function JobsSidebar() {
 
 // Search input for Jobs tab
 function JobsSearchInput() {
-  const { t, locale } = useLanguage();
+  const { t } = useLanguage();
   const { filters, setFilters } = useJobsContext();
   const [localSearch, setLocalSearch] = useState(filters.searchQuery);
   const [isFocused, setIsFocused] = useState(false);
@@ -83,7 +83,7 @@ function JobsSearchInput() {
           onChange={(e) => handleSearchChange(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          placeholder={t('browse.searchJobs')}
+          placeholder={t("browse.searchJobs")}
           className="flex-1 h-10 pr-9 bg-transparent text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none"
         />
         {localSearch ? (
@@ -218,16 +218,24 @@ function useJobsFilterCount() {
   if (filters.subcategory) count++;
   if (filters.budgetMin !== null) count++;
   if (filters.budgetMax !== null) count++;
-  if (filters.propertyType && filters.propertyType !== 'all') count++;
-  if (filters.location && filters.location !== 'all') count++;
-  if (filters.deadline && filters.deadline !== 'all') count++;
+  if (filters.propertyType && filters.propertyType !== "all") count++;
+  if (filters.location && filters.location !== "all") count++;
+  if (filters.deadline && filters.deadline !== "all") count++;
   if (filters.showFavoritesOnly) count++;
   return count;
 }
 
 // Helper to count active filters for Browse (Portfolio/Professionals)
 function useBrowseFilterCount() {
-  const { selectedCategory, selectedSubcategory, minRating, budgetMin, budgetMax, selectedCity, selectedBudget } = useBrowseContext();
+  const {
+    selectedCategory,
+    selectedSubcategory,
+    minRating,
+    budgetMin,
+    budgetMax,
+    selectedCity,
+    selectedBudget,
+  } = useBrowseContext();
   let count = 0;
   // Count category/subcategory as one filter (subcategory implies category)
   if (selectedSubcategory) {
@@ -237,18 +245,28 @@ function useBrowseFilterCount() {
   }
   if (minRating > 0) count++;
   if (budgetMin !== null || budgetMax !== null) count++; // Count budget range as one filter
-  if (selectedCity && selectedCity !== 'tbilisi') count++;
-  if (selectedBudget && selectedBudget !== 'all') count++;
+  if (selectedCity && selectedCity !== "tbilisi") count++;
+  if (selectedBudget && selectedBudget !== "all") count++;
   return count;
 }
 
 // Filter button with badge
-function FilterButton({ onClick, filterCount }: { onClick: () => void; filterCount: number }) {
+function FilterButton({
+  onClick,
+  filterCount,
+}: {
+  onClick: () => void;
+  filterCount: number;
+}) {
   return (
     <button
       onClick={onClick}
       className="lg:hidden relative flex items-center justify-center w-10 h-10 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
-      style={filterCount > 0 ? { borderColor: ACCENT_COLOR, color: ACCENT_COLOR } : {}}
+      style={
+        filterCount > 0
+          ? { borderColor: ACCENT_COLOR, color: ACCENT_COLOR }
+          : {}
+      }
     >
       <Filter className="w-5 h-5" />
       {filterCount > 0 && (
@@ -331,16 +349,14 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
               style={{ backgroundColor: ACCENT_COLOR }}
             >
               <Plus className="w-4 h-4" />
-              <span>
-                {t('browse.postAJob')}
-              </span>
+              <span>{t("browse.postAJob")}</span>
             </Link>
           </div>
 
           {/* BROWSE Label */}
           <div className="px-5 pt-3 pb-2">
             <span className="text-xs font-semibold tracking-wider text-neutral-400 uppercase">
-              {t('browse.browse')}
+              {t("browse.browse")}
             </span>
           </div>
 
@@ -369,7 +385,13 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                     }
                   >
                     <Icon className="w-5 h-5" />
-                    <span>{locale === "ka" ? tab.labelKa : locale === "ru" ? tab.labelRu : tab.label}</span>
+                    <span>
+                      {locale === "ka"
+                        ? tab.labelKa
+                        : locale === "ru"
+                          ? tab.labelRu
+                          : tab.label}
+                    </span>
                   </Link>
                 );
               })}
@@ -400,15 +422,11 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                   <JobsSearchInput />
                 ) : isProfessionalsPage ? (
                   <BrowseSearchInput
-                    placeholder={
-                      t('browse.searchProfessionals')
-                    }
+                    placeholder={t("browse.searchProfessionals")}
                   />
                 ) : (
                   <BrowseSearchInput
-                    placeholder={
-                      t('browse.searchPortfolio')
-                    }
+                    placeholder={t("browse.searchPortfolio")}
                   />
                 )}
               </div>
@@ -416,7 +434,9 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
               {isJobsPage ? (
                 <JobsFilterButton onClick={() => setShowMobileFilters(true)} />
               ) : (
-                <BrowseFilterButton onClick={() => setShowMobileFilters(true)} />
+                <BrowseFilterButton
+                  onClick={() => setShowMobileFilters(true)}
+                />
               )}
             </div>
           </div>
@@ -433,15 +453,11 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                       <JobsSearchInput />
                     ) : isProfessionalsPage ? (
                       <BrowseSearchInput
-                        placeholder={
-                          t('browse.searchProfessionals')
-                        }
+                        placeholder={t("browse.searchProfessionals")}
                       />
                     ) : (
                       <BrowseSearchInput
-                        placeholder={
-                          t('browse.searchPortfolio')
-                        }
+                        placeholder={t("browse.searchPortfolio")}
                       />
                     )}
                   </div>
@@ -468,7 +484,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
           <div className="absolute left-0 top-0 bottom-0 w-72 max-w-[80vw] bg-white dark:bg-[#0a0a0a] shadow-2xl animate-slide-in-left">
             <div className="flex items-center justify-between p-3 border-b border-neutral-200 dark:border-neutral-800">
               <h3 className="font-semibold text-sm text-neutral-900 dark:text-white">
-                {t('common.filters')}
+                {t("common.filters")}
               </h3>
               <button
                 onClick={() => setShowMobileFilters(false)}

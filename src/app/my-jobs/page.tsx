@@ -260,18 +260,7 @@ function MyJobsPageContent() {
   }
 
   return (
-    <div className="flex flex-col font-body">
-      {/* Font imports */}
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
-
-        .font-display {
-          font-family: 'Playfair Display', Georgia, serif;
-        }
-        .font-body {
-          font-family: 'DM Sans', system-ui, sans-serif;
-        }
-      `}</style>
+    <div className="flex flex-col">
 
       {/* ==================== MAIN CONTENT ==================== */}
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-6">

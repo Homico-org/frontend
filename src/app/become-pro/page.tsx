@@ -36,7 +36,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 // Homico Terracotta Color Palette
 const TERRACOTTA = {
@@ -56,17 +56,29 @@ const STEPS: {
 }[] = [
   {
     id: "category",
-    title: { en: "Specialty", ka: "აირჩიე შენი სპეციალობა", ru: "Специальность" },
+    title: {
+      en: "Specialty",
+      ka: "აირჩიე შენი სპეციალობა",
+      ru: "Специальность",
+    },
     icon: <Briefcase className="w-4 h-4" />,
   },
   {
     id: "about",
-    title: { en: "About You", ka: "შეავსე შენს შესახებ ინფორმაცია", ru: "О вас" },
+    title: {
+      en: "About You",
+      ka: "შეავსე შენს შესახებ ინფორმაცია",
+      ru: "О вас",
+    },
     icon: <FileText className="w-4 h-4" />,
   },
   {
     id: "contact",
-    title: { en: "Contact", ka: "შეავსე შენს საკონტაქტო ინფორმაცია", ru: "Контакты" },
+    title: {
+      en: "Contact",
+      ka: "შეავსე შენს საკონტაქტო ინფორმაცია",
+      ru: "Контакты",
+    },
     icon: <MessageCircle className="w-4 h-4" />,
   },
   {
@@ -157,7 +169,6 @@ export default function BecomeProPage() {
   const { openLoginModal } = useAuthModal();
   const { t, locale } = useLanguage();
   const { categories } = useCategories();
-  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   // Step state
   const [currentStep, setCurrentStep] = useState<Step>("intro");
@@ -173,7 +184,6 @@ export default function BecomeProPage() {
     []
   );
   const [customServices, setCustomServices] = useState<string[]>([]);
-  const [newCustomService, setNewCustomService] = useState("");
 
   // About state
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -191,7 +201,9 @@ export default function BecomeProPage() {
   const [website, setWebsite] = useState("");
 
   // Projects state
-  const [portfolioProjects, setPortfolioProjects] = useState<PortfolioProject[]>([]);
+  const [portfolioProjects, setPortfolioProjects] = useState<
+    PortfolioProject[]
+  >([]);
 
   useEffect(() => {
     setIsVisible(true);
@@ -207,7 +219,6 @@ export default function BecomeProPage() {
       }
     }
   }, [authLoading, isAuthenticated, user, router, openLoginModal]);
-
 
   // Get current step index
   const getCurrentStepIndex = () =>
@@ -259,65 +270,6 @@ export default function BecomeProPage() {
     }
   };
 
-  // Category handlers
-  const handleCategoryToggle = (categoryKey: string) => {
-    if (selectedCategories.includes(categoryKey)) {
-      setSelectedCategories(
-        selectedCategories.filter((c) => c !== categoryKey)
-      );
-      const category = categories.find((c) => c.key === categoryKey);
-      if (category) {
-        const categorySubKeys = category.subcategories.map((s) => s.key);
-        setSelectedSubcategories(
-          selectedSubcategories.filter((s) => !categorySubKeys.includes(s))
-        );
-      }
-    } else if (selectedCategories.length < 4) {
-      setSelectedCategories([...selectedCategories, categoryKey]);
-    }
-  };
-
-  const handleSubcategoryToggle = (subcategoryKey: string) => {
-    if (selectedSubcategories.includes(subcategoryKey)) {
-      setSelectedSubcategories(
-        selectedSubcategories.filter((s) => s !== subcategoryKey)
-      );
-    } else if (selectedSubcategories.length < 10) {
-      setSelectedSubcategories([...selectedSubcategories, subcategoryKey]);
-    }
-  };
-
-  const handleAddCustomService = () => {
-    if (newCustomService.trim() && customServices.length < 5) {
-      setCustomServices([...customServices, newCustomService.trim()]);
-      setNewCustomService("");
-    }
-  };
-
-  const handleRemoveCustomService = (index: number) => {
-    setCustomServices(customServices.filter((_, i) => i !== index));
-  };
-
-  // Avatar handlers
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert(
-          t('becomePro.imageMustBeLessThan')
-        );
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageToCrop(reader.result as string);
-        setShowCropper(true);
-      };
-      reader.readAsDataURL(file);
-    }
-    e.target.value = "";
-  };
-
   const handleCropComplete = (croppedBlob: Blob) => {
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -333,12 +285,6 @@ export default function BecomeProPage() {
     setShowCropper(false);
     setImageToCrop(null);
   };
-
-  // Get available subcategories
-  const availableSubcategories = selectedCategories.flatMap((catKey) => {
-    const category = categories.find((c) => c.key === catKey);
-    return category?.subcategories || [];
-  });
 
   const handleSubmit = async () => {
     if (!canProceed()) return;
@@ -492,15 +438,15 @@ export default function BecomeProPage() {
             </div>
 
             <h2 className="text-3xl md:text-4xl font-bold text-[var(--color-text-primary)] tracking-tight mb-3">
-              {t('becomePro.congratulations')}
+              {t("becomePro.congratulations")}
             </h2>
 
             <p className="text-lg text-[var(--color-text-secondary)] mb-2">
-              {t('becomePro.youAreNowAProfessional')}
+              {t("becomePro.youAreNowAProfessional")}
             </p>
 
             <p className="text-sm text-[var(--color-text-tertiary)] mb-10 max-w-xs mx-auto">
-              {t('becomePro.startReceivingJobsAndGrow')}
+              {t("becomePro.startReceivingJobsAndGrow")}
             </p>
 
             <div className="space-y-3">
@@ -511,15 +457,13 @@ export default function BecomeProPage() {
                   className="w-full group"
                   style={{ backgroundColor: TERRACOTTA.primary }}
                 >
-                  <span>
-                    {t('becomePro.browseJobs')}
-                  </span>
+                  <span>{t("becomePro.browseJobs")}</span>
                   <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
               <Link href="/pro/profile-setup">
                 <Button variant="secondary" size="xl" className="w-full">
-                  {t('becomePro.completeProfile')}
+                  {t("becomePro.completeProfile")}
                 </Button>
               </Link>
             </div>
@@ -570,7 +514,7 @@ export default function BecomeProPage() {
                     className="text-xs font-semibold uppercase tracking-wider"
                     style={{ color: TERRACOTTA.primary }}
                   >
-                    {t('becomePro.freeToJoin')}
+                    {t("becomePro.freeToJoin")}
                   </span>
                 </div>
 
@@ -591,14 +535,14 @@ export default function BecomeProPage() {
                 </h1>
 
                 <p className="become-pro-hero-subtitle">
-                  {t('becomePro.joinGeorgiasLeadingPlatformAnd')}
+                  {t("becomePro.joinGeorgiasLeadingPlatformAnd")}
                 </p>
               </section>
 
               {/* Steps Preview */}
               <section className="bg-[var(--color-bg-elevated)] rounded-2xl p-6 border border-[var(--color-border-subtle)] mb-8">
                 <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-4">
-                  {t('becomePro.whatToExpect')}
+                  {t("becomePro.whatToExpect")}
                 </h3>
                 <div className="space-y-3">
                   {STEPS.map((step, i) => (
@@ -614,7 +558,11 @@ export default function BecomeProPage() {
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                          {locale === "ka" ? step.title.ka : locale === "ru" ? step.title.ru : step.title.en}
+                          {locale === "ka"
+                            ? step.title.ka
+                            : locale === "ru"
+                              ? step.title.ru
+                              : step.title.en}
                         </p>
                       </div>
                       {step.icon}
@@ -636,7 +584,7 @@ export default function BecomeProPage() {
               className="w-full group"
               style={{ backgroundColor: TERRACOTTA.primary }}
             >
-              <span>{t('becomePro.getStarted')}</span>
+              <span>{t("becomePro.getStarted")}</span>
               <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
             </Button>
           </div>
@@ -670,8 +618,8 @@ export default function BecomeProPage() {
                 </button>
                 <div className="flex-1">
                   <p className="text-xs text-[var(--color-text-tertiary)] uppercase tracking-wider">
-                    {t('becomePro.step')}{" "}
-                    {getCurrentStepIndex() + 1} / {STEPS.length}
+                    {t("becomePro.step")} {getCurrentStepIndex() + 1} /{" "}
+                    {STEPS.length}
                   </p>
                   <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
                     {locale === "ka"
@@ -731,10 +679,13 @@ export default function BecomeProPage() {
                   avatarPreview={avatarPreview}
                   onFormChange={(updates) => {
                     if (updates.bio !== undefined) setBio(updates.bio);
-                    if (updates.yearsExperience !== undefined) setYearsExperience(updates.yearsExperience);
+                    if (updates.yearsExperience !== undefined)
+                      setYearsExperience(updates.yearsExperience);
                   }}
                   onAvatarChange={() => {}}
-                  onAvatarCropped={(croppedDataUrl) => setAvatarPreview(croppedDataUrl)}
+                  onAvatarCropped={(croppedDataUrl) =>
+                    setAvatarPreview(croppedDataUrl)
+                  }
                   validation={{
                     bio: validation.bio,
                     experience: validation.experience,
@@ -754,13 +705,13 @@ export default function BecomeProPage() {
                           style={{ color: TERRACOTTA.primary }}
                         />
                         <h3 className="font-semibold text-[var(--color-text-primary)]">
-                          {t('becomePro.contactInformation')}
+                          {t("becomePro.contactInformation")}
                         </h3>
                       </div>
                     </div>
 
                     <p className="text-sm text-[var(--color-text-secondary)] mb-6">
-                      {t('becomePro.addSocialLinksForClient')}
+                      {t("becomePro.addSocialLinksForClient")}
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -863,7 +814,7 @@ export default function BecomeProPage() {
                       {/* Website */}
                       <div>
                         <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
-                          {t('common.website')}
+                          {t("common.website")}
                         </label>
                         <Input
                           type="url"
@@ -897,7 +848,7 @@ export default function BecomeProPage() {
                   {portfolioProjects.length === 0 && (
                     <div className="bg-[var(--color-bg-tertiary)] rounded-xl p-4 text-center">
                       <p className="text-sm text-[var(--color-text-secondary)]">
-                        {t('becomePro.addingProjectsIsOptionalYou')}
+                        {t("becomePro.addingProjectsIsOptionalYou")}
                       </p>
                     </div>
                   )}
@@ -910,7 +861,7 @@ export default function BecomeProPage() {
                   {/* Summary Card */}
                   <div className="bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 border border-[var(--color-border-subtle)]">
                     <h3 className="font-semibold text-[var(--color-text-primary)] mb-6">
-                      {t('becomePro.profileSummary')}
+                      {t("becomePro.profileSummary")}
                     </h3>
 
                     {/* Profile Preview */}
@@ -931,8 +882,7 @@ export default function BecomeProPage() {
                         </h4>
                         {yearsExperience && (
                           <p className="text-sm text-[var(--color-text-secondary)]">
-                            {yearsExperience}{" "}
-                            {t('becomePro.yearsExperience')}
+                            {yearsExperience} {t("becomePro.yearsExperience")}
                           </p>
                         )}
                       </div>
@@ -941,7 +891,7 @@ export default function BecomeProPage() {
                     {/* Categories */}
                     <div className="mb-6">
                       <p className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2">
-                        {t('common.categories')}
+                        {t("common.categories")}
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {selectedCategories.map((catKey) => {
@@ -967,7 +917,7 @@ export default function BecomeProPage() {
                     {selectedSubcategories.length > 0 && (
                       <div className="mb-6">
                         <p className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2">
-                          {t('common.skills')}
+                          {t("common.skills")}
                         </p>
                         <div className="flex flex-wrap gap-2">
                           {selectedSubcategories.map((subKey) => {
@@ -983,11 +933,7 @@ export default function BecomeProPage() {
                               }
                             }
                             return (
-                              <Badge
-                                key={subKey}
-                                variant="secondary"
-                                size="sm"
-                              >
+                              <Badge key={subKey} variant="secondary" size="sm">
                                 {locale === "ka"
                                   ? subcategory?.nameKa || subKey
                                   : subcategory?.name || subKey}
@@ -1001,7 +947,7 @@ export default function BecomeProPage() {
                     {/* Bio */}
                     <div className="mb-6">
                       <p className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2">
-                        {t('becomePro.about')}
+                        {t("becomePro.about")}
                       </p>
                       <p className="text-sm text-[var(--color-text-secondary)]">
                         {bio}
@@ -1011,7 +957,7 @@ export default function BecomeProPage() {
                     {/* Contact */}
                     <div>
                       <p className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2">
-                        {t('becomePro.contact')}
+                        {t("becomePro.contact")}
                       </p>
                       <div className="flex flex-wrap gap-3">
                         {whatsapp && (
@@ -1063,7 +1009,7 @@ export default function BecomeProPage() {
                     {portfolioProjects.length > 0 && (
                       <div className="mt-6 pt-6 border-t border-[var(--color-border-subtle)]">
                         <p className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-3">
-                          {t('becomePro.portfolio')}
+                          {t("becomePro.portfolio")}
                         </p>
                         <div className="grid grid-cols-3 gap-2">
                           {portfolioProjects.slice(0, 6).map((project) => {
@@ -1099,7 +1045,7 @@ export default function BecomeProPage() {
                         {portfolioProjects.length > 6 && (
                           <p className="text-xs text-[var(--color-text-muted)] mt-2 text-center">
                             +{portfolioProjects.length - 6}{" "}
-                            {t('becomePro.moreProjects')}
+                            {t("becomePro.moreProjects")}
                           </p>
                         )}
                       </div>
@@ -1144,9 +1090,7 @@ export default function BecomeProPage() {
                 className="flex-1 group"
                 style={{ backgroundColor: TERRACOTTA.primary }}
               >
-                <span>
-                  {t('becomePro.becomeAPro')}
-                </span>
+                <span>{t("becomePro.becomeAPro")}</span>
                 {!isSubmitting && <Sparkles className="w-5 h-5" />}
               </Button>
             ) : (
@@ -1162,7 +1106,7 @@ export default function BecomeProPage() {
                     : undefined,
                 }}
               >
-                <span>{t('common.continue')}</span>
+                <span>{t("common.continue")}</span>
                 <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </Button>
             )}

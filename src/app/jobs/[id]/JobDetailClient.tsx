@@ -1569,17 +1569,6 @@ export default function JobDetailClient() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF8] dark:bg-[#0D0D0C]">
-      {/* Fonts */}
-      <style jsx global>{`
-        @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap");
-
-        .font-display {
-          font-family: "Playfair Display", Georgia, serif;
-        }
-        .font-body {
-          font-family: "DM Sans", system-ui, sans-serif;
-        }
-      `}</style>
 
       <Header />
       <HeaderSpacer />

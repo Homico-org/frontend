@@ -273,8 +273,6 @@ function CheckoutContent() {
     <div className="min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
       {/* Custom Styles */}
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap');
-        
         @keyframes float {
           0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
           50% { transform: translateY(-15px) rotate(5deg); opacity: 0.5; }
@@ -387,7 +385,7 @@ function CheckoutContent() {
           <div className="text-center mb-10">
             <h1 
               className="text-3xl sm:text-4xl font-bold text-neutral-900 mb-3"
-              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+              style={{ fontFamily: "var(--font-sans)" }}
             >
               {t('premium.completeYourOrder')}
             </h1>
@@ -836,7 +834,7 @@ function CheckoutContent() {
                           <div>
                             <h3 
                               className="text-2xl font-bold"
-                              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                              style={{ fontFamily: "var(--font-sans)" }}
                             >
                               {tier.name[locale === 'ka' ? 'ka' : 'en']}
                             </h3>
@@ -848,7 +846,7 @@ function CheckoutContent() {
                         <div className="flex items-baseline gap-2">
                           <span 
                             className="text-5xl font-bold"
-                            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                            style={{ fontFamily: "var(--font-sans)" }}
                           >
                             {tier.currency}{price}
                           </span>

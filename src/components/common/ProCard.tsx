@@ -83,10 +83,11 @@ export default function ProCard({
   // Use the maximum of all available project count sources
   // This handles cases where counters weren't incremented for old projects
   const portfolioCount = profile.portfolioProjects?.length || 0;
+  const portfolioItemCount = profile.portfolioItemCount || 0; // From PortfolioItem collection
   const externalJobs = profile.externalCompletedJobs || 0;
   const completedProjects = profile.completedProjects || 0;
   const completedJobsCounter = profile.completedJobs || 0;
-  const completedJobs = Math.max(completedJobsCounter, portfolioCount, completedProjects, externalJobs);
+  const completedJobs = Math.max(completedJobsCounter, portfolioCount, portfolioItemCount, completedProjects, externalJobs);
 
   // Default/Compact variant
   if (variant === "compact" || variant === "default") {

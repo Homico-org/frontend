@@ -160,6 +160,7 @@ export interface ProProfile extends BaseEntity {
   portfolioProjects: PortfolioProject[];
   portfolioImages: string[];
   pinterestLinks: string[];
+  portfolioItemCount?: number; // Count from PortfolioItem collection
   
   // Verification
   isEmailVerified: boolean;
