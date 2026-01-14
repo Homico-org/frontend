@@ -1,34 +1,29 @@
-'use client';
+"use client";
 
-import AuthGuard from '@/components/common/AuthGuard';
-import Avatar from '@/components/common/Avatar';
-import BackButton from '@/components/common/BackButton';
-import EmptyState from '@/components/common/EmptyState';
-import ProjectTrackerCard from '@/components/projects/ProjectTrackerCard';
-import { Button } from '@/components/ui/button';
-import { ConfirmModal } from '@/components/ui/Modal';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/contexts/ToastContext';
-import { useCategoryLabels } from '@/hooks/useCategoryLabels';
-import { api } from '@/lib/api';
-import { isMVPMode } from '@/lib/mvp';
-import { storage } from '@/services/storage';
-import type { Job, ProjectStage, ProjectTracking } from '@/types/shared';
-
-// Socket event data type
-interface ProjectStageUpdateEvent {
-  jobId: string;
-  stage: ProjectStage;
-  progress: number;
-  project?: Partial<ProjectTracking>;
-}
+import AuthGuard from "@/components/common/AuthGuard";
+import Avatar from "@/components/common/Avatar";
+import BackButton from "@/components/common/BackButton";
+import EmptyState from "@/components/common/EmptyState";
+import ProjectTrackerCard from "@/components/projects/ProjectTrackerCard";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { ConfirmModal } from "@/components/ui/Modal";
+import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
+import { ACCENT_COLOR } from "@/constants/theme";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/contexts/ToastContext";
+import { useCategoryLabels } from "@/hooks/useCategoryLabels";
+import { api } from "@/lib/api";
+import { storage } from "@/services/storage";
+import type { Job, ProjectStage, ProjectTracking } from "@/types/shared";
+import { formatTimeAgo } from "@/utils/dateUtils";
 import {
   AlertTriangle,
   ArrowRight,
   Briefcase,
   Check,
   ChevronDown,
-  ChevronRight,
   Clock,
   Edit3,
   Eye,
@@ -38,21 +33,23 @@ import {
   RefreshCw,
   Sparkles,
   Trash2,
-  Users,
-  Phone
-} from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { formatTimeAgo } from '@/utils/dateUtils';
-import { ACCENT_COLOR } from '@/constants/theme';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { io, Socket } from 'socket.io-client';
-import { Skeleton, SkeletonCard } from '@/components/ui/Skeleton';
-import { Badge } from '@/components/ui/badge';
+  Users
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { io, Socket } from "socket.io-client";
+
+// Socket event data type
+interface ProjectStageUpdateEvent {
+  jobId: string;
+  stage: ProjectStage;
+  progress: number;
+  project?: Partial<ProjectTracking>;
+}
 
 import { useLanguage } from "@/contexts/LanguageContext";
-type StatusFilter = 'all' | 'open' | 'hired' | 'closed' | 'expired';
+type StatusFilter = "all" | "open" | "hired" | "closed" | "expired";
 
 function MyJobsPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -65,7 +62,7 @@ function MyJobsPageContent() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isFilterLoading, setIsFilterLoading] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('open');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("open");
   const [deletingJobId, setDeletingJobId] = useState<string | null>(null);
   const [deleteModalJob, setDeleteModalJob] = useState<Job | null>(null);
   const [renewingJobId, setRenewingJobId] = useState<string | null>(null);
@@ -74,7 +71,7 @@ function MyJobsPageContent() {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      router.push('/');
+      router.push("/");
     }
   }, [authLoading, isAuthenticated, router]);
 
@@ -98,27 +95,30 @@ function MyJobsPageContent() {
     });
 
     // Listen for project stage updates
-    socketRef.current.on("projectStageUpdate", (data: ProjectStageUpdateEvent) => {
-      console.log("[MyJobs] Project stage update:", data);
-      // Update the job's project tracking data in state
-      setJobs((prevJobs) =>
-        prevJobs.map((job) => {
-          if (job.id === data.jobId && job.projectTracking) {
-            return {
-              ...job,
-              projectTracking: {
-                ...job.projectTracking,
-                ...data.project,
-                jobId: job.projectTracking.jobId || job.id,
-                currentStage: data.stage,
-                progress: data.progress,
-              },
-            };
-          }
-          return job;
-        })
-      );
-    });
+    socketRef.current.on(
+      "projectStageUpdate",
+      (data: ProjectStageUpdateEvent) => {
+        console.log("[MyJobs] Project stage update:", data);
+        // Update the job's project tracking data in state
+        setJobs((prevJobs) =>
+          prevJobs.map((job) => {
+            if (job.id === data.jobId && job.projectTracking) {
+              return {
+                ...job,
+                projectTracking: {
+                  ...job.projectTracking,
+                  ...data.project,
+                  jobId: job.projectTracking.jobId || job.id,
+                  currentStage: data.stage,
+                  progress: data.progress,
+                },
+              };
+            }
+            return job;
+          })
+        );
+      }
+    );
 
     return () => {
       socketRef.current?.disconnect();
@@ -126,45 +126,50 @@ function MyJobsPageContent() {
     };
   }, [isAuthenticated, user]);
 
-  const fetchMyJobs = useCallback(async (status: StatusFilter, isInitial: boolean = false) => {
-    try {
-      if (isInitial) {
-        setIsInitialLoading(true);
-      } else {
-        setIsFilterLoading(true);
-      }
-      const params = status !== 'all' ? `?status=${status}` : '';
-      const response = await api.get(`/jobs/my-jobs${params}`);
-      const jobsData = response.data;
+  const fetchMyJobs = useCallback(
+    async (status: StatusFilter, isInitial: boolean = false) => {
+      try {
+        if (isInitial) {
+          setIsInitialLoading(true);
+        } else {
+          setIsFilterLoading(true);
+        }
+        const params = status !== "all" ? `?status=${status}` : "";
+        const response = await api.get(`/jobs/my-jobs${params}`);
+        const jobsData = response.data;
 
-      // Fetch project tracking data for in_progress jobs
-      const jobsWithTracking = await Promise.all(
-        jobsData.map(async (job: Job) => {
-          if (job.status === 'in_progress') {
-            try {
-              const trackingResponse = await api.get(`/jobs/projects/${job.id}`);
-              return { ...job, projectTracking: trackingResponse.data.project };
-            } catch {
-              // If no project tracking exists, return job as-is
-              return job;
+        // Fetch project tracking data for in_progress jobs
+        const jobsWithTracking = await Promise.all(
+          jobsData.map(async (job: Job) => {
+            if (job.status === "in_progress") {
+              try {
+                const trackingResponse = await api.get(
+                  `/jobs/projects/${job.id}`
+                );
+                return {
+                  ...job,
+                  projectTracking: trackingResponse.data.project,
+                };
+              } catch {
+                // If no project tracking exists, return job as-is
+                return job;
+              }
             }
-          }
-          return job;
-        })
-      );
+            return job;
+          })
+        );
 
-      setJobs(jobsWithTracking);
-    } catch (err) {
-      console.error('Failed to fetch jobs:', err);
-      toast.error(
-        t('common.error'),
-        t('job.failedToLoadProjects')
-      );
-    } finally {
-      setIsInitialLoading(false);
-      setIsFilterLoading(false);
-    }
-  }, [locale, toast]);
+        setJobs(jobsWithTracking);
+      } catch (err) {
+        console.error("Failed to fetch jobs:", err);
+        toast.error(t("common.error"), t("job.failedToLoadProjects"));
+      } finally {
+        setIsInitialLoading(false);
+        setIsFilterLoading(false);
+      }
+    },
+    [locale, toast]
+  );
 
   // Initial load
   useEffect(() => {
@@ -198,16 +203,13 @@ function MyJobsPageContent() {
     try {
       setDeletingJobId(jobId);
       await api.delete(`/jobs/${jobId}`);
-      setJobs(prev => prev.filter(j => j.id !== jobId));
-      toast.success(
-        t('common.success'),
-        t('job.jobDeletedSuccessfully')
-      );
+      setJobs((prev) => prev.filter((j) => j.id !== jobId));
+      toast.success(t("common.success"), t("job.jobDeletedSuccessfully"));
       setDeleteModalJob(null);
     } catch (err) {
       toast.error(
-        locale === 'ka' ? 'შეცდომა' : 'Error',
-        t('job.failedToDeleteJob')
+        locale === "ka" ? "შეცდომა" : "Error",
+        t("job.failedToDeleteJob")
       );
     } finally {
       setDeletingJobId(null);
@@ -221,18 +223,20 @@ function MyJobsPageContent() {
       await api.post(`/jobs/${jobId}/renew`);
 
       // Update job in local state to open status
-      setJobs(prev => prev.map(j =>
-        j.id === jobId ? { ...j, status: 'open' as const } : j
-      ));
+      setJobs((prev) =>
+        prev.map((j) =>
+          j.id === jobId ? { ...j, status: "open" as const } : j
+        )
+      );
 
       toast.success(
-        locale === 'ka' ? 'წარმატება' : 'Success',
-        t('job.jobRenewedFor30Days')
+        locale === "ka" ? "წარმატება" : "Success",
+        t("job.jobRenewedFor30Days")
       );
     } catch (err) {
       toast.error(
-        locale === 'ka' ? 'შეცდომა' : 'Error',
-        t('job.failedToRenewJob')
+        locale === "ka" ? "შეცდომა" : "Error",
+        t("job.failedToRenewJob")
       );
     } finally {
       setRenewingJobId(null);
@@ -246,13 +250,17 @@ function MyJobsPageContent() {
         <Skeleton className="w-32 h-8 mb-2" />
         <Skeleton className="w-64 h-5 mb-6" />
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-          {[1, 2, 3, 4].map(i => (
+          {[1, 2, 3, 4].map((i) => (
             <Skeleton key={i} className="w-20 h-9 rounded-full flex-shrink-0" />
           ))}
         </div>
         <div className="space-y-4">
-          {[1, 2, 3].map(i => (
-            <SkeletonCard key={i} variant="horizontal" className="h-56 sm:h-44" />
+          {[1, 2, 3].map((i) => (
+            <SkeletonCard
+              key={i}
+              variant="horizontal"
+              className="h-56 sm:h-44"
+            />
           ))}
         </div>
       </div>
@@ -261,7 +269,6 @@ function MyJobsPageContent() {
 
   return (
     <div className="flex flex-col">
-
       {/* ==================== MAIN CONTENT ==================== */}
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-6">
         {/* ==================== PAGE HEADER WITH BACK BUTTON ==================== */}
@@ -272,7 +279,7 @@ function MyJobsPageContent() {
               <div className="flex items-center justify-between gap-3 mb-1">
                 <div className="flex items-center gap-3">
                   <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white tracking-tight">
-                    {t('job.myJobs')}
+                    {t("job.myJobs")}
                   </h1>
                   <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#C4735B]/10 text-[#C4735B]">
                     <Briefcase className="w-3.5 h-3.5" />
@@ -285,13 +292,11 @@ function MyJobsPageContent() {
                   className="rounded-full"
                   leftIcon={<Plus className="w-4 h-4" />}
                 >
-                  <Link href="/post-job">
-                    {t('job.addJob')}
-                  </Link>
+                  <Link href="/post-job">{t("job.addJob")}</Link>
                 </Button>
               </div>
               <p className="text-sm text-neutral-500 dark:text-neutral-400 hidden sm:block">
-                {t('job.manageYourActiveListingsAnd')}
+                {t("job.manageYourActiveListingsAnd")}
               </p>
             </div>
           </div>
@@ -300,13 +305,33 @@ function MyJobsPageContent() {
         {/* ==================== TABS FILTER ZONE - Premium Design ==================== */}
         {(() => {
           const tabs = [
-            { key: 'all' as StatusFilter, label: t('common.all'), icon: Briefcase },
-            { key: 'open' as StatusFilter, label: t('common.active'), icon: Sparkles },
-            { key: 'hired' as StatusFilter, label: t('common.hired'), icon: Check },
-            { key: 'closed' as StatusFilter, label: t('job.closed'), icon: FileText },
-            { key: 'expired' as StatusFilter, label: t('job.expired'), icon: Clock },
+            {
+              key: "all" as StatusFilter,
+              label: t("common.all"),
+              icon: Briefcase,
+            },
+            {
+              key: "open" as StatusFilter,
+              label: t("common.active"),
+              icon: Sparkles,
+            },
+            {
+              key: "hired" as StatusFilter,
+              label: t("common.hired"),
+              icon: Check,
+            },
+            {
+              key: "closed" as StatusFilter,
+              label: t("job.closed"),
+              icon: FileText,
+            },
+            {
+              key: "expired" as StatusFilter,
+              label: t("job.expired"),
+              icon: Clock,
+            },
           ];
-          const activeTab = tabs.find(t => t.key === statusFilter) || tabs[0];
+          const activeTab = tabs.find((t) => t.key === statusFilter) || tabs[0];
 
           return (
             <>
@@ -323,19 +348,21 @@ function MyJobsPageContent() {
                     </div>
                     <div className="text-left">
                       <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 block">
-                        {t('common.filter')}
+                        {t("common.filter")}
                       </span>
                       <span className="text-sm font-medium text-neutral-900 dark:text-white">
                         {activeTab.label}
                       </span>
                     </div>
                   </div>
-                  <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform duration-300 ${isFilterOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown
+                    className={`w-5 h-5 text-neutral-400 transition-transform duration-300 ${isFilterOpen ? "rotate-180" : ""}`}
+                  />
                 </button>
 
                 {isFilterOpen && (
                   <div className="mt-2 p-2 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 shadow-lg space-y-1 animate-in slide-in-from-top-2 duration-200">
-                    {tabs.map(tab => {
+                    {tabs.map((tab) => {
                       const TabIcon = tab.icon;
                       const isActive = statusFilter === tab.key;
                       return (
@@ -347,12 +374,21 @@ function MyJobsPageContent() {
                           }}
                           className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                             isActive
-                              ? 'text-white shadow-md'
-                              : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800'
+                              ? "text-white shadow-md"
+                              : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800"
                           }`}
-                          style={isActive ? { background: 'linear-gradient(135deg, #C4735B 0%, #A85D48 100%)' } : {}}
+                          style={
+                            isActive
+                              ? {
+                                  background:
+                                    "linear-gradient(135deg, #C4735B 0%, #A85D48 100%)",
+                                }
+                              : {}
+                          }
                         >
-                          <TabIcon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-neutral-400'}`} />
+                          <TabIcon
+                            className={`w-4 h-4 ${isActive ? "text-white" : "text-neutral-400"}`}
+                          />
                           {tab.label}
                           {isActive && <Check className="w-4 h-4 ml-auto" />}
                         </button>
@@ -365,7 +401,7 @@ function MyJobsPageContent() {
               {/* Desktop: Premium Pill Tabs */}
               <div className="hidden sm:block mb-6">
                 <div className="relative flex gap-1.5 p-1.5 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100 dark:border-neutral-800 shadow-sm w-fit">
-                  {tabs.map(tab => {
+                  {tabs.map((tab) => {
                     const TabIcon = tab.icon;
                     const isActive = statusFilter === tab.key;
                     return (
@@ -375,9 +411,10 @@ function MyJobsPageContent() {
                         disabled={isFilterLoading}
                         className={`
                           relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 disabled:opacity-50
-                          ${isActive
-                            ? 'text-white shadow-lg'
-                            : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
+                          ${
+                            isActive
+                              ? "text-white shadow-lg"
+                              : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
                           }
                         `}
                       >
@@ -401,20 +438,38 @@ function MyJobsPageContent() {
         {/* ==================== JOB CARDS ZONE ==================== */}
         {isFilterLoading ? (
           <div className="space-y-4">
-            {[1, 2, 3].map(i => (
-              <SkeletonCard key={i} variant="horizontal" className="h-56 sm:h-44" />
+            {[1, 2, 3].map((i) => (
+              <SkeletonCard
+                key={i}
+                variant="horizontal"
+                className="h-56 sm:h-44"
+              />
             ))}
           </div>
         ) : jobs.length === 0 ? (
           <EmptyState
             icon={Briefcase}
-            title={statusFilter === 'all' ? "No jobs yet" : "No jobs found"}
-            titleKa={statusFilter === 'all' ? "პროექტები ჯერ არ არის" : "პროექტები არ მოიძებნა"}
-            description={statusFilter === 'all' ? "Create your first project and start receiving proposals" : "No jobs found with this filter"}
-            descriptionKa={statusFilter === 'all' ? "შექმენი პირველი პროექტი და დაიწყე შეთავაზებების მიღება" : "ამ ფილტრით პროექტები ვერ მოიძებნა"}
-            actionLabel={statusFilter === 'all' ? "Post a Job" : undefined}
-            actionLabelKa={statusFilter === 'all' ? "სამუშაოს გამოქვეყნება" : undefined}
-            actionHref={statusFilter === 'all' ? "/post-job" : undefined}
+            title={statusFilter === "all" ? "No jobs yet" : "No jobs found"}
+            titleKa={
+              statusFilter === "all"
+                ? "პროექტები ჯერ არ არის"
+                : "პროექტები არ მოიძებნა"
+            }
+            description={
+              statusFilter === "all"
+                ? "Create your first project and start receiving proposals"
+                : "No jobs found with this filter"
+            }
+            descriptionKa={
+              statusFilter === "all"
+                ? "შექმენი პირველი პროექტი და დაიწყე შეთავაზებების მიღება"
+                : "ამ ფილტრით პროექტები ვერ მოიძებნა"
+            }
+            actionLabel={statusFilter === "all" ? "Post a Job" : undefined}
+            actionLabelKa={
+              statusFilter === "all" ? "სამუშაოს გამოქვეყნება" : undefined
+            }
+            actionHref={statusFilter === "all" ? "/post-job" : undefined}
             variant="illustrated"
             size="md"
           />
@@ -422,87 +477,17 @@ function MyJobsPageContent() {
           <div className="space-y-4">
             {jobs.map((job) => {
               const firstImage = job.media?.[0]?.url || job.images?.[0];
-              const isHired = job.status === 'in_progress';
+              const isHired = job.status === "in_progress";
               const hasShortlisted = (job.shortlistedCount || 0) > 0;
-              const isOpen = job.status === 'open' && !hasShortlisted;
-              const isShortlisted = job.status === 'open' && hasShortlisted;
-              const isClosed = job.status === 'completed' || job.status === 'cancelled';
-              const isExpired = job.status === 'expired';
+              const isOpen = job.status === "open" && !hasShortlisted;
+              const isShortlisted = job.status === "open" && hasShortlisted;
+              const isClosed =
+                job.status === "completed" || job.status === "cancelled";
+              const isExpired = job.status === "expired";
 
               // Show ProjectTrackerCard for in_progress jobs with tracking data
               // In MVP mode, show a simplified hired card instead
               if (isHired && job.projectTracking) {
-                if (isMVPMode()) {
-                  // Simplified MVP card - just shows hired status and phone
-                  const hiredPro = job.hiredPro;
-                  const proName = hiredPro?.name || hiredPro?.userId?.name || (t('common.professional'));
-                  const proPhone = hiredPro?.phone || hiredPro?.userId?.phone;
-                  const proAvatar = hiredPro?.avatar || hiredPro?.userId?.avatar;
-                  
-                  return (
-                    <div
-                      key={job.id}
-                      className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100 dark:border-neutral-800 overflow-hidden"
-                    >
-                      {/* Header */}
-                      <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-emerald-50 dark:bg-emerald-900/20">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-800/50 flex items-center justify-center">
-                            <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                          </div>
-                          <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
-                            {t('common.hired')}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      {/* Content */}
-                      <div className="p-4">
-                        <h3 className="font-semibold text-neutral-900 dark:text-white mb-4 line-clamp-2">
-                          {job.title}
-                        </h3>
-                        
-                        {/* Pro Info */}
-                        <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50">
-                          <div className="flex items-center gap-3">
-                            <Avatar src={proAvatar} name={proName} size="md" className="w-10 h-10" />
-                            <div>
-                              <p className="font-medium text-neutral-900 dark:text-white">{proName}</p>
-                              <p className="text-xs text-neutral-500">{locale === 'ka' ? 'სპეციალისტი' : 'Professional'}</p>
-                            </div>
-                          </div>
-                          
-                          {/* Phone Button */}
-                          {proPhone && (
-                            <a
-                              href={`tel:${proPhone}`}
-                              onClick={(e) => e.stopPropagation()}
-                              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 text-white font-medium text-sm hover:bg-emerald-600 transition-colors"
-                            >
-                              <Phone className="w-4 h-4" />
-                              {proPhone}
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {/* Footer */}
-                      <div className="p-4 border-t border-neutral-100 dark:border-neutral-800">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => router.push(`/jobs/${job.id}`)}
-                          rightIcon={<ChevronRight className="w-4 h-4" />}
-                          className="w-full"
-                        >
-                          {t('job.viewDetails')}
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                }
-                
-                // Full project tracker for non-MVP mode
                 return (
                   <ProjectTrackerCard
                     key={job.id}
@@ -523,10 +508,9 @@ function MyJobsPageContent() {
                 >
                   {/* Premium border glow effect */}
                   <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-[#C4735B]/0 via-[#C4735B]/0 to-[#C4735B]/0 group-hover:from-[#C4735B]/20 group-hover:via-[#D4937B]/10 group-hover:to-[#C4735B]/20 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-[1px]" />
-                  
+
                   {/* Main Card */}
                   <div className="relative bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-100/80 dark:border-neutral-800 group-hover:border-[#C4735B]/20 transition-all duration-500 group-hover:shadow-[0_20px_50px_-12px_rgba(196,115,91,0.12)] group-hover:-translate-y-0.5">
-                    
                     {/* Shine effect overlay */}
                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-20">
                       <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/3 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
@@ -541,7 +525,7 @@ function MyJobsPageContent() {
                             src={storage.getFileUrl(firstImage)}
                             alt=""
                             className="w-full h-44 sm:h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                            style={{ minHeight: '176px' }}
+                            style={{ minHeight: "176px" }}
                           />
                         ) : (
                           <div className="w-full h-44 sm:h-full min-h-[176px] flex items-center justify-center">
@@ -549,39 +533,66 @@ function MyJobsPageContent() {
                               <div className="w-14 h-14 rounded-2xl bg-neutral-200/50 dark:bg-neutral-700/50 flex items-center justify-center mx-auto mb-2">
                                 <FileText className="w-6 h-6 text-neutral-400 dark:text-neutral-500" />
                               </div>
-                              <span className="text-xs text-neutral-400">{t('job.noImage')}</span>
+                              <span className="text-xs text-neutral-400">
+                                {t("job.noImage")}
+                              </span>
                             </div>
                           </div>
                         )}
-                        
+
                         {/* Gradient overlay on image */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
                         {/* Status Badge */}
                         <div className="absolute top-3 left-3 z-10">
                           {isOpen && (
-                            <Badge variant="success" size="sm" dot dotColor="success" className="shadow-lg backdrop-blur-sm">
-                              {t('common.open')}
+                            <Badge
+                              variant="success"
+                              size="sm"
+                              dot
+                              dotColor="success"
+                              className="shadow-lg backdrop-blur-sm"
+                            >
+                              {t("common.open")}
                             </Badge>
                           )}
                           {isShortlisted && (
-                            <Badge variant="info" size="sm" icon={<Users className="w-3 h-3" />} className="shadow-lg backdrop-blur-sm">
-                              {t('job.shortlisted')} ({job.shortlistedCount})
+                            <Badge
+                              variant="info"
+                              size="sm"
+                              icon={<Users className="w-3 h-3" />}
+                              className="shadow-lg backdrop-blur-sm"
+                            >
+                              {t("job.shortlisted")} ({job.shortlistedCount})
                             </Badge>
                           )}
                           {isHired && (
-                            <Badge variant="premium" size="sm" icon={<Check className="w-3 h-3" />} className="shadow-lg backdrop-blur-sm">
-                              {locale === 'ka' ? 'დაქირავებული' : 'Hired'}
+                            <Badge
+                              variant="premium"
+                              size="sm"
+                              icon={<Check className="w-3 h-3" />}
+                              className="shadow-lg backdrop-blur-sm"
+                            >
+                              {locale === "ka" ? "დაქირავებული" : "Hired"}
                             </Badge>
                           )}
                           {isClosed && (
-                            <Badge variant="default" size="sm" className="shadow-lg backdrop-blur-sm">
-                              {locale === 'ka' ? 'დახურული' : 'Closed'}
+                            <Badge
+                              variant="default"
+                              size="sm"
+                              className="shadow-lg backdrop-blur-sm"
+                            >
+                              {locale === "ka" ? "დახურული" : "Closed"}
                             </Badge>
                           )}
                           {isExpired && (
-                            <Badge variant="warning" size="sm" icon={<Clock className="w-3 h-3" />} className="shadow-lg backdrop-blur-sm">
-                              {locale === 'ka' ? 'ვადაგასული' : 'Expired'}
+                            <Badge
+                              variant="warning"
+                              size="sm"
+                              icon={<Clock className="w-3 h-3" />}
+                              className="shadow-lg backdrop-blur-sm"
+                            >
+                              {locale === "ka" ? "ვადაგასული" : "Expired"}
                             </Badge>
                           )}
                         </div>
@@ -614,7 +625,10 @@ function MyJobsPageContent() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={(e) => { e.stopPropagation(); setDeleteModalJob(job); }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeleteModalJob(job);
+                                }}
                                 disabled={deletingJobId === job.id}
                                 className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md shadow-lg w-8 h-8 text-neutral-400 hover:text-red-500"
                               >
@@ -626,7 +640,10 @@ function MyJobsPageContent() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={(e) => { e.stopPropagation(); handleRenewJob(job.id); }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRenewJob(job.id);
+                              }}
                               disabled={renewingJobId === job.id}
                               loading={renewingJobId === job.id}
                               className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md shadow-lg w-8 h-8 text-amber-600"
@@ -648,12 +665,17 @@ function MyJobsPageContent() {
                               </span>
                               {(job.subcategory || job.skills?.[0]) && (
                                 <span className="px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-[10px] sm:text-[11px] font-medium text-neutral-500">
-                                  {getCategoryLabel(job.subcategory || job.skills?.[0] || '')}
+                                  {getCategoryLabel(
+                                    job.subcategory || job.skills?.[0] || ""
+                                  )}
                                 </span>
                               )}
                               <span className="flex items-center gap-1 text-[10px] sm:text-[11px] text-neutral-400">
                                 <Clock className="w-3 h-3" />
-                                {formatTimeAgo(job.createdAt, locale as 'en' | 'ka' | 'ru')}
+                                {formatTimeAgo(
+                                  job.createdAt,
+                                  locale as "en" | "ka" | "ru"
+                                )}
                               </span>
                             </div>
 
@@ -689,7 +711,10 @@ function MyJobsPageContent() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={(e) => { e.stopPropagation(); setDeleteModalJob(job); }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDeleteModalJob(job);
+                                  }}
                                   disabled={deletingJobId === job.id}
                                   className="opacity-0 group-hover:opacity-100 transition-opacity text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
                                 >
@@ -701,11 +726,14 @@ function MyJobsPageContent() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={(e) => { e.stopPropagation(); handleRenewJob(job.id); }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRenewJob(job.id);
+                                }}
                                 disabled={renewingJobId === job.id}
                                 loading={renewingJobId === job.id}
                                 className="text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
-                                title={t('job.renew')}
+                                title={t("job.renew")}
                               >
                                 <RefreshCw className="w-4 h-4" />
                               </Button>
@@ -721,10 +749,14 @@ function MyJobsPageContent() {
                               <>
                                 {/* Stacked Avatars with ring effect */}
                                 <div className="flex -space-x-2.5">
-                                  {[...Array(Math.min(job.proposalCount, 3))].map((_, i) => {
+                                  {[
+                                    ...Array(Math.min(job.proposalCount, 3)),
+                                  ].map((_, i) => {
                                     const proposal = job.recentProposals?.[i];
-                                    const proName = proposal?.proId?.name || '';
-                                    const initial = proName.charAt(0).toUpperCase();
+                                    const proName = proposal?.proId?.name || "";
+                                    const initial = proName
+                                      .charAt(0)
+                                      .toUpperCase();
 
                                     return (
                                       <div
@@ -734,13 +766,17 @@ function MyJobsPageContent() {
                                       >
                                         {proposal?.proId?.avatar ? (
                                           <img
-                                            src={storage.getFileUrl(proposal.proId.avatar)}
+                                            src={storage.getFileUrl(
+                                              proposal.proId.avatar
+                                            )}
                                             alt={proName}
                                             className="w-full h-full object-cover"
                                           />
                                         ) : (
                                           <div className="w-full h-full flex items-center justify-center text-xs font-semibold text-neutral-500 dark:text-neutral-400 bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-600 dark:to-neutral-700">
-                                            {initial || <Users className="w-3 h-3" />}
+                                            {initial || (
+                                              <Users className="w-3 h-3" />
+                                            )}
                                           </div>
                                         )}
                                       </div>
@@ -754,13 +790,20 @@ function MyJobsPageContent() {
                                 </div>
                                 <div className="flex flex-col">
                                   <span className="text-sm font-semibold text-[#C4735B]">
-                                    {job.proposalCount} {locale === 'ka' ? 'შეთავაზება' : (job.proposalCount === 1 ? 'Proposal' : 'Proposals')}
+                                    {job.proposalCount}{" "}
+                                    {locale === "ka"
+                                      ? "შეთავაზება"
+                                      : job.proposalCount === 1
+                                        ? "Proposal"
+                                        : "Proposals"}
                                   </span>
-                                  {job.proposalCount === 1 && job.recentProposals?.[0]?.proId?.name && (
-                                    <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                                      {t('job.from')} {job.recentProposals[0].proId.name}
-                                    </span>
-                                  )}
+                                  {job.proposalCount === 1 &&
+                                    job.recentProposals?.[0]?.proId?.name && (
+                                      <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                                        {t("job.from")}{" "}
+                                        {job.recentProposals[0].proId.name}
+                                      </span>
+                                    )}
                                 </div>
                               </>
                             )}
@@ -771,7 +814,7 @@ function MyJobsPageContent() {
                                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
                                 </span>
                                 <span className="text-xs font-medium text-amber-700 dark:text-amber-400">
-                                  {t('job.awaitingProposals')}
+                                  {t("job.awaitingProposals")}
                                 </span>
                               </div>
                             )}
@@ -779,8 +822,15 @@ function MyJobsPageContent() {
                               <div className="flex items-center gap-3">
                                 <div className="relative">
                                   <Avatar
-                                    src={job.hiredPro.avatar || job.hiredPro.userId?.avatar}
-                                    name={job.hiredPro.name || job.hiredPro.userId?.name || 'Pro'}
+                                    src={
+                                      job.hiredPro.avatar ||
+                                      job.hiredPro.userId?.avatar
+                                    }
+                                    name={
+                                      job.hiredPro.name ||
+                                      job.hiredPro.userId?.name ||
+                                      "Pro"
+                                    }
                                     size="sm"
                                     className="w-9 h-9 ring-2 ring-[#C4735B]/20"
                                   />
@@ -790,10 +840,12 @@ function MyJobsPageContent() {
                                 </div>
                                 <div>
                                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#C4735B] block">
-                                    {t('common.hired')}
+                                    {t("common.hired")}
                                   </span>
                                   <span className="text-sm font-semibold text-neutral-900 dark:text-white">
-                                    {job.hiredPro.name || job.hiredPro.userId?.name || 'Professional'}
+                                    {job.hiredPro.name ||
+                                      job.hiredPro.userId?.name ||
+                                      "Professional"}
                                   </span>
                                 </div>
                               </div>
@@ -802,7 +854,7 @@ function MyJobsPageContent() {
                               <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30">
                                 <Clock className="w-4 h-4 text-amber-600" />
                                 <span className="text-xs font-medium text-amber-700 dark:text-amber-400">
-                                  {t('job.expired')}
+                                  {t("job.expired")}
                                 </span>
                               </div>
                             )}
@@ -815,28 +867,43 @@ function MyJobsPageContent() {
                                 variant="secondary"
                                 size="sm"
                                 asChild
-                                onClick={(e) => { e.stopPropagation(); handleViewProposals(job.id); }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleViewProposals(job.id);
+                                }}
                                 className="group/btn"
                               >
-                                <Link href={`/my-jobs/${job.id}/proposals`} className="flex items-center gap-2">
+                                <Link
+                                  href={`/my-jobs/${job.id}/proposals`}
+                                  className="flex items-center gap-2"
+                                >
                                   <Eye className="w-4 h-4" />
-                                  {t('job.viewProposals')}
+                                  {t("job.viewProposals")}
                                   <ArrowRight className="w-3.5 h-3.5 opacity-0 -ml-1 group-hover/btn:opacity-100 group-hover/btn:ml-0 transition-all" />
                                 </Link>
                               </Button>
                             )}
                             {isExpired && (
                               <Button
-                                onClick={(e) => { e.stopPropagation(); handleRenewJob(job.id); }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRenewJob(job.id);
+                                }}
                                 disabled={renewingJobId === job.id}
                                 loading={renewingJobId === job.id}
                                 size="sm"
-                                leftIcon={!renewingJobId || renewingJobId !== job.id ? <RefreshCw className="w-4 h-4" /> : undefined}
+                                leftIcon={
+                                  !renewingJobId || renewingJobId !== job.id ? (
+                                    <RefreshCw className="w-4 h-4" />
+                                  ) : undefined
+                                }
                                 className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-lg shadow-amber-500/20"
                               >
                                 {renewingJobId === job.id
-                                  ? (t('job.renewing'))
-                                  : (locale === 'ka' ? 'განახლება' : 'Renew')}
+                                  ? t("job.renewing")
+                                  : locale === "ka"
+                                    ? "განახლება"
+                                    : "Renew"}
                               </Button>
                             )}
                           </div>
@@ -856,14 +923,14 @@ function MyJobsPageContent() {
         isOpen={!!deleteModalJob}
         onClose={() => !deletingJobId && setDeleteModalJob(null)}
         onConfirm={handleDeleteJob}
-        title={t('job.deleteJob')}
-        description={t('job.areYouSureYouWant')}
+        title={t("job.deleteJob")}
+        description={t("job.areYouSureYouWant")}
         icon={<AlertTriangle className="w-6 h-6 text-red-500" />}
         variant="danger"
-        cancelLabel={t('common.cancel')}
-        confirmLabel={t('common.delete')}
+        cancelLabel={t("common.cancel")}
+        confirmLabel={t("common.delete")}
         isLoading={!!deletingJobId}
-        loadingLabel={t('common.deleting')}
+        loadingLabel={t("common.deleting")}
         confirmIcon={<Trash2 className="w-4 h-4" />}
       >
         {/* Job preview */}
@@ -895,12 +962,14 @@ function MyJobsPageContent() {
 
 export default function MyJobsPage() {
   return (
-    <AuthGuard allowedRoles={['client', 'pro', 'company', 'admin']}>
-      <Suspense fallback={
-        <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950">
-          <LoadingSpinner size="lg" color={ACCENT_COLOR} />
-        </div>
-      }>
+    <AuthGuard allowedRoles={["client", "pro", "company", "admin"]}>
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950">
+            <LoadingSpinner size="lg" color={ACCENT_COLOR} />
+          </div>
+        }
+      >
         <MyJobsPageContent />
       </Suspense>
     </AuthGuard>

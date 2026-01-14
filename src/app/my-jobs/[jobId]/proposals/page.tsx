@@ -1,26 +1,25 @@
-'use client';
+"use client";
 
-import AuthGuard from '@/components/common/AuthGuard';
-import Avatar from '@/components/common/Avatar';
-import BackButton from '@/components/common/BackButton';
-import Header, { HeaderSpacer } from '@/components/common/Header';
-import HiringChoiceModal from '@/components/proposals/HiringChoiceModal';
-import { Alert } from '@/components/ui/Alert';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/Card';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { ConfirmModal } from '@/components/ui/Modal';
-import { Skeleton, SkeletonCard } from '@/components/ui/Skeleton';
-import { ACCENT_COLOR } from '@/constants/theme';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/contexts/ToastContext';
-import { useCategoryLabels } from '@/hooks/useCategoryLabels';
-import { api } from '@/lib/api';
-import type { Proposal } from '@/types/shared';
-import { isMVPMode } from '@/lib/mvp';
-import { isHighLevelCategory } from '@/utils/categoryHelpers';
-import { formatTimeAgoCompact } from '@/utils/dateUtils';
+import AuthGuard from "@/components/common/AuthGuard";
+import Avatar from "@/components/common/Avatar";
+import BackButton from "@/components/common/BackButton";
+import Header, { HeaderSpacer } from "@/components/common/Header";
+import HiringChoiceModal from "@/components/proposals/HiringChoiceModal";
+import { Alert } from "@/components/ui/Alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/Card";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { ConfirmModal } from "@/components/ui/Modal";
+import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
+import { ACCENT_COLOR } from "@/constants/theme";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/contexts/ToastContext";
+import { useCategoryLabels } from "@/hooks/useCategoryLabels";
+import { api } from "@/lib/api";
+import type { Proposal } from "@/types/shared";
+import { isHighLevelCategory } from "@/utils/categoryHelpers";
+import { formatTimeAgoCompact } from "@/utils/dateUtils";
 import {
   Check,
   Clock,
@@ -30,11 +29,11 @@ import {
   RotateCcw,
   Star,
   Users,
-  X
-} from 'lucide-react';
-import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useState } from 'react';
+  X,
+} from "lucide-react";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { Suspense, useCallback, useEffect, useState } from "react";
 
 import { useLanguage } from "@/contexts/LanguageContext";
 // Minimal job info for this page
@@ -59,10 +58,14 @@ function ProposalsPageContent() {
   const [job, setJob] = useState<JobSummary | null>(null);
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(null);
+  const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(
+    null
+  );
   const [showHiringModal, setShowHiringModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showRejectConfirm, setShowRejectConfirm] = useState<string | null>(null);
+  const [showRejectConfirm, setShowRejectConfirm] = useState<string | null>(
+    null
+  );
 
   const jobId = params.jobId as string;
   const isHighLevel = job ? isHighLevelCategory(job.category) : false;
@@ -87,12 +90,9 @@ function ProposalsPageContent() {
         await api.post(`/jobs/counters/mark-proposals-viewed/${jobId}`);
       } catch (error) {
         if (!isMounted) return;
-        console.error('Failed to fetch data:', error);
-        toast.error(
-          t('common.error'),
-          t('job.failedToLoadData')
-        );
-        router.push('/my-jobs');
+        console.error("Failed to fetch data:", error);
+        toast.error(t("common.error"), t("job.failedToLoadData"));
+        router.push("/my-jobs");
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -107,170 +107,167 @@ function ProposalsPageContent() {
     return () => {
       isMounted = false;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId]);
 
-  const handleShortlist = useCallback(async (proposal: Proposal) => {
-    // In MVP mode, skip the modal and go directly to phone reveal
-    if (isMVPMode()) {
+  const handleShortlist = useCallback(
+    async (proposal: Proposal) => {
+      setSelectedProposal(proposal);
+      setShowHiringModal(true);
+    },
+    [locale, toast]
+  );
+
+  const handleHiringChoice = useCallback(
+    async (choice: "homico" | "direct") => {
+      if (!selectedProposal) return;
+
       setIsProcessing(true);
       try {
-        const response = await api.post(`/jobs/proposals/${proposal.id}/shortlist`, {
-          hiringChoice: 'direct',
-        });
+        const response = await api.post(
+          `/jobs/proposals/${selectedProposal.id}/shortlist`,
+          {
+            hiringChoice: choice,
+          }
+        );
 
-        setProposals(prev =>
-          prev.map(p =>
-            p.id === proposal.id
-              ? { ...p, status: 'shortlisted', hiringChoice: 'direct', contactRevealed: true, proId: response.data.proId || p.proId }
+        // Update proposal in list
+        setProposals((prev) =>
+          prev.map((p) =>
+            p.id === selectedProposal.id
+              ? {
+                  ...p,
+                  status: "shortlisted",
+                  hiringChoice: choice,
+                  contactRevealed: choice === "direct",
+                  proId: response.data.proId || p.proId,
+                }
+              : p
+          )
+        );
+
+        setShowHiringModal(false);
+        setSelectedProposal(null);
+
+        if (choice === "direct") {
+          toast.success(
+            locale === "ka" ? "წარმატება" : "Success",
+            locale === "ka"
+              ? "ტელეფონის ნომერი გამოჩნდა"
+              : "Phone number revealed"
+          );
+        } else {
+          toast.success(
+            locale === "ka" ? "წარმატება" : "Success",
+            t("job.markedAsInterested")
+          );
+        }
+      } catch (error) {
+        const apiErr = error as { response?: { data?: { message?: string } } };
+        toast.error(
+          locale === "ka" ? "შეცდომა" : "Error",
+          apiErr.response?.data?.message ||
+            (locale === "ka" ? "ვერ მოხერხდა" : "Failed to process")
+        );
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    [selectedProposal, locale, toast]
+  );
+
+  const handleReject = useCallback(
+    async (proposalId: string) => {
+      setIsProcessing(true);
+      try {
+        await api.post(`/jobs/proposals/${proposalId}/reject`);
+
+        setProposals((prev) =>
+          prev.map((p) =>
+            p.id === proposalId ? { ...p, status: "rejected" } : p
+          )
+        );
+
+        setShowRejectConfirm(null);
+        toast.success(
+          locale === "ka" ? "წარმატება" : "Success",
+          t("job.proposalRejected")
+        );
+      } catch (error) {
+        const apiErr = error as { response?: { data?: { message?: string } } };
+        toast.error(
+          locale === "ka" ? "შეცდომა" : "Error",
+          apiErr.response?.data?.message || t("job.failedToReject")
+        );
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    [locale, toast]
+  );
+
+  const handleAccept = useCallback(
+    async (proposalId: string) => {
+      setIsProcessing(true);
+      try {
+        await api.post(`/jobs/proposals/${proposalId}/accept`);
+
+        toast.success(
+          locale === "ka" ? "წარმატება" : "Success",
+          t("job.projectStartedRedirectingToProject")
+        );
+
+        // Redirect to my-jobs where they'll see the project tracker
+        setTimeout(() => {
+          router.push("/my-jobs?status=hired");
+        }, 1500);
+      } catch (error) {
+        const apiErr = error as { response?: { data?: { message?: string } } };
+        toast.error(
+          locale === "ka" ? "შეცდომა" : "Error",
+          apiErr.response?.data?.message || t("job.failedToAccept")
+        );
+        setIsProcessing(false);
+      }
+    },
+    [locale, toast, router]
+  );
+
+  const handleRevertToPending = useCallback(
+    async (proposalId: string) => {
+      setIsProcessing(true);
+      try {
+        await api.post(`/jobs/proposals/${proposalId}/revert-to-pending`);
+
+        setProposals((prev) =>
+          prev.map((p) =>
+            p.id === proposalId
+              ? {
+                  ...p,
+                  status: "pending",
+                  hiringChoice: undefined,
+                  contactRevealed: false,
+                }
               : p
           )
         );
 
         toast.success(
-          t('common.success'),
-          t('job.phoneNumberRevealed')
+          locale === "ka" ? "წარმატება" : "Success",
+          t("job.revertedToNewProposals")
         );
       } catch (error) {
         const apiErr = error as { response?: { data?: { message?: string } } };
         toast.error(
-          locale === 'ka' ? 'შეცდომა' : 'Error',
-          apiErr.response?.data?.message || (t('job.failedToProcess'))
+          locale === "ka" ? "შეცდომა" : "Error",
+          apiErr.response?.data?.message || t("job.failedToRevert")
         );
       } finally {
         setIsProcessing(false);
       }
-      return;
-    }
-    
-    // Normal mode: show the hiring choice modal
-    setSelectedProposal(proposal);
-    setShowHiringModal(true);
-  }, [locale, toast]);
-
-  const handleHiringChoice = useCallback(async (choice: 'homico' | 'direct') => {
-    if (!selectedProposal) return;
-
-    setIsProcessing(true);
-    try {
-      const response = await api.post(`/jobs/proposals/${selectedProposal.id}/shortlist`, {
-        hiringChoice: choice,
-      });
-
-      // Update proposal in list
-      setProposals(prev =>
-        prev.map(p =>
-          p.id === selectedProposal.id
-            ? { ...p, status: 'shortlisted', hiringChoice: choice, contactRevealed: choice === 'direct', proId: response.data.proId || p.proId }
-            : p
-        )
-      );
-
-      setShowHiringModal(false);
-      setSelectedProposal(null);
-
-      if (choice === 'direct') {
-        toast.success(
-          locale === 'ka' ? 'წარმატება' : 'Success',
-          locale === 'ka' ? 'ტელეფონის ნომერი გამოჩნდა' : 'Phone number revealed'
-        );
-      } else {
-        toast.success(
-          locale === 'ka' ? 'წარმატება' : 'Success',
-          t('job.markedAsInterested')
-        );
-      }
-    } catch (error) {
-      const apiErr = error as { response?: { data?: { message?: string } } };
-      toast.error(
-        locale === 'ka' ? 'შეცდომა' : 'Error',
-        apiErr.response?.data?.message || (locale === 'ka' ? 'ვერ მოხერხდა' : 'Failed to process')
-      );
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [selectedProposal, locale, toast]);
-
-  const handleReject = useCallback(async (proposalId: string) => {
-    setIsProcessing(true);
-    try {
-      await api.post(`/jobs/proposals/${proposalId}/reject`);
-
-      setProposals(prev =>
-        prev.map(p =>
-          p.id === proposalId
-            ? { ...p, status: 'rejected' }
-            : p
-        )
-      );
-
-      setShowRejectConfirm(null);
-      toast.success(
-        locale === 'ka' ? 'წარმატება' : 'Success',
-        t('job.proposalRejected')
-      );
-    } catch (error) {
-      const apiErr = error as { response?: { data?: { message?: string } } };
-      toast.error(
-        locale === 'ka' ? 'შეცდომა' : 'Error',
-        apiErr.response?.data?.message || (t('job.failedToReject'))
-      );
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [locale, toast]);
-
-  const handleAccept = useCallback(async (proposalId: string) => {
-    setIsProcessing(true);
-    try {
-      await api.post(`/jobs/proposals/${proposalId}/accept`);
-
-      toast.success(
-        locale === 'ka' ? 'წარმატება' : 'Success',
-        t('job.projectStartedRedirectingToProject')
-      );
-
-      // Redirect to my-jobs where they'll see the project tracker
-      setTimeout(() => {
-        router.push('/my-jobs?status=hired');
-      }, 1500);
-    } catch (error) {
-      const apiErr = error as { response?: { data?: { message?: string } } };
-      toast.error(
-        locale === 'ka' ? 'შეცდომა' : 'Error',
-        apiErr.response?.data?.message || (t('job.failedToAccept'))
-      );
-      setIsProcessing(false);
-    }
-  }, [locale, toast, router]);
-
-  const handleRevertToPending = useCallback(async (proposalId: string) => {
-    setIsProcessing(true);
-    try {
-      await api.post(`/jobs/proposals/${proposalId}/revert-to-pending`);
-
-      setProposals(prev =>
-        prev.map(p =>
-          p.id === proposalId
-            ? { ...p, status: 'pending', hiringChoice: undefined, contactRevealed: false }
-            : p
-        )
-      );
-
-      toast.success(
-        locale === 'ka' ? 'წარმატება' : 'Success',
-        t('job.revertedToNewProposals')
-      );
-    } catch (error) {
-      const apiErr = error as { response?: { data?: { message?: string } } };
-      toast.error(
-        locale === 'ka' ? 'შეცდომა' : 'Error',
-        apiErr.response?.data?.message || (t('job.failedToRevert'))
-      );
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [locale, toast]);
+    },
+    [locale, toast]
+  );
 
   if (isLoading) {
     return (
@@ -281,7 +278,7 @@ function ProposalsPageContent() {
           <Skeleton className="w-32 h-6 mb-6" />
           <Skeleton className="w-64 h-8 mb-8" />
           <div className="space-y-4">
-            {[1, 2, 3].map(i => (
+            {[1, 2, 3].map((i) => (
               <SkeletonCard key={i} variant="horizontal" className="h-40" />
             ))}
           </div>
@@ -290,9 +287,13 @@ function ProposalsPageContent() {
     );
   }
 
-  const pendingProposals = proposals.filter(p => p.status === 'pending');
-  const shortlistedProposals = proposals.filter(p => p.status === 'shortlisted');
-  const rejectedProposals = proposals.filter(p => p.status === 'rejected' || p.status === 'withdrawn');
+  const pendingProposals = proposals.filter((p) => p.status === "pending");
+  const shortlistedProposals = proposals.filter(
+    (p) => p.status === "shortlisted"
+  );
+  const rejectedProposals = proposals.filter(
+    (p) => p.status === "rejected" || p.status === "withdrawn"
+  );
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col">
@@ -308,10 +309,10 @@ function ProposalsPageContent() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
-                {t('job.proposals')}
+                {t("job.proposals")}
               </h1>
               {job && (
-                <Link 
+                <Link
                   href={`/jobs/${job.id}`}
                   className="inline-flex items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400 hover:text-[#C4735B] transition-colors"
                 >
@@ -339,7 +340,7 @@ function ProposalsPageContent() {
                 </span>
               </div>
               <p className="text-[10px] sm:text-xs text-neutral-500">
-                {t('common.new')}
+                {t("common.new")}
               </p>
             </Card>
             <Card variant="default" size="sm" className="text-center">
@@ -352,7 +353,7 @@ function ProposalsPageContent() {
                 </span>
               </div>
               <p className="text-[10px] sm:text-xs text-neutral-500">
-                {t('job.shortlisted')}
+                {t("job.shortlisted")}
               </p>
             </Card>
             <Card variant="default" size="sm" className="text-center">
@@ -365,7 +366,7 @@ function ProposalsPageContent() {
                 </span>
               </div>
               <p className="text-[10px] sm:text-xs text-neutral-500">
-                {t('common.rejected')}
+                {t("common.rejected")}
               </p>
             </Card>
           </div>
@@ -373,13 +374,13 @@ function ProposalsPageContent() {
 
         {/* Info Banner for Low-Level Categories */}
         {!isHighLevel && (
-          <Alert 
-            variant="warning" 
+          <Alert
+            variant="warning"
             size="sm"
-            title={t('job.directContactCategory')}
+            title={t("job.directContactCategory")}
             className="mb-6"
           >
-            {t('job.forThisCategoryYouCan')}
+            {t("job.forThisCategoryYouCan")}
           </Alert>
         )}
 
@@ -390,10 +391,10 @@ function ProposalsPageContent() {
               <FileText className="w-8 h-8 text-neutral-400" />
             </div>
             <h3 className="text-base font-semibold text-neutral-900 dark:text-white mb-2">
-              {t('job.noProposalsYet')}
+              {t("job.noProposalsYet")}
             </h3>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-xs mx-auto">
-              {t('job.whenProfessionalsSendProposalsThey')}
+              {t("job.whenProfessionalsSendProposalsThey")}
             </p>
           </Card>
         ) : (
@@ -407,7 +408,7 @@ function ProposalsPageContent() {
                   </div>
                   <div className="flex-1">
                     <h2 className="text-sm sm:text-base font-semibold text-neutral-900 dark:text-white">
-                      {t('job.newProposals')}
+                      {t("job.newProposals")}
                     </h2>
                   </div>
                   <Badge variant="default" size="sm">
@@ -415,7 +416,7 @@ function ProposalsPageContent() {
                   </Badge>
                 </div>
                 <div className="space-y-3">
-                  {pendingProposals.map(proposal => (
+                  {pendingProposals.map((proposal) => (
                     <ProposalCard
                       key={proposal.id}
                       proposal={proposal}
@@ -438,10 +439,10 @@ function ProposalsPageContent() {
                   </div>
                   <div className="flex-1">
                     <h2 className="text-sm sm:text-base font-semibold text-neutral-900 dark:text-white">
-                      {locale === 'ka' ? 'მონიშნული' : 'Shortlisted'}
+                      {locale === "ka" ? "მონიშნული" : "Shortlisted"}
                     </h2>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                      {t('job.selectOneToStartThe')}
+                      {t("job.selectOneToStartThe")}
                     </p>
                   </div>
                   <Badge variant="success" size="sm">
@@ -449,7 +450,7 @@ function ProposalsPageContent() {
                   </Badge>
                 </div>
                 <div className="space-y-3">
-                  {shortlistedProposals.map(proposal => (
+                  {shortlistedProposals.map((proposal) => (
                     <ProposalCard
                       key={proposal.id}
                       proposal={proposal}
@@ -474,7 +475,7 @@ function ProposalsPageContent() {
                   </div>
                   <div className="flex-1">
                     <h2 className="text-sm sm:text-base font-semibold text-neutral-500 dark:text-neutral-400">
-                      {locale === 'ka' ? 'უარყოფილი' : 'Rejected'}
+                      {locale === "ka" ? "უარყოფილი" : "Rejected"}
                     </h2>
                   </div>
                   <Badge variant="default" size="sm">
@@ -482,7 +483,7 @@ function ProposalsPageContent() {
                   </Badge>
                 </div>
                 <div className="space-y-3 opacity-60 hover:opacity-80 transition-opacity">
-                  {rejectedProposals.map(proposal => (
+                  {rejectedProposals.map((proposal) => (
                     <ProposalCard
                       key={proposal.id}
                       proposal={proposal}
@@ -505,9 +506,9 @@ function ProposalsPageContent() {
           setShowHiringModal(false);
           setSelectedProposal(null);
         }}
-        onChooseHomico={() => handleHiringChoice('homico')}
-        onChooseDirect={() => handleHiringChoice('direct')}
-        proName={selectedProposal?.proId?.name || ''}
+        onChooseHomico={() => handleHiringChoice("homico")}
+        onChooseDirect={() => handleHiringChoice("direct")}
+        proName={selectedProposal?.proId?.name || ""}
         proPhone={selectedProposal?.proId?.phone}
         isLoading={isProcessing}
       />
@@ -517,12 +518,12 @@ function ProposalsPageContent() {
         isOpen={!!showRejectConfirm}
         onClose={() => setShowRejectConfirm(null)}
         onConfirm={() => showRejectConfirm && handleReject(showRejectConfirm)}
-        title={t('job.rejectProposal')}
-        description={t('job.thisActionCannotBeUndone')}
+        title={t("job.rejectProposal")}
+        description={t("job.thisActionCannotBeUndone")}
         icon={<X className="w-6 h-6 text-red-500" />}
         variant="danger"
-        cancelLabel={t('common.cancel')}
-        confirmLabel={t('job.reject')}
+        cancelLabel={t("common.cancel")}
+        confirmLabel={t("job.reject")}
         isLoading={isProcessing}
         loadingLabel="..."
       />
@@ -557,17 +558,21 @@ function ProposalCard({
   const pro = proposal.proId;
 
   return (
-    <Card 
-      variant="default" 
+    <Card
+      variant="default"
       size="md"
-      className={isShortlisted ? 'ring-2 ring-emerald-500/20 border-emerald-200 dark:border-emerald-800' : ''}
+      className={
+        isShortlisted
+          ? "ring-2 ring-emerald-500/20 border-emerald-200 dark:border-emerald-800"
+          : ""
+      }
     >
       <div className="flex items-start gap-3 sm:gap-4">
         {/* Avatar with Link */}
         <Link href={`/professionals/${pro?.id}`} className="flex-shrink-0">
           <Avatar
             src={pro?.avatar}
-            name={pro?.name || 'Pro'}
+            name={pro?.name || "Pro"}
             size="lg"
             className="w-12 h-12 sm:w-14 sm:h-14 ring-2 ring-white dark:ring-neutral-800 shadow-sm"
           />
@@ -582,25 +587,38 @@ function ProposalCard({
                 href={`/professionals/${pro?.id}`}
                 className="text-sm sm:text-base font-semibold text-neutral-900 dark:text-white hover:text-[#C4735B] transition-colors block truncate"
               >
-                {pro?.name || 'Professional'}
+                {pro?.name || "Professional"}
               </Link>
               <div className="flex items-center gap-2 mt-0.5">
                 <Clock className="w-3 h-3 text-neutral-400 flex-shrink-0" />
-                <span className="text-xs text-neutral-400">{formatTimeAgoCompact(proposal.createdAt, locale as 'en' | 'ka' | 'ru')}</span>
+                <span className="text-xs text-neutral-400">
+                  {formatTimeAgoCompact(
+                    proposal.createdAt,
+                    locale as "en" | "ka" | "ru"
+                  )}
+                </span>
               </div>
             </div>
 
             {/* Status Badge */}
             {isShortlisted && (
-              <Badge variant="success" size="sm" icon={<Check className="w-3 h-3" />}>
-                {proposal.hiringChoice === 'direct'
-                  ? (t('job.direct'))
-                  : (t('job.homico'))}
+              <Badge
+                variant="success"
+                size="sm"
+                icon={<Check className="w-3 h-3" />}
+              >
+                {proposal.hiringChoice === "direct"
+                  ? t("job.direct")
+                  : t("job.homico")}
               </Badge>
             )}
             {isRejected && (
-              <Badge variant="default" size="sm" icon={<X className="w-3 h-3" />}>
-                {locale === 'ka' ? 'უარყოფილი' : 'Rejected'}
+              <Badge
+                variant="default"
+                size="sm"
+                icon={<X className="w-3 h-3" />}
+              >
+                {locale === "ka" ? "უარყოფილი" : "Rejected"}
               </Badge>
             )}
           </div>
@@ -618,12 +636,12 @@ function ProposalCard({
               <div className="flex items-center gap-1.5 text-sm text-neutral-500">
                 <Clock className="w-3.5 h-3.5" />
                 <span>
-                  {proposal.estimatedDuration}{' '}
-                  {proposal.estimatedDurationUnit === 'days'
-                    ? t('common.days')
-                    : proposal.estimatedDurationUnit === 'weeks'
-                      ? t('job.weeks')
-                      : t('common.months')}
+                  {proposal.estimatedDuration}{" "}
+                  {proposal.estimatedDurationUnit === "days"
+                    ? t("common.days")
+                    : proposal.estimatedDurationUnit === "weeks"
+                      ? t("job.weeks")
+                      : t("common.months")}
                 </span>
               </div>
             )}
@@ -645,7 +663,7 @@ function ProposalCard({
                 </div>
                 <div>
                   <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-0.5">
-                    {t('common.phone')}
+                    {t("common.phone")}
                   </p>
                   <a
                     href={`tel:${pro.phone}`}
@@ -666,7 +684,7 @@ function ProposalCard({
                 size="sm"
                 leftIcon={<Check className="w-4 h-4" />}
               >
-                {t('job.interested')}
+                {t("job.interested")}
               </Button>
               <Button
                 onClick={onReject}
@@ -674,15 +692,11 @@ function ProposalCard({
                 size="sm"
                 leftIcon={<X className="w-4 h-4" />}
               >
-                {locale === 'ka' ? 'უარყოფა' : 'Reject'}
+                {locale === "ka" ? "უარყოფა" : "Reject"}
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                asChild
-              >
+              <Button variant="ghost" size="sm" asChild>
                 <Link href={`/professionals/${pro?.id}`}>
-                  {t('common.profile')}
+                  {t("common.profile")}
                 </Link>
               </Button>
             </div>
@@ -697,10 +711,12 @@ function ProposalCard({
                 disabled={isProcessing}
                 loading={isProcessing}
                 size="sm"
-                leftIcon={!isProcessing ? <Check className="w-4 h-4" /> : undefined}
+                leftIcon={
+                  !isProcessing ? <Check className="w-4 h-4" /> : undefined
+                }
                 className="shadow-lg"
               >
-                {t('job.startProject')}
+                {t("job.startProject")}
               </Button>
 
               {proposal.contactRevealed && pro?.phone && (
@@ -712,17 +728,13 @@ function ProposalCard({
                 >
                   <a href={`tel:${pro.phone}`}>
                     <Phone className="w-4 h-4 mr-1.5" />
-                    {t('job.call')}
+                    {t("job.call")}
                   </a>
                 </Button>
               )}
-              <Button
-                variant="ghost"
-                size="sm"
-                asChild
-              >
+              <Button variant="ghost" size="sm" asChild>
                 <Link href={`/professionals/${pro?.id}`}>
-                  {locale === 'ka' ? 'პროფილი' : 'Profile'}
+                  {locale === "ka" ? "პროფილი" : "Profile"}
                 </Link>
               </Button>
               {/* Revert to Pending Button */}
@@ -735,7 +747,7 @@ function ProposalCard({
                   leftIcon={<RotateCcw className="w-4 h-4" />}
                   className="border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30"
                 >
-                  {t('job.revert')}
+                  {t("job.revert")}
                 </Button>
               )}
             </div>
@@ -748,12 +760,14 @@ function ProposalCard({
 
 export default function ProposalsPage() {
   return (
-    <AuthGuard allowedRoles={['client', 'pro', 'company', 'admin']}>
-      <Suspense fallback={
-        <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950">
-          <LoadingSpinner size="lg" color={ACCENT_COLOR} />
-        </div>
-      }>
+    <AuthGuard allowedRoles={["client", "pro", "company", "admin"]}>
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950">
+            <LoadingSpinner size="lg" color={ACCENT_COLOR} />
+          </div>
+        }
+      >
         <ProposalsPageContent />
       </Suspense>
     </AuthGuard>
