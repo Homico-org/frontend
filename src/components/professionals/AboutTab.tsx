@@ -17,8 +17,8 @@ export interface SocialLinks {
 }
 
 export interface AboutTabProps {
-  /** Profile description */
-  description?: string;
+  /** Profile bio */
+  bio?: string;
   /** Custom services offered */
   customServices?: string[];
   /** Subcategories/skills grouped by category */
@@ -43,8 +43,8 @@ export interface AboutTabProps {
   locale?: 'en' | 'ka' | 'ru';
   /** Is current user viewing their own profile */
   isOwner?: boolean;
-  /** Handler to save description */
-  onSaveDescription?: (description: string) => Promise<void>;
+  /** Handler to save bio */
+  onSaveBio?: (bio: string) => Promise<void>;
   /** Handler to save custom services */
   onSaveServices?: (services: string[]) => Promise<void>;
   /** Handler to save social links */
@@ -52,7 +52,7 @@ export interface AboutTabProps {
 }
 
 export default function AboutTab({
-  description,
+  bio,
   customServices,
   groupedServices,
   getCategoryLabel,
@@ -65,18 +65,18 @@ export default function AboutTab({
   websiteUrl,
   locale = 'en',
   isOwner = false,
-  onSaveDescription,
+  onSaveBio,
   onSaveServices,
   onSaveSocialLinks,
 }: AboutTabProps) {
   const hasContactLinks = whatsapp || telegram || facebookUrl || instagramUrl || linkedinUrl || websiteUrl;
 
   // Inline editing states
-  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [isEditingBio, setIsEditingBio] = useState(false);
 
   const { t } = useLanguage();
-  const [editDescription, setEditDescription] = useState(description || '');
-  const [isSavingDescription, setIsSavingDescription] = useState(false);
+  const [editBio, setEditBio] = useState(bio || '');
+  const [isSavingBio, setIsSavingBio] = useState(false);
 
   const [isEditingServices, setIsEditingServices] = useState(false);
   const [editServices, setEditServices] = useState<string[]>(customServices || []);
@@ -94,16 +94,16 @@ export default function AboutTab({
   });
   const [isSavingSocial, setIsSavingSocial] = useState(false);
 
-  const handleSaveDescription = async () => {
-    if (!onSaveDescription) return;
-    setIsSavingDescription(true);
+  const handleSaveBio = async () => {
+    if (!onSaveBio) return;
+    setIsSavingBio(true);
     try {
-      await onSaveDescription(editDescription);
-      setIsEditingDescription(false);
+      await onSaveBio(editBio);
+      setIsEditingBio(false);
     } catch {
       // Error handled in parent
     } finally {
-      setIsSavingDescription(false);
+      setIsSavingBio(false);
     }
   };
 
@@ -155,17 +155,17 @@ export default function AboutTab({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Description */}
+      {/* Bio */}
       <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-sm border border-neutral-100 dark:border-neutral-800 group relative">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider">
             {t('professional.about')}
           </h3>
-          {isOwner && !isEditingDescription && (
+          {isOwner && !isEditingBio && (
             <button
               onClick={() => {
-                setEditDescription(description || '');
-                setIsEditingDescription(true);
+                setEditBio(bio || '');
+                setIsEditingBio(true);
               }}
               className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
             >
@@ -174,11 +174,11 @@ export default function AboutTab({
           )}
         </div>
 
-        {isEditingDescription ? (
+        {isEditingBio ? (
           <div className="space-y-3">
             <textarea
-              value={editDescription}
-              onChange={(e) => setEditDescription(e.target.value)}
+              value={editBio}
+              onChange={(e) => setEditBio(e.target.value)}
               placeholder={t('professional.describeYourExperienceAndServices')}
               rows={5}
               className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent resize-none"
@@ -187,36 +187,36 @@ export default function AboutTab({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsEditingDescription(false)}
-                disabled={isSavingDescription}
+                onClick={() => setIsEditingBio(false)}
+                disabled={isSavingBio}
               >
                 <X className="w-4 h-4 mr-1" />
                 {t('common.cancel')}
               </Button>
               <Button
                 size="sm"
-                onClick={handleSaveDescription}
-                loading={isSavingDescription}
+                onClick={handleSaveBio}
+                loading={isSavingBio}
               >
                 <Check className="w-4 h-4 mr-1" />
                 {t('common.save')}
               </Button>
             </div>
           </div>
-        ) : description ? (
+        ) : bio ? (
           <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
-            {description}
+            {bio}
           </p>
         ) : isOwner ? (
           <button
-            onClick={() => setIsEditingDescription(true)}
+            onClick={() => setIsEditingBio(true)}
             className="w-full py-6 border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-400 hover:text-[#C4735B] hover:border-[#C4735B] transition-colors"
           >
             <Plus className="w-5 h-5 mx-auto mb-1" />
-            <span className="text-sm">{t('professional.addDescription')}</span>
+            <span className="text-sm">{t('professional.addBio')}</span>
           </button>
         ) : (
-          <p className="text-neutral-400 italic">{t('professional.noDescription')}</p>
+          <p className="text-neutral-400 italic">{t('professional.noBio')}</p>
         )}
       </div>
 

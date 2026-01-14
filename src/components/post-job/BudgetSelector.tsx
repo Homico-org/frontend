@@ -55,16 +55,16 @@ export default function BudgetSelector({
   return (
     <div className={className}>
       {/* Budget Type Selector */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-3 mb-5">
         {budgetTypes.map((type) => (
           <button
             key={type.value}
             type="button"
             onClick={() => onBudgetTypeChange(type.value)}
-            className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-medium border-2 transition-all ${
+            className={`flex-1 py-3 px-4 rounded-xl text-sm font-semibold border-2 transition-all ${
               budgetType === type.value
-                ? 'border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B]'
-                : 'border-neutral-200 dark:border-neutral-700 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600'
+                ? 'border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B] shadow-sm'
+                : 'border-neutral-200 dark:border-neutral-700 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600 hover:bg-neutral-50'
             }`}
           >
             {locale === 'ka' ? type.labelKa : type.labelEn}
@@ -74,9 +74,9 @@ export default function BudgetSelector({
 
       {/* Budget Inputs */}
       {budgetType !== 'negotiable' && (
-        <div className={`grid gap-3 ${budgetType === 'range' ? 'grid-cols-2' : 'grid-cols-1'}`}>
+        <div className={`grid gap-4 ${budgetType === 'range' ? 'grid-cols-2' : 'grid-cols-1'}`}>
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 font-medium">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 font-medium text-base">
               {currency}
             </span>
             <input
@@ -85,12 +85,12 @@ export default function BudgetSelector({
               value={formatNumber(budgetMin)}
               onChange={(e) => onBudgetMinChange(parseNumber(e.target.value))}
               placeholder={budgetType === 'range' ? (t('job.min')) : '1'}
-              className="w-full pl-8 pr-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B] transition-all"
+              className="w-full pl-9 pr-4 py-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-base focus:outline-none focus:ring-2 focus:ring-[#C4735B]/20 focus:border-[#C4735B] transition-all"
             />
           </div>
           {budgetType === 'range' && (
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 font-medium">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 font-medium text-base">
                 {currency}
               </span>
               <input
@@ -99,7 +99,7 @@ export default function BudgetSelector({
                 value={formatNumber(budgetMax)}
                 onChange={(e) => onBudgetMaxChange(parseNumber(e.target.value))}
                 placeholder={t('job.max')}
-                className="w-full pl-8 pr-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B] transition-all"
+                className="w-full pl-9 pr-4 py-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-base focus:outline-none focus:ring-2 focus:ring-[#C4735B]/20 focus:border-[#C4735B] transition-all"
               />
             </div>
           )}
@@ -107,7 +107,7 @@ export default function BudgetSelector({
       )}
 
       {budgetType === 'negotiable' && (
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center py-4">
+        <p className="text-base text-neutral-500 dark:text-neutral-400 text-center py-5">
           {t('job.priceWillBeDeterminedAfter')}
         </p>
       )}

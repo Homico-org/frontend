@@ -435,9 +435,9 @@ function MyJobsPageContent() {
                 if (isMVPMode()) {
                   // Simplified MVP card - just shows hired status and phone
                   const hiredPro = job.hiredPro;
-                  const proName = hiredPro?.userId?.name || hiredPro?.name || (t('common.professional'));
-                  const proPhone = hiredPro?.userId?.phone || hiredPro?.phone;
-                  const proAvatar = hiredPro?.userId?.avatar || hiredPro?.avatar;
+                  const proName = hiredPro?.name || hiredPro?.userId?.name || (t('common.professional'));
+                  const proPhone = hiredPro?.phone || hiredPro?.userId?.phone;
+                  const proAvatar = hiredPro?.avatar || hiredPro?.userId?.avatar;
                   
                   return (
                     <div
@@ -779,8 +779,8 @@ function MyJobsPageContent() {
                               <div className="flex items-center gap-3">
                                 <div className="relative">
                                   <Avatar
-                                    src={job.hiredPro.userId?.avatar || job.hiredPro.avatar}
-                                    name={job.hiredPro.userId?.name || 'Pro'}
+                                    src={job.hiredPro.avatar || job.hiredPro.userId?.avatar}
+                                    name={job.hiredPro.name || job.hiredPro.userId?.name || 'Pro'}
                                     size="sm"
                                     className="w-9 h-9 ring-2 ring-[#C4735B]/20"
                                   />
@@ -793,7 +793,7 @@ function MyJobsPageContent() {
                                     {t('common.hired')}
                                   </span>
                                   <span className="text-sm font-semibold text-neutral-900 dark:text-white">
-                                    {job.hiredPro.userId?.name || 'Professional'}
+                                    {job.hiredPro.name || job.hiredPro.userId?.name || 'Professional'}
                                   </span>
                                 </div>
                               </div>

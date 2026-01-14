@@ -22,10 +22,10 @@ const timingOptions: {
   labelKa: string;
   icon: ReactNode;
 }[] = [
-  { value: 'asap', labelEn: 'ASAP', labelKa: 'სასწრაფოდ', icon: <Zap className="w-4 h-4" /> },
-  { value: 'this_week', labelEn: 'This Week', labelKa: 'ამ კვირას', icon: <Calendar className="w-4 h-4" /> },
-  { value: 'this_month', labelEn: 'This Month', labelKa: 'ამ თვეში', icon: <CalendarRange className="w-4 h-4" /> },
-  { value: 'flexible', labelEn: 'Flexible', labelKa: 'მოქნილი', icon: <Clock className="w-4 h-4" /> },
+  { value: 'asap', labelEn: 'ASAP', labelKa: 'სასწრაფოდ', icon: <Zap className="w-5 h-5" /> },
+  { value: 'this_week', labelEn: 'This Week', labelKa: 'ამ კვირას', icon: <Calendar className="w-5 h-5" /> },
+  { value: 'this_month', labelEn: 'This Month', labelKa: 'ამ თვეში', icon: <CalendarRange className="w-5 h-5" /> },
+  { value: 'flexible', labelEn: 'Flexible', labelKa: 'მოქნილი', icon: <Clock className="w-5 h-5" /> },
 ];
 
 export default function TimingSelector({
@@ -35,16 +35,16 @@ export default function TimingSelector({
   className = '',
 }: TimingSelectorProps) {
   return (
-    <div className={`grid grid-cols-2 sm:grid-cols-4 gap-2 ${className}`}>
+    <div className={`grid grid-cols-2 sm:grid-cols-4 gap-3 ${className}`}>
       {timingOptions.map((option) => (
         <button
           key={option.value}
           type="button"
           onClick={() => onChange(option.value)}
-          className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-medium border-2 transition-all ${
+          className={`flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl text-sm font-medium border-2 transition-all ${
             value === option.value
-              ? 'border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B]'
-              : 'border-neutral-200 dark:border-neutral-700 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600'
+              ? 'border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B] shadow-sm'
+              : 'border-neutral-200 dark:border-neutral-700 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600 hover:bg-neutral-50'
           }`}
         >
           {option.icon}

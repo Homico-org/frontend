@@ -337,7 +337,7 @@ function ProProfileSetupPageContent() {
           setFormData(prev => ({
             ...prev,
             title: profile.title || '',
-            bio: profile.description || profile.bio || '',
+            bio: profile.bio || '',
             avatar: profile.avatar || user?.avatar || '',
             portfolioUrl: profile.pinterestLinks?.[0] || '',
             licenseNumber: profile.architectLicenseNumber || '',
@@ -629,7 +629,6 @@ function ProProfileSetupPageContent() {
         profileType: 'personal',
         title: formData.title || (locale === 'ka' ? categoryInfo.nameKa : categoryInfo.name),
         bio: formData.bio,
-        description: formData.bio,
         categories: selectedCategories.length > 0 ? selectedCategories : ['interior-design'],
         subcategories: selectedSubcategories.length > 0 ? selectedSubcategories : (user?.selectedSubcategories || []),
         // Send selectedServices with per-service experience levels
@@ -679,8 +678,20 @@ function ProProfileSetupPageContent() {
         throw new Error(data.message || (isEditMode ? 'Failed to update profile' : 'Failed to create profile'));
       }
 
-      // Update the user context to mark profile as completed
-      updateUser({ isProfileCompleted: true });
+      // Update the user context with all the updated profile data
+      updateUser({
+        isProfileCompleted: true,
+        selectedCategories: selectedCategories.length > 0 ? selectedCategories : ['interior-design'],
+        selectedSubcategories: selectedSubcategories.length > 0 ? selectedSubcategories : (user?.selectedSubcategories || []),
+        selectedServices: selectedServices.map(s => ({
+          key: s.key,
+          categoryKey: s.categoryKey,
+          name: s.name,
+          nameKa: s.nameKa,
+          experience: s.experience,
+        })),
+        avatar: formData.avatar || user?.avatar,
+      });
 
       // Navigate to the professional's profile page
       const userId = data.id || data._id || user?.id;

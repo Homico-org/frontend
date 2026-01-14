@@ -10,7 +10,6 @@ import ReviewsTab from "@/components/professionals/ReviewsTab";
 import SimilarProfessionals from "@/components/professionals/SimilarProfessionals";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ConfirmModal, Modal } from "@/components/ui/Modal";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ACCENT_COLOR } from "@/constants/theme";
@@ -36,10 +35,8 @@ import {
   MessageSquare,
   Phone,
   Plus,
-  Settings,
   Share2,
   Star,
-  Trash2,
   X
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -448,16 +445,35 @@ export default function ProfessionalDetailClient() {
   const handleDeleteProject = async () => {
     if (!isOwner || !deleteProjectId) return;
     setIsSaving(true);
+    
+    console.log('[handleDeleteProject]', {
+      deleteProjectId,
+      portfolioIds: portfolio.map(p => ({ id: p.id, _id: (p as any)._id })),
+      embeddedProjectIds: profile?.portfolioProjects?.map((p, idx) => ({ id: p.id, idx, fallbackId: `embedded-${idx}` })),
+    });
+    
     try {
       // Check if this project exists in the portfolio collection
-      const existsInPortfolio = portfolio.some(p => p.id === deleteProjectId);
+      // Check both id and _id in case the transformation didn't work
+      const existsInPortfolio = portfolio.some(p => p.id === deleteProjectId || (p as any)._id === deleteProjectId);
       
       if (existsInPortfolio) {
+        console.log('[handleDeleteProject] Deleting from portfolio collection:', deleteProjectId);
         await api.delete(`/portfolio/${deleteProjectId}`);
-        setPortfolio(prev => prev.filter(p => p.id !== deleteProjectId));
+        setPortfolio(prev => prev.filter(p => p.id !== deleteProjectId && (p as any)._id !== deleteProjectId));
+      } else {
+        // Check if it's an embedded project in profile.portfolioProjects
+        const embeddedIdx = profile?.portfolioProjects?.findIndex((p, idx) => 
+          (p.id === deleteProjectId) || (`embedded-${idx}` === deleteProjectId)
+        );
+        
+        if (embeddedIdx !== undefined && embeddedIdx >= 0 && profile?.portfolioProjects) {
+          // Remove from embedded portfolioProjects via profile update
+          const updatedProjects = profile.portfolioProjects.filter((_, idx) => idx !== embeddedIdx);
+          await api.patch('/users/me/pro-profile', { portfolioProjects: updatedProjects });
+          setProfile(prev => prev ? { ...prev, portfolioProjects: updatedProjects } : prev);
+        }
       }
-      // If it's an embedded project, we just close the modal
-      // (embedded projects can't be deleted via API, would need profile update)
       
       setDeleteProjectId(null);
       toast.success(t('professional.projectDeleted'));
@@ -476,6 +492,17 @@ export default function ProfessionalDetailClient() {
       .split("-")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
+  };
+
+  // Check if title is a category name (should not be displayed as tagline)
+  const isCategoryBasedTitle = (title: string) => {
+    if (!title) return false;
+    const lowerTitle = title.toLowerCase().trim();
+    return CATEGORIES.some(cat =>
+      cat.name.toLowerCase() === lowerTitle ||
+      cat.nameKa.toLowerCase() === lowerTitle ||
+      cat.key === lowerTitle
+    );
   };
 
   // Experience level labels - matches StepSelectServices options
@@ -1047,7 +1074,7 @@ export default function ProfessionalDetailClient() {
                     </div>
                   ) : (
                     <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
-                      {profile.title ? (
+                      {profile.title && !isCategoryBasedTitle(profile.title) ? (
                         <p className="text-sm sm:text-base text-[#C4735B] font-medium truncate">
                           {profile.title}
                         </p>
@@ -1058,7 +1085,7 @@ export default function ProfessionalDetailClient() {
                       )}
                       <button
                         onClick={() => {
-                          setEditedTitle(profile.title || '');
+                          setEditedTitle(profile.title && !isCategoryBasedTitle(profile.title) ? profile.title : '');
                           setIsEditingTitle(true);
                         }}
                         className="p-1 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
@@ -1069,7 +1096,7 @@ export default function ProfessionalDetailClient() {
                     </div>
                   )
                 ) : (
-                  profile.title && (
+                  profile.title && !isCategoryBasedTitle(profile.title) && (
                     <p className="text-sm sm:text-base text-[#C4735B] font-medium mb-2 truncate">
                       {profile.title}
                     </p>
@@ -1121,8 +1148,8 @@ export default function ProfessionalDetailClient() {
                 {profile.categories?.length > 0 && (
                   <div className="flex flex-wrap justify-center sm:justify-start gap-1.5 mt-3">
                     {profile.categories.map((cat, idx) => (
-                      <span 
-                        key={`cat-${idx}`} 
+                      <span
+                        key={`cat-${idx}`}
                         className="px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-[#C4735B] to-[#D4937B] text-white shadow-sm"
                       >
                         {getCategoryLabel(cat)}
@@ -1286,7 +1313,7 @@ export default function ProfessionalDetailClient() {
             {activeTab === "about" && (
               <div className="min-h-[300px]">
                 <AboutTab
-                  description={profile.description}
+                  bio={profile.bio}
                   customServices={profile.customServices}
                   groupedServices={groupedServices}
                   getCategoryLabel={getCategoryLabel}
@@ -1299,9 +1326,9 @@ export default function ProfessionalDetailClient() {
                   websiteUrl={profile.websiteUrl}
                   locale={locale as 'en' | 'ka' | 'ru'}
                   isOwner={isOwner}
-                  onSaveDescription={async (description) => {
-                    await api.patch('/users/me/pro-profile', { description });
-                    setProfile(prev => prev ? { ...prev, description } : prev);
+                  onSaveBio={async (bio) => {
+                    await api.patch('/users/me/pro-profile', { bio });
+                    setProfile(prev => prev ? { ...prev, bio } : prev);
                     toast.success(t('professional.saved'));
                   }}
                   onSaveServices={async (customServices) => {
@@ -1640,7 +1667,7 @@ export default function ProfessionalDetailClient() {
 }
 
 // ========== PROJECT FORM MODAL COMPONENT ==========
-import { Image as ImageIcon, Video, SplitSquareHorizontal, Trash2 as TrashIcon } from "lucide-react";
+import { Image as ImageIcon, SplitSquareHorizontal, Video } from "lucide-react";
 
 interface MediaItem {
   url: string;

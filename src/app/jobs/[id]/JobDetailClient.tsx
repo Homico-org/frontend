@@ -800,17 +800,23 @@ export default function JobDetailClient() {
   
   // Check if current user is the hired pro for this job
   // hiredPro structure can vary:
+  // - hiredPro.id is the pro's user ID at top level
   // - hiredPro.userId can be a string ID or a populated object { id, name, avatar }
   // - After _id->id transform, it might be in different places
   const getHiredProUserId = (): string | null => {
     if (!job?.hiredPro) return null;
     
-    // Try userId first (can be string or object)
     const hiredPro = job.hiredPro as { 
       userId?: string | { id?: string; _id?: string }; 
       id?: string;
+      _id?: string;
     };
     
+    // Try top-level id first
+    if (hiredPro.id) return hiredPro.id;
+    if (hiredPro._id) return hiredPro._id;
+    
+    // Fallback to userId
     if (hiredPro.userId) {
       if (typeof hiredPro.userId === 'string') return hiredPro.userId;
       if (typeof hiredPro.userId === 'object') {
@@ -821,17 +827,30 @@ export default function JobDetailClient() {
     return null;
   };
   const hiredProUserId = getHiredProUserId();
-  const isHiredPro = isPro && job?.hiredPro && user?.id === hiredProUserId;
+  // User is the hired pro if:
+  // 1. They're a pro and hiredPro.id matches their id, OR
+  // 2. They're a pro and their proposal was accepted
+  const isHiredPro = isPro && (
+    (job?.hiredPro && user?.id === hiredProUserId) ||
+    (myProposal?.status === 'accepted')
+  );
   
   // Debug log (remove in production)
-  if (job?.hiredPro && user) {
-    console.log('[JobDetail] Hired pro check:', {
+  if (job && user) {
+    console.log('[JobDetail] Workspace visibility check:', {
+      jobStatus: job.status,
+      hasHiredPro: !!job.hiredPro,
       hiredPro: job.hiredPro,
       hiredProUserId,
       userId: user.id,
       isPro,
       isHiredPro,
-      jobStatus: job.status,
+      isOwner,
+      myProposalStatus: myProposal?.status,
+      isMVPMode: isMVPMode(),
+      // Visibility conditions
+      isHired: job.status === "in_progress" || job.status === "completed" || !!job.hiredPro,
+      showWorkspace: (job.status === "in_progress" || job.status === "completed" || !!job.hiredPro) && (isOwner || isHiredPro) && !isMVPMode(),
     });
   }
 
@@ -1166,6 +1185,24 @@ export default function JobDetailClient() {
       setIsCheckingProposal(false);
     }
   }, [user, params.id]);
+
+  // Refetch job when proposal is accepted (to get updated status and hiredPro)
+  useEffect(() => {
+    const refetchJob = async () => {
+      if (!params.id) return;
+      try {
+        const response = await api.get(`/jobs/${params.id}`);
+        setJob(response.data);
+      } catch (err) {
+        console.error("Failed to refetch job:", err);
+      }
+    };
+
+    // If proposal is accepted but job doesn't have hiredPro or is not in_progress, refetch
+    if (myProposal?.status === 'accepted' && (!job?.hiredPro || job?.status === 'open')) {
+      refetchJob();
+    }
+  }, [myProposal?.status, job?.hiredPro, job?.status, params.id]);
 
   // Auto-rotate images
   useEffect(() => {
@@ -1565,8 +1602,8 @@ export default function JobDetailClient() {
 
   const budgetDisplay = formatBudget(job);
   const isOpen = job.status === "open";
-  // Job is considered "hired" if status is in_progress/completed OR if hiredPro exists
-  const isHired = job.status === "in_progress" || job.status === "completed" || !!job.hiredPro;
+  // Job is considered "hired" if status is in_progress/completed OR if hiredPro exists OR if user's proposal was accepted
+  const isHired = job.status === "in_progress" || job.status === "completed" || !!job.hiredPro || myProposal?.status === 'accepted';
   const isCompleted = job.status === "completed";
 
   return (
@@ -1860,7 +1897,7 @@ export default function JobDetailClient() {
                     : `${job.clientId?.name || 'The client'} hired you`}
                 </p>
               </div>
-              {job.hiredPro?.userId?.name && (
+              {(job.hiredPro?.name || job.hiredPro?.userId?.name) && (
                 <Avatar
                   src={job.clientId?.avatar}
                   name={job.clientId?.name || "Client"}
@@ -1910,13 +1947,13 @@ export default function JobDetailClient() {
               <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/50">
                 <div className="flex items-center gap-3">
                   <Avatar 
-                    src={isOwner ? job.hiredPro?.userId?.avatar : job.clientId?.avatar} 
-                    name={isOwner ? (job.hiredPro?.userId?.name || "Professional") : (job.clientId?.name || "Client")} 
+                    src={isOwner ? (job.hiredPro?.avatar || job.hiredPro?.userId?.avatar) : job.clientId?.avatar} 
+                    name={isOwner ? (job.hiredPro?.name || job.hiredPro?.userId?.name || "Professional") : (job.clientId?.name || "Client")} 
                     size="md" 
                   />
                   <div>
                     <p className="font-medium text-neutral-900 dark:text-white">
-                      {isOwner ? (job.hiredPro?.userId?.name || "Professional") : (job.clientId?.name || "Client")}
+                      {isOwner ? (job.hiredPro?.name || job.hiredPro?.userId?.name || "Professional") : (job.clientId?.name || "Client")}
                     </p>
                     <p className="text-xs text-neutral-500">
                       {isOwner ? (t('common.professional')) : (t('common.client'))}
@@ -1925,13 +1962,13 @@ export default function JobDetailClient() {
                 </div>
                 
                 {/* Phone CTA */}
-                {isOwner && job.hiredPro?.userId?.phone && (
+                {isOwner && (job.hiredPro?.phone || job.hiredPro?.userId?.phone) && (
                   <a
-                    href={`tel:${job.hiredPro.userId.phone}`}
+                    href={`tel:${job.hiredPro?.phone || job.hiredPro?.userId?.phone}`}
                     className="flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-500 text-white font-semibold text-sm hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/25"
                   >
                     <Phone className="w-4 h-4" />
-                    {job.hiredPro.userId.phone}
+                    {job.hiredPro?.phone || job.hiredPro?.userId?.phone}
                   </a>
                 )}
                 {isHiredPro && job.clientId?.phone && (
@@ -2406,7 +2443,7 @@ export default function JobDetailClient() {
               )}
 
               {/* My Proposal - only show when not hired (pending/rejected/withdrawn) */}
-              {myProposal && isPro && !isHiredPro && (
+              {myProposal && isPro && !isHiredPro && myProposal.status !== 'accepted' && (
                 <MyProposalCard
                   proposal={{
                     id: myProposal.id,
@@ -2690,19 +2727,19 @@ export default function JobDetailClient() {
                       </h3>
                     </div>
                     <Link
-                      href={`/professionals/${job.hiredPro.id}`}
+                      href={`/professionals/${job.hiredPro.uid || job.hiredPro.id || job.hiredPro.userId?.id}`}
                       className="flex items-center gap-4 group"
                     >
                       <Avatar
                         src={job.hiredPro.avatar || job.hiredPro.userId?.avatar}
-                        name={job.hiredPro.userId?.name || "Professional"}
+                        name={job.hiredPro.name || job.hiredPro.userId?.name || "Professional"}
                         size="lg"
                         className="w-14 h-14 ring-2 transition-all group-hover:ring-4"
                         style={{ "--tw-ring-color": `${ACCENT}40` } as React.CSSProperties}
                       />
                       <div className="min-w-0 flex-1">
                         <p className="font-body font-semibold text-neutral-900 dark:text-white truncate group-hover:underline">
-                          {job.hiredPro.userId?.name || "Professional"}
+                          {job.hiredPro.name || job.hiredPro.userId?.name || "Professional"}
                         </p>
                         {job.hiredPro.title && (
                           <p className="font-body text-sm text-neutral-500 dark:text-neutral-400 truncate">
@@ -2905,7 +2942,7 @@ export default function JobDetailClient() {
           onRatingChange={setReviewRating}
           text={reviewText}
           onTextChange={setReviewText}
-        pro={job?.hiredPro || { userId: { name: 'Professional' } }}
+        pro={job?.hiredPro || { name: 'Professional', userId: { name: 'Professional' } }}
         isCompletionFlow={isCompletionFlow}
       />
 

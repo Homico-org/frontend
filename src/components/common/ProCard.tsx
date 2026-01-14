@@ -255,6 +255,15 @@ export default function ProCard({
               </div>
             </div>
 
+            {/* Bio - Short preview */}
+            {profile.bio && (
+              <div className="mb-4">
+                <p className="text-[12px] text-neutral-600 dark:text-neutral-400 text-center line-clamp-2 leading-relaxed">
+                  {profile.bio}
+                </p>
+              </div>
+            )}
+
             {/* Divider - Enhanced */}
             <div className="h-px bg-gradient-to-r from-transparent via-neutral-200 dark:via-neutral-700 to-transparent mb-4" />
 
@@ -362,9 +371,15 @@ export default function ProCard({
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
                   )}
                 </div>
-                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate mb-1.5">
-                  {getCategoryLabel(userCategories[0])}
-                </p>
+                {profile.bio ? (
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate mb-1.5">
+                    {profile.bio}
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate mb-1.5">
+                    {getCategoryLabel(userCategories[0])}
+                  </p>
+                )}
                 <div className="flex items-center gap-2.5 text-[11px]">
                   {(profile.totalReviews || 0) > 0 ? (
                     <StarRating

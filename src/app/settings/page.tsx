@@ -819,12 +819,6 @@ function SettingsPageContent() {
           >
             {t('settings.title')}
           </h1>
-          <p
-            className="mt-1 text-sm sm:text-base"
-            style={{ color: 'var(--color-text-secondary)' }}
-          >
-            {t('settings.subtitle')}
-          </p>
         </div>
 
         {/* Desktop: Sidebar + Content layout */}

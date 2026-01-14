@@ -64,8 +64,8 @@ export async function generateMetadata({
   }
 
   const title = `${profile.name} - ${profile.title} | Homico`;
-  const description = profile.description
-    ? profile.description.slice(0, 160)
+  const description = profile.bio
+    ? profile.bio.slice(0, 160)
     : `${profile.name} is a ${profile.title} on Homico. ${profile.avgRating ? `Rating: ${profile.avgRating.toFixed(1)}/5` : ""} ${profile.totalReviews ? `(${profile.totalReviews} reviews)` : ""}`.trim();
 
   const imageUrl = getAbsoluteImageUrl(profile.avatar);

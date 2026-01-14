@@ -58,6 +58,7 @@ export interface FeedItemPro {
   avatar?: string;
   rating: number;
   title?: string;
+  bio?: string;
 }
 
 export interface FeedItemClient {

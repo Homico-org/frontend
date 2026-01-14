@@ -1,6 +1,5 @@
 'use client';
 
-import { GoogleUserData } from '@/components/auth/GoogleSignInButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useCategories } from '@/contexts/CategoriesContext';
@@ -11,7 +10,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Step configuration
 export type RegistrationStep = 'account' | 'category' | 'services' | 'review';
-export type AuthMethod = 'google' | 'mobile' | 'email';
+export type AuthMethod = 'mobile';
 export type VerificationChannel = 'sms' | 'whatsapp';
 
 export interface StepConfig {
@@ -129,16 +128,6 @@ export interface UseRegistrationReturn {
   sendOtp: (channel?: VerificationChannel) => Promise<void>;
   verifyOtp: (otpCode?: string) => Promise<void>;
   
-  // Google
-  googleUser: GoogleUserData | null;
-  setGoogleUser: (user: GoogleUserData | null) => void;
-  showGooglePhoneVerification: boolean;
-  setShowGooglePhoneVerification: (show: boolean) => void;
-  handleGoogleSuccess: (userData: GoogleUserData) => void;
-  handleGoogleError: (errorMsg: string) => void;
-  handleGooglePhoneSubmit: () => Promise<void>;
-  verifyGoogleOtp: (otpCode?: string) => Promise<void>;
-  
   // Categories
   handleCategoryToggle: (categoryKey: string) => void;
   handleSubcategoryToggle: (subcategoryKey: string) => void;
@@ -247,10 +236,6 @@ export function useRegistration(): UseRegistrationReturn {
   const [phoneOtp, setPhoneOtp] = useState(['', '', '', '']);
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [resendTimer, setResendTimer] = useState(0);
-
-  // Google
-  const [googleUser, setGoogleUser] = useState<GoogleUserData | null>(null);
-  const [showGooglePhoneVerification, setShowGooglePhoneVerification] = useState(false);
 
   // Services
   const [customServices, setCustomServices] = useState<string[]>([]);
@@ -455,23 +440,6 @@ export function useRegistration(): UseRegistrationReturn {
     }
   }, [avatarPreview]);
 
-  // Google handlers
-  const handleGoogleSuccess = useCallback((userData: GoogleUserData) => {
-    setGoogleUser(userData);
-    setFormData(prev => ({
-      ...prev,
-      fullName: userData.name,
-      email: userData.email,
-    }));
-    setAgreedToTerms(true);
-    setShowGooglePhoneVerification(true);
-  }, []);
-
-  const handleGoogleError = useCallback((errorMsg: string) => {
-    console.error('Google Sign In Error:', errorMsg);
-    setError(locale === 'ka' ? 'Google-ით შესვლა ვერ მოხერხდა' : 'Failed to sign in with Google');
-  }, [locale]);
-
   // OTP functions
   const sendOtp = useCallback(async (channel: VerificationChannel = verificationChannel) => {
     const identifier = `${countries[phoneCountry].phonePrefix}${formData.phone}`;
@@ -526,129 +494,6 @@ export function useRegistration(): UseRegistrationReturn {
       setIsLoading(false);
     }
   }, [phoneCountry, formData.phone, phoneOtp, locale]);
-
-  const handleGooglePhoneSubmit = useCallback(async () => {
-    setError('');
-    setIsLoading(true);
-
-    try {
-      const phoneCheck = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/check-exists?field=phone&value=${encodeURIComponent(countries[phoneCountry].phonePrefix + formData.phone)}`
-      ).then(r => r.json());
-
-      if (phoneCheck.exists) {
-        setError(locale === 'ka' ? 'ეს ტელეფონის ნომერი უკვე რეგისტრირებულია' : 'This phone number is already registered');
-        setIsLoading(false);
-        return;
-      }
-
-      setShowVerification(true);
-      await sendOtp(verificationChannel);
-    } catch (err: any) {
-      setError(err.message || 'Failed to verify phone number');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [phoneCountry, formData.phone, locale, verificationChannel, sendOtp]);
-
-  const verifyGoogleOtp = useCallback(async (otpCode?: string) => {
-    setIsLoading(true);
-    setError('');
-    
-    try {
-      const identifier = `${countries[phoneCountry].phonePrefix}${formData.phone}`;
-      const code = otpCode || phoneOtp.join('');
-
-      if (code.length !== 4) {
-        throw new Error(locale === 'ka' ? 'შეიყვანეთ 4-ნიშნა კოდი' : 'Please enter 4-digit code');
-      }
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/verification/verify-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier, code, type: 'phone' }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Invalid verification code');
-
-      setShowVerification(false);
-      await submitGoogleRegistration();
-    } catch (err: any) {
-      setError(err.message || 'Verification failed');
-      setPhoneOtp(['', '', '', '']);
-      otpInputRefs.current[0]?.focus();
-    } finally {
-      setIsLoading(false);
-    }
-  }, [phoneCountry, formData.phone, phoneOtp, locale]);
-
-  const submitGoogleRegistration = useCallback(async () => {
-    if (!googleUser) return;
-
-    setIsLoading(true);
-    setError('');
-
-    try {
-      const proFieldsGoogle = userType === 'pro' ? {
-        selectedCategories: formData.selectedCategories,
-        selectedSubcategories: formData.selectedSubcategories,
-        customServices: customServices.length > 0 ? customServices : undefined,
-        portfolioProjects: portfolioProjects.filter(p => p.images.length > 0 || p.videos.length > 0 || p.beforeAfterPairs.length > 0).map(p => ({
-          title: p.title,
-          description: p.description,
-          images: p.images,
-          videos: p.videos,
-          beforeAfterPairs: p.beforeAfterPairs,
-        })),
-      } : {};
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/google-register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          googleId: googleUser.googleId,
-          email: googleUser.email,
-          name: googleUser.name,
-          picture: googleUser.picture,
-          phone: `${countries[phoneCountry].phonePrefix}${formData.phone}`,
-          password: formData.password,
-          role: userType,
-          city: formData.city || undefined,
-          isPhoneVerified: true,
-          ...proFieldsGoogle,
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Registration failed');
-
-      login(data.access_token, data.user);
-      trackEvent(
-        data.user.role === 'pro' ? AnalyticsEvent.REGISTER_PRO : AnalyticsEvent.REGISTER_CLIENT,
-        { userRole: data.user.role, authMethod: 'google' }
-      );
-
-      localStorage.setItem('homi_last_auth_method', 'google');
-      localStorage.setItem('homi_last_auth_identifier', googleUser.email);
-
-      if (data.user.role === 'pro') {
-        sessionStorage.setItem('proRegistrationData', JSON.stringify({
-          categories: formData.selectedCategories,
-          subcategories: formData.selectedSubcategories,
-          customServices: customServices.length > 0 ? customServices : undefined,
-          portfolioProjects: portfolioProjects.filter(p => p.images.length > 0 || p.videos.length > 0 || p.beforeAfterPairs.length > 0),
-        }));
-        router.push('/pro/profile-setup');
-      } else {
-        router.push('/browse');
-      }
-    } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [googleUser, userType, formData, customServices, portfolioProjects, phoneCountry, login, trackEvent, router]);
 
   // Category handlers
   const handleCategoryToggle = useCallback((categoryKey: string) => {
@@ -904,8 +749,8 @@ export function useRegistration(): UseRegistrationReturn {
         { userRole: data.user.role, authMethod }
       );
 
-      localStorage.setItem('homi_last_auth_method', authMethod);
-      localStorage.setItem('homi_last_auth_identifier', authMethod === 'email' ? formData.email : `${countries[phoneCountry].phonePrefix}${formData.phone}`);
+      localStorage.setItem('homi_last_auth_method', 'mobile');
+      localStorage.setItem('homi_last_auth_identifier', `${countries[phoneCountry].phonePrefix}${formData.phone}`);
 
       if (data.user.role === 'pro') {
         sessionStorage.setItem('proRegistrationData', JSON.stringify({
@@ -943,25 +788,7 @@ export function useRegistration(): UseRegistrationReturn {
           return;
         }
 
-        if (authMethod === 'email' && formData.email) {
-          const emailCheck = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/auth/check-exists?field=email&value=${encodeURIComponent(formData.email)}`
-          ).then(r => r.json());
-
-          if (emailCheck.exists) {
-            setError(locale === 'ka' ? 'ეს ელ-ფოსტა უკვე რეგისტრირებულია' : 'This email is already registered');
-            setIsLoading(false);
-            return;
-          }
-        }
-
-        // For email auth, directly submit
-        if (authMethod === 'email') {
-          await submitRegistration();
-          return;
-        }
-
-        // For mobile auth, show verification
+        // Show phone verification
         setShowVerification(true);
         await sendOtp(verificationChannel);
       } catch (err: any) {
@@ -1075,14 +902,6 @@ export function useRegistration(): UseRegistrationReturn {
     resendTimer,
     sendOtp,
     verifyOtp,
-    googleUser,
-    setGoogleUser,
-    showGooglePhoneVerification,
-    setShowGooglePhoneVerification,
-    handleGoogleSuccess,
-    handleGoogleError,
-    handleGooglePhoneSubmit,
-    verifyGoogleOtp,
     handleCategoryToggle,
     handleSubcategoryToggle,
     customServices,

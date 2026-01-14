@@ -23,18 +23,18 @@ import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { api } from "@/lib/api";
 import { storage } from "@/services/storage";
 import {
-  ArrowLeft,
-  ArrowRight,
-  Camera,
-  Check,
-  Clock,
-  Image as ImageIcon,
-  MapPin,
-  Palette,
-  Pencil,
-  Plus,
-  Ruler,
-  X
+    ArrowLeft,
+    ArrowRight,
+    Camera,
+    Check,
+    Clock,
+    Image as ImageIcon,
+    MapPin,
+    Palette,
+    Pencil,
+    Plus,
+    Ruler,
+    X
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -471,25 +471,25 @@ function PostJobPageContent() {
 
   return (
     <div className="flex flex-col min-h-screen pb-28 lg:pb-14">
-      {/* Progress Header - Compact */}
+      {/* Progress Header */}
       <div className="bg-white border-b border-neutral-100 sticky top-14 z-40">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-2.5">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-xs text-neutral-500">
-              <span className="font-medium">{getCurrentStepIndex() + 1}/{STEPS.length}</span>
-              <span className="hidden sm:inline">•</span>
-              <span className="hidden sm:inline">{locale === "ka" ? STEPS[getCurrentStepIndex()].labelKa : locale === "ru" ? STEPS[getCurrentStepIndex()].labelRu : STEPS[getCurrentStepIndex()].label}</span>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3 text-sm text-neutral-600">
+              <span className="font-semibold text-[#C4735B]">{getCurrentStepIndex() + 1}/{STEPS.length}</span>
+              <span className="hidden sm:inline text-neutral-300">•</span>
+              <span className="hidden sm:inline font-medium">{locale === "ka" ? STEPS[getCurrentStepIndex()].labelKa : locale === "ru" ? STEPS[getCurrentStepIndex()].labelRu : STEPS[getCurrentStepIndex()].label}</span>
             </div>
-            <Progress value={progressPercent} size="sm" className="flex-1" />
-            <span className="text-xs font-medium text-[#C4735B]">
+            <Progress value={progressPercent} size="default" className="flex-1" />
+            <span className="text-sm font-semibold text-[#C4735B]">
               {Math.round(progressPercent)}%
             </span>
           </div>
         </div>
       </div>
 
-      <main className={`flex-1 py-4 lg:py-5 transition-opacity duration-500 ${isVisible ? "opacity-100" : "opacity-0"}`}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+      <main className={`flex-1 py-6 lg:py-8 transition-opacity duration-500 ${isVisible ? "opacity-100" : "opacity-0"}`}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {error && (
             <Alert variant="error" size="sm" className="mb-4">
               {error}
@@ -498,21 +498,21 @@ function PostJobPageContent() {
 
           {/* STEP 1: Category Selection */}
           {currentStep === "category" && (
-            <div className="grid lg:grid-cols-3 gap-4">
+            <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
               {/* Left: Main Content */}
-              <div className="lg:col-span-2 space-y-4">
+              <div className="lg:col-span-2 space-y-6">
                 <div>
-                  <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
+                  <h1 className="text-2xl lg:text-3xl font-bold text-neutral-900 mb-2">
                     {t('job.projectDetails')}
                   </h1>
-                  <p className="text-sm text-neutral-500">
+                  <p className="text-base text-neutral-500">
                     {t('job.selectPropertyTypeCategoryAnd')}
                   </p>
                 </div>
 
                 {/* Property Type Selection with Icons */}
                 <div>
-                  <label className="block text-xs font-medium text-neutral-600 mb-2">
+                  <label className="block text-sm font-semibold text-neutral-700 mb-3">
                     {t('job.propertyType')} <span className="text-[#C4735B]">*</span>
                   </label>
                   <PropertyTypeSelector
@@ -524,7 +524,7 @@ function PostJobPageContent() {
 
                 {/* Category & Subcategory Selection */}
                 <div>
-                  <label className="block text-xs font-medium text-neutral-600 mb-2">
+                  <label className="block text-sm font-semibold text-neutral-700 mb-3">
                     {t('job.categoryService')} <span className="text-[#C4735B]">*</span>
                   </label>
                   <CategorySelector
@@ -542,14 +542,14 @@ function PostJobPageContent() {
 
                 {/* Category-specific fields */}
                 {selectedSubcategory && getActiveFields().length > 0 && (
-                  <div className="bg-white rounded-xl border border-neutral-200 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                    <h3 className="text-sm font-medium text-neutral-900 mb-3">
+                  <div className="bg-white rounded-2xl border border-neutral-200 p-5 lg:p-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <h3 className="text-base font-semibold text-neutral-900 mb-4">
                       {t('job.additionalDetails')}
                     </h3>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-4">
                       {getActiveFields().map((field) => (
                         <div key={field.key}>
-                          <label className="block text-xs font-medium text-neutral-600 mb-1.5">
+                          <label className="block text-sm font-medium text-neutral-600 mb-2">
                             {locale === "ka" ? field.labelKa : field.labelEn}
                             {field.required && " *"}
                           </label>
@@ -568,12 +568,12 @@ function PostJobPageContent() {
                                 updateFormData(field.key, value);
                               }}
                               placeholder={locale === "ka" ? field.placeholderKa : field.placeholderEn}
-                              className={`w-full px-3 py-2 rounded-lg border border-neutral-200 bg-white text-sm placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B] ${
-                                field.suffix ? "pr-10" : ""
+                              className={`w-full px-4 py-3 rounded-xl border border-neutral-200 bg-white text-base placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 transition-all ${
+                                field.suffix ? "pr-12" : ""
                               }`}
                             />
                             {field.suffix && (
-                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-400">
+                              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-neutral-400 font-medium">
                                 {field.suffix}
                               </span>
                             )}
@@ -586,16 +586,17 @@ function PostJobPageContent() {
 
                 {/* Cadastral Code Input - Only for architecture/design */}
                 {(selectedCategory === "architecture" || selectedCategory === "design") && (
-                  <div className="bg-white rounded-xl border border-neutral-200 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                    <label className="block text-sm font-medium text-neutral-900 mb-2">
-                      {t('job.cadastralCode')} <span className="text-neutral-400 font-normal">({t('common.optional')})</span>
+                  <div className="bg-white rounded-2xl border border-neutral-200 p-5 lg:p-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <label className="block text-base font-semibold text-neutral-900 mb-3">
+                      {t('job.cadastralCode')} <span className="text-neutral-400 font-normal text-sm">({t('common.optional')})</span>
                     </label>
                     <Input
                       value={formData.cadastralId}
                       onChange={(e) => updateFormData("cadastralId", e.target.value)}
                       placeholder="XX.XX.XX.XXX.XXX"
+                      className="text-base py-3"
                     />
-                    <p className="mt-2 text-[11px] text-neutral-500 leading-relaxed">
+                    <p className="mt-3 text-sm text-neutral-500 leading-relaxed">
                       {t('job.cadastralCodeHelpsIdentifyThe')}
                     </p>
                   </div>
@@ -603,8 +604,8 @@ function PostJobPageContent() {
 
                 {/* Land Area Input - Only for house/building with architecture/design */}
                 {(formData.propertyType === "house" || formData.propertyType === "building") && (selectedCategory === "architecture" || selectedCategory === "design") && (
-                  <div className="bg-white rounded-xl border border-neutral-200 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                    <label className="block text-sm font-medium text-neutral-900 mb-2">
+                  <div className="bg-white rounded-2xl border border-neutral-200 p-5 lg:p-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <label className="block text-base font-semibold text-neutral-900 mb-3">
                       {t('job.landArea')}
                     </label>
                     <div className="relative">
@@ -619,13 +620,13 @@ function PostJobPageContent() {
                           }
                         }}
                         placeholder={"5007"}
-                        className="w-full px-3 py-2.5 pr-12 rounded-lg border border-neutral-200 bg-white text-sm placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]"
+                        className="w-full px-4 py-3 pr-14 rounded-xl border border-neutral-200 bg-white text-base placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 transition-all"
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-400">
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-neutral-400 font-medium">
                         m²
                       </span>
                     </div>
-                    <p className="mt-2 text-[11px] text-neutral-500 leading-relaxed">
+                    <p className="mt-3 text-sm text-neutral-500 leading-relaxed">
                       {t('job.specifyTheLandPlotArea')}
                     </p>
                   </div>
@@ -633,8 +634,8 @@ function PostJobPageContent() {
 
                 {/* Property Condition Selector - For relevant categories */}
                 {selectedCategory && categoriesNeedingCondition.includes(selectedCategory) && (
-                  <div className="bg-white rounded-xl border border-neutral-200 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                    <label className="block text-sm font-medium text-neutral-900 mb-3">
+                  <div className="bg-white rounded-2xl border border-neutral-200 p-5 lg:p-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <label className="block text-base font-semibold text-neutral-900 mb-4">
                       {t('job.propertyCondition')}
                     </label>
                     <ConditionSelector
@@ -643,7 +644,7 @@ function PostJobPageContent() {
                       locale={locale as "en" | "ka" | "ru"}
                       category={selectedCategory}
                     />
-                    <p className="mt-3 text-[11px] text-neutral-500 leading-relaxed">
+                    <p className="mt-4 text-sm text-neutral-500 leading-relaxed">
                       {t('job.propertyConditionHelpsProfessionalsProvide')}
                     </p>
                   </div>
@@ -652,20 +653,20 @@ function PostJobPageContent() {
 
               {/* Right: Hints Panel */}
               <div className="lg:col-span-1">
-                <div className="sticky top-[120px] space-y-4">
+                <div className="sticky top-[140px] space-y-4">
                   {/* Hint Card */}
-                  <div className="bg-gradient-to-br from-[#C4735B]/5 to-[#C4735B]/10 rounded-xl border border-[#C4735B]/20 p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-8 h-8 rounded-lg bg-[#C4735B] flex items-center justify-center">
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="bg-gradient-to-br from-[#C4735B]/5 to-[#C4735B]/10 rounded-2xl border border-[#C4735B]/20 p-5 lg:p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-xl bg-[#C4735B] flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       </div>
-                      <h3 className="font-medium text-sm text-[#C4735B]">
+                      <h3 className="font-semibold text-base text-[#C4735B]">
                         {t('job.tip')}
                       </h3>
                     </div>
-                    <p className="text-xs text-neutral-600 leading-relaxed">
+                    <p className="text-sm text-neutral-600 leading-relaxed">
                       {getActiveHint()}
                     </p>
                   </div>
@@ -677,16 +678,19 @@ function PostJobPageContent() {
 
           {/* STEP 2: Location & Budget */}
           {currentStep === "location" && (
-            <div className="max-w-2xl mx-auto">
-              <div className="bg-white rounded-xl border border-neutral-200 p-4">
-                <h2 className="text-lg font-bold text-neutral-900 mb-3">
+            <div className="max-w-3xl mx-auto">
+              <div className="bg-white rounded-2xl border border-neutral-200 p-6 lg:p-8">
+                <h2 className="text-2xl lg:text-3xl font-bold text-neutral-900 mb-2">
                   {t('job.locationBudget')}
                 </h2>
+                <p className="text-base text-neutral-500 mb-6">
+                  {locale === "ka" ? "მიუთითეთ პროექტის მისამართი და ბიუჯეტი" : "Specify the project address and budget"}
+                </p>
 
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {/* Address */}
                   <div>
-                    <label className="block text-xs font-medium text-neutral-600 mb-1.5">
+                    <label className="block text-sm font-semibold text-neutral-700 mb-2">
                       {t('job.jobAddress')} <span className="text-[#C4735B]">*</span>
                     </label>
                     <AddressPicker
@@ -699,7 +703,7 @@ function PostJobPageContent() {
 
                   {/* Budget Type Selection and Inputs */}
                   <div>
-                    <label className="block text-xs font-medium text-neutral-600 mb-2">
+                    <label className="block text-sm font-semibold text-neutral-700 mb-3">
                       {t('common.budget')} <span className="text-[#C4735B]">*</span>
                     </label>
                     <BudgetSelector
@@ -722,7 +726,7 @@ function PostJobPageContent() {
 
                   {/* Timing Selection */}
                   <div>
-                    <label className="block text-xs font-medium text-neutral-600 mb-2">
+                    <label className="block text-sm font-semibold text-neutral-700 mb-3">
                       {t('job.whenDoYouNeedIt')} <span className="text-[#C4735B]">*</span>
                     </label>
                     <TimingSelector
@@ -738,69 +742,71 @@ function PostJobPageContent() {
 
           {/* STEP 3: Details */}
           {currentStep === "details" && (
-            <div className="max-w-2xl mx-auto space-y-4">
+            <div className="max-w-3xl mx-auto space-y-6">
               <div>
-                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
+                <h1 className="text-2xl lg:text-3xl font-bold text-neutral-900 mb-2">
                   {locale === "ka" ? "პროექტის დეტალები" : "Project Details"}
                 </h1>
-                <p className="text-sm text-neutral-500">
+                <p className="text-base text-neutral-500">
                   {t('job.describeWhatNeedsToBe')}
                 </p>
               </div>
 
-              <div className="bg-white rounded-xl border border-neutral-200 p-4 space-y-4">
+              <div className="bg-white rounded-2xl border border-neutral-200 p-6 lg:p-8 space-y-6">
                 {/* Title */}
                 <div>
-                  <label className="block text-xs font-medium text-neutral-600 mb-1.5">
+                  <label className="block text-sm font-semibold text-neutral-700 mb-2">
                     {t('common.title')} <span className="text-[#C4735B]">*</span>
                   </label>
                   <Input
                     value={formData.title}
                     onChange={(e) => updateFormData("title", e.target.value)}
                     placeholder={t('job.egKitchenPipeRepair')}
+                    className="text-base py-3"
                   />
                 </div>
 
                 {/* Description */}
                 <div>
-                  <label className="block text-xs font-medium text-neutral-600 mb-1.5">
+                  <label className="block text-sm font-semibold text-neutral-700 mb-2">
                     {t('common.description')} <span className="text-[#C4735B]">*</span>
                   </label>
                   <Textarea
                     value={formData.description}
                     onChange={(e) => updateFormData("description", e.target.value)}
-                    rows={3}
+                    rows={4}
                     placeholder={t('job.describeTheProblemOrWhat')}
+                    className="text-base"
                   />
                 </div>
 
 
                 {/* Photos - Enhanced with explanation */}
-                <div className={`p-4 rounded-xl border-2 transition-all ${
+                <div className={`p-5 lg:p-6 rounded-2xl border-2 transition-all ${
                   (existingMedia.length + mediaFiles.length) > 0
                     ? 'bg-emerald-50/50 border-emerald-200'
                     : 'bg-gradient-to-br from-amber-50/50 to-orange-50/30 border-amber-200/60'
                 }`}>
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
                       (existingMedia.length + mediaFiles.length) > 0
                         ? 'bg-emerald-100'
                         : 'bg-amber-100'
                     }`}>
-                      <ImageIcon className={`w-5 h-5 ${
+                      <ImageIcon className={`w-6 h-6 ${
                         (existingMedia.length + mediaFiles.length) > 0
                           ? 'text-emerald-600'
                           : 'text-amber-600'
                       }`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <label className="block text-sm font-semibold text-neutral-800 mb-0.5">
+                      <label className="block text-base font-semibold text-neutral-800 mb-1">
                         {t('job.addPhotos')}
-                        <span className="ml-1.5 text-xs font-normal text-neutral-400">
+                        <span className="ml-2 text-sm font-normal text-neutral-400">
                           ({t('job.recommended')})
                         </span>
                       </label>
-                      <p className="text-xs text-neutral-500 leading-relaxed">
+                      <p className="text-sm text-neutral-500 leading-relaxed">
                         {t('job.photosHelpProfessionalsBetterUnderstand')}
                       </p>
                     </div>
@@ -808,13 +814,13 @@ function PostJobPageContent() {
 
                   {/* Tips when no photos */}
                   {(existingMedia.length + mediaFiles.length) === 0 && (
-                    <div className="mb-3 flex flex-wrap gap-1.5">
+                    <div className="mb-4 flex flex-wrap gap-2">
                       {[
-                        { icon: <Camera className="w-3.5 h-3.5" />, text: t('job.problemArea') },
-                        { icon: <Ruler className="w-3.5 h-3.5" />, text: t('job.dimensions') },
-                        { icon: <Palette className="w-3.5 h-3.5" />, text: t('job.desiredStyle') },
+                        { icon: <Camera className="w-4 h-4" />, text: t('job.problemArea') },
+                        { icon: <Ruler className="w-4 h-4" />, text: t('job.dimensions') },
+                        { icon: <Palette className="w-4 h-4" />, text: t('job.desiredStyle') },
                       ].map((tip, i) => (
-                        <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/80 border border-neutral-200 text-xs text-neutral-600">
+                        <span key={i} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 border border-neutral-200 text-sm text-neutral-600">
                           <span className="text-[#C4735B]">{tip.icon}</span>
                           {tip.text}
                         </span>
@@ -823,10 +829,10 @@ function PostJobPageContent() {
                   )}
 
                   {/* Upload area and previews */}
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-3">
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className={`w-20 h-20 rounded-xl border-2 border-dashed flex flex-col items-center justify-center transition-all flex-shrink-0 ${
+                      className={`w-24 h-24 rounded-xl border-2 border-dashed flex flex-col items-center justify-center transition-all flex-shrink-0 ${
                         (existingMedia.length + mediaFiles.length) > 0
                           ? 'border-emerald-300 hover:border-emerald-400 hover:bg-emerald-100/50 bg-white'
                           : 'border-amber-300 hover:border-amber-400 hover:bg-amber-100/50 bg-white'
@@ -840,10 +846,10 @@ function PostJobPageContent() {
                         onChange={handleFileSelect}
                         className="hidden"
                       />
-                      <Plus className={`w-5 h-5 ${
+                      <Plus className={`w-6 h-6 ${
                         (existingMedia.length + mediaFiles.length) > 0 ? 'text-emerald-500' : 'text-amber-500'
                       }`} />
-                      <span className={`text-[10px] font-medium mt-0.5 ${
+                      <span className={`text-xs font-medium mt-1 ${
                         (existingMedia.length + mediaFiles.length) > 0 ? 'text-emerald-600' : 'text-amber-600'
                       }`}>
                         {t('common.add')}
@@ -852,26 +858,26 @@ function PostJobPageContent() {
 
                     {/* Preview - Existing */}
                     {existingMedia.map((media, idx) => (
-                      <div key={`existing-${idx}`} className="relative w-20 h-20 rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0 ring-2 ring-emerald-200 ring-offset-1">
-                        <Image src={storage.getFileUrl(media.url)} alt="Uploaded media" fill className="object-cover" sizes="80px" />
+                      <div key={`existing-${idx}`} className="relative w-24 h-24 rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0 ring-2 ring-emerald-200 ring-offset-2">
+                        <Image src={storage.getFileUrl(media.url)} alt="Uploaded media" fill className="object-cover" sizes="96px" />
                         <button
                           onClick={() => removeExistingMedia(idx)}
-                          className="absolute top-1.5 right-1.5 w-5 h-5 bg-black/60 hover:bg-red-500 rounded-full flex items-center justify-center transition-colors"
+                          className="absolute top-2 right-2 w-6 h-6 bg-black/60 hover:bg-red-500 rounded-full flex items-center justify-center transition-colors"
                         >
-                          <X className="w-3 h-3 text-white" />
+                          <X className="w-3.5 h-3.5 text-white" />
                         </button>
                       </div>
                     ))}
 
                     {/* Preview - New */}
                     {mediaFiles.map((media, idx) => (
-                      <div key={`new-${idx}`} className="relative w-20 h-20 rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0 ring-2 ring-emerald-200 ring-offset-1">
-                        <Image src={media.preview} alt="Preview" fill className="object-cover" sizes="80px" unoptimized />
+                      <div key={`new-${idx}`} className="relative w-24 h-24 rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0 ring-2 ring-emerald-200 ring-offset-2">
+                        <Image src={media.preview} alt="Preview" fill className="object-cover" sizes="96px" unoptimized />
                         <button
                           onClick={() => removeMediaFile(idx)}
-                          className="absolute top-1.5 right-1.5 w-5 h-5 bg-black/60 hover:bg-red-500 rounded-full flex items-center justify-center transition-colors"
+                          className="absolute top-2 right-2 w-6 h-6 bg-black/60 hover:bg-red-500 rounded-full flex items-center justify-center transition-colors"
                         >
-                          <X className="w-3 h-3 text-white" />
+                          <X className="w-3.5 h-3.5 text-white" />
                         </button>
                       </div>
                     ))}
@@ -879,8 +885,8 @@ function PostJobPageContent() {
 
                   {/* Success state */}
                   {(existingMedia.length + mediaFiles.length) > 0 && (
-                    <div className="mt-3 flex items-center gap-1.5 text-xs text-emerald-600">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="mt-4 flex items-center gap-2 text-sm text-emerald-600">
+                      <Check className="w-4 h-4" />
                       <span>
                         {locale === "ka"
                           ? `${existingMedia.length + mediaFiles.length} ფოტო დამატებულია - პროფესიონალები უკეთ გაიგებენ შენს პროექტს!`
@@ -893,41 +899,42 @@ function PostJobPageContent() {
             </div>
           )}
 
-          {/* STEP 4: Review - Compact */}
+          {/* STEP 4: Review */}
           {currentStep === "review" && (
-            <div className="max-w-2xl mx-auto space-y-3">
-              <div className="mb-2">
-                <h1 className="text-lg font-bold text-neutral-900">
+            <div className="max-w-3xl mx-auto space-y-4">
+              <div className="mb-4">
+                <h1 className="text-2xl lg:text-3xl font-bold text-neutral-900 mb-2">
                   {t('job.reviewYourJobPost')}
                 </h1>
-                <p className="text-xs text-neutral-500">
+                <p className="text-base text-neutral-500">
                   {t('job.pleaseEnsureAllDetailsAre')}
                 </p>
               </div>
 
-              {/* Service Details - Compact */}
-              <div className="bg-white rounded-xl border border-neutral-200 p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
-                    <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
-                      <CategoryIcon type={selectedCategoryData?.icon || ""} className="w-3 h-3 text-[#C4735B]" />
+              {/* Service Details */}
+              <div className="bg-white rounded-2xl border border-neutral-200 p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
+                      <CategoryIcon type={selectedCategoryData?.icon || ""} className="w-4 h-4 text-[#C4735B]" />
                     </div>
                     {t('job.service')}
                   </h3>
-                  <Button variant="ghost" size="icon-sm" onClick={() => goToStep("category")} className="text-[#C4735B] w-6 h-6">
-                    <Pencil className="w-3 h-3" />
+                  <Button variant="ghost" size="sm" onClick={() => goToStep("category")} className="text-[#C4735B]">
+                    <Pencil className="w-4 h-4 mr-1" />
+                    {locale === "ka" ? "შეცვლა" : "Edit"}
                   </Button>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-neutral-400 mb-0.5">{t('job.category')}</p>
-                    <p className="font-medium text-neutral-900">
+                    <p className="text-neutral-400 mb-1">{t('job.category')}</p>
+                    <p className="font-semibold text-neutral-900 text-base">
                       {locale === "ka" ? selectedCategoryData?.nameKa : selectedCategoryData?.name}
                     </p>
                   </div>
                   <div>
-                    <p className="text-neutral-400 mb-0.5">{t('common.type')}</p>
-                    <p className="font-medium text-neutral-900">
+                    <p className="text-neutral-400 mb-1">{t('common.type')}</p>
+                    <p className="font-semibold text-neutral-900 text-base">
                       {(() => {
                         const sub = selectedCategoryData?.subcategories.find((s) => s.key === selectedSubcategory);
                         return locale === "ka" ? sub?.nameKa : sub?.name;
@@ -937,23 +944,23 @@ function PostJobPageContent() {
                 </div>
               </div>
 
-              {/* Location & Budget - Combined Compact */}
-              <div className="grid grid-cols-2 gap-2">
-                <div className="bg-white rounded-xl border border-neutral-200 p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
-                      <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
-                        <MapPin className="w-3 h-3 text-[#C4735B]" />
+              {/* Location & Budget - Combined */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="bg-white rounded-2xl border border-neutral-200 p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
+                        <MapPin className="w-4 h-4 text-[#C4735B]" />
                       </div>
                       {t('common.location')}
                     </h3>
-<Button variant="ghost" size="icon-sm" onClick={() => goToStep("location")} className="text-[#C4735B] w-6 h-6">
-                    <Pencil className="w-3 h-3" />
-                  </Button>
+                    <Button variant="ghost" size="sm" onClick={() => goToStep("location")} className="text-[#C4735B] h-8 w-8 p-0">
+                      <Pencil className="w-4 h-4" />
+                    </Button>
                   </div>
-                  <p className="text-xs font-medium text-neutral-900 line-clamp-1">{formData.location}</p>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    <Badge variant="secondary" size="xs">
+                  <p className="text-sm font-medium text-neutral-900 line-clamp-2 mb-2">{formData.location}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    <Badge variant="secondary" size="sm">
                       {formData.propertyType === "apartment" && (t('job.apartment'))}
                       {formData.propertyType === "house" && (t('job.house'))}
                       {formData.propertyType === "office" && (t('job.office'))}
@@ -961,7 +968,7 @@ function PostJobPageContent() {
                       {formData.propertyType === "other" && (t('common.other'))}
                     </Badge>
                     {formData.propertyCondition && (
-                      <Badge variant="premium" size="xs">
+                      <Badge variant="premium" size="sm">
                         {formData.propertyCondition === "shell" && (t('job.shell'))}
                         {formData.propertyCondition === "black-frame" && (t('job.blackFrame'))}
                         {formData.propertyCondition === "needs-renovation" && (t('job.fullRenovation'))}
@@ -973,21 +980,21 @@ function PostJobPageContent() {
                 </div>
 
                 {/* Budget */}
-                <div className="bg-white rounded-xl border border-neutral-200 p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
-                      <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
-                        <svg className="w-3 h-3 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-white rounded-2xl border border-neutral-200 p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
+                        <svg className="w-4 h-4 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       </div>
                       {locale === "ka" ? "ბიუჯეტი" : "Budget"}
                     </h3>
-                    <Button variant="ghost" size="icon-sm" onClick={() => goToStep("location")} className="text-[#C4735B] w-6 h-6">
-                      <Pencil className="w-3 h-3" />
+                    <Button variant="ghost" size="sm" onClick={() => goToStep("location")} className="text-[#C4735B] h-8 w-8 p-0">
+                      <Pencil className="w-4 h-4" />
                     </Button>
                   </div>
-                  <p className="text-xs font-medium text-neutral-900">
+                  <p className="text-lg font-bold text-neutral-900">
                     {formData.budgetType === "negotiable"
                       ? (t('common.negotiable'))
                       : formData.budgetType === "range"
@@ -997,21 +1004,21 @@ function PostJobPageContent() {
                 </div>
 
                 {/* Timing */}
-                <div className="bg-white rounded-xl border border-neutral-200 p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
-                      <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
-                        <Clock className="w-3 h-3 text-[#C4735B]" />
+                <div className="bg-white rounded-2xl border border-neutral-200 p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
+                        <Clock className="w-4 h-4 text-[#C4735B]" />
                       </div>
                       {t('job.whenNeeded')}
                     </h3>
-                    <Button variant="ghost" size="icon-sm" onClick={() => goToStep("location")} className="text-[#C4735B] w-6 h-6">
-                      <Pencil className="w-3 h-3" />
+                    <Button variant="ghost" size="sm" onClick={() => goToStep("location")} className="text-[#C4735B] h-8 w-8 p-0">
+                      <Pencil className="w-4 h-4" />
                     </Button>
                   </div>
                   <Badge
                     variant={formData.timing === "asap" ? "danger" : formData.timing === "this_week" ? "warning" : "default"}
-                    size="xs"
+                    size="default"
                   >
                     {formData.timing === "flexible" && (t('job.flexible'))}
                     {formData.timing === "asap" && (t('job.asap'))}
@@ -1023,41 +1030,41 @@ function PostJobPageContent() {
 
               {/* Category-specific fields - Show if any are filled */}
               {(formData.areaSize || formData.roomCount || formData.pointsCount || formData.cadastralId || formData.landArea) && (
-                <div className="bg-white rounded-xl border border-neutral-200 p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
-                      <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
-                        <Ruler className="w-3 h-3 text-[#C4735B]" />
+                <div className="bg-white rounded-2xl border border-neutral-200 p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
+                        <Ruler className="w-4 h-4 text-[#C4735B]" />
                       </div>
                       {t('common.details')}
                     </h3>
-                    <Button variant="ghost" size="icon-sm" onClick={() => goToStep("details")} className="text-[#C4735B] w-6 h-6">
-                      <Pencil className="w-3 h-3" />
+                    <Button variant="ghost" size="sm" onClick={() => goToStep("details")} className="text-[#C4735B] h-8 w-8 p-0">
+                      <Pencil className="w-4 h-4" />
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {formData.areaSize && (
-                      <Badge variant="secondary" size="xs">
+                      <Badge variant="secondary" size="default">
                         {t('job.area')}: {formData.areaSize} m²
                       </Badge>
                     )}
                     {formData.roomCount && (
-                      <Badge variant="secondary" size="xs">
+                      <Badge variant="secondary" size="default">
                         {t('job.rooms')}: {formData.roomCount}
                       </Badge>
                     )}
                     {formData.pointsCount && (
-                      <Badge variant="secondary" size="xs">
+                      <Badge variant="secondary" size="default">
                         {t('job.points')}: {formData.pointsCount}
                       </Badge>
                     )}
                     {formData.cadastralId && (
-                      <Badge variant="secondary" size="xs">
+                      <Badge variant="secondary" size="default">
                         {t('job.cadastral')}: {formData.cadastralId}
                       </Badge>
                     )}
                     {formData.landArea && (
-                      <Badge variant="secondary" size="xs">
+                      <Badge variant="secondary" size="default">
                         {t('job.land')}: {formData.landArea} m²
                       </Badge>
                     )}
@@ -1065,57 +1072,57 @@ function PostJobPageContent() {
                 </div>
               )}
 
-              {/* Description - Compact */}
-              <div className="bg-white rounded-xl border border-neutral-200 p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
-                    <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
-                      <svg className="w-3 h-3 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {/* Description */}
+              <div className="bg-white rounded-2xl border border-neutral-200 p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
                       </svg>
                     </div>
                     {locale === "ka" ? "აღწერა" : "Description"}
                   </h3>
-                  <Button variant="ghost" size="icon-sm" onClick={() => goToStep("details")} className="text-[#C4735B] w-6 h-6">
-                    <Pencil className="w-3 h-3" />
+                  <Button variant="ghost" size="sm" onClick={() => goToStep("details")} className="text-[#C4735B] h-8 w-8 p-0">
+                    <Pencil className="w-4 h-4" />
                   </Button>
                 </div>
-                <h4 className="text-xs font-medium text-neutral-900 mb-1">{formData.title}</h4>
-                <p className="text-neutral-600 text-xs leading-relaxed line-clamp-2">{formData.description}</p>
+                <h4 className="text-base font-semibold text-neutral-900 mb-2">{formData.title}</h4>
+                <p className="text-neutral-600 text-sm leading-relaxed line-clamp-3">{formData.description}</p>
               </div>
 
-              {/* Photos - Compact */}
+              {/* Photos */}
               {(existingMedia.length > 0 || mediaFiles.length > 0) && (
-                <div className="bg-white rounded-xl border border-neutral-200 p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
-                      <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
-                        <ImageIcon className="w-3 h-3 text-[#C4735B]" />
+                <div className="bg-white rounded-2xl border border-neutral-200 p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
+                        <ImageIcon className="w-4 h-4 text-[#C4735B]" />
                       </div>
                       {t('common.photos')} ({existingMedia.length + mediaFiles.length})
                     </h3>
-                    <Button variant="ghost" size="icon-sm" onClick={() => goToStep("details")} className="text-[#C4735B] w-6 h-6">
-                      <Pencil className="w-3 h-3" />
+                    <Button variant="ghost" size="sm" onClick={() => goToStep("details")} className="text-[#C4735B] h-8 w-8 p-0">
+                      <Pencil className="w-4 h-4" />
                     </Button>
                   </div>
-                  <div className="flex gap-2 flex-wrap">
+                  <div className="flex gap-3 flex-wrap">
                     {existingMedia.map((media, idx) => (
-                      <div key={`review-existing-${idx}`} className="relative w-14 h-14 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
-                        <Image src={storage.getFileUrl(media.url)} alt="Uploaded media" fill className="object-cover" sizes="56px" />
+                      <div key={`review-existing-${idx}`} className="relative w-20 h-20 rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0">
+                        <Image src={storage.getFileUrl(media.url)} alt="Uploaded media" fill className="object-cover" sizes="80px" />
                       </div>
                     ))}
                     {mediaFiles.map((media, idx) => (
-                      <div key={`review-new-${idx}`} className="relative w-14 h-14 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
-                        <Image src={media.preview} alt="Preview" fill className="object-cover" sizes="56px" unoptimized />
+                      <div key={`review-new-${idx}`} className="relative w-20 h-20 rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0">
+                        <Image src={media.preview} alt="Preview" fill className="object-cover" sizes="80px" unoptimized />
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Info Note - Compact */}
-              <div className="flex items-center justify-center gap-1.5 text-[10px] text-neutral-400 py-1">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {/* Info Note */}
+              <div className="flex items-center justify-center gap-2 text-sm text-neutral-400 py-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
                 {t('job.willBeReviewedByAdmins')}
@@ -1125,21 +1132,22 @@ function PostJobPageContent() {
         </div>
       </main>
 
-      {/* Footer Navigation - Compact */}
-      <footer className="fixed bottom-14 lg:bottom-0 left-0 right-0 bg-white border-t border-neutral-100 z-40">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-2.5">
+      {/* Footer Navigation */}
+      <footer className="fixed bottom-14 lg:bottom-0 left-0 right-0 bg-white border-t border-neutral-100 z-40 shadow-lg shadow-neutral-900/5">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
-              size="sm"
+              size="default"
               onClick={handleBack}
-              leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}
+              leftIcon={<ArrowLeft className="w-4 h-4" />}
+              className="text-base"
             >
               {t('common.back')}
             </Button>
 
             <Button
-              size="sm"
+              size="lg"
               onClick={handleNext}
               loading={isSubmitting}
               disabled={
@@ -1147,7 +1155,8 @@ function PostJobPageContent() {
                 (currentStep === "location" && !canProceedFromLocation()) ||
                 (currentStep === "details" && !canProceedFromDetails())
               }
-              rightIcon={currentStep === "review" ? <Check className="w-3.5 h-3.5" /> : <ArrowRight className="w-3.5 h-3.5" />}
+              rightIcon={currentStep === "review" ? <Check className="w-5 h-5" /> : <ArrowRight className="w-5 h-5" />}
+              className="text-base px-8"
             >
               {currentStep === "review"
                 ? (t('job.postJob'))

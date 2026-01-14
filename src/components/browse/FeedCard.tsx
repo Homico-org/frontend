@@ -6,13 +6,13 @@ import { StarRating } from '@/components/ui/StarRating';
 import { StatusPill } from '@/components/ui/StatusPill';
 import { Badge } from '@/components/ui/badge';
 import { ACCENT_COLOR } from '@/constants/theme';
+import { useLanguage } from "@/contexts/LanguageContext";
 import { getCategoryLabelStatic } from '@/hooks/useCategoryLabels';
 import { storage } from '@/services/storage';
 import { FeedItem, FeedItemType } from '@/types';
 import { BadgeCheck, ChevronLeft, ChevronRight, Globe, Play } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useLanguage } from "@/contexts/LanguageContext";
 import React, { useCallback, useMemo, useState } from 'react';
 
 interface FeedCardProps {
@@ -282,10 +282,10 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
               ) : null}
             </div>
 
-            {/* Description */}
-            {item.description && (
+            {/* Description or Bio */}
+            {(item.description || item.pro.bio) && (
               <p className="text-sm text-neutral-500 dark:text-neutral-400 line-clamp-2 mb-4 leading-relaxed">
-                {item.description}
+                {item.description || item.pro.bio}
               </p>
             )}
 

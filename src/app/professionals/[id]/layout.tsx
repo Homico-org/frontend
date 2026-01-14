@@ -93,7 +93,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const description = descriptionParts.length > 0
     ? descriptionParts.join(' | ')
-    : (profile.description ? profile.description.slice(0, 160) : `${profile.name} - პროფესიონალი Homico-ზე`);
+    : (profile.bio ? profile.bio.slice(0, 160) : `${profile.name} - პროფესიონალი Homico-ზე`);
 
   // Use avatar for OG image, with absolute URL
   const avatarUrl = getImageUrl(profile.avatar, true);

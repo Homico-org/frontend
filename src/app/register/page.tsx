@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRegistration } from '@/components/register/hooks';
@@ -8,20 +8,12 @@ import { StepAccount } from '@/components/register/steps';
 import UserTypeSelector from '@/components/register/UserTypeSelector';
 import ProRegistration from '@/components/register/ProRegistration';
 import LanguageSelector from '@/components/common/LanguageSelector';
-import Select from '@/components/common/Select';
 import { OTPInput } from '@/components/ui/OTPInput';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { countries, CountryCode, useLanguage } from '@/contexts/LanguageContext';
-
-// Generate country options for Select component
-const countryOptions = Object.entries(countries).map(([code, data]) => ({
-  value: code,
-  label: `${data.flag} ${data.phonePrefix}`,
-  description: data.name,
-}));
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Logo component
 function Logo({ className = '' }: { className?: string }) {
@@ -89,112 +81,6 @@ function RegisterContent() {
     );
   }
 
-  // Google Phone Verification - need to collect phone number
-  if (reg.showGooglePhoneVerification && !reg.showVerification) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAFAF9] px-4">
-        <Card className="w-full max-w-md p-6">
-          <div className="text-center mb-6">
-            {reg.googleUser?.picture && (
-              <img 
-                src={reg.googleUser.picture} 
-                alt="" 
-                className="w-16 h-16 rounded-full mx-auto mb-4 border-2 border-[#C4735B]"
-              />
-            )}
-            <h2 className="text-xl font-bold text-neutral-900 mb-1">
-              {t('register.almostThere')}
-            </h2>
-            <p className="text-sm text-neutral-500">
-              {reg.locale === 'ka' 
-                ? `გამარჯობა ${reg.googleUser?.name}! გთხოვთ დაამატოთ ტელეფონის ნომერი`
-                : `Hi ${reg.googleUser?.name}! Please add your phone number`
-              }
-            </p>
-          </div>
-
-          {reg.error && (
-            <Alert variant="error" size="sm" className="mb-4">
-              {reg.error}
-            </Alert>
-          )}
-
-          {/* Phone input */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                {t('register.phoneNumber')}
-              </label>
-              <div className="flex gap-2">
-                <div className="w-32 flex-shrink-0">
-                  <Select
-                    options={countryOptions}
-                    value={reg.phoneCountry}
-                    onChange={(value) => reg.setPhoneCountry(value as CountryCode)}
-                    size="md"
-                  />
-                </div>
-                <input
-                  type="tel"
-                  value={reg.formData.phone}
-                  onChange={(e) => reg.handleInputChange('phone', e.target.value.replace(/\D/g, ''))}
-                  placeholder={countries[reg.phoneCountry]?.placeholder || '5XX XXX XXX'}
-                  className="flex-1 px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-[#C4735B]/50 focus:border-[#C4735B] outline-none transition-all"
-                />
-              </div>
-            </div>
-
-            {/* Verification channel */}
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => reg.setVerificationChannel('sms')}
-                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                  reg.verificationChannel === 'sms'
-                    ? 'bg-[#C4735B] text-white'
-                    : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-                }`}
-              >
-                SMS
-              </button>
-              <button
-                type="button"
-                onClick={() => reg.setVerificationChannel('whatsapp')}
-                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                  reg.verificationChannel === 'whatsapp'
-                    ? 'bg-[#25D366] text-white'
-                    : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-                }`}
-              >
-                WhatsApp
-              </button>
-            </div>
-
-            <Button
-              className="w-full"
-              onClick={reg.handleGooglePhoneSubmit}
-              disabled={reg.isLoading || !reg.formData.phone || reg.formData.phone.length < 9}
-              loading={reg.isLoading}
-            >
-              {t('register.sendCode')}
-            </Button>
-
-            <Button
-              variant="ghost"
-              className="w-full"
-              onClick={() => {
-                reg.setShowGooglePhoneVerification(false);
-                reg.setGoogleUser(null);
-              }}
-            >
-              {t('common.back')}
-            </Button>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
   // OTP Verification overlay
   if (reg.showVerification) {
     return (
@@ -220,7 +106,7 @@ function RegisterContent() {
             length={4}
             value={reg.phoneOtp.join('')}
             onChange={(value) => reg.setPhoneOtp(value.split(''))}
-            onComplete={(code) => reg.googleUser ? reg.verifyGoogleOtp(code) : reg.verifyOtp(code)}
+            onComplete={(code) => reg.verifyOtp(code)}
           />
           
           <div className="mt-4 flex items-center justify-center gap-2">
@@ -297,8 +183,6 @@ function RegisterContent() {
               avatarInputRef={{ current: null }}
               handleAvatarSelect={() => {}}
               removeAvatar={() => {}}
-              handleGoogleSuccess={reg.handleGoogleSuccess}
-              handleGoogleError={reg.handleGoogleError}
               canProceed={reg.canProceedFromAccount()}
               onNext={reg.handleNext}
               onSwitchType={() => reg.setShowTypeSelection(true)}
