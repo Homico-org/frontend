@@ -6,6 +6,7 @@ interface ProProfile {
   name: string;
   title: string;
   avatar?: string;
+  bio?: string;
   description?: string;
   avgRating?: number;
   totalReviews?: number;

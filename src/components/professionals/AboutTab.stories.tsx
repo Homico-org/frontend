@@ -51,7 +51,7 @@ const mockGetSubcategoryLabel = (key: string) => {
 
 export const Default: Story = {
   args: {
-    description: 'Experienced professional with over 10 years in home renovation. Specializing in kitchen and bathroom remodeling, I take pride in delivering high-quality work that exceeds client expectations. Every project is treated with care and attention to detail.',
+    bio: 'Experienced professional with over 10 years in home renovation. Specializing in kitchen and bathroom remodeling, I take pride in delivering high-quality work that exceeds client expectations. Every project is treated with care and attention to detail.',
     customServices: ['Kitchen Remodeling', 'Bathroom Renovation', 'Custom Cabinetry', 'Tile Work'],
     groupedServices: mockGroupedServices,
     getCategoryLabel: mockGetCategoryLabel,
@@ -68,7 +68,7 @@ export const Default: Story = {
 
 export const MinimalInfo: Story = {
   args: {
-    description: 'Professional handyman offering various home repair services.',
+    bio: 'Professional handyman offering various home repair services.',
     groupedServices: {},
     getCategoryLabel: mockGetCategoryLabel,
     getSubcategoryLabel: mockGetSubcategoryLabel,
@@ -85,7 +85,7 @@ export const MinimalInfo: Story = {
 
 export const WithServicesOnly: Story = {
   args: {
-    description: 'Expert electrician with 15 years of experience.',
+    bio: 'Expert electrician with 15 years of experience.',
     customServices: ['Electrical Wiring', 'Panel Upgrades', 'Smart Home Installation'],
     groupedServices: mockGroupedServices,
     getCategoryLabel: mockGetCategoryLabel,
@@ -103,7 +103,7 @@ export const WithServicesOnly: Story = {
 
 export const GeorgianLocale: Story = {
   args: {
-    description: 'გამოცდილი პროფესიონალი 10 წელზე მეტი გამოცდილებით სახლის რემონტში. სპეციალიზირებული სამზარეულოს და აბაზანის რემონტში.',
+    bio: 'გამოცდილი პროფესიონალი 10 წელზე მეტი გამოცდილებით სახლის რემონტში. სპეციალიზირებული სამზარეულოს და აბაზანის რემონტში.',
     customServices: ['სამზარეულოს რემონტი', 'აბაზანის რემონტი', 'ფილების დაგება'],
     groupedServices: {
       renovation: ['painting', 'flooring'],

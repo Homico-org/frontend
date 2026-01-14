@@ -33,7 +33,14 @@ interface LocationPickerProps {
   placeholder?: string;
 }
 
-// Types declared in src/types/google.d.ts
+// Extend window with google maps types
+declare global {
+  interface Window {
+    google?: {
+      maps: GoogleMapsType;
+    };
+  }
+}
 
 export default function LocationPicker({ value, onChange, placeholder = 'Enter address' }: LocationPickerProps) {
   const { t } = useLanguage();

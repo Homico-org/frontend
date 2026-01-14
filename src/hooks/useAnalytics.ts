@@ -3,6 +3,13 @@
 import { UserRole } from '@/types';
 import { useCallback } from 'react';
 
+// Extend window for Google Tag Manager dataLayer
+declare global {
+  interface Window {
+    dataLayer?: Record<string, unknown>[];
+  }
+}
+
 // Event names enum for type safety
 export enum AnalyticsEvent {
   // Auth events
