@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Local type definitions for Google Maps API
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
