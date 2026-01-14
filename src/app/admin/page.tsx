@@ -833,7 +833,7 @@ function AdminDashboardPageContent() {
                   const msg = getActivityMessage(activity);
                   return (
                     <div
-                      key={i}
+                      key={`activity-${i}-${activity.type}-${activity.date}`}
                       className="px-6 py-3 flex items-center gap-4 transition-colors"
                       style={{
                         borderBottom: i < 11 ? `1px solid ${THEME.border}` : 'none',

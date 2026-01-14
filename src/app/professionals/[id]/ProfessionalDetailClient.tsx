@@ -133,21 +133,45 @@ export default function ProfessionalDetailClient() {
   } | null>(null);
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Name editing state
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState('');
+  
+  // Title/tagline editing state
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState('');
 
   // Check if current user is viewing their own profile
   const isOwner = user?.id === profile?.id;
 
   useEffect(() => {
     setIsVisible(true);
+    // Show floating button immediately on mobile for visitors
+    const isMobile = window.innerWidth < 1024;
+    if (isMobile && !isOwner) {
+      setShowFloatingButton(true);
+    }
+    
     const handleScroll = () => {
       if (heroRef.current) {
         const heroBottom = heroRef.current.getBoundingClientRect().bottom;
-        setShowFloatingButton(heroBottom < 100);
+        // On mobile, always show for visitors; on desktop, show after hero is scrolled
+        const isMobileNow = window.innerWidth < 1024;
+        if (isMobileNow && !isOwner) {
+          setShowFloatingButton(true);
+        } else {
+          setShowFloatingButton(heroBottom < 100);
+        }
       }
     };
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    window.addEventListener("resize", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, [isOwner]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -287,6 +311,45 @@ export default function ProfessionalDetailClient() {
   };
 
   // === OWNER CRUD FUNCTIONS ===
+  const handleSaveName = async () => {
+    if (!isOwner || !profile || !editedName.trim()) return;
+    if (editedName.trim() === profile.name) {
+      setIsEditingName(false);
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await api.patch('/users/me', { name: editedName.trim() });
+      setProfile(prev => prev ? { ...prev, name: editedName.trim() } : prev);
+      setIsEditingName(false);
+      toast.success(t('professional.savedSuccessfully'));
+    } catch (err) {
+      toast.error(t('professional.failedToSave'));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveTitle = async () => {
+    if (!isOwner || !profile) return;
+    const newTitle = editedTitle.trim();
+    if (newTitle === (profile.title || '')) {
+      setIsEditingTitle(false);
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await api.patch('/users/me/pro-profile', { title: newTitle || null });
+      setProfile(prev => prev ? { ...prev, title: newTitle || undefined } : prev);
+      setIsEditingTitle(false);
+      toast.success(t('professional.savedSuccessfully'));
+    } catch (err) {
+      toast.error(t('professional.failedToSave'));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleSaveAbout = async (data: { description: string }) => {
     if (!isOwner || !profile) return;
     setIsSaving(true);
@@ -906,12 +969,112 @@ export default function ProfessionalDetailClient() {
 
               {/* Info */}
               <div className="flex-1 text-center sm:text-left min-w-0">
-                <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white truncate">
-                  {profile.name}
-                </h1>
-                <p className="text-sm sm:text-base text-[#C4735B] font-medium mb-2 truncate">
-                  {profile.title}
-                </p>
+                {isOwner && isEditingName ? (
+                  <div className="flex items-center gap-2 mb-1">
+                    <Input
+                      value={editedName}
+                      onChange={(e) => setEditedName(e.target.value)}
+                      className="text-xl font-bold max-w-[200px]"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveName();
+                        if (e.key === 'Escape') setIsEditingName(false);
+                      }}
+                    />
+                    <Button
+                      size="sm"
+                      onClick={handleSaveName}
+                      disabled={isSaving || !editedName.trim()}
+                    >
+                      <Check className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setIsEditingName(false)}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center sm:justify-start gap-2">
+                    <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white truncate">
+                      {profile.name}
+                    </h1>
+                    {isOwner && (
+                      <button
+                        onClick={() => {
+                          setEditedName(profile.name);
+                          setIsEditingName(true);
+                        }}
+                        className="p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                        title={t('common.edit')}
+                      >
+                        <Edit3 className="w-4 h-4 text-neutral-500" />
+                      </button>
+                    )}
+                  </div>
+                )}
+                {/* Title/Tagline - only show if user has explicitly set one, hide old category-based titles */}
+                {isOwner ? (
+                  isEditingTitle ? (
+                    <div className="flex items-center gap-2 mb-2">
+                      <Input
+                        value={editedTitle}
+                        onChange={(e) => setEditedTitle(e.target.value)}
+                        placeholder={t('professional.addTagline')}
+                        className="text-sm max-w-[250px]"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSaveTitle();
+                          if (e.key === 'Escape') setIsEditingTitle(false);
+                        }}
+                      />
+                      <Button
+                        size="sm"
+                        onClick={handleSaveTitle}
+                        disabled={isSaving}
+                      >
+                        <Check className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setIsEditingTitle(false)}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
+                      {profile.title ? (
+                        <p className="text-sm sm:text-base text-[#C4735B] font-medium truncate">
+                          {profile.title}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-neutral-400 italic">
+                          {t('professional.addTagline')}
+                        </p>
+                      )}
+                      <button
+                        onClick={() => {
+                          setEditedTitle(profile.title || '');
+                          setIsEditingTitle(true);
+                        }}
+                        className="p-1 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                        title={t('common.edit')}
+                      >
+                        <Edit3 className="w-3.5 h-3.5 text-neutral-400" />
+                      </button>
+                    </div>
+                  )
+                ) : (
+                  profile.title && (
+                    <p className="text-sm sm:text-base text-[#C4735B] font-medium mb-2 truncate">
+                      {profile.title}
+                    </p>
+                  )
+                )}
                 
                 {/* Stats */}
                 <div className="flex items-center justify-center sm:justify-start flex-wrap gap-3 text-xs sm:text-sm">

@@ -5,6 +5,14 @@ import { AccountType, UserRole } from '@/types';
 import { useRouter } from 'next/navigation';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
+interface SelectedService {
+  key: string;
+  categoryKey: string;
+  name: string;
+  nameKa?: string;
+  experience: string;
+}
+
 interface User {
   id: string;
   uid?: number;
@@ -16,6 +24,7 @@ interface User {
   phone?: string;
   selectedCategories?: string[];
   selectedSubcategories?: string[];
+  selectedServices?: SelectedService[];
   accountType?: AccountType;
   companyName?: string;
   isProfileCompleted?: boolean;
@@ -78,6 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         phone: userData.phone,
         selectedCategories: userData.selectedCategories,
         selectedSubcategories: userData.selectedSubcategories,
+        selectedServices: userData.selectedServices,
         accountType: userData.accountType,
         companyName: userData.companyName,
         isProfileCompleted: userData.isProfileCompleted,

@@ -38,6 +38,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 interface PendingPro {
   _id: string;
+  id?: string; // Alternative ID field
   uid?: number;
   name: string;
   email?: string;
@@ -135,7 +136,14 @@ function AdminPendingProsPageContent() {
     }
   }, [isAuthenticated, fetchPendingPros, fetchStats]);
 
+  // Helper to get pro ID (supports both _id and id)
+  const getProId = (pro: PendingPro): string => pro._id || pro.id || '';
+
   const handleApprove = async (proId: string) => {
+    if (!proId) {
+      console.error('Cannot approve: pro ID is undefined');
+      return;
+    }
     try {
       setActionLoading(proId);
       await api.patch(`/admin/pros/${proId}/approve`);
@@ -153,8 +161,9 @@ function AdminPendingProsPageContent() {
     if (!rejectModalPro || !rejectReason.trim()) return;
     
     try {
-      setActionLoading(rejectModalPro._id);
-      await api.patch(`/admin/pros/${rejectModalPro._id}/reject`, {
+      const proId = getProId(rejectModalPro);
+      setActionLoading(proId);
+      await api.patch(`/admin/pros/${proId}/reject`, {
         reason: rejectReason,
       });
       fetchPendingPros();
@@ -370,7 +379,7 @@ function AdminPendingProsPageContent() {
             <div>
               {pros.map((pro, index) => (
                 <div
-                  key={pro._id}
+                  key={getProId(pro)}
                   className="p-4 transition-colors cursor-pointer"
                   style={{ 
                     borderBottom: index < pros.length - 1 ? `1px solid ${THEME.border}` : 'none',
@@ -429,7 +438,7 @@ function AdminPendingProsPageContent() {
                       <div className="flex flex-wrap gap-1.5 mt-2">
                         {(pro.selectedServices?.slice(0, 3) || []).map((service, i) => (
                           <span
-                            key={i}
+                            key={`service-${i}-${service.key}`}
                             className="px-2 py-0.5 rounded-full text-xs font-medium"
                             style={{ background: `${THEME.primary}20`, color: THEME.primary }}
                           >
@@ -446,7 +455,7 @@ function AdminPendingProsPageContent() {
                         )}
                         {!pro.selectedServices?.length && (pro.selectedSubcategories?.slice(0, 3) || []).map((sub, i) => (
                           <span
-                            key={i}
+                            key={`subcategory-${i}-${sub}`}
                             className="px-2 py-0.5 rounded-full text-xs font-medium"
                             style={{ background: `${THEME.primary}20`, color: THEME.primary }}
                           >
@@ -465,7 +474,7 @@ function AdminPendingProsPageContent() {
                               e.stopPropagation();
                               setRejectModalPro(pro);
                             }}
-                            disabled={actionLoading === pro._id}
+                            disabled={actionLoading === getProId(pro)}
                             style={{ borderColor: THEME.error, color: THEME.error }}
                           >
                             <XCircle className="w-4 h-4 mr-1" />
@@ -475,9 +484,9 @@ function AdminPendingProsPageContent() {
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleApprove(pro._id);
+                              handleApprove(getProId(pro));
                             }}
-                            disabled={actionLoading === pro._id}
+                            disabled={actionLoading === getProId(pro)}
                             style={{ background: THEME.success, color: '#fff' }}
                           >
                             <CheckCircle className="w-4 h-4 mr-1" />
@@ -486,7 +495,7 @@ function AdminPendingProsPageContent() {
                         </>
                       )}
                       <Link
-                        href={`/professionals/${pro.uid || pro._id}`}
+                        href={`/professionals/${pro.uid || getProId(pro)}`}
                         target="_blank"
                         onClick={(e) => e.stopPropagation()}
                         className="p-2 rounded-lg"
@@ -629,7 +638,7 @@ function AdminPendingProsPageContent() {
                   <div className="flex flex-wrap gap-2">
                     {selectedPro.selectedServices.map((service, i) => (
                       <span
-                        key={i}
+                        key={`service-${i}-${service.key}`}
                         className="px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2"
                         style={{ background: `${THEME.primary}20`, color: THEME.primary }}
                       >
@@ -652,7 +661,7 @@ function AdminPendingProsPageContent() {
                   <div className="flex flex-wrap gap-2">
                     {selectedPro.selectedCategories.map((cat, i) => (
                       <span
-                        key={i}
+                        key={`category-${i}-${cat}`}
                         className="px-3 py-1 rounded-full text-sm"
                         style={{ background: THEME.surface, color: THEME.text }}
                       >
@@ -672,7 +681,7 @@ function AdminPendingProsPageContent() {
                   <div className="grid grid-cols-3 gap-2">
                     {selectedPro.portfolioProjects.slice(0, 6).map((project, i) => (
                       <div 
-                        key={i} 
+                        key={`project-${i}-${project.title}`} 
                         className="aspect-square rounded-lg overflow-hidden relative"
                         style={{ background: THEME.surface }}
                       >
@@ -716,7 +725,7 @@ function AdminPendingProsPageContent() {
                 style={{ borderTop: `1px solid ${THEME.border}` }}
               >
                 <Link
-                  href={`/professionals/${selectedPro.uid || selectedPro._id}`}
+                  href={`/professionals/${selectedPro.uid || getProId(selectedPro)}`}
                   target="_blank"
                   className="flex-1"
                 >
@@ -732,7 +741,7 @@ function AdminPendingProsPageContent() {
                       onClick={() => {
                         setRejectModalPro(selectedPro);
                       }}
-                      disabled={actionLoading === selectedPro._id}
+                      disabled={actionLoading === getProId(selectedPro)}
                       className="flex-1"
                       style={{ borderColor: THEME.error, color: THEME.error }}
                     >
@@ -740,8 +749,8 @@ function AdminPendingProsPageContent() {
                       {locale === 'ka' ? 'უარყოფა' : 'Reject'}
                     </Button>
                     <Button
-                      onClick={() => handleApprove(selectedPro._id)}
-                      disabled={actionLoading === selectedPro._id}
+                      onClick={() => handleApprove(getProId(selectedPro))}
+                      disabled={actionLoading === getProId(selectedPro)}
                       className="flex-1"
                       style={{ background: THEME.success, color: '#fff' }}
                     >
@@ -808,7 +817,7 @@ function AdminPendingProsPageContent() {
                 </Button>
                 <Button
                   onClick={handleReject}
-                  disabled={!rejectReason.trim() || actionLoading === rejectModalPro._id}
+                  disabled={!rejectReason.trim() || actionLoading === getProId(rejectModalPro)}
                   className="flex-1"
                   style={{ background: THEME.error, color: '#fff' }}
                 >
