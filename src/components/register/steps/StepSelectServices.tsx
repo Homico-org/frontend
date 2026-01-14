@@ -74,7 +74,7 @@ export default function StepSelectServices({
 
   // Filter services by search
   const filteredServices = useMemo(() => {
-    if (!searchQuery.trim()) return allServices.slice(0, 50); // Show first 50 by default
+    if (!searchQuery.trim()) return allServices;
     
     const query = searchQuery.toLowerCase();
     return allServices.filter(
@@ -82,8 +82,22 @@ export default function StepSelectServices({
            s.nameKa.toLowerCase().includes(query) ||
            s.categoryName.toLowerCase().includes(query) ||
            s.categoryNameKa.toLowerCase().includes(query)
-    ).slice(0, 50);
+    );
   }, [allServices, searchQuery]);
+
+  // Group services by category
+  const groupedServices = useMemo(() => {
+    const groups: Record<string, typeof filteredServices> = {};
+    
+    filteredServices.forEach(service => {
+      if (!groups[service.categoryKey]) {
+        groups[service.categoryKey] = [];
+      }
+      groups[service.categoryKey].push(service);
+    });
+    
+    return groups;
+  }, [filteredServices]);
 
   const isSelected = (key: string) => selectedServices.some(s => s.key === key);
 
@@ -209,8 +223,8 @@ export default function StepSelectServices({
         />
       </div>
 
-      {/* Services List */}
-      <div className="max-h-[300px] overflow-y-auto rounded-2xl border border-neutral-200 divide-y divide-neutral-100">
+      {/* Services List - Grouped by Category */}
+      <div className="max-h-[350px] overflow-y-auto rounded-2xl border border-neutral-200">
         {categoriesLoading ? (
           <div className="py-8 text-center">
             <div className="inline-block w-6 h-6 border-2 border-[#C4735B] border-t-transparent rounded-full animate-spin" />
@@ -221,32 +235,43 @@ export default function StepSelectServices({
             {t('common.noResults')}
           </div>
         ) : (
-          filteredServices.map(service => {
-            const selected = isSelected(service.key);
+          Object.entries(groupedServices).map(([categoryKey, services]) => {
+            const categoryName = locale === 'ka' ? services[0].categoryNameKa : services[0].categoryName;
             return (
-              <button
-                key={service.key}
-                onClick={() => toggleService(service)}
-                className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors ${
-                  selected ? 'bg-[#C4735B]/5' : 'hover:bg-neutral-50'
-                }`}
-              >
-                <div>
-                  <p className={`font-medium ${selected ? 'text-[#C4735B]' : 'text-neutral-900'}`}>
-                    {locale === 'ka' ? service.nameKa : service.name}
-                  </p>
-                  <p className="text-xs text-neutral-400">
-                    {locale === 'ka' ? service.categoryNameKa : service.categoryName}
+              <div key={categoryKey}>
+                {/* Category Header */}
+                <div className="sticky top-0 px-4 py-2 bg-neutral-100 border-b border-neutral-200">
+                  <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                    {categoryName}
                   </p>
                 </div>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                  selected 
-                    ? 'border-[#C4735B] bg-[#C4735B]' 
-                    : 'border-neutral-300'
-                }`}>
-                  {selected && <Check className="w-4 h-4 text-white" />}
+                {/* Services in this category */}
+                <div className="divide-y divide-neutral-100">
+                  {services.map(service => {
+                    const selected = isSelected(service.key);
+                    return (
+                      <button
+                        key={service.key}
+                        onClick={() => toggleService(service)}
+                        className={`w-full flex items-center justify-between px-4 py-2.5 text-left transition-colors ${
+                          selected ? 'bg-[#C4735B]/5' : 'hover:bg-neutral-50'
+                        }`}
+                      >
+                        <p className={`text-sm font-medium ${selected ? 'text-[#C4735B]' : 'text-neutral-900'}`}>
+                          {locale === 'ka' ? service.nameKa : service.name}
+                        </p>
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                          selected 
+                            ? 'border-[#C4735B] bg-[#C4735B]' 
+                            : 'border-neutral-300'
+                        }`}>
+                          {selected && <Check className="w-3 h-3 text-white" />}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
-              </button>
+              </div>
             );
           })
         )}

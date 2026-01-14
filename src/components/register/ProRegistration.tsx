@@ -176,7 +176,7 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
               <button
                 onClick={reg.handleNext}
                 disabled={reg.selectedServices.length === 0 || reg.isLoading}
-                className="w-full py-3.5 rounded-xl font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-[#C4735B] hover:bg-[#A85D47] active:scale-[0.98]"
+                className="w-full max-w-xs mx-auto block py-2.5 rounded-xl font-medium text-sm text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-[#C4735B] hover:bg-[#A85D47] active:scale-[0.98]"
               >
                 {reg.isLoading ? (
                   <span className="flex items-center justify-center gap-2">

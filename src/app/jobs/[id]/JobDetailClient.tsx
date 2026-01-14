@@ -60,6 +60,7 @@ import {
   Hammer,
   History,
   Home,
+  ImageIcon,
   Layers,
   Map,
   MapPin,
@@ -83,7 +84,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -722,11 +723,11 @@ export default function JobDetailClient() {
   const [isPollsExpanded, setIsPollsExpanded] = useState(true);
   const [isResourcesExpanded, setIsResourcesExpanded] = useState(true);
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
-
+  
   // Sidebar navigation state for hired projects
   const [activeSidebarTab, setActiveSidebarTab] =
     useState<ProjectSidebarTab>("details");
-
+  
   // Unread counts for sidebar badges
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [unreadPollsCount, setUnreadPollsCount] = useState(0);
@@ -799,7 +800,7 @@ export default function JobDetailClient() {
   const [showDescriptionEdit, setShowDescriptionEdit] = useState(false);
   const [editDescription, setEditDescription] = useState("");
   const [isSavingDescription, setIsSavingDescription] = useState(false);
-
+  
   // Property details inline edit
   const [showPropertyEdit, setShowPropertyEdit] = useState(false);
   const [editPropertyData, setEditPropertyData] = useState({
@@ -815,12 +816,12 @@ export default function JobDetailClient() {
     deadline: "",
   });
   const [isSavingProperty, setIsSavingProperty] = useState(false);
-
+  
   // Work types inline edit
   const [showWorkTypesEdit, setShowWorkTypesEdit] = useState(false);
   const [editWorkTypes, setEditWorkTypes] = useState<string[]>([]);
   const [isSavingWorkTypes, setIsSavingWorkTypes] = useState(false);
-
+  
   // Requirements inline edit
   const [showRequirementsEdit, setShowRequirementsEdit] = useState(false);
   const [editRequirements, setEditRequirements] = useState({
@@ -830,7 +831,7 @@ export default function JobDetailClient() {
     occupiedDuringWork: false,
   });
   const [isSavingRequirements, setIsSavingRequirements] = useState(false);
-
+  
   // Title inline edit
   const [showTitleEdit, setShowTitleEdit] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -838,7 +839,7 @@ export default function JobDetailClient() {
 
   const isOwner = user && job?.clientId && user.id === job.clientId.id;
   const isPro = user?.role === "pro" || user?.role === "admin";
-
+  
   // Check if current user is the hired pro for this job
   // hiredPro structure can vary:
   // - hiredPro.id is the pro's user ID at top level
@@ -846,13 +847,13 @@ export default function JobDetailClient() {
   // - After _id->id transform, it might be in different places
   const getHiredProUserId = (): string | null => {
     if (!job?.hiredPro) return null;
-
-    const hiredPro = job.hiredPro as {
-      userId?: string | { id?: string; _id?: string };
+    
+    const hiredPro = job.hiredPro as { 
+      userId?: string | { id?: string; _id?: string }; 
       id?: string;
       _id?: string;
     };
-
+    
     // Try top-level id first
     if (hiredPro.id) return hiredPro.id;
     if (hiredPro._id) return hiredPro._id;
@@ -864,7 +865,7 @@ export default function JobDetailClient() {
         return hiredPro.userId.id || hiredPro.userId._id || null;
       }
     }
-
+    
     return null;
   };
   const hiredProUserId = getHiredProUserId();
@@ -926,9 +927,9 @@ export default function JobDetailClient() {
     socketRef.current.on(
       "projectStageUpdate",
       (data: { jobId: string; stage: string; progress: number }) => {
-        if (data.jobId === job.id) {
-          setProjectStage(data.stage as ProjectStage);
-        }
+      if (data.jobId === job.id) {
+        setProjectStage(data.stage as ProjectStage);
+      }
       }
     );
 
@@ -936,8 +937,8 @@ export default function JobDetailClient() {
     socketRef.current.on(
       "projectPollUpdate",
       (data: { type: string; poll: Record<string, unknown> }) => {
-        console.log("[JobDetail] Poll update:", data);
-        // PollsTab component handles its own state, this is just for logging
+      console.log("[JobDetail] Poll update:", data);
+      // PollsTab component handles its own state, this is just for logging
       }
     );
 
@@ -973,7 +974,7 @@ export default function JobDetailClient() {
   }, [isOwner, user, job?.id, job?.status]);
 
   // Fetch history when expanded and not loaded yet
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     if (!job?.id) return;
     try {
       setIsLoadingHistory(true);
@@ -985,7 +986,7 @@ export default function JobDetailClient() {
     } finally {
       setIsLoadingHistory(false);
     }
-  };
+  }, [job?.id]);
 
   useEffect(() => {
     const jobIsHired =
@@ -1005,6 +1006,7 @@ export default function JobDetailClient() {
     job?.status,
     job?.hiredPro,
     job?.id,
+    fetchHistory,
   ]);
 
   // Helper to get event icon and color
@@ -1221,7 +1223,7 @@ export default function JobDetailClient() {
 
   const filteredHistory =
     historyFilter === "all"
-      ? historyEvents
+    ? historyEvents
       : historyEvents.filter((e) => e.userRole === historyFilter);
 
   // Submit review handler (and optionally confirm completion)
@@ -1239,8 +1241,8 @@ export default function JobDetailClient() {
       (typeof hiredProUser === "object"
         ? hiredProUser?.id || hiredProUser?._id
         : hiredProUser) ||
-      job.hiredPro?.id ||
-      projectProId || // Fallback to project tracking proId
+                  job.hiredPro?.id ||
+                  projectProId || // Fallback to project tracking proId
       "";
 
     // Validate proId
@@ -1268,7 +1270,7 @@ export default function JobDetailClient() {
 
       // Then submit review
       await api.post("/reviews", reviewData);
-
+      
       setShowReviewModal(false);
       setIsCompletionFlow(false);
       setHasSubmittedReview(true);
@@ -1299,7 +1301,7 @@ export default function JobDetailClient() {
         setIsCompletionFlow(false);
       } else {
         setError(t("jobDetail.failedToSubmitReview"));
-        setTimeout(() => setError(""), 3000);
+      setTimeout(() => setError(""), 3000);
       }
     } finally {
       setIsSubmittingReview(false);
@@ -1328,7 +1330,7 @@ export default function JobDetailClient() {
     if (params.id) {
       fetchJob();
     }
-  }, [params.id, router]);
+  }, [params.id, router, trackEvent]);
 
   useEffect(() => {
     const fetchMyProposal = async () => {
@@ -1417,13 +1419,13 @@ export default function JobDetailClient() {
           setIsClientConfirmed(
             !!project.clientConfirmedAt || isLegacyCompleted
           );
-
+          
           // Store pro ID from project tracking as fallback
           if (project.proId) {
             const proIdValue =
               typeof project.proId === "object"
                 ? project.proId._id || project.proId.id
-                : project.proId;
+              : project.proId;
             setProjectProId(proIdValue);
           }
         }
@@ -1460,7 +1462,7 @@ export default function JobDetailClient() {
   // Clear unread counts when switching tabs
   useEffect(() => {
     if (!job?.id) return;
-
+    
     if (activeSidebarTab === "chat" && unreadChatCount > 0) {
       api.post(`/jobs/projects/${job.id}/messages/read`).catch(() => {});
       setUnreadChatCount(0);
@@ -1505,7 +1507,7 @@ export default function JobDetailClient() {
     if (!job?.id || !isOwner) return;
     // Open review modal in completion flow mode
     setIsCompletionFlow(true);
-    setShowReviewModal(true);
+      setShowReviewModal(true);
   };
 
   // Handle client request changes
@@ -1540,13 +1542,13 @@ export default function JobDetailClient() {
 
     try {
       const response = await api.post(`/jobs/${params.id}/proposals`, {
-        ...proposalData,
-        proposedPrice: proposalData.proposedPrice
-          ? parseFloat(proposalData.proposedPrice)
-          : undefined,
-        estimatedDuration: proposalData.estimatedDuration
-          ? parseInt(proposalData.estimatedDuration)
-          : undefined,
+            ...proposalData,
+            proposedPrice: proposalData.proposedPrice
+              ? parseFloat(proposalData.proposedPrice)
+              : undefined,
+            estimatedDuration: proposalData.estimatedDuration
+              ? parseInt(proposalData.estimatedDuration)
+              : undefined,
       });
 
       setSuccess(t("jobDetail.proposalSubmittedSuccessfully"));
@@ -1607,10 +1609,17 @@ export default function JobDetailClient() {
     if (!job?.id) return;
     setIsSavingDescription(true);
     try {
-      await api.put(`/jobs/${job.id}`, { description: editDescription });
-      setJob((prev) =>
-        prev ? { ...prev, description: editDescription } : prev
-      );
+      const res = await api.put(`/jobs/${job.id}`, {
+        description: editDescription,
+      });
+      // Always prefer the server-returned job (it may normalize/derive fields)
+      if (res?.data) {
+        setJob(res.data);
+      } else {
+        setJob((prev) =>
+          prev ? { ...prev, description: editDescription } : prev
+        );
+      }
       setShowDescriptionEdit(false);
       toast.success(t("jobDetail.saved"));
     } catch (err) {
@@ -1625,8 +1634,12 @@ export default function JobDetailClient() {
     if (!job?.id || !editTitle.trim()) return;
     setIsSavingTitle(true);
     try {
-      await api.put(`/jobs/${job.id}`, { title: editTitle });
-      setJob((prev) => (prev ? { ...prev, title: editTitle } : prev));
+      const res = await api.put(`/jobs/${job.id}`, { title: editTitle });
+      if (res?.data) {
+        setJob(res.data);
+      } else {
+        setJob((prev) => (prev ? { ...prev, title: editTitle } : prev));
+      }
       setShowTitleEdit(false);
       toast.success(locale === "ka" ? "შენახულია" : "Saved");
     } catch (err) {
@@ -1658,20 +1671,26 @@ export default function JobDetailClient() {
         updateData.floorCount = Number(editPropertyData.floorCount);
       if (editPropertyData.pointsCount)
         updateData.pointsCount = Number(editPropertyData.pointsCount);
-      if (editPropertyData.cadastralId)
-        updateData.cadastralId = editPropertyData.cadastralId;
+      // Allow clearing cadastralId: empty string => send null => backend will $unset it
+      updateData.cadastralId = editPropertyData.cadastralId?.trim()
+        ? editPropertyData.cadastralId.trim()
+        : null;
       if (editPropertyData.deadline)
         updateData.deadline = editPropertyData.deadline;
-
-      await api.put(`/jobs/${job.id}`, updateData);
-      setJob((prev) =>
-        prev
-          ? ({
-              ...prev,
-              ...updateData,
-            } as PageJob)
-          : prev
-      );
+      
+      const res = await api.put(`/jobs/${job.id}`, updateData);
+      if (res?.data) {
+        setJob(res.data);
+      } else {
+        setJob((prev) =>
+          prev
+            ? ({
+                ...prev,
+                ...updateData,
+              } as PageJob)
+            : prev
+        );
+      }
       setShowPropertyEdit(false);
       toast.success(locale === "ka" ? "შენახულია" : "Saved");
     } catch (err) {
@@ -1686,8 +1705,12 @@ export default function JobDetailClient() {
     if (!job?.id) return;
     setIsSavingWorkTypes(true);
     try {
-      await api.put(`/jobs/${job.id}`, { workTypes: editWorkTypes });
-      setJob((prev) => (prev ? { ...prev, workTypes: editWorkTypes } : prev));
+      const res = await api.put(`/jobs/${job.id}`, { workTypes: editWorkTypes });
+      if (res?.data) {
+        setJob(res.data);
+      } else {
+        setJob((prev) => (prev ? { ...prev, workTypes: editWorkTypes } : prev));
+      }
       setShowWorkTypesEdit(false);
       toast.success(locale === "ka" ? "შენახულია" : "Saved");
     } catch (err) {
@@ -1702,8 +1725,12 @@ export default function JobDetailClient() {
     if (!job?.id) return;
     setIsSavingRequirements(true);
     try {
-      await api.put(`/jobs/${job.id}`, editRequirements);
-      setJob((prev) => (prev ? { ...prev, ...editRequirements } : prev));
+      const res = await api.put(`/jobs/${job.id}`, editRequirements);
+      if (res?.data) {
+        setJob(res.data);
+      } else {
+        setJob((prev) => (prev ? { ...prev, ...editRequirements } : prev));
+      }
       setShowRequirementsEdit(false);
       toast.success(locale === "ka" ? "შენახულია" : "Saved");
     } catch (err) {
@@ -1824,14 +1851,11 @@ export default function JobDetailClient() {
       <Header />
       <HeaderSpacer />
 
-      {/* Compact Header with Side-by-Side Layout */}
-      <section className="relative bg-gradient-to-br from-[#FDF8F5] via-[#FAF5F2] to-[#F8F2EE] dark:from-neutral-900 dark:via-neutral-900 dark:to-neutral-800 border-b border-neutral-200 dark:border-neutral-800 overflow-hidden">
-        {/* Subtle decorative elements */}
-        <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-[#D4846C]/5 blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-[#C4735B]/5 blur-2xl" />
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-3">
+      {/* Header / Hero */}
+      <section className="relative bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-6">
           {/* Back button + Edit/Delete buttons row (only when job is not hired) */}
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-5">
             <BackButton href="/browse/jobs" />
             {isOwner && !isHired && (
               <div className="flex items-center gap-2">
@@ -1870,32 +1894,32 @@ export default function JobDetailClient() {
                     <img
                       src={storage.getFileUrl(allMedia[activeImageIndex]?.url)}
                       alt={job.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="w-full h-full object-cover"
                     />
                     {/* Expand icon */}
                     <div className="absolute top-3 right-3 p-2 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity">
                       <Maximize2 className="w-4 h-4" />
-                    </div>
+        </div>
                     {/* Image count badge */}
-                    {allMedia.length > 1 && (
+        {allMedia.length > 1 && (
                       <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/60 text-white text-xs font-medium backdrop-blur-sm">
                         {activeImageIndex + 1} / {allMedia.length}
-                      </div>
-                    )}
+          </div>
+        )}
                   </button>
 
                   {/* Thumbnail strip */}
-                  {allMedia.length > 1 && (
+        {allMedia.length > 1 && (
                     <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                       {allMedia.map((media, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => setActiveImageIndex(idx)}
+              <button
+                key={idx}
+                onClick={() => setActiveImageIndex(idx)}
                           className={`relative flex-shrink-0 w-16 h-12 md:w-20 md:h-14 rounded-lg overflow-hidden transition-all ${
-                            idx === activeImageIndex
+                  idx === activeImageIndex
                               ? "ring-2 ring-offset-2 ring-offset-white dark:ring-offset-neutral-900"
-                              : "opacity-60 hover:opacity-100"
-                          }`}
+                    : "opacity-60 hover:opacity-100"
+                }`}
                           style={
                             idx === activeImageIndex
                               ? ({
@@ -1903,164 +1927,92 @@ export default function JobDetailClient() {
                                 } as React.CSSProperties)
                               : undefined
                           }
-                        >
-                          <img
-                            src={storage.getFileUrl(media.url)}
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
+              >
+                <img
+                  src={storage.getFileUrl(media.url)}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
                           {media.type === "video" && (
                             <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                               <Play className="w-4 h-4 text-white fill-white" />
                             </div>
                           )}
-                        </button>
-                      ))}
+              </button>
+            ))}
                     </div>
                   )}
                 </>
               ) : (
-                /* No images placeholder - Terracotta with Homico logo */
-                <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden bg-gradient-to-br from-[#D4846C] via-[#C4735B] to-[#A85D4A]">
-                  {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-white/10" />
-
-                  {/* Decorative geometric pattern */}
-                  <div className="absolute inset-0 opacity-[0.07]">
-                    <svg
-                      className="w-full h-full"
-                      viewBox="0 0 100 100"
-                      preserveAspectRatio="xMidYMid slice"
-                    >
-                      <defs>
-                        <pattern
-                          id="homico-grid-detail"
-                          x="0"
-                          y="0"
-                          width="25"
-                          height="25"
-                          patternUnits="userSpaceOnUse"
-                        >
-                          <path
-                            d="M25 0L25 25M0 25L25 25"
-                            stroke="white"
-                            strokeWidth="0.5"
-                            fill="none"
-                          />
-                        </pattern>
-                      </defs>
-                      <rect
-                        width="100"
-                        height="100"
-                        fill="url(#homico-grid-detail)"
-                      />
-                    </svg>
+                /* No images placeholder - clean & professional */
+                <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-2 text-neutral-500 dark:text-neutral-400">
+                    <div className="w-10 h-10 rounded-full bg-white/70 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center">
+                      <ImageIcon className="w-5 h-5" />
                   </div>
-
-                  {/* Centered Homico logomark */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                    <div className="relative">
-                      {/* Soft white glow */}
-                      <div className="absolute inset-0 blur-3xl bg-white/20 rounded-full scale-[2.5]" />
-                      {/* Homico "H" logomark - white on terracotta */}
-                      <svg
-                        className="w-16 h-16 md:w-20 md:h-20 relative drop-shadow-md"
-                        viewBox="0 0 56 60"
-                        fill="none"
-                      >
-                        <rect
-                          x="0"
-                          y="0"
-                          width="10"
-                          height="50"
-                          rx="2"
-                          fill="white"
-                          fillOpacity="0.9"
-                        />
-                        <rect
-                          x="36"
-                          y="0"
-                          width="10"
-                          height="50"
-                          rx="2"
-                          fill="white"
-                          fillOpacity="0.9"
-                        />
-                        <path
-                          d="M10 25 Q23 5 36 25"
-                          stroke="white"
-                          strokeOpacity="0.9"
-                          strokeWidth="10"
-                          fill="none"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                    </div>
-                    <span className="text-xs font-medium text-white/70 tracking-wider uppercase">
-                      {t("common.noPhoto")}
-                    </span>
+                    <span className="text-xs font-medium">{t("common.noPhoto")}</span>
                   </div>
-                </div>
-              )}
+          </div>
+        )}
             </div>
 
             {/* Right: Job Info */}
             <div className="flex flex-col justify-center">
               {/* Status badges */}
               <div className="flex flex-wrap items-center gap-2 mb-3">
-                {isOpen && (
+              {isOpen && (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="text-xs font-semibold">
                       {t("common.active")}
-                    </span>
                   </span>
-                )}
-                {isHired && (
-                  <span
+                </span>
+              )}
+              {isHired && (
+                <span
                     className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full"
                     style={{ backgroundColor: `${ACCENT}20`, color: ACCENT }}
                   >
                     <Check className="w-3 h-3" />
                     <span className="text-xs font-semibold">
                       {t("common.hired")}
-                    </span>
                   </span>
-                )}
-                <span
+                </span>
+              )}
+              <span
                   className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"
                   style={{ backgroundColor: `${ACCENT}10`, color: ACCENT }}
                 >
                   {getCategoryLabel(job.category)}
-                  {job.subcategory && (
-                    <>
+                {job.subcategory && (
+                  <>
                       <span className="opacity-50">/</span>
                       {getCategoryLabel(job.subcategory)}
-                    </>
-                  )}
-                </span>
-              </div>
+                  </>
+                )}
+              </span>
+            </div>
 
-              {/* Title */}
+            {/* Title */}
               <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-neutral-900 dark:text-white mb-4 leading-tight">
-                {job.title}
-              </h1>
+              {job.title}
+            </h1>
 
               {/* Quick stats */}
               <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400 mb-4">
-                {job.location && (
+              {job.location && (
                   <span className="flex items-center gap-1.5">
                     <MapPin className="w-4 h-4" />
                     <span className="truncate max-w-[180px]">
                       {job.location}
                     </span>
-                  </span>
-                )}
+                </span>
+              )}
                 <span className="flex items-center gap-1.5">
                   <Clock className="w-4 h-4" />
-                  {getTimeAgo(job.createdAt)}
-                </span>
-              </div>
+                {getTimeAgo(job.createdAt)}
+              </span>
+            </div>
 
               {/* Budget highlight */}
               <div className="flex items-center gap-3 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 mb-4">
@@ -2071,7 +2023,7 @@ export default function JobDetailClient() {
                   <span className="text-lg" style={{ color: ACCENT }}>
                     ₾
                   </span>
-                </div>
+          </div>
                 <div>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                     {t("common.budget")}
@@ -2079,7 +2031,7 @@ export default function JobDetailClient() {
                   <p className="text-xl font-bold text-neutral-900 dark:text-white">
                     {budgetDisplay}
                   </p>
-                </div>
+        </div>
               </div>
 
               {/* Stats row - hide proposals link when hired */}
@@ -2092,15 +2044,15 @@ export default function JobDetailClient() {
                 </div>
                 {!isHired &&
                   (isOwner ? (
-                    <Link
+                  <Link
                       href={`/my-jobs/${job.id}/proposals`}
                       className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-[#C4735B] transition-colors"
-                    >
+                  >
                       <Users className="w-4 h-4" />
                       <span className="underline underline-offset-2">
                         {job.proposalCount || 0} {t("jobDetail.proposals")}
                       </span>
-                    </Link>
+                  </Link>
                   ) : (
                     <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
                       <Users className="w-4 h-4" />
@@ -2108,7 +2060,7 @@ export default function JobDetailClient() {
                         {job.proposalCount || 0}{" "}
                         {locale === "ka" ? "შეთავაზება" : "proposals"}
                       </span>
-                    </div>
+                </div>
                   ))}
               </div>
 
@@ -2144,20 +2096,20 @@ export default function JobDetailClient() {
             !isHired &&
             !myProposal &&
             !isCheckingProposal && (
-              <div className="flex justify-end mb-4">
+            <div className="flex justify-end mb-4">
                 <Button
                   onClick={() => setShowProposalForm(true)}
                   leftIcon={<Send className="w-4 h-4" />}
                 >
                   {t("jobDetail.submitProposal")}
                 </Button>
-              </div>
-            )}
+            </div>
+          )}
           {isPro && !isOwner && isOpen && !isHired && isCheckingProposal && (
             <div className="flex justify-end mb-4">
-              <div className="flex items-center gap-2 px-6 py-3 rounded-xl font-body text-sm font-semibold text-neutral-400">
-                <LoadingSpinner size="sm" color="#737373" />
-              </div>
+                <div className="flex items-center gap-2 px-6 py-3 rounded-xl font-body text-sm font-semibold text-neutral-400">
+                  <LoadingSpinner size="sm" color="#737373" />
+                </div>
             </div>
           )}
 
@@ -2176,80 +2128,6 @@ export default function JobDetailClient() {
             </div>
           )}
 
-          {/* MVP Mode: Simplified Hired Card */}
-          {isHired && (isOwner || isHiredPro) && (
-            <div className="mb-6 p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/50 dark:border-neutral-800 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-800/50 flex items-center justify-center">
-                  <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-neutral-900 dark:text-white">
-                    {t("common.hired")}
-                  </h3>
-                  <p className="text-sm text-neutral-500">
-                    {isOwner
-                      ? t("jobDetail.youHiredTheProfessional")
-                      : t("jobDetail.theClientHiredYou")}
-                  </p>
-                </div>
-              </div>
-
-              {/* Partner info with phone */}
-              <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/50">
-                <div className="flex items-center gap-3">
-                  <Avatar
-                    src={
-                      isOwner
-                        ? job.hiredPro?.avatar || job.hiredPro?.userId?.avatar
-                        : job.clientId?.avatar
-                    }
-                    name={
-                      isOwner
-                        ? job.hiredPro?.name ||
-                          job.hiredPro?.userId?.name ||
-                          "Professional"
-                        : job.clientId?.name || "Client"
-                    }
-                    size="md"
-                  />
-                  <div>
-                    <p className="font-medium text-neutral-900 dark:text-white">
-                      {isOwner
-                        ? job.hiredPro?.name ||
-                          job.hiredPro?.userId?.name ||
-                          "Professional"
-                        : job.clientId?.name || "Client"}
-                    </p>
-                    <p className="text-xs text-neutral-500">
-                      {isOwner ? t("common.professional") : t("common.client")}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Phone CTA */}
-                {isOwner &&
-                  (job.hiredPro?.phone || job.hiredPro?.userId?.phone) && (
-                    <a
-                      href={`tel:${job.hiredPro?.phone || job.hiredPro?.userId?.phone}`}
-                      className="flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-500 text-white font-semibold text-sm hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/25"
-                    >
-                      <Phone className="w-4 h-4" />
-                      {job.hiredPro?.phone || job.hiredPro?.userId?.phone}
-                    </a>
-                  )}
-                {isHiredPro && job.clientId?.phone && (
-                  <a
-                    href={`tel:${job.clientId.phone}`}
-                    className="flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-500 text-white font-semibold text-sm hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/25"
-                  >
-                    <Phone className="w-4 h-4" />
-                    {job.clientId.phone}
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* Status bar moved to hero section - keeping only sidebar tabs below */}
 
@@ -2270,7 +2148,7 @@ export default function JobDetailClient() {
                     unreadResourcesCount={unreadResourcesCount}
                     isProjectStarted={projectStage !== "hired"}
                   />
-                </div>
+              </div>
               </div>
             )}
             {/* Main Content - min-height prevents layout jumping when switching tabs */}
@@ -2279,122 +2157,122 @@ export default function JobDetailClient() {
               {isHired &&
                 (isOwner || isHiredPro) &&
                 activeSidebarTab === "chat" && (
-                  <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden min-h-[450px]">
-                    <ProjectChat
-                      jobId={job.id}
-                      locale={locale}
-                      isClient={!!isOwner}
-                    />
-                  </div>
-                )}
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden min-h-[450px]">
+                  <ProjectChat
+                    jobId={job.id}
+                    locale={locale}
+                    isClient={!!isOwner}
+                  />
+            </div>
+          )}
 
               {/* POLLS TAB CONTENT - hidden in MVP mode */}
               {isHired &&
                 (isOwner || isHiredPro) &&
                 activeSidebarTab === "polls" && (
-                  <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 p-4 md:p-6 min-h-[300px]">
-                    <PollsTab
-                      jobId={job.id}
-                      isPro={isPro || !!isHiredPro}
-                      isClient={isOwner || false}
-                      userId={user?.id}
-                      locale={locale}
-                      embedded={true}
-                    />
-                  </div>
-                )}
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 p-4 md:p-6 min-h-[300px]">
+                  <PollsTab
+                    jobId={job.id}
+                    isPro={isPro || !!isHiredPro}
+                    isClient={isOwner || false}
+                    userId={user?.id}
+                    locale={locale}
+                    embedded={true}
+                  />
+                </div>
+              )}
 
               {/* RESOURCES TAB CONTENT - hidden in MVP mode */}
               {isHired &&
                 (isOwner || isHiredPro) &&
                 activeSidebarTab === "resources" && (
-                  <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 p-4 md:p-6 min-h-[300px]">
-                    <ProjectWorkspace
-                      jobId={job.id}
-                      locale={locale}
-                      isClient={isOwner || false}
-                      embedded={true}
-                    />
-                  </div>
-                )}
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 p-4 md:p-6 min-h-[300px]">
+                  <ProjectWorkspace
+                    jobId={job.id}
+                    locale={locale}
+                    isClient={isOwner || false}
+                    embedded={true}
+                  />
+                </div>
+              )}
 
               {/* HISTORY TAB CONTENT - hidden in MVP mode */}
               {isHired &&
                 (isOwner || isHiredPro) &&
                 activeSidebarTab === "history" && (
-                  <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden min-h-[300px]">
-                    {/* Filter Tabs */}
-                    <div className="flex items-center gap-1 px-4 py-3 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
-                      {[
-                        { key: "all", label: "All", labelKa: "ყველა" },
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden min-h-[300px]">
+                  {/* Filter Tabs */}
+                  <div className="flex items-center gap-1 px-4 py-3 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
+                    {[
+                      { key: "all", label: "All", labelKa: "ყველა" },
                         {
                           key: "client",
                           label: "Client",
                           labelKa: "კლიენტი",
                         },
-                        { key: "pro", label: "Pro", labelKa: "სპეციალისტი" },
+                      { key: "pro", label: "Pro", labelKa: "სპეციალისტი" },
                       ].map((f) => (
-                        <button
-                          key={f.key}
+                      <button
+                        key={f.key}
                           onClick={() =>
                             setHistoryFilter(f.key as typeof historyFilter)
                           }
-                          className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
-                            historyFilter === f.key
-                              ? "text-white"
-                              : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
-                          }`}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+                          historyFilter === f.key
+                            ? "text-white"
+                            : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+                        }`}
                           style={
                             historyFilter === f.key
                               ? { backgroundColor: ACCENT }
                               : {}
                           }
-                        >
-                          {locale === "ka" ? f.labelKa : f.label}
-                        </button>
-                      ))}
-                    </div>
-                    {/* History Timeline */}
-                    <div className="p-4 max-h-[600px] overflow-y-auto">
-                      {isLoadingHistory ? (
-                        <div className="flex items-center justify-center py-8">
-                          <LoadingSpinner size="lg" color={ACCENT} />
-                        </div>
-                      ) : filteredHistory.length === 0 ? (
-                        <div className="text-center py-8 text-neutral-500 dark:text-neutral-400">
-                          <History className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                          <p className="text-sm">
+                      >
+                        {locale === "ka" ? f.labelKa : f.label}
+                      </button>
+                    ))}
+                  </div>
+                  {/* History Timeline */}
+                  <div className="p-4 max-h-[600px] overflow-y-auto">
+                    {isLoadingHistory ? (
+                      <div className="flex items-center justify-center py-8">
+                        <LoadingSpinner size="lg" color={ACCENT} />
+                      </div>
+                    ) : filteredHistory.length === 0 ? (
+                      <div className="text-center py-8 text-neutral-500 dark:text-neutral-400">
+                        <History className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                        <p className="text-sm">
                             {t("jobDetail.noActivityYet")}
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="relative">
-                          {/* Timeline Line */}
-                          <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-neutral-200 dark:bg-neutral-700" />
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        {/* Timeline Line */}
+                        <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-neutral-200 dark:bg-neutral-700" />
 
-                          <div className="space-y-4">
-                            {filteredHistory.slice(0, 30).map((event, idx) => {
-                              const config = getEventConfig(event.eventType);
-                              const description = getEventDescription(event);
-                              return (
+                        <div className="space-y-4">
+                          {filteredHistory.slice(0, 30).map((event, idx) => {
+                            const config = getEventConfig(event.eventType);
+                            const description = getEventDescription(event);
+                            return (
                                 <div
                                   key={`history-${idx}`}
                                   className="relative flex items-start gap-3 pl-1"
                                 >
-                                  <div
-                                    className="relative z-10 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white dark:ring-neutral-900"
+                                <div
+                                  className="relative z-10 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white dark:ring-neutral-900"
                                     style={{
                                       backgroundColor: config.bgColor,
                                       color: config.color,
                                     }}
-                                  >
-                                    {config.icon}
-                                  </div>
-                                  <div className="flex-1 min-w-0 pt-0.5">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                      <span className="text-sm font-medium text-neutral-900 dark:text-white">
-                                        {event.userName}
-                                      </span>
+                                >
+                                  {config.icon}
+                                </div>
+                                <div className="flex-1 min-w-0 pt-0.5">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-sm font-medium text-neutral-900 dark:text-white">
+                                      {event.userName}
+                                    </span>
                                       <Badge
                                         variant={
                                           event.userRole === "client"
@@ -2403,66 +2281,66 @@ export default function JobDetailClient() {
                                         }
                                         size="xs"
                                       >
-                                        {event.userRole === "client"
+                                      {event.userRole === "client"
                                           ? locale === "ka"
                                             ? "კლიენტი"
                                             : "Client"
                                           : t("jobDetail.pro")}
-                                      </Badge>
-                                    </div>
-                                    <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
+                                    </Badge>
+                                  </div>
+                                  <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
                                       {locale === "ka"
                                         ? config.labelKa
                                         : config.label}
-                                      {description && (
+                                    {description && (
                                         <span className="text-neutral-500">
                                           {" "}
                                           · {description}
                                         </span>
-                                      )}
-                                    </p>
-                                    <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-1">
-                                      {formatHistoryTime(event.createdAt)}
-                                    </p>
-                                  </div>
+                                    )}
+                                  </p>
+                                  <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-1">
+                                    {formatHistoryTime(event.createdAt)}
+                                  </p>
                                 </div>
-                              );
-                            })}
-                          </div>
-
-                          {/* Show more indicator */}
-                          {filteredHistory.length > 30 && (
-                            <div className="mt-4 text-center">
-                              <span className="text-xs text-neutral-400">
-                                {locale === "ka"
-                                  ? `+ ${filteredHistory.length - 30} სხვა მოვლენა`
-                                  : `+ ${filteredHistory.length - 30} more events`}
-                              </span>
-                            </div>
-                          )}
+                              </div>
+                            );
+                          })}
                         </div>
-                      )}
-                    </div>
+
+                        {/* Show more indicator */}
+                        {filteredHistory.length > 30 && (
+                          <div className="mt-4 text-center">
+                            <span className="text-xs text-neutral-400">
+                              {locale === "ka" 
+                                ? `+ ${filteredHistory.length - 30} სხვა მოვლენა` 
+                                : `+ ${filteredHistory.length - 30} more events`}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
+              )}
 
               {/* DETAILS TAB CONTENT (or non-hired job content) */}
               {(!isHired ||
                 !(isOwner || isHiredPro) ||
                 activeSidebarTab === "details") && (
                 <>
-                  {/* Description */}
-                  <section
-                    className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-500 ${
-                      isVisible
-                        ? "opacity-100 translate-y-0"
-                        : "opacity-0 translate-y-4"
-                    }`}
-                  >
+              {/* Description */}
+              <section
+                className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-500 ${
+                  isVisible
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 translate-y-4"
+                }`}
+              >
                     <div className="flex items-center justify-between mb-4">
                       <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
                         {t("common.description")}
-                      </h2>
+                </h2>
                       {isOwner && !isHired && (
                         <button
                           onClick={() => {
@@ -2476,106 +2354,106 @@ export default function JobDetailClient() {
                         </button>
                       )}
                     </div>
-                    <p className="font-body text-neutral-600 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
-                      {job.description}
-                    </p>
-                  </section>
+                <p className="font-body text-neutral-600 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
+                  {job.description}
+                </p>
+              </section>
 
-                  {/* Property Specs */}
-                  {(job.propertyType ||
-                    job.currentCondition ||
-                    job.areaSize ||
-                    job.roomCount ||
-                    job.floorCount ||
-                    job.deadline ||
-                    job.cadastralId ||
-                    job.landArea ||
-                    job.pointsCount) && (
-                    <section
-                      className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-600 ${
-                        isVisible
-                          ? "opacity-100 translate-y-0"
-                          : "opacity-0 translate-y-4"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-6">
-                        <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
+              {/* Property Specs */}
+              {(job.propertyType ||
+                job.currentCondition ||
+                job.areaSize ||
+                job.roomCount ||
+                job.floorCount ||
+                job.deadline ||
+                job.cadastralId ||
+                job.landArea ||
+                job.pointsCount) && (
+                <section
+                  className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-600 ${
+                    isVisible
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 translate-y-4"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
                           {t("jobDetail.propertyDetails")}
-                        </h2>
-                        {isOwner && !isHired && (
-                          <button
-                            onClick={openPropertyEditModal}
-                            className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                            title={locale === "ka" ? "რედაქტირება" : "Edit"}
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {job.propertyType && (
-                          <SpecCard
-                            icon={<Home className="w-5 h-5" />}
+                    </h2>
+                    {isOwner && !isHired && (
+                      <button
+                        onClick={openPropertyEditModal}
+                        className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                        title={locale === "ka" ? "რედაქტირება" : "Edit"}
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {job.propertyType && (
+                      <SpecCard
+                        icon={<Home className="w-5 h-5" />}
                             label={t("common.type")}
-                            value={getPropertyTypeLabel(job.propertyType)}
-                          />
-                        )}
-                        {job.currentCondition && (
-                          <SpecCard
-                            icon={<Hammer className="w-5 h-5" />}
-                            label={t("job.condition")}
-                            value={getConditionLabel(job.currentCondition)}
-                          />
-                        )}
-                        {job.areaSize && (
-                          <SpecCard
-                            icon={<Ruler className="w-5 h-5" />}
+                        value={getPropertyTypeLabel(job.propertyType)}
+                      />
+                    )}
+                    {job.currentCondition && (
+                      <SpecCard
+                        icon={<Hammer className="w-5 h-5" />}
+                        label={t("job.condition")}
+                        value={getConditionLabel(job.currentCondition)}
+                      />
+                    )}
+                    {job.areaSize && (
+                      <SpecCard
+                        icon={<Ruler className="w-5 h-5" />}
                             label={t("jobDetail.area")}
-                            value={`${job.areaSize} მ²`}
-                          />
-                        )}
-                        {job.landArea && (
-                          <SpecCard
-                            icon={<Mountain className="w-5 h-5" />}
+                        value={`${job.areaSize} მ²`}
+                      />
+                    )}
+                    {job.landArea && (
+                      <SpecCard
+                        icon={<Mountain className="w-5 h-5" />}
                             label={t("jobDetail.landArea")}
-                            value={`${job.landArea} მ²`}
-                          />
-                        )}
-                        {job.roomCount && (
-                          <SpecCard
-                            icon={<DoorOpen className="w-5 h-5" />}
+                        value={`${job.landArea} მ²`}
+                      />
+                    )}
+                    {job.roomCount && (
+                      <SpecCard
+                        icon={<DoorOpen className="w-5 h-5" />}
                             label={t("jobDetail.rooms")}
-                            value={job.roomCount.toString()}
-                          />
-                        )}
-                        {job.pointsCount && (
-                          <SpecCard
-                            icon={<Zap className="w-5 h-5" />}
+                        value={job.roomCount.toString()}
+                      />
+                    )}
+                    {job.pointsCount && (
+                      <SpecCard
+                        icon={<Zap className="w-5 h-5" />}
                             label={t("jobDetail.points")}
-                            value={job.pointsCount.toString()}
-                          />
-                        )}
-                        {job.floorCount && (
-                          <SpecCard
-                            icon={<Layers className="w-5 h-5" />}
+                        value={job.pointsCount.toString()}
+                      />
+                    )}
+                    {job.floorCount && (
+                      <SpecCard
+                        icon={<Layers className="w-5 h-5" />}
                             label={t("jobDetail.floors")}
-                            value={job.floorCount.toString()}
-                          />
-                        )}
-                        {job.cadastralId && (
-                          <SpecCard
-                            icon={<Map className="w-5 h-5" />}
+                        value={job.floorCount.toString()}
+                      />
+                    )}
+                    {job.cadastralId && (
+                      <SpecCard
+                        icon={<Map className="w-5 h-5" />}
                             label={t("jobDetail.cadastral")}
-                            value={job.cadastralId}
-                          />
-                        )}
-                        {job.deadline && (
-                          <SpecCard
-                            icon={<Calendar className="w-5 h-5" />}
+                        value={job.cadastralId}
+                      />
+                    )}
+                    {job.deadline && (
+                      <SpecCard
+                        icon={<Calendar className="w-5 h-5" />}
                             label={t("jobDetail.deadline")}
-                            value={(() => {
-                              const date = new Date(job.deadline);
-                              if (locale === "ka") {
+                        value={(() => {
+                          const date = new Date(job.deadline);
+                          if (locale === "ka") {
                                 const months = [
                                   "იან",
                                   "თებ",
@@ -2590,186 +2468,186 @@ export default function JobDetailClient() {
                                   "ნოე",
                                   "დეკ",
                                 ];
-                                return `${date.getDate()} ${months[date.getMonth()]}`;
-                              }
+                            return `${date.getDate()} ${months[date.getMonth()]}`;
+                          }
                               return date.toLocaleDateString("en-US", {
                                 month: "short",
                                 day: "numeric",
                               });
-                            })()}
-                          />
-                        )}
-                      </div>
-                    </section>
-                  )}
+                        })()}
+                      />
+                    )}
+                  </div>
+                </section>
+              )}
 
-                  {/* Work Types */}
-                  {job.workTypes && job.workTypes.length > 0 && (
-                    <section
-                      className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-700 ${
-                        isVisible
-                          ? "opacity-100 translate-y-0"
-                          : "opacity-0 translate-y-4"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-4">
-                        <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
+              {/* Work Types */}
+              {job.workTypes && job.workTypes.length > 0 && (
+                <section
+                  className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-700 ${
+                    isVisible
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 translate-y-4"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
                           {t("jobDetail.workTypes")}
-                        </h2>
-                        {isOwner && !isHired && (
-                          <button
-                            onClick={openWorkTypesEditModal}
-                            className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                            title={locale === "ka" ? "რედაქტირება" : "Edit"}
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {job.workTypes.map((type) => (
-                          <span
-                            key={type}
-                            className="px-4 py-2 rounded-xl font-body text-sm font-medium transition-all hover:scale-105"
-                            style={{
-                              backgroundColor: `${ACCENT}10`,
-                              color: ACCENT,
-                            }}
-                          >
-                            {getWorkTypeLabel(type)}
-                          </span>
-                        ))}
-                      </div>
-                    </section>
-                  )}
+                    </h2>
+                    {isOwner && !isHired && (
+                      <button
+                        onClick={openWorkTypesEditModal}
+                        className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                        title={locale === "ka" ? "რედაქტირება" : "Edit"}
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {job.workTypes.map((type) => (
+                      <span
+                        key={type}
+                        className="px-4 py-2 rounded-xl font-body text-sm font-medium transition-all hover:scale-105"
+                        style={{
+                          backgroundColor: `${ACCENT}10`,
+                          color: ACCENT,
+                        }}
+                      >
+                        {getWorkTypeLabel(type)}
+                      </span>
+                    ))}
+                  </div>
+                </section>
+              )}
 
-                  {/* Requirements */}
-                  {(job.furnitureIncluded ||
-                    job.visualizationNeeded ||
-                    job.materialsProvided ||
-                    job.occupiedDuringWork) && (
-                    <section
-                      className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-[800ms] ${
-                        isVisible
-                          ? "opacity-100 translate-y-0"
-                          : "opacity-0 translate-y-4"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-4">
-                        <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
+              {/* Requirements */}
+              {(job.furnitureIncluded ||
+                job.visualizationNeeded ||
+                job.materialsProvided ||
+                job.occupiedDuringWork) && (
+                <section
+                  className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-[800ms] ${
+                    isVisible
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 translate-y-4"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
                           {t("jobDetail.requirements")}
-                        </h2>
-                        {isOwner && !isHired && (
-                          <button
-                            onClick={openRequirementsEditModal}
-                            className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                            title={locale === "ka" ? "რედაქტირება" : "Edit"}
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                      <div className="grid sm:grid-cols-2 gap-3">
-                        {job.furnitureIncluded && (
-                          <RequirementBadge
-                            icon={<Armchair className="w-4 h-4" />}
+                    </h2>
+                    {isOwner && !isHired && (
+                      <button
+                        onClick={openRequirementsEditModal}
+                        className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                        title={locale === "ka" ? "რედაქტირება" : "Edit"}
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {job.furnitureIncluded && (
+                      <RequirementBadge
+                        icon={<Armchair className="w-4 h-4" />}
                             text={t("jobDetail.furnitureSelection")}
-                          />
-                        )}
-                        {job.visualizationNeeded && (
-                          <RequirementBadge
-                            icon={<Sparkles className="w-4 h-4" />}
+                      />
+                    )}
+                    {job.visualizationNeeded && (
+                      <RequirementBadge
+                        icon={<Sparkles className="w-4 h-4" />}
                             text={t("jobDetail.3dVisualization")}
-                          />
-                        )}
-                        {job.materialsProvided && (
-                          <RequirementBadge
-                            icon={<Package className="w-4 h-4" />}
+                      />
+                    )}
+                    {job.materialsProvided && (
+                      <RequirementBadge
+                        icon={<Package className="w-4 h-4" />}
                             text={t("jobDetail.materialsProvided")}
-                          />
-                        )}
-                        {job.occupiedDuringWork && (
-                          <RequirementBadge
-                            icon={<Users className="w-4 h-4" />}
+                      />
+                    )}
+                    {job.occupiedDuringWork && (
+                      <RequirementBadge
+                        icon={<Users className="w-4 h-4" />}
                             text={t("jobDetail.occupiedDuringWork")}
-                          />
-                        )}
-                      </div>
-                    </section>
-                  )}
+                      />
+                    )}
+                  </div>
+                </section>
+              )}
 
-                  {/* References */}
-                  {job.references && job.references.length > 0 && (
-                    <section
-                      className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-[900ms] ${
-                        isVisible
-                          ? "opacity-100 translate-y-0"
-                          : "opacity-0 translate-y-4"
-                      }`}
-                    >
-                      <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white mb-4">
+              {/* References */}
+              {job.references && job.references.length > 0 && (
+                <section
+                  className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-[900ms] ${
+                    isVisible
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 translate-y-4"
+                  }`}
+                >
+                  <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white mb-4">
                         {t("jobDetail.references")}
-                      </h2>
-                      <div className="space-y-2">
-                        {job.references.map((ref, idx) => (
-                          <a
-                            key={idx}
-                            href={ref.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-4 p-4 rounded-xl border border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-all group"
-                          >
-                            <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center flex-shrink-0">
-                              {ref.type === "pinterest" ? (
-                                <svg
-                                  className="w-5 h-5"
-                                  style={{ color: "#E60023" }}
-                                  viewBox="0 0 24 24"
-                                  fill="currentColor"
-                                >
-                                  <path d="M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z" />
-                                </svg>
-                              ) : ref.type === "instagram" ? (
-                                <svg
-                                  className="w-5 h-5"
-                                  style={{ color: "#E4405F" }}
-                                  viewBox="0 0 24 24"
-                                  fill="currentColor"
-                                >
-                                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
-                                </svg>
-                              ) : (
-                                <ExternalLink className="w-5 h-5 text-neutral-400" />
-                              )}
-                            </div>
-                            <span className="font-body text-sm text-neutral-600 dark:text-neutral-300 truncate flex-1">
-                              {ref.title ||
-                                (() => {
-                                  try {
-                                    return new URL(ref.url).hostname;
-                                  } catch {
-                                    return ref.url;
-                                  }
-                                })()}
-                            </span>
-                            <ChevronRight className="w-4 h-4 text-neutral-300 group-hover:text-neutral-500 group-hover:translate-x-1 transition-all" />
-                          </a>
-                        ))}
-                      </div>
-                    </section>
-                  )}
+                  </h2>
+                  <div className="space-y-2">
+                    {job.references.map((ref, idx) => (
+                      <a
+                        key={idx}
+                        href={ref.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-4 p-4 rounded-xl border border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-all group"
+                      >
+                        <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center flex-shrink-0">
+                          {ref.type === "pinterest" ? (
+                            <svg
+                              className="w-5 h-5"
+                              style={{ color: "#E60023" }}
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                            >
+                              <path d="M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z" />
+                            </svg>
+                          ) : ref.type === "instagram" ? (
+                            <svg
+                              className="w-5 h-5"
+                              style={{ color: "#E4405F" }}
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                            >
+                              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                            </svg>
+                          ) : (
+                            <ExternalLink className="w-5 h-5 text-neutral-400" />
+                          )}
+                        </div>
+                        <span className="font-body text-sm text-neutral-600 dark:text-neutral-300 truncate flex-1">
+                          {ref.title ||
+                            (() => {
+                              try {
+                                return new URL(ref.url).hostname;
+                              } catch {
+                                return ref.url;
+                              }
+                            })()}
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-neutral-300 group-hover:text-neutral-500 group-hover:translate-x-1 transition-all" />
+                      </a>
+                    ))}
+                  </div>
+                </section>
+              )}
 
-                  {/* My Proposal - only show when not hired (pending/rejected/withdrawn) */}
+              {/* My Proposal - only show when not hired (pending/rejected/withdrawn) */}
                   {myProposal &&
                     isPro &&
                     !isHiredPro &&
                     myProposal.status !== "accepted" && (
-                      <MyProposalCard
-                        proposal={{
-                          id: myProposal.id,
-                          coverLetter: myProposal.coverLetter,
-                          proposedPrice: myProposal.proposedPrice,
-                          estimatedDuration: myProposal.estimatedDuration,
+                <MyProposalCard
+                  proposal={{
+                    id: myProposal.id,
+                    coverLetter: myProposal.coverLetter,
+                    proposedPrice: myProposal.proposedPrice,
+                    estimatedDuration: myProposal.estimatedDuration,
                           estimatedDurationUnit:
                             myProposal.estimatedDurationUnit as
                               | "days"
@@ -2781,11 +2659,11 @@ export default function JobDetailClient() {
                             | "accepted"
                             | "rejected"
                             | "withdrawn",
-                          createdAt: myProposal.createdAt,
-                        }}
+                    createdAt: myProposal.createdAt,
+                  }}
                         locale={locale as "en" | "ka" | "ru"}
-                      />
-                    )}
+                />
+              )}
                 </>
               )}
 
@@ -2794,78 +2672,78 @@ export default function JobDetailClient() {
                 isHired &&
                 activeSidebarTab === "details" &&
                 false && (
-                  <section className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden">
-                    {/* Header with progress */}
-                    <div className="p-4 border-b border-neutral-100 dark:border-neutral-800">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className="w-10 h-10 rounded-xl flex items-center justify-center"
-                            style={{ backgroundColor: `${ACCENT}15` }}
-                          >
+                <section className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden">
+                  {/* Header with progress */}
+                  <div className="p-4 border-b border-neutral-100 dark:border-neutral-800">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div 
+                          className="w-10 h-10 rounded-xl flex items-center justify-center"
+                          style={{ backgroundColor: `${ACCENT}15` }}
+                        >
                             <BarChart3
                               className="w-5 h-5"
                               style={{ color: ACCENT }}
                             />
-                          </div>
-                          <div>
-                            <h3 className="font-display text-base font-semibold text-neutral-900 dark:text-white">
+                        </div>
+                        <div>
+                          <h3 className="font-display text-base font-semibold text-neutral-900 dark:text-white">
                               {t("jobDetail.projectStatus")}
-                            </h3>
-                            <p className="text-xs text-neutral-500">
+                    </h3>
+                          <p className="text-xs text-neutral-500">
                               {locale === "ka"
                                 ? STAGES[getStageIndex(projectStage)]?.labelKa
                                 : STAGES[getStageIndex(projectStage)]?.label}
-                            </p>
-                          </div>
-                        </div>
-                        <div
-                          className="text-lg font-bold"
-                          style={{ color: ACCENT }}
-                        >
-                          {STAGES[getStageIndex(projectStage)]?.progress || 0}%
+                          </p>
                         </div>
                       </div>
-                      {/* Progress Bar */}
+                      <div 
+                        className="text-lg font-bold"
+                        style={{ color: ACCENT }}
+                      >
+                          {STAGES[getStageIndex(projectStage)]?.progress || 0}%
+                      </div>
+                    </div>
+                    {/* Progress Bar */}
                       <div className="h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                         <div
-                          className="h-full rounded-full transition-all duration-700 ease-out"
+                        className="h-full rounded-full transition-all duration-700 ease-out"
                           style={{
                             width: `${STAGES[getStageIndex(projectStage)]?.progress || 0}%`,
-                            background: `linear-gradient(90deg, ${ACCENT} 0%, ${ACCENT_LIGHT} 100%)`,
+                          background: `linear-gradient(90deg, ${ACCENT} 0%, ${ACCENT_LIGHT} 100%)`,
                           }}
                         />
                       </div>
                     </div>
 
-                    <div className="p-4">
-                      {/* Client Actions when project is completed but not yet confirmed */}
+                  <div className="p-4">
+                    {/* Client Actions when project is completed but not yet confirmed */}
                       {isOwner &&
                         projectStage === "completed" &&
                         !isClientConfirmed && (
-                          <div className="mb-4 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-                            <div className="flex items-start gap-3 mb-3">
-                              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                              </div>
-                              <div>
-                                <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+                      <div className="mb-4 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
                                   {t("jobDetail.workCompleted")}
-                                </p>
-                                <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">
+                            </p>
+                            <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">
                                   {t(
                                     "jobDetail.pleaseReviewAndConfirmCompletion"
                                   )}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                onClick={handleClientConfirm}
-                                disabled={isUpdatingStage}
-                                loading={isUpdatingStage}
-                                size="sm"
-                                className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                        </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={handleClientConfirm}
+                            disabled={isUpdatingStage}
+                            loading={isUpdatingStage}
+                            size="sm"
+                            className="flex-1 bg-emerald-600 hover:bg-emerald-700"
                                 leftIcon={
                                   !isUpdatingStage ? (
                                     <BadgeCheck className="w-4 h-4" />
@@ -2873,145 +2751,145 @@ export default function JobDetailClient() {
                                 }
                               >
                                 {t("common.confirm")}
-                              </Button>
-                              <Button
-                                onClick={handleClientRequestChanges}
-                                disabled={isUpdatingStage}
-                                variant="outline"
-                                size="sm"
-                                leftIcon={<RotateCcw className="w-4 h-4" />}
-                              >
+                          </Button>
+                          <Button
+                            onClick={handleClientRequestChanges}
+                            disabled={isUpdatingStage}
+                            variant="outline"
+                            size="sm"
+                            leftIcon={<RotateCcw className="w-4 h-4" />}
+                          >
                                 {t("jobDetail.changes")}
-                              </Button>
-                            </div>
-                          </div>
-                        )}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
 
-                      {/* Leave Review button when project is confirmed but no review yet */}
+                    {/* Leave Review button when project is confirmed but no review yet */}
                       {isOwner &&
                         projectStage === "completed" &&
                         isClientConfirmed &&
                         !hasSubmittedReview && (
-                          <div className="mb-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-                            <div className="flex items-start gap-3 mb-3">
-                              <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                                <Star className="w-4 h-4 text-amber-600" />
-                              </div>
-                              <div>
-                                <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
-                                  {t("jobDetail.leaveAReview")}
-                                </p>
-                                <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
-                                  {t("jobDetail.yourFeedbackHelpsOtherClients")}
-                                </p>
-                              </div>
-                            </div>
-                            <Button
-                              type="button"
-                              onClick={() => setShowReviewModal(true)}
-                              size="sm"
-                              className="w-full bg-amber-600 hover:bg-amber-700"
-                              leftIcon={<Star className="w-4 h-4" />}
-                            >
-                              {t("jobDetail.writeAReview")}
-                            </Button>
+                      <div className="mb-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                            <Star className="w-4 h-4 text-amber-600" />
                           </div>
-                        )}
+                          <div>
+                            <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                                  {t("jobDetail.leaveAReview")}
+                            </p>
+                            <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                                  {t("jobDetail.yourFeedbackHelpsOtherClients")}
+                        </p>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          onClick={() => setShowReviewModal(true)}
+                          size="sm"
+                          className="w-full bg-amber-600 hover:bg-amber-700"
+                          leftIcon={<Star className="w-4 h-4" />}
+                        >
+                              {t("jobDetail.writeAReview")}
+                        </Button>
+                      </div>
+                    )}
 
-                      {/* Stage Timeline */}
-                      <div className="space-y-0">
-                        {STAGES.map((stage, index) => {
-                          const currentIndex = getStageIndex(projectStage);
-                          const isStageCompleted = index < currentIndex;
-                          const isCurrent = index === currentIndex;
-                          const isNext = index === currentIndex + 1;
+                    {/* Stage Timeline */}
+                    <div className="space-y-0">
+                      {STAGES.map((stage, index) => {
+                        const currentIndex = getStageIndex(projectStage);
+                        const isStageCompleted = index < currentIndex;
+                        const isCurrent = index === currentIndex;
+                        const isNext = index === currentIndex + 1;
                           const canAdvance =
                             isHiredPro && isNext && !isUpdatingStage;
-                          const isLast = index === STAGES.length - 1;
+                        const isLast = index === STAGES.length - 1;
 
-                          return (
+                        return (
                             <div
                               key={stage.key}
                               className="flex items-stretch gap-3"
                             >
-                              {/* Timeline indicator */}
-                              <div className="flex flex-col items-center">
-                                <div
-                                  className={`
+                            {/* Timeline indicator */}
+                            <div className="flex flex-col items-center">
+                              <div
+                            className={`
                                   w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
                                   transition-all duration-300
                               ${
                                 isStageCompleted
                                   ? "bg-emerald-500 text-white"
-                                  : isCurrent
+                                : isCurrent
                                     ? "text-white shadow-lg"
-                                    : canAdvance
+                                  : canAdvance
                                       ? "bg-white dark:bg-neutral-800 border-2 border-dashed text-neutral-400"
                                       : "bg-neutral-100 dark:bg-neutral-800 text-neutral-400"
                               }
                             `}
-                                  style={{
+                            style={{
                                     backgroundColor: isCurrent
                                       ? ACCENT
                                       : undefined,
                                     borderColor: canAdvance
                                       ? ACCENT
                                       : undefined,
-                                  }}
-                                >
-                                  {isUpdatingStage && isCurrent ? (
-                                    <LoadingSpinner size="xs" color="white" />
-                                  ) : isStageCompleted ? (
-                                    <Check className="w-4 h-4" />
-                                  ) : (
+                            }}
+                          >
+                            {isUpdatingStage && isCurrent ? (
+                                  <LoadingSpinner size="xs" color="white" />
+                            ) : isStageCompleted ? (
+                                  <Check className="w-4 h-4" />
+                                ) : (
                                     <span className="text-xs font-bold">
                                       {index + 1}
                                     </span>
-                                  )}
-                                </div>
-                                {/* Connecting line */}
-                                {!isLast && (
-                                  <div
-                                    className={`w-0.5 flex-1 min-h-[24px] transition-colors duration-300 ${
-                                      isStageCompleted
-                                        ? "bg-emerald-500"
-                                        : "bg-neutral-200 dark:bg-neutral-700"
-                                    }`}
-                                  />
                                 )}
                               </div>
+                              {/* Connecting line */}
+                              {!isLast && (
+                                <div 
+                                  className={`w-0.5 flex-1 min-h-[24px] transition-colors duration-300 ${
+                                    isStageCompleted 
+                                        ? "bg-emerald-500"
+                                        : "bg-neutral-200 dark:bg-neutral-700"
+                                  }`}
+                                />
+                              )}
+                            </div>
 
-                              {/* Stage content */}
+                            {/* Stage content */}
                               <div
                                 className={`flex-1 pb-4 ${isLast ? "pb-0" : ""}`}
                               >
-                                <button
+                              <button
                                   onClick={() =>
                                     canAdvance && handleStageChange(stage.key)
                                   }
-                                  disabled={!canAdvance}
-                                  className={`
+                                disabled={!canAdvance}
+                                className={`
                                   w-full text-left p-3 rounded-xl transition-all duration-200
                                   ${
                                     isCurrent
                                       ? "bg-[#C4735B]/10 border border-[#C4735B]/20"
-                                      : canAdvance
+                                    : canAdvance
                                         ? "bg-white dark:bg-neutral-800 border border-dashed border-[#C4735B]/40 hover:border-solid hover:border-[#C4735B] hover:shadow-md cursor-pointer"
-                                        : isStageCompleted
+                                      : isStageCompleted
                                           ? "bg-emerald-50/50 dark:bg-emerald-900/10"
                                           : ""
                                   }
                                 `}
-                                >
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
                                       <span
                                         className={`
                                       text-sm font-medium
                                       ${
                                         isStageCompleted
                                           ? "text-emerald-600 dark:text-emerald-400"
-                                          : isCurrent
+                                        : isCurrent
                                             ? "text-[#C4735B] font-semibold"
                                             : "text-neutral-500 dark:text-neutral-400"
                                       }
@@ -3020,35 +2898,35 @@ export default function JobDetailClient() {
                                         {locale === "ka"
                                           ? stage.labelKa
                                           : stage.label}
-                                      </span>
-                                      {isCurrent && (
-                                        <span
-                                          className="text-[10px] px-1.5 py-0.5 rounded-full font-medium text-white"
-                                          style={{ backgroundColor: ACCENT }}
-                                        >
+                                    </span>
+                                    {isCurrent && (
+                                      <span 
+                                        className="text-[10px] px-1.5 py-0.5 rounded-full font-medium text-white"
+                                        style={{ backgroundColor: ACCENT }}
+                                      >
                                           {t("jobDetail.current")}
-                                        </span>
-                                      )}
-                                    </div>
-                                    {canAdvance && (
+                                      </span>
+                                    )}
+                                  </div>
+                            {canAdvance && (
                                       <div
                                         className="flex items-center gap-1 text-xs font-medium"
                                         style={{ color: ACCENT }}
                                       >
                                         <span>{t("common.next")}</span>
-                                        <ChevronRight className="w-4 h-4" />
-                                      </div>
-                                    )}
-                                  </div>
-                                </button>
-                              </div>
+                                      <ChevronRight className="w-4 h-4" />
+                                    </div>
+                            )}
+                                </div>
+                          </button>
                             </div>
-                          );
-                        })}
-                      </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  </section>
-                )}
+                  </div>
+                </section>
+              )}
 
               {/* LEGACY: Project Chat moved to sidebar tabs - HIDDEN */}
             </div>
@@ -3071,36 +2949,26 @@ export default function JobDetailClient() {
                   isVisible={isVisible}
                 />
 
-                {/* Hired Professional Card */}
-                {isHired && job.hiredPro && (
+                {/* Hired Professional Card - with phone for client */}
+                {isHired && job.hiredPro && isOwner && (
                   <div
-                    className={`rounded-2xl p-6 border transition-all duration-700 delay-600 ${
+                    className={`rounded-2xl p-5 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-700/80 transition-all duration-700 delay-600 ${
                       isVisible
                         ? "opacity-100 translate-y-0"
                         : "opacity-0 translate-y-4"
                     }`}
-                    style={{
-                      backgroundColor: `${ACCENT}08`,
-                      borderColor: `${ACCENT}30`,
-                    }}
                   >
                     <div className="flex items-center gap-2 mb-4">
-                      <div
-                        className="w-8 h-8 rounded-lg flex items-center justify-center"
-                        style={{ backgroundColor: `${ACCENT}20` }}
-                      >
-                        <Check className="w-4 h-4" style={{ color: ACCENT }} />
+                      <div className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                        <Check className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-400" />
                       </div>
-                      <h3
-                        className="font-display text-sm font-semibold uppercase tracking-wider"
-                        style={{ color: ACCENT }}
-                      >
+                      <h3 className="font-display text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                         {locale === "ka" ? "დაქირავებული" : "Hired"}
                       </h3>
                     </div>
                     <Link
                       href={`/professionals/${job.hiredPro.uid || job.hiredPro.id || job.hiredPro.userId?.id}`}
-                      className="flex items-center gap-4 group"
+                      className="flex items-center gap-3 group mb-4"
                     >
                       <Avatar
                         src={job.hiredPro.avatar || job.hiredPro.userId?.avatar}
@@ -3110,12 +2978,7 @@ export default function JobDetailClient() {
                           "Professional"
                         }
                         size="lg"
-                        className="w-14 h-14 ring-2 transition-all group-hover:ring-4"
-                        style={
-                          {
-                            "--tw-ring-color": `${ACCENT}40`,
-                          } as React.CSSProperties
-                        }
+                        className="w-12 h-12"
                       />
                       <div className="min-w-0 flex-1">
                         <p className="font-body font-semibold text-neutral-900 dark:text-white truncate group-hover:underline">
@@ -3124,16 +2987,59 @@ export default function JobDetailClient() {
                             "Professional"}
                         </p>
                         {job.hiredPro.title && (
-                          <p className="font-body text-sm text-neutral-500 dark:text-neutral-400 truncate">
+                          <p className="font-body text-xs text-neutral-500 dark:text-neutral-400 truncate">
                             {job.hiredPro.title}
                           </p>
                         )}
                       </div>
-                      <ChevronRight
-                        className="w-5 h-5 text-neutral-300 group-hover:translate-x-1 transition-transform"
-                        style={{ color: ACCENT }}
-                      />
                     </Link>
+                    {/* Phone CTA for client to call pro */}
+                    {(job.hiredPro?.phone || job.hiredPro?.userId?.phone) && (
+                      <a
+                        href={`tel:${job.hiredPro?.phone || job.hiredPro?.userId?.phone}`}
+                        className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl text-white font-medium text-sm transition-colors"
+                        style={{ backgroundColor: ACCENT }}
+                      >
+                        <Phone className="w-4 h-4" />
+                        {job.hiredPro?.phone || job.hiredPro?.userId?.phone}
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                {/* Hired by banner for pro - show client phone */}
+                {isHired && isHiredPro && (
+                  <div
+                    className={`rounded-2xl p-5 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-700/80 transition-all duration-700 delay-600 ${
+                      isVisible
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 translate-y-4"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                        <BadgeCheck className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-400" />
+                      </div>
+                      <h3 className="font-display text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                        {locale === "ka" ? "დაქირავებული ხართ" : "You're Hired"}
+                      </h3>
+                    </div>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
+                      {locale === "ka"
+                        ? `${job.clientId?.name || "კლიენტმა"} დაგიქირავათ`
+                        : `${job.clientId?.name || "The client"} hired you`}
+                    </p>
+                    {/* Phone CTA for pro to call client */}
+                    {job.clientId?.phone && (
+                      <a
+                        href={`tel:${job.clientId.phone}`}
+                        className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl text-white font-medium text-sm transition-colors"
+                        style={{ backgroundColor: ACCENT }}
+                      >
+                        <Phone className="w-4 h-4" />
+                        {job.clientId.phone}
+                      </a>
+                    )}
                   </div>
                 )}
 
@@ -3145,36 +3051,36 @@ export default function JobDetailClient() {
 
                 {/* Share Section - Only show when job is not hired */}
                 {!isHired && (
-                  <div className="group rounded-2xl bg-gradient-to-br from-white to-neutral-50/80 dark:from-neutral-900 dark:to-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
-                          style={{
-                            background: `linear-gradient(135deg, ${ACCENT}15 0%, ${ACCENT}25 100%)`,
+                <div className="group rounded-2xl bg-gradient-to-br from-white to-neutral-50/80 dark:from-neutral-900 dark:to-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
+                        style={{
+                          background: `linear-gradient(135deg, ${ACCENT}15 0%, ${ACCENT}25 100%)`,
                             border: `1px solid ${ACCENT}20`,
-                          }}
-                        >
+                        }}
+                      >
                           <Share2
                             className="w-5 h-5"
                             style={{ color: ACCENT }}
                           />
-                        </div>
-                        <div className="text-left">
-                          <span className="font-body font-semibold text-neutral-900 dark:text-white block">
+                      </div>
+                      <div className="text-left">
+                        <span className="font-body font-semibold text-neutral-900 dark:text-white block">
                             {t("common.share")}
-                          </span>
-                          <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                        </span>
+                        <span className="text-xs text-neutral-500 dark:text-neutral-400">
                             #{job.jobNumber || job.id.slice(-6)}
-                          </span>
-                        </div>
+                        </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                  </div>
+                  <div className="flex items-center gap-3">
                       <Button
                         size="icon"
                         onClick={() => {
-                          const url = `${window.location.origin}/jobs/${job.id}`;
+                            const url = `${window.location.origin}/jobs/${job.id}`;
                           const text = job.title;
                           window.open(
                             `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`,
@@ -3191,7 +3097,7 @@ export default function JobDetailClient() {
                         size="icon"
                         variant="secondary"
                         onClick={async () => {
-                          const url = `${window.location.origin}/jobs/${job.id}`;
+                            const url = `${window.location.origin}/jobs/${job.id}`;
                           if (navigator.share) {
                             try {
                               await navigator.share({
@@ -3216,7 +3122,7 @@ export default function JobDetailClient() {
                         size="icon"
                         variant="secondary"
                         onClick={async () => {
-                          const url = `${window.location.origin}/jobs/${job.id}`;
+                            const url = `${window.location.origin}/jobs/${job.id}`;
                           await navigator.clipboard.writeText(url);
                           setCopyToast(true);
                           setTimeout(() => setCopyToast(false), 2000);
@@ -3225,8 +3131,8 @@ export default function JobDetailClient() {
                       >
                         <Copy className="w-5 h-5" />
                       </Button>
-                    </div>
                   </div>
+                </div>
                 )}
               </div>
             </div>
@@ -3244,6 +3150,16 @@ export default function JobDetailClient() {
         locale={locale}
         proposalData={proposalData}
         onDataChange={setProposalData}
+        job={job ? {
+          title: job.title,
+          budgetMin: job.budgetMin,
+          budgetMax: job.budgetMax,
+          location: job.location,
+          category: job.category,
+          subcategory: job.subcategory,
+          propertyType: job.propertyType,
+          propertySize: job.areaSize,
+        } : undefined}
       />
 
       {/* Delete Confirmation Modal */}
@@ -3312,19 +3228,19 @@ export default function JobDetailClient() {
       />
 
       {/* Review Modal */}
-      <ReviewModal
-        isOpen={showReviewModal}
+        <ReviewModal
+          isOpen={showReviewModal}
         onClose={() => {
           setShowReviewModal(false);
           setIsCompletionFlow(false);
         }}
-        onSubmit={handleSubmitReview}
-        isSubmitting={isSubmittingReview}
-        locale={locale}
-        rating={reviewRating}
-        onRatingChange={setReviewRating}
-        text={reviewText}
-        onTextChange={setReviewText}
+          onSubmit={handleSubmitReview}
+          isSubmitting={isSubmittingReview}
+          locale={locale}
+          rating={reviewRating}
+          onRatingChange={setReviewRating}
+          text={reviewText}
+          onTextChange={setReviewText}
         pro={
           job?.hiredPro || {
             name: "Professional",
@@ -3432,7 +3348,7 @@ export default function JobDetailClient() {
                 placeholder={t("common.select")}
                 options={Object.entries(propertyTypeKeys).map(
                   ([key, translationKey]) => ({
-                    value: key,
+                  value: key,
                     label: t(translationKey),
                   })
                 )}
@@ -3455,7 +3371,7 @@ export default function JobDetailClient() {
                 placeholder={t("common.select")}
                 options={Object.entries(conditionKeys).map(
                   ([key, translationKey]) => ({
-                    value: key,
+                  value: key,
                     label: t(translationKey),
                   })
                 )}
@@ -3631,7 +3547,7 @@ export default function JobDetailClient() {
                   type="button"
                   onClick={() => {
                     setEditWorkTypes((prev) =>
-                      isSelected
+                      isSelected 
                         ? prev.filter((t) => t !== type)
                         : [...prev, type]
                     );

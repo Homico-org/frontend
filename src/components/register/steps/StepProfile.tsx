@@ -149,6 +149,8 @@ export default function StepProfile({
             placeholder={t('register.enterYourName')}
             autoComplete="off"
             data-form-type="other"
+            inputSize="lg"
+            className="bg-white dark:bg-neutral-900"
           />
         </div>
 

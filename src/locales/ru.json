@@ -2031,7 +2031,8 @@
     "noPhoto": "Нет фото",
     "client": "Клиент",
     "new": "Новый",
-    "seeListingForDetails": "Смотрите объявление для деталей"
+    "seeListingForDetails": "Смотрите объявление для деталей",
+    "yourJob": "Ваше объявление"
   },
   "input": {
     "portfolioProjects": "Проекты портфолио",

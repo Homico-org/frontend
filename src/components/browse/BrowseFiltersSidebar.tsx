@@ -221,8 +221,14 @@ export default function BrowseFiltersSidebar({
     budgetMax,
     setBudgetMax,
     clearAllFilters,
-    hasActiveFilters,
   } = useBrowseContext();
+
+  // Only count filters that are actually visible on this page
+  const hasActiveFiltersLocal =
+    selectedCategory !== null ||
+    selectedSubcategory !== null ||
+    (showRatingFilter && minRating > 0) ||
+    (showBudgetFilter && (budgetMin !== null || budgetMax !== null));
 
   // Track which category accordions are expanded
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
@@ -299,7 +305,7 @@ export default function BrowseFiltersSidebar({
       <div className="p-3 space-y-2.5">
 
         {/* Clear filters button */}
-        {hasActiveFilters && (
+        {hasActiveFiltersLocal && (
           <div className="flex items-center justify-end mb-1">
             <Button
               variant="link"
