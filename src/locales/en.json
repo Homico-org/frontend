@@ -2031,7 +2031,8 @@
     "noPhoto": "No photo",
     "client": "Client",
     "new": "New",
-    "seeListingForDetails": "See Listing For Details"
+    "seeListingForDetails": "See Listing For Details",
+    "yourJob": "Your Job"
   },
   "input": {
     "portfolioProjects": "Portfolio Projects",

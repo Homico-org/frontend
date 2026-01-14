@@ -256,8 +256,8 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
 
             <FormGroup>
               <Label locale={locale === 'ka' ? 'ka' : 'en'}>{t('common.email')}</Label>
-              <div className="flex gap-2">
-                <div className="flex-1">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex-1 min-w-0">
                   <Input
                     type="email"
                     value={formData.email}
@@ -270,7 +270,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
                     ) : undefined}
                   />
                 </div>
-                <Button variant="outline" onClick={onOpenEmailModal}>
+                <Button variant="outline" onClick={onOpenEmailModal} className="w-full sm:w-auto">
                   {formData.email
                     ? (t('settings.change'))
                     : (t('common.add'))}
@@ -283,8 +283,8 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
 
             <FormGroup>
               <Label locale={locale === 'ka' ? 'ka' : 'en'}>{t('common.phone')}</Label>
-              <div className="flex gap-2">
-                <div className="flex-1">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex-1 min-w-0">
                   <Input
                     type="tel"
                     value={formData.phone}
@@ -297,7 +297,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
                     ) : undefined}
                   />
                 </div>
-                <Button variant="outline" onClick={onOpenPhoneModal}>
+                <Button variant="outline" onClick={onOpenPhoneModal} className="w-full sm:w-auto">
                   {formData.phone
                     ? (locale === 'ka' ? 'შეცვლა' : 'Change')
                     : (locale === 'ka' ? 'დამატება' : 'Add')}

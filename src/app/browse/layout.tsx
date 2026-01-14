@@ -226,7 +226,7 @@ function useJobsFilterCount() {
 }
 
 // Helper to count active filters for Browse (Portfolio/Professionals)
-function useBrowseFilterCount() {
+function useBrowseFilterCount(includeProOnlyFilters: boolean) {
   const {
     selectedCategory,
     selectedSubcategory,
@@ -243,8 +243,8 @@ function useBrowseFilterCount() {
   } else if (selectedCategory) {
     count++;
   }
-  if (minRating > 0) count++;
-  if (budgetMin !== null || budgetMax !== null) count++; // Count budget range as one filter
+  if (includeProOnlyFilters && minRating > 0) count++;
+  if (includeProOnlyFilters && (budgetMin !== null || budgetMax !== null)) count++; // Count budget range as one filter
   if (selectedCity && selectedCity !== "tbilisi") count++;
   if (selectedBudget && selectedBudget !== "all") count++;
   return count;
@@ -287,8 +287,14 @@ function JobsFilterButton({ onClick }: { onClick: () => void }) {
   return <FilterButton onClick={onClick} filterCount={filterCount} />;
 }
 
-function BrowseFilterButton({ onClick }: { onClick: () => void }) {
-  const filterCount = useBrowseFilterCount();
+function BrowseFilterButton({
+  onClick,
+  includeProOnlyFilters,
+}: {
+  onClick: () => void;
+  includeProOnlyFilters: boolean;
+}) {
+  const filterCount = useBrowseFilterCount(includeProOnlyFilters);
   return <FilterButton onClick={onClick} filterCount={filterCount} />;
 }
 
@@ -406,7 +412,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
               <BrowseFiltersSidebar
                 showSearch={false}
                 showRatingFilter={isProfessionalsPage}
-                showBudgetFilter={true}
+                showBudgetFilter={isProfessionalsPage}
               />
             )}
           </div>
@@ -436,6 +442,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
               ) : (
                 <BrowseFilterButton
                   onClick={() => setShowMobileFilters(true)}
+                  includeProOnlyFilters={isProfessionalsPage}
                 />
               )}
             </div>
@@ -500,7 +507,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                 <BrowseFiltersSidebar
                   showSearch={false}
                   showRatingFilter={isProfessionalsPage}
-                  showBudgetFilter={false}
+                  showBudgetFilter={isProfessionalsPage}
                 />
               )}
             </div>

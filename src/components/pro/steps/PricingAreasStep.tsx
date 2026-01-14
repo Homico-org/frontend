@@ -186,9 +186,9 @@ export default function PricingAreasStep({
                   });
                 }}
                 placeholder={t('common.price')}
-                variant="filled"
                 inputSize="default"
                 leftIcon={<span className="text-sm">₾</span>}
+                className="bg-white dark:bg-neutral-900"
               />
             </div>
           ) : (
@@ -211,9 +211,9 @@ export default function PricingAreasStep({
                     });
                   }}
                   placeholder={t('common.min')}
-                  variant="filled"
                   inputSize="default"
                   leftIcon={<span className="text-sm">₾</span>}
+                  className="bg-white dark:bg-neutral-900"
                 />
               </div>
               <span className="text-neutral-400 text-sm font-medium">—</span>
@@ -234,9 +234,9 @@ export default function PricingAreasStep({
                     });
                   }}
                   placeholder={t('common.max')}
-                  variant="filled"
                   inputSize="default"
                   leftIcon={<span className="text-sm">₾</span>}
+                  className="bg-white dark:bg-neutral-900"
                 />
               </div>
             </div>

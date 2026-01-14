@@ -67,7 +67,7 @@ function PostJobPageContent() {
   const searchParams = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const editJobId = searchParams.get("common.edit");
+  const editJobId = searchParams.get("edit");
   const isEditMode = !!editJobId;
 
   // Step state
@@ -232,7 +232,7 @@ function PostJobPageContent() {
         const job = response.data;
 
         setSelectedCategory(job.category || "");
-        setSelectedSubcategory(job.skills?.[0] || "");
+        setSelectedSubcategory(job.subcategory || job.skills?.[0] || "");
 
         setFormData({
           title: job.title || "",
@@ -389,6 +389,7 @@ function PostJobPageContent() {
         title: formData.title,
         description: formData.description,
         category: selectedCategory,
+        subcategory: selectedSubcategory,
         skills: [selectedSubcategory],
         location: formData.location,
         propertyType: formData.propertyType,

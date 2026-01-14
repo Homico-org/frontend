@@ -4,9 +4,9 @@ import AuthGuard from "@/components/common/AuthGuard";
 import Avatar from "@/components/common/Avatar";
 import BackButton from "@/components/common/BackButton";
 import EmptyState from "@/components/common/EmptyState";
-import ProjectTrackerCard from "@/components/projects/ProjectTrackerCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ConfirmModal } from "@/components/ui/Modal";
 import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
@@ -23,7 +23,6 @@ import {
   ArrowRight,
   Briefcase,
   Check,
-  ChevronDown,
   Clock,
   Edit3,
   Eye,
@@ -31,13 +30,14 @@ import {
   MapPin,
   Plus,
   RefreshCw,
-  Sparkles,
+  Search,
   Trash2,
-  Users
+  Users,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
 // Socket event data type
@@ -49,7 +49,6 @@ interface ProjectStageUpdateEvent {
 }
 
 import { useLanguage } from "@/contexts/LanguageContext";
-type StatusFilter = "all" | "open" | "hired" | "closed" | "expired";
 
 function MyJobsPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -61,12 +60,10 @@ function MyJobsPageContent() {
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [isFilterLoading, setIsFilterLoading] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("open");
+  const [searchQuery, setSearchQuery] = useState("");
   const [deletingJobId, setDeletingJobId] = useState<string | null>(null);
   const [deleteModalJob, setDeleteModalJob] = useState<Job | null>(null);
   const [renewingJobId, setRenewingJobId] = useState<string | null>(null);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
@@ -127,15 +124,12 @@ function MyJobsPageContent() {
   }, [isAuthenticated, user]);
 
   const fetchMyJobs = useCallback(
-    async (status: StatusFilter, isInitial: boolean = false) => {
+    async (isInitial: boolean = false) => {
       try {
         if (isInitial) {
           setIsInitialLoading(true);
-        } else {
-          setIsFilterLoading(true);
         }
-        const params = status !== "all" ? `?status=${status}` : "";
-        const response = await api.get(`/jobs/my-jobs${params}`);
+        const response = await api.get(`/jobs/my-jobs`);
         const jobsData = response.data;
 
         // Fetch project tracking data for in_progress jobs
@@ -165,18 +159,17 @@ function MyJobsPageContent() {
         toast.error(t("common.error"), t("job.failedToLoadProjects"));
       } finally {
         setIsInitialLoading(false);
-        setIsFilterLoading(false);
       }
     },
-    [locale, toast]
+    [toast, t]
   );
 
   // Initial load
   useEffect(() => {
     if (isAuthenticated && isInitialLoading) {
-      fetchMyJobs(statusFilter, true);
+      fetchMyJobs(true);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isInitialLoading, fetchMyJobs]);
 
   // Mark proposals on each job as viewed when clicking "View Proposals"
   const handleViewProposals = async (jobId: string) => {
@@ -187,12 +180,33 @@ function MyJobsPageContent() {
     }
   };
 
-  // Filter change
-  useEffect(() => {
-    if (isAuthenticated && !isInitialLoading) {
-      fetchMyJobs(statusFilter, false);
-    }
-  }, [statusFilter]);
+  // No filter tabs: always show full list
+
+  const visibleJobs = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    const filtered = !query
+      ? jobs
+      : jobs.filter((job) => {
+          const title = (job.title || "").toLowerCase();
+          const category = (job.category || "").toLowerCase();
+          const subcategory = ((job as any).subcategory || "").toString().toLowerCase();
+          const location = (job.location || "").toLowerCase();
+          return (
+            title.includes(query) ||
+            category.includes(query) ||
+            subcategory.includes(query) ||
+            location.includes(query)
+          );
+        });
+
+    const getSortTime = (job: Job): number => {
+      const dateStr = (job as any).createdAt || (job as any).updatedAt || null;
+      const ms = dateStr ? new Date(dateStr).getTime() : 0;
+      return Number.isFinite(ms) ? ms : 0;
+    };
+
+    return [...filtered].sort((a, b) => getSortTime(b) - getSortTime(a));
+  }, [jobs, searchQuery]);
 
   // Delete job handler
   const handleDeleteJob = async () => {
@@ -249,11 +263,6 @@ function MyJobsPageContent() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         <Skeleton className="w-32 h-8 mb-2" />
         <Skeleton className="w-64 h-5 mb-6" />
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="w-20 h-9 rounded-full flex-shrink-0" />
-          ))}
-        </div>
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <SkeletonCard
@@ -283,7 +292,7 @@ function MyJobsPageContent() {
                   </h1>
                   <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#C4735B]/10 text-[#C4735B]">
                     <Briefcase className="w-3.5 h-3.5" />
-                    <span className="text-xs font-semibold">{jobs.length}</span>
+                    <span className="text-xs font-semibold">{visibleJobs.length}</span>
                   </div>
                 </div>
                 <Button
@@ -302,180 +311,61 @@ function MyJobsPageContent() {
           </div>
         </div>
 
-        {/* ==================== TABS FILTER ZONE - Premium Design ==================== */}
-        {(() => {
-          const tabs = [
-            {
-              key: "all" as StatusFilter,
-              label: t("common.all"),
-              icon: Briefcase,
-            },
-            {
-              key: "open" as StatusFilter,
-              label: t("common.active"),
-              icon: Sparkles,
-            },
-            {
-              key: "hired" as StatusFilter,
-              label: t("common.hired"),
-              icon: Check,
-            },
-            {
-              key: "closed" as StatusFilter,
-              label: t("job.closed"),
-              icon: FileText,
-            },
-            {
-              key: "expired" as StatusFilter,
-              label: t("job.expired"),
-              icon: Clock,
-            },
-          ];
-          const activeTab = tabs.find((t) => t.key === statusFilter) || tabs[0];
-
-          return (
-            <>
-              {/* Mobile: Enhanced Collapsible Accordion */}
-              <div className="sm:hidden mb-6">
+        {/* Search */}
+        {jobs.length > 0 && (
+          <div className="mb-6">
+            <div className="relative">
+              <Input
+                type="text"
+                placeholder={
+                  locale === "ka"
+                    ? "ძებნა სათაურით, კატეგორიით ან მდებარეობით..."
+                    : "Search by title, category, or location..."
+                }
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                leftIcon={<Search className="w-4 h-4" />}
+                className="pr-10"
+              />
+              {searchQuery && (
                 <button
-                  onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  disabled={isFilterLoading}
-                  className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 shadow-sm disabled:opacity-50 transition-all hover:shadow-md"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-[#C4735B]/10 flex items-center justify-center">
-                      <activeTab.icon className="w-4 h-4 text-[#C4735B]" />
-                    </div>
-                    <div className="text-left">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 block">
-                        {t("common.filter")}
-                      </span>
-                      <span className="text-sm font-medium text-neutral-900 dark:text-white">
-                        {activeTab.label}
-                      </span>
-                    </div>
-                  </div>
-                  <ChevronDown
-                    className={`w-5 h-5 text-neutral-400 transition-transform duration-300 ${isFilterOpen ? "rotate-180" : ""}`}
-                  />
+                  <X className="w-3.5 h-3.5 text-neutral-500" />
                 </button>
-
-                {isFilterOpen && (
-                  <div className="mt-2 p-2 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 shadow-lg space-y-1 animate-in slide-in-from-top-2 duration-200">
-                    {tabs.map((tab) => {
-                      const TabIcon = tab.icon;
-                      const isActive = statusFilter === tab.key;
-                      return (
-                        <button
-                          key={tab.key}
-                          onClick={() => {
-                            setStatusFilter(tab.key);
-                            setIsFilterOpen(false);
-                          }}
-                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                            isActive
-                              ? "text-white shadow-md"
-                              : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800"
-                          }`}
-                          style={
-                            isActive
-                              ? {
-                                  background:
-                                    "linear-gradient(135deg, #C4735B 0%, #A85D48 100%)",
-                                }
-                              : {}
-                          }
-                        >
-                          <TabIcon
-                            className={`w-4 h-4 ${isActive ? "text-white" : "text-neutral-400"}`}
-                          />
-                          {tab.label}
-                          {isActive && <Check className="w-4 h-4 ml-auto" />}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Desktop: Premium Pill Tabs */}
-              <div className="hidden sm:block mb-6">
-                <div className="relative flex gap-1.5 p-1.5 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100 dark:border-neutral-800 shadow-sm w-fit">
-                  {tabs.map((tab) => {
-                    const TabIcon = tab.icon;
-                    const isActive = statusFilter === tab.key;
-                    return (
-                      <button
-                        key={tab.key}
-                        onClick={() => setStatusFilter(tab.key)}
-                        disabled={isFilterLoading}
-                        className={`
-                          relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 disabled:opacity-50
-                          ${
-                            isActive
-                              ? "text-white shadow-lg"
-                              : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
-                          }
-                        `}
-                      >
-                        {/* Active background with gradient */}
-                        {isActive && (
-                          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-[#C4735B] to-[#A85D48] shadow-[0_4px_12px_-2px_rgba(196,115,91,0.4)]" />
-                        )}
-                        <span className="relative flex items-center gap-2">
-                          <TabIcon className="w-4 h-4" />
-                          {tab.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </>
-          );
-        })()}
+              )}
+            </div>
+          </div>
+        )}
 
         {/* ==================== JOB CARDS ZONE ==================== */}
-        {isFilterLoading ? (
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <SkeletonCard
-                key={i}
-                variant="horizontal"
-                className="h-56 sm:h-44"
-              />
-            ))}
-          </div>
-        ) : jobs.length === 0 ? (
+        {visibleJobs.length === 0 ? (
           <EmptyState
             icon={Briefcase}
-            title={statusFilter === "all" ? "No jobs yet" : "No jobs found"}
+            title={jobs.length === 0 ? "No jobs yet" : "No jobs found"}
             titleKa={
-              statusFilter === "all"
-                ? "პროექტები ჯერ არ არის"
-                : "პროექტები არ მოიძებნა"
+              jobs.length === 0 ? "პროექტები ჯერ არ არის" : "პროექტები არ მოიძებნა"
             }
             description={
-              statusFilter === "all"
+              jobs.length === 0
                 ? "Create your first project and start receiving proposals"
-                : "No jobs found with this filter"
+                : "Try a different search term"
             }
             descriptionKa={
-              statusFilter === "all"
+              jobs.length === 0
                 ? "შექმენი პირველი პროექტი და დაიწყე შეთავაზებების მიღება"
-                : "ამ ფილტრით პროექტები ვერ მოიძებნა"
+                : "სცადე სხვა საძიებო სიტყვა"
             }
-            actionLabel={statusFilter === "all" ? "Post a Job" : undefined}
-            actionLabelKa={
-              statusFilter === "all" ? "სამუშაოს გამოქვეყნება" : undefined
-            }
-            actionHref={statusFilter === "all" ? "/post-job" : undefined}
+            actionLabel={jobs.length === 0 ? "Post a Job" : undefined}
+            actionLabelKa={jobs.length === 0 ? "სამუშაოს გამოქვეყნება" : undefined}
+            actionHref={jobs.length === 0 ? "/post-job" : undefined}
             variant="illustrated"
             size="md"
           />
         ) : (
           <div className="space-y-4">
-            {jobs.map((job) => {
+            {visibleJobs.map((job) => {
               const firstImage = job.media?.[0]?.url || job.images?.[0];
               const isHired = job.status === "in_progress";
               const hasShortlisted = (job.shortlistedCount || 0) > 0;
@@ -484,21 +374,6 @@ function MyJobsPageContent() {
               const isClosed =
                 job.status === "completed" || job.status === "cancelled";
               const isExpired = job.status === "expired";
-
-              // Show ProjectTrackerCard for in_progress jobs with tracking data
-              // In MVP mode, show a simplified hired card instead
-              if (isHired && job.projectTracking) {
-                return (
-                  <ProjectTrackerCard
-                    key={job.id}
-                    job={job}
-                    project={job.projectTracking}
-                    isClient={true}
-                    locale={locale}
-                    onRefresh={() => fetchMyJobs(statusFilter, false)}
-                  />
-                );
-              }
 
               return (
                 <div

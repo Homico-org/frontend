@@ -26,8 +26,8 @@ import {
   ExternalLink,
   FileText,
   Phone,
-  RotateCcw,
   Star,
+  Undo2,
   Users,
   X,
 } from "lucide-react";
@@ -217,9 +217,9 @@ function ProposalsPageContent() {
           t("job.projectStartedRedirectingToProject")
         );
 
-        // Redirect to my-jobs where they'll see the project tracker
+        // Redirect to the job page where they'll see the project tracker
         setTimeout(() => {
-          router.push("/my-jobs?status=hired");
+          router.push(`/jobs/${jobId}`);
         }, 1500);
       } catch (error) {
         const apiErr = error as { response?: { data?: { message?: string } } };
@@ -230,7 +230,7 @@ function ProposalsPageContent() {
         setIsProcessing(false);
       }
     },
-    [locale, toast, router]
+    [locale, toast, router, jobId]
   );
 
   const handleRevertToPending = useCallback(
@@ -300,9 +300,9 @@ function ProposalsPageContent() {
       <Header />
       <HeaderSpacer />
 
-      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 pb-20 lg:pb-8">
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 pt-4 pb-20 lg:pb-8">
         {/* Back Button */}
-        <BackButton href="/my-jobs" className="mb-6" />
+        <BackButton href="/my-jobs" className="mb-4" />
 
         {/* Page Header with Stats */}
         <div className="mb-6">
@@ -744,7 +744,7 @@ function ProposalCard({
                   disabled={isProcessing}
                   variant="outline"
                   size="sm"
-                  leftIcon={<RotateCcw className="w-4 h-4" />}
+                  leftIcon={<Undo2 className="w-4 h-4" />}
                   className="border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30"
                 >
                   {t("job.revert")}

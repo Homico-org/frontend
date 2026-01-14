@@ -2,6 +2,7 @@
 
 import EmptyState from "@/components/common/EmptyState";
 import JobCard from "@/components/common/JobCard";
+import MyJobCard from "@/components/common/MyJobCard";
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { SkeletonCardGrid } from '@/components/ui/Skeleton';
 import { ACCENT_COLOR } from '@/constants/theme';
@@ -11,7 +12,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { api } from "@/lib/api";
 import type { Job } from "@/types/shared";
-import { Bookmark, Briefcase } from "lucide-react";
+import { Bookmark, Briefcase, ChevronDown, ChevronUp, Plus } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -37,6 +39,11 @@ export default function JobsPage() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const loaderRef = useRef<HTMLDivElement>(null);
+
+  // User's own posted jobs
+  const [myJobs, setMyJobs] = useState<Job[]>([]);
+  const [isLoadingMyJobs, setIsLoadingMyJobs] = useState(true);
+  const [showMyJobs, setShowMyJobs] = useState(true);
 
   // Jobs are filtered on the backend when showFavoritesOnly is true
   const displayedJobs = jobs;
@@ -124,6 +131,31 @@ export default function JobsPage() {
     },
     [isPro, user?.selectedSubcategories, filters.category, filters.budgetMin, filters.budgetMax, filters.propertyType, filters.location, filters.searchQuery, filters.deadline, filters.showFavoritesOnly]
   );
+
+  // Fetch user's own posted jobs (regardless of subcategory)
+  const fetchMyJobs = useCallback(async () => {
+    if (!user?.id) return;
+    
+    try {
+      setIsLoadingMyJobs(true);
+      const response = await api.get('/jobs/my-jobs?status=open');
+      const data = response.data;
+      // API returns array directly, or wrapped in data/jobs property
+      const jobsList = Array.isArray(data) ? data : (data.data || data.jobs || []);
+      setMyJobs(jobsList.slice(0, 10)); // Limit to 10 jobs
+    } catch (error) {
+      console.error("Error fetching my jobs:", error);
+    } finally {
+      setIsLoadingMyJobs(false);
+    }
+  }, [user?.id]);
+
+  // Fetch user's own jobs on mount
+  useEffect(() => {
+    if (user?.id) {
+      fetchMyJobs();
+    }
+  }, [user?.id, fetchMyJobs]);
 
   // Track if initial fetch has been done
   const hasFetchedRef = useRef(false);
@@ -222,13 +254,81 @@ export default function JobsPage() {
   }
 
   return (
-    <div>
+    <div className="space-y-8">
+      {/* User's Own Posted Jobs Section */}
+      {!filters.showFavoritesOnly && myJobs.length > 0 && (
+        <div>
+          <button
+            onClick={() => setShowMyJobs(!showMyJobs)}
+            className="w-full flex items-center justify-between py-2 group"
+          >
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-neutral-900 dark:text-white text-sm">
+                {locale === 'ka' ? 'თქვენი განცხადებები' : 'Your Posted Jobs'}
+              </h3>
+              <span className="text-xs text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full">
+                {myJobs.length}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/post-job"
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                {locale === 'ka' ? 'ახალი' : 'New'}
+              </Link>
+              {showMyJobs ? (
+                <ChevronUp className="w-4 h-4 text-neutral-400" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-neutral-400" />
+              )}
+            </div>
+          </button>
+          
+          {showMyJobs && (
+            <div className="pt-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {myJobs.map((job) => (
+                  <MyJobCard
+                    key={job.id}
+                    job={job}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Main Jobs Feed */}
       {isLoading ? (
         <JobsSkeleton />
-      ) : displayedJobs.length === 0 ? (
+      ) : displayedJobs.length === 0 && myJobs.length === 0 ? (
         <JobsEmptyState />
+      ) : displayedJobs.length === 0 ? (
+        <div className="text-center py-12 text-neutral-500">
+          <p className="text-sm">
+            {locale === 'ka' 
+              ? 'თქვენი სერვისების მიხედვით სამუშაოები არ მოიძებნა' 
+              : 'No jobs found matching your services'}
+          </p>
+        </div>
       ) : (
         <>
+          {/* Section Header */}
+          {myJobs.length > 0 && (
+            <div className="flex items-center gap-2 pb-2">
+              <h3 className="font-semibold text-neutral-900 dark:text-white text-sm">
+                {locale === 'ka' ? 'შესაფერისი სამუშაოები' : 'Jobs for You'}
+              </h3>
+              <span className="text-xs text-neutral-400">
+                ({locale === 'ka' ? 'თქვენი სერვისების მიხედვით' : 'based on your services'})
+              </span>
+            </div>
+          )}
+          
           {/* Jobs Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {displayedJobs.map((job, index) => (

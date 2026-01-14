@@ -180,12 +180,12 @@ export default function HiringChoiceModal({
                   : '0 2px 12px rgba(224, 123, 79, 0.08)',
               }}
             >
-              {/* Recommended badge */}
+              {/* Free badge */}
               <div
                 className="absolute -right-8 top-4 rotate-45 px-10 py-1 text-[10px] font-bold uppercase tracking-wider text-white"
-                style={{ background: 'var(--color-accent)' }}
+                style={{ background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)' }}
               >
-                {t('proposal.recommended')}
+                {locale === 'ka' ? 'უფასოა' : 'FREE'}
               </div>
 
               {/* Header */}
@@ -259,6 +259,16 @@ export default function HiringChoiceModal({
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Temporary free notice */}
+              <div className="mb-3 flex items-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 border border-emerald-200/50 dark:border-emerald-800/50">
+                <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                <p className="text-xs text-emerald-700 dark:text-emerald-300">
+                  {locale === 'ka' 
+                    ? 'დროებით უფასოა! მალე დაემატება ესქრო და პროექტის მართვა' 
+                    : 'Temporarily free! Escrow & project management coming soon'}
+                </p>
               </div>
 
               {/* CTA area */}

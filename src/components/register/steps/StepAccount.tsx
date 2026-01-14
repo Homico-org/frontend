@@ -244,6 +244,9 @@ export default function StepAccount({
               onChange={(e) => handleInputChange("fullName", e.target.value)}
               placeholder={t('register.giorgiBeridze')}
               required
+              autoComplete="off"
+              data-form-type="other"
+              className="bg-white dark:bg-neutral-900"
             />
           </FormGroup>
           <FormGroup>

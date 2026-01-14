@@ -112,6 +112,11 @@ export default function ProjectStatusBar({
     );
   }
 
+  // Get next stage for pro to advance to
+  const nextStageIndex = currentIndex + 1;
+  const nextStage = STAGES[nextStageIndex];
+  const canAdvanceToNext = isPro && nextStage && !isUpdating && !isProjectCompleted;
+
   return (
     <div className={compact ? "space-y-2" : "space-y-3"}>
       {/* Progress Bar */}
@@ -135,6 +140,19 @@ export default function ProjectStatusBar({
             />
           </div>
         </div>
+        {/* Next Stage Button in Compact Mode (for Pro) */}
+        {compact && canAdvanceToNext && (
+          <Button
+            size="sm"
+            onClick={() => onStageChange(nextStage.key)}
+            disabled={isUpdating}
+            loading={isUpdating}
+            leftIcon={!isUpdating ? <ChevronRight className="w-3.5 h-3.5" /> : undefined}
+            className="flex-shrink-0"
+          >
+            {locale === "ka" ? nextStage.labelKa : nextStage.label}
+          </Button>
+        )}
       </div>
 
       {/* Client Confirmation Prompt */}
