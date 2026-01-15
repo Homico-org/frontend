@@ -20,11 +20,8 @@ interface FeedSectionProps {
 
 export default function FeedSection({ selectedCategory, topRatedActive }: FeedSectionProps) {
   const { t, locale } = useLanguage();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { searchQuery, sortBy, selectedCity, selectedSubcategory } = useBrowseContext();
-  
-  // Get user's subcategories for personalization (from selectedServices or selectedSubcategories)
-  const userSubcategories = user?.selectedServices?.map(s => s.key) || user?.selectedSubcategories || [];
   const { toggleLike, initializeLikeStates, likeStates } = useLikes();
 
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
@@ -63,11 +60,9 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
         if (selectedCategory) {
           params.append('category', selectedCategory);
         }
-        // Use filter subcategory if selected, otherwise use user's subcategories for personalization
+        // Only apply subcategory filter when user explicitly selects it from filters.
         if (selectedSubcategory) {
           params.append('subcategories', selectedSubcategory);
-        } else if (userSubcategories.length > 0) {
-          params.append('subcategories', userSubcategories.join(','));
         }
         if (selectedCity && selectedCity !== 'all') {
           params.append('location', selectedCity);
@@ -130,15 +125,14 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
         setIsLoadingMore(false);
       }
     },
-    [selectedCategory, selectedSubcategory, userSubcategories, selectedCity, topRatedActive, searchQuery, sortBy, initializeLikeStates]
+    [selectedCategory, selectedSubcategory, selectedCity, topRatedActive, searchQuery, sortBy, initializeLikeStates]
   );
 
   // Previous filters ref to detect actual changes
   const prevFiltersRef = useRef<string | undefined>(undefined);
 
   // Create a stable filter key for comparison
-  const userSubcatsKey = userSubcategories.join(',');
-  const filterKey = `${selectedCategory}-${selectedSubcategory}-${userSubcatsKey}-${selectedCity}-${topRatedActive}-${searchQuery}-${sortBy}`;
+  const filterKey = `${selectedCategory}-${selectedSubcategory}-${selectedCity}-${topRatedActive}-${searchQuery}-${sortBy}`;
 
   // Fetch when any filter changes (including initial mount)
   useEffect(() => {
