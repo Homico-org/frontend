@@ -34,8 +34,9 @@ const nextConfig = {
   },
 }
 
-// Only enable Sentry in production
-if (process.env.NODE_ENV === 'production') {
+// Only enable Sentry release/sourcemap upload in production *when auth is configured*.
+// Runtime Sentry (capturing errors) is still controlled by sentry.*.config.ts and does NOT require an auth token.
+if (process.env.NODE_ENV === 'production' && process.env.SENTRY_AUTH_TOKEN) {
   const { withSentryConfig } = require("@sentry/nextjs");
 
   module.exports = withSentryConfig(nextConfig, {
@@ -44,6 +45,7 @@ if (process.env.NODE_ENV === 'production') {
 
     org: "homico-k4",
     project: "javascript-nextjs",
+    authToken: process.env.SENTRY_AUTH_TOKEN,
 
     // Only print logs for uploading source maps in CI
     silent: !process.env.CI,
