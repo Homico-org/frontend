@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/contexts/ToastContext';
 import AuthGuard from '@/components/common/AuthGuard';
 import Select from '@/components/common/Select';
 import { api } from '@/lib/api';
@@ -100,6 +101,7 @@ const ACTIVITY_COLORS: Record<string, string> = {
 function AdminActivityLogsPageContent() {
   const { isAuthenticated } = useAuth();
   const { t, locale } = useLanguage();
+  const toast = useToast();
   const router = useRouter();
 
   const [logs, setLogs] = useState<ActivityLog[]>([]);
@@ -138,6 +140,7 @@ function AdminActivityLogsPageContent() {
       setActivityTypes(typesRes.data || []);
     } catch (err) {
       console.error('Failed to fetch activity logs:', err);
+      toast.error(locale === 'ka' ? 'ვერ მოხერხდა აქტივობის ჩატვირთვა' : 'Failed to load activity logs');
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);

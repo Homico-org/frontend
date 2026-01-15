@@ -1331,20 +1331,20 @@
       "editProfileQuestion": "როგორ შევცვალო პროფილი?",
       "editProfileAnswer": "გადადით პარამეტრებში და განაახლეთ თქვენი ინფორმაცია.",
       "contactSupportQuestion": "როგორ დავუკავშირდე მხარდაჭერას?",
-      "contactSupportAnswer": "გამოიყენეთ დახმარების ცენტრი ტიკეტის შესაქმნელად ან მოგვწერეთ ელფოსტაზე."
+      "contactSupportAnswer": "გამოიყენეთ დახმარების ცენტრი დავალების შესაქმნელად ან მოგვწერეთ ელფოსტაზე."
     },
     "tickets": {
       "title": "ჩემი დავალებები",
-      "newTicket": "ახალი ტიკეტი",
-      "createTicket": "ტიკეტის შექმნა",
+      "newTicket": "მოგვწერეთ",
+      "createTicket": "გაგვიზიარეთ პრობლემა",
       "subject": "თემა",
       "subjectPlaceholder": "მოკლედ აღწერეთ პრობლემა",
       "category": "კატეგორია",
       "priority": "პრიორიტეტი",
       "message": "შეტყობინება",
       "messagePlaceholder": "დეტალურად აღწერეთ პრობლემა...",
-      "noTickets": "ტიკეტები ჯერ არ არის",
-      "noTicketsDesc": "როცა შექმნით ტიკეტს, ის აქ გამოჩნდება"
+      "noTickets": "დავალებები ჯერ არ არის",
+      "noTicketsDesc": "როცა შექმნით დავალებას, ის აქ გამოჩნდება"
     },
     "ticketCategories": {
       "account": "ანგარიში და პროფილი",
@@ -1395,7 +1395,15 @@
       "notFound": "დავალება ვერ მოიძებნა",
       "loadError": "დავალების ჩატვირთვა ვერ მოხერხდა"
     },
-    "badge": "ბეჯი"
+    "badge": "ჰომიკო"
+  },
+  "helpPage": {
+    "status": {
+      "open": "ღია",
+      "in_progress": "მიმდინარე",
+      "resolved": "გადაწყვეტილი",
+      "closed": "დახურული"
+    }
   },
   "helpSupport": {
     "topicCategories": {

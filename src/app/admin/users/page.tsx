@@ -44,6 +44,7 @@ import { ADMIN_THEME as THEME } from '@/constants/theme';
 import { getAdminRoleColor, getAdminRoleLabel } from '@/utils/statusUtils';
 import { Button } from '@/components/ui/button';
 import { Input, Textarea } from '@/components/ui/input';
+import { useToast } from '@/contexts/ToastContext';
 
 interface User {
   _id: string;
@@ -85,6 +86,7 @@ interface UserStats {
 function AdminUsersPageContent() {
   const { isAuthenticated } = useAuth();
   const { t, locale } = useLanguage();
+  const toast = useToast();
   const router = useRouter();
 
   const [users, setUsers] = useState<User[]>([]);
@@ -158,6 +160,7 @@ function AdminUsersPageContent() {
       });
     } catch (err) {
       console.error('Failed to fetch users:', err);
+      toast.error(locale === 'ka' ? 'ვერ მოხერხდა მომხმარებლების ჩატვირთვა' : 'Failed to load users');
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -195,11 +198,18 @@ function AdminUsersPageContent() {
           : u
       ));
 
+      toast.success(
+        action === 'approve'
+          ? (locale === 'ka' ? 'დამტკიცებულია' : 'Approved')
+          : (locale === 'ka' ? 'უარყოფილია' : 'Rejected')
+      );
+
       setShowVerificationModal(null);
       setVerificationAction(null);
       setRejectionNote('');
     } catch (err) {
       console.error('Failed to update verification:', err);
+      toast.error(locale === 'ka' ? 'ვერ მოხერხდა განახლება' : 'Failed to update');
     } finally {
       setIsProcessingVerification(false);
     }

@@ -9,6 +9,7 @@ import { ADMIN_THEME as THEME } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
 import { formatDateShort } from '@/utils/dateUtils';
 import {
@@ -83,6 +84,7 @@ interface PendingProsStats {
 function AdminPendingProsPageContent() {
   const { isAuthenticated } = useAuth();
   const { locale } = useLanguage();
+  const toast = useToast();
   const router = useRouter();
   const { categories, getCategoryByKey, getSubcategoriesForCategory } = useCategories();
 
@@ -90,6 +92,7 @@ function AdminPendingProsPageContent() {
   const [stats, setStats] = useState<PendingProsStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
   const [page, setPage] = useState(1);
@@ -102,6 +105,7 @@ function AdminPendingProsPageContent() {
   const fetchPendingPros = useCallback(async () => {
     try {
       setIsRefreshing(true);
+      setErrorMessage('');
       const response = await api.get('/admin/pending-pros', {
         params: {
           page,
@@ -114,6 +118,7 @@ function AdminPendingProsPageContent() {
       setTotalPages(response.data.totalPages);
     } catch (error) {
       console.error('Error fetching pending pros:', error);
+      setErrorMessage(locale === 'ka' ? 'ვერ მოხერხდა მონაცემების ჩატვირთვა' : 'Failed to load data');
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -142,16 +147,19 @@ function AdminPendingProsPageContent() {
   const handleApprove = async (proId: string) => {
     if (!proId) {
       console.error('Cannot approve: pro ID is undefined');
+      toast.error(locale === 'ka' ? 'ვერ მოხერხდა დამტკიცება' : 'Failed to approve');
       return;
     }
     try {
       setActionLoading(proId);
       await api.patch(`/admin/pros/${proId}/approve`);
+      toast.success(locale === 'ka' ? 'დამტკიცებულია' : 'Approved');
       fetchPendingPros();
       fetchStats();
       setSelectedPro(null);
     } catch (error) {
       console.error('Error approving pro:', error);
+      toast.error(locale === 'ka' ? 'ვერ მოხერხდა დამტკიცება' : 'Failed to approve');
     } finally {
       setActionLoading(null);
     }
@@ -166,6 +174,7 @@ function AdminPendingProsPageContent() {
       await api.patch(`/admin/pros/${proId}/reject`, {
         reason: rejectReason,
       });
+      toast.success(locale === 'ka' ? 'უარყოფილია' : 'Rejected');
       fetchPendingPros();
       fetchStats();
       setRejectModalPro(null);
@@ -173,6 +182,7 @@ function AdminPendingProsPageContent() {
       setSelectedPro(null);
     } catch (error) {
       console.error('Error rejecting pro:', error);
+      toast.error(locale === 'ka' ? 'ვერ მოხერხდა უარყოფა' : 'Failed to reject');
     } finally {
       setActionLoading(null);
     }
@@ -251,6 +261,21 @@ function AdminPendingProsPageContent() {
           </div>
         </div>
       </header>
+
+      {errorMessage && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+          <div
+            className="rounded-xl px-4 py-3 text-sm"
+            style={{
+              background: `${THEME.error}12`,
+              border: `1px solid ${THEME.error}33`,
+              color: THEME.error,
+            }}
+          >
+            {errorMessage}
+          </div>
+        </div>
+      )}
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}

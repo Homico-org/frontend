@@ -1397,6 +1397,14 @@
     },
     "badge": "Badge"
   },
+  "helpPage": {
+    "status": {
+      "open": "Open",
+      "in_progress": "In Progress",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    }
+  },
   "helpSupport": {
     "topicCategories": {
       "findingPros": {
