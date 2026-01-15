@@ -549,9 +549,36 @@ function ProProfileSetupPageContent() {
     experience: selectedServices.length > 0, // Experience is now tied to services
     categories: selectedCategories.length > 0,
     subcategories: selectedSubcategories.length > 0,
-    pricing: !!formData.basePrice,
+    pricing: (() => {
+      // "By agreement" pricing is valid without numeric inputs.
+      if (formData.pricingModel === 'hourly') return true;
+
+      const base = parseFloat(formData.basePrice);
+      const max = parseFloat(formData.maxPrice);
+
+      if (!formData.basePrice || Number.isNaN(base) || base <= 0) return false;
+
+      // For ranges, ensure max exists and is >= base.
+      if (formData.pricingModel === 'project_based') {
+        if (!formData.maxPrice || Number.isNaN(max) || max <= 0) return false;
+        return max >= base;
+      }
+
+      return true;
+    })(),
     serviceAreas: formData.nationwide || formData.serviceAreas.length > 0,
-  }), [avatarPreview, formData.bio, formData.basePrice, formData.nationwide, formData.serviceAreas, selectedCategories.length, selectedSubcategories.length, selectedServices.length]);
+  }), [
+    avatarPreview,
+    formData.bio,
+    formData.basePrice,
+    formData.maxPrice,
+    formData.pricingModel,
+    formData.nationwide,
+    formData.serviceAreas,
+    selectedCategories.length,
+    selectedSubcategories.length,
+    selectedServices.length,
+  ]);
 
   const isFormValid = validation.avatar && validation.bio && validation.categories && validation.subcategories && validation.pricing && validation.serviceAreas;
 
@@ -602,14 +629,11 @@ function ProProfileSetupPageContent() {
       const token = localStorage.getItem('access_token');
       const categoryInfo = getCategoryByKey(selectedCategories[0]) || allCategories[0];
 
+      // Pricing models used in UI:
+      // - hourly: by agreement
+      // - from: fixed (single number)
+      // - project_based: range (min-max)
       let pricingModel = formData.pricingModel || 'project_based';
-      if (!formData.pricingModel) {
-        if (selectedCategories.includes('interior-design') || selectedCategories.length === 0) {
-          pricingModel = 'sqm';
-        } else if (selectedCategories.includes('craftsmen') || selectedCategories.includes('home-care')) {
-          pricingModel = 'hourly';
-        }
-      }
 
       // Transform beforeAfterPairs to the API format
       const cleanedPortfolioProjects = portfolioProjects.map(p => ({
@@ -643,8 +667,9 @@ function ProProfileSetupPageContent() {
         yearsExperience: maxExperienceYears,
         avatar: formData.avatar || user?.avatar,
         pricingModel,
-        basePrice: parseFloat(formData.basePrice) || undefined,
-        maxPrice: parseFloat(formData.maxPrice) || undefined,
+        // For "by agreement", explicitly send null so backend can unset previously saved numeric prices.
+        basePrice: pricingModel === 'hourly' ? null : (parseFloat(formData.basePrice) || undefined),
+        maxPrice: pricingModel === 'hourly' ? null : (parseFloat(formData.maxPrice) || undefined),
         serviceAreas: formData.nationwide && locationData ? [locationData.nationwide] : formData.serviceAreas,
         portfolioProjects: cleanedPortfolioProjects,
         pinterestLinks: formData.portfolioUrl ? [formData.portfolioUrl] : undefined,
@@ -852,7 +877,16 @@ function ProProfileSetupPageContent() {
                       'fixed': 'from',     // Fixed price (from X amount)
                       'project': 'project_based',  // Per project (range)
                     };
-                    handleFormChange({ pricingModel: typeMap[updates.priceType] || 'from' });
+                    const nextModel = typeMap[updates.priceType] || 'from';
+                    // When selecting "by agreement", clear numeric prices so validation/UI are consistent.
+                    if (nextModel === 'hourly') {
+                      handleFormChange({ pricingModel: nextModel, basePrice: '', maxPrice: '' });
+                    } else if (nextModel === 'from') {
+                      // Fixed "from" is a single price; clear max price.
+                      handleFormChange({ pricingModel: nextModel, maxPrice: '' });
+                    } else {
+                      handleFormChange({ pricingModel: nextModel });
+                    }
                   }
                   if ('serviceAreas' in updates) {
                     handleFormChange({ serviceAreas: updates.serviceAreas });
