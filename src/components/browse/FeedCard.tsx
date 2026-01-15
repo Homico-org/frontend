@@ -12,6 +12,7 @@ import { storage } from "@/services/storage";
 import { FeedItem, FeedItemType } from "@/types";
 import {
   BadgeCheck,
+  Briefcase,
   ChevronLeft,
   ChevronRight,
   Globe,
@@ -326,6 +327,12 @@ const FeedCard = React.memo(function FeedCard({
 
           {/* Content Section */}
           <div className="p-4">
+            {/* Service Type (subtitle; clearer than a second badge) */}
+            <div className="flex items-center gap-1.5 mb-1 text-[12px] font-semibold text-[#C4735B]">
+              <Briefcase className="w-3.5 h-3.5" />
+              <span className="truncate">{getCategoryLabel()}</span>
+            </div>
+
             {/* Title Row with animated underline */}
             <div className="flex items-start justify-between gap-3 mb-2">
               <div className="relative min-w-0 flex-1">
@@ -377,15 +384,8 @@ const FeedCard = React.memo(function FeedCard({
                   {item.pro.name}
                 </span>
               </div>
-
-              {/* Category Tag */}
-              <Badge
-                variant="outline"
-                size="sm"
-                className="flex-shrink-0 group-hover:border-[#C4735B]/50 group-hover:text-[#C4735B] transition-all duration-300"
-              >
-                {getCategoryLabel()}
-              </Badge>
+              {/* right side intentionally empty (avoid duplicate category badge) */}
+              <div />
             </div>
           </div>
         </div>
