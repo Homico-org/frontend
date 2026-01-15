@@ -1397,6 +1397,14 @@
     },
     "badge": "Значок"
   },
+  "helpPage": {
+    "status": {
+      "open": "Открыт",
+      "in_progress": "В процессе",
+      "resolved": "Решён",
+      "closed": "Закрыт"
+    }
+  },
   "helpSupport": {
     "topicCategories": {
       "findingPros": {

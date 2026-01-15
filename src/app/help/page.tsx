@@ -233,7 +233,7 @@ export default function HelpPage() {
             </span>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-medium text-white mb-4 tracking-tight">
-              {t('common.title')}
+              {t('help.title')}
             </h1>
             <p className="text-base sm:text-lg text-white/70 max-w-2xl mx-auto leading-relaxed">
               {t('help.subtitle')}
@@ -249,7 +249,7 @@ export default function HelpPage() {
           <section className="mb-12">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-serif font-medium text-neutral-900 dark:text-neutral-50">
-                {t('common.title')}
+                {t('help.title')}
               </h2>
               <Button
                 onClick={() => {
@@ -419,7 +419,7 @@ export default function HelpPage() {
         <section className="mb-12">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-serif font-medium text-neutral-900 dark:text-neutral-50 mb-2">
-              {t('common.title')}
+              {t('help.title')}
             </h2>
             <p className="text-neutral-500 dark:text-neutral-400">
               {t('help.faq.subtitle')}
@@ -480,7 +480,7 @@ export default function HelpPage() {
             <div className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border overflow-hidden">
               <div className="p-6 sm:p-8 border-b border-neutral-100 dark:border-dark-border">
                 <h2 className="text-xl font-serif font-medium text-neutral-900 dark:text-neutral-50 mb-2">
-                  {t('common.title')}
+                  {t('help.title')}
                 </h2>
                 <p className="text-neutral-500 dark:text-neutral-400">
                   {t('help.contact.subtitle')}

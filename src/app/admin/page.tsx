@@ -9,6 +9,7 @@ import { api } from '@/lib/api';
 import { formatTimeAgoCompact } from '@/utils/dateUtils';
 import { logApiError } from '@/utils/errorUtils';
 import { getAdminActivityColor } from '@/utils/statusUtils';
+import { getCategoryLabelStatic } from '@/hooks/useCategoryLabels';
 import {
   Activity as ActivityIcon,
   AlertCircle,
@@ -226,6 +227,30 @@ function AdminDashboardPageContent() {
         return { name: activity.data.userId?.name || 'User', action: t('admin.openedTicket'), extra: '' };
       default:
         return { name: 'System', action: 'activity', extra: '' };
+    }
+  };
+
+  const getSafeCategoryLabel = (key?: string) => {
+    const normalized = key || 'other';
+    return getCategoryLabelStatic(normalized, locale as 'en' | 'ka' | 'ru') || normalized;
+  };
+
+  const getActivityHref = (activity: Activity): string | null => {
+    switch (activity.type) {
+      case 'job_created': {
+        const id = (activity.data as any)?._id;
+        return id ? `/jobs/${id}` : null;
+      }
+      case 'proposal_sent': {
+        const jobId = (activity.data as any)?.jobId?._id;
+        return jobId ? `/jobs/${jobId}` : null;
+      }
+      case 'ticket_created':
+        return '/admin/support';
+      case 'user_signup':
+        return '/admin/users';
+      default:
+        return null;
     }
   };
 
@@ -831,15 +856,20 @@ function AdminDashboardPageContent() {
                   const Icon = getActivityIcon(activity.type);
                   const color = getActivityColor(activity.type);
                   const msg = getActivityMessage(activity);
+                  const href = getActivityHref(activity);
                   return (
-                    <div
+                    <Link
+                      href={href || '#'}
                       key={`activity-${i}-${activity.type}-${activity.date}`}
                       className="px-6 py-3 flex items-center gap-4 transition-colors"
                       style={{
                         borderBottom: i < 11 ? `1px solid ${THEME.border}` : 'none',
+                        cursor: href ? 'pointer' : 'default',
+                        pointerEvents: href ? 'auto' : 'none',
                       }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = THEME.surfaceHover}
-                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = THEME.surfaceHover)}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                      title={href ? (locale === 'ka' ? 'გახსნა' : 'Open') : undefined}
                     >
                       <div
                         className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -860,7 +890,7 @@ function AdminDashboardPageContent() {
                       >
                         {formatTimeAgoCompact(activity.date, locale as 'en' | 'ka' | 'ru')}
                       </span>
-                    </div>
+                    </Link>
                   );
                 })
               )}
@@ -895,7 +925,7 @@ function AdminDashboardPageContent() {
                     <div key={cat._id} className="group">
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-sm truncate" style={{ color: THEME.textMuted }}>
-                          {t(`categories.${cat._id}`) || cat._id || 'Other'}
+                          {getSafeCategoryLabel(cat._id)}
                         </span>
                         <span
                           className="text-xs font-medium ml-2"
@@ -948,7 +978,7 @@ function AdminDashboardPageContent() {
                     <div key={loc._id} className="group">
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-sm truncate" style={{ color: THEME.textMuted }}>
-                          {loc._id || 'Unknown'}
+                          {loc._id || (locale === 'ka' ? 'უცნობი' : 'Unknown')}
                         </span>
                         <span
                           className="text-xs font-medium ml-2"
@@ -1085,10 +1115,17 @@ function AdminDashboardPageContent() {
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate" style={{ color: THEME.text }}>{job.title}</p>
+                        <Link
+                          href={`/jobs/${job._id}`}
+                          className="text-sm font-medium truncate inline-flex items-center gap-1 hover:underline"
+                          style={{ color: THEME.text }}
+                        >
+                          {job.title}
+                          <ArrowUpRight className="w-3.5 h-3.5" style={{ color: THEME.textDim }} />
+                        </Link>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-xs truncate" style={{ color: THEME.textDim }}>
-                            {t(`categories.${job.category}`) || job.category}
+                            {getSafeCategoryLabel(job.category)}
                           </span>
                           {job.location && (
                             <>
