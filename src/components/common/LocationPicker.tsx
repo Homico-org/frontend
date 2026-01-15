@@ -5,17 +5,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Local type definitions for Google Maps API
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type GoogleMapsType = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type GoogleMapInstance = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type GoogleMarkerInstance = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type GoogleGeocoderInstance = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type GoogleAutocompleteServiceInstance = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type GooglePlacesServiceInstance = any;
 
 interface AutocompletePrediction {
@@ -120,7 +114,6 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
         setSelectedCoords(coords);
         // Reverse geocode
         const geocoder = new googleMaps.Geocoder();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         geocoder.geocode({ location: coords }, (results: any, status: string) => {
           if (status === 'OK' && results?.[0]) {
             setInputValue(results[0].formatted_address);
@@ -130,7 +123,6 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
     });
 
     // Handle map click
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mapInstanceRef.current.addListener('click', (e: any) => {
       if (e.latLng) {
         const coords = { lat: e.latLng.lat(), lng: e.latLng.lng() };
@@ -138,7 +130,6 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
         setSelectedCoords(coords);
         // Reverse geocode
         const geocoder = new googleMaps.Geocoder();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         geocoder.geocode({ location: coords }, (results: any, status: string) => {
           if (status === 'OK' && results?.[0]) {
             setInputValue(results[0].formatted_address);
@@ -161,7 +152,6 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
         input: query,
         componentRestrictions: { country: 'ge' }, // Georgia
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (results: any, status: string) => {
         setIsLoading(false);
         if (status === 'OK' && results) {
@@ -195,7 +185,6 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
     if (placesServiceRef.current) {
       placesServiceRef.current.getDetails(
         { placeId: prediction.place_id, fields: ['geometry', 'formatted_address'] },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (place: any, status: string) => {
           if (status === 'OK' && place?.geometry?.location) {
             const coords = {

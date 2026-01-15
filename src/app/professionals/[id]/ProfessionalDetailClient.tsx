@@ -22,6 +22,7 @@ import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { api } from "@/lib/api";
 import { storage } from "@/services/storage";
 import type { BaseEntity, PortfolioItem, ProProfile } from "@/types/shared";
+import Image from "next/image";
 import {
   BadgeCheck,
   Briefcase,
@@ -2074,7 +2075,8 @@ function ProjectFormModal({
                   <div className="grid grid-cols-4 gap-2">
                     {images.map((img, idx) => (
                       <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group ring-1 ring-neutral-200 dark:ring-neutral-700">
-                        <img src={storage.getFileUrl(img)} alt="" className="w-full h-full object-cover" />
+                        <Image src={storage.getFileUrl(img)} alt="" fill className="rounded-full object-cover" sizes="40px" />
+
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
                         <button
                           onClick={() => removeImage(idx)}
@@ -2197,7 +2199,7 @@ function ProjectFormModal({
                       {t('common.before')}
                     </span>
                     <div className="aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-neutral-200 dark:ring-neutral-700">
-                      <img src={storage.getFileUrl(pair.before)} alt="Before" className="w-full h-full object-cover" />
+                      <Image src={storage.getFileUrl(pair.before)} alt="" fill className="rounded-full object-cover" sizes="40px" />
                     </div>
                   </div>
                   <div className="flex items-center">
@@ -2211,7 +2213,7 @@ function ProjectFormModal({
                       {t('common.after')}
                     </span>
                     <div className="aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-neutral-200 dark:ring-neutral-700">
-                      <img src={storage.getFileUrl(pair.after)} alt="After" className="w-full h-full object-cover" />
+                      <Image src={storage.getFileUrl(pair.after)} alt="" fill className="rounded-full object-cover" sizes="40px" />
                     </div>
                   </div>
                   <button
@@ -2231,7 +2233,7 @@ function ProjectFormModal({
                       ✓ {locale === 'ka' ? 'მანამდე' : 'Before'}
                     </span>
                     <div className="aspect-[4/3] rounded-lg overflow-hidden ring-2 ring-amber-300 dark:ring-amber-600">
-                      <img src={storage.getFileUrl(pendingBeforeImage)} alt="Before" className="w-full h-full object-cover" />
+                      <Image src={storage.getFileUrl(pendingBeforeImage)} alt="" fill className="rounded-full object-cover" sizes="40px" />
                     </div>
                   </div>
                   <div className="flex items-center">

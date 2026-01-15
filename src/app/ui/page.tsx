@@ -37,7 +37,9 @@ export default function UIShowcase() {
 
             {/* Primary */}
             <div className="p-5 rounded-xl border border-neutral-200 bg-white">
-              <p className="text-xs text-neutral-500 mb-4 font-mono">variant="primary"</p>
+              <p className="text-xs text-neutral-500 mb-4 font-mono">
+                {`variant="primary"`}
+              </p>
               <div className="flex flex-wrap items-center gap-3">
                 <Button variant="primary" size="sm">Small</Button>
                 <Button variant="primary" size="md">Medium</Button>
@@ -54,7 +56,9 @@ export default function UIShowcase() {
 
             {/* Secondary */}
             <div className="p-5 rounded-xl border border-neutral-200 bg-white">
-              <p className="text-xs text-neutral-500 mb-4 font-mono">variant="secondary"</p>
+              <p className="text-xs text-neutral-500 mb-4 font-mono">
+                {`variant="secondary"`}
+              </p>
               <div className="flex flex-wrap items-center gap-3">
                 <Button variant="secondary" size="sm">Small</Button>
                 <Button variant="secondary" size="md">Medium</Button>
@@ -66,7 +70,9 @@ export default function UIShowcase() {
 
             {/* Outline */}
             <div className="p-5 rounded-xl border border-neutral-200 bg-white">
-              <p className="text-xs text-neutral-500 mb-4 font-mono">variant="outline"</p>
+              <p className="text-xs text-neutral-500 mb-4 font-mono">
+                {`variant="outline"`}
+              </p>
               <div className="flex flex-wrap items-center gap-3">
                 <Button variant="outline" size="sm">Small</Button>
                 <Button variant="outline" size="md">Medium</Button>
@@ -78,7 +84,9 @@ export default function UIShowcase() {
 
             {/* Ghost */}
             <div className="p-5 rounded-xl border border-neutral-200 bg-white">
-              <p className="text-xs text-neutral-500 mb-4 font-mono">variant="ghost"</p>
+              <p className="text-xs text-neutral-500 mb-4 font-mono">
+                {`variant="ghost"`}
+              </p>
               <div className="flex flex-wrap items-center gap-3">
                 <Button variant="ghost" size="sm">Small</Button>
                 <Button variant="ghost" size="md">Medium</Button>
@@ -103,7 +111,9 @@ export default function UIShowcase() {
 
             {/* As Link */}
             <div className="p-5 rounded-xl border border-neutral-200 bg-white">
-              <p className="text-xs text-neutral-500 mb-4 font-mono">href="/browse"</p>
+              <p className="text-xs text-neutral-500 mb-4 font-mono">
+                {`href="/browse"`}
+              </p>
               <div className="flex flex-wrap items-center gap-3">
                 <Button variant="primary" href="/browse" icon={<ButtonIcons.Arrow />} iconPosition="right">
                   Go to Browse

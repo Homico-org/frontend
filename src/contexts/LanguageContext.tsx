@@ -8,7 +8,6 @@ import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, 
 export type Locale = 'en' | 'ka' | 'ru';
 
 // Translation types for JSON locale files
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TranslationValue = any;
 type Translations = Record<string, TranslationValue>;
 

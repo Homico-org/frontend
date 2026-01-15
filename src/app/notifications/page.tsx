@@ -201,8 +201,11 @@ function SwipeableNotificationCard({
 }
 
 // Group notifications by date
-function groupNotificationsByDate(notifications: Notification[], locale: string) {
-  const { t } = useLanguage();
+function groupNotificationsByDate(
+  notifications: Notification[],
+  locale: string,
+  t: (key: string) => string
+) {
   const groups: { label: string; notifications: Notification[] }[] = [];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -300,7 +303,11 @@ function NotificationsPageContent() {
     }
   });
 
-  const groupedNotifications = groupNotificationsByDate(filteredNotifications, locale);
+  const groupedNotifications = groupNotificationsByDate(
+    filteredNotifications,
+    locale,
+    t
+  );
 
   const handleNotificationClick = async (notification: Notification) => {
     if (!notification.isRead) {

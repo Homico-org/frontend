@@ -891,7 +891,7 @@ export default function ProjectsStep({
                     {isHomico && project.review && (
                       <div className="mt-3 p-3 rounded-xl bg-emerald-50 border border-emerald-100">
                         <p className="text-xs text-emerald-800 italic">
-                          "{project.review}"
+                          {`"${project.review}"`}
                         </p>
                       </div>
                     )}
