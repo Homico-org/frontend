@@ -542,7 +542,6 @@ export default function PremiumPlansPage() {
   const [testimonialsVisible, setTestimonialsVisible] = useState(false);
 
   const isPro = user?.role === "pro";
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const currentTier = user && 'proProfile' in user ? (user as { proProfile?: { premiumTier?: string } }).proProfile?.premiumTier || "none" : "none";
 
   useEffect(() => {

@@ -1,19 +1,25 @@
-'use client';
+"use client";
 
-import Avatar from '@/components/common/Avatar';
-import { Skeleton } from '@/components/ui/Skeleton';
-import { StarRating } from '@/components/ui/StarRating';
-import { StatusPill } from '@/components/ui/StatusPill';
-import { Badge } from '@/components/ui/badge';
-import { ACCENT_COLOR } from '@/constants/theme';
+import Avatar from "@/components/common/Avatar";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { StarRating } from "@/components/ui/StarRating";
+import { StatusPill } from "@/components/ui/StatusPill";
+import { Badge } from "@/components/ui/badge";
+import { ACCENT_COLOR } from "@/constants/theme";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { getCategoryLabelStatic } from '@/hooks/useCategoryLabels';
-import { storage } from '@/services/storage';
-import { FeedItem, FeedItemType } from '@/types';
-import { BadgeCheck, ChevronLeft, ChevronRight, Globe, Play } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import React, { useCallback, useMemo, useState } from 'react';
+import { getCategoryLabelStatic } from "@/hooks/useCategoryLabels";
+import { storage } from "@/services/storage";
+import { FeedItem, FeedItemType } from "@/types";
+import {
+  BadgeCheck,
+  ChevronLeft,
+  ChevronRight,
+  Globe,
+  Play,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import React, { useCallback, useMemo, useState } from "react";
 
 interface FeedCardProps {
   item: FeedItem;
@@ -22,7 +28,10 @@ interface FeedCardProps {
   locale?: string;
 }
 
-const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardProps) {
+const FeedCard = React.memo(function FeedCard({
+  item,
+  locale = "en",
+}: FeedCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const { t } = useLanguage();
@@ -37,7 +46,8 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
   const firstBeforeAfterPair = item.beforeAfterPairs?.[0];
   const beforeImage = item.beforeImage || firstBeforeAfterPair?.beforeImage;
   const afterImage = item.afterImage || firstBeforeAfterPair?.afterImage;
-  const isBeforeAfter = item.type === FeedItemType.BEFORE_AFTER && beforeImage && afterImage;
+  const isBeforeAfter =
+    item.type === FeedItemType.BEFORE_AFTER && beforeImage && afterImage;
   // Combine images and videos for navigation
   const allMedia = [...item.images, ...(item.videos || [])];
   const totalImages = allMedia.length;
@@ -48,27 +58,36 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
     if (!item.createdAt) return true; // Default to new if no date
     const createdDate = new Date(item.createdAt);
     const now = new Date();
-    const daysDiff = (now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
+    const daysDiff =
+      (now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
     return daysDiff < 14;
   }, [item.pro.rating, item.createdAt]);
 
-  const nextImage = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev + 1) % totalImages);
-  }, [totalImages]);
+  const nextImage = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setCurrentImageIndex((prev) => (prev + 1) % totalImages);
+    },
+    [totalImages]
+  );
 
-  const prevImage = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev - 1 + totalImages) % totalImages);
-  }, [totalImages]);
+  const prevImage = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setCurrentImageIndex((prev) => (prev - 1 + totalImages) % totalImages);
+    },
+    [totalImages]
+  );
 
-  const handleSliderMove = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
-    if (!isDragging && e.type !== 'click') return;
+  const handleSliderMove = (
+    e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
+  ) => {
+    if (!isDragging && e.type !== "click") return;
     const container = e.currentTarget;
     const rect = container.getBoundingClientRect();
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
     const x = clientX - rect.left;
     const percentage = Math.max(5, Math.min(95, (x / rect.width) * 100));
     setSliderPosition(percentage);
@@ -76,7 +95,7 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
 
   // Get category label for the tag
   const getCategoryLabel = () => {
-    const category = item.category || 'design';
+    const category = item.category || "design";
     return getCategoryLabelStatic(category, locale);
   };
 
@@ -87,18 +106,16 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
   const proId = item.pro.id || (item.pro as { _id?: string })._id;
 
   return (
-    <Link
-      href={`/professionals/${proId}`}
-      className="group block"
-    >
+    <Link href={`/professionals/${proId}`} className="group block">
       {/* Card Container with Premium Effects */}
-      <div className={`relative transition-all duration-500 ${isPremium ? 'game-card-premium' : ''}`}>
+      <div
+        className={`relative transition-all duration-500 ${isPremium ? "game-card-premium" : ""}`}
+      >
         {/* Premium border glow effect */}
         <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-[#C4735B]/0 via-[#C4735B]/0 to-[#C4735B]/0 group-hover:from-[#C4735B]/30 group-hover:via-[#D4937B]/15 group-hover:to-[#C4735B]/30 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-[1px]" />
-        
+
         {/* Main Card */}
         <div className="relative bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-100/80 dark:border-neutral-800 group-hover:border-[#C4735B]/20 transition-all duration-500 group-hover:shadow-[0_20px_50px_-12px_rgba(196,115,91,0.15)] group-hover:-translate-y-0.5">
-          
           {/* Shine effect overlay */}
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-30">
             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
@@ -115,12 +132,12 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
                 {item.isVerified ? (
                   <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/90 backdrop-blur-md text-white text-[11px] font-semibold shadow-lg border border-white/20">
                     <BadgeCheck className="w-3.5 h-3.5" />
-                    {t('browse.viaHomico')}
+                    {t("browse.viaHomico")}
                   </div>
                 ) : (
                   <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-md text-white text-[11px] font-medium shadow-lg border border-white/10">
                     <Globe className="w-3.5 h-3.5" />
-                    {t('browse.external')}
+                    {t("browse.external")}
                   </div>
                 )}
               </div>
@@ -133,19 +150,46 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
                 onMouseUp={() => setIsDragging(false)}
                 onMouseLeave={() => setIsDragging(false)}
                 onMouseMove={handleSliderMove}
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSliderMove(e); }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSliderMove(e);
+                }}
                 onTouchStart={() => setIsDragging(true)}
                 onTouchEnd={() => setIsDragging(false)}
                 onTouchMove={handleSliderMove}
               >
-                <Image src={storage.getFeedCardImageUrl(afterImage)} alt="After" fill className="object-cover" sizes="(max-width: 640px) 100vw, 400px" priority={false} />
-                <div className="absolute inset-0 overflow-hidden" style={{ width: `${sliderPosition}%` }}>
+                <Image
+                  src={storage.getFeedCardImageUrl(afterImage)}
+                  alt="After"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 100vw, 400px"
+                  priority={false}
+                />
+                <div
+                  className="absolute inset-0 overflow-hidden"
+                  style={{ width: `${sliderPosition}%` }}
+                >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={storage.getFeedCardImageUrl(beforeImage)} alt="Before" loading="lazy" className="absolute inset-0 w-full h-full object-cover" style={{ width: `${100 / (sliderPosition / 100)}%`, maxWidth: 'none' }} />
+                  <Image
+                    src={storage.getFeedCardImageUrl(beforeImage)}
+                    alt="Before"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 100vw, 400px"
+                    priority={false}
+                  />
                 </div>
 
                 {/* Slider handle - enhanced */}
-                <div className="absolute top-0 bottom-0 z-10" style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}>
+                <div
+                  className="absolute top-0 bottom-0 z-10"
+                  style={{
+                    left: `${sliderPosition}%`,
+                    transform: "translateX(-50%)",
+                  }}
+                >
                   <div className="absolute inset-0 w-0.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-xl flex items-center justify-center border-2 border-[#C4735B]/20">
                     <div className="flex items-center gap-0.5">
@@ -157,19 +201,25 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
 
                 {/* Before/After labels - enhanced */}
                 <div className="absolute bottom-3 left-3 px-3 py-1.5 bg-black/70 backdrop-blur-sm text-white text-[11px] font-semibold rounded-full">
-                  {t('common.before')}
+                  {t("common.before")}
                 </div>
                 <div className="absolute bottom-3 right-3 px-3 py-1.5 bg-white/95 backdrop-blur-sm text-neutral-900 text-[11px] font-semibold rounded-full shadow-lg">
-                  {t('common.after')}
+                  {t("common.after")}
                 </div>
               </div>
             ) : (
               <div className="relative aspect-[4/3] bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
                 {/* Main Image or Video */}
-                {!imageError && allMedia.length > 0 && allMedia[currentImageIndex] ? (
+                {!imageError &&
+                allMedia.length > 0 &&
+                allMedia[currentImageIndex] ? (
                   (() => {
                     const currentMedia = allMedia[currentImageIndex];
-                    const isVideo = currentMedia.includes('.mp4') || currentMedia.includes('.mov') || currentMedia.includes('.webm') || currentMedia.startsWith('data:video');
+                    const isVideo =
+                      currentMedia.includes(".mp4") ||
+                      currentMedia.includes(".mov") ||
+                      currentMedia.includes(".webm") ||
+                      currentMedia.startsWith("data:video");
 
                     if (isVideo) {
                       return (
@@ -181,7 +231,10 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
                             playsInline
                             loop
                             onMouseEnter={(e) => e.currentTarget.play()}
-                            onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.pause();
+                              e.currentTarget.currentTime = 0;
+                            }}
                           />
                           {/* Video play icon overlay - enhanced */}
                           <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover:opacity-0 transition-opacity duration-300">
@@ -199,7 +252,7 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
                         alt={item.title}
                         loading="lazy"
                         decoding="async"
-                        className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                        className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
                         onLoad={() => setImageLoaded(true)}
                         onError={() => setImageError(true)}
                       />
@@ -207,8 +260,18 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
                   })()
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-800 dark:to-neutral-700">
-                    <svg className="w-12 h-12 text-neutral-300 dark:text-neutral-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                    <svg
+                      className="w-12 h-12 text-neutral-300 dark:text-neutral-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="1"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+                      />
                     </svg>
                   </div>
                 )}
@@ -243,12 +306,16 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
                         <div
                           key={idx}
                           className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                            idx === currentImageIndex ? 'bg-white w-3' : 'bg-white/50'
+                            idx === currentImageIndex
+                              ? "bg-white w-3"
+                              : "bg-white/50"
                           }`}
                         />
                       ))}
                       {allMedia.length > 5 && (
-                        <span className="text-[10px] text-white/70 ml-0.5">+{allMedia.length - 5}</span>
+                        <span className="text-[10px] text-white/70 ml-0.5">
+                          +{allMedia.length - 5}
+                        </span>
                       )}
                     </div>
                   </>
@@ -278,7 +345,11 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
                   className="flex-shrink-0 [&>span]:!text-[#C4735B]"
                 />
               ) : isNew ? (
-                <StatusPill variant="new" size="sm" locale={locale as 'en' | 'ka' | 'ru'} />
+                <StatusPill
+                  variant="new"
+                  size="sm"
+                  locale={locale as "en" | "ka" | "ru"}
+                />
               ) : null}
             </div>
 
@@ -308,7 +379,11 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
               </div>
 
               {/* Category Tag */}
-              <Badge variant="outline" size="sm" className="flex-shrink-0 group-hover:border-[#C4735B]/50 group-hover:text-[#C4735B] transition-all duration-300">
+              <Badge
+                variant="outline"
+                size="sm"
+                className="flex-shrink-0 group-hover:border-[#C4735B]/50 group-hover:text-[#C4735B] transition-all duration-300"
+              >
                 {getCategoryLabel()}
               </Badge>
             </div>
@@ -319,8 +394,12 @@ const FeedCard = React.memo(function FeedCard({ item, locale = 'en' }: FeedCardP
         {isPremium && (
           <div className="absolute -top-1 -right-1 z-20">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg border-2 border-white">
-              <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-white">
-                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+              <svg
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="w-4 h-4 text-white"
+              >
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
               </svg>
             </div>
           </div>

@@ -18,7 +18,6 @@ const loadCallbacks: (() => void)[] = [];
 function loadGoogleMapsScript(apiKey: string): Promise<void> {
   return new Promise((resolve) => {
     // Already loaded
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((window as any).google?.maps) {
       isScriptLoaded = true;
       resolve();
@@ -161,12 +160,10 @@ export interface UseGeocoderReturn {
  * ```
  */
 export function useGeocoder(): UseGeocoderReturn {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const geocoderRef = useRef<any>(null);
   const [isGeocoding, setIsGeocoding] = useState(false);
 
   const getGeocoder = useCallback(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const google = (window as any).google;
     if (!google?.maps) return null;
     if (!geocoderRef.current) {
@@ -182,7 +179,6 @@ export function useGeocoder(): UseGeocoderReturn {
 
       setIsGeocoding(true);
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const response: any = await geocoder.geocode({ address });
         if (response.results?.[0]?.geometry?.location) {
           const location = response.results[0].geometry.location;
@@ -205,7 +201,6 @@ export function useGeocoder(): UseGeocoderReturn {
 
       setIsGeocoding(true);
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const response: any = await geocoder.geocode({ location: coords });
         return response.results?.[0]?.formatted_address || null;
       } catch {
@@ -282,14 +277,11 @@ export function usePlacesAutocomplete(
   const [predictions, setPredictions] = useState<PlacePrediction[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const autocompleteServiceRef = useRef<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const placesServiceRef = useRef<any>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const getAutocompleteService = useCallback(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const google = (window as any).google;
     if (!google?.maps?.places) return null;
     if (!autocompleteServiceRef.current) {
@@ -299,7 +291,6 @@ export function usePlacesAutocomplete(
   }, []);
 
   const getPlacesService = useCallback(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const google = (window as any).google;
     if (!google?.maps?.places) return null;
     if (!placesServiceRef.current) {
@@ -332,14 +323,11 @@ export function usePlacesAutocomplete(
             componentRestrictions: { country },
             types,
           },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (results: any[] | null, status: string) => {
             setIsSearching(false);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const google = (window as any).google;
             if (status === google?.maps?.places?.PlacesServiceStatus?.OK && results) {
               setPredictions(
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 results.map((r: any) => ({
                   placeId: r.place_id,
                   description: r.description,
@@ -369,9 +357,7 @@ export function usePlacesAutocomplete(
       return new Promise((resolve) => {
         service.getDetails(
           { placeId, fields: ['formatted_address', 'geometry'] },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (place: any, status: string) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const google = (window as any).google;
             if (status === google?.maps?.places?.PlacesServiceStatus?.OK && place) {
               const location = place.geometry?.location;

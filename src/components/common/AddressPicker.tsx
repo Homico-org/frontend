@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 import { useLanguage } from "@/contexts/LanguageContext";
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 interface AddressPickerProps {
   value: string;
