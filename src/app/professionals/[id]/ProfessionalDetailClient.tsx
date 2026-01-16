@@ -32,6 +32,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Edit3,
+  Eye,
   Facebook,
   Link2,
   MapPin,
@@ -44,7 +45,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 // API response types for before/after pairs (supports both formats)
 interface ApiBeforeAfterPair {
@@ -86,8 +87,17 @@ interface PageReview extends BaseEntity {
   isAnonymous?: boolean;
 }
 
-export default function ProfessionalDetailClient() {
+export default function ProfessionalDetailClient({
+  initialProfile,
+}: {
+  initialProfile?: ProProfile | null;
+}) {
   const params = useParams();
+  const paramId = useMemo(() => {
+    const raw = (params as any)?.id as string | string[] | undefined;
+    if (!raw) return undefined;
+    return Array.isArray(raw) ? raw[0] : raw;
+  }, [params]);
   const router = useRouter();
   const { user } = useAuth();
   const { openLoginModal } = useAuthModal();
@@ -96,8 +106,8 @@ export default function ProfessionalDetailClient() {
   const { trackEvent } = useAnalytics();
   const { categories: CATEGORIES } = useCategories();
 
-  const [profile, setProfile] = useState<ProProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [profile, setProfile] = useState<ProProfile | null>(initialProfile ?? null);
+  const [isLoading, setIsLoading] = useState(!initialProfile);
   const [error, setError] = useState<string | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
   const [reviews, setReviews] = useState<PageReview[]>([]);
@@ -146,6 +156,10 @@ export default function ProfessionalDetailClient() {
   // Check if current user is viewing their own profile
   const isOwner = user?.id === profile?.id;
 
+  const fetchProfileAbortRef = useRef<AbortController | null>(null);
+  const profileFetchInFlightRef = useRef<string | null>(null);
+  const profileViewTrackedRef = useRef<string | null>(null);
+
   useEffect(() => {
     setIsVisible(true);
     // Show floating button immediately on mobile for visitors
@@ -175,17 +189,36 @@ export default function ProfessionalDetailClient() {
   }, [isOwner]);
 
   useEffect(() => {
+    if (!paramId) return;
+    // If server already provided the right profile, avoid an extra client fetch.
+    if (
+      profile &&
+      (profile.id === paramId ||
+        (profile.uid !== undefined && String(profile.uid) === String(paramId)))
+    ) {
+      setIsLoading(false);
+      return;
+    }
+    // Dedupe in React 18 StrictMode / rapid rerenders
+    if (profileFetchInFlightRef.current === paramId) return;
+    profileFetchInFlightRef.current = paramId;
+
+    fetchProfileAbortRef.current?.abort();
+    const controller = new AbortController();
+    fetchProfileAbortRef.current = controller;
+
     const fetchProfile = async () => {
       try {
-        const response = await api.get(`/users/pros/${params.id}`);
+        const response = await api.get(`/users/pros/${paramId}`, {
+          signal: controller.signal,
+        });
         const data = response.data;
         setProfile(data);
-        trackEvent(AnalyticsEvent.PROFILE_VIEW, {
-          proId: data.id,
-          proName: data.name,
-          category: data.categories?.[0],
-        });
       } catch (err) {
+        // Ignore aborts (navigation / StrictMode cleanup)
+        if ((err as any)?.name === "CanceledError") return;
+        if ((err as any)?.code === "ERR_CANCELED") return;
+
         const error = err as {
           message?: string;
           response?: { status?: number };
@@ -197,10 +230,29 @@ export default function ProfessionalDetailClient() {
         }
       } finally {
         setIsLoading(false);
+        if (profileFetchInFlightRef.current === paramId) {
+          profileFetchInFlightRef.current = null;
+        }
       }
     };
-    if (params.id) fetchProfile();
-  }, [params.id]);
+    fetchProfile();
+
+    return () => {
+      controller.abort();
+    };
+  }, [paramId, profile]);
+
+  useEffect(() => {
+    if (!profile?.id) return;
+    if (profileViewTrackedRef.current === profile.id) return;
+    profileViewTrackedRef.current = profile.id;
+
+    trackEvent(AnalyticsEvent.PROFILE_VIEW, {
+      proId: profile.id,
+      proName: profile.name,
+      category: profile.categories?.[0],
+    });
+  }, [profile?.id, profile?.name, profile?.categories, trackEvent]);
 
   useEffect(() => {
     if (profile?.name) {
@@ -254,6 +306,66 @@ export default function ProfessionalDetailClient() {
     !profile?.premiumTier ||
     profile?.premiumTier === "none" ||
     profile?.premiumTier === "basic";
+
+  const pricingMeta = useMemo(() => {
+    if (!profile) return null;
+    const model = (profile.pricingModel as unknown as string | undefined) || undefined;
+    const base = typeof profile.basePrice === "number" ? profile.basePrice : undefined;
+    const max = typeof profile.maxPrice === "number" ? profile.maxPrice : undefined;
+    const hasBase = typeof base === "number" && base > 0;
+    const hasMax = typeof max === "number" && max > 0;
+
+    // Normalize legacy values
+    const normalizedIncoming =
+      model === "hourly"
+        ? "byAgreement"
+        : model === "daily" || model === "sqm" || model === "from"
+          ? "fixed"
+          : model === "project_based"
+            ? "range"
+            : model;
+
+    const normalized =
+      normalizedIncoming === "range"
+        ? hasBase && hasMax && max! > base!
+          ? "range"
+          : hasBase || hasMax
+            ? "fixed"
+            : "byAgreement"
+        : normalizedIncoming === "fixed"
+          ? hasBase || hasMax
+            ? "fixed"
+            : "byAgreement"
+          : normalizedIncoming === "byAgreement"
+            ? "byAgreement"
+            : undefined;
+
+    if (normalized === "byAgreement") {
+      return { typeLabel: t("common.negotiable"), valueLabel: null as string | null };
+    }
+    if (normalized === "range" && hasBase && hasMax) {
+      return {
+        typeLabel: t("common.priceRange"),
+        valueLabel: `${base}₾ - ${max}₾`,
+      };
+    }
+    if (normalized === "fixed" && (hasBase || hasMax)) {
+      const val = hasBase ? base! : max!;
+      return {
+        typeLabel: t("common.fixed"),
+        valueLabel: `${val}₾`,
+      };
+    }
+    return null;
+  }, [profile, t]);
+
+  const proCategories = useMemo(() => {
+    if (!profile) return [];
+    const cats =
+      (profile.categories?.length ? profile.categories : profile.selectedCategories) ||
+      [];
+    return cats.filter(Boolean);
+  }, [profile]);
 
   const handleContact = () => {
     if (!user) {
@@ -748,19 +860,6 @@ export default function ProfessionalDetailClient() {
     return groups;
   }, [profile?.categories, profile?.subcategories, CATEGORIES]);
 
-  const getPricingLabel = () => {
-    switch (profile?.pricingModel) {
-      case "hourly":
-        return t("professional.hr");
-      case "daily":
-        return t("professional.day");
-      case "sqm":
-        return "/m²";
-      default:
-        return "";
-    }
-  };
-
   const cityTranslations: Record<string, string> = {
     tbilisi: "თბილისი",
     rustavi: "რუსთავი",
@@ -786,26 +885,28 @@ export default function ProfessionalDetailClient() {
   const totalCompletedJobs =
     (profile?.completedJobs || 0) + (profile?.externalCompletedJobs || 0);
 
-  const openLightbox = (index: number) => {
+  const openLightbox = useCallback((index: number) => {
     setLightboxIndex(index);
     setLightboxOpen(true);
     document.body.style.overflow = "hidden";
-  };
+  }, []);
 
-  const closeLightbox = () => {
+  const closeLightbox = useCallback(() => {
     setLightboxOpen(false);
     document.body.style.overflow = "";
-  };
+  }, []);
 
-  const nextImage = () => {
+  const nextImage = useCallback(() => {
     const images = getAllPortfolioImages();
-    setLightboxIndex((prev) => (prev + 1) % images.length);
-  };
+    setLightboxIndex((prev) => (images.length ? (prev + 1) % images.length : 0));
+  }, [getAllPortfolioImages]);
 
-  const prevImage = () => {
+  const prevImage = useCallback(() => {
     const images = getAllPortfolioImages();
-    setLightboxIndex((prev) => (prev - 1 + images.length) % images.length);
-  };
+    setLightboxIndex((prev) =>
+      images.length ? (prev - 1 + images.length) % images.length : 0
+    );
+  }, [getAllPortfolioImages]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -844,7 +945,7 @@ export default function ProfessionalDetailClient() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [lightboxOpen, selectedProject]);
+  }, [lightboxOpen, selectedProject, closeLightbox, nextImage, prevImage]);
 
   // Loading state
   if (isLoading) {
@@ -873,6 +974,11 @@ export default function ProfessionalDetailClient() {
             <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
               {t("professional.profileNotFound")}
             </h2>
+            {error && (
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
+                {error}
+              </p>
+            )}
             <Button onClick={() => router.push("/browse")} className="mt-6">
               {t("common.goBack")}
             </Button>
@@ -960,24 +1066,24 @@ export default function ProfessionalDetailClient() {
         ref={heroRef}
         className={`relative transition-all duration-700 ${isVisible ? "opacity-100" : "opacity-0"}`}
       >
-        {/* Compact gradient header */}
-        <div className="relative h-24 md:h-28 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#D4B8A0] via-[#C4A080] to-[#A08060] dark:from-[#3A2820] dark:via-[#2A1E18] dark:to-[#1A1410]" />
-          <div className="absolute inset-0 overflow-hidden">
-            <div
-              className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-20"
-              style={{ backgroundColor: ACCENT_COLOR }}
-            />
-            <div
-              className="absolute top-1/2 -left-4 w-20 h-20 rounded-full opacity-15"
-              style={{ backgroundColor: ACCENT_COLOR }}
-            />
-          </div>
-          <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-[#FAFAFA] dark:from-[#0A0A0A] to-transparent" />
+        {/* Clean header (less busy, better on mobile) */}
+        <div className="relative h-20 sm:h-24 md:h-28 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-[#F6F1EC] via-[#FAFAFA] to-[#FAFAFA] dark:from-neutral-950 dark:via-[#0A0A0A] dark:to-[#0A0A0A]" />
+          {/* Subtle texture */}
+          <div
+            className="absolute inset-0 opacity-[0.10] dark:opacity-[0.06]"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 1px 1px, rgba(0,0,0,0.18) 1px, transparent 0)",
+              backgroundSize: "18px 18px",
+            }}
+          />
+          {/* Accent hairline */}
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C4735B]/40 to-transparent" />
         </div>
 
         {/* Back button & Share - positioned over header */}
-        <div className="absolute top-3 left-0 right-0 z-10">
+        <div className="absolute top-4 sm:top-5 left-0 right-0 z-10">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 flex justify-between">
             <Button
               variant="ghost"
@@ -1047,16 +1153,18 @@ export default function ProfessionalDetailClient() {
           </div>
         </div>
 
-        {/* Profile card - horizontal compact layout */}
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 -mt-12 pb-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg border border-neutral-200/50 dark:border-neutral-800 p-4 md:p-5">
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+        {/* Profile card - mobile-first layout */}
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 -mt-5 sm:-mt-7 pb-4">
+          <div className="bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm rounded-2xl shadow-lg border border-neutral-200/60 dark:border-neutral-800 p-4 md:p-5">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-4">
               {/* Avatar */}
-              <div className="relative flex-shrink-0">
+              <div className="relative flex-shrink-0 self-start">
                 {avatarUrl ? (
-                  <img
+                  <Image
                     src={storage.getFileUrl(avatarUrl)}
                     alt={profile.name}
+                    width={96}
+                    height={96}
                     className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover ring-2 ring-white dark:ring-neutral-800 shadow-lg"
                   />
                 ) : (
@@ -1077,7 +1185,7 @@ export default function ProfessionalDetailClient() {
               </div>
 
               {/* Info */}
-              <div className="flex-1 text-center sm:text-left min-w-0">
+              <div className="flex-1 text-left min-w-0">
                 {isOwner && isEditingName ? (
                   <div className="flex items-center gap-2 mb-1">
                     <Input
@@ -1106,7 +1214,7 @@ export default function ProfessionalDetailClient() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center sm:justify-start gap-2">
+                  <div className="flex items-center justify-start gap-2">
                     <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white truncate">
                       {profile.name}
                     </h1>
@@ -1192,7 +1300,13 @@ export default function ProfessionalDetailClient() {
                 )}
 
                 {/* Stats */}
-                <div className="flex items-center justify-center sm:justify-start flex-wrap gap-3 text-xs sm:text-sm">
+                <div className="flex items-center justify-start flex-wrap gap-3 text-xs sm:text-sm">
+                  <div className="flex items-center gap-1 text-neutral-600 dark:text-neutral-400">
+                    <Eye className="w-3.5 h-3.5" />
+                    <span className="font-semibold text-neutral-900 dark:text-white">
+                      {profile.profileViewCount ?? 0}
+                    </span>
+                  </div>
                   {profile.avgRating > 0 && (
                     <div className="flex items-center gap-1">
                       <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
@@ -1245,8 +1359,11 @@ export default function ProfessionalDetailClient() {
 
                 {/* Categories - Main expertise areas */}
                 {profile.categories?.length > 0 && (
-                  <div className="flex flex-wrap justify-center sm:justify-start gap-1.5 mt-3">
-                    {profile.categories.map((cat, idx) => (
+                  <div className="flex flex-wrap justify-start gap-1.5 mt-3">
+                    {(profile.categories.length > 2
+                      ? profile.categories.slice(0, 2)
+                      : profile.categories
+                    ).map((cat, idx) => (
                       <span
                         key={`cat-${idx}`}
                         className="px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-[#C4735B] to-[#D4937B] text-white shadow-sm"
@@ -1254,13 +1371,82 @@ export default function ProfessionalDetailClient() {
                         {getCategoryLabel(cat)}
                       </span>
                     ))}
+                    {profile.categories.length > 2 && (
+                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 border border-neutral-200/60 dark:border-neutral-700">
+                        +{profile.categories.length - 2}
+                      </span>
+                    )}
                   </div>
                 )}
 
-                {/* Services with Experience - Detailed skills */}
+                {/* Services with Experience - mobile compact */}
                 {((profile.selectedServices?.length ?? 0) > 0 ||
                   (profile.subcategories?.length ?? 0) > 0) && (
-                  <div className="mt-3 p-3 rounded-xl bg-neutral-50/80 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
+                  <div className="sm:hidden mt-3">
+                    <p className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold mb-2">
+                      {locale === "ka"
+                        ? "სერვისები და გამოცდილება"
+                        : "Services & Experience"}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {profile.selectedServices && profile.selectedServices.length > 0 ? (
+                        <>
+                          {profile.selectedServices.slice(0, 3).map((service, idx) => (
+                            <span
+                              key={`m-svc-${idx}`}
+                              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs font-medium text-neutral-800 dark:text-neutral-200 border border-neutral-200/60 dark:border-neutral-700"
+                            >
+                              <span className="truncate max-w-[160px]">
+                                {locale === "ka" ? service.nameKa : service.name}
+                              </span>
+                              <span className="text-[10px] font-semibold text-[#C4735B] bg-[#C4735B]/10 px-1.5 py-0.5 rounded">
+                                {getExperienceLabel(service.experience)}
+                              </span>
+                            </span>
+                          ))}
+                          {profile.selectedServices.length > 3 && (
+                            <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs font-medium text-neutral-600 dark:text-neutral-300 border border-neutral-200/60 dark:border-neutral-700">
+                              +{profile.selectedServices.length - 3}{" "}
+                              {locale === "ka" ? "სხვა" : "more"}
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {(profile.subcategories || []).slice(0, 3).map((sub, idx) => {
+                            const experience = getServiceExperience(sub);
+                            return (
+                              <span
+                                key={`m-sub-${idx}`}
+                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs font-medium text-neutral-800 dark:text-neutral-200 border border-neutral-200/60 dark:border-neutral-700"
+                              >
+                                <span className="truncate max-w-[160px]">
+                                  {getSubcategoryLabel(sub)}
+                                </span>
+                                {experience && (
+                                  <span className="text-[10px] font-semibold text-[#C4735B] bg-[#C4735B]/10 px-1.5 py-0.5 rounded">
+                                    {getExperienceLabel(experience)}
+                                  </span>
+                                )}
+                              </span>
+                            );
+                          })}
+                          {(profile.subcategories?.length || 0) > 3 && (
+                            <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs font-medium text-neutral-600 dark:text-neutral-300 border border-neutral-200/60 dark:border-neutral-700">
+                              +{(profile.subcategories?.length || 0) - 3}{" "}
+                              {locale === "ka" ? "სხვა" : "more"}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Services with Experience - Detailed skills (desktop) */}
+                {((profile.selectedServices?.length ?? 0) > 0 ||
+                  (profile.subcategories?.length ?? 0) > 0) && (
+                  <div className="hidden sm:block mt-3 p-3 rounded-xl bg-neutral-50/80 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
                     <p className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold mb-2">
                       {locale === "ka"
                         ? "სერვისები და გამოცდილება"
@@ -1330,78 +1516,54 @@ export default function ProfessionalDetailClient() {
               </div>
 
               {/* Price & CTA - Right side */}
-              <div className="flex flex-col items-center sm:items-end gap-3 flex-shrink-0">
-                {(profile.basePrice ?? 0) > 0 && (
-                  <div className="text-right">
-                    <div className="flex items-baseline gap-1">
-                      {/* Price range display */}
-                      {profile.maxPrice &&
-                      profile.maxPrice > (profile.basePrice ?? 0) ? (
-                        <>
-                          <span className="text-2xl font-bold text-neutral-900 dark:text-white">
-                            {profile.basePrice}₾
-                          </span>
-                          <span className="text-neutral-400 font-medium">
-                            -
-                          </span>
-                          <span className="text-2xl font-bold text-neutral-900 dark:text-white">
-                            {profile.maxPrice}₾
-                          </span>
-                        </>
-                      ) : (
+              <div className="flex flex-col gap-3 flex-shrink-0 w-full sm:w-auto sm:items-end">
+                {pricingMeta && (
+                  <div className="text-left sm:text-right">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                        {pricingMeta.typeLabel}
+                      </span>
+                      {pricingMeta.valueLabel && (
                         <span className="text-2xl font-bold text-neutral-900 dark:text-white">
-                          {profile.pricingModel === "from" &&
-                            (locale === "ka" ? "" : "from ")}
-                          {profile.basePrice}₾
-                          {profile.pricingModel === "from" &&
-                            (locale === "ka" ? "-დან" : "")}
+                          {pricingMeta.valueLabel}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-neutral-500 mt-0.5">
-                      {profile.pricingModel === "hourly" &&
-                        t("professional.hourly")}
-                      {profile.pricingModel === "daily" &&
-                        t("professional.daily")}
-                      {profile.pricingModel === "project_based" &&
-                        t("professional.perProject")}
-                      {profile.pricingModel === "from" &&
-                        t("professional.startingPrice")}
-                      {profile.pricingModel === "sqm" &&
-                        t("professional.perSqm")}
-                    </p>
                   </div>
                 )}
-                {/* Visitor: Contact button (no owner edit button - edits are inline now) */}
-                {!isOwner &&
-                  (phoneRevealed && profile.phone ? (
-                    <a
-                      href={`tel:${profile.phone}`}
-                      className="px-5 py-2 rounded-full text-white font-medium text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg shadow-emerald-500/25"
-                    >
-                      <span className="flex items-center gap-2">
-                        <Phone className="w-4 h-4" />
-                        {profile.phone}
-                      </span>
-                    </a>
-                  ) : (
-                    <Button
-                      onClick={handleContact}
-                      size="sm"
-                      className="rounded-full"
-                      leftIcon={
-                        isBasicTier ? (
+                {/* Visitor CTA: show inside hero on desktop; mobile uses the fixed bottom button */}
+                {!isOwner && (
+                  <div className="hidden lg:block">
+                    {phoneRevealed && profile.phone ? (
+                      <a
+                        href={`tel:${profile.phone}`}
+                        className="w-full sm:w-auto px-5 py-2 rounded-xl sm:rounded-full text-white font-medium text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg shadow-emerald-500/25"
+                      >
+                        <span className="flex items-center justify-center sm:justify-start gap-2">
                           <Phone className="w-4 h-4" />
-                        ) : (
-                          <MessageSquare className="w-4 h-4" />
-                        )
-                      }
-                    >
-                      {isBasicTier
-                        ? t("professional.showPhone")
-                        : t("professional.contact")}
-                    </Button>
-                  ))}
+                          {profile.phone}
+                        </span>
+                      </a>
+                    ) : (
+                      <Button
+                        onClick={handleContact}
+                        size="sm"
+                        className="w-full sm:w-auto rounded-xl sm:rounded-full"
+                        leftIcon={
+                          isBasicTier ? (
+                            <Phone className="w-4 h-4" />
+                          ) : (
+                            <MessageSquare className="w-4 h-4" />
+                          )
+                        }
+                      >
+                        {isBasicTier
+                          ? t("professional.showPhone")
+                          : t("professional.contact")}
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1526,9 +1688,9 @@ export default function ProfessionalDetailClient() {
             )}
 
             {/* ========== SIMILAR PROFESSIONALS ========== */}
-            {profile.categories && profile.categories.length > 0 && (
+            {proCategories.length > 0 && (
               <SimilarProfessionals
-                categories={profile.categories}
+                categories={proCategories}
                 currentProId={profile.id}
                 locale={locale}
               />
@@ -1671,6 +1833,7 @@ export default function ProfessionalDetailClient() {
                     className="max-w-full max-h-[70vh] object-contain rounded-lg"
                   />
                 ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={storage.getFileUrl(currentItem)}
                     alt=""
@@ -1682,7 +1845,7 @@ export default function ProfessionalDetailClient() {
               {/* Thumbnail Strip */}
               {totalMedia > 1 && (
                 <div className="p-4" onClick={(e) => e.stopPropagation()}>
-                  <div className="flex justify-center gap-2 overflow-x-auto pb-2">
+                  <div className="flex justify-start gap-2 overflow-x-auto pb-2">
                     {/* Image thumbnails */}
                     {selectedProject.images.map((img, idx) => (
                       <button
@@ -1698,6 +1861,7 @@ export default function ProfessionalDetailClient() {
                             : "opacity-60 hover:opacity-100"
                         }`}
                       >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={storage.getFileUrl(img)}
                           alt=""

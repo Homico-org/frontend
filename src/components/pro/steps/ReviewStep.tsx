@@ -1,8 +1,9 @@
 "use client";
 
+import { ExperienceLevel, SelectedService } from "@/components/register/steps/StepSelectServices";
+import { Badge } from "@/components/ui/badge";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Badge } from "@/components/ui/badge";
 import {
   Briefcase,
   Clock,
@@ -12,7 +13,6 @@ import {
   Images,
   Instagram,
   Linkedin,
-  Link2,
   MapPin,
   MessageCircle,
   Pencil,
@@ -20,7 +20,6 @@ import {
   User
 } from "lucide-react";
 import { PortfolioProject } from "./ProjectsStep";
-import { SelectedService, ExperienceLevel } from "@/components/register/steps/StepSelectServices";
 
 // Experience level labels
 const EXPERIENCE_LABELS: Record<ExperienceLevel, { en: string; ka: string }> = {
@@ -87,13 +86,11 @@ export default function ReviewStep({
 
   const getPricingSuffix = () => {
     switch (formData.pricingModel) {
-      case "hourly":
-        return t('common.hr');
-      case "daily":
-        return t('common.day');
-      case "sqm":
-        return "₾/m²";
-      case "from":
+      case "byAgreement":
+        return "";
+      case "range":
+        return "₾";
+      case "fixed":
         return "₾";
       default:
         return "₾";
@@ -102,16 +99,12 @@ export default function ReviewStep({
 
   const getPricingLabel = () => {
     switch (formData.pricingModel) {
-      case "hourly":
-        return t('common.hourly');
-      case "daily":
-        return t('common.daily');
-      case "sqm":
-        return t('common.perSquareMeter');
-      case "from":
-        return t('common.fixedPrice');
-      case "project_based":
-        return t('common.perProject');
+      case "byAgreement":
+        return t("common.negotiable");
+      case "fixed":
+        return t("common.fixed");
+      case "range":
+        return t("common.priceRange");
       default:
         return "";
     }
@@ -351,8 +344,10 @@ export default function ReviewStep({
 
           <div className="flex items-baseline gap-3">
             <span className="text-2xl font-bold text-[var(--color-text-primary)]">
-              {formData.basePrice || "0"}
-              {formData.maxPrice && ` - ${formData.maxPrice}`}
+              {formData.pricingModel === "byAgreement"
+                ? t("common.negotiable")
+                : formData.basePrice || "0"}
+              {formData.pricingModel === "range" && formData.maxPrice && ` - ${formData.maxPrice}`}
             </span>
             <span className="text-[var(--color-text-secondary)]">
               {getPricingSuffix()}

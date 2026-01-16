@@ -4,7 +4,7 @@ import AvatarCropper from '@/components/common/AvatarCropper';
 import { Input, Textarea } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { AlertCircle, Camera, CheckCircle2, Clock, FileText, Globe, Instagram, Facebook, Linkedin, MessageCircle, Send } from 'lucide-react';
+import { AlertCircle, Camera, CheckCircle2, Clock, FileText, Globe, Instagram, Facebook, Linkedin, MessageCircle, Send, Sparkles, Plus, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 interface AboutStepProps {
@@ -29,6 +29,8 @@ interface AboutStepProps {
     avatar?: boolean;
   };
   hideExperience?: boolean; // Hide experience field (experience is now per-service)
+  customServices?: string[];
+  onCustomServicesChange?: (services: string[]) => void;
 }
 
 export default function AboutStep({
@@ -39,6 +41,8 @@ export default function AboutStep({
   onAvatarCropped,
   validation,
   hideExperience = false,
+  customServices = [],
+  onCustomServicesChange,
 }: AboutStepProps) {
   const { t, locale } = useLanguage();
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -46,6 +50,23 @@ export default function AboutStep({
   // State for cropper
   const [imageToCrop, setImageToCrop] = useState<string | null>(null);
   const [showCropper, setShowCropper] = useState(false);
+  const [customSkillInput, setCustomSkillInput] = useState('');
+
+  const addCustomSkill = () => {
+    if (customSkillInput.trim() && onCustomServicesChange) {
+      const newSkill = customSkillInput.trim();
+      if (!customServices.includes(newSkill)) {
+        onCustomServicesChange([...customServices, newSkill]);
+      }
+      setCustomSkillInput('');
+    }
+  };
+
+  const removeCustomSkill = (skill: string) => {
+    if (onCustomServicesChange) {
+      onCustomServicesChange(customServices.filter(s => s !== skill));
+    }
+  };
 
   // Handle file selection - show cropper instead of directly setting avatar
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -286,6 +307,74 @@ export default function AboutStep({
             </span>
           </div>
         </div>
+
+        {/* Custom Skills - OPTIONAL */}
+        {onCustomServicesChange && (
+          <div className="bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm border-2 border-[var(--color-border-subtle)]">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-[#C4735B]" />
+                <span className="font-semibold text-[var(--color-text-primary)]">
+                  {t('common.customSkills')}
+                </span>
+              </div>
+              <span className="text-xs font-medium text-[var(--color-text-muted)] bg-[var(--color-bg-tertiary)] px-2.5 py-1 rounded-full">
+                {t('common.optional')}
+              </span>
+            </div>
+            <p className="text-sm text-[var(--color-text-secondary)] mb-4">
+              {t('register.customSkillHint')}
+            </p>
+
+            {/* Custom skills list */}
+            {customServices.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {customServices.map(skill => (
+                  <span
+                    key={skill}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-sm dark:bg-emerald-900/30 dark:text-emerald-400"
+                  >
+                    {skill}
+                    <button
+                      type="button"
+                      onClick={() => removeCustomSkill(skill)}
+                      className="w-4 h-4 rounded-full hover:bg-emerald-200 dark:hover:bg-emerald-800 flex items-center justify-center transition-colors"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Add custom skill input */}
+            <div className="flex gap-2">
+              <Input
+                value={customSkillInput}
+                onChange={(e) => setCustomSkillInput(e.target.value)}
+                variant="filled"
+                inputSize="default"
+                placeholder={t('register.addCustomSkill')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addCustomSkill();
+                  }
+                }}
+                className="flex-1"
+              />
+              <button
+                type="button"
+                onClick={addCustomSkill}
+                disabled={!customSkillInput.trim()}
+                className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:bg-neutral-200 dark:disabled:bg-neutral-700 text-white transition-colors flex items-center gap-1.5"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline text-sm font-medium">{t('common.add')}</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Contact & Social Media - OPTIONAL */}
         <div className="bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm border-2 border-[var(--color-border-subtle)]">

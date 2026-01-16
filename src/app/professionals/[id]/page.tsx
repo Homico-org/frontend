@@ -16,7 +16,7 @@ interface ProProfile {
 // Fetch profile data for metadata
 async function getProfile(id: string): Promise<ProProfile | null> {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
     const response = await fetch(`${apiUrl}/users/pros/${id}`, {
       next: { revalidate: 60 }, // Cache for 60 seconds
     });
@@ -106,6 +106,12 @@ export async function generateMetadata({
   };
 }
 
-export default function ProfessionalDetailPage() {
-  return <ProfessionalDetailClient />;
+export default async function ProfessionalDetailPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  // Server-side fetch so the page works even if the browser doesn't show an XHR
+  const initialProfile = await getProfile(params.id);
+  return <ProfessionalDetailClient initialProfile={initialProfile} />;
 }

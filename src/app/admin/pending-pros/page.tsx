@@ -2,9 +2,8 @@
 
 import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
-import Select from '@/components/common/Select';
 import { Button } from '@/components/ui/button';
-import { Input, Textarea } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/input';
 import { ADMIN_THEME as THEME } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCategories } from '@/contexts/CategoriesContext';
@@ -26,16 +25,14 @@ import {
     MapPin,
     Phone,
     RefreshCw,
-    Search,
     UserCheck,
     Users,
-    X,
     XCircle,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface PendingPro {
   _id: string;
@@ -93,7 +90,6 @@ function AdminPendingProsPageContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -102,15 +98,18 @@ function AdminPendingProsPageContent() {
   const [rejectReason, setRejectReason] = useState('');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
+  // Avoid "full page reload" feel on filter changes after first load
+  const hasLoadedOnceRef = useRef(false);
+
   const fetchPendingPros = useCallback(async () => {
     try {
-      setIsRefreshing(true);
+      if (hasLoadedOnceRef.current) setIsRefreshing(true);
+      else setIsLoading(true);
       setErrorMessage('');
       const response = await api.get('/admin/pending-pros', {
         params: {
           page,
           limit: 20,
-          search: searchQuery || undefined,
           status: statusFilter,
         },
       });
@@ -120,10 +119,11 @@ function AdminPendingProsPageContent() {
       console.error('Error fetching pending pros:', error);
       setErrorMessage(locale === 'ka' ? 'ვერ მოხერხდა მონაცემების ჩატვირთვა' : 'Failed to load data');
     } finally {
+      hasLoadedOnceRef.current = true;
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [page, searchQuery, statusFilter]);
+  }, [page, statusFilter, locale]);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -214,12 +214,10 @@ function AdminPendingProsPageContent() {
     return labels[exp] || exp;
   };
 
-  const statusOptions = [
-    { value: 'pending', label: locale === 'ka' ? 'მოლოდინში' : 'Pending' },
-    { value: 'approved', label: locale === 'ka' ? 'დამტკიცებული' : 'Approved' },
-    { value: 'rejected', label: locale === 'ka' ? 'უარყოფილი' : 'Rejected' },
-    { value: 'all', label: locale === 'ka' ? 'ყველა' : 'All' },
-  ];
+  const handleStatusCardClick = (next: typeof statusFilter) => {
+    setPage(1);
+    setStatusFilter((prev) => (prev === next ? 'all' : next));
+  };
 
   return (
     <div className="min-h-screen" style={{ background: THEME.surface }}>
@@ -281,9 +279,15 @@ function AdminPendingProsPageContent() {
         {/* Stats Cards */}
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div 
-              className="rounded-2xl p-4"
-              style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+            <button
+              type="button"
+              onClick={() => handleStatusCardClick('pending')}
+              className="rounded-2xl p-4 text-left transition-all hover:scale-[1.01]"
+              style={{
+                background: THEME.surfaceLight,
+                border: `1px solid ${statusFilter === 'pending' ? `${THEME.warning}66` : THEME.border}`,
+                boxShadow: statusFilter === 'pending' ? `0 0 0 3px ${THEME.warning}14` : undefined,
+              }}
             >
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-xl" style={{ background: `${THEME.warning}20` }}>
@@ -296,10 +300,16 @@ function AdminPendingProsPageContent() {
                   </p>
                 </div>
               </div>
-            </div>
-            <div 
-              className="rounded-2xl p-4"
-              style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleStatusCardClick('approved')}
+              className="rounded-2xl p-4 text-left transition-all hover:scale-[1.01]"
+              style={{
+                background: THEME.surfaceLight,
+                border: `1px solid ${statusFilter === 'approved' ? `${THEME.success}66` : THEME.border}`,
+                boxShadow: statusFilter === 'approved' ? `0 0 0 3px ${THEME.success}14` : undefined,
+              }}
             >
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-xl" style={{ background: `${THEME.success}20` }}>
@@ -312,10 +322,16 @@ function AdminPendingProsPageContent() {
                   </p>
                 </div>
               </div>
-            </div>
-            <div 
-              className="rounded-2xl p-4"
-              style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleStatusCardClick('rejected')}
+              className="rounded-2xl p-4 text-left transition-all hover:scale-[1.01]"
+              style={{
+                background: THEME.surfaceLight,
+                border: `1px solid ${statusFilter === 'rejected' ? `${THEME.error}66` : THEME.border}`,
+                boxShadow: statusFilter === 'rejected' ? `0 0 0 3px ${THEME.error}14` : undefined,
+              }}
             >
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-xl" style={{ background: `${THEME.error}20` }}>
@@ -328,10 +344,16 @@ function AdminPendingProsPageContent() {
                   </p>
                 </div>
               </div>
-            </div>
-            <div 
-              className="rounded-2xl p-4"
-              style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleStatusCardClick('all')}
+              className="rounded-2xl p-4 text-left transition-all hover:scale-[1.01]"
+              style={{
+                background: THEME.surfaceLight,
+                border: `1px solid ${statusFilter === 'all' ? `${THEME.info}66` : THEME.border}`,
+                boxShadow: statusFilter === 'all' ? `0 0 0 3px ${THEME.info}14` : undefined,
+              }}
             >
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-xl" style={{ background: `${THEME.info}20` }}>
@@ -344,39 +366,9 @@ function AdminPendingProsPageContent() {
                   </p>
                 </div>
               </div>
-            </div>
+            </button>
           </div>
         )}
-
-        {/* Filters */}
-        <div 
-          className="rounded-2xl p-4 mb-6"
-          style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
-        >
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search 
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5"
-                style={{ color: THEME.textMuted }}
-              />
-              <Input
-                placeholder={locale === 'ka' ? 'ძებნა სახელით, ტელეფონით...' : 'Search by name, phone...'}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-                style={{ background: THEME.surface, borderColor: THEME.border, color: THEME.text }}
-              />
-            </div>
-            <div className="w-full sm:w-48">
-              <Select
-                options={statusOptions}
-                value={statusFilter}
-                onChange={(val) => setStatusFilter(val as 'pending' | 'approved' | 'rejected' | 'all')}
-                placeholder={locale === 'ka' ? 'სტატუსი' : 'Status'}
-              />
-            </div>
-          </div>
-        </div>
 
         {/* Professionals List */}
         <div 

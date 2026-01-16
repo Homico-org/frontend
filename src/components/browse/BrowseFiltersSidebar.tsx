@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { useBrowseContext } from '@/contexts/BrowseContext';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { getCategoryLabelStatic } from '@/hooks/useCategoryLabels';
 import { ChevronDown, Facebook, HelpCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
@@ -84,7 +85,7 @@ function CategoryAccordion({
         <div ref={contentRef} className="px-3 pb-2.5 space-y-1.5">
           {subcategories.map((sub, index) => {
             const isSelected = selectedCategory === categoryKey && selectedSubcategory === sub.key;
-            const subLabel = locale === 'ka' ? sub.nameKa : sub.name;
+            const subLabel = getCategoryLabelStatic(sub.key, locale);
 
             return (
               <button
@@ -326,7 +327,7 @@ export default function BrowseFiltersSidebar({
             // Only expand if manually toggled - don't auto-expand on selection
             const isExpanded = expandedCategories[categoryKey] ?? false;
             const subcategories = getSubcategoriesForCategory(categoryKey);
-            const categoryLabel = locale === 'ka' ? category.nameKa : category.name;
+            const categoryLabel = getCategoryLabelStatic(categoryKey, locale);
 
             return (
               <CategoryAccordion

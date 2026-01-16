@@ -3,6 +3,7 @@
 import { CategoryIcon } from '@/components/categories';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { getCategoryLabelStatic } from '@/hooks/useCategoryLabels';
 import { useState } from 'react';
 
 interface CategorySectionProps {
@@ -74,7 +75,7 @@ export default function CategorySection({
 
               {/* Label */}
               <span className="font-semibold">
-                {locale === 'ka' ? category.nameKa : category.name}
+                {getCategoryLabelStatic(category.key, locale)}
               </span>
 
               {/* Hover glow effect */}
@@ -136,7 +137,7 @@ export default function CategorySection({
                 `}
                 style={{ animationDelay: `${index * 30}ms` }}
               >
-                {locale === 'ka' ? sub.nameKa : sub.name}
+                {getCategoryLabelStatic(sub.key, locale)}
               </button>
             );
           })}

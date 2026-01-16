@@ -104,7 +104,7 @@ function ProProfileSetupPageContent() {
     availability: [] as string[],
     basePrice: '',
     maxPrice: '',
-    pricingModel: '' as 'hourly' | 'daily' | 'sqm' | 'project_based' | 'from' | '',
+    pricingModel: '' as 'fixed' | 'range' | 'byAgreement' | '',
     serviceAreas: [] as string[],
     nationwide: false,
     // Social media
@@ -551,7 +551,7 @@ function ProProfileSetupPageContent() {
     subcategories: selectedSubcategories.length > 0,
     pricing: (() => {
       // "By agreement" pricing is valid without numeric inputs.
-      if (formData.pricingModel === 'hourly') return true;
+      if (formData.pricingModel === 'byAgreement') return true;
 
       const base = parseFloat(formData.basePrice);
       const max = parseFloat(formData.maxPrice);
@@ -559,7 +559,7 @@ function ProProfileSetupPageContent() {
       if (!formData.basePrice || Number.isNaN(base) || base <= 0) return false;
 
       // For ranges, ensure max exists and is >= base.
-      if (formData.pricingModel === 'project_based') {
+      if (formData.pricingModel === 'range') {
         if (!formData.maxPrice || Number.isNaN(max) || max <= 0) return false;
         return max >= base;
       }
@@ -630,10 +630,10 @@ function ProProfileSetupPageContent() {
       const categoryInfo = getCategoryByKey(selectedCategories[0]) || allCategories[0];
 
       // Pricing models used in UI:
-      // - hourly: by agreement
-      // - from: fixed (single number)
-      // - project_based: range (min-max)
-      let pricingModel = formData.pricingModel || 'project_based';
+      // - byAgreement: no numeric prices
+      // - fixed: single price
+      // - range: min-max
+      let pricingModel = formData.pricingModel || 'range';
 
       // Transform beforeAfterPairs to the API format
       const cleanedPortfolioProjects = portfolioProjects.map(p => ({
@@ -668,8 +668,13 @@ function ProProfileSetupPageContent() {
         avatar: formData.avatar || user?.avatar,
         pricingModel,
         // For "by agreement", explicitly send null so backend can unset previously saved numeric prices.
-        basePrice: pricingModel === 'hourly' ? null : (parseFloat(formData.basePrice) || undefined),
-        maxPrice: pricingModel === 'hourly' ? null : (parseFloat(formData.maxPrice) || undefined),
+        // For "fixed", also send maxPrice=null so previous range max doesn't linger.
+        basePrice: pricingModel === 'byAgreement' ? null : (parseFloat(formData.basePrice) || undefined),
+        maxPrice: pricingModel === 'byAgreement'
+          ? null
+          : pricingModel === 'fixed'
+            ? null
+            : (parseFloat(formData.maxPrice) || undefined),
         serviceAreas: formData.nationwide && locationData ? [locationData.nationwide] : formData.serviceAreas,
         portfolioProjects: cleanedPortfolioProjects,
         pinterestLinks: formData.portfolioUrl ? [formData.portfolioUrl] : undefined,
@@ -823,6 +828,8 @@ function ProProfileSetupPageContent() {
                   experience: true, // Always valid - experience is set per service
                 }}
                 hideExperience // Hide the experience field
+                customServices={customServices}
+                onCustomServicesChange={setCustomServices}
               />
             </div>
           )}
@@ -856,10 +863,10 @@ function ProProfileSetupPageContent() {
                     max: parseInt(formData.maxPrice) || 0,
                   },
                   priceType: (
-                    formData.pricingModel === 'hourly' ? 'hourly' :
-                    formData.pricingModel === 'project_based' ? 'project' :
-                    'fixed' // Default to fixed (covers 'from', 'sqm', 'daily', etc.)
-                  ) as 'hourly' | 'fixed' | 'project',
+                    formData.pricingModel === 'byAgreement' ? 'byAgreement' :
+                    formData.pricingModel === 'range' ? 'range' :
+                    'fixed'
+                  ) as 'byAgreement' | 'fixed' | 'range',
                   serviceAreas: formData.serviceAreas,
                   nationwide: formData.nationwide,
                 }}
@@ -873,16 +880,15 @@ function ProProfileSetupPageContent() {
                   }
                   if ('priceType' in updates && updates.priceType) {
                     const typeMap: Record<string, typeof formData.pricingModel> = {
-                      'hourly': 'hourly',  // By agreement
-                      'fixed': 'from',     // Fixed price (from X amount)
-                      'project': 'project_based',  // Per project (range)
+                      byAgreement: 'byAgreement',
+                      fixed: 'fixed',
+                      range: 'range',
                     };
-                    const nextModel = typeMap[updates.priceType] || 'from';
-                    // When selecting "by agreement", clear numeric prices so validation/UI are consistent.
-                    if (nextModel === 'hourly') {
+                    const nextModel = typeMap[updates.priceType] || 'fixed';
+                    if (nextModel === 'byAgreement') {
                       handleFormChange({ pricingModel: nextModel, basePrice: '', maxPrice: '' });
-                    } else if (nextModel === 'from') {
-                      // Fixed "from" is a single price; clear max price.
+                    } else if (nextModel === 'fixed') {
+                      // Fixed is a single price; clear max price.
                       handleFormChange({ pricingModel: nextModel, maxPrice: '' });
                     } else {
                       handleFormChange({ pricingModel: nextModel });

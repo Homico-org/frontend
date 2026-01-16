@@ -415,9 +415,9 @@ function MyWorkPageContent() {
                           ? "პროექტის ჩათი/რესურსები/დეტალები ნახეთ სამუშაოს გვერდზე"
                           : "Open the job page to view chat, resources, and project details"}
                       </p>
-                    </div>
                   </div>
-                );
+                </div>
+              );
               }
 
               // Pending / rejected proposals are not shown on this page anymore.
