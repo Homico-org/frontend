@@ -7,7 +7,8 @@ import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
 import { ProProfile, ProStatus } from "@/types";
-import { Briefcase, CheckCircle2, Clock, Sparkles } from "lucide-react";
+import { Briefcase, CheckCircle2, Clock, Eye, Sparkles, Wallet } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -134,6 +135,68 @@ export default function ProCard({
   const completedJobsCounter = profile.completedJobs || 0;
   const completedJobs = Math.max(completedJobsCounter, portfolioCount, portfolioItemCount, completedProjects, externalJobs);
 
+  // TODO: Temporary fix for pricing model
+  const pricing = useMemo(() => {
+    const model = (profile.pricingModel as unknown as string | undefined) || undefined;
+    const base = typeof profile.basePrice === "number" ? profile.basePrice : undefined;
+    const max = typeof profile.maxPrice === "number" ? profile.maxPrice : undefined;
+
+    const hasBase = typeof base === "number" && base > 0;
+    const hasMax = typeof max === "number" && max > 0;
+
+    // Normalize legacy values to canonical product requirement:
+    // fixed | range | byAgreement
+    const normalizedIncoming =
+      model === "hourly"
+        ? "byAgreement"
+        : model === "daily" || model === "sqm" || model === "from"
+          ? "fixed"
+          : model === "project_based"
+            ? "range"
+            : model;
+
+    const normalizedModel =
+      normalizedIncoming === "range"
+        ? hasBase && hasMax && max! > base!
+          ? "range"
+          : hasBase || hasMax
+            ? "fixed"
+            : "byAgreement"
+        : normalizedIncoming === "fixed"
+          ? hasBase || hasMax
+            ? "fixed"
+            : "byAgreement"
+          : normalizedIncoming === "byAgreement"
+            ? "byAgreement"
+            : undefined;
+
+    if (normalizedModel === "byAgreement") {
+      return {
+        label: t("common.negotiable"),
+        value: null as string | null,
+      };
+    }
+
+    if (normalizedModel === "range" && hasBase && hasMax) {
+      return {
+        label: t("common.priceRange"),
+        value: `${base}₾ - ${max}₾`,
+      };
+    }
+
+    if (normalizedModel === "fixed" && (hasBase || hasMax)) {
+      const val = hasBase ? base! : max!;
+      return {
+        label: t("common.fixed"),
+        value: `${val}₾`,
+      };
+    }
+
+    return null;
+  }, [profile.pricingModel, profile.basePrice, profile.maxPrice, t]);
+
+  const viewsCount = profile.profileViewCount ?? 0;
+
   // Default/Compact variant
   if (variant === "compact" || variant === "default") {
     return (
@@ -144,7 +207,7 @@ export default function ProCard({
           <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-[#C4735B]/0 via-[#C4735B]/0 to-[#C4735B]/0 group-hover:from-[#C4735B]/25 group-hover:via-[#D4937B]/15 group-hover:to-[#C4735B]/25 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-[1px]" />
           
           {/* Main Card */}
-          <div className="relative bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-100/80 dark:border-neutral-800 group-hover:border-[#C4735B]/20 transition-all duration-500 group-hover:shadow-[0_20px_50px_-12px_rgba(196,115,91,0.15)] group-hover:-translate-y-0.5 p-5">
+          <div className="relative bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80 shadow-[0_1px_0_rgba(0,0,0,0.03),0_8px_24px_-18px_rgba(0,0,0,0.35)] group-hover:border-[#C4735B]/25 transition-all duration-500 group-hover:shadow-[0_20px_50px_-12px_rgba(196,115,91,0.15)] group-hover:-translate-y-0.5 p-5">
             
             {/* Shine effect overlay */}
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-30">
@@ -183,10 +246,12 @@ export default function ProCard({
                 
                 <div className="relative w-20 h-20 rounded-full overflow-hidden bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-700 dark:to-neutral-800 ring-2 ring-white dark:ring-neutral-900 shadow-lg group-hover:-translate-y-0.5 transition-transform duration-300">
                   {avatarUrl && !imageError ? (
-                    <img
+                    <Image
                       src={avatarUrl}
                       alt={profile.name}
-                      className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
+                      fill
+                      sizes="80px"
+                      className={`object-cover transition-all duration-500 group-hover:scale-105 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
                       onLoad={() => setImageLoaded(true)}
                       onError={() => setImageError(true)}
                     />
@@ -251,6 +316,30 @@ export default function ProCard({
                 <Briefcase className="w-3.5 h-3.5 text-neutral-400 group-hover:text-[#C4735B]/70 transition-colors" />
                 <span className="text-[12px] font-medium text-neutral-600 dark:text-neutral-400">
                   {completedJobs} {t('admin.job')}
+                </span>
+              </div>
+            </div>
+
+            {/* Pricing + Views */}
+            <div className="flex items-center justify-center gap-2.5 mb-4 flex-wrap">
+              {pricing && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#C4735B]/10 dark:bg-[#C4735B]/15 border border-[#C4735B]/25 dark:border-[#C4735B]/30 shadow-sm">
+                  <Wallet className="w-3.5 h-3.5 text-[#C4735B]" />
+                  <span className="text-[12px] font-semibold text-neutral-800 dark:text-neutral-100">
+                    {pricing.label}
+                    {pricing.value ? (
+                      <>
+                        <span className="text-neutral-400 dark:text-neutral-500">:</span>{" "}
+                        <span className="text-[#C4735B] font-bold">{pricing.value}</span>
+                      </>
+                    ) : null}
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-50 dark:bg-neutral-800/50 group-hover:bg-[#C4735B]/5 transition-colors duration-300">
+                <Eye className="w-3.5 h-3.5 text-neutral-400 group-hover:text-[#C4735B]/70 transition-colors" />
+                <span className="text-[12px] font-medium text-neutral-600 dark:text-neutral-400">
+                  {viewsCount}
                 </span>
               </div>
             </div>
@@ -335,16 +424,18 @@ export default function ProCard({
           {/* Premium border glow */}
           <div className="absolute -inset-[1px] rounded-xl bg-gradient-to-r from-[#C4735B]/0 via-[#C4735B]/0 to-[#C4735B]/0 group-hover:from-[#C4735B]/20 group-hover:via-[#D4937B]/10 group-hover:to-[#C4735B]/20 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-[1px]" />
           
-          <div className="relative bg-white dark:bg-neutral-900 rounded-xl overflow-hidden border border-neutral-100/80 dark:border-neutral-800 group-hover:border-[#C4735B]/20 transition-all duration-500 group-hover:shadow-lg p-3.5">
+          <div className="relative bg-white dark:bg-neutral-900 rounded-xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80 shadow-[0_1px_0_rgba(0,0,0,0.03),0_10px_24px_-22px_rgba(0,0,0,0.35)] group-hover:border-[#C4735B]/25 transition-all duration-500 group-hover:shadow-lg p-3.5">
             <div className="flex items-center gap-3.5">
               {/* Avatar - Enhanced */}
               <div className="relative flex-shrink-0 group/avatar">
                 <div className="w-14 h-14 rounded-full overflow-hidden bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-700 dark:to-neutral-800 ring-2 ring-white dark:ring-neutral-800 shadow-md">
                   {avatarUrl && !imageError ? (
-                    <img
+                    <Image
                       src={avatarUrl}
                       alt={profile.name}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover/avatar:scale-105"
+                      fill
+                      sizes="56px"
+                      className="object-cover transition-transform duration-300 group-hover/avatar:scale-105"
                       onError={() => setImageError(true)}
                     />
                   ) : (
@@ -404,6 +495,18 @@ export default function ProCard({
                   </span>
                   <span className="text-neutral-500 dark:text-neutral-400 font-medium">
                     {completedJobs} {locale === "ka" ? "პრ" : "jobs"}
+                  </span>
+                  <span className="text-neutral-400 dark:text-neutral-600">•</span>
+                  {pricing && (
+                    <span className="inline-flex items-center gap-1 text-[#C4735B] dark:text-[#D4937B] font-semibold">
+                      <Wallet className="w-3.5 h-3.5" />
+                      {pricing.value ? pricing.value : pricing.label}
+                    </span>
+                  )}
+                  <span className="text-neutral-400 dark:text-neutral-600">•</span>
+                  <span className="inline-flex items-center gap-1 text-neutral-500 dark:text-neutral-400 font-medium">
+                    <Eye className="w-3.5 h-3.5" />
+                    {viewsCount}
                   </span>
                 </div>
               </div>

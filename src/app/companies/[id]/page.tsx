@@ -1,14 +1,21 @@
 "use client";
 
-import Image from "next/image";
 import AppBackground from "@/components/common/AppBackground";
 import Header, { HeaderSpacer } from "@/components/common/Header";
+import MediaLightbox, { MediaItem } from "@/components/common/MediaLightbox";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { MultiStarDisplay } from "@/components/ui/StarRating";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { COMPANY_ACCENT as ACCENT, COMPANY_ACCENT_HOVER as ACCENT_HOVER } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/contexts/ToastContext";
+import { storage } from "@/services/storage";
+import type { BaseEntity } from "@/types/shared";
+import { formatTimeAgo } from "@/utils/dateUtils";
 import {
   ArrowRight,
   BadgeCheck,
@@ -28,16 +35,9 @@ import {
   Users,
   X,
 } from "lucide-react";
-import MediaLightbox, { MediaItem } from "@/components/common/MediaLightbox";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { storage } from "@/services/storage";
-import { formatTimeAgo } from "@/utils/dateUtils";
-import { COMPANY_ACCENT as ACCENT, COMPANY_ACCENT_HOVER as ACCENT_HOVER } from "@/constants/theme";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { MultiStarDisplay } from "@/components/ui/StarRating";
-import { Badge } from "@/components/ui/badge";
-import type { BaseEntity } from "@/types/shared";
 
 interface TeamMember extends BaseEntity {
   name: string;
@@ -566,7 +566,7 @@ export default function CompanyProfilePage() {
                     <Briefcase className="w-5 h-5 text-[#4A9B9B]" />
                   </div>
                   <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-                    {t('common.services')}
+                    {t('common.customSkills')}
                   </h2>
                 </div>
 

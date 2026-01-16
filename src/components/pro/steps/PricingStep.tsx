@@ -8,7 +8,7 @@ interface PricingStepProps {
   formData: {
     basePrice: string;
     maxPrice: string;
-    pricingModel: "hourly" | "daily" | "sqm" | "project_based" | "";
+    pricingModel: "fixed" | "range" | "byAgreement" | "";
   };
   onFormChange: (updates: Partial<PricingStepProps["formData"]>) => void;
   validation: {
@@ -18,68 +18,91 @@ interface PricingStepProps {
 
 // Modern outlined icons for pricing options
 const PricingIcons = {
-  hourly: ({ className, isActive }: { className?: string; isActive?: boolean }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke={isActive ? "#C4735B" : "currentColor"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
+  fixed: ({
+    className,
+    isActive,
+  }: {
+    className?: string;
+    isActive?: boolean;
+  }) => (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={isActive ? "#C4735B" : "currentColor"}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 2v20" strokeOpacity="0.25" />
+      <path d="M7 7h7a3 3 0 010 6H10a3 3 0 000 6h7" />
     </svg>
   ),
-  daily: ({ className, isActive }: { className?: string; isActive?: boolean }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke={isActive ? "#C4735B" : "currentColor"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="4" width="18" height="18" rx="2" />
-      <line x1="16" y1="2" x2="16" y2="6" />
-      <line x1="8" y1="2" x2="8" y2="6" />
-      <line x1="3" y1="10" x2="21" y2="10" />
-      <rect x="14" y="14" width="4" height="4" rx="0.5" fill={isActive ? "#C4735B" : "currentColor"} fillOpacity="0.2" />
+  range: ({
+    className,
+    isActive,
+  }: {
+    className?: string;
+    isActive?: boolean;
+  }) => (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={isActive ? "#C4735B" : "currentColor"}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 12h16" />
+      <path d="M7 9l-3 3 3 3" />
+      <path d="M17 9l3 3-3 3" />
     </svg>
   ),
-  sqm: ({ className, isActive }: { className?: string; isActive?: boolean }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke={isActive ? "#C4735B" : "currentColor"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <path d="M3 12h18" strokeOpacity="0.4" />
-      <path d="M12 3v18" strokeOpacity="0.4" />
-      <path d="M7 8h4M7 8l1.5-1.5M7 8l1.5 1.5M11 8l-1.5-1.5M11 8l-1.5 1.5" strokeWidth="1.25" />
-      <text x="13" y="18" fontSize="6" fontWeight="600" fill={isActive ? "#C4735B" : "currentColor"} stroke="none">m²</text>
-    </svg>
-  ),
-  project_based: ({ className, isActive }: { className?: string; isActive?: boolean }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke={isActive ? "#C4735B" : "currentColor"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
-      <rect x="9" y="3" width="6" height="4" rx="1" />
-      <path d="M9 12l2 2 4-4" />
-      <line x1="9" y1="17" x2="15" y2="17" strokeOpacity="0.5" />
+  byAgreement: ({
+    className,
+    isActive,
+  }: {
+    className?: string;
+    isActive?: boolean;
+  }) => (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={isActive ? "#C4735B" : "currentColor"}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M7 12l2 2 4-4" />
+      <path d="M14 12l2 2 4-4" />
+      <path d="M2 7h8M2 17h8" strokeOpacity="0.4" />
     </svg>
   ),
 };
 
 const pricingOptions = [
   {
-    key: "hourly",
-    label: "Hourly",
-    labelKa: "საათობრივი",
-    suffix: "₾/სთ",
-    Icon: PricingIcons.hourly,
-  },
-  {
-    key: "daily",
-    label: "Daily",
-    labelKa: "დღიური",
-    suffix: "₾/დღე",
-    Icon: PricingIcons.daily,
-  },
-  {
-    key: "sqm",
-    label: "Per m²",
-    labelKa: "კვ.მ",
-    suffix: "₾/m²",
-    Icon: PricingIcons.sqm,
-  },
-  {
-    key: "project_based",
-    label: "Per Project",
-    labelKa: "პროექტზე",
+    key: "fixed",
+    label: "Fixed",
+    labelKa: "ფიქსირებული",
     suffix: "₾",
-    Icon: PricingIcons.project_based,
+    Icon: PricingIcons.fixed,
+  },
+  {
+    key: "range",
+    label: "Range",
+    labelKa: "დიაპაზონი",
+    suffix: "₾",
+    Icon: PricingIcons.range,
+  },
+  {
+    key: "byAgreement",
+    label: "By Agreement",
+    labelKa: "შეთანხმებით",
+    suffix: "",
+    Icon: PricingIcons.byAgreement,
   },
 ];
 
@@ -100,7 +123,7 @@ export default function PricingStep({
       {/* Pricing Type Selection */}
       <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 shadow-sm">
         <h3 className="font-semibold text-[var(--color-text-primary)] mb-4">
-          {t('common.pricingType')}
+          {t("common.pricingType")}
         </h3>
 
         <div className="grid grid-cols-2 gap-3">
@@ -108,7 +131,11 @@ export default function PricingStep({
             <button
               key={option.key}
               type="button"
-              onClick={() => onFormChange({ pricingModel: option.key as typeof formData.pricingModel })}
+              onClick={() =>
+                onFormChange({
+                  pricingModel: option.key as typeof formData.pricingModel,
+                })
+              }
               className={`
                 group relative p-4 rounded-xl border-2 text-left transition-all duration-200
                 ${
@@ -154,40 +181,56 @@ export default function PricingStep({
         </div>
       </div>
 
-      {/* Price Range */}
+      {/* Price */}
       <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-[var(--color-text-primary)]">
-            {t('common.priceRange')}
+            {t("common.priceRange")}
           </h3>
           {validation.pricing && (
-            <Badge variant="success" size="xs" icon={<Check className="w-3 h-3" />}>
-              {t('common.completed')}
+            <Badge
+              variant="success"
+              size="xs"
+              icon={<Check className="w-3 h-3" />}
+            >
+              {t("common.completed")}
             </Badge>
           )}
         </div>
 
-        <div className="flex items-center gap-4">
-          {/* Min Price */}
-          <div className="flex-1">
-            <label className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2 block">
-              {t('common.startingPrice')}
-            </label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#E07B4F] font-semibold">
-                ₾
-              </span>
-              <input
-                type="number"
-                min="1"
-                value={formData.basePrice}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value === '' || parseFloat(value) >= 0) {
-                    onFormChange({ basePrice: value });
-                  }
-                }}
-                className={`
+        {formData.pricingModel === "byAgreement" ? (
+          <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-tertiary)] p-4">
+            <p className="text-sm text-[var(--color-text-secondary)]">
+              {t("common.negotiable")}
+            </p>
+            <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
+              {t("common.negotiable")}
+            </p>
+          </div>
+        ) : (
+          <div className="flex items-center gap-4">
+            {/* Min Price */}
+            <div className="flex-1">
+              <label className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2 block">
+                {formData.pricingModel === "range"
+                  ? t("common.startingPrice")
+                  : t("common.price")}
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#E07B4F] font-semibold">
+                  ₾
+                </span>
+                <input
+                  type="number"
+                  min="1"
+                  value={formData.basePrice}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === "" || parseFloat(value) >= 0) {
+                      onFormChange({ basePrice: value });
+                    }
+                  }}
+                  className={`
                   w-full pl-10 pr-4 py-3.5 rounded-xl text-lg font-semibold
                   bg-[var(--color-bg-tertiary)] border-2
                   text-[var(--color-text-primary)]
@@ -199,58 +242,66 @@ export default function PricingStep({
                       : "border-transparent focus:border-[#E07B4F]/50 focus:ring-4 focus:ring-[#E07B4F]/10"
                   }
                 `}
-                placeholder="50"
-              />
+                  placeholder="100"
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Divider */}
-          <div className="pt-6">
-            <span className="text-[var(--color-text-muted)] text-xl">—</span>
-          </div>
+            {/* Divider */}
+            {formData.pricingModel === "range" && (
+              <div className="pt-6">
+                <span className="text-[var(--color-text-muted)] text-xl">
+                  —
+                </span>
+              </div>
+            )}
 
-          {/* Max Price */}
-          <div className="flex-1">
-            <label className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2 block">
-              {t('common.maximumPrice')}
-            </label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] font-semibold">
-                ₾
-              </span>
-              <input
-                type="number"
-                min="1"
-                value={formData.maxPrice}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value === '' || parseFloat(value) >= 0) {
-                    onFormChange({ maxPrice: value });
-                  }
-                }}
-                className="
-                  w-full pl-10 pr-4 py-3.5 rounded-xl text-lg font-semibold
-                  bg-[var(--color-bg-tertiary)] border-2 border-transparent
-                  text-[var(--color-text-primary)]
-                  placeholder-[var(--color-text-muted)]
-                  focus:outline-none focus:border-[var(--color-border)] focus:ring-4 focus:ring-[var(--color-bg-muted)]
-                  transition-all duration-200
-                "
-                placeholder="200"
-              />
-            </div>
+            {/* Max Price */}
+            {formData.pricingModel === "range" && (
+              <div className="flex-1">
+                <label className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2 block">
+                  {t("common.maximumPrice")}
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] font-semibold">
+                    ₾
+                  </span>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.maxPrice}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "" || parseFloat(value) >= 0) {
+                        onFormChange({ maxPrice: value });
+                      }
+                    }}
+                    className="
+                    w-full pl-10 pr-4 py-3.5 rounded-xl text-lg font-semibold
+                    bg-[var(--color-bg-tertiary)] border-2 border-transparent
+                    text-[var(--color-text-primary)]
+                    placeholder-[var(--color-text-muted)]
+                    focus:outline-none focus:border-[var(--color-border)] focus:ring-4 focus:ring-[var(--color-bg-muted)]
+                    transition-all duration-200
+                  "
+                    placeholder="300"
+                  />
+                </div>
+              </div>
+            )}
           </div>
-        </div>
+        )}
 
         {/* Preview */}
-        {formData.basePrice && (
+        {(formData.basePrice || formData.pricingModel === "byAgreement") && (
           <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-[#E07B4F]/5 to-[#E8956A]/5 border border-[#E07B4F]/10">
             <p className="text-sm text-[var(--color-text-secondary)]">
-              {t('common.clientsWillSee')}
+              {t("common.clientsWillSee")}
             </p>
             <p className="text-xl font-bold text-[#E07B4F] mt-1">
-              {formData.basePrice}
-              {formData.maxPrice && ` - ${formData.maxPrice}`} {suffix}
+              {formData.pricingModel === "byAgreement"
+                ? t("common.negotiable")
+                : `${formData.basePrice}${formData.pricingModel === "range" && formData.maxPrice ? ` - ${formData.maxPrice}` : ""} ${suffix}`}
             </p>
           </div>
         )}

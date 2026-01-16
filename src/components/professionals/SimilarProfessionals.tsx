@@ -24,24 +24,37 @@ export default function SimilarProfessionals({
 
   const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(true);
+  const fetchInFlightRef = useRef<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
   const fetchSimilarPros = useCallback(async () => {
-    if (!categories.length) {
+    const category = categories?.[0] || "";
+    const fetchKey = `${category}__${currentProId}`;
+
+    if (fetchInFlightRef.current === fetchKey) return;
+    fetchInFlightRef.current = fetchKey;
+
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    if (!category) {
       setIsLoading(false);
+      fetchInFlightRef.current = null;
       return;
     }
 
     try {
       const params = new URLSearchParams();
       params.append("limit", "12");
-      if (categories[0]) {
-        params.append("category", categories[0]);
-      }
+      params.append("category", category);
 
-      const response = await api.get(`/users/pros?${params.toString()}`);
+      const response = await api.get(`/users/pros?${params.toString()}`, {
+        signal: controller.signal,
+      });
       const data = response.data;
       const pros = (data.data || []) as ProProfile[];
       
@@ -49,14 +62,22 @@ export default function SimilarProfessionals({
       const filtered = pros.filter((p) => p.id !== currentProId);
       setProfessionals(filtered);
     } catch (err) {
+      if ((err as any)?.name === "CanceledError") return;
+      if ((err as any)?.code === "ERR_CANCELED") return;
       console.error("Failed to fetch similar professionals:", err);
     } finally {
       setIsLoading(false);
+      if (fetchInFlightRef.current === fetchKey) {
+        fetchInFlightRef.current = null;
+      }
     }
   }, [categories, currentProId]);
 
   useEffect(() => {
     fetchSimilarPros();
+    return () => {
+      abortRef.current?.abort();
+    };
   }, [fetchSimilarPros]);
 
   const checkScrollButtons = useCallback(() => {
@@ -109,7 +130,7 @@ export default function SimilarProfessionals({
   return (
     <section className="py-8 border-t border-neutral-200/50 dark:border-neutral-800/50">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#C4735B] to-[#A85D48] flex items-center justify-center shadow-lg shadow-[#C4735B]/20">
             <Users className="w-5 h-5 text-white" />
@@ -155,8 +176,29 @@ export default function SimilarProfessionals({
         </div>
       </div>
 
+      {/* Mobile-friendly list (no horizontal scroll) */}
+      <div className="sm:hidden">
+        <div className="grid grid-cols-1 gap-4">
+          {professionals.slice(0, 4).map((pro) => (
+            <div key={pro.id} className="w-full">
+              <ProCard profile={pro} variant="compact" showLikeButton={false} />
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-5">
+          <a
+            href={`/browse/professionals?category=${categories[0] || ""}`}
+            className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-sm font-semibold text-neutral-800 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+          >
+            {t("common.viewAll")}
+            <ChevronRight className="w-4 h-4" />
+          </a>
+        </div>
+      </div>
+
       {/* Scrollable cards container */}
-      <div className="relative -mx-4 sm:-mx-6 lg:mx-0">
+      <div className="relative -mx-4 sm:-mx-6 lg:mx-0 hidden sm:block">
         {/* Left fade gradient */}
         {canScrollLeft && (
           <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-[#FAFAFA] dark:from-[#0A0A0A] to-transparent z-10 pointer-events-none lg:hidden" />

@@ -114,7 +114,7 @@ const JobCard = React.memo(function JobCard({
   return (
     <Link href={`/jobs/${job.id}`} className="group block">
       <div className="game-card-wrapper">
-        <div className={`game-card-content bg-white dark:bg-neutral-900 rounded-lg overflow-hidden shadow-sm transition-shadow duration-300 border border-neutral-100 dark:border-neutral-800 ${isExpired ? 'opacity-60' : ''}`}>
+        <div className={`game-card-content bg-white dark:bg-neutral-900 rounded-lg overflow-hidden transition-all duration-300 border border-neutral-200/70 dark:border-neutral-800/80 shadow-[0_1px_0_rgba(0,0,0,0.03),0_8px_24px_-18px_rgba(0,0,0,0.35)] group-hover:shadow-md ${isExpired ? 'opacity-60' : ''}`}>
 
         {/* Image Section */}
         <div className="relative aspect-[16/10] bg-neutral-100 dark:bg-neutral-800">

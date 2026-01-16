@@ -25,11 +25,9 @@ export enum ProStatus {
 }
 
 export enum PricingModel {
-  HOURLY = 'hourly',
-  DAILY = 'daily',
-  SQM = 'sqm',
-  PROJECT_BASED = 'project_based',
-  FROM = 'from',
+  FIXED = 'fixed',
+  RANGE = 'range',
+  BY_AGREEMENT = 'byAgreement',
 }
 
 export enum VerificationStatus {

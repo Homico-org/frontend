@@ -36,7 +36,8 @@ import {
   Zap
 } from 'lucide-react';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { io, Socket } from 'socket.io-client';
 
 interface DashboardStats {
   users: {
@@ -115,7 +116,7 @@ interface LocationData {
 }
 
 function AdminDashboardPageContent() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, token, user } = useAuth();
   const { t, locale } = useLanguage();
 
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -134,6 +135,8 @@ function AdminDashboardPageContent() {
   const [activeChart, setActiveChart] = useState<'signups' | 'jobs' | 'proposals'>('signups');
 
   const [error, setError] = useState<string | null>(null);
+  const socketRef = useRef<Socket | null>(null);
+  const supportRefreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchDashboardData = useCallback(async (showRefresh = false) => {
     try {
@@ -187,6 +190,63 @@ function AdminDashboardPageContent() {
     }
   }, []);
 
+  const refreshSupportStats = useCallback(async () => {
+    try {
+      const res = await api.get(`/support/admin/stats`);
+      const data = res.data;
+      setStats(prev => prev ? {
+        ...prev,
+        support: {
+          ...prev.support,
+          total: data.total ?? prev.support.total,
+          open: data.open ?? prev.support.open,
+          inProgress: data.inProgress ?? prev.support.inProgress,
+          resolved: data.resolved ?? prev.support.resolved,
+          unread: data.unread ?? prev.support.unread,
+        },
+      } : prev);
+    } catch (err) {
+      // Keep dashboard resilient; worst case it refreshes on the normal interval.
+    }
+  }, []);
+
+  // Live update support unread count on dashboard header
+  useEffect(() => {
+    if (!token || user?.role !== 'admin') return;
+
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:3001';
+    socketRef.current = io(`${backendUrl}/chat`, {
+      auth: { token },
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    });
+
+    socketRef.current.on('connect', () => {
+      socketRef.current?.emit('joinAdminSupport');
+    });
+
+    const scheduleSupportRefresh = () => {
+      if (supportRefreshTimeoutRef.current) clearTimeout(supportRefreshTimeoutRef.current);
+      supportRefreshTimeoutRef.current = setTimeout(() => {
+        refreshSupportStats();
+      }, 300);
+    };
+
+    // Any ticket update/new ticket can affect unread count
+    socketRef.current.on('supportNewTicket', scheduleSupportRefresh);
+    socketRef.current.on('supportTicketUpdate', scheduleSupportRefresh);
+    socketRef.current.on('supportTicketStatusChange', scheduleSupportRefresh);
+
+    return () => {
+      if (supportRefreshTimeoutRef.current) clearTimeout(supportRefreshTimeoutRef.current);
+      socketRef.current?.emit('leaveAdminSupport');
+      socketRef.current?.disconnect();
+      socketRef.current = null;
+    };
+  }, [token, user?.role, refreshSupportStats]);
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchDashboardData();
@@ -238,11 +298,14 @@ function AdminDashboardPageContent() {
   const getActivityHref = (activity: Activity): string | null => {
     switch (activity.type) {
       case 'job_created': {
-        const id = (activity.data as any)?._id;
-        return id ? `/jobs/${id}` : null;
+        const jobId = (activity.data as any)?._id || (activity.data as any)?.id;
+        return jobId ? `/jobs/${jobId}` : null;
       }
       case 'proposal_sent': {
-        const jobId = (activity.data as any)?.jobId?._id;
+        const jobId =
+          (activity.data as any)?.jobId?._id ||
+          (activity.data as any)?.jobId?.id ||
+          (activity.data as any)?.jobId;
         return jobId ? `/jobs/${jobId}` : null;
       }
       case 'ticket_created':
@@ -1105,9 +1168,11 @@ function AdminDashboardPageContent() {
                   <p style={{ color: THEME.textMuted }}>{t('admin.noJobsYet')}</p>
                 </div>
               ) : (
-                recentJobs.map((job, i) => (
+                recentJobs.map((job, i) => {
+                  const jobId = job?._id || job?.id;
+                  return (
                   <div
-                    key={job._id}
+                    key={jobId || `job-${i}`}
                     className="px-6 py-3 transition-colors"
                     style={{ borderBottom: i < recentJobs.length - 1 ? `1px solid ${THEME.border}` : 'none' }}
                     onMouseEnter={(e) => e.currentTarget.style.background = THEME.surfaceHover}
@@ -1116,9 +1181,13 @@ function AdminDashboardPageContent() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <Link
-                          href={`/jobs/${job._id}`}
+                          href={jobId ? `/jobs/${jobId}` : '#'}
                           className="text-sm font-medium truncate inline-flex items-center gap-1 hover:underline"
-                          style={{ color: THEME.text }}
+                          style={{
+                            color: THEME.text,
+                            pointerEvents: jobId ? 'auto' : 'none',
+                            opacity: jobId ? 1 : 0.6,
+                          }}
                         >
                           {job.title}
                           <ArrowUpRight className="w-3.5 h-3.5" style={{ color: THEME.textDim }} />
@@ -1155,7 +1224,8 @@ function AdminDashboardPageContent() {
                       </span>
                     </div>
                   </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>

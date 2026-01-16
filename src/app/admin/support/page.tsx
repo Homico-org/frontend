@@ -6,6 +6,7 @@ import Select from '@/components/common/Select';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
@@ -136,6 +137,8 @@ function AdminSupportPageContent() {
       // Skip if it's our own message (already added optimistically)
       if (message.isAdmin) return;
 
+      const isCurrentlyOpen = previousTicketIdRef.current === ticketId;
+
       setSelectedTicket(prev => {
         if (prev?._id !== ticketId) return prev;
         // Check if message already exists
@@ -143,18 +146,36 @@ function AdminSupportPageContent() {
         return {
           ...prev,
           messages: [...prev.messages, message],
+          // If the admin is viewing the chat, don't let it appear unread locally
+          hasUnreadUserMessages: false,
         };
       });
 
       // Update ticket in list
-      setTickets(prev => prev.map(t => {
-        if (t._id !== ticketId) return t;
-        return {
-          ...t,
-          hasUnreadUserMessages: true,
-          lastMessageAt: message.createdAt,
-        };
-      }));
+      setTickets(prev => {
+        let shouldIncrementUnread = false;
+        const next = prev.map(t => {
+          if (t._id !== ticketId) return t;
+          const nextUnread = !isCurrentlyOpen;
+          if (!t.hasUnreadUserMessages && nextUnread) {
+            shouldIncrementUnread = true;
+          }
+          return {
+            ...t,
+            hasUnreadUserMessages: nextUnread,
+            lastMessageAt: message.createdAt,
+          };
+        });
+        if (shouldIncrementUnread) {
+          setStats(s => s ? { ...s, unread: (s.unread || 0) + 1 } : s);
+        }
+        return next;
+      });
+
+      // If the admin is currently viewing this ticket, mark it as read on the backend as well
+      if (isCurrentlyOpen) {
+        api.patch(`/support/tickets/${ticketId}/read`).catch(() => {});
+      }
     });
 
     // Handle message status updates
@@ -205,10 +226,7 @@ function AdminSupportPageContent() {
       previousTicketIdRef.current = selectedTicket._id;
 
       // Mark as delivered when viewing
-      fetch(`${API_URL}/support/tickets/${selectedTicket._id}/delivered`, {
-        method: 'PATCH',
-        headers: { Authorization: `Bearer ${token}` },
-      }).catch(() => {});
+      api.patch(`/support/tickets/${selectedTicket._id}/delivered`).catch(() => {});
     }
 
     return () => {
@@ -271,15 +289,14 @@ function AdminSupportPageContent() {
     // Mark as read
     if (ticket.hasUnreadUserMessages) {
       try {
-        await fetch(`${API_URL}/support/tickets/${ticket._id}/read`, {
-          method: 'PATCH',
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await api.patch(`/support/tickets/${ticket._id}/read`);
         // Update local state
         setTickets(prev => prev.map(t =>
           t._id === ticket._id ? { ...t, hasUnreadUserMessages: false } : t
         ));
         setSelectedTicket(prev => prev ? { ...prev, hasUnreadUserMessages: false } : null);
+        // Optimistically update unread stats so the top card reflects reality immediately
+        setStats(prev => prev ? { ...prev, unread: Math.max(0, (prev.unread || 0) - 1) } : prev);
       } catch (err) {
         console.error('Failed to mark as read:', err);
       }

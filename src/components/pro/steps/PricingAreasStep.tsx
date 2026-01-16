@@ -2,12 +2,20 @@
 
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Banknote, Check, DollarSign, FolderKanban, Globe, Handshake, MapPin } from "lucide-react";
+import {
+  Banknote,
+  Check,
+  DollarSign,
+  FolderKanban,
+  Globe,
+  Handshake,
+  MapPin,
+} from "lucide-react";
 
 interface PricingAreasStepProps {
   formData: {
     priceRange: { min: number; max: number };
-    priceType: "hourly" | "fixed" | "project";
+    priceType: "byAgreement" | "fixed" | "range";
     serviceAreas: string[];
     nationwide: boolean;
   };
@@ -29,29 +37,29 @@ function PriceTypeSelector({
   onChange,
   locale,
 }: {
-  value: "hourly" | "fixed" | "project";
-  onChange: (type: "hourly" | "fixed" | "project") => void;
+  value: "byAgreement" | "fixed" | "range";
+  onChange: (type: "byAgreement" | "fixed" | "range") => void;
   locale: string;
 }) {
   const { t } = useLanguage();
   const types = [
     {
       id: "fixed" as const,
-      label: t('common.fixed'),
+      label: t("common.fixed"),
       icon: Banknote,
-      description: t('common.onetimePrice'),
+      description: t("common.onetimePrice"),
     },
     {
-      id: "project" as const,
-      label: t('common.perProject'),
+      id: "range" as const,
+      label: t("common.perProject"),
       icon: FolderKanban,
-      description: t('common.priceRange'),
+      description: t("common.priceRange"),
     },
     {
-      id: "hourly" as const,
-      label: t('common.byAgreement'),
+      id: "byAgreement" as const,
+      label: t("common.negotiable"),
       icon: Handshake,
-      description: t('common.negotiable'),
+      description: t("common.negotiable"),
     },
   ];
 
@@ -67,28 +75,34 @@ function PriceTypeSelector({
             onClick={() => onChange(type.id)}
             className={`
               relative flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl text-center transition-all duration-300 group
-              ${isSelected
-                ? "bg-gradient-to-br from-[#C4735B] to-[#A85D48] text-white shadow-lg shadow-[#C4735B]/25"
-                : "bg-neutral-50 text-neutral-600 hover:bg-neutral-100 border border-neutral-200 hover:border-[#C4735B]/30"
+              ${
+                isSelected
+                  ? "bg-gradient-to-br from-[#C4735B] to-[#A85D48] text-white shadow-lg shadow-[#C4735B]/25"
+                  : "bg-neutral-50 text-neutral-600 hover:bg-neutral-100 border border-neutral-200 hover:border-[#C4735B]/30"
               }
             `}
           >
             {/* Icon container with animation */}
-            <div className={`
+            <div
+              className={`
               w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300
-              ${isSelected 
-                ? "bg-white/20" 
-                : "bg-neutral-100 group-hover:bg-[#C4735B]/10 group-hover:scale-105"
+              ${
+                isSelected
+                  ? "bg-white/20"
+                  : "bg-neutral-100 group-hover:bg-[#C4735B]/10 group-hover:scale-105"
               }
-            `}>
-              <Icon className={`w-4 h-4 transition-colors duration-300 ${isSelected ? "text-white" : "text-neutral-500 group-hover:text-[#C4735B]"}`} />
+            `}
+            >
+              <Icon
+                className={`w-4 h-4 transition-colors duration-300 ${isSelected ? "text-white" : "text-neutral-500 group-hover:text-[#C4735B]"}`}
+              />
             </div>
-            
+
             {/* Label */}
             <span className="text-xs font-semibold leading-tight">
               {type.label}
             </span>
-            
+
             {/* Selection indicator */}
             {isSelected && (
               <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-white shadow-md flex items-center justify-center">
@@ -137,10 +151,10 @@ export default function PricingAreasStep({
           </div>
           <div>
             <h3 className="font-bold text-neutral-900 text-sm">
-              {t('common.pricing')}
+              {t("common.pricing")}
             </h3>
             <p className="text-xs text-neutral-500">
-              {t('common.serviceCostRange')}
+              {t("common.serviceCostRange")}
             </p>
           </div>
         </div>
@@ -154,17 +168,20 @@ export default function PricingAreasStep({
           />
 
           {/* Price Inputs - Conditional based on price type */}
-          {formData.priceType === "hourly" ? (
+          {formData.priceType === "byAgreement" ? (
             /* By Agreement - Modern styled placeholder */
             <div className="p-4 rounded-xl bg-gradient-to-br from-neutral-50 to-neutral-100/50 border border-neutral-200/50 text-center">
               <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center mx-auto mb-2">
-                <Handshake className="w-5 h-5 text-[#C4735B]" strokeWidth={1.5} />
+                <Handshake
+                  className="w-5 h-5 text-[#C4735B]"
+                  strokeWidth={1.5}
+                />
               </div>
               <p className="text-sm text-neutral-600 font-medium">
-                {t('common.priceWillBeDeterminedBy')}
+                {t("common.priceWillBeDeterminedBy")}
               </p>
               <p className="text-xs text-neutral-400 mt-1">
-                {t('common.flexiblePricing')}
+                {t("common.flexiblePricing")}
               </p>
             </div>
           ) : formData.priceType === "fixed" ? (
@@ -174,9 +191,13 @@ export default function PricingAreasStep({
                 type="text"
                 inputMode="numeric"
                 pattern="[0-9]*"
-                value={formData.priceRange.min > 0 ? formData.priceRange.min.toString() : ""}
+                value={
+                  formData.priceRange.min > 0
+                    ? formData.priceRange.min.toString()
+                    : ""
+                }
                 onChange={(e) => {
-                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  const value = e.target.value.replace(/[^0-9]/g, "");
                   const numValue = parseInt(value) || 0;
                   onFormChange({
                     priceRange: {
@@ -185,23 +206,27 @@ export default function PricingAreasStep({
                     },
                   });
                 }}
-                placeholder={t('common.price')}
+                placeholder={t("common.price")}
                 inputSize="default"
                 leftIcon={<span className="text-sm">₾</span>}
                 className="bg-white dark:bg-neutral-900"
               />
             </div>
           ) : (
-            /* Per Project - Range inputs */
+            /* Range inputs */
             <div className="flex items-center gap-3">
               <div className="flex-1">
                 <Input
                   type="text"
                   inputMode="numeric"
                   pattern="[0-9]*"
-                  value={formData.priceRange.min > 0 ? formData.priceRange.min.toString() : ""}
+                  value={
+                    formData.priceRange.min > 0
+                      ? formData.priceRange.min.toString()
+                      : ""
+                  }
                   onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9]/g, '');
+                    const value = e.target.value.replace(/[^0-9]/g, "");
                     const numValue = parseInt(value) || 0;
                     onFormChange({
                       priceRange: {
@@ -210,7 +235,7 @@ export default function PricingAreasStep({
                       },
                     });
                   }}
-                  placeholder={t('common.min')}
+                  placeholder={t("common.min")}
                   inputSize="default"
                   leftIcon={<span className="text-sm">₾</span>}
                   className="bg-white dark:bg-neutral-900"
@@ -222,9 +247,13 @@ export default function PricingAreasStep({
                   type="text"
                   inputMode="numeric"
                   pattern="[0-9]*"
-                  value={formData.priceRange.max > 0 ? formData.priceRange.max.toString() : ""}
+                  value={
+                    formData.priceRange.max > 0
+                      ? formData.priceRange.max.toString()
+                      : ""
+                  }
                   onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9]/g, '');
+                    const value = e.target.value.replace(/[^0-9]/g, "");
                     const numValue = parseInt(value) || 0;
                     onFormChange({
                       priceRange: {
@@ -233,7 +262,7 @@ export default function PricingAreasStep({
                       },
                     });
                   }}
-                  placeholder={t('common.max')}
+                  placeholder={t("common.max")}
                   inputSize="default"
                   leftIcon={<span className="text-sm">₾</span>}
                   className="bg-white dark:bg-neutral-900"
@@ -256,10 +285,10 @@ export default function PricingAreasStep({
           </div>
           <div>
             <h3 className="font-bold text-neutral-900 text-sm">
-              {t('common.serviceAreas')}
+              {t("common.serviceAreas")}
             </h3>
             <p className="text-xs text-neutral-500">
-              {t('common.whereYouWork')}
+              {t("common.whereYouWork")}
             </p>
           </div>
         </div>
@@ -271,46 +300,58 @@ export default function PricingAreasStep({
             onClick={handleNationwideToggle}
             className={`
               relative w-full p-4 rounded-xl border-2 text-left transition-all duration-300 mb-4 group overflow-hidden
-              ${formData.nationwide
-                ? "border-[#C4735B] bg-gradient-to-r from-[#C4735B]/10 via-[#E8956A]/5 to-[#C4735B]/10 shadow-lg shadow-[#C4735B]/10"
-                : "border-neutral-200 hover:border-[#C4735B]/40 bg-gradient-to-br from-neutral-50 to-white hover:shadow-md"
+              ${
+                formData.nationwide
+                  ? "border-[#C4735B] bg-gradient-to-r from-[#C4735B]/10 via-[#E8956A]/5 to-[#C4735B]/10 shadow-lg shadow-[#C4735B]/10"
+                  : "border-neutral-200 hover:border-[#C4735B]/40 bg-gradient-to-br from-neutral-50 to-white hover:shadow-md"
               }
             `}
           >
             {/* Shine effect on hover */}
             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-            
+
             <div className="relative flex items-center gap-3">
-              <div className={`
+              <div
+                className={`
                 relative w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300
-                ${formData.nationwide 
-                  ? "bg-gradient-to-br from-[#C4735B] to-[#A85D48] shadow-lg shadow-[#C4735B]/25" 
-                  : "bg-neutral-100 group-hover:bg-[#C4735B]/10 group-hover:scale-105"
+                ${
+                  formData.nationwide
+                    ? "bg-gradient-to-br from-[#C4735B] to-[#A85D48] shadow-lg shadow-[#C4735B]/25"
+                    : "bg-neutral-100 group-hover:bg-[#C4735B]/10 group-hover:scale-105"
                 }
-              `}>
-                <Globe className={`w-5 h-5 transition-all duration-300 ${formData.nationwide ? "text-white" : "text-neutral-400 group-hover:text-[#C4735B]"}`} strokeWidth={1.5} />
+              `}
+              >
+                <Globe
+                  className={`w-5 h-5 transition-all duration-300 ${formData.nationwide ? "text-white" : "text-neutral-400 group-hover:text-[#C4735B]"}`}
+                  strokeWidth={1.5}
+                />
               </div>
-              
+
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className={`text-sm font-semibold transition-colors duration-300 ${formData.nationwide ? "text-[#C4735B]" : "text-neutral-700 group-hover:text-[#C4735B]"}`}>
-                    {t('common.nationwide')}
+                  <span
+                    className={`text-sm font-semibold transition-colors duration-300 ${formData.nationwide ? "text-[#C4735B]" : "text-neutral-700 group-hover:text-[#C4735B]"}`}
+                  >
+                    {t("common.nationwide")}
                   </span>
                   <span className="text-lg">{locationData.emoji}</span>
                 </div>
                 <p className="text-xs text-neutral-500 mt-0.5">
-                  {t('common.serviceInAllRegions')}
+                  {t("common.serviceInAllRegions")}
                 </p>
               </div>
-              
+
               {/* Selection indicator */}
-              <div className={`
+              <div
+                className={`
                 w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-300
-                ${formData.nationwide
-                  ? "border-[#C4735B] bg-[#C4735B] scale-110"
-                  : "border-neutral-300 group-hover:border-[#C4735B]/50"
+                ${
+                  formData.nationwide
+                    ? "border-[#C4735B] bg-[#C4735B] scale-110"
+                    : "border-neutral-300 group-hover:border-[#C4735B]/50"
                 }
-              `}>
+              `}
+              >
                 {formData.nationwide && (
                   <Check className="w-3.5 h-3.5 text-white" />
                 )}
@@ -324,7 +365,7 @@ export default function PricingAreasStep({
           <div className="flex items-center gap-3 mb-4">
             <div className="flex-1 h-px bg-neutral-200" />
             <span className="text-[10px] text-neutral-400 px-2">
-              {t('common.orSelectCities')}
+              {t("common.orSelectCities")}
             </span>
             <div className="flex-1 h-px bg-neutral-200" />
           </div>
@@ -338,11 +379,14 @@ export default function PricingAreasStep({
                 <div key={regionName} className="group/region">
                   <h4 className="font-semibold text-neutral-800 text-xs mb-2.5 flex items-center gap-2 sticky top-0 bg-white py-1.5 z-10">
                     <div className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
-                      <MapPin className="w-3 h-3 text-[#C4735B]" strokeWidth={2} />
+                      <MapPin
+                        className="w-3 h-3 text-[#C4735B]"
+                        strokeWidth={2}
+                      />
                     </div>
                     {regionName}
                     <span className="text-[10px] text-neutral-400 font-normal ml-auto">
-                      {cities.length} {t('common.cities')}
+                      {cities.length} {t("common.cities")}
                     </span>
                   </h4>
                   <div className="flex flex-wrap gap-2">
@@ -355,14 +399,18 @@ export default function PricingAreasStep({
                           onClick={() => toggleServiceArea(city)}
                           className={`
                             relative px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 group/city
-                            ${isSelected
-                              ? "bg-gradient-to-r from-[#C4735B] to-[#A85D48] text-white shadow-md shadow-[#C4735B]/25 scale-105"
-                              : "bg-neutral-50 text-neutral-600 hover:bg-[#C4735B]/10 hover:text-[#C4735B] border border-neutral-200 hover:border-[#C4735B]/30"
+                            ${
+                              isSelected
+                                ? "bg-gradient-to-r from-[#C4735B] to-[#A85D48] text-white shadow-md shadow-[#C4735B]/25 scale-105"
+                                : "bg-neutral-50 text-neutral-600 hover:bg-[#C4735B]/10 hover:text-[#C4735B] border border-neutral-200 hover:border-[#C4735B]/30"
                             }
                           `}
                         >
                           {isSelected && (
-                            <Check className="w-3 h-3 inline mr-1.5 -mt-0.5" strokeWidth={2.5} />
+                            <Check
+                              className="w-3 h-3 inline mr-1.5 -mt-0.5"
+                              strokeWidth={2.5}
+                            />
                           )}
                           {city}
                         </button>
@@ -384,12 +432,12 @@ export default function PricingAreasStep({
                   <Check className="w-4 h-4 text-[#C4735B]" strokeWidth={2} />
                 </div>
                 <span className="text-xs text-neutral-600 font-medium">
-                  {t('common.selectedAreas')}
+                  {t("common.selectedAreas")}
                 </span>
               </div>
               <span className="text-sm font-bold text-[#C4735B] px-3 py-1 rounded-full bg-[#C4735B]/10">
                 {formData.nationwide
-                  ? t('common.nationwide')
+                  ? t("common.nationwide")
                   : `${formData.serviceAreas.length} ${locale === "ka" ? "ქალაქი" : "cities"}`}
               </span>
             </div>

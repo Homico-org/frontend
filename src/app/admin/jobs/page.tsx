@@ -1,37 +1,27 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
-import Select from '@/components/common/Select';
 import { api } from '@/lib/api';
 import {
   Briefcase,
-  Search,
   Clock,
   CheckCircle,
-  AlertTriangle,
   XCircle,
   ArrowLeft,
   RefreshCw,
-  MoreVertical,
   Eye,
-  Trash2,
   MapPin,
-  Calendar,
   DollarSign,
-  ChevronLeft,
-  ChevronRight,
   Play,
-  Pause,
   Tag,
-  User,
   FileText,
 } from 'lucide-react';
-import { formatDateShort } from '@/utils/dateUtils';
+import { formatDateTimeShort } from '@/utils/dateUtils';
 import { ADMIN_THEME as THEME } from '@/constants/theme';
 import { getAdminJobStatusColor, getJobStatusLabel } from '@/utils/statusUtils';
 import type { BaseEntity } from '@/types/shared';
@@ -67,6 +57,8 @@ interface JobStats {
   thisMonth: number;
 }
 
+type JobStatusFilter = 'all' | 'open' | 'in_progress' | 'completed' | 'cancelled';
+
 function AdminJobsPageContent() {
   const { isAuthenticated } = useAuth();
   const { t, locale } = useLanguage();
@@ -76,21 +68,21 @@ function AdminJobsPageContent() {
   const [stats, setStats] = useState<JobStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<JobStatusFilter>('all');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [actionMenuJob, setActionMenuJob] = useState<string | null>(null);
+  const hasLoadedRef = useRef(false);
 
   const fetchData = useCallback(async (showRefresh = false) => {
     try {
-      if (showRefresh) setIsRefreshing(true);
+      // Initial load: show full-page loader
+      // Subsequent loads (filters/pagination): soft refresh
+      if (showRefresh || hasLoadedRef.current) setIsRefreshing(true);
       else setIsLoading(true);
 
       const params = new URLSearchParams();
       params.set('page', page.toString());
       params.set('limit', '20');
-      if (searchQuery) params.set('search', searchQuery);
       if (statusFilter !== 'all') params.set('status', statusFilter);
 
       // Fetch stats first (this always works)
@@ -135,10 +127,11 @@ function AdminJobsPageContent() {
     } catch (err) {
       console.error('Failed to fetch jobs:', err);
     } finally {
+      hasLoadedRef.current = true;
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [page, searchQuery, statusFilter]);
+  }, [page, statusFilter]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -148,7 +141,7 @@ function AdminJobsPageContent() {
 
   useEffect(() => {
     setPage(1);
-  }, [searchQuery, statusFilter]);
+  }, [statusFilter]);
 
   const formatBudget = (budget?: AdminJob['budget']) => {
     if (!budget) return '-';
@@ -173,12 +166,17 @@ function AdminJobsPageContent() {
     }
   };
 
-  const statCards = [
-    { label: t('admin.totalJobs'), value: stats?.total || 0, icon: Briefcase, color: THEME.primary },
-    { label: t('common.open'), value: stats?.open || 0, icon: Play, color: THEME.success },
-    { label: t('common.inProgress'), value: stats?.inProgress || 0, icon: Clock, color: THEME.warning },
-    { label: t('common.completed'), value: stats?.completed || 0, icon: CheckCircle, color: THEME.info },
-  ];
+  const statCards = useMemo(() => ([
+    { key: 'all' as const, label: t('admin.totalJobs'), value: stats?.total || 0, icon: Briefcase, color: THEME.primary },
+    { key: 'open' as const, label: t('common.open'), value: stats?.open || 0, icon: Play, color: THEME.success },
+    { key: 'in_progress' as const, label: t('common.inProgress'), value: stats?.inProgress || 0, icon: Clock, color: THEME.warning },
+    { key: 'completed' as const, label: t('common.completed'), value: stats?.completed || 0, icon: CheckCircle, color: THEME.info },
+    { key: 'cancelled' as const, label: t('common.cancelled'), value: stats?.cancelled || 0, icon: XCircle, color: THEME.textDim },
+  ]), [stats?.total, stats?.open, stats?.inProgress, stats?.completed, stats?.cancelled, t]);
+
+  const handleCardFilterClick = (key: JobStatusFilter) => {
+    setStatusFilter(prev => (prev === key ? 'all' : key));
+  };
 
   if (isLoading) {
     return (
@@ -255,17 +253,29 @@ function AdminJobsPageContent() {
 
       <main className="max-w-[1800px] mx-auto px-6 py-8">
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           {statCards.map((stat) => (
-            <div
+            <button
               key={stat.label}
-              className="group relative overflow-hidden rounded-2xl p-5 transition-all duration-300 hover:scale-[1.02]"
-              style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+              type="button"
+              onClick={() => handleCardFilterClick(stat.key)}
+              className="group relative overflow-hidden rounded-2xl p-5 transition-all duration-300 hover:scale-[1.02] text-left"
+              style={{
+                background: THEME.surfaceLight,
+                border: statusFilter === stat.key ? `1px solid ${stat.color}80` : `1px solid ${THEME.border}`,
+                boxShadow: statusFilter === stat.key ? `0 8px 32px ${stat.color}20` : undefined,
+              }}
             >
               <div
                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
                 style={{ background: `radial-gradient(circle at top right, ${stat.color}10, transparent 70%)` }}
               />
+              {statusFilter === stat.key && (
+                <div
+                  className="absolute inset-0"
+                  style={{ background: `linear-gradient(135deg, ${stat.color}10, transparent 60%)` }}
+                />
+              )}
               <div className="relative flex items-center gap-4">
                 <div
                   className="w-12 h-12 rounded-xl flex items-center justify-center"
@@ -283,44 +293,8 @@ function AdminJobsPageContent() {
                   <p className="text-sm" style={{ color: THEME.textMuted }}>{stat.label}</p>
                 </div>
               </div>
-            </div>
+            </button>
           ))}
-        </div>
-
-        {/* Filters */}
-        <div
-          className="rounded-2xl p-4 mb-6"
-          style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
-        >
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: THEME.textDim }} />
-              <input
-                type="text"
-                placeholder={t('admin.searchByTitleOrCategory')}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-all"
-                style={{
-                  background: THEME.surface,
-                  border: `1px solid ${THEME.border}`,
-                  color: THEME.text,
-                }}
-              />
-            </div>
-            <Select
-              value={statusFilter}
-              onChange={setStatusFilter}
-              size="sm"
-              options={[
-                { value: 'all', label: t('admin.allStatus') },
-                { value: 'open', label: locale === 'ka' ? 'ღია' : 'Open' },
-                { value: 'in_progress', label: locale === 'ka' ? 'მიმდინარე' : 'In Progress' },
-                { value: 'completed', label: locale === 'ka' ? 'დასრულებული' : 'Completed' },
-                { value: 'cancelled', label: t('common.cancelled') },
-              ]}
-            />
-          </div>
         </div>
 
         {/* Jobs Table */}
@@ -354,21 +328,49 @@ function AdminJobsPageContent() {
           ) : (
             jobs.map((job, index) => {
               const StatusIcon = getStatusIcon(job.status);
+              const jobIdRaw = (job as any)?._id || (job as any)?.id;
+              const jobId =
+                typeof jobIdRaw === 'string'
+                  ? jobIdRaw
+                  : jobIdRaw?.toString?.() || '';
+              const clientIdRaw = (job as any)?.clientId?.id || (job as any)?.clientId?._id;
+              const clientId =
+                typeof clientIdRaw === 'string'
+                  ? clientIdRaw
+                  : clientIdRaw?.toString?.() || '';
               return (
                 <div
-                  key={job.id}
+                  key={jobId || `job-${index}`}
                   className="px-6 py-4 grid grid-cols-12 gap-4 items-center transition-colors cursor-pointer"
                   style={{
                     borderBottom: index < jobs.length - 1 ? `1px solid ${THEME.border}` : 'none',
+                  }}
+                  onClick={() => {
+                    if (jobId) router.push(`/jobs/${jobId}`);
                   }}
                   onMouseEnter={(e) => e.currentTarget.style.background = THEME.surfaceHover}
                   onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                 >
                   {/* Job Info */}
                   <div className="col-span-4 min-w-0">
-                    <p className="font-medium text-sm truncate" style={{ color: THEME.text }}>
-                      {job.title}
-                    </p>
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="font-medium text-sm truncate" style={{ color: THEME.text }}>
+                        {job.title}
+                      </p>
+                      <span
+                        className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold flex-shrink-0"
+                        style={{
+                          background: `${THEME.accent}18`,
+                          border: `1px solid ${THEME.accent}30`,
+                          color: THEME.accent,
+                          fontFamily: "'JetBrains Mono', monospace",
+                        }}
+                        title={job.budget ? formatBudget(job.budget) : '-'}
+                      >
+                        <DollarSign className="w-3 h-3" />
+                        {job.budget ? formatBudget(job.budget) : '-'}
+                      </span>
+                    </div>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="flex items-center gap-1 text-xs" style={{ color: THEME.textDim }}>
                         <Tag className="w-3 h-3" />
@@ -384,20 +386,39 @@ function AdminJobsPageContent() {
                         </>
                       )}
                     </div>
-                    {job.budget && (
-                      <div className="flex items-center gap-1 mt-1 text-xs" style={{ color: THEME.accent }}>
+                    <div className="xl:hidden mt-2">
+                      <span
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold"
+                        style={{
+                          background: `${THEME.accent}18`,
+                          border: `1px solid ${THEME.accent}30`,
+                          color: THEME.accent,
+                          fontFamily: "'JetBrains Mono', monospace",
+                        }}
+                      >
                         <DollarSign className="w-3 h-3" />
-                        {formatBudget(job.budget)}
-                      </div>
-                    )}
+                        {job.budget ? formatBudget(job.budget) : '-'}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Client */}
                   <div className="col-span-2 flex items-center gap-2">
-                    <Avatar src={job.clientId?.avatar} name={job.clientId?.name || 'Client'} size="sm" />
-                    <span className="text-sm truncate" style={{ color: THEME.textMuted }}>
-                      {job.clientId?.name || 'Unknown'}
-                    </span>
+                    <button
+                      type="button"
+                      className="flex items-center gap-2 min-w-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (clientId) router.push(`/users/${clientId}`);
+                      }}
+                      disabled={!clientId}
+                      title={clientId ? t('admin.viewClient') : ''}
+                    >
+                      <Avatar src={job.clientId?.avatar} name={job.clientId?.name || 'Client'} size="sm" />
+                      <span className="text-sm truncate" style={{ color: THEME.textMuted }}>
+                        {job.clientId?.name || 'Unknown'}
+                      </span>
+                    </button>
                   </div>
 
                   {/* Status */}
@@ -420,7 +441,7 @@ function AdminJobsPageContent() {
                       className="text-sm"
                       style={{ color: THEME.textMuted, fontFamily: "'JetBrains Mono', monospace" }}
                     >
-                      {formatDateShort(job.createdAt, locale as 'en' | 'ka' | 'ru')}
+                      {formatDateTimeShort(job.createdAt, locale as 'en' | 'ka' | 'ru')}
                     </p>
                     {job.proposalCount !== undefined && (
                       <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: THEME.textDim }}>
@@ -433,78 +454,17 @@ function AdminJobsPageContent() {
                   {/* Actions */}
                   <div className="col-span-2 flex items-center justify-end gap-2">
                     <button
-                      onClick={() => router.push(`/jobs/${job.id}`)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (jobId) router.push(`/jobs/${jobId}`);
+                      }}
+                      disabled={!jobId}
                       className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
                       style={{ background: `${THEME.info}20` }}
                       title={t('admin.viewJob')}
                     >
                       <Eye className="w-4 h-4" style={{ color: THEME.info }} />
                     </button>
-                    <div className="relative">
-                      <button
-                        onClick={() => setActionMenuJob(actionMenuJob === job.id ? null : job.id)}
-                        className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
-                        style={{ background: THEME.surface }}
-                      >
-                        <MoreVertical className="w-4 h-4" style={{ color: THEME.textMuted }} />
-                      </button>
-                      {actionMenuJob === job.id && (
-                        <div
-                          className="absolute right-0 mt-2 w-48 rounded-xl overflow-hidden shadow-xl z-10"
-                          style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
-                        >
-                          <button
-                            className="w-full px-4 py-3 text-left text-sm flex items-center gap-3 transition-colors"
-                            style={{ color: THEME.text }}
-                            onMouseEnter={(e) => e.currentTarget.style.background = THEME.surfaceHover}
-                            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                            onClick={() => {
-                              setActionMenuJob(null);
-                              router.push(`/jobs/${job.id}`);
-                            }}
-                          >
-                            <Eye className="w-4 h-4" style={{ color: THEME.info }} />
-                            {t('admin.viewDetails')}
-                          </button>
-                          <button
-                            className="w-full px-4 py-3 text-left text-sm flex items-center gap-3 transition-colors"
-                            style={{ color: THEME.text }}
-                            onMouseEnter={(e) => e.currentTarget.style.background = THEME.surfaceHover}
-                            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                            onClick={() => {
-                              setActionMenuJob(null);
-                              router.push(`/profile/${job.clientId?.id}`);
-                            }}
-                          >
-                            <User className="w-4 h-4" style={{ color: THEME.warning }} />
-                            {t('admin.viewClient')}
-                          </button>
-                          <div style={{ borderTop: `1px solid ${THEME.border}` }} />
-                          {job.status === 'open' && (
-                            <button
-                              className="w-full px-4 py-3 text-left text-sm flex items-center gap-3 transition-colors"
-                              style={{ color: THEME.warning }}
-                              onMouseEnter={(e) => e.currentTarget.style.background = THEME.surfaceHover}
-                              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                              onClick={() => setActionMenuJob(null)}
-                            >
-                              <Pause className="w-4 h-4" />
-                              {t('admin.pauseJob')}
-                            </button>
-                          )}
-                          <button
-                            className="w-full px-4 py-3 text-left text-sm flex items-center gap-3 transition-colors"
-                            style={{ color: THEME.error }}
-                            onMouseEnter={(e) => e.currentTarget.style.background = THEME.surfaceHover}
-                            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                            onClick={() => setActionMenuJob(null)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            {t('admin.deleteJob')}
-                          </button>
-                        </div>
-                      )}
-                    </div>
                   </div>
                 </div>
               );
@@ -540,13 +500,6 @@ function AdminJobsPageContent() {
         )}
       </main>
 
-      {/* Click outside to close menu */}
-      {actionMenuJob && (
-        <div
-          className="fixed inset-0 z-0"
-          onClick={() => setActionMenuJob(null)}
-        />
-      )}
     </div>
   );
 }

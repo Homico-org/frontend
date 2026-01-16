@@ -33,7 +33,8 @@ interface ProfileHeroProps {
   location?: string;
   memberSince?: number;
   basePrice?: number;
-  pricingModel?: "hourly" | "daily" | "project_based" | "from" | "sqm";
+  maxPrice?: number;
+  pricingModel?: "fixed" | "range" | "byAgreement";
   phone?: string;
   phoneRevealed?: boolean;
   locale: string;
@@ -56,6 +57,7 @@ export default function ProfileHero({
   location,
   memberSince,
   basePrice,
+  maxPrice,
   pricingModel,
   phone,
   phoneRevealed = false,
@@ -74,17 +76,6 @@ export default function ProfileHero({
   useEffect(() => {
     setIsVisible(true);
   }, []);
-
-  const getPricingLabel = () => {
-    const labels: Record<string, string> = {
-      hourly: t('heroes.perHour'),
-      daily: t('heroes.perDay'),
-      project_based: "",
-      from: "",
-      sqm: t('heroes.perSqm'),
-    };
-    return pricingModel ? labels[pricingModel] || "" : "";
-  };
 
   const avatarUrl = avatar || "";
 
@@ -111,7 +102,7 @@ export default function ProfileHero({
           <>
             {/* Elegant warm gradient */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#E8DDD4] via-[#D4C4B8] to-[#C4A98C] dark:from-[#2A2420] dark:via-[#1E1A17] dark:to-[#151210]" />
-            
+
             {/* Decorative circles */}
             <div className="absolute inset-0 overflow-hidden">
               <div
@@ -129,9 +120,12 @@ export default function ProfileHero({
             </div>
 
             {/* Subtle pattern overlay */}
-            <div className="absolute inset-0 opacity-[0.02]" style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1.5'/%3E%3Ccircle cx='13' cy='13' r='1.5'/%3E%3C/g%3E%3C/svg%3E")`,
-            }} />
+            <div
+              className="absolute inset-0 opacity-[0.02]"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1.5'/%3E%3Ccircle cx='13' cy='13' r='1.5'/%3E%3C/g%3E%3C/svg%3E")`,
+              }}
+            />
           </>
         )}
       </div>
@@ -147,7 +141,7 @@ export default function ProfileHero({
             className="rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm shadow-sm hover:bg-white dark:hover:bg-neutral-800"
             leftIcon={<ChevronLeft className="w-4 h-4" />}
           >
-            {t('common.back')}
+            {t("common.back")}
           </Button>
 
           {onShare && (
@@ -158,7 +152,7 @@ export default function ProfileHero({
               className="rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm shadow-sm hover:bg-white dark:hover:bg-neutral-800"
               leftIcon={<Share2 className="w-4 h-4" />}
             >
-              {t('common.share')}
+              {t("common.share")}
             </Button>
           )}
         </div>
@@ -240,7 +234,7 @@ export default function ProfileHero({
                 <div className="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400">
                   <Briefcase className="w-4 h-4" />
                   <span>
-                    {yearsExperience}+ {t('heroes.yrs')}
+                    {yearsExperience}+ {t("heroes.yrs")}
                   </span>
                 </div>
               )}
@@ -249,7 +243,7 @@ export default function ProfileHero({
                 <div className="flex items-center gap-1.5 text-neutral-500">
                   <span>•</span>
                   <span>
-                    {t('common.member')} {memberSince}
+                    {t("common.member")} {memberSince}
                     {locale === "ka" ? "-დან" : ""}
                   </span>
                 </div>
@@ -257,21 +251,22 @@ export default function ProfileHero({
             </div>
 
             {/* Price display */}
-            {basePrice && basePrice > 0 && (
+            {(pricingModel === "byAgreement" ||
+              (basePrice && basePrice > 0) ||
+              (maxPrice && maxPrice > 0)) && (
               <div className="flex items-center justify-center gap-2 mb-6">
                 <span className="text-xl font-bold text-neutral-900 dark:text-white">
-                  {pricingModel === "from" && (locale === "ka" ? "" : "from ")}
-                  {basePrice}₾
-                  {pricingModel === "from" && (locale === "ka" ? "-დან" : "")}
-                  {getPricingLabel()}
+                  {pricingModel === "byAgreement"
+                    ? t("common.negotiable")
+                    : pricingModel === "range"
+                      ? `${basePrice || 0}₾ - ${maxPrice || 0}₾`
+                      : `${basePrice || maxPrice || 0}₾`}
                 </span>
-                {pricingModel && (
+                {pricingModel && pricingModel !== "fixed" && (
                   <Badge variant="secondary" size="sm">
-                    {pricingModel === "hourly" && (t('heroes.hourly'))}
-                    {pricingModel === "daily" && (t('heroes.daily'))}
-                    {pricingModel === "project_based" && (t('heroes.perProject'))}
-                    {pricingModel === "from" && (t('heroes.starting'))}
-                    {pricingModel === "sqm" && (t('heroes.perSqm'))}
+                    {pricingModel === "byAgreement"
+                      ? t("common.negotiable")
+                      : t("common.priceRange")}
                   </Badge>
                 )}
               </div>
@@ -295,12 +290,15 @@ export default function ProfileHero({
                   onClick={isBasicTier ? onRevealPhone : onContact}
                   className="rounded-full px-8"
                   size="lg"
-                  leftIcon={isBasicTier ? <Phone className="w-4 h-4" /> : <MessageSquare className="w-4 h-4" />}
-                >
-                  {isBasicTier
-                    ? t('heroes.showPhone')
-                    : t('heroes.contact')
+                  leftIcon={
+                    isBasicTier ? (
+                      <Phone className="w-4 h-4" />
+                    ) : (
+                      <MessageSquare className="w-4 h-4" />
+                    )
                   }
+                >
+                  {isBasicTier ? t("heroes.showPhone") : t("heroes.contact")}
                 </Button>
               )}
             </div>
