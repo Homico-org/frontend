@@ -1,20 +1,19 @@
 import { Metadata } from "next";
 import ProfessionalDetailClient from "./ProfessionalDetailClient";
 
-interface ProProfile {
+// Simplified profile for metadata (subset of ProProfile)
+interface MetadataProfile {
   id: string;
   name: string;
   title: string;
   avatar?: string;
   bio?: string;
-  description?: string;
   avgRating?: number;
   totalReviews?: number;
-  serviceAreas?: string[];
 }
 
 // Fetch profile data for metadata
-async function getProfile(id: string): Promise<ProProfile | null> {
+async function getProfile(id: string): Promise<MetadataProfile | null> {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
     const response = await fetch(`${apiUrl}/users/pros/${id}`, {
@@ -111,7 +110,6 @@ export default async function ProfessionalDetailPage({
 }: {
   params: { id: string };
 }) {
-  // Server-side fetch so the page works even if the browser doesn't show an XHR
-  const initialProfile = await getProfile(params.id);
-  return <ProfessionalDetailClient initialProfile={initialProfile} />;
+  // Client handles fetching the full profile - we only fetch metadata server-side
+  return <ProfessionalDetailClient />;
 }
