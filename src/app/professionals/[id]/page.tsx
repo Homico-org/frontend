@@ -1,19 +1,8 @@
 import { Metadata } from "next";
 import ProfessionalDetailClient from "./ProfessionalDetailClient";
 
-// Simplified profile for metadata (subset of ProProfile)
-interface MetadataProfile {
-  id: string;
-  name: string;
-  title: string;
-  avatar?: string;
-  bio?: string;
-  avgRating?: number;
-  totalReviews?: number;
-}
-
-// Fetch profile data for metadata
-async function getProfile(id: string): Promise<MetadataProfile | null> {
+// Fetch profile data for metadata and initial hydration
+async function getProfile(id: string) {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
     const response = await fetch(`${apiUrl}/users/pros/${id}`, {
@@ -110,6 +99,9 @@ export default async function ProfessionalDetailPage({
 }: {
   params: { id: string };
 }) {
-  // Client handles fetching the full profile - we only fetch metadata server-side
-  return <ProfessionalDetailClient />;
+  // Fetch profile server-side for faster initial load
+  const initialProfile = await getProfile(params.id);
+  // Cast to any to avoid type mismatch between server-fetched data and client ProProfile type
+  // The API returns the same structure, but TypeScript can't verify this at compile time
+  return <ProfessionalDetailClient initialProfile={initialProfile as any} />;
 }
