@@ -2208,6 +2208,8 @@
     "hvac": "HVAC",
     "security": "Security",
     "smartHome": "Smart Home",
+    "it-support": "IT Support",
+    "network-admin": "Network Administration",
     "other": "Other"
   },
   "about": {
