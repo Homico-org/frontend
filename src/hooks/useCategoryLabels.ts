@@ -65,6 +65,8 @@ const CATEGORY_LABELS: Record<string, { en: string; ka: string; ru: string }> = 
   lighting: { en: 'Lighting', ka: 'განათება', ru: 'Освещение' },
   windows: { en: 'Windows', ka: 'ფანჯრები', ru: 'Окна' },
   doors: { en: 'Doors', ka: 'კარები', ru: 'Двери' },
+  'it-support': { en: 'IT Support', ka: 'IT მხარდაჭერა', ru: 'IT поддержка' },
+  'network-admin': { en: 'Network Administration', ka: 'ქსელის ადმინისტრირება', ru: 'Сетевое администрирование' },
 
   // Craftsmen subcategories
   handyman: { en: 'Handyman', ka: 'ხელოსანი', ru: 'Мастер на все руки' },
