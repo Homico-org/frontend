@@ -108,10 +108,13 @@ export function formatBudget(
   const symbol = currencySymbols[currency] || '₾';
 
   switch (budget.budgetType) {
-    case 'fixed':
-      return budget.budgetAmount
-        ? `${symbol}${budget.budgetAmount.toLocaleString()}`
+    case 'fixed': {
+      // Check budgetAmount first, then fall back to budgetMin (used by job posting form)
+      const amount = budget.budgetAmount ?? budget.budgetMin;
+      return amount
+        ? `${symbol}${amount.toLocaleString()}`
         : null;
+    }
     case 'range':
       return budget.budgetMin && budget.budgetMax
         ? `${symbol}${budget.budgetMin.toLocaleString()} - ${symbol}${budget.budgetMax.toLocaleString()}`
