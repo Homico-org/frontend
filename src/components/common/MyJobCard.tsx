@@ -38,8 +38,10 @@ const MyJobCard = React.memo(function MyJobCard({
   };
 
   const formattedBudget = useMemo(() => {
-    if (job.budgetType === "fixed" && job.budgetAmount) {
-      return formatCurrency(job.budgetAmount);
+    if (job.budgetType === "fixed") {
+      // Check budgetAmount first, then fall back to budgetMin (used by job posting form)
+      const amount = job.budgetAmount ?? job.budgetMin;
+      if (amount) return formatCurrency(amount);
     } else if (job.budgetType === "per_sqm" && job.pricePerUnit) {
       const total = job.areaSize ? job.pricePerUnit * job.areaSize : null;
       if (total) return formatCurrency(total);

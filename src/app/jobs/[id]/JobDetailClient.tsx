@@ -15,6 +15,7 @@ import ProjectSidebar, {
 import ProjectStatusBar from "@/components/jobs/ProjectStatusBar";
 import ProposalFormModal from "@/components/jobs/ProposalFormModal";
 import RequirementBadge from "@/components/jobs/RequirementBadge";
+import InviteProsModal from "@/components/jobs/InviteProsModal";
 import ReviewModal from "@/components/jobs/ReviewModal";
 import SpecCard from "@/components/jobs/SpecCard";
 import PollsTab from "@/components/polls/PollsTab";
@@ -77,6 +78,7 @@ import {
   Sparkles,
   Star,
   Trash2,
+  UserPlus,
   Users,
   Vote,
   X,
@@ -715,6 +717,7 @@ export default function JobDetailClient() {
     null
   );
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showInviteProsModal, setShowInviteProsModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -1859,6 +1862,16 @@ export default function JobDetailClient() {
             <BackButton href="/browse/jobs" />
             {isOwner && !isHired && (
               <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowInviteProsModal(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-[#C4735B] bg-[#C4735B]/10 hover:bg-[#C4735B]/20 transition-all"
+                  title={t("job.invitePros")}
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span className="hidden sm:inline">
+                    {t("job.invite")}
+                  </span>
+                </button>
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
                   className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
@@ -3185,6 +3198,17 @@ export default function JobDetailClient() {
           </div>
         )}
       </ConfirmModal>
+
+      {/* Invite Professionals Modal */}
+      {job && (
+        <InviteProsModal
+          isOpen={showInviteProsModal}
+          onClose={() => setShowInviteProsModal(false)}
+          jobId={job.id}
+          subcategory={job.subcategory || job.skills?.[0]}
+          category={job.category}
+        />
+      )}
 
       {/* Success Toast */}
       {success && (
