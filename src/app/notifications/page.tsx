@@ -57,6 +57,11 @@ const notificationConfig: Record<NotificationType, { icon: typeof Briefcase; col
     color: '#6B7280',
     bgColor: 'rgba(107, 114, 128, 0.1)',
   },
+  job_invitation: {
+    icon: Briefcase,
+    color: '#C4735B',
+    bgColor: 'rgba(196, 115, 91, 0.1)',
+  },
   new_message: {
     icon: MessageSquare,
     color: '#8B5CF6',
@@ -293,7 +298,7 @@ function NotificationsPageContent() {
       case 'unread':
         return !n.isRead;
       case 'jobs':
-        return ['new_proposal', 'proposal_accepted', 'proposal_rejected', 'job_completed', 'job_cancelled'].includes(n.type);
+        return ['new_proposal', 'proposal_accepted', 'proposal_rejected', 'job_completed', 'job_cancelled', 'job_invitation'].includes(n.type);
       case 'messages':
         return n.type === 'new_message';
       case 'reviews':

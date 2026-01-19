@@ -512,7 +512,7 @@ export default function ProfessionalDetailClient({
     if (!isOwner || !profile) return;
     setIsSaving(true);
     try {
-      const response = await api.post("/portfolio", {
+      const response = await api.post(`/portfolio?proId=${profile.id}`, {
         title: data.title,
         description: data.description,
         location: data.location,

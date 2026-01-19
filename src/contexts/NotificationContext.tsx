@@ -11,6 +11,7 @@ export type NotificationType =
   | 'proposal_rejected'
   | 'job_completed'
   | 'job_cancelled'
+  | 'job_invitation'
   | 'new_message'
   | 'new_review'
   | 'account_verified'

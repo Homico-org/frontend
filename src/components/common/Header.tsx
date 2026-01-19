@@ -191,61 +191,7 @@ export default function Header() {
             </div>
           )}
 
-          {/* My Work & My Jobs buttons - tablet (icon only) */}
-          {isAuthenticated && user && (
-            <div className="hidden sm:flex lg:hidden items-center gap-1">
-              {/* My Work - only for pro/admin */}
-              {(user.role === "pro" || user.role === "admin") && (
-                <Link
-                  href="/my-work"
-                  className={`relative flex items-center justify-center w-9 h-9 rounded-xl transition-all ${
-                    isMyWorkActive
-                      ? 'bg-neutral-200 dark:bg-neutral-700 ring-2 ring-offset-1'
-                      : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700'
-                  }`}
-                  style={isMyWorkActive ? { '--tw-ring-color': ACCENT_COLOR } as React.CSSProperties : {}}
-                  title={locale === 'ka' ? 'ჩემი სამუშაო' : 'My Work'}
-                >
-                  <FileText className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
-                  {proposalUpdatesCount > 0 && (
-                    <span
-                      className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-white rounded-full"
-                      style={{
-                        background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-                        boxShadow: '0 2px 6px rgba(16, 185, 129, 0.4)'
-                      }}
-                    >
-                      {proposalUpdatesCount > 99 ? "99+" : proposalUpdatesCount}
-                    </span>
-                  )}
-                </Link>
-              )}
-              {/* My Jobs - for everyone (pros can also post jobs) */}
-              <Link
-                href="/my-jobs"
-                className={`relative flex items-center justify-center w-9 h-9 rounded-xl transition-all ${
-                  isMyJobsActive
-                    ? 'bg-neutral-200 dark:bg-neutral-700 ring-2 ring-offset-1'
-                    : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700'
-                }`}
-                style={isMyJobsActive ? { '--tw-ring-color': ACCENT_COLOR } as React.CSSProperties : {}}
-                title={locale === 'ka' ? 'ჩემი განცხადებები' : 'My Jobs'}
-              >
-                <Hammer className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
-                {unviewedProposalsCount > 0 && (
-                  <span
-                    className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-white rounded-full"
-                    style={{
-                      background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
-                      boxShadow: '0 2px 6px rgba(245, 158, 11, 0.4)'
-                    }}
-                  >
-                    {unviewedProposalsCount > 99 ? "99+" : unviewedProposalsCount}
-                  </span>
-                )}
-              </Link>
-            </div>
-          )}
+          {/* My Work & My Jobs buttons removed from tablet - they're in the bottom navigation */}
 
           {/* Language Selector */}
           <div className="relative" ref={langDropdownRef}>
