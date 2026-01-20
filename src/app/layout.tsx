@@ -124,6 +124,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         />
         {/* End Google Tag Manager */}
 
+        {/* Contentsquare */}
+        <script async src="https://t.contentsquare.net/uxa/e85c48d50001d.js" />
+        {/* End Contentsquare */}
+
         {/* Prevent flash of wrong theme by setting class before React hydration */}
         <script
           dangerouslySetInnerHTML={{
