@@ -74,7 +74,7 @@ interface ExtendedEmbeddedProject {
 
 // Page-specific review with populated client info
 interface PageReview extends BaseEntity {
-  clientId: {
+  clientId?: {
     name: string;
     avatar?: string;
     city?: string;
@@ -85,6 +85,11 @@ interface PageReview extends BaseEntity {
   createdAt: string;
   projectTitle?: string;
   isAnonymous?: boolean;
+  source?: 'homico' | 'external';
+  externalClientName?: string;
+  externalClientPhone?: string;
+  externalVerifiedAt?: string;
+  isVerified?: boolean;
 }
 
 export default function ProfessionalDetailClient({
@@ -292,25 +297,26 @@ export default function ProfessionalDetailClient({
     if (profile?.id) fetchPortfolio();
   }, [profile?.id]);
 
-  useEffect(() => {
-    const fetchReviews = async () => {
-      if (!profile?.id) return;
-      try {
-        const response = await api.get(`/reviews/pro/${profile.id}`);
-        // Ensure reviews have proper id field
-        const reviewsData = Array.isArray(response.data) ? response.data : [];
-        setReviews(
-          reviewsData.map((r: PageReview & { _id?: string }) => ({
-            ...r,
-            id: r.id || r._id || "",
-          }))
-        );
-      } catch (err) {
-        console.error("Failed to fetch reviews:", err);
-      }
-    };
-    if (profile?.id) fetchReviews();
+  const fetchReviews = useCallback(async () => {
+    if (!profile?.id) return;
+    try {
+      const response = await api.get(`/reviews/pro/${profile.id}`);
+      // Ensure reviews have proper id field
+      const reviewsData = Array.isArray(response.data) ? response.data : [];
+      setReviews(
+        reviewsData.map((r: PageReview & { _id?: string }) => ({
+          ...r,
+          id: r.id || r._id || "",
+        }))
+      );
+    } catch (err) {
+      console.error("Failed to fetch reviews:", err);
+    }
   }, [profile?.id]);
+
+  useEffect(() => {
+    if (profile?.id) fetchReviews();
+  }, [profile?.id, fetchReviews]);
 
   const isBasicTier =
     !profile?.premiumTier ||
@@ -1696,6 +1702,7 @@ export default function ProfessionalDetailClient({
                   isOwner={isOwner}
                   proId={profile.id}
                   proName={profile.name}
+                  onReviewSubmitted={fetchReviews}
                 />
               </div>
             )}

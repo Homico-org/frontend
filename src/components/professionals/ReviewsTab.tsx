@@ -24,7 +24,7 @@ import {
   Star,
   Users,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import ReviewItem, { RatingSummary, Review } from "./ReviewItem";
 
 type ReviewFilter = "all" | "homico" | "external";
@@ -46,6 +46,8 @@ export interface ReviewsTabProps {
   proId?: string;
   /** Pro name for the modal */
   proName?: string;
+  /** Callback after a new review is submitted */
+  onReviewSubmitted?: () => void;
 }
 
 export default function ReviewsTab({
@@ -57,6 +59,7 @@ export default function ReviewsTab({
   isOwner = false,
   proId,
   proName,
+  onReviewSubmitted,
 }: ReviewsTabProps) {
   const { t } = useLanguage();
   const toast = useToast();
@@ -81,6 +84,26 @@ export default function ReviewsTab({
 
   // Check if user's phone is already verified (pros always have verified phone, or user has phone in profile)
   const isPhoneVerified = user?.isPhoneVerified || user?.role === "pro" || !!user?.phone;
+
+  // Check if current user has already left a review
+  const hasUserReviewed = useMemo(() => {
+    if (!user?.id) return false;
+    const userId = user.id;
+    const userPhone = user.phone;
+    
+    return reviews.some((review) => {
+      // Check by clientId (for reviews left by logged-in users)
+      const reviewClientId = review.clientId?.id || review.clientId?._id;
+      if (reviewClientId && String(reviewClientId) === String(userId)) {
+        return true;
+      }
+      // Check by phone (for external reviews)
+      if (userPhone && review.externalClientPhone === userPhone) {
+        return true;
+      }
+      return false;
+    });
+  }, [reviews, user?.id, user?.phone]);
 
   // Fetch review link when owner opens the section
   const fetchReviewLink = useCallback(async () => {
@@ -180,8 +203,10 @@ export default function ReviewsTab({
       setReviewText("");
       setReviewerPhone("");
 
-      // Reload page to show new review
-      window.location.reload();
+      // Refresh reviews list
+      if (onReviewSubmitted) {
+        onReviewSubmitted();
+      }
     } catch (err: any) {
       const message =
         err.response?.data?.message || t("reviews.failedToSubmit");
@@ -224,8 +249,8 @@ export default function ReviewsTab({
   return (
     <div className="animate-in fade-in duration-300">
       <div className="space-y-4">
-        {/* Leave Review Button - for logged-in non-owners */}
-        {!isOwner && proId && isAuthenticated && (
+        {/* Leave Review Button - for logged-in non-owners who haven't reviewed yet */}
+        {!isOwner && proId && isAuthenticated && !hasUserReviewed && (
           <Button
             onClick={() => setShowReviewModal(true)}
             className="w-full sm:w-auto bg-[#C4735B] hover:bg-[#B5654D]"
@@ -431,7 +456,7 @@ export default function ReviewsTab({
             <p className="text-neutral-500 text-sm mb-1">
               {t("professional.noReviewsYet")}
             </p>
-            {!isOwner && proId && isAuthenticated && (
+            {!isOwner && proId && isAuthenticated && !hasUserReviewed && (
               <Button
                 onClick={() => setShowReviewModal(true)}
                 variant="outline"

@@ -9,7 +9,9 @@ import { ShieldCheck, Globe } from 'lucide-react';
 import { useLanguage } from "@/contexts/LanguageContext";
 export interface Review {
   id: string;
-  clientId: {
+  clientId?: {
+    id?: string;
+    _id?: string;
     name: string;
     avatar?: string;
     city?: string;
@@ -23,7 +25,9 @@ export interface Review {
   // External review fields
   source?: 'homico' | 'external';
   externalClientName?: string;
+  externalClientPhone?: string;
   externalVerifiedAt?: string;
+  isVerified?: boolean;
 }
 
 export interface ReviewItemProps {
