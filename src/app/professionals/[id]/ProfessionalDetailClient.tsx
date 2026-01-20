@@ -383,6 +383,14 @@ export default function ProfessionalDetailClient({
     return cats.filter(Boolean);
   }, [profile]);
 
+  const proSubcategories = useMemo(() => {
+    if (!profile) return [];
+    const subcats =
+      (profile.subcategories?.length ? profile.subcategories : profile.selectedSubcategories) ||
+      [];
+    return subcats.filter(Boolean);
+  }, [profile]);
+
   const handleContact = () => {
     if (!user) {
       openLoginModal();
@@ -1330,7 +1338,7 @@ export default function ProfessionalDetailClient({
                         {profile.avgRating.toFixed(1)}
                       </span>
                       <span className="text-neutral-500">
-                        ({profile.totalReviews})
+                        ({reviews.length || profile.totalReviews})
                       </span>
                     </div>
                   )}
@@ -1608,7 +1616,7 @@ export default function ProfessionalDetailClient({
                 onTabChange={setActiveTab}
                 locale={locale}
                 portfolioCount={portfolioProjects.length}
-                reviewsCount={profile.totalReviews}
+                reviewsCount={reviews.length || profile.totalReviews}
               />
             </div>
           </aside>
@@ -1697,7 +1705,7 @@ export default function ProfessionalDetailClient({
                 <ReviewsTab
                   reviews={reviews}
                   avgRating={profile.avgRating}
-                  totalReviews={profile.totalReviews}
+                  totalReviews={reviews.length || profile.totalReviews}
                   locale={locale as "en" | "ka" | "ru"}
                   isOwner={isOwner}
                   proId={profile.id}
@@ -1707,17 +1715,19 @@ export default function ProfessionalDetailClient({
               </div>
             )}
 
-            {/* ========== SIMILAR PROFESSIONALS ========== */}
-            {proCategories.length > 0 && (
-              <SimilarProfessionals
-                categories={proCategories}
-                currentProId={profile.id}
-                locale={locale}
-              />
-            )}
           </div>
         </div>
       </main>
+
+      {/* ========== SIMILAR PROFESSIONALS - Full width section ========== */}
+      {(proSubcategories.length > 0 || proCategories.length > 0) && (
+        <SimilarProfessionals
+          categories={proCategories}
+          subcategories={proSubcategories}
+          currentProId={profile.id}
+          locale={locale}
+        />
+      )}
 
       {/* Click outside to close share menu */}
       {showShareMenu && (

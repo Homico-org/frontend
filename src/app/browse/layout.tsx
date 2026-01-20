@@ -528,6 +528,7 @@ function BrowseLayoutWithParams({ children }: { children: ReactNode }) {
     <BrowseProvider
       initialCategory={searchParams.get("category")}
       initialSubcategory={searchParams.get("subcategory")}
+      initialSubcategories={searchParams.get("subcategories")?.split(",").filter(Boolean) || []}
     >
       <BrowseLayoutContent>{children}</BrowseLayoutContent>
     </BrowseProvider>

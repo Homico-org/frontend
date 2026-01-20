@@ -20,7 +20,7 @@ export default function ProfessionalsPage() {
   const { trackEvent } = useAnalytics();
   const {
     selectedCategory,
-    selectedSubcategory,
+    selectedSubcategories,
     minRating,
     searchQuery,
     sortBy,
@@ -53,8 +53,8 @@ export default function ProfessionalsPage() {
         params.append("limit", "12");
 
         if (selectedCategory) params.append("category", selectedCategory);
-        if (selectedSubcategory)
-          params.append("subcategory", selectedSubcategory);
+        if (selectedSubcategories.length > 0)
+          params.append("subcategories", selectedSubcategories.join(","));
         if (minRating > 0) params.append("minRating", minRating.toString());
         if (searchQuery) params.append("search", searchQuery);
         if (sortBy && sortBy !== "recommended") params.append("sort", sortBy);
@@ -105,7 +105,7 @@ export default function ProfessionalsPage() {
     },
     [
       selectedCategory,
-      selectedSubcategory,
+      selectedSubcategories,
       minRating,
       searchQuery,
       sortBy,
@@ -125,7 +125,7 @@ export default function ProfessionalsPage() {
     // Create a filter key to compare against previous filters
     const filterKey = JSON.stringify({
       selectedCategory,
-      selectedSubcategory,
+      selectedSubcategories,
       minRating,
       searchQuery,
       sortBy,
@@ -152,10 +152,10 @@ export default function ProfessionalsPage() {
           category: selectedCategory,
         });
       }
-      if (selectedSubcategory) {
+      if (selectedSubcategories.length > 0) {
         trackEvent(AnalyticsEvent.SUBCATEGORY_SELECT, {
           category: selectedCategory || undefined,
-          subcategory: selectedSubcategory,
+          subcategory: selectedSubcategories.join(","),
         });
       }
     }
@@ -167,7 +167,7 @@ export default function ProfessionalsPage() {
     fetchProfessionals(1, true);
   }, [
     selectedCategory,
-    selectedSubcategory,
+    selectedSubcategories,
     minRating,
     searchQuery,
     sortBy,

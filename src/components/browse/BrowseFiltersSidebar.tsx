@@ -27,8 +27,7 @@ function CategoryAccordion({
   isExpanded,
   onToggle,
   subcategories,
-  selectedCategory,
-  selectedSubcategory,
+  selectedSubcategories,
   onSubcategoryToggle,
   locale,
 }: {
@@ -38,8 +37,7 @@ function CategoryAccordion({
   isExpanded: boolean;
   onToggle: () => void;
   subcategories: { key: string; name: string; nameKa: string }[];
-  selectedCategory: string | null;
-  selectedSubcategory: string | null;
+  selectedSubcategories: string[];
   onSubcategoryToggle: (categoryKey: string, subcategoryKey: string) => void;
   locale: string;
 }) {
@@ -84,7 +82,7 @@ function CategoryAccordion({
       >
         <div ref={contentRef} className="px-3 pb-2.5 space-y-1.5">
           {subcategories.map((sub, index) => {
-            const isSelected = selectedCategory === categoryKey && selectedSubcategory === sub.key;
+            const isSelected = selectedSubcategories.includes(sub.key);
             const subLabel = getCategoryLabelStatic(sub.key, locale);
 
             return (
@@ -214,8 +212,9 @@ export default function BrowseFiltersSidebar({
   const {
     selectedCategory,
     setSelectedCategory,
-    selectedSubcategory,
-    setSelectedSubcategory,
+    selectedSubcategories,
+    toggleSubcategory,
+    setSelectedSubcategories,
     minRating,
     setMinRating,
     budgetMin,
@@ -228,22 +227,48 @@ export default function BrowseFiltersSidebar({
   // Only count filters that are actually visible on this page
   const hasActiveFiltersLocal =
     selectedCategory !== null ||
-    selectedSubcategory !== null ||
+    selectedSubcategories.length > 0 ||
     (showRatingFilter && minRating > 0) ||
     (showBudgetFilter && (budgetMin !== null || budgetMax !== null));
 
   // Track which category accordions are expanded
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
 
-  // Auto-expand parent category when a subcategory is selected
+  // Auto-expand parent categories when subcategories are selected
   useEffect(() => {
-    if (selectedCategory && !expandedCategories[selectedCategory]) {
+    // Find and expand parent categories for all selected subcategories
+    if (selectedSubcategories.length > 0) {
+      const categoriesToExpand: string[] = [];
+      
+      for (const subcategoryKey of selectedSubcategories) {
+        for (const category of categories) {
+          const subcats = getSubcategoriesForCategory(category.key);
+          const found = subcats.find(sub => sub.key === subcategoryKey);
+          if (found && !categoriesToExpand.includes(category.key)) {
+            categoriesToExpand.push(category.key);
+            break;
+          }
+        }
+      }
+      
+      if (categoriesToExpand.length > 0) {
+        setExpandedCategories(prev => {
+          const newExpanded = { ...prev };
+          categoriesToExpand.forEach(cat => {
+            newExpanded[cat] = true;
+          });
+          return newExpanded;
+        });
+      }
+    }
+    // If category is set, make sure it's expanded
+    else if (selectedCategory && !expandedCategories[selectedCategory]) {
       setExpandedCategories(prev => ({
         ...prev,
         [selectedCategory]: true,
       }));
     }
-  }, [selectedCategory]);
+  }, [selectedCategory, selectedSubcategories, categories, getSubcategoriesForCategory]);
 
   // Local state for price inputs
   const [localMinPrice, setLocalMinPrice] = useState<string>(budgetMin?.toString() || '');
@@ -257,14 +282,15 @@ export default function BrowseFiltersSidebar({
   };
 
   const handleSubcategoryToggle = (categoryKey: string, subcategoryKey: string) => {
-    if (selectedCategory === categoryKey && selectedSubcategory === subcategoryKey) {
-      // Deselect if already selected - clear both category and subcategory
+    // Toggle the subcategory
+    toggleSubcategory(subcategoryKey);
+    
+    // If this was the only subcategory and we're removing it, clear category too
+    if (selectedSubcategories.includes(subcategoryKey) && selectedSubcategories.length === 1) {
       setSelectedCategory(null);
-      setSelectedSubcategory(null);
-    } else {
-      // Select the category and subcategory
+    } else if (!selectedSubcategories.includes(subcategoryKey)) {
+      // Set the category when adding a subcategory
       setSelectedCategory(categoryKey);
-      setSelectedSubcategory(subcategoryKey);
     }
   };
 
@@ -338,8 +364,7 @@ export default function BrowseFiltersSidebar({
                 isExpanded={isExpanded}
                 onToggle={() => toggleCategoryExpand(categoryKey)}
                 subcategories={subcategories}
-                selectedCategory={selectedCategory}
-                selectedSubcategory={selectedSubcategory}
+                selectedSubcategories={selectedSubcategories}
                 onSubcategoryToggle={handleSubcategoryToggle}
                 locale={locale}
               />

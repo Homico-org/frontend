@@ -5,8 +5,13 @@ import { createContext, useContext, ReactNode, useState, useCallback } from "rea
 interface BrowseContextType {
   selectedCategory: string | null;
   setSelectedCategory: (category: string | null) => void;
+  // Support single subcategory for backward compatibility
   selectedSubcategory: string | null;
   setSelectedSubcategory: (subcategory: string | null) => void;
+  // Support multiple subcategories
+  selectedSubcategories: string[];
+  setSelectedSubcategories: (subcategories: string[]) => void;
+  toggleSubcategory: (subcategory: string) => void;
   minRating: number;
   setMinRating: (rating: number) => void;
   selectedBudget: string;
@@ -39,15 +44,24 @@ interface BrowseProviderProps {
   children: ReactNode;
   initialCategory?: string | null;
   initialSubcategory?: string | null;
+  initialSubcategories?: string[];
 }
 
 export function BrowseProvider({
   children,
   initialCategory = null,
   initialSubcategory = null,
+  initialSubcategories = [],
 }: BrowseProviderProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory);
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(initialSubcategory);
+  
+  // Initialize subcategories from either single or multiple
+  const initialSubcatsArray = initialSubcategories.length > 0 
+    ? initialSubcategories 
+    : (initialSubcategory ? [initialSubcategory] : []);
+  
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>(initialSubcatsArray);
+  
   const [minRating, setMinRating] = useState<number>(0);
   const [selectedBudget, setSelectedBudget] = useState<string>('all');
   const [budgetMin, setBudgetMin] = useState<number | null>(null);
@@ -56,9 +70,28 @@ export function BrowseProvider({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('recommended');
 
+  // For backward compatibility - return first subcategory or null
+  const selectedSubcategory = selectedSubcategories.length > 0 ? selectedSubcategories[0] : null;
+  
+  // For backward compatibility - set single subcategory
+  const setSelectedSubcategory = useCallback((subcategory: string | null) => {
+    setSelectedSubcategories(subcategory ? [subcategory] : []);
+  }, []);
+
+  // Toggle a subcategory in the array
+  const toggleSubcategory = useCallback((subcategory: string) => {
+    setSelectedSubcategories(prev => {
+      if (prev.includes(subcategory)) {
+        return prev.filter(s => s !== subcategory);
+      } else {
+        return [...prev, subcategory];
+      }
+    });
+  }, []);
+
   const clearAllFilters = useCallback(() => {
     setSelectedCategory(null);
-    setSelectedSubcategory(null);
+    setSelectedSubcategories([]);
     setMinRating(0);
     setSelectedBudget('common.all');
     setBudgetMin(null);
@@ -69,7 +102,7 @@ export function BrowseProvider({
   }, []);
 
   const hasActiveFilters = selectedCategory !== null ||
-    selectedSubcategory !== null ||
+    selectedSubcategories.length > 0 ||
     minRating > 0 ||
     selectedBudget !== 'all' ||
     budgetMin !== null ||
@@ -84,6 +117,9 @@ export function BrowseProvider({
         setSelectedCategory,
         selectedSubcategory,
         setSelectedSubcategory,
+        selectedSubcategories,
+        setSelectedSubcategories,
+        toggleSubcategory,
         minRating,
         setMinRating,
         selectedBudget,
