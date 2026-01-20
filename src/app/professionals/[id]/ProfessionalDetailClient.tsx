@@ -1561,18 +1561,16 @@ export default function ProfessionalDetailClient({
                     {phoneRevealed && profile.phone ? (
                       <a
                         href={`tel:${profile.phone}`}
-                        className="w-full sm:w-auto px-5 py-2 rounded-xl sm:rounded-full text-white font-medium text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg shadow-emerald-500/25"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white font-medium text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg shadow-emerald-500/25"
                       >
-                        <span className="flex items-center justify-center sm:justify-start gap-2">
-                          <Phone className="w-4 h-4" />
-                          {profile.phone}
-                        </span>
+                        <Phone className="w-4 h-4" />
+                        {profile.phone}
                       </a>
                     ) : (
                       <Button
                         onClick={handleContact}
                         size="sm"
-                        className="w-full sm:w-auto rounded-xl sm:rounded-full"
+                        className="rounded-full whitespace-nowrap"
                         leftIcon={
                           isBasicTier ? (
                             <Phone className="w-4 h-4" />
