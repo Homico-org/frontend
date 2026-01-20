@@ -1693,6 +1693,9 @@ export default function ProfessionalDetailClient({
                   avgRating={profile.avgRating}
                   totalReviews={profile.totalReviews}
                   locale={locale as "en" | "ka" | "ru"}
+                  isOwner={isOwner}
+                  proId={profile.id}
+                  proName={profile.name}
                 />
               </div>
             )}

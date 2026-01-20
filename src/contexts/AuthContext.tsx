@@ -22,6 +22,7 @@ interface User {
   avatar?: string;
   city?: string;
   phone?: string;
+  isPhoneVerified?: boolean;
   selectedCategories?: string[];
   selectedSubcategories?: string[];
   selectedServices?: SelectedService[];

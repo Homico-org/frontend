@@ -4,6 +4,7 @@ import Avatar from '@/components/common/Avatar';
 import { MultiStarDisplay } from '@/components/ui/StarRating';
 import { storage } from '@/services/storage';
 import { formatTimeAgo } from '@/utils/dateUtils';
+import { ShieldCheck, Globe } from 'lucide-react';
 
 import { useLanguage } from "@/contexts/LanguageContext";
 export interface Review {
@@ -19,6 +20,10 @@ export interface Review {
   createdAt: string;
   projectTitle?: string;
   isAnonymous?: boolean;
+  // External review fields
+  source?: 'homico' | 'external';
+  externalClientName?: string;
+  externalVerifiedAt?: string;
 }
 
 export interface ReviewItemProps {
@@ -39,9 +44,24 @@ export default function ReviewItem({
   className = '',
 }: ReviewItemProps) {
   const { t } = useLanguage();
+  
+  // Determine display name based on source and anonymity
+  const isExternal = review.source === 'external';
   const displayName = review.isAnonymous
     ? t('common.anonymous')
-    : review.clientId.name;
+    : isExternal
+      ? (review.externalClientName || t('common.anonymous'))
+      : review.clientId?.name || t('common.anonymous');
+
+  // Determine avatar
+  const avatarName = review.isAnonymous 
+    ? '?' 
+    : isExternal 
+      ? (review.externalClientName || '?')
+      : (review.clientId?.name || '?');
+  const avatarSrc = review.isAnonymous || isExternal 
+    ? undefined 
+    : review.clientId?.avatar;
 
   return (
     <div
@@ -49,19 +69,38 @@ export default function ReviewItem({
     >
       <div className="flex items-start gap-4">
         <Avatar
-          src={review.isAnonymous ? undefined : review.clientId.avatar}
-          name={review.isAnonymous ? '?' : review.clientId.name}
+          src={avatarSrc}
+          name={avatarName}
           size="md"
         />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
-            <p className="font-semibold text-neutral-900 dark:text-white text-sm truncate">
-              {displayName}
-            </p>
+            <div className="flex items-center gap-2 min-w-0">
+              <p className="font-semibold text-neutral-900 dark:text-white text-sm truncate">
+                {displayName}
+              </p>
+              {/* Source badge */}
+              {isExternal ? (
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 shrink-0">
+                  <Globe className="w-2.5 h-2.5" />
+                  {review.externalVerifiedAt ? t('reviews.verified') : t('reviews.external')}
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 shrink-0">
+                  <ShieldCheck className="w-2.5 h-2.5" />
+                  Homico
+                </span>
+              )}
+            </div>
             <MultiStarDisplay rating={review.rating} size="sm" />
           </div>
           <p className="text-xs text-neutral-400 mb-2">
             {formatTimeAgo(review.createdAt, locale)}
+            {review.projectTitle && (
+              <span className="ml-2 text-neutral-500">
+                • {review.projectTitle}
+              </span>
+            )}
           </p>
           {review.text && (
             <p className="text-sm text-neutral-600 dark:text-neutral-400">
