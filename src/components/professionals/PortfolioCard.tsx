@@ -3,7 +3,8 @@
 import { Badge } from '@/components/ui/badge';
 import { storage } from '@/services/storage';
 import { Camera, Eye, MapPin, Sparkles, Star } from 'lucide-react';
-import { useState } from 'react';
+import Image from "next/image";
+import { useEffect, useState } from 'react';
 
 import { useLanguage } from "@/contexts/LanguageContext";
 export interface PortfolioProject {
@@ -51,10 +52,19 @@ export default function PortfolioCard({
   ];
   
   const hasBeforeAfter = project.beforeAfter && project.beforeAfter.length > 0;
-  
-  if (allImages.length === 0) return null;
 
+  const hasImages = allImages.length > 0;
   const currentImage = allImages[activeThumb] || allImages[0];
+  // Prefer optimized (Cloudinary) URLs when available; otherwise falls back to original URL.
+  const currentSrc = currentImage
+    ? storage.getOptimizedImageUrl(currentImage, "portfolio")
+    : "";
+
+  useEffect(() => {
+    setImageLoaded(false);
+  }, [currentImage]);
+
+  if (!hasImages) return null;
 
   return (
     <div
@@ -88,11 +98,14 @@ export default function PortfolioCard({
             <div className="absolute inset-0 bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-800 dark:to-neutral-700 animate-pulse" />
           )}
           
-          <img
-            src={storage.getFileUrl(currentImage)}
+          <Image
+            src={currentSrc}
             alt={project.title}
-            className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-            onLoad={() => setImageLoaded(true)}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            quality={60}
+            className={`object-cover transition-all duration-700 group-hover:scale-105 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+            onLoadingComplete={() => setImageLoaded(true)}
           />
           
           {/* Gradient overlays */}
@@ -161,15 +174,20 @@ export default function PortfolioCard({
                 }}
                 onMouseEnter={() => setActiveThumb(imgIdx)}
                 className={`relative flex-1 aspect-square rounded-lg overflow-hidden transition-all duration-300 ${
-                  activeThumb === imgIdx 
-                    ? 'ring-2 ring-[#C4735B] scale-[1.02] shadow-md' 
+                  activeThumb === imgIdx
+                    ? 'ring-2 ring-[#C4735B] scale-[1.02] shadow-md'
                     : 'ring-1 ring-neutral-200/50 dark:ring-neutral-700/50 hover:ring-[#C4735B]/50 hover:scale-[1.02]'
                 }`}
               >
-                <img
-                  src={storage.getFileUrl(img)}
+                <Image
+                  src={storage.getOptimizedImageUrl(img, "thumbnail")}
                   alt=""
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="96px"
+                  quality={30}
+                  loading="lazy"
+                  fetchPriority="low"
+                  className="object-cover"
                 />
                 {/* Active indicator dot */}
                 {activeThumb === imgIdx && (

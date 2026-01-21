@@ -145,12 +145,14 @@ export default function ProCard({
     const hasMax = typeof max === "number" && max > 0;
 
     // Normalize legacy values to canonical product requirement:
-    // fixed | range | byAgreement
+    // fixed | range | byAgreement | per_sqm
     const normalizedIncoming =
       model === "hourly"
         ? "byAgreement"
-        : model === "daily" || model === "sqm" || model === "from"
-          ? "fixed"
+        : model === "per_sqm" || model === "sqm"
+          ? "per_sqm"
+          : model === "daily" || model === "from"
+            ? "fixed"
           : model === "project_based"
             ? "range"
             : model;
@@ -161,6 +163,10 @@ export default function ProCard({
           ? "range"
           : hasBase || hasMax
             ? "fixed"
+            : "byAgreement"
+        : normalizedIncoming === "per_sqm"
+          ? hasBase || hasMax
+            ? "per_sqm"
             : "byAgreement"
         : normalizedIncoming === "fixed"
           ? hasBase || hasMax
@@ -174,6 +180,14 @@ export default function ProCard({
       return {
         label: t("common.negotiable"),
         value: null as string | null,
+      };
+    }
+
+    if (normalizedModel === "per_sqm" && (hasBase || hasMax)) {
+      const val = hasBase ? base! : max!;
+      return {
+        label: t("professional.perSqm"),
+        value: `${val}₾${t("timeUnits.perSqm")}`,
       };
     }
 

@@ -259,6 +259,8 @@ export default function ProfileHero({
                 <span className="text-xl font-bold text-neutral-900 dark:text-white">
                   {pricingModel === "byAgreement"
                     ? t("common.negotiable")
+                    : pricingModel === "per_sqm"
+                      ? `${basePrice || maxPrice || 0}₾${t("timeUnits.perSqm")}`
                     : pricingModel === "range"
                       ? `${basePrice || 0}₾ - ${maxPrice || 0}₾`
                       : `${basePrice || maxPrice || 0}₾`}
@@ -267,6 +269,8 @@ export default function ProfileHero({
                   <Badge variant="secondary" size="sm">
                     {pricingModel === "byAgreement"
                       ? t("common.negotiable")
+                      : pricingModel === "per_sqm"
+                        ? t("professional.perSqm")
                       : t("common.priceRange")}
                   </Badge>
                 )}

@@ -2,6 +2,7 @@
 
 import AddressPicker from "@/components/common/AddressPicker";
 import Header, { HeaderSpacer } from "@/components/common/Header";
+import Select from "@/components/common/Select";
 import AboutTab from "@/components/professionals/AboutTab";
 import ContactModal from "@/components/professionals/ContactModal";
 import InviteProToJobModal from "@/components/professionals/InviteProToJobModal";
@@ -138,9 +139,10 @@ export default function ProfessionalDetailClient({
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
+  const [showAvatarZoom, setShowAvatarZoom] = useState(false);
 
   // Invite-to-job (client -> pro)
-  const [myOpenJobs, setMyOpenJobs] = useState<Job[]>([]);
+  const [myMatchingOpenJobs, setMyMatchingOpenJobs] = useState<Job[]>([]);
   const [myOpenJobsLoaded, setMyOpenJobsLoaded] = useState(false);
   const [showInviteToJobModal, setShowInviteToJobModal] = useState(false);
 
@@ -166,6 +168,14 @@ export default function ProfessionalDetailClient({
   // Title/tagline editing state
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
+
+  // Pricing editing state (owner)
+  const [isEditingPricing, setIsEditingPricing] = useState(false);
+  const [editedPricingModel, setEditedPricingModel] = useState<
+    "fixed" | "range" | "byAgreement" | "per_sqm"
+  >("fixed");
+  const [editedBasePrice, setEditedBasePrice] = useState("");
+  const [editedMaxPrice, setEditedMaxPrice] = useState("");
 
   // Check if current user is viewing their own profile
   const isOwner = user?.id === profile?.id;
@@ -327,10 +337,36 @@ export default function ProfessionalDetailClient({
     if (profile?.id) fetchReviews();
   }, [profile?.id, fetchReviews]);
 
+  // Close avatar zoom on Escape
+  useEffect(() => {
+    if (!showAvatarZoom) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowAvatarZoom(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [showAvatarZoom]);
+
+  const proCategories = useMemo(() => {
+    if (!profile) return [];
+    const cats =
+      (profile.categories?.length ? profile.categories : profile.selectedCategories) ||
+      [];
+    return cats.filter(Boolean);
+  }, [profile]);
+
+  const proSubcategories = useMemo(() => {
+    if (!profile) return [];
+    const subcats =
+      (profile.subcategories?.length ? profile.subcategories : profile.selectedSubcategories) ||
+      [];
+    return subcats.filter(Boolean);
+  }, [profile]);
+
   // Fetch my open jobs to decide whether to show "Invite to job" CTA
   useEffect(() => {
     if (!user || isOwner) {
-      setMyOpenJobs([]);
+      setMyMatchingOpenJobs([]);
       setMyOpenJobsLoaded(false);
       return;
     }
@@ -340,10 +376,29 @@ export default function ProfessionalDetailClient({
       try {
         const response = await api.get("/jobs/my-jobs?status=open");
         const list = Array.isArray(response.data) ? (response.data as Job[]) : [];
-        if (!cancelled) setMyOpenJobs(list);
+        if (!cancelled) {
+          const normalize = (s: string) => s.trim().toLowerCase();
+          const proSet = new Set(proSubcategories.map(normalize));
+
+          const getJobKeys = (job: Job): string[] => {
+            const skills = Array.isArray(job.skills) ? job.skills : [];
+            const sub = (job.subcategory || "").toString();
+            // Some legacy jobs may encode the "skill" in category; include it for matching.
+            const cat = (job.category || "").toString();
+            return [...skills, sub, cat].filter(Boolean).map(normalize);
+          };
+
+          const matches = list.filter((job) => {
+            if (proSet.size === 0) return false;
+            const keys = getJobKeys(job);
+            return keys.some((k) => proSet.has(k));
+          });
+
+          setMyMatchingOpenJobs(matches);
+        }
       } catch (err) {
         console.error("Failed to fetch my open jobs:", err);
-        if (!cancelled) setMyOpenJobs([]);
+        if (!cancelled) setMyMatchingOpenJobs([]);
       } finally {
         if (!cancelled) setMyOpenJobsLoaded(true);
       }
@@ -353,7 +408,7 @@ export default function ProfessionalDetailClient({
     return () => {
       cancelled = true;
     };
-  }, [user, isOwner]);
+  }, [user, isOwner, proSubcategories]);
 
   const isBasicTier =
     !profile?.premiumTier ||
@@ -372,8 +427,10 @@ export default function ProfessionalDetailClient({
     const normalizedIncoming =
       model === "hourly"
         ? "byAgreement"
-        : model === "daily" || model === "sqm" || model === "from"
-          ? "fixed"
+        : model === "per_sqm" || model === "sqm"
+          ? "per_sqm"
+          : model === "daily" || model === "from"
+            ? "fixed"
           : model === "project_based"
             ? "range"
             : model;
@@ -385,6 +442,10 @@ export default function ProfessionalDetailClient({
           : hasBase || hasMax
             ? "fixed"
             : "byAgreement"
+        : normalizedIncoming === "per_sqm"
+          ? hasBase || hasMax
+            ? "per_sqm"
+            : "byAgreement"
         : normalizedIncoming === "fixed"
           ? hasBase || hasMax
             ? "fixed"
@@ -395,6 +456,13 @@ export default function ProfessionalDetailClient({
 
     if (normalized === "byAgreement") {
       return { typeLabel: t("common.negotiable"), valueLabel: null as string | null };
+    }
+    if (normalized === "per_sqm" && (hasBase || hasMax)) {
+      const val = hasBase ? base! : max!;
+      return {
+        typeLabel: t("professional.perSqm"),
+        valueLabel: `${val}₾${t("timeUnits.perSqm")}`,
+      };
     }
     if (normalized === "range" && hasBase && hasMax) {
       return {
@@ -411,22 +479,6 @@ export default function ProfessionalDetailClient({
     }
     return null;
   }, [profile, t]);
-
-  const proCategories = useMemo(() => {
-    if (!profile) return [];
-    const cats =
-      (profile.categories?.length ? profile.categories : profile.selectedCategories) ||
-      [];
-    return cats.filter(Boolean);
-  }, [profile]);
-
-  const proSubcategories = useMemo(() => {
-    if (!profile) return [];
-    const subcats =
-      (profile.subcategories?.length ? profile.subcategories : profile.selectedSubcategories) ||
-      [];
-    return subcats.filter(Boolean);
-  }, [profile]);
 
   const handleContact = () => {
     if (!user) {
@@ -525,6 +577,104 @@ export default function ProfessionalDetailClient({
         prev ? { ...prev, title: newTitle || undefined } : prev
       );
       setIsEditingTitle(false);
+      toast.success(t("professional.savedSuccessfully"));
+    } catch (err) {
+      toast.error(t("professional.failedToSave"));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const openPricingEdit = () => {
+    if (!isOwner || !profile) return;
+    const model = (profile.pricingModel as unknown as string | undefined) || "byAgreement";
+    const normalized =
+      model === "sqm" || model === "per_sqm"
+        ? "per_sqm"
+        : model === "range"
+          ? "range"
+          : model === "byAgreement" || model === "hourly"
+            ? "byAgreement"
+            : "fixed";
+
+    setEditedPricingModel(normalized);
+    setEditedBasePrice(
+      typeof profile.basePrice === "number" ? String(profile.basePrice) : ""
+    );
+    setEditedMaxPrice(
+      typeof profile.maxPrice === "number" ? String(profile.maxPrice) : ""
+    );
+    setIsEditingPricing(true);
+  };
+
+  const handleSavePricing = async () => {
+    if (!isOwner || !profile) return;
+
+    const base = editedBasePrice ? Number(editedBasePrice) : undefined;
+    const max = editedMaxPrice ? Number(editedMaxPrice) : undefined;
+
+    const baseValid = base !== undefined && Number.isFinite(base) && base > 0;
+    const maxValid = max !== undefined && Number.isFinite(max) && max > 0;
+
+    if (editedPricingModel === "byAgreement") {
+      // ok
+    } else if (editedPricingModel === "range") {
+      if (!baseValid || !maxValid || max! < base!) {
+        toast.error(t("common.error"), t("common.invalidPriceRange") || t("common.invalid"));
+        return;
+      }
+    } else {
+      // fixed or per_sqm
+      if (!baseValid) {
+        toast.error(t("common.error"), t("common.invalidPrice") || t("common.invalid"));
+        return;
+      }
+    }
+
+    setIsSaving(true);
+    try {
+      // Abort any in-flight profile fetch so it can't overwrite our just-saved values.
+      fetchProfileAbortRef.current?.abort();
+      profileFetchInFlightRef.current = null;
+
+      const response = await api.patch("/users/me/pro-profile", {
+        pricingModel: editedPricingModel,
+        basePrice: editedPricingModel === "byAgreement" ? null : base,
+        maxPrice:
+          editedPricingModel === "byAgreement"
+            ? null
+            : editedPricingModel === "range"
+              ? max
+              : null,
+      });
+
+      // Prefer backend-normalized payload (ensures enums/fields match what server stores).
+      const updated = response?.data as ProProfile | undefined;
+      if (updated) {
+        setProfile((prev) => {
+          if (!prev) return updated;
+          const prevViews = prev.profileViewCount ?? 0;
+          const updatedViews = (updated as any)?.profileViewCount ?? 0;
+          return {
+            ...prev,
+            ...updated,
+            profileViewCount: Math.max(prevViews, updatedViews),
+          };
+        });
+      } else {
+        // Fallback (shouldn't happen): optimistic local update
+        setProfile((prev) =>
+          prev
+            ? {
+                ...prev,
+                pricingModel: editedPricingModel,
+                basePrice: editedPricingModel === "byAgreement" ? undefined : base,
+                maxPrice: editedPricingModel === "range" ? max : undefined,
+              }
+            : prev
+        );
+      }
+      setIsEditingPricing(false);
       toast.success(t("professional.savedSuccessfully"));
     } catch (err) {
       toast.error(t("professional.failedToSave"));
@@ -1050,6 +1200,7 @@ export default function ProfessionalDetailClient({
   }
 
   const avatarUrl = profile.avatar;
+  const avatarSrc = avatarUrl ? storage.getFileUrl(avatarUrl) : "";
   const portfolioImages = getAllPortfolioImages();
   const portfolioProjects = getUnifiedProjects();
   const groupedServices = getGroupedServices();
@@ -1221,13 +1372,20 @@ export default function ProfessionalDetailClient({
               {/* Avatar */}
               <div className="relative flex-shrink-0 self-start">
                 {avatarUrl ? (
-                  <Image
-                    src={storage.getFileUrl(avatarUrl)}
-                    alt={profile.name}
-                    width={96}
-                    height={96}
-                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover ring-2 ring-white dark:ring-neutral-800 shadow-lg"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowAvatarZoom(true)}
+                    className="cursor-zoom-in"
+                    aria-label={locale === "ka" ? "ავატარის გადიდება" : "Zoom avatar"}
+                  >
+                    <Image
+                      src={avatarSrc}
+                      alt={profile.name}
+                      width={96}
+                      height={96}
+                      className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover ring-2 ring-white dark:ring-neutral-800 shadow-lg"
+                    />
+                  </button>
                 ) : (
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl flex items-center justify-center text-white text-3xl font-bold bg-gradient-to-br from-[#C4735B] to-[#A65D47] ring-2 ring-white dark:ring-neutral-800 shadow-lg">
                     {profile.name.charAt(0)}
@@ -1580,16 +1738,111 @@ export default function ProfessionalDetailClient({
               <div className="flex flex-col gap-3 flex-shrink-0 w-full sm:w-auto sm:items-end">
                 {pricingMeta && (
                   <div className="text-left sm:text-right">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-                        {pricingMeta.typeLabel}
-                      </span>
-                      {pricingMeta.valueLabel && (
-                        <span className="text-2xl font-bold text-neutral-900 dark:text-white">
-                          {pricingMeta.valueLabel}
-                        </span>
-                      )}
-                    </div>
+                    {!isOwner || !isEditingPricing ? (
+                      <div className="flex items-start gap-2 justify-between sm:justify-end">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                            {pricingMeta.typeLabel}
+                          </span>
+                          {pricingMeta.valueLabel && (
+                            <span className="text-2xl font-bold text-neutral-900 dark:text-white">
+                              {pricingMeta.valueLabel}
+                            </span>
+                          )}
+                        </div>
+                        {isOwner && (
+                          <button
+                            onClick={openPricingEdit}
+                            className="mt-1 w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                            title={t("common.edit")}
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-end">
+                          <div className="min-w-[200px]">
+                            <Select
+                              size="sm"
+                              value={editedPricingModel}
+                              onChange={(val) =>
+                                setEditedPricingModel(val as typeof editedPricingModel)
+                              }
+                              options={[
+                                { value: "fixed", label: t("common.fixed") },
+                                { value: "range", label: t("common.priceRange") },
+                                { value: "per_sqm", label: t("professional.perSqm") },
+                                { value: "byAgreement", label: t("common.negotiable") },
+                              ]}
+                            />
+                          </div>
+
+                          {editedPricingModel !== "byAgreement" && (
+                            <div className="flex items-center gap-2 sm:justify-end">
+                              <div className="relative">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">
+                                  ₾
+                                </span>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  inputMode="numeric"
+                                  value={editedBasePrice}
+                                  onChange={(e) => setEditedBasePrice(e.target.value)}
+                                  className="w-28 pl-7 pr-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/30"
+                                  placeholder="0"
+                                />
+                              </div>
+                              {editedPricingModel === "range" && (
+                                <>
+                                  <span className="text-neutral-400">—</span>
+                                  <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">
+                                      ₾
+                                    </span>
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      inputMode="numeric"
+                                      value={editedMaxPrice}
+                                      onChange={(e) => setEditedMaxPrice(e.target.value)}
+                                      className="w-28 pl-7 pr-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/30"
+                                      placeholder="0"
+                                    />
+                                  </div>
+                                </>
+                              )}
+                              {editedPricingModel === "per_sqm" && (
+                                <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                                  {t("timeUnits.perSqm")}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setIsEditingPricing(false)}
+                            disabled={isSaving}
+                          >
+                            <X className="w-4 h-4 mr-1" />
+                            {t("common.cancel")}
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={handleSavePricing}
+                            loading={isSaving}
+                          >
+                            <Check className="w-4 h-4 mr-1" />
+                            {t("common.save")}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
                 {/* Visitor CTA: show inside hero on desktop; mobile uses the fixed bottom button */}
@@ -1624,7 +1877,7 @@ export default function ProfessionalDetailClient({
                       )}
 
                       {/* Invite pro to one of my open jobs */}
-                      {myOpenJobsLoaded && myOpenJobs.length > 0 && (
+                      {myOpenJobsLoaded && myMatchingOpenJobs.length > 0 && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -1798,7 +2051,7 @@ export default function ProfessionalDetailClient({
         }`}
       >
         {/* Invite pro to job - mobile (only if viewer has open jobs) */}
-        {myOpenJobsLoaded && myOpenJobs.length > 0 && (
+        {myOpenJobsLoaded && myMatchingOpenJobs.length > 0 && (
           <Button
             variant="outline"
             size="lg"
@@ -1846,7 +2099,7 @@ export default function ProfessionalDetailClient({
           onClose={() => setShowInviteToJobModal(false)}
           proId={profile.id}
           proName={profile.name}
-          initialJobs={myOpenJobs}
+          initialJobs={myMatchingOpenJobs}
         />
       )}
 
@@ -2021,6 +2274,42 @@ export default function ProfessionalDetailClient({
             </div>
           );
         })()}
+
+      {/* ========== AVATAR ZOOM (FULLSCREEN) ========== */}
+      {showAvatarZoom && avatarUrl && (
+        <div
+          className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setShowAvatarZoom(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowAvatarZoom(false);
+            }}
+            className="absolute top-4 right-4 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center"
+            aria-label={t("common.close") || "Close"}
+          >
+            <X className="w-5 h-5" />
+          </button>
+
+          <div
+            className="relative w-full max-w-4xl h-[75vh] sm:h-[80vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image
+              src={avatarSrc}
+              alt={profile.name}
+              fill
+              sizes="100vw"
+              className="object-contain"
+              priority
+            />
+          </div>
+        </div>
+      )}
 
       {/* ========== CONTACT MODAL ========== */}
       <ContactModal

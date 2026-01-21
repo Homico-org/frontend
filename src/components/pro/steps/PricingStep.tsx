@@ -8,7 +8,7 @@ interface PricingStepProps {
   formData: {
     basePrice: string;
     maxPrice: string;
-    pricingModel: "fixed" | "range" | "byAgreement" | "";
+    pricingModel: "fixed" | "range" | "byAgreement" | "per_sqm" | "";
   };
   onFormChange: (updates: Partial<PricingStepProps["formData"]>) => void;
   validation: {
@@ -80,31 +80,29 @@ const PricingIcons = {
       <path d="M2 7h8M2 17h8" strokeOpacity="0.4" />
     </svg>
   ),
+  per_sqm: ({
+    className,
+    isActive,
+  }: {
+    className?: string;
+    isActive?: boolean;
+  }) => (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={isActive ? "#C4735B" : "currentColor"}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 4h16v16H4z" strokeOpacity="0.25" />
+      <path d="M8 16V8h2.5a2 2 0 010 4H8" />
+      <path d="M14 8h2v8h-2" />
+      <path d="M6 20h12" strokeOpacity="0.4" />
+    </svg>
+  ),
 };
-
-const pricingOptions = [
-  {
-    key: "fixed",
-    label: "Fixed",
-    labelKa: "ფიქსირებული",
-    suffix: "₾",
-    Icon: PricingIcons.fixed,
-  },
-  {
-    key: "range",
-    label: "Range",
-    labelKa: "დიაპაზონი",
-    suffix: "₾",
-    Icon: PricingIcons.range,
-  },
-  {
-    key: "byAgreement",
-    label: "By Agreement",
-    labelKa: "შეთანხმებით",
-    suffix: "",
-    Icon: PricingIcons.byAgreement,
-  },
-];
 
 export default function PricingStep({
   formData,
@@ -113,9 +111,38 @@ export default function PricingStep({
 }: PricingStepProps) {
   const { t, locale } = useLanguage();
 
-  const selectedOption = pricingOptions.find(
-    (o) => o.key === formData.pricingModel
-  );
+  const pricingOptions = [
+    {
+      key: "fixed",
+      label: "Fixed",
+      labelKa: "ფიქსირებული",
+      suffix: "₾",
+      Icon: PricingIcons.fixed,
+    },
+    {
+      key: "range",
+      label: "Range",
+      labelKa: "დიაპაზონი",
+      suffix: "₾",
+      Icon: PricingIcons.range,
+    },
+    {
+      key: "per_sqm",
+      label: "Per m²",
+      labelKa: "კვ.მ",
+      suffix: `₾${t("timeUnits.perSqm")}`,
+      Icon: PricingIcons.per_sqm,
+    },
+    {
+      key: "byAgreement",
+      label: "By Agreement",
+      labelKa: "შეთანხმებით",
+      suffix: "",
+      Icon: PricingIcons.byAgreement,
+    },
+  ] as const;
+
+  const selectedOption = pricingOptions.find((o) => o.key === formData.pricingModel);
   const suffix = selectedOption?.suffix || "₾";
 
   return (

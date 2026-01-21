@@ -90,6 +90,7 @@ const CATEGORY_LABELS: Record<string, { en: string; ka: string; ru: string }> = 
   'bathroom-renovation': { en: 'Bathroom Renovation', ka: 'აბაზანის რემონტი', ru: 'Ремонт ванной' },
 
   // Other
+  wood: { en: 'Wood', ka: 'ხე', ru: 'Дерево' },
   furniture: { en: 'Furniture', ka: 'ავეჯი', ru: 'Мебель' },
   other: { en: 'Other', ka: 'სხვა', ru: 'Другое' },
 };
@@ -100,12 +101,13 @@ export function useCategoryLabels() {
   const getCategoryLabel = useCallback(
     (category?: string): string => {
       if (!category) return '';
-      const label = CATEGORY_LABELS[category];
+      const key = category.trim().toLowerCase();
+      const label = CATEGORY_LABELS[key];
       if (label) {
         return label[locale as 'en' | 'ka' | 'ru'] || label.en;
       }
       // Fallback: format the category key nicely
-      return category
+      return category.trim()
         .replace(/-/g, ' ')
         .replace(/\b\w/g, (l) => l.toUpperCase());
     },
@@ -118,11 +120,12 @@ export function useCategoryLabels() {
 // Export for non-hook usage (e.g., in utility functions)
 export function getCategoryLabelStatic(category: string | undefined, locale: string): string {
   if (!category) return '';
-  const label = CATEGORY_LABELS[category];
+  const key = category.trim().toLowerCase();
+  const label = CATEGORY_LABELS[key];
   if (label) {
     return label[locale as 'en' | 'ka' | 'ru'] || label.en;
   }
-  return category
+  return category.trim()
     .replace(/-/g, ' ')
     .replace(/\b\w/g, (l) => l.toUpperCase());
 }
