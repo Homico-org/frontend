@@ -28,6 +28,7 @@ export enum PricingModel {
   FIXED = 'fixed',
   RANGE = 'range',
   BY_AGREEMENT = 'byAgreement',
+  PER_SQUARE_METER = 'per_sqm',
 }
 
 export enum VerificationStatus {

@@ -104,7 +104,7 @@ function ProProfileSetupPageContent() {
     availability: [] as string[],
     basePrice: '',
     maxPrice: '',
-    pricingModel: '' as 'fixed' | 'range' | 'byAgreement' | '',
+    pricingModel: '' as 'fixed' | 'range' | 'per_sqm' | 'byAgreement' | '',
     serviceAreas: [] as string[],
     nationwide: false,
     // Social media
@@ -633,7 +633,25 @@ function ProProfileSetupPageContent() {
       // - byAgreement: no numeric prices
       // - fixed: single price
       // - range: min-max
+      // - per_sqm: price per square meter (single price)
       let pricingModel = formData.pricingModel || 'range';
+
+      // Reject explicit "0" (or <=0) instead of letting it turn into undefined in the payload.
+      const baseRaw = formData.basePrice.trim();
+      const maxRaw = formData.maxPrice.trim();
+      const baseNum = baseRaw ? Number(baseRaw) : NaN;
+      const maxNum = maxRaw ? Number(maxRaw) : NaN;
+
+      if (pricingModel !== 'byAgreement') {
+        if (!baseRaw || !Number.isFinite(baseNum) || baseNum <= 0) {
+          throw new Error(t('common.invalidPrice'));
+        }
+        if (pricingModel === 'range') {
+          if (!maxRaw || !Number.isFinite(maxNum) || maxNum <= 0 || maxNum < baseNum) {
+            throw new Error(t('common.invalidPriceRange'));
+          }
+        }
+      }
 
       // Transform beforeAfterPairs to the API format
       const cleanedPortfolioProjects = portfolioProjects.map(p => ({
@@ -668,13 +686,13 @@ function ProProfileSetupPageContent() {
         avatar: formData.avatar || user?.avatar,
         pricingModel,
         // For "by agreement", explicitly send null so backend can unset previously saved numeric prices.
-        // For "fixed", also send maxPrice=null so previous range max doesn't linger.
-        basePrice: pricingModel === 'byAgreement' ? null : (parseFloat(formData.basePrice) || undefined),
+        // For "fixed" and "per_sqm", also send maxPrice=null so previous range max doesn't linger.
+        basePrice: pricingModel === 'byAgreement' ? null : baseNum,
         maxPrice: pricingModel === 'byAgreement'
           ? null
-          : pricingModel === 'fixed'
+          : pricingModel === 'fixed' || pricingModel === 'per_sqm'
             ? null
-            : (parseFloat(formData.maxPrice) || undefined),
+            : maxNum,
         serviceAreas: formData.nationwide && locationData ? [locationData.nationwide] : formData.serviceAreas,
         portfolioProjects: cleanedPortfolioProjects,
         pinterestLinks: formData.portfolioUrl ? [formData.portfolioUrl] : undefined,

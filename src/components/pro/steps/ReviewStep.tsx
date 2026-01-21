@@ -88,6 +88,8 @@ export default function ReviewStep({
     switch (formData.pricingModel) {
       case "byAgreement":
         return "";
+      case "per_sqm":
+        return `₾${t("timeUnits.perSqm")}`;
       case "range":
         return "₾";
       case "fixed":
@@ -101,6 +103,8 @@ export default function ReviewStep({
     switch (formData.pricingModel) {
       case "byAgreement":
         return t("common.negotiable");
+      case "per_sqm":
+        return t("professional.perSqm");
       case "fixed":
         return t("common.fixed");
       case "range":

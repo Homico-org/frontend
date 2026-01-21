@@ -39,8 +39,8 @@ export default function InviteProToJobModal({
   useEffect(() => {
     if (!isOpen) return;
 
-    // Prefer preloaded jobs from parent to avoid extra request.
-    if (initialJobs && initialJobs.length > 0) {
+    // If parent passed initialJobs (even empty), treat it as authoritative.
+    if (initialJobs !== undefined) {
       setJobs(initialJobs);
       setSelectedJobId(initialJobs[0]?.id || "");
       return;
@@ -132,11 +132,15 @@ export default function InviteProToJobModal({
             <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-300">
               <Briefcase className="w-5 h-5" />
               <span className="text-sm font-medium">
-                {t("professional.noOpenJobsToInvite")}
+                {initialJobs !== undefined
+                  ? t("professional.noMatchingJobsToInvite")
+                  : t("professional.noOpenJobsToInvite")}
               </span>
             </div>
             <p className="text-sm text-neutral-500 dark:text-neutral-400">
-              {t("professional.postJobToInvite")}
+              {initialJobs !== undefined
+                ? t("professional.adjustJobSkillsToInvite")
+                : t("professional.postJobToInvite")}
             </p>
             <div className="flex gap-2 justify-end pt-2">
               <Button variant="outline" onClick={onClose}>
