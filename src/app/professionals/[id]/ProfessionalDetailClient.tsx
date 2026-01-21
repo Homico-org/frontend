@@ -27,6 +27,7 @@ import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { api } from "@/lib/api";
 import { storage } from "@/services/storage";
 import type { BaseEntity, Job, PortfolioItem, ProProfile } from "@/types/shared";
+import { PricingModel } from "@/types/shared";
 import {
   BadgeCheck,
   Briefcase,
@@ -171,9 +172,9 @@ export default function ProfessionalDetailClient({
 
   // Pricing editing state (owner)
   const [isEditingPricing, setIsEditingPricing] = useState(false);
-  const [editedPricingModel, setEditedPricingModel] = useState<
-    "fixed" | "range" | "byAgreement" | "per_sqm"
-  >("fixed");
+  const [editedPricingModel, setEditedPricingModel] = useState<PricingModel>(
+    PricingModel.FIXED
+  );
   const [editedBasePrice, setEditedBasePrice] = useState("");
   const [editedMaxPrice, setEditedMaxPrice] = useState("");
 
@@ -588,14 +589,14 @@ export default function ProfessionalDetailClient({
   const openPricingEdit = () => {
     if (!isOwner || !profile) return;
     const model = (profile.pricingModel as unknown as string | undefined) || "byAgreement";
-    const normalized =
-      model === "sqm" || model === "per_sqm"
-        ? "per_sqm"
-        : model === "range"
-          ? "range"
-          : model === "byAgreement" || model === "hourly"
-            ? "byAgreement"
-            : "fixed";
+    const normalized: PricingModel =
+      model === "sqm" || model === PricingModel.PER_SQUARE_METER
+        ? PricingModel.PER_SQUARE_METER
+        : model === PricingModel.RANGE
+          ? PricingModel.RANGE
+          : model === PricingModel.BY_AGREEMENT || model === "hourly"
+            ? PricingModel.BY_AGREEMENT
+            : PricingModel.FIXED;
 
     setEditedPricingModel(normalized);
     setEditedBasePrice(
@@ -616,9 +617,9 @@ export default function ProfessionalDetailClient({
     const baseValid = base !== undefined && Number.isFinite(base) && base > 0;
     const maxValid = max !== undefined && Number.isFinite(max) && max > 0;
 
-    if (editedPricingModel === "byAgreement") {
+    if (editedPricingModel === PricingModel.BY_AGREEMENT) {
       // ok
-    } else if (editedPricingModel === "range") {
+    } else if (editedPricingModel === PricingModel.RANGE) {
       if (!baseValid || !maxValid || max! < base!) {
         toast.error(t("common.error"), t("common.invalidPriceRange") || t("common.invalid"));
         return;
@@ -639,11 +640,11 @@ export default function ProfessionalDetailClient({
 
       const response = await api.patch("/users/me/pro-profile", {
         pricingModel: editedPricingModel,
-        basePrice: editedPricingModel === "byAgreement" ? null : base,
+        basePrice: editedPricingModel === PricingModel.BY_AGREEMENT ? null : base,
         maxPrice:
-          editedPricingModel === "byAgreement"
+          editedPricingModel === PricingModel.BY_AGREEMENT
             ? null
-            : editedPricingModel === "range"
+            : editedPricingModel === PricingModel.RANGE
               ? max
               : null,
       });
@@ -668,8 +669,8 @@ export default function ProfessionalDetailClient({
             ? {
                 ...prev,
                 pricingModel: editedPricingModel,
-                basePrice: editedPricingModel === "byAgreement" ? undefined : base,
-                maxPrice: editedPricingModel === "range" ? max : undefined,
+                basePrice: editedPricingModel === PricingModel.BY_AGREEMENT ? undefined : base,
+                maxPrice: editedPricingModel === PricingModel.RANGE ? max : undefined,
               }
             : prev
         );
@@ -1768,18 +1769,18 @@ export default function ProfessionalDetailClient({
                               size="sm"
                               value={editedPricingModel}
                               onChange={(val) =>
-                                setEditedPricingModel(val as typeof editedPricingModel)
+                                setEditedPricingModel(val as PricingModel)
                               }
                               options={[
-                                { value: "fixed", label: t("common.fixed") },
-                                { value: "range", label: t("common.priceRange") },
-                                { value: "per_sqm", label: t("professional.perSqm") },
-                                { value: "byAgreement", label: t("common.negotiable") },
+                                { value: PricingModel.FIXED, label: t("common.fixed") },
+                                { value: PricingModel.RANGE, label: t("common.priceRange") },
+                                { value: PricingModel.PER_SQUARE_METER, label: t("professional.perSqm") },
+                                { value: PricingModel.BY_AGREEMENT, label: t("common.negotiable") },
                               ]}
                             />
                           </div>
 
-                          {editedPricingModel !== "byAgreement" && (
+                          {editedPricingModel !== PricingModel.BY_AGREEMENT && (
                             <div className="flex items-center gap-2 sm:justify-end">
                               <div className="relative">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">
@@ -1795,7 +1796,7 @@ export default function ProfessionalDetailClient({
                                   placeholder="0"
                                 />
                               </div>
-                              {editedPricingModel === "range" && (
+                              {editedPricingModel === PricingModel.RANGE && (
                                 <>
                                   <span className="text-neutral-400">—</span>
                                   <div className="relative">
@@ -1814,7 +1815,7 @@ export default function ProfessionalDetailClient({
                                   </div>
                                 </>
                               )}
-                              {editedPricingModel === "per_sqm" && (
+                              {editedPricingModel === PricingModel.PER_SQUARE_METER && (
                                 <span className="text-xs text-neutral-500 dark:text-neutral-400">
                                   {t("timeUnits.perSqm")}
                                 </span>
