@@ -21,6 +21,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { useLanguage } from "@/contexts/LanguageContext";
 import { backOrNavigate } from "@/utils/navigationUtils";
+import { PricingModel } from "@/types/shared";
 interface ProfileHeroProps {
   name: string;
   title?: string;
@@ -35,7 +36,7 @@ interface ProfileHeroProps {
   memberSince?: number;
   basePrice?: number;
   maxPrice?: number;
-  pricingModel?: "fixed" | "range" | "byAgreement";
+  pricingModel?: PricingModel;
   phone?: string;
   phoneRevealed?: boolean;
   locale: string;
@@ -252,24 +253,24 @@ export default function ProfileHero({
             </div>
 
             {/* Price display */}
-            {(pricingModel === "byAgreement" ||
+            {(pricingModel === PricingModel.BY_AGREEMENT ||
               (basePrice && basePrice > 0) ||
               (maxPrice && maxPrice > 0)) && (
               <div className="flex items-center justify-center gap-2 mb-6">
                 <span className="text-xl font-bold text-neutral-900 dark:text-white">
-                  {pricingModel === "byAgreement"
+                  {pricingModel === PricingModel.BY_AGREEMENT
                     ? t("common.negotiable")
-                    : pricingModel === "per_sqm"
+                    : pricingModel === PricingModel.PER_SQUARE_METER
                       ? `${basePrice || maxPrice || 0}₾${t("timeUnits.perSqm")}`
-                    : pricingModel === "range"
+                    : pricingModel === PricingModel.RANGE
                       ? `${basePrice || 0}₾ - ${maxPrice || 0}₾`
                       : `${basePrice || maxPrice || 0}₾`}
                 </span>
-                {pricingModel && pricingModel !== "fixed" && (
+                {pricingModel && pricingModel !== PricingModel.FIXED && (
                   <Badge variant="secondary" size="sm">
-                    {pricingModel === "byAgreement"
+                    {pricingModel === PricingModel.BY_AGREEMENT
                       ? t("common.negotiable")
-                      : pricingModel === "per_sqm"
+                      : pricingModel === PricingModel.PER_SQUARE_METER
                         ? t("professional.perSqm")
                       : t("common.priceRange")}
                   </Badge>
