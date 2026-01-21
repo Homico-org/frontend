@@ -234,6 +234,36 @@ export function validateGeorgianPhone(
   return { isValid: true };
 }
 
+/**
+ * Format Georgian phone number for display (drops +995/995/0 prefix).
+ *
+ * Examples:
+ * - "+995555555555" -> "555 55 55 55"
+ * - "995 555 55 55 55" -> "555 55 55 55"
+ * - "0555555555" -> "555 55 55 55"
+ *
+ * If the number can't be normalized to a Georgian mobile (9 digits starting with 5),
+ * the original input is returned unchanged.
+ */
+export function formatGeorgianPhoneDisplay(phone?: string | null): string {
+  if (!phone) return '';
+
+  // Keep only digits
+  let digits = phone.replace(/\D/g, '');
+
+  // Drop common country/local prefixes
+  if (digits.startsWith('995') && digits.length === 12) {
+    digits = digits.slice(3);
+  } else if (digits.startsWith('0') && digits.length === 10) {
+    digits = digits.slice(1);
+  }
+
+  // Georgian mobile: 9 digits starting with 5
+  if (!/^5\d{8}$/.test(digits)) return phone;
+
+  return `${digits.slice(0, 3)} ${digits.slice(3, 5)} ${digits.slice(5, 7)} ${digits.slice(7, 9)}`;
+}
+
 // ============================================================================
 // Text Validation
 // ============================================================================

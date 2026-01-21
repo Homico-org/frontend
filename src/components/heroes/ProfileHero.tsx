@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { useLanguage } from "@/contexts/LanguageContext";
+import { backOrNavigate } from "@/utils/navigationUtils";
 interface ProfileHeroProps {
   name: string;
   title?: string;
@@ -137,7 +138,7 @@ export default function ProfileHero({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => router.back()}
+            onClick={() => backOrNavigate(router, "/browse")}
             className="rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm shadow-sm hover:bg-white dark:hover:bg-neutral-800"
             leftIcon={<ChevronLeft className="w-4 h-4" />}
           >

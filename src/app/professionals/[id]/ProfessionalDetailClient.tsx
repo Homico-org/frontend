@@ -4,6 +4,7 @@ import AddressPicker from "@/components/common/AddressPicker";
 import Header, { HeaderSpacer } from "@/components/common/Header";
 import AboutTab from "@/components/professionals/AboutTab";
 import ContactModal from "@/components/professionals/ContactModal";
+import InviteProToJobModal from "@/components/professionals/InviteProToJobModal";
 import PortfolioTab from "@/components/professionals/PortfolioTab";
 import ProfileSidebar, {
   ProfileSidebarMobile,
@@ -24,7 +25,7 @@ import { useToast } from "@/contexts/ToastContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { api } from "@/lib/api";
 import { storage } from "@/services/storage";
-import type { BaseEntity, PortfolioItem, ProProfile } from "@/types/shared";
+import type { BaseEntity, Job, PortfolioItem, ProProfile } from "@/types/shared";
 import {
   BadgeCheck,
   Briefcase,
@@ -44,8 +45,10 @@ import {
   X,
 } from "lucide-react";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { formatGeorgianPhoneDisplay } from "@/utils/validationUtils";
+import { backOrNavigate } from "@/utils/navigationUtils";
 
 // API response types for before/after pairs (supports both formats)
 interface ApiBeforeAfterPair {
@@ -104,6 +107,7 @@ export default function ProfessionalDetailClient({
     return Array.isArray(raw) ? raw[0] : raw;
   }, [params]);
   const router = useRouter();
+  const pathname = usePathname();
   const { user } = useAuth();
   const { openLoginModal } = useAuthModal();
   const { t, locale } = useLanguage();
@@ -134,6 +138,11 @@ export default function ProfessionalDetailClient({
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
+
+  // Invite-to-job (client -> pro)
+  const [myOpenJobs, setMyOpenJobs] = useState<Job[]>([]);
+  const [myOpenJobsLoaded, setMyOpenJobsLoaded] = useState(false);
+  const [showInviteToJobModal, setShowInviteToJobModal] = useState(false);
 
   // Owner edit states
   const [showEditAboutModal, setShowEditAboutModal] = useState(false);
@@ -317,6 +326,34 @@ export default function ProfessionalDetailClient({
   useEffect(() => {
     if (profile?.id) fetchReviews();
   }, [profile?.id, fetchReviews]);
+
+  // Fetch my open jobs to decide whether to show "Invite to job" CTA
+  useEffect(() => {
+    if (!user || isOwner) {
+      setMyOpenJobs([]);
+      setMyOpenJobsLoaded(false);
+      return;
+    }
+
+    let cancelled = false;
+    const fetchMyOpenJobs = async () => {
+      try {
+        const response = await api.get("/jobs/my-jobs?status=open");
+        const list = Array.isArray(response.data) ? (response.data as Job[]) : [];
+        if (!cancelled) setMyOpenJobs(list);
+      } catch (err) {
+        console.error("Failed to fetch my open jobs:", err);
+        if (!cancelled) setMyOpenJobs([]);
+      } finally {
+        if (!cancelled) setMyOpenJobsLoaded(true);
+      }
+    };
+
+    fetchMyOpenJobs();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, isOwner]);
 
   const isBasicTier =
     !profile?.premiumTier ||
@@ -1112,7 +1149,7 @@ export default function ProfessionalDetailClient({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.back()}
+              onClick={() => backOrNavigate(router, "/browse")}
               className="rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm shadow-md hover:bg-white dark:hover:bg-neutral-800"
               leftIcon={<ChevronLeft className="w-4 h-4" />}
             >
@@ -1558,32 +1595,47 @@ export default function ProfessionalDetailClient({
                 {/* Visitor CTA: show inside hero on desktop; mobile uses the fixed bottom button */}
                 {!isOwner && (
                   <div className="hidden lg:block">
-                    {phoneRevealed && profile.phone ? (
-                      <a
-                        href={`tel:${profile.phone}`}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white font-medium text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg shadow-emerald-500/25"
-                      >
-                        <Phone className="w-4 h-4" />
-                        {profile.phone}
-                      </a>
-                    ) : (
-                      <Button
-                        onClick={handleContact}
-                        size="sm"
-                        className="rounded-full whitespace-nowrap"
-                        leftIcon={
-                          isBasicTier ? (
-                            <Phone className="w-4 h-4" />
-                          ) : (
-                            <MessageSquare className="w-4 h-4" />
-                          )
-                        }
-                      >
-                        {isBasicTier
-                          ? t("professional.showPhone")
-                          : t("professional.contact")}
-                      </Button>
-                    )}
+                    <div className="flex flex-col gap-2 items-start sm:items-end">
+                      {phoneRevealed && profile.phone ? (
+                        <a
+                          href={`tel:${profile.phone.replace(/\s/g, "")}`}
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white font-medium text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg shadow-emerald-500/25"
+                        >
+                          <Phone className="w-4 h-4" />
+                          {formatGeorgianPhoneDisplay(profile.phone)}
+                        </a>
+                      ) : (
+                        <Button
+                          onClick={handleContact}
+                          size="sm"
+                          className="rounded-full whitespace-nowrap"
+                          leftIcon={
+                            isBasicTier ? (
+                              <Phone className="w-4 h-4" />
+                            ) : (
+                              <MessageSquare className="w-4 h-4" />
+                            )
+                          }
+                        >
+                          {isBasicTier
+                            ? t("professional.showPhone")
+                            : t("professional.contact")}
+                        </Button>
+                      )}
+
+                      {/* Invite pro to one of my open jobs */}
+                      {myOpenJobsLoaded && myOpenJobs.length > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-full whitespace-nowrap"
+                          leftIcon={<Briefcase className="w-4 h-4" />}
+                          onClick={() => setShowInviteToJobModal(true)}
+                        >
+                          {t("professional.inviteToJob")}
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -1637,6 +1689,8 @@ export default function ProfessionalDetailClient({
                   linkedinUrl={profile.linkedinUrl}
                   websiteUrl={profile.websiteUrl}
                   locale={locale as "en" | "ka" | "ru"}
+                  isAuthenticated={!!user}
+                  onRequireAuth={() => openLoginModal(pathname)}
                   isOwner={isOwner}
                   onSaveBio={async (bio) => {
                     await api.patch("/users/me/pro-profile", { bio });
@@ -1743,14 +1797,26 @@ export default function ProfessionalDetailClient({
             : "translate-y-20 opacity-0 pointer-events-none"
         }`}
       >
+        {/* Invite pro to job - mobile (only if viewer has open jobs) */}
+        {myOpenJobsLoaded && myOpenJobs.length > 0 && (
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full rounded-2xl mb-2"
+            leftIcon={<Briefcase className="w-5 h-5" />}
+            onClick={() => setShowInviteToJobModal(true)}
+          >
+            {t("professional.inviteToJob")}
+          </Button>
+        )}
         {phoneRevealed && profile.phone ? (
           <a
-            href={`tel:${profile.phone}`}
+            href={`tel:${profile.phone.replace(/\s/g, "")}`}
             className="block w-full py-4 rounded-2xl text-white font-semibold text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-xl shadow-emerald-500/30 text-center"
           >
             <span className="flex items-center justify-center gap-2">
               <Phone className="w-5 h-5" />
-              {profile.phone}
+              {formatGeorgianPhoneDisplay(profile.phone)}
             </span>
           </a>
         ) : (
@@ -1772,6 +1838,17 @@ export default function ProfessionalDetailClient({
           </Button>
         )}
       </div>
+
+      {/* Invite modal */}
+      {profile?.id && (
+        <InviteProToJobModal
+          isOpen={showInviteToJobModal}
+          onClose={() => setShowInviteToJobModal(false)}
+          proId={profile.id}
+          proName={profile.name}
+          initialJobs={myOpenJobs}
+        />
+      )}
 
       {/* ========== PROJECT LIGHTBOX ========== */}
       {selectedProject &&

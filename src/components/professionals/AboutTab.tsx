@@ -41,6 +41,10 @@ export interface AboutTabProps {
   websiteUrl?: string;
   /** Locale for translations */
   locale?: 'en' | 'ka' | 'ru';
+  /** Is the viewer authenticated (used to gate contact/social links) */
+  isAuthenticated?: boolean;
+  /** Called when an unauthenticated user tries to open a gated contact/social link */
+  onRequireAuth?: () => void;
   /** Is current user viewing their own profile */
   isOwner?: boolean;
   /** Handler to save bio */
@@ -64,12 +68,22 @@ export default function AboutTab({
   linkedinUrl,
   websiteUrl,
   locale = 'en',
+  isAuthenticated = false,
+  onRequireAuth,
   isOwner = false,
   onSaveBio,
   onSaveServices,
   onSaveSocialLinks,
 }: AboutTabProps) {
   const hasContactLinks = whatsapp || telegram || facebookUrl || instagramUrl || linkedinUrl || websiteUrl;
+  const shouldGateLinks = !isOwner && !isAuthenticated;
+
+  const loginRequiredTitle =
+    locale === "ka"
+      ? "საჭიროა შესვლა"
+      : locale === "ru"
+        ? "Требуется вход"
+        : "Login required";
 
   // Inline editing states
   const [isEditingBio, setIsEditingBio] = useState(false);
@@ -466,72 +480,174 @@ export default function AboutTab({
           </div>
         ) : hasContactLinks ? (
           <div className="flex flex-wrap gap-2">
-            {whatsapp && (
-              <a
-                href={`https://wa.me/${whatsapp.replace(/[^0-9+]/g, '')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="h-10 px-3 rounded-full flex items-center justify-center gap-2 hover:opacity-80 transition-colors"
-                style={{ backgroundColor: `${socialColors.whatsapp}15`, color: socialColors.whatsapp }}
-              >
-                <SocialIcon name="whatsapp" size="md" />
-                <span className="text-sm font-medium">WhatsApp</span>
-              </a>
-            )}
+            {whatsapp &&
+              (shouldGateLinks ? (
+                <button
+                  type="button"
+                  onClick={() => onRequireAuth?.()}
+                  title={loginRequiredTitle}
+                  className="h-10 px-3 rounded-full flex items-center justify-center gap-2 transition-colors opacity-60 cursor-not-allowed"
+                  style={{
+                    backgroundColor: `${socialColors.whatsapp}15`,
+                    color: socialColors.whatsapp,
+                  }}
+                >
+                  <SocialIcon name="whatsapp" size="md" />
+                  <span className="text-sm font-medium">WhatsApp</span>
+                </button>
+              ) : (
+                <a
+                  href={`https://wa.me/${whatsapp.replace(/[^0-9+]/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="h-10 px-3 rounded-full flex items-center justify-center gap-2 hover:opacity-80 transition-colors"
+                  style={{
+                    backgroundColor: `${socialColors.whatsapp}15`,
+                    color: socialColors.whatsapp,
+                  }}
+                >
+                  <SocialIcon name="whatsapp" size="md" />
+                  <span className="text-sm font-medium">WhatsApp</span>
+                </a>
+              ))}
             {telegram && (
-              <a
-                href={`https://t.me/${telegram.replace('@', '')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="h-10 px-3 rounded-full flex items-center justify-center gap-2 hover:opacity-80 transition-colors"
-                style={{ backgroundColor: `${socialColors.telegram}15`, color: socialColors.telegram }}
-              >
-                <SocialIcon name="telegram" size="md" />
-                <span className="text-sm font-medium">Telegram</span>
-              </a>
+              shouldGateLinks ? (
+                <button
+                  type="button"
+                  onClick={() => onRequireAuth?.()}
+                  title={loginRequiredTitle}
+                  className="h-10 px-3 rounded-full flex items-center justify-center gap-2 transition-colors opacity-60 cursor-not-allowed"
+                  style={{
+                    backgroundColor: `${socialColors.telegram}15`,
+                    color: socialColors.telegram,
+                  }}
+                >
+                  <SocialIcon name="telegram" size="md" />
+                  <span className="text-sm font-medium">Telegram</span>
+                </button>
+              ) : (
+                <a
+                  href={`https://t.me/${telegram.replace("@", "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="h-10 px-3 rounded-full flex items-center justify-center gap-2 hover:opacity-80 transition-colors"
+                  style={{
+                    backgroundColor: `${socialColors.telegram}15`,
+                    color: socialColors.telegram,
+                  }}
+                >
+                  <SocialIcon name="telegram" size="md" />
+                  <span className="text-sm font-medium">Telegram</span>
+                </a>
+              )
             )}
             {facebookUrl && (
-              <a
-                href={facebookUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-colors"
-                style={{ backgroundColor: `${socialColors.facebook}15`, color: socialColors.facebook }}
-              >
-                <SocialIcon name="facebook" size="md" />
-              </a>
+              shouldGateLinks ? (
+                <button
+                  type="button"
+                  onClick={() => onRequireAuth?.()}
+                  title={loginRequiredTitle}
+                  className="w-10 h-10 rounded-full flex items-center justify-center transition-colors opacity-60 cursor-not-allowed"
+                  style={{
+                    backgroundColor: `${socialColors.facebook}15`,
+                    color: socialColors.facebook,
+                  }}
+                >
+                  <SocialIcon name="facebook" size="md" />
+                </button>
+              ) : (
+                <a
+                  href={facebookUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-colors"
+                  style={{
+                    backgroundColor: `${socialColors.facebook}15`,
+                    color: socialColors.facebook,
+                  }}
+                >
+                  <SocialIcon name="facebook" size="md" />
+                </a>
+              )
             )}
             {instagramUrl && (
-              <a
-                href={instagramUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-colors"
-                style={{ backgroundColor: `${socialColors.instagram}15`, color: socialColors.instagram }}
-              >
-                <SocialIcon name="instagram" size="md" />
-              </a>
+              shouldGateLinks ? (
+                <button
+                  type="button"
+                  onClick={() => onRequireAuth?.()}
+                  title={loginRequiredTitle}
+                  className="w-10 h-10 rounded-full flex items-center justify-center transition-colors opacity-60 cursor-not-allowed"
+                  style={{
+                    backgroundColor: `${socialColors.instagram}15`,
+                    color: socialColors.instagram,
+                  }}
+                >
+                  <SocialIcon name="instagram" size="md" />
+                </button>
+              ) : (
+                <a
+                  href={instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-colors"
+                  style={{
+                    backgroundColor: `${socialColors.instagram}15`,
+                    color: socialColors.instagram,
+                  }}
+                >
+                  <SocialIcon name="instagram" size="md" />
+                </a>
+              )
             )}
             {linkedinUrl && (
-              <a
-                href={linkedinUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-colors"
-                style={{ backgroundColor: `${socialColors.linkedin}15`, color: socialColors.linkedin }}
-              >
-                <SocialIcon name="linkedin" size="md" />
-              </a>
+              shouldGateLinks ? (
+                <button
+                  type="button"
+                  onClick={() => onRequireAuth?.()}
+                  title={loginRequiredTitle}
+                  className="w-10 h-10 rounded-full flex items-center justify-center transition-colors opacity-60 cursor-not-allowed"
+                  style={{
+                    backgroundColor: `${socialColors.linkedin}15`,
+                    color: socialColors.linkedin,
+                  }}
+                >
+                  <SocialIcon name="linkedin" size="md" />
+                </button>
+              ) : (
+                <a
+                  href={linkedinUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-colors"
+                  style={{
+                    backgroundColor: `${socialColors.linkedin}15`,
+                    color: socialColors.linkedin,
+                  }}
+                >
+                  <SocialIcon name="linkedin" size="md" />
+                </a>
+              )
             )}
             {websiteUrl && (
-              <a
-                href={websiteUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-              >
-                <Globe className="w-4 h-4" />
-              </a>
+              shouldGateLinks ? (
+                <button
+                  type="button"
+                  onClick={() => onRequireAuth?.()}
+                  title={loginRequiredTitle}
+                  className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-400 transition-colors opacity-60 cursor-not-allowed"
+                >
+                  <Globe className="w-4 h-4" />
+                </button>
+              ) : (
+                <a
+                  href={websiteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                >
+                  <Globe className="w-4 h-4" />
+                </a>
+              )
             )}
           </div>
         ) : isOwner ? (

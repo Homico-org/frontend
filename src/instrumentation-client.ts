@@ -4,6 +4,20 @@
 
 import * as Sentry from "@sentry/nextjs";
 
+function isJavaObjectGonePostMessageError(input: unknown): boolean {
+  const text =
+    typeof input === "string"
+      ? input
+      : input instanceof Error
+        ? input.message
+        : "";
+
+  return (
+    text.includes("Error invoking postMessage: Java object is gone") ||
+    text.includes("Java object is gone")
+  );
+}
+
 // Only initialize Sentry in production
 if (process.env.NODE_ENV === "production") {
   Sentry.init({
@@ -22,6 +36,28 @@ if (process.env.NODE_ENV === "production") {
 
     // Define how likely Replay events are sampled when an error occurs.
     replaysOnErrorSampleRate: 1.0,
+
+    // This is a common WebView-bridge failure when the site is loaded inside an Android WebView
+    // and the underlying Java-side object has been torn down. It's not actionable from the web app,
+    // so we drop it to avoid noisy "Unhandled" issues.
+    ignoreErrors: [/Error invoking postMessage: Java object is gone/i],
+    beforeSend(event, hint) {
+      if (isJavaObjectGonePostMessageError(hint?.originalException)) {
+        return null;
+      }
+
+      const exceptionMessages =
+        event.exception?.values?.map((v) => v.value).filter(Boolean) ?? [];
+      if (exceptionMessages.some((m) => isJavaObjectGonePostMessageError(m))) {
+        return null;
+      }
+
+      if (isJavaObjectGonePostMessageError(event.message)) {
+        return null;
+      }
+
+      return event;
+    },
 
     // Enable sending user PII (Personally Identifiable Information)
     // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#sendDefaultPii

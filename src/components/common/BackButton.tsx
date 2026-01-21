@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/contexts/LanguageContext";
+import { backOrNavigate } from "@/utils/navigationUtils";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -34,7 +35,7 @@ export default function BackButton({
     if (href) {
       router.push(href);
     } else {
-      router.back();
+      backOrNavigate(router, "/browse");
     }
   };
 

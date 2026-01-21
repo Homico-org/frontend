@@ -39,6 +39,7 @@ import {
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
+import { backOrNavigate } from "@/utils/navigationUtils";
 
 type Step = "category" | "location" | "details" | "review";
 
@@ -310,7 +311,7 @@ function PostJobPageContent() {
       setCurrentStep(STEPS[stepIndex - 1].id);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
-      router.back();
+      backOrNavigate(router, "/browse");
     }
   };
 
