@@ -24,6 +24,7 @@ import {
   Star,
   Users,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import ReviewItem, { RatingSummary, Review } from "./ReviewItem";
 
@@ -64,6 +65,7 @@ export default function ReviewsTab({
   const { t } = useLanguage();
   const toast = useToast();
   const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
 
   const [filter, setFilter] = useState<ReviewFilter>("all");
   const [reviewLink, setReviewLink] = useState<string>("");
@@ -73,6 +75,7 @@ export default function ReviewsTab({
   const [inviteName, setInviteName] = useState("");
   const [isSendingInvite, setIsSendingInvite] = useState(false);
   const [showRequestSection, setShowRequestSection] = useState(false);
+  const [reviewLinkError, setReviewLinkError] = useState(false);
 
   // Leave Review Modal State
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -109,11 +112,14 @@ export default function ReviewsTab({
   const fetchReviewLink = useCallback(async () => {
     if (!isOwner || reviewLink) return;
     setIsLinkLoading(true);
+    setReviewLinkError(false);
     try {
       const res = await api.get("/reviews/request-link");
       setReviewLink(res.data.link);
     } catch (err) {
       console.error("Failed to fetch review link:", err);
+      setReviewLinkError(true);
+      toast.error(t("common.error"), t("common.tryAgain"));
     } finally {
       setIsLinkLoading(false);
     }
@@ -263,41 +269,52 @@ export default function ReviewsTab({
         {/* Owner: Request Reviews Section */}
         {isOwner && (
           <div className="bg-gradient-to-br from-[#C4735B]/10 to-[#C4735B]/5 dark:from-[#C4735B]/20 dark:to-[#C4735B]/10 rounded-2xl border border-[#C4735B]/20 overflow-hidden">
-            <button
-              onClick={() => setShowRequestSection(!showRequestSection)}
-              className="w-full flex items-center justify-between p-4 hover:bg-[#C4735B]/5 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <div className="bg-[#C4735B] p-2 rounded-lg">
-                  <Users className="h-5 w-5 text-white" />
-                </div>
-                <div className="text-left">
-                  <h3 className="font-semibold text-neutral-900 dark:text-white">
-                    {t("reviews.requestReviews")}
-                  </h3>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                    {t("reviews.shareWithClients")}
-                  </p>
-                </div>
-              </div>
-              <div
-                className={`transition-transform duration-200 ${showRequestSection ? "rotate-180" : ""}`}
+            <div className="w-full flex items-center justify-between gap-3 p-4">
+              <button
+                onClick={() => setShowRequestSection(!showRequestSection)}
+                className="flex-1 flex items-center justify-between hover:bg-[#C4735B]/5 transition-colors rounded-xl px-2 py-1"
               >
-                <svg
-                  className="w-5 h-5 text-neutral-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+                <div className="flex items-center gap-3">
+                  <div className="bg-[#C4735B] p-2 rounded-lg">
+                    <Users className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-semibold text-neutral-900 dark:text-white">
+                      {t("reviews.requestReviews")}
+                    </h3>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                      {t("reviews.shareWithClients")}
+                    </p>
+                  </div>
+                </div>
+                <div
+                  className={`transition-transform duration-200 ${showRequestSection ? "rotate-180" : ""}`}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </div>
-            </button>
+                  <svg
+                    className="w-5 h-5 text-neutral-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push("/pro/reviews")}
+                className="shrink-0"
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                {t("common.open")}
+              </Button>
+            </div>
 
             {showRequestSection && (
               <div className="px-4 pb-4 space-y-3">
@@ -318,11 +335,22 @@ export default function ReviewsTab({
                         inputSize="sm"
                         className="flex-1 font-mono text-xs"
                       />
+                      {!reviewLink && reviewLinkError && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={fetchReviewLink}
+                          className="shrink-0"
+                        >
+                          {t("common.tryAgain")}
+                        </Button>
+                      )}
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={copyLink}
                         className="shrink-0"
+                        disabled={!reviewLink}
                       >
                         {isCopied ? (
                           <CheckCircle className="w-4 h-4" />
@@ -335,6 +363,7 @@ export default function ReviewsTab({
                         size="sm"
                         onClick={shareOnWhatsApp}
                         className="shrink-0 hidden sm:flex"
+                        disabled={!reviewLink}
                       >
                         <ExternalLink className="w-4 h-4" />
                       </Button>
