@@ -3,7 +3,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { Briefcase, FileText, Images, Plus, Search, Users } from 'lucide-react';
+import { Briefcase, Calculator, FileText, Images, Plus, Search, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
@@ -29,11 +29,11 @@ const NAV_ITEMS: NavItem[] = [
     showFor: 'guest',
   },
   {
-    key: 'professionals',
-    href: '/browse/professionals',
-    label: 'Pros',
-    labelKa: 'სპეცები',
-    icon: Users,
+    key: 'tools-guest',
+    href: '/tools',
+    label: 'Tools',
+    labelKa: 'ხელსაწყოები',
+    icon: Calculator,
     showFor: 'guest',
   },
   // Authenticated navigation
@@ -67,6 +67,14 @@ const NAV_ITEMS: NavItem[] = [
     label: 'My Jobs',
     labelKa: 'პროექტები',
     icon: Briefcase,
+    showFor: 'authenticated',
+  },
+  {
+    key: 'tools',
+    href: '/tools',
+    label: 'Tools',
+    labelKa: 'ხელსაწყოები',
+    icon: Calculator,
     showFor: 'authenticated',
   },
 ];
@@ -121,6 +129,7 @@ export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
 
   // Determine active tab
   const getActiveKey = () => {
+    if (pathname.includes('/tools')) return isAuthenticated ? 'tools' : 'tools-guest';
     if (pathname.includes('/my-work')) return 'my-work';
     if (pathname.includes('/my-proposals')) return 'my-work'; // Redirect case
     if (pathname.includes('/my-jobs')) return 'my-jobs';
