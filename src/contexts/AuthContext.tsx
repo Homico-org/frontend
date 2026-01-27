@@ -29,7 +29,6 @@ interface User {
   accountType?: AccountType;
   companyName?: string;
   isProfileCompleted?: boolean;
-  isAdminApproved?: boolean;
   verificationStatus?: 'pending' | 'submitted' | 'verified' | 'rejected';
 }
 
@@ -93,7 +92,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         accountType: userData.accountType,
         companyName: userData.companyName,
         isProfileCompleted: userData.isProfileCompleted,
-        isAdminApproved: userData.isAdminApproved,
         verificationStatus: userData.verificationStatus
       };
     } catch (err) {
