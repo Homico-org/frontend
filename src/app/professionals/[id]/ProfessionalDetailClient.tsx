@@ -1072,7 +1072,7 @@ export default function ProfessionalDetailClient({
     return groups;
   }, [profile?.categories, profile?.subcategories, CATEGORIES]);
 
-  const cityTranslations: Record<string, string> = {
+  const cityTranslationsKa: Record<string, string> = {
     tbilisi: "თბილისი",
     rustavi: "რუსთავი",
     mtskheta: "მცხეთა",
@@ -1086,10 +1086,30 @@ export default function ProfessionalDetailClient({
     countrywide: "საქართველოს მასშტაბით",
   };
 
+  const cityTranslationsEn: Record<string, string> = {
+    tbilisi: "Tbilisi",
+    rustavi: "Rustavi",
+    mtskheta: "Mtskheta",
+    batumi: "Batumi",
+    kutaisi: "Kutaisi",
+    gori: "Gori",
+    zugdidi: "Zugdidi",
+    telavi: "Telavi",
+    nationwide: "Nationwide",
+    georgia: "Georgia",
+    countrywide: "Nationwide",
+    "საქართველოს მასშტაბით": "Nationwide",
+    "საქართველო": "Georgia",
+  };
+
   const translateCity = (city: string) => {
+    const lowerCity = city.toLowerCase().trim();
     if (locale === "ka") {
-      const lowerCity = city.toLowerCase().trim();
-      if (cityTranslations[lowerCity]) return cityTranslations[lowerCity];
+      if (cityTranslationsKa[lowerCity]) return cityTranslationsKa[lowerCity];
+    } else {
+      // For English/Russian, translate Georgian text to English
+      if (cityTranslationsEn[city]) return cityTranslationsEn[city];
+      if (cityTranslationsEn[lowerCity]) return cityTranslationsEn[lowerCity];
     }
     return city;
   };
