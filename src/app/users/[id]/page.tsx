@@ -199,15 +199,14 @@ export default function UserProfilePage() {
     <div className="min-h-screen bg-[var(--color-bg-primary)]">
       <ArchitecturalBackground />
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap');
-
         .user-page {
-          --font-display: 'Syne', sans-serif;
-          --font-body: 'Outfit', sans-serif;
+          --font-display: 'Inter', sans-serif;
+          --font-body: 'Inter', sans-serif;
         }
 
         .user-page .font-display {
           font-family: var(--font-display);
+          font-weight: 600;
         }
 
         .user-page * {

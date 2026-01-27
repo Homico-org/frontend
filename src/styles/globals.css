@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&family=Instrument+Serif:ital@0;1&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -52,8 +52,8 @@
   --gradient-secondary: linear-gradient(180deg, #faf9f7 0%, #f5f3f0 100%);
   --gradient-tertiary: linear-gradient(180deg, #eae7e2 0%, #dfdcd6 100%);
 
-  /* Typography */
-  --font-sans: 'Outfit', system-ui, -apple-system, sans-serif;
+  /* Typography - Modern Inter font */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* Layered Shadows - creating depth */
   --shadow-xs: 0 1px 2px rgba(28, 26, 23, 0.04);
@@ -1261,11 +1261,11 @@ img:not(.loading) {
 
 /* Custom fonts */
 .font-display {
-  font-family: 'DM Serif Display', 'Instrument Serif', Georgia, serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .font-serif-italic {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* Blueprint grid background pattern */
@@ -1603,13 +1603,13 @@ img:not(.loading) {
 /* Browse page header text styling */
 .browse-title {
   @apply text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight;
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   letter-spacing: -0.02em;
 }
 
 .browse-subtitle {
   @apply text-sm sm:text-base mt-1;
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: var(--color-text-secondary);
 }
 
@@ -2235,7 +2235,7 @@ img:not(.loading) {
 /* Job title styling */
 .job-title {
   @apply text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight;
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   letter-spacing: -0.025em;
   color: var(--color-text-primary);
 }
@@ -2367,7 +2367,7 @@ img:not(.loading) {
 .job-description::before {
   content: '"';
   @apply absolute -left-2 -top-4 text-6xl leading-none;
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: rgba(210, 105, 30, 0.1);
 }
 
@@ -2493,7 +2493,7 @@ img:not(.loading) {
 
 .job-budget-value {
   @apply text-4xl sm:text-5xl font-bold tracking-tight;
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: linear-gradient(135deg, #D26B3F 0%, #E07B4F 50%, #E8956A 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -2831,14 +2831,14 @@ img:not(.loading) {
 
 .myjobs-title {
   @apply text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight;
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   letter-spacing: -0.02em;
   color: var(--color-text-primary);
 }
 
 .myjobs-subtitle {
   @apply text-sm mt-1;
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: var(--color-text-tertiary);
 }
 
@@ -2872,7 +2872,7 @@ img:not(.loading) {
 
 .myjobs-stat-value {
   @apply text-2xl sm:text-3xl font-bold tracking-tight;
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: linear-gradient(135deg, #D26B3F 0%, #E07B4F 50%, #E8956A 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -3244,7 +3244,7 @@ img:not(.loading) {
 /* Proposal Price */
 .myjobs-proposal-price {
   @apply text-xl sm:text-2xl font-bold;
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: #E07B4F;
 }
 
@@ -3645,7 +3645,7 @@ img:not(.loading) {
 
 .postjob-title {
   @apply text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-3;
-  font-family: 'DM Serif Display', 'Instrument Serif', Georgia, serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: var(--color-text-primary);
 }
 
@@ -3768,7 +3768,7 @@ img:not(.loading) {
 
 .postjob-section-title h2 {
   @apply text-xl sm:text-2xl font-bold;
-  font-family: 'DM Serif Display', 'Instrument Serif', Georgia, serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: var(--color-text-primary);
 }
 
@@ -4304,7 +4304,7 @@ img:not(.loading) {
 
 .myproposals-title {
   @apply text-2xl sm:text-3xl font-bold tracking-tight;
-  font-family: 'DM Serif Display', 'Instrument Serif', Georgia, serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: linear-gradient(135deg, #E07B4F 0%, #8B4513 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -6265,8 +6265,8 @@ img:not(.loading) {
 
 /* Pro Page - Main container class for all styling overrides */
 .pro-page {
-  --font-display: 'Syne', system-ui, sans-serif;
-  --font-body: 'Outfit', system-ui, sans-serif;
+  --font-display: 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
   --color-accent: #C87259;
   --color-accent-hover: #B86349;
   --color-accent-soft: rgba(200, 114, 89, 0.12);
@@ -6587,7 +6587,7 @@ img:not(.loading) {
   top: -8px;
   left: 12px;
   font-size: 48px;
-  font-family: Georgia, serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: #E07B4F;
   opacity: 0.3;
   line-height: 1;
