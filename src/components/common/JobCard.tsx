@@ -17,8 +17,6 @@ import {
   Send,
   ChevronLeft,
   ChevronRight,
-  Calendar,
-  Briefcase,
 } from "lucide-react";
 
 export interface JobCardProps {
@@ -255,20 +253,12 @@ const JobCard = React.memo(function JobCard({
             )}
 
             {/* Meta info row */}
-            <div className="flex items-center gap-3 text-[12px] text-neutral-500 dark:text-neutral-400">
-              {job.location && (
-                <span className="flex items-center gap-1 truncate">
-                  <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-neutral-400" />
-                  <span className="truncate">{truncateLocation(job.location)}</span>
-                </span>
-              )}
-              {job.propertyType && (
-                <span className="flex items-center gap-1">
-                  <Briefcase className="w-3.5 h-3.5 flex-shrink-0 text-neutral-400" />
-                  {t(`propertyTypes.${job.propertyType}`) || job.propertyType}
-                </span>
-              )}
-            </div>
+            {job.location && (
+              <div className="flex items-center gap-1 text-[12px] text-neutral-500 dark:text-neutral-400">
+                <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-neutral-400" />
+                <span className="truncate">{truncateLocation(job.location)}</span>
+              </div>
+            )}
 
             {/* Divider */}
             <div className="h-px bg-neutral-100 dark:bg-neutral-800" />

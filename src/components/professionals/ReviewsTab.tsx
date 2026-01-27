@@ -420,43 +420,61 @@ export default function ReviewsTab({
           />
         )}
 
-        {/* Filter Tabs */}
+        {/* Filter Tabs - Modern segmented control */}
         {reviews.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="inline-flex p-1 bg-neutral-100 dark:bg-neutral-800 rounded-xl gap-1">
             <button
               onClick={() => setFilter("all")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                 filter === "all"
-                  ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
-                  : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                  ? "bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm"
+                  : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"
               }`}
             >
               {t("common.all")}
-              <span className="text-xs opacity-70">({reviews.length})</span>
+              <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                filter === "all"
+                  ? "bg-neutral-100 dark:bg-neutral-600 text-neutral-600 dark:text-neutral-300"
+                  : "bg-neutral-200/50 dark:bg-neutral-700 text-neutral-400"
+              }`}>
+                {reviews.length}
+              </span>
             </button>
             <button
               onClick={() => setFilter("homico")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                 filter === "homico"
-                  ? "bg-emerald-600 text-white"
-                  : "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50"
+                  ? "bg-white dark:bg-neutral-700 text-emerald-600 dark:text-emerald-400 shadow-sm"
+                  : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"
               }`}
             >
-              <ShieldCheck className="w-3.5 h-3.5" />
+              <ShieldCheck className={`w-3.5 h-3.5 ${filter === "homico" ? "text-emerald-500" : ""}`} />
               Homico
-              <span className="text-xs opacity-70">({homicoCount})</span>
+              <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                filter === "homico"
+                  ? "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400"
+                  : "bg-neutral-200/50 dark:bg-neutral-700 text-neutral-400"
+              }`}>
+                {homicoCount}
+              </span>
             </button>
             <button
               onClick={() => setFilter("external")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                 filter === "external"
-                  ? "bg-blue-600 text-white"
-                  : "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50"
+                  ? "bg-white dark:bg-neutral-700 text-blue-600 dark:text-blue-400 shadow-sm"
+                  : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"
               }`}
             >
-              <Globe className="w-3.5 h-3.5" />
-              {t("reviews.externalReviews")}
-              <span className="text-xs opacity-70">({externalCount})</span>
+              <Globe className={`w-3.5 h-3.5 ${filter === "external" ? "text-blue-500" : ""}`} />
+              {t("reviews.external")}
+              <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                filter === "external"
+                  ? "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400"
+                  : "bg-neutral-200/50 dark:bg-neutral-700 text-neutral-400"
+              }`}>
+                {externalCount}
+              </span>
             </button>
           </div>
         )}
