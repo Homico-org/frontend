@@ -28,6 +28,8 @@ import { api } from "@/lib/api";
 import { storage } from "@/services/storage";
 import type { BaseEntity, Job, PortfolioItem, ProProfile } from "@/types/shared";
 import { PricingModel } from "@/types/shared";
+import { backOrNavigate } from "@/utils/navigationUtils";
+import { formatGeorgianPhoneDisplay } from "@/utils/validationUtils";
 import {
   BadgeCheck,
   Briefcase,
@@ -49,8 +51,6 @@ import {
 import Image from "next/image";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { formatGeorgianPhoneDisplay } from "@/utils/validationUtils";
-import { backOrNavigate } from "@/utils/navigationUtils";
 
 // API response types for before/after pairs (supports both formats)
 interface ApiBeforeAfterPair {
@@ -1175,7 +1175,7 @@ export default function ProfessionalDetailClient({
   // Error state
   if (error || !profile) {
     return (
-      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0A0A0A]">
+      <div className="min-h-screen bg-[var(--color-bg-app)] dark:bg-[#0A0A0A]">
         <Header />
         <HeaderSpacer />
         <div className="py-20 text-center">
@@ -1207,7 +1207,7 @@ export default function ProfessionalDetailClient({
   const groupedServices = getGroupedServices();
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0A0A0A]">
+    <div className="min-h-screen bg-[var(--color-bg-app)] dark:bg-[#0A0A0A]">
       <Header />
       <HeaderSpacer />
 
@@ -1274,35 +1274,19 @@ export default function ProfessionalDetailClient({
         </div>
       )}
 
-      {/* ========== COMPACT HERO SECTION ========== */}
+      {/* ========== HERO SECTION ========== */}
       <section
         ref={heroRef}
         className={`relative transition-all duration-700 ${isVisible ? "opacity-100" : "opacity-0"}`}
       >
-        {/* Clean header (less busy, better on mobile) */}
-        <div className="relative h-20 sm:h-24 md:h-28 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-[#F6F1EC] via-[#FAFAFA] to-[#FAFAFA] dark:from-neutral-950 dark:via-[#0A0A0A] dark:to-[#0A0A0A]" />
-          {/* Subtle texture */}
-          <div
-            className="absolute inset-0 opacity-[0.10] dark:opacity-[0.06]"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at 1px 1px, rgba(0,0,0,0.18) 1px, transparent 0)",
-              backgroundSize: "18px 18px",
-            }}
-          />
-          {/* Accent hairline */}
-          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C4735B]/40 to-transparent" />
-        </div>
-
-        {/* Back button & Share - positioned over header */}
-        <div className="absolute top-4 sm:top-5 left-0 right-0 z-10">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 flex justify-between">
+        {/* Navigation row */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex justify-between items-center">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => backOrNavigate(router, "/browse")}
-              className="rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm shadow-md hover:bg-white dark:hover:bg-neutral-800"
+              className="rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-all"
               leftIcon={<ChevronLeft className="w-4 h-4" />}
             >
               {t("common.back")}
@@ -1314,7 +1298,7 @@ export default function ProfessionalDetailClient({
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowShareMenu(!showShareMenu)}
-                className="rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm shadow-md hover:bg-white dark:hover:bg-neutral-800"
+                className="rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-all"
                 leftIcon={<Share2 className="w-4 h-4" />}
               >
                 {t("common.share")}
@@ -1366,39 +1350,39 @@ export default function ProfessionalDetailClient({
           </div>
         </div>
 
-        {/* Profile card - mobile-first layout */}
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 -mt-5 sm:-mt-7 pb-4">
-          <div className="bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm rounded-2xl shadow-lg border border-neutral-200/60 dark:border-neutral-800 p-4 md:p-5">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-4">
+        {/* Profile card */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-6">
+          <div className="bg-white dark:bg-neutral-900 rounded-3xl shadow-lg shadow-neutral-900/[0.03] dark:shadow-black/20 border border-neutral-200/60 dark:border-neutral-800 p-6 md:p-8">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-6">
               {/* Avatar */}
               <div className="relative flex-shrink-0 self-start">
                 {avatarUrl ? (
                   <button
                     type="button"
                     onClick={() => setShowAvatarZoom(true)}
-                    className="cursor-zoom-in"
+                    className="cursor-zoom-in group"
                     aria-label={locale === "ka" ? "ავატარის გადიდება" : "Zoom avatar"}
                   >
                     <Image
                       src={avatarSrc}
                       alt={profile.name}
-                      width={96}
-                      height={96}
-                      className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover ring-2 ring-white dark:ring-neutral-800 shadow-lg"
+                      width={112}
+                      height={112}
+                      className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover shadow-md ring-1 ring-neutral-200/50 dark:ring-neutral-700 group-hover:shadow-lg transition-shadow"
                     />
                   </button>
                 ) : (
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl flex items-center justify-center text-white text-3xl font-bold bg-gradient-to-br from-[#C4735B] to-[#A65D47] ring-2 ring-white dark:ring-neutral-800 shadow-lg">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl flex items-center justify-center text-white text-4xl font-semibold bg-gradient-to-br from-[#C4735B] to-[#A85D4A] shadow-md">
                     {profile.name.charAt(0)}
                   </div>
                 )}
                 {profile.verificationStatus === "verified" && (
-                  <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-emerald-500 border-2 border-white dark:border-neutral-900 flex items-center justify-center shadow-md">
+                  <div className="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full bg-emerald-500 border-[3px] border-white dark:border-neutral-900 flex items-center justify-center shadow-sm">
                     <BadgeCheck className="w-4 h-4 text-white" />
                   </div>
                 )}
                 {profile.isAvailable && !profile.verificationStatus && (
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 border-2 border-white dark:border-neutral-900 flex items-center justify-center">
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 border-[3px] border-white dark:border-neutral-900 flex items-center justify-center">
                     <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                   </div>
                 )}
@@ -1407,11 +1391,11 @@ export default function ProfessionalDetailClient({
               {/* Info */}
               <div className="flex-1 text-left min-w-0">
                 {isOwner && isEditingName ? (
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-2">
                     <Input
                       value={editedName}
                       onChange={(e) => setEditedName(e.target.value)}
-                      className="text-xl font-bold max-w-[200px]"
+                      className="text-xl font-bold max-w-[220px]"
                       autoFocus
                       onKeyDown={(e) => {
                         if (e.key === "Enter") handleSaveName();
@@ -1434,8 +1418,8 @@ export default function ProfessionalDetailClient({
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-start gap-2">
-                    <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white truncate">
+                  <div className="flex items-center justify-start gap-2 mb-1">
+                    <h1 className="text-2xl sm:text-[28px] font-bold text-neutral-900 dark:text-white truncate tracking-tight">
                       {profile.name}
                     </h1>
                     {isOwner && (
@@ -1444,23 +1428,23 @@ export default function ProfessionalDetailClient({
                           setEditedName(profile.name);
                           setIsEditingName(true);
                         }}
-                        className="p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                         title={t("common.edit")}
                       >
-                        <Edit3 className="w-4 h-4 text-neutral-500" />
+                        <Edit3 className="w-4 h-4 text-neutral-400" />
                       </button>
                     )}
                   </div>
                 )}
-                {/* Title/Tagline - only show if user has explicitly set one, hide old category-based titles */}
+                {/* Title/Tagline */}
                 {isOwner ? (
                   isEditingTitle ? (
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2 mb-3">
                       <Input
                         value={editedTitle}
                         onChange={(e) => setEditedTitle(e.target.value)}
                         placeholder={t("professional.addTagline")}
-                        className="text-sm max-w-[250px]"
+                        className="text-sm max-w-[280px]"
                         autoFocus
                         onKeyDown={(e) => {
                           if (e.key === "Enter") handleSaveTitle();
@@ -1483,13 +1467,13 @@ export default function ProfessionalDetailClient({
                       </Button>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
+                    <div className="flex items-center justify-start gap-2 mb-3">
                       {profile.title && !isCategoryBasedTitle(profile.title) ? (
-                        <p className="text-sm sm:text-base text-[#C4735B] font-medium truncate">
+                        <p className="text-base text-[#C4735B] font-medium truncate">
                           {profile.title}
                         </p>
                       ) : (
-                        <p className="text-sm text-neutral-400 italic">
+                        <p className="text-sm text-neutral-400 dark:text-neutral-500 italic">
                           {t("professional.addTagline")}
                         </p>
                       )}
@@ -1503,7 +1487,7 @@ export default function ProfessionalDetailClient({
                           );
                           setIsEditingTitle(true);
                         }}
-                        className="p-1 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                         title={t("common.edit")}
                       >
                         <Edit3 className="w-3.5 h-3.5 text-neutral-400" />
@@ -1513,35 +1497,37 @@ export default function ProfessionalDetailClient({
                 ) : (
                   profile.title &&
                   !isCategoryBasedTitle(profile.title) && (
-                    <p className="text-sm sm:text-base text-[#C4735B] font-medium mb-2 truncate">
+                    <p className="text-base text-[#C4735B] font-medium mb-3 truncate">
                       {profile.title}
                     </p>
                   )
                 )}
 
-                {/* Stats */}
-                <div className="flex items-center justify-start flex-wrap gap-3 text-xs sm:text-sm">
-                  <div className="flex items-center gap-1 text-neutral-600 dark:text-neutral-400">
-                    <Eye className="w-3.5 h-3.5" />
-                    <span className="font-semibold text-neutral-900 dark:text-white">
+                {/* Stats - Modern pill badges */}
+                <div className="flex items-center justify-start flex-wrap gap-2 text-xs sm:text-sm">
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700">
+                    <Eye className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
+                    <span className="font-semibold text-neutral-700 dark:text-neutral-200">
                       {profile.profileViewCount ?? 0}
                     </span>
                   </div>
                   {profile.avgRating > 0 && (
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-800/40">
                       <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                      <span className="font-semibold text-neutral-900 dark:text-white">
+                      <span className="font-semibold text-amber-700 dark:text-amber-300">
                         {profile.avgRating.toFixed(1)}
                       </span>
-                      <span className="text-neutral-500">
+                      <span className="text-amber-600/70 dark:text-amber-400/70">
                         ({reviews.length || profile.totalReviews})
                       </span>
                     </div>
                   )}
                   {profile.serviceAreas.length > 0 && (
-                    <div className="flex items-center gap-1 text-neutral-600 dark:text-neutral-400">
-                      <MapPin className="w-3.5 h-3.5" />
-                      <span>{translateCity(profile.serviceAreas[0])}</span>
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700">
+                      <MapPin className="w-3.5 h-3.5 text-[#C4735B]" />
+                      <span className="text-neutral-700 dark:text-neutral-200">
+                        {translateCity(profile.serviceAreas[0])}
+                      </span>
                     </div>
                   )}
                   {/* Show years of experience - calculated from selectedServices or yearsExperience */}
@@ -1567,9 +1553,9 @@ export default function ProfessionalDetailClient({
                     }
 
                     return maxYears > 0 ? (
-                      <div className="flex items-center gap-1 text-neutral-600 dark:text-neutral-400">
-                        <Briefcase className="w-3.5 h-3.5" />
-                        <span>
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#C4735B]/10 dark:bg-[#C4735B]/20 border border-[#C4735B]/20 dark:border-[#C4735B]/30">
+                        <Briefcase className="w-3.5 h-3.5 text-[#C4735B]" />
+                        <span className="font-medium text-[#C4735B] dark:text-[#D4937B]">
                           {maxYears}+ {t("professional.yrs")}
                         </span>
                       </div>
@@ -1741,12 +1727,12 @@ export default function ProfessionalDetailClient({
                   <div className="text-left sm:text-right">
                     {!isOwner || !isEditingPricing ? (
                       <div className="flex items-start gap-2 justify-between sm:justify-end">
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                        <div className="flex flex-col items-start sm:items-end">
+                          <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400 dark:text-neutral-500 mb-0.5">
                             {pricingMeta.typeLabel}
                           </span>
                           {pricingMeta.valueLabel && (
-                            <span className="text-2xl font-bold text-neutral-900 dark:text-white">
+                            <span className="text-2xl font-bold text-[#C4735B] dark:text-[#D4937B]">
                               {pricingMeta.valueLabel}
                             </span>
                           )}
@@ -1849,45 +1835,40 @@ export default function ProfessionalDetailClient({
                 {/* Visitor CTA: show inside hero on desktop; mobile uses the fixed bottom button */}
                 {!isOwner && (
                   <div className="hidden lg:block">
-                    <div className="flex flex-col gap-2 items-start sm:items-end">
+                    <div className="flex flex-col gap-2.5 items-start sm:items-end">
                       {phoneRevealed && profile.phone ? (
                         <a
                           href={`tel:${profile.phone.replace(/\s/g, "")}`}
-                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white font-medium text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg shadow-emerald-500/25"
+                          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 hover:-translate-y-0.5"
                         >
                           <Phone className="w-4 h-4" />
                           {formatGeorgianPhoneDisplay(profile.phone)}
                         </a>
                       ) : (
-                        <Button
+                        <button
                           onClick={handleContact}
-                          size="sm"
-                          className="rounded-full whitespace-nowrap"
-                          leftIcon={
-                            isBasicTier ? (
-                              <Phone className="w-4 h-4" />
-                            ) : (
-                              <MessageSquare className="w-4 h-4" />
-                            )
-                          }
+                          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm bg-gradient-to-r from-[#C4735B] to-[#A85D4A] hover:from-[#B5624A] hover:to-[#9A5242] transition-all shadow-lg shadow-[#C4735B]/25 hover:shadow-xl hover:shadow-[#C4735B]/30 hover:-translate-y-0.5"
                         >
+                          {isBasicTier ? (
+                            <Phone className="w-4 h-4" />
+                          ) : (
+                            <MessageSquare className="w-4 h-4" />
+                          )}
                           {isBasicTier
                             ? t("professional.showPhone")
                             : t("professional.contact")}
-                        </Button>
+                        </button>
                       )}
 
                       {/* Invite pro to one of my open jobs */}
                       {myOpenJobsLoaded && myMatchingOpenJobs.length > 0 && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="rounded-full whitespace-nowrap"
-                          leftIcon={<Briefcase className="w-4 h-4" />}
+                        <button
                           onClick={() => setShowInviteToJobModal(true)}
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-neutral-700 dark:text-neutral-200 font-medium text-sm bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-[#C4735B]/30 hover:bg-[#C4735B]/5 dark:hover:bg-[#C4735B]/10 transition-all shadow-sm hover:shadow-md"
                         >
+                          <Briefcase className="w-4 h-4" />
                           {t("professional.inviteToJob")}
-                        </Button>
+                        </button>
                       )}
                     </div>
                   </div>
@@ -1899,7 +1880,7 @@ export default function ProfessionalDetailClient({
       </section>
 
       {/* ========== MOBILE TAB NAVIGATION ========== */}
-      <div className="lg:hidden sticky top-[60px] z-30 bg-[#FAFAFA]/95 dark:bg-[#0A0A0A]/95 backdrop-blur-lg border-b border-neutral-200/50 dark:border-neutral-800/50 px-4 py-3">
+      <div className="lg:hidden sticky top-[60px] z-30 bg-[var(--color-bg-app)]/95 dark:bg-[#0A0A0A]/95 backdrop-blur-lg border-b border-neutral-200/50 dark:border-neutral-800/50 px-4 py-3">
         <ProfileSidebarMobile
           activeTab={activeTab}
           onTabChange={setActiveTab}
@@ -1914,7 +1895,7 @@ export default function ProfessionalDetailClient({
         <div className="flex gap-6">
           {/* Desktop Sidebar */}
           <aside className="hidden lg:block w-56 flex-shrink-0">
-            <div className="sticky top-[80px] bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 p-3 shadow-sm">
+            <div className="sticky top-[80px] bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/60 dark:border-neutral-800 p-3 shadow-lg shadow-neutral-900/[0.03] dark:shadow-black/20">
               <ProfileSidebar
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
@@ -2053,20 +2034,18 @@ export default function ProfessionalDetailClient({
       >
         {/* Invite pro to job - mobile (only if viewer has open jobs) */}
         {myOpenJobsLoaded && myMatchingOpenJobs.length > 0 && (
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full rounded-2xl mb-2"
-            leftIcon={<Briefcase className="w-5 h-5" />}
+          <button
             onClick={() => setShowInviteToJobModal(true)}
+            className="w-full flex items-center justify-center gap-2 py-3.5 mb-2 rounded-2xl text-neutral-700 dark:text-neutral-200 font-semibold text-sm bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-lg shadow-neutral-900/10 dark:shadow-black/30"
           >
+            <Briefcase className="w-5 h-5" />
             {t("professional.inviteToJob")}
-          </Button>
+          </button>
         )}
         {phoneRevealed && profile.phone ? (
           <a
             href={`tel:${profile.phone.replace(/\s/g, "")}`}
-            className="block w-full py-4 rounded-2xl text-white font-semibold text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-xl shadow-emerald-500/30 text-center"
+            className="block w-full py-4 rounded-2xl text-white font-semibold text-base bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-xl shadow-emerald-500/30 text-center"
           >
             <span className="flex items-center justify-center gap-2">
               <Phone className="w-5 h-5" />
@@ -2074,22 +2053,19 @@ export default function ProfessionalDetailClient({
             </span>
           </a>
         ) : (
-          <Button
+          <button
             onClick={handleContact}
-            size="lg"
-            className="w-full rounded-2xl"
-            leftIcon={
-              isBasicTier ? (
-                <Phone className="w-5 h-5" />
-              ) : (
-                <MessageSquare className="w-5 h-5" />
-              )
-            }
+            className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-white font-semibold text-base bg-gradient-to-r from-[#C4735B] to-[#A85D4A] shadow-xl shadow-[#C4735B]/30"
           >
+            {isBasicTier ? (
+              <Phone className="w-5 h-5" />
+            ) : (
+              <MessageSquare className="w-5 h-5" />
+            )}
             {isBasicTier
               ? t("professional.showPhone")
               : t("professional.contact")}
-          </Button>
+          </button>
         )}
       </div>
 

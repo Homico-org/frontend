@@ -193,3 +193,57 @@ export interface SavedJob extends BaseEntity {
   job?: Job;
   savedAt?: string;
 }
+
+// ============== JOB COMMENTS (Interest Board) ==============
+
+/**
+ * Author info embedded in JobComment responses
+ */
+export interface CommentAuthor {
+  _id: string;
+  name: string;
+  avatar?: string;
+  role: string;
+  rating?: number;
+  completedJobs?: number;
+  responseTime?: string;
+  skills?: string[];
+}
+
+/**
+ * Portfolio item preview in comments
+ */
+export interface CommentPortfolioItem {
+  _id: string;
+  title: string;
+  images: string[];
+}
+
+/**
+ * Job Comment - for the interest board
+ */
+export interface JobComment extends BaseEntity {
+  jobId: string;
+  authorId: string;
+  author?: CommentAuthor;
+  content: string;
+  phoneNumber?: string;
+  portfolioItems: string[];
+  portfolioDetails?: CommentPortfolioItem[];
+  showProfile: boolean;
+  parentId?: string;
+  depth: number;
+  isClientReply: boolean;
+  isMarkedInteresting: boolean;
+  isDeleted: boolean;
+  replies?: JobComment[];
+}
+
+/**
+ * Response from getJobComments API
+ */
+export interface JobCommentsResponse {
+  comments: JobComment[];
+  totalCount: number;
+  interestingCount: number;
+}

@@ -275,8 +275,8 @@ export default function JobsPage() {
     }
   }, [page, fetchJobs]);
 
-  // Skeleton loading - Grid style
-  const JobsSkeleton = () => <SkeletonCardGrid count={6} columns={4} />;
+  // Skeleton loading - Grid style (3 columns max for better readability)
+  const JobsSkeleton = () => <SkeletonCardGrid count={6} columns={3} />;
 
   // Empty state using shared component
   const JobsEmptyState = () => (
@@ -316,38 +316,45 @@ export default function JobsPage() {
     <div className="space-y-8">
       {/* User's Own Posted Jobs Section */}
       {!filters.showFavoritesOnly && myJobs.length > 0 && (
-        <div>
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/60 dark:border-neutral-800 p-4 shadow-sm">
           <button
             onClick={() => setShowMyJobs(!showMyJobs)}
-            className="w-full flex items-center justify-between py-2 group"
+            className="w-full flex items-center justify-between group"
           >
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-neutral-900 dark:text-white text-sm">
-                {locale === "ka" ? "თქვენი განცხადებები" : "Your Posted Jobs"}
-              </h3>
-              <span className="text-xs text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full">
-                {myJobs.length}
-              </span>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#C4735B]/10 flex items-center justify-center">
+                <Briefcase className="w-4 h-4 text-[#C4735B]" />
+              </div>
+              <div className="text-left">
+                <h3 className="font-semibold text-neutral-900 dark:text-white text-sm">
+                  {locale === "ka" ? "თქვენი განცხადებები" : "Your Posted Jobs"}
+                </h3>
+                <p className="text-xs text-neutral-400">
+                  {myJobs.length} {locale === "ka" ? "აქტიური" : "active"}
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <Link
                 href="/post-job"
                 onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#C4735B] bg-[#C4735B]/10 hover:bg-[#C4735B]/20 transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
                 {locale === "ka" ? "ახალი" : "New"}
               </Link>
-              {showMyJobs ? (
-                <ChevronUp className="w-4 h-4 text-neutral-400" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-neutral-400" />
-              )}
+              <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                {showMyJobs ? (
+                  <ChevronUp className="w-4 h-4 text-neutral-500" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-neutral-500" />
+                )}
+              </div>
             </div>
           </button>
 
           {showMyJobs && (
-            <div className="pt-3">
+            <div className="pt-4 mt-4 border-t border-neutral-100 dark:border-neutral-800">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {myJobs.map((job) => (
                   <MyJobCard key={job.id} job={job} />
@@ -375,22 +382,26 @@ export default function JobsPage() {
         <>
           {/* Section Header */}
           {myJobs.length > 0 && (
-            <div className="flex items-center gap-2 pb-2">
-              <h3 className="font-semibold text-neutral-900 dark:text-white text-sm">
-                {locale === "ka" ? "შესაფერისი სამუშაოები" : "Jobs for You"}
-              </h3>
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800 mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-1 h-5 rounded-full bg-[#C4735B]" />
+                <h3 className="font-semibold text-neutral-900 dark:text-white">
+                  {locale === "ka" ? "შესაფერისი სამუშაოები" : "Jobs for You"}
+                </h3>
+                <span className="text-xs text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full">
+                  {displayedJobs.length}+
+                </span>
+              </div>
               <span className="text-xs text-neutral-400">
-                (
                 {locale === "ka"
                   ? "თქვენი სერვისების მიხედვით"
-                  : "based on your services"}
-                )
+                  : "Based on your services"}
               </span>
             </div>
           )}
 
-          {/* Jobs Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {/* Jobs Grid - 3 columns max for better readability */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {displayedJobs.map((job, index) => (
               <div
                 key={job.id}

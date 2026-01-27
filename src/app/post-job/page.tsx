@@ -293,7 +293,7 @@ function PostJobPageContent() {
     }
     return true;
   };
-  const canProceedFromDetails = () => formData.title.trim() && formData.description.trim();
+  const canProceedFromDetails = () => formData.title.trim() && formData.description.trim() && (existingMedia.length + mediaFiles.length) > 0;
 
   const handleNext = () => {
     const stepIndex = getCurrentStepIndex();
@@ -803,13 +803,12 @@ function PostJobPageContent() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <label className="block text-base font-semibold text-neutral-800 mb-1">
-                        {t('job.addPhotos')}
-                        <span className="ml-2 text-sm font-normal text-neutral-400">
-                          ({t('job.recommended')})
-                        </span>
+                        {t('job.addPhotos')} <span className="text-[#C4735B]">*</span>
                       </label>
                       <p className="text-sm text-neutral-500 leading-relaxed">
-                        {t('job.photosHelpProfessionalsBetterUnderstand')}
+                        {locale === "ka"
+                          ? "მინიმუმ 1 ფოტო საჭიროა. ფოტოები ეხმარება პროფესიონალებს უკეთ გაიგონ თქვენი პროექტი."
+                          : "At least 1 photo is required. Photos help professionals better understand your project."}
                       </p>
                     </div>
                   </div>
@@ -893,6 +892,20 @@ function PostJobPageContent() {
                         {locale === "ka"
                           ? `${existingMedia.length + mediaFiles.length} ფოტო დამატებულია - პროფესიონალები უკეთ გაიგებენ შენს პროექტს!`
                           : `${existingMedia.length + mediaFiles.length} photo${(existingMedia.length + mediaFiles.length) > 1 ? 's' : ''} added - pros will better understand your project!`}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Required validation message */}
+                  {(existingMedia.length + mediaFiles.length) === 0 && formData.title.trim() && formData.description.trim() && (
+                    <div className="mt-4 flex items-center gap-2 text-sm text-amber-600">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      <span>
+                        {locale === "ka"
+                          ? "გთხოვთ დაამატოთ მინიმუმ 1 ფოტო გასაგრძელებლად"
+                          : "Please add at least 1 photo to continue"}
                       </span>
                     </div>
                   )}
