@@ -128,7 +128,7 @@ function PostJobPageContent() {
     design: {
       fields: [
         { key: "areaSize", type: "number", labelEn: "Area", labelKa: "ფართი", placeholderEn: "80", placeholderKa: "80", suffix: "m²" },
-        { key: "roomCount", type: "number", labelEn: "Rooms", labelKa: "ოთახები", placeholderEn: "3", placeholderKa: "3" },
+        { key: "roomCount", type: "number", labelEn: "Rooms", labelKa: "ოთახები", placeholderEn: "3", placeholderKa: "3", required: true },
       ],
       hintEn: "Specify the total area and number of rooms to help designers provide accurate estimates for your interior project.",
       hintKa: "მიუთითე საერთო ფართი და ოთახების რაოდენობა, რომ დიზაინერებმა შეძლონ ზუსტი შეფასების მოწოდება.",
@@ -180,7 +180,7 @@ function PostJobPageContent() {
     // Lighting
     "lighting": [
       { key: "pointsCount", type: "number", labelEn: "Light points", labelKa: "სანათი წერტილები", placeholderEn: "15", placeholderKa: "15", suffix: "წრტ" },
-      { key: "roomCount", type: "number", labelEn: "Rooms", labelKa: "ოთახები", placeholderEn: "4", placeholderKa: "4" },
+      { key: "roomCount", type: "number", labelEn: "Rooms", labelKa: "ოთახები", placeholderEn: "4", placeholderKa: "4", required: true },
     ],
   };
 
@@ -293,7 +293,20 @@ function PostJobPageContent() {
     }
     return true;
   };
-  const canProceedFromDetails = () => formData.title.trim() && formData.description.trim() && (existingMedia.length + mediaFiles.length) > 0;
+  const canProceedFromDetails = () => {
+    // Check basic required fields
+    if (!formData.title.trim() || !formData.description.trim() || (existingMedia.length + mediaFiles.length) === 0) {
+      return false;
+    }
+    // Check required category-specific fields
+    const activeFields = getActiveFields();
+    for (const field of activeFields) {
+      if (field.required && !formData[field.key as keyof typeof formData]) {
+        return false;
+      }
+    }
+    return true;
+  };
 
   const handleNext = () => {
     const stepIndex = getCurrentStepIndex();
