@@ -7,6 +7,8 @@ import Header, { HeaderSpacer } from "@/components/common/Header";
 import MediaLightbox from "@/components/common/MediaLightbox";
 import Select from "@/components/common/Select";
 import ClientCard from "@/components/jobs/ClientCard";
+import InviteProsModal from "@/components/jobs/InviteProsModal";
+import JobCommentsSection from "@/components/jobs/JobCommentsSection";
 import MyProposalCard from "@/components/jobs/MyProposalCard";
 import ProjectSidebar, {
   ProjectSidebarMobile,
@@ -15,11 +17,9 @@ import ProjectSidebar, {
 import ProjectStatusBar from "@/components/jobs/ProjectStatusBar";
 import ProposalFormModal from "@/components/jobs/ProposalFormModal";
 import RequirementBadge from "@/components/jobs/RequirementBadge";
-import InviteProsModal from "@/components/jobs/InviteProsModal";
 import ReviewModal from "@/components/jobs/ReviewModal";
 import SpecCard from "@/components/jobs/SpecCard";
 import PollsTab from "@/components/polls/PollsTab";
-import JobCommentsSection from "@/components/jobs/JobCommentsSection";
 import ProjectChat from "@/components/projects/ProjectChat";
 import ProjectWorkspace from "@/components/projects/ProjectWorkspace";
 import { Badge } from "@/components/ui/badge";
@@ -40,8 +40,8 @@ import type {
   ProjectStage,
   Proposal,
 } from "@/types/shared";
-import { formatBudget as formatBudgetUtil } from "@/utils/currencyUtils";
 import { isHighLevelCategory } from "@/utils/categoryHelpers";
+import { formatBudget as formatBudgetUtil } from "@/utils/currencyUtils";
 import { formatTimeAgoCompact } from "@/utils/dateUtils";
 import {
   AlertCircle,
@@ -63,7 +63,6 @@ import {
   Hammer,
   History,
   Home,
-  ImageIcon,
   Layers,
   Map,
   MapPin,
@@ -84,7 +83,7 @@ import {
   Users,
   Vote,
   X,
-  Zap,
+  Zap
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -2167,7 +2166,7 @@ export default function JobDetailClient() {
                 </div>
 
                 {/* Quick Specs - show key info inline */}
-                {(job.areaSize || job.roomCount || job.deadline || job.propertyType) && (
+                {(job.areaSize != null || job.roomCount != null || job.deadline || job.propertyType) && (
                   <div className="flex flex-wrap items-center gap-2">
                     {job.propertyType && (
                       <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
@@ -2177,7 +2176,7 @@ export default function JobDetailClient() {
                         </span>
                       </div>
                     )}
-                    {job.areaSize && (
+                    {job.areaSize != null && (
                       <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
                         <Ruler className="w-4 h-4 text-neutral-500" />
                         <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
@@ -2185,7 +2184,7 @@ export default function JobDetailClient() {
                         </span>
                       </div>
                     )}
-                    {job.roomCount && (
+                    {job.roomCount != null && (
                       <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
                         <DoorOpen className="w-4 h-4 text-neutral-500" />
                         <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
@@ -2531,13 +2530,13 @@ export default function JobDetailClient() {
               {/* Property Specs */}
               {(job.propertyType ||
                 job.currentCondition ||
-                job.areaSize ||
-                job.roomCount ||
-                job.floorCount ||
+                job.areaSize != null ||
+                job.roomCount != null ||
+                job.floorCount != null ||
                 job.deadline ||
                 job.cadastralId ||
-                job.landArea ||
-                job.pointsCount) && (
+                job.landArea != null ||
+                job.pointsCount != null) && (
                 <section
                   className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-600 ${
                     isVisible
@@ -2574,35 +2573,35 @@ export default function JobDetailClient() {
                         value={getConditionLabel(job.currentCondition)}
                       />
                     )}
-                    {job.areaSize && (
+                    {job.areaSize != null && (
                       <SpecCard
                         icon={<Ruler className="w-5 h-5" />}
                             label={t("jobDetail.area")}
                         value={`${job.areaSize} მ²`}
                       />
                     )}
-                    {job.landArea && (
+                    {job.landArea != null && (
                       <SpecCard
                         icon={<Mountain className="w-5 h-5" />}
                             label={t("jobDetail.landArea")}
                         value={`${job.landArea} მ²`}
                       />
                     )}
-                    {job.roomCount && (
+                    {job.roomCount != null && (
                       <SpecCard
                         icon={<DoorOpen className="w-5 h-5" />}
                             label={t("jobDetail.rooms")}
                         value={job.roomCount.toString()}
                       />
                     )}
-                    {job.pointsCount && (
+                    {job.pointsCount != null && (
                       <SpecCard
                         icon={<Zap className="w-5 h-5" />}
                             label={t("jobDetail.points")}
                         value={job.pointsCount.toString()}
                       />
                     )}
-                    {job.floorCount && (
+                    {job.floorCount != null && (
                       <SpecCard
                         icon={<Layers className="w-5 h-5" />}
                             label={t("jobDetail.floors")}
