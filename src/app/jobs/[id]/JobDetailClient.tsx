@@ -19,6 +19,7 @@ import InviteProsModal from "@/components/jobs/InviteProsModal";
 import ReviewModal from "@/components/jobs/ReviewModal";
 import SpecCard from "@/components/jobs/SpecCard";
 import PollsTab from "@/components/polls/PollsTab";
+import JobCommentsSection from "@/components/jobs/JobCommentsSection";
 import ProjectChat from "@/components/projects/ProjectChat";
 import ProjectWorkspace from "@/components/projects/ProjectWorkspace";
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +41,7 @@ import type {
   Proposal,
 } from "@/types/shared";
 import { formatBudget as formatBudgetUtil } from "@/utils/currencyUtils";
+import { isHighLevelCategory } from "@/utils/categoryHelpers";
 import { formatTimeAgoCompact } from "@/utils/dateUtils";
 import {
   AlertCircle,
@@ -2110,12 +2112,31 @@ export default function JobDetailClient() {
             !myProposal &&
             !isCheckingProposal && (
             <div className="flex justify-end mb-4">
+              {user?.verificationStatus === 'verified' ? (
                 <Button
                   onClick={() => setShowProposalForm(true)}
                   leftIcon={<Send className="w-4 h-4" />}
                 >
                   {t("jobDetail.submitProposal")}
                 </Button>
+              ) : (
+                <div className="flex items-center gap-3 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
+                  <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm text-amber-800 dark:text-amber-200 font-medium">
+                      {locale === 'ka'
+                        ? 'წინადადების გასაგზავნად საჭიროა პროფილის ვერიფიკაცია'
+                        : 'Profile verification required to submit proposals'}
+                    </p>
+                    <Link
+                      href="/settings"
+                      className="text-sm text-amber-700 dark:text-amber-300 underline hover:no-underline"
+                    >
+                      {locale === 'ka' ? 'გაიარეთ ვერიფიკაცია →' : 'Complete verification →'}
+                    </Link>
+                  </div>
+                </div>
+              )}
             </div>
           )}
           {isPro && !isOwner && isOpen && !isHired && isCheckingProposal && (
@@ -2942,6 +2963,17 @@ export default function JobDetailClient() {
               )}
 
               {/* LEGACY: Project Chat moved to sidebar tabs - HIDDEN */}
+
+              {/* Comments Section - Interest Board (only for open jobs, NOT for design/architecture) */}
+              {job.status === "open" && !isHighLevelCategory(job.category) && (
+                <section className="mt-8">
+                  <JobCommentsSection
+                    jobId={job.id}
+                    clientId={job.clientId?.id || ""}
+                    isJobOwner={!!isOwner}
+                  />
+                </section>
+              )}
             </div>
 
             {/* Sidebar */}

@@ -13,23 +13,28 @@ export interface ImageTransformOptions {
 
 /**
  * Default presets for common use cases
+ * Optimized for fast loading with good quality balance
  */
 export const IMAGE_PRESETS = {
-  // Thumbnails for cards and lists
-  thumbnail: { width: 400, height: 300, quality: 'auto' as const, format: 'auto' as const, crop: 'fill' as const },
-  // Avatar images
-  avatar: { width: 100, height: 100, quality: 'auto' as const, format: 'auto' as const, crop: 'fill' as const, gravity: 'face' as const },
-  avatarLarge: { width: 200, height: 200, quality: 'auto' as const, format: 'auto' as const, crop: 'fill' as const, gravity: 'face' as const },
-  // Hero/banner images
+  // Thumbnails for cards and lists - smaller for faster loading
+  thumbnail: { width: 300, height: 225, quality: 'auto' as const, format: 'auto' as const, crop: 'fill' as const },
+  // Avatar images - small, face-focused
+  avatar: { width: 80, height: 80, quality: 'auto' as const, format: 'auto' as const, crop: 'fill' as const, gravity: 'face' as const },
+  avatarLarge: { width: 150, height: 150, quality: 'auto' as const, format: 'auto' as const, crop: 'fill' as const, gravity: 'face' as const },
+  // Hero/banner images - optimized for web
   hero: { width: 1200, height: 630, quality: 'auto' as const, format: 'auto' as const, crop: 'fill' as const },
   // Full size optimized
   full: { quality: 'auto' as const, format: 'auto' as const },
-  // Job card images
-  jobCard: { width: 600, height: 375, quality: 'auto' as const, format: 'auto' as const, crop: 'fill' as const },
+  // Job card images - optimized for grid display (matches Cloudinary eager transform)
+  jobCard: { width: 400, height: 250, quality: 'auto' as const, format: 'auto' as const, crop: 'fill' as const },
+  // Job card small - for mobile or list view
+  jobCardSmall: { width: 300, height: 188, quality: 'auto' as const, format: 'auto' as const, crop: 'fill' as const },
   // Feed card images
-  feedCard: { width: 500, height: 375, quality: 'auto' as const, format: 'auto' as const, crop: 'fill' as const },
+  feedCard: { width: 400, height: 300, quality: 'auto' as const, format: 'auto' as const, crop: 'fill' as const },
   // Portfolio images
-  portfolio: { width: 800, height: 600, quality: 'auto' as const, format: 'auto' as const, crop: 'fill' as const },
+  portfolio: { width: 600, height: 450, quality: 'auto' as const, format: 'auto' as const, crop: 'fill' as const },
+  // Portfolio thumbnail - for grid
+  portfolioThumb: { width: 300, height: 225, quality: 'auto' as const, format: 'auto' as const, crop: 'fill' as const },
 } as const;
 
 /**

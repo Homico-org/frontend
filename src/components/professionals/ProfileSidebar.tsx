@@ -37,20 +37,20 @@ export default function ProfileSidebar({
   const menuItems: SidebarMenuItem[] = [
     {
       key: "about",
-      icon: <FileText className="w-5 h-5" />,
+      icon: <FileText className="w-[18px] h-[18px]" />,
       label: "About",
       labelKa: "შესახებ",
     },
     {
       key: "portfolio",
-      icon: <FolderKanban className="w-5 h-5" />,
+      icon: <FolderKanban className="w-[18px] h-[18px]" />,
       label: "Portfolio",
       labelKa: "ნამუშევრები",
       count: portfolioCount,
     },
     {
       key: "reviews",
-      icon: <MessageSquareQuote className="w-5 h-5" />,
+      icon: <MessageSquareQuote className="w-[18px] h-[18px]" />,
       label: "Reviews",
       labelKa: "შეფასებები",
       count: reviewsCount,
@@ -58,7 +58,7 @@ export default function ProfileSidebar({
   ];
 
   return (
-    <nav className="flex flex-col gap-1">
+    <nav className="flex flex-col gap-1.5 pt-2">
       {menuItems.map((item) => {
         const isActive = activeTab === item.key;
 
@@ -67,36 +67,35 @@ export default function ProfileSidebar({
             key={item.key}
             onClick={() => onTabChange(item.key)}
             className={`
-              group relative flex items-center gap-3 px-4 py-3 rounded-xl
-              font-medium text-sm transition-all duration-200
+              group relative flex items-center gap-3 px-4 py-3.5 rounded-2xl
+              font-medium text-[13px] transition-all duration-300 ease-out
               ${isActive
-                ? "text-white shadow-md"
-                : "text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                ? "text-white shadow-lg shadow-[#C4735B]/25"
+                : "text-neutral-600 dark:text-neutral-400 hover:bg-gradient-to-r hover:from-[#C4735B]/5 hover:to-[#C4735B]/10 dark:hover:from-[#C4735B]/10 dark:hover:to-[#C4735B]/5"
               }
             `}
-            style={isActive ? { backgroundColor: ACCENT } : {}}
+            style={isActive ? {
+              background: "linear-gradient(135deg, #C4735B 0%, #B5624A 50%, #A85D4A 100%)",
+            } : {}}
           >
-            {/* Active indicator */}
+            {/* Active glow effect */}
             {isActive && (
-              <div
-                className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full"
-                style={{ backgroundColor: "white" }}
-              />
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#C4735B] to-[#A85D4A] blur-xl opacity-40 -z-10" />
             )}
 
             {/* Icon */}
             <span
-              className={`transition-colors ${
+              className={`transition-all duration-300 ${
                 isActive
                   ? "text-white"
-                  : `group-hover:text-[${ACCENT}]`
+                  : "text-neutral-500 dark:text-neutral-400 group-hover:text-[#C4735B] group-hover:scale-110"
               }`}
             >
               {item.icon}
             </span>
 
             {/* Label */}
-            <span className="flex-1 text-left">
+            <span className={`flex-1 text-left tracking-wide ${isActive ? "" : "group-hover:text-neutral-900 dark:group-hover:text-neutral-100"}`}>
               {locale === "ka" ? item.labelKa : item.label}
             </span>
 
@@ -105,7 +104,11 @@ export default function ProfileSidebar({
               <Badge
                 variant={isActive ? "secondary" : "outline"}
                 size="xs"
-                className={`!min-w-[20px] !h-[20px] !px-1.5 ${isActive ? "!bg-white/20 !text-white" : ""}`}
+                className={`!min-w-[22px] !h-[22px] !px-1.5 !text-[11px] !font-semibold transition-all ${
+                  isActive
+                    ? "!bg-white/25 !text-white !border-white/20"
+                    : "!bg-neutral-100 dark:!bg-neutral-800 !text-neutral-600 dark:!text-neutral-300 group-hover:!bg-[#C4735B]/10 group-hover:!text-[#C4735B] group-hover:!border-[#C4735B]/20"
+                }`}
               >
                 {item.count > 99 ? "99+" : item.count}
               </Badge>
@@ -117,7 +120,7 @@ export default function ProfileSidebar({
   );
 }
 
-// Mobile version - wrapped segmented tabs (no horizontal scroll)
+// Mobile version - premium segmented tabs
 export function ProfileSidebarMobile({
   activeTab,
   onTabChange,
@@ -149,7 +152,7 @@ export function ProfileSidebarMobile({
   ];
 
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-3 gap-2 p-1 bg-neutral-100/80 dark:bg-neutral-800/50 rounded-2xl">
       {menuItems.map((item) => {
         const isActive = activeTab === item.key;
 
@@ -158,19 +161,21 @@ export function ProfileSidebarMobile({
             key={item.key}
             onClick={() => onTabChange(item.key)}
             className={`
-              relative flex flex-col items-center justify-center gap-1 px-2 py-2.5 rounded-2xl
-              font-semibold text-[12px] leading-tight transition-all duration-200
+              relative flex flex-col items-center justify-center gap-1.5 px-2 py-3 rounded-xl
+              font-semibold text-[11px] leading-tight transition-all duration-300 ease-out
               ${isActive
-                ? "text-white shadow-md"
-                : "bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                ? "text-white shadow-lg shadow-[#C4735B]/30"
+                : "text-neutral-600 dark:text-neutral-300 hover:bg-white/50 dark:hover:bg-neutral-700/50"
               }
             `}
-            style={isActive ? { backgroundColor: ACCENT } : {}}
+            style={isActive ? {
+              background: "linear-gradient(135deg, #C4735B 0%, #B5624A 50%, #A85D4A 100%)",
+            } : {}}
           >
-            <span className={`${isActive ? "text-white" : "text-neutral-600 dark:text-neutral-300"}`}>
+            <span className={`transition-all duration-300 ${isActive ? "text-white scale-110" : "text-neutral-500 dark:text-neutral-400"}`}>
               {item.icon}
             </span>
-            <span className="text-center px-1">
+            <span className="text-center px-0.5 tracking-wide">
               {locale === "ka" ? item.labelKa : item.label}
             </span>
 
@@ -179,7 +184,11 @@ export function ProfileSidebarMobile({
               <Badge
                 variant={isActive ? "secondary" : "outline"}
                 size="xs"
-                className={`absolute -top-1 -right-1 !min-w-[18px] !h-[18px] !px-1 ${isActive ? "!bg-white/20 !text-white !border-white/20" : ""}`}
+                className={`absolute -top-0.5 -right-0.5 !min-w-[20px] !h-[20px] !px-1 !text-[10px] !font-bold transition-all ${
+                  isActive
+                    ? "!bg-white !text-[#C4735B] !border-white shadow-sm"
+                    : "!bg-neutral-200 dark:!bg-neutral-700 !text-neutral-600 dark:!text-neutral-300"
+                }`}
               >
                 {item.count > 9 ? "9+" : item.count}
               </Badge>

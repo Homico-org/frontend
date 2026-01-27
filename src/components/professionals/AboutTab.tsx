@@ -76,14 +76,6 @@ export default function AboutTab({
   onSaveSocialLinks,
 }: AboutTabProps) {
   const hasContactLinks = whatsapp || telegram || facebookUrl || instagramUrl || linkedinUrl || websiteUrl;
-  const shouldGateLinks = !isOwner && !isAuthenticated;
-
-  const loginRequiredTitle =
-    locale === "ka"
-      ? "საჭიროა შესვლა"
-      : locale === "ru"
-        ? "Требуется вход"
-        : "Login required";
 
   // Inline editing states
   const [isEditingBio, setIsEditingBio] = useState(false);
@@ -331,171 +323,157 @@ export default function AboutTab({
 
       {/* Skills section removed - categories now shown in hero */}
 
-      {/* Contact & Social Links */}
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl p-5 shadow-sm border border-neutral-100 dark:border-neutral-800 group relative">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider">
-            {t('professional.contactSocial')}
-          </h3>
-          {isOwner && !isEditingSocial && (
-            <button
-              onClick={() => {
-                setEditSocial({
-                  whatsapp: whatsapp || '',
-                  telegram: telegram || '',
-                  facebookUrl: facebookUrl || '',
-                  instagramUrl: instagramUrl || '',
-                  linkedinUrl: linkedinUrl || '',
-                  websiteUrl: websiteUrl || '',
-                });
-                setIsEditingSocial(true);
-              }}
-              className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-            >
-              <Edit3 className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-
-        {isEditingSocial ? (
-          <div className="space-y-3">
-            {/* WhatsApp */}
-            <div className="flex items-center gap-3">
-              <div 
-                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: `${socialColors.whatsapp}15`, color: socialColors.whatsapp }}
+      {/* Social Links - Only visible to owner for editing (visitors see them in hero) */}
+      {isOwner && (
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl p-5 shadow-sm border border-neutral-100 dark:border-neutral-800 group relative">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider">
+              {t('professional.contactSocial')}
+            </h3>
+            {!isEditingSocial && (
+              <button
+                onClick={() => {
+                  setEditSocial({
+                    whatsapp: whatsapp || '',
+                    telegram: telegram || '',
+                    facebookUrl: facebookUrl || '',
+                    instagramUrl: instagramUrl || '',
+                    linkedinUrl: linkedinUrl || '',
+                    websiteUrl: websiteUrl || '',
+                  });
+                  setIsEditingSocial(true);
+                }}
+                className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
               >
-                <SocialIcon name="whatsapp" size="md" />
-              </div>
-              <input
-                type="text"
-                value={editSocial.whatsapp || ''}
-                onChange={(e) => setEditSocial({ ...editSocial, whatsapp: e.target.value })}
-                placeholder={t('professional.995XxxXxxXxx')}
-                className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent text-sm"
-              />
-            </div>
-
-            {/* Telegram */}
-            <div className="flex items-center gap-3">
-              <div 
-                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: `${socialColors.telegram}15`, color: socialColors.telegram }}
-              >
-                <SocialIcon name="telegram" size="md" />
-              </div>
-              <input
-                type="text"
-                value={editSocial.telegram || ''}
-                onChange={(e) => setEditSocial({ ...editSocial, telegram: e.target.value })}
-                placeholder={t('professional.username')}
-                className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent text-sm"
-              />
-            </div>
-
-            {/* Facebook */}
-            <div className="flex items-center gap-3">
-              <div 
-                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: `${socialColors.facebook}15`, color: socialColors.facebook }}
-              >
-                <SocialIcon name="facebook" size="md" />
-              </div>
-              <input
-                type="url"
-                value={editSocial.facebookUrl || ''}
-                onChange={(e) => setEditSocial({ ...editSocial, facebookUrl: e.target.value })}
-                placeholder="https://facebook.com/..."
-                className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent text-sm"
-              />
-            </div>
-
-            {/* Instagram */}
-            <div className="flex items-center gap-3">
-              <div 
-                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: `${socialColors.instagram}15`, color: socialColors.instagram }}
-              >
-                <SocialIcon name="instagram" size="md" />
-              </div>
-              <input
-                type="url"
-                value={editSocial.instagramUrl || ''}
-                onChange={(e) => setEditSocial({ ...editSocial, instagramUrl: e.target.value })}
-                placeholder="https://instagram.com/..."
-                className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent text-sm"
-              />
-            </div>
-
-            {/* LinkedIn */}
-            <div className="flex items-center gap-3">
-              <div 
-                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: `${socialColors.linkedin}15`, color: socialColors.linkedin }}
-              >
-                <SocialIcon name="linkedin" size="md" />
-              </div>
-              <input
-                type="url"
-                value={editSocial.linkedinUrl || ''}
-                onChange={(e) => setEditSocial({ ...editSocial, linkedinUrl: e.target.value })}
-                placeholder="https://linkedin.com/in/..."
-                className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent text-sm"
-              />
-            </div>
-
-            {/* Website */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center flex-shrink-0 text-neutral-600 dark:text-neutral-400">
-                <Globe className="w-4 h-4" />
-              </div>
-              <input
-                type="url"
-                value={editSocial.websiteUrl || ''}
-                onChange={(e) => setEditSocial({ ...editSocial, websiteUrl: e.target.value })}
-                placeholder="https://your-website.com"
-                className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent text-sm"
-              />
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsEditingSocial(false)}
-                disabled={isSavingSocial}
-              >
-                <X className="w-4 h-4 mr-1" />
-                {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleSaveSocialLinks}
-                loading={isSavingSocial}
-              >
-                <Check className="w-4 h-4 mr-1" />
-                {locale === 'ka' ? 'შენახვა' : 'Save'}
-              </Button>
-            </div>
+                <Edit3 className="w-4 h-4" />
+              </button>
+            )}
           </div>
-        ) : hasContactLinks ? (
-          <div className="flex flex-wrap gap-2">
-            {whatsapp &&
-              (shouldGateLinks ? (
-                <button
-                  type="button"
-                  onClick={() => onRequireAuth?.()}
-                  title={loginRequiredTitle}
-                  className="h-10 px-3 rounded-full flex items-center justify-center gap-2 transition-colors opacity-60 cursor-not-allowed"
-                  style={{
-                    backgroundColor: `${socialColors.whatsapp}15`,
-                    color: socialColors.whatsapp,
-                  }}
+
+          {isEditingSocial ? (
+            <div className="space-y-3">
+              {/* WhatsApp */}
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: `${socialColors.whatsapp}15`, color: socialColors.whatsapp }}
                 >
                   <SocialIcon name="whatsapp" size="md" />
-                  <span className="text-sm font-medium">WhatsApp</span>
-                </button>
-              ) : (
+                </div>
+                <input
+                  type="text"
+                  value={editSocial.whatsapp || ''}
+                  onChange={(e) => setEditSocial({ ...editSocial, whatsapp: e.target.value })}
+                  placeholder={t('professional.995XxxXxxXxx')}
+                  className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent text-sm"
+                />
+              </div>
+
+              {/* Telegram */}
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: `${socialColors.telegram}15`, color: socialColors.telegram }}
+                >
+                  <SocialIcon name="telegram" size="md" />
+                </div>
+                <input
+                  type="text"
+                  value={editSocial.telegram || ''}
+                  onChange={(e) => setEditSocial({ ...editSocial, telegram: e.target.value })}
+                  placeholder={t('professional.username')}
+                  className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent text-sm"
+                />
+              </div>
+
+              {/* Facebook */}
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: `${socialColors.facebook}15`, color: socialColors.facebook }}
+                >
+                  <SocialIcon name="facebook" size="md" />
+                </div>
+                <input
+                  type="url"
+                  value={editSocial.facebookUrl || ''}
+                  onChange={(e) => setEditSocial({ ...editSocial, facebookUrl: e.target.value })}
+                  placeholder="https://facebook.com/..."
+                  className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent text-sm"
+                />
+              </div>
+
+              {/* Instagram */}
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: `${socialColors.instagram}15`, color: socialColors.instagram }}
+                >
+                  <SocialIcon name="instagram" size="md" />
+                </div>
+                <input
+                  type="url"
+                  value={editSocial.instagramUrl || ''}
+                  onChange={(e) => setEditSocial({ ...editSocial, instagramUrl: e.target.value })}
+                  placeholder="https://instagram.com/..."
+                  className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent text-sm"
+                />
+              </div>
+
+              {/* LinkedIn */}
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: `${socialColors.linkedin}15`, color: socialColors.linkedin }}
+                >
+                  <SocialIcon name="linkedin" size="md" />
+                </div>
+                <input
+                  type="url"
+                  value={editSocial.linkedinUrl || ''}
+                  onChange={(e) => setEditSocial({ ...editSocial, linkedinUrl: e.target.value })}
+                  placeholder="https://linkedin.com/in/..."
+                  className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent text-sm"
+                />
+              </div>
+
+              {/* Website */}
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center flex-shrink-0 text-neutral-600 dark:text-neutral-400">
+                  <Globe className="w-4 h-4" />
+                </div>
+                <input
+                  type="url"
+                  value={editSocial.websiteUrl || ''}
+                  onChange={(e) => setEditSocial({ ...editSocial, websiteUrl: e.target.value })}
+                  placeholder="https://your-website.com"
+                  className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent text-sm"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditingSocial(false)}
+                  disabled={isSavingSocial}
+                >
+                  <X className="w-4 h-4 mr-1" />
+                  {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSaveSocialLinks}
+                  loading={isSavingSocial}
+                >
+                  <Check className="w-4 h-4 mr-1" />
+                  {locale === 'ka' ? 'შენახვა' : 'Save'}
+                </Button>
+              </div>
+            </div>
+          ) : hasContactLinks ? (
+            <div className="flex flex-wrap gap-2">
+              {whatsapp && (
                 <a
                   href={`https://wa.me/${whatsapp.replace(/[^0-9+]/g, "")}`}
                   target="_blank"
@@ -509,23 +487,8 @@ export default function AboutTab({
                   <SocialIcon name="whatsapp" size="md" />
                   <span className="text-sm font-medium">WhatsApp</span>
                 </a>
-              ))}
-            {telegram && (
-              shouldGateLinks ? (
-                <button
-                  type="button"
-                  onClick={() => onRequireAuth?.()}
-                  title={loginRequiredTitle}
-                  className="h-10 px-3 rounded-full flex items-center justify-center gap-2 transition-colors opacity-60 cursor-not-allowed"
-                  style={{
-                    backgroundColor: `${socialColors.telegram}15`,
-                    color: socialColors.telegram,
-                  }}
-                >
-                  <SocialIcon name="telegram" size="md" />
-                  <span className="text-sm font-medium">Telegram</span>
-                </button>
-              ) : (
+              )}
+              {telegram && (
                 <a
                   href={`https://t.me/${telegram.replace("@", "")}`}
                   target="_blank"
@@ -539,23 +502,8 @@ export default function AboutTab({
                   <SocialIcon name="telegram" size="md" />
                   <span className="text-sm font-medium">Telegram</span>
                 </a>
-              )
-            )}
-            {facebookUrl && (
-              shouldGateLinks ? (
-                <button
-                  type="button"
-                  onClick={() => onRequireAuth?.()}
-                  title={loginRequiredTitle}
-                  className="w-10 h-10 rounded-full flex items-center justify-center transition-colors opacity-60 cursor-not-allowed"
-                  style={{
-                    backgroundColor: `${socialColors.facebook}15`,
-                    color: socialColors.facebook,
-                  }}
-                >
-                  <SocialIcon name="facebook" size="md" />
-                </button>
-              ) : (
+              )}
+              {facebookUrl && (
                 <a
                   href={facebookUrl}
                   target="_blank"
@@ -568,23 +516,8 @@ export default function AboutTab({
                 >
                   <SocialIcon name="facebook" size="md" />
                 </a>
-              )
-            )}
-            {instagramUrl && (
-              shouldGateLinks ? (
-                <button
-                  type="button"
-                  onClick={() => onRequireAuth?.()}
-                  title={loginRequiredTitle}
-                  className="w-10 h-10 rounded-full flex items-center justify-center transition-colors opacity-60 cursor-not-allowed"
-                  style={{
-                    backgroundColor: `${socialColors.instagram}15`,
-                    color: socialColors.instagram,
-                  }}
-                >
-                  <SocialIcon name="instagram" size="md" />
-                </button>
-              ) : (
+              )}
+              {instagramUrl && (
                 <a
                   href={instagramUrl}
                   target="_blank"
@@ -597,23 +530,8 @@ export default function AboutTab({
                 >
                   <SocialIcon name="instagram" size="md" />
                 </a>
-              )
-            )}
-            {linkedinUrl && (
-              shouldGateLinks ? (
-                <button
-                  type="button"
-                  onClick={() => onRequireAuth?.()}
-                  title={loginRequiredTitle}
-                  className="w-10 h-10 rounded-full flex items-center justify-center transition-colors opacity-60 cursor-not-allowed"
-                  style={{
-                    backgroundColor: `${socialColors.linkedin}15`,
-                    color: socialColors.linkedin,
-                  }}
-                >
-                  <SocialIcon name="linkedin" size="md" />
-                </button>
-              ) : (
+              )}
+              {linkedinUrl && (
                 <a
                   href={linkedinUrl}
                   target="_blank"
@@ -626,19 +544,8 @@ export default function AboutTab({
                 >
                   <SocialIcon name="linkedin" size="md" />
                 </a>
-              )
-            )}
-            {websiteUrl && (
-              shouldGateLinks ? (
-                <button
-                  type="button"
-                  onClick={() => onRequireAuth?.()}
-                  title={loginRequiredTitle}
-                  className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-400 transition-colors opacity-60 cursor-not-allowed"
-                >
-                  <Globe className="w-4 h-4" />
-                </button>
-              ) : (
+              )}
+              {websiteUrl && (
                 <a
                   href={websiteUrl}
                   target="_blank"
@@ -647,21 +554,19 @@ export default function AboutTab({
                 >
                   <Globe className="w-4 h-4" />
                 </a>
-              )
-            )}
-          </div>
-        ) : isOwner ? (
-          <button
-            onClick={() => setIsEditingSocial(true)}
-            className="w-full py-6 border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-400 hover:text-[#C4735B] hover:border-[#C4735B] transition-colors"
-          >
-            <Plus className="w-5 h-5 mx-auto mb-1" />
-            <span className="text-sm">{t('professional.addSocialLinks')}</span>
-          </button>
-        ) : (
-          <p className="text-neutral-400 italic">{t('professional.noSocialLinks')}</p>
-        )}
-      </div>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={() => setIsEditingSocial(true)}
+              className="w-full py-6 border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-400 hover:text-[#C4735B] hover:border-[#C4735B] transition-colors"
+            >
+              <Plus className="w-5 h-5 mx-auto mb-1" />
+              <span className="text-sm">{t('professional.addSocialLinks')}</span>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
