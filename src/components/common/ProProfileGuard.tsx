@@ -48,8 +48,10 @@ export default function ProProfileGuard({ children }: ProProfileGuardProps) {
       return;
     }
 
-    // If pro user has incomplete profile and is not on allowed page
-    if (user.isProfileCompleted === false && !isPathAllowed(pathname)) {
+    // If pro user has incomplete profile and is not admin-approved, redirect to setup
+    // Admin-approved users are considered complete regardless of isProfileCompleted flag
+    const isComplete = user.isProfileCompleted === true || user.isAdminApproved === true;
+    if (!isComplete && !isPathAllowed(pathname)) {
       router.replace('/pro/profile-setup');
       return;
     }
@@ -60,7 +62,8 @@ export default function ProProfileGuard({ children }: ProProfileGuardProps) {
   // Show loading while checking
   if (isLoading || isChecking) {
     // Only show loading indicator if it's a pro user that might need redirect
-    if (user?.role === 'pro' && user?.isProfileCompleted === false) {
+    const isComplete = user?.isProfileCompleted === true || user?.isAdminApproved === true;
+    if (user?.role === 'pro' && !isComplete) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-primary)]">
           <LoadingSpinner size="xl" color="#E07B4F" />
