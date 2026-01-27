@@ -76,6 +76,7 @@ function PostJobPageContent() {
   const [isVisible, setIsVisible] = useState(false);
   const [isLoadingJob, setIsLoadingJob] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = useRef(false); // Ref to prevent double submission
   const [error, setError] = useState<string | null>(null);
 
   // Form state
@@ -359,8 +360,11 @@ function PostJobPageContent() {
 
   // Submit
   const handleSubmit = async () => {
+    // Prevent double submission using ref (synchronous check)
+    if (submittingRef.current) return;
     if (!canProceedFromCategory() || !canProceedFromLocation() || !canProceedFromDetails()) return;
 
+    submittingRef.current = true;
     setIsSubmitting(true);
     setError(null);
 
@@ -463,6 +467,7 @@ function PostJobPageContent() {
         t('job.failedToSaveProject')
       );
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   };
