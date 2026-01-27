@@ -24,6 +24,7 @@ const CATEGORY_LABELS: Record<string, { en: string; ka: string; ru: string }> = 
   tiling: { en: 'Tiling', ka: 'მოპირკეთება', ru: 'Укладка плитки' },
   plastering: { en: 'Plastering', ka: 'მლესავი', ru: 'Штукатурка' },
   hvac: { en: 'HVAC', ka: 'კონდიცირება/გათბობა', ru: 'Кондиционирование/отопление' },
+  iron: { en: 'Ironwork', ka: 'რკინის სამუშაოები', ru: 'Металлоконструкции' },
   carpentry: { en: 'Carpentry', ka: 'ხის სამუშაოები', ru: 'Столярные работы' },
   drywall: { en: 'Drywall', ka: 'თაბაშირმუყაო', ru: 'Гипсокартон' },
   insulation: { en: 'Insulation', ka: 'იზოლაცია', ru: 'Изоляция' },
