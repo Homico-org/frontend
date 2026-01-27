@@ -1885,219 +1885,354 @@ export default function JobDetailClient() {
             )}
           </div>
 
-          {/* Side-by-side layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
-            {/* Left: Image Gallery - smaller */}
-            <div className="space-y-2 relative">
-              {/* Edit Media Button for Owner - Links to full edit page */}
-              {isOwner && !isHired && (
-                <Link
-                  href={`/post-job?edit=${job.id}`}
-                  className="absolute top-3 left-3 z-10 w-9 h-9 rounded-full bg-white/95 dark:bg-neutral-800/95 shadow-lg border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-600 dark:text-neutral-300 hover:text-[#C4735B] hover:border-[#C4735B] transition-all"
-                  title={t("jobDetail.editMedia")}
-                >
-                  <Edit3 className="w-4 h-4" />
-                </Link>
-              )}
-              {allMedia.length > 0 ? (
-                <>
-                  {/* Main Image - smaller aspect ratio */}
-                  <button
-                    onClick={() => setSelectedMediaIndex(activeImageIndex)}
-                    className="relative w-full aspect-[16/10] rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 group"
+          {/* Conditional Layout: With images = 2 columns, Without images = single column compact */}
+          {allMedia.length > 0 ? (
+            /* WITH IMAGES: Side-by-side layout */
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
+              {/* Left: Image Gallery */}
+              <div className="space-y-2 relative">
+                {/* Edit Media Button for Owner */}
+                {isOwner && !isHired && (
+                  <Link
+                    href={`/post-job?edit=${job.id}`}
+                    className="absolute top-3 left-3 z-10 w-9 h-9 rounded-full bg-white/95 dark:bg-neutral-800/95 shadow-lg border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-600 dark:text-neutral-300 hover:text-[#C4735B] hover:border-[#C4735B] transition-all"
+                    title={t("jobDetail.editMedia")}
                   >
-                    <img
-                      src={storage.getFileUrl(allMedia[activeImageIndex]?.url)}
-                      alt={job.title}
-                      className="w-full h-full object-cover"
-                    />
-                    {/* Expand icon */}
-                    <div className="absolute top-3 right-3 p-2 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Maximize2 className="w-4 h-4" />
-        </div>
-                    {/* Image count badge */}
-        {allMedia.length > 1 && (
-                      <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/60 text-white text-xs font-medium backdrop-blur-sm">
-                        {activeImageIndex + 1} / {allMedia.length}
-          </div>
-        )}
-                  </button>
-
-                  {/* Thumbnail strip */}
-        {allMedia.length > 1 && (
-                    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                      {allMedia.map((media, idx) => (
-              <button
-                key={idx}
-                onClick={() => setActiveImageIndex(idx)}
-                          className={`relative flex-shrink-0 w-16 h-12 md:w-20 md:h-14 rounded-lg overflow-hidden transition-all ${
-                  idx === activeImageIndex
-                              ? "ring-2 ring-offset-2 ring-offset-white dark:ring-offset-neutral-900"
-                    : "opacity-60 hover:opacity-100"
-                }`}
-                          style={
-                            idx === activeImageIndex
-                              ? ({
-                                  borderColor: ACCENT,
-                                } as React.CSSProperties)
-                              : undefined
-                          }
-              >
-                <img
-                  src={storage.getFileUrl(media.url)}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
-                          {media.type === "video" && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                              <Play className="w-4 h-4 text-white fill-white" />
-                            </div>
-                          )}
-              </button>
-            ))}
+                    <Edit3 className="w-4 h-4" />
+                  </Link>
+                )}
+                {/* Main Image */}
+                <button
+                  onClick={() => setSelectedMediaIndex(activeImageIndex)}
+                  className="relative w-full aspect-[16/10] rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 group"
+                >
+                  <img
+                    src={storage.getFileUrl(allMedia[activeImageIndex]?.url)}
+                    alt={job.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-3 right-3 p-2 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Maximize2 className="w-4 h-4" />
+                  </div>
+                  {allMedia.length > 1 && (
+                    <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/60 text-white text-xs font-medium backdrop-blur-sm">
+                      {activeImageIndex + 1} / {allMedia.length}
                     </div>
                   )}
-                </>
-              ) : (
-                /* No images placeholder - clean & professional */
-                <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center">
-                  <div className="flex flex-col items-center gap-2 text-neutral-500 dark:text-neutral-400">
-                    <div className="w-10 h-10 rounded-full bg-white/70 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center">
-                      <ImageIcon className="w-5 h-5" />
-                  </div>
-                    <span className="text-xs font-medium">{t("common.noPhoto")}</span>
-                  </div>
-          </div>
-        )}
-            </div>
+                </button>
 
-            {/* Right: Job Info */}
-            <div className="flex flex-col justify-center">
-              {/* Status badges */}
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-              {isOpen && (
+                {/* Thumbnail strip */}
+                {allMedia.length > 1 && (
+                  <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                    {allMedia.map((media, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setActiveImageIndex(idx)}
+                        className={`relative flex-shrink-0 w-16 h-12 md:w-20 md:h-14 rounded-lg overflow-hidden transition-all ${
+                          idx === activeImageIndex
+                            ? "ring-2 ring-offset-2 ring-offset-white dark:ring-offset-neutral-900"
+                            : "opacity-60 hover:opacity-100"
+                        }`}
+                        style={
+                          idx === activeImageIndex
+                            ? ({ borderColor: ACCENT } as React.CSSProperties)
+                            : undefined
+                        }
+                      >
+                        <img
+                          src={storage.getFileUrl(media.url)}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                        {media.type === "video" && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                            <Play className="w-4 h-4 text-white fill-white" />
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Right: Job Info */}
+              <div className="flex flex-col justify-center">
+                {/* Status badges */}
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  {isOpen && (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-xs font-semibold">{t("common.active")}</span>
+                    </span>
+                  )}
+                  {isHired && (
+                    <span
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+                      style={{ backgroundColor: `${ACCENT}20`, color: ACCENT }}
+                    >
+                      <Check className="w-3 h-3" />
+                      <span className="text-xs font-semibold">{t("common.hired")}</span>
+                    </span>
+                  )}
+                  <span
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"
+                    style={{ backgroundColor: `${ACCENT}10`, color: ACCENT }}
+                  >
+                    {getCategoryLabel(job.category)}
+                    {job.subcategory && (
+                      <>
+                        <span className="opacity-50">/</span>
+                        {getCategoryLabel(job.subcategory)}
+                      </>
+                    )}
+                  </span>
+                </div>
+
+                {/* Title */}
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-neutral-900 dark:text-white mb-4 leading-tight">
+                  {job.title}
+                </h1>
+
+                {/* Quick stats */}
+                <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+                  {job.location && (
+                    <span className="flex items-center gap-1.5">
+                      <MapPin className="w-4 h-4" />
+                      <span className="truncate max-w-[180px]">{job.location}</span>
+                    </span>
+                  )}
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="w-4 h-4" />
+                    {getTimeAgo(job.createdAt)}
+                  </span>
+                </div>
+
+                {/* Budget highlight */}
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 mb-4">
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: `${ACCENT}15` }}
+                  >
+                    <span className="text-lg" style={{ color: ACCENT }}>₾</span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                      {t("common.budget")}
+                    </p>
+                    <p className="text-xl font-bold text-neutral-900 dark:text-white">
+                      {budgetDisplay}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Stats row */}
+                <div className="flex items-center gap-6 text-sm mb-3">
+                  <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
+                    <Eye className="w-4 h-4" />
+                    <span>{job.viewCount || 0} {t("jobDetail.views")}</span>
+                  </div>
+                  {!isHired &&
+                    (isOwner ? (
+                      <Link
+                        href={`/my-jobs/${job.id}/proposals`}
+                        className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-[#C4735B] transition-colors"
+                      >
+                        <Users className="w-4 h-4" />
+                        <span className="underline underline-offset-2">
+                          {job.proposalCount || 0} {t("jobDetail.proposals")}
+                        </span>
+                      </Link>
+                    ) : (
+                      <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
+                        <Users className="w-4 h-4" />
+                        <span>
+                          {job.proposalCount || 0} {locale === "ka" ? "შეთავაზება" : "proposals"}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+
+                {/* Compact Status Bar in Hero (for hired projects) */}
+                {isHired && (isOwner || isHiredPro) && (
+                  <ProjectStatusBar
+                    currentStage={projectStage}
+                    locale={locale}
+                    isPro={!!isHiredPro}
+                    isClient={!!isOwner}
+                    isUpdating={isUpdatingStage}
+                    isClientConfirmed={isClientConfirmed}
+                    hasSubmittedReview={hasSubmittedReview}
+                    onStageChange={handleStageChange}
+                    onClientConfirm={handleClientConfirm}
+                    onClientRequestChanges={handleClientRequestChanges}
+                    onLeaveReview={() => setShowReviewModal(true)}
+                    compact={true}
+                  />
+                )}
+              </div>
+            </div>
+          ) : (
+            /* NO IMAGES: Compact single-column layout */
+            <div className="space-y-4">
+              {/* Top row: Status badges + Category */}
+              <div className="flex flex-wrap items-center gap-2">
+                {isOpen && (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-xs font-semibold">
-                      {t("common.active")}
+                    <span className="text-xs font-semibold">{t("common.active")}</span>
                   </span>
-                </span>
-              )}
-              {isHired && (
-                <span
+                )}
+                {isHired && (
+                  <span
                     className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full"
                     style={{ backgroundColor: `${ACCENT}20`, color: ACCENT }}
                   >
                     <Check className="w-3 h-3" />
-                    <span className="text-xs font-semibold">
-                      {t("common.hired")}
+                    <span className="text-xs font-semibold">{t("common.hired")}</span>
                   </span>
-                </span>
-              )}
-              <span
+                )}
+                <span
                   className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"
                   style={{ backgroundColor: `${ACCENT}10`, color: ACCENT }}
                 >
                   {getCategoryLabel(job.category)}
-                {job.subcategory && (
-                  <>
+                  {job.subcategory && (
+                    <>
                       <span className="opacity-50">/</span>
                       {getCategoryLabel(job.subcategory)}
-                  </>
-                )}
-              </span>
-            </div>
-
-            {/* Title */}
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-neutral-900 dark:text-white mb-4 leading-tight">
-              {job.title}
-            </h1>
-
-              {/* Quick stats */}
-              <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400 mb-4">
-              {job.location && (
-                  <span className="flex items-center gap-1.5">
-                    <MapPin className="w-4 h-4" />
-                    <span className="truncate max-w-[180px]">
-                      {job.location}
-                    </span>
+                    </>
+                  )}
                 </span>
-              )}
-                <span className="flex items-center gap-1.5">
-                  <Clock className="w-4 h-4" />
-                {getTimeAgo(job.createdAt)}
-              </span>
-            </div>
-
-              {/* Budget highlight */}
-              <div className="flex items-center gap-3 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 mb-4">
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: `${ACCENT}15` }}
-                >
-                  <span className="text-lg" style={{ color: ACCENT }}>
-                    ₾
-                  </span>
-          </div>
-                <div>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                    {t("common.budget")}
-                  </p>
-                  <p className="text-xl font-bold text-neutral-900 dark:text-white">
-                    {budgetDisplay}
-                  </p>
-        </div>
               </div>
 
-              {/* Stats row - hide proposals link when hired */}
-              <div className="flex items-center gap-6 text-sm mb-3">
-                <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
-                  <Eye className="w-4 h-4" />
-                  <span>
-                    {job.viewCount || 0} {t("jobDetail.views")}
+              {/* Title */}
+              <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white leading-tight">
+                {job.title}
+              </h1>
+
+              {/* Meta info row */}
+              <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400">
+                {job.location && (
+                  <span className="flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4" />
+                    <span className="truncate max-w-[200px]">{job.location}</span>
                   </span>
+                )}
+                <span className="flex items-center gap-1.5">
+                  <Clock className="w-4 h-4" />
+                  {getTimeAgo(job.createdAt)}
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <Eye className="w-4 h-4" />
+                  <span>{job.viewCount || 0} {t("jobDetail.views")}</span>
                 </div>
-                {!isHired &&
-                  (isOwner ? (
-                  <Link
+                {!isHired && (
+                  isOwner ? (
+                    <Link
                       href={`/my-jobs/${job.id}/proposals`}
-                      className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-[#C4735B] transition-colors"
-                  >
+                      className="flex items-center gap-1.5 hover:text-[#C4735B] transition-colors"
+                    >
                       <Users className="w-4 h-4" />
                       <span className="underline underline-offset-2">
                         {job.proposalCount || 0} {t("jobDetail.proposals")}
                       </span>
-                  </Link>
+                    </Link>
                   ) : (
-                    <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
+                    <div className="flex items-center gap-1.5">
                       <Users className="w-4 h-4" />
-                      <span>
-                        {job.proposalCount || 0}{" "}
-                        {locale === "ka" ? "შეთავაზება" : "proposals"}
-                      </span>
+                      <span>{job.proposalCount || 0} {locale === "ka" ? "შეთავაზება" : "proposals"}</span>
+                    </div>
+                  )
+                )}
+              </div>
+
+              {/* Budget + Quick Specs Row */}
+              <div className="flex flex-wrap items-stretch gap-3 pt-2">
+                {/* Budget Card */}
+                <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
+                  <div
+                    className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: `${ACCENT}15` }}
+                  >
+                    <span className="text-base font-semibold" style={{ color: ACCENT }}>₾</span>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                      {t("common.budget")}
+                    </p>
+                    <p className="text-lg font-bold text-neutral-900 dark:text-white leading-tight">
+                      {budgetDisplay}
+                    </p>
+                  </div>
                 </div>
-                  ))}
+
+                {/* Quick Specs - show key info inline */}
+                {(job.areaSize || job.roomCount || job.deadline || job.propertyType) && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    {job.propertyType && (
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
+                        <Home className="w-4 h-4 text-neutral-500" />
+                        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                          {getPropertyTypeLabel(job.propertyType)}
+                        </span>
+                      </div>
+                    )}
+                    {job.areaSize && (
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
+                        <Ruler className="w-4 h-4 text-neutral-500" />
+                        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                          {job.areaSize} მ²
+                        </span>
+                      </div>
+                    )}
+                    {job.roomCount && (
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
+                        <DoorOpen className="w-4 h-4 text-neutral-500" />
+                        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                          {job.roomCount} {locale === "ka" ? "ოთახი" : "rooms"}
+                        </span>
+                      </div>
+                    )}
+                    {job.deadline && (
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
+                        <Calendar className="w-4 h-4 text-neutral-500" />
+                        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                          {(() => {
+                            const date = new Date(job.deadline);
+                            if (locale === "ka") {
+                              const months = ["იან", "თებ", "მარ", "აპრ", "მაი", "ივნ", "ივლ", "აგვ", "სექ", "ოქტ", "ნოე", "დეკ"];
+                              return `${date.getDate()} ${months[date.getMonth()]}`;
+                            }
+                            return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+                          })()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Compact Status Bar in Hero (for hired projects) */}
               {isHired && (isOwner || isHiredPro) && (
-                <ProjectStatusBar
-                  currentStage={projectStage}
-                  locale={locale}
-                  isPro={!!isHiredPro}
-                  isClient={!!isOwner}
-                  isUpdating={isUpdatingStage}
-                  isClientConfirmed={isClientConfirmed}
-                  hasSubmittedReview={hasSubmittedReview}
-                  onStageChange={handleStageChange}
-                  onClientConfirm={handleClientConfirm}
-                  onClientRequestChanges={handleClientRequestChanges}
-                  onLeaveReview={() => setShowReviewModal(true)}
-                  compact={true}
-                />
+                <div className="pt-2">
+                  <ProjectStatusBar
+                    currentStage={projectStage}
+                    locale={locale}
+                    isPro={!!isHiredPro}
+                    isClient={!!isOwner}
+                    isUpdating={isUpdatingStage}
+                    isClientConfirmed={isClientConfirmed}
+                    hasSubmittedReview={hasSubmittedReview}
+                    onStageChange={handleStageChange}
+                    onClientConfirm={handleClientConfirm}
+                    onClientRequestChanges={handleClientRequestChanges}
+                    onLeaveReview={() => setShowReviewModal(true)}
+                    compact={true}
+                  />
+                </div>
               )}
             </div>
-          </div>
+          )}
         </div>
       </section>
 
@@ -3052,7 +3187,7 @@ export default function JobDetailClient() {
                   </div>
                 )}
 
-                {/* Hired by banner for pro - show client phone */}
+                {/* Hired by banner for pro - show client info and phone */}
                 {isHired && isHiredPro && (
                   <div
                     className={`rounded-2xl p-5 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-700/80 transition-all duration-700 delay-600 ${
@@ -3061,7 +3196,7 @@ export default function JobDetailClient() {
                         : "opacity-0 translate-y-4"
                     }`}
                   >
-                    <div className="flex items-center gap-2 mb-3">
+                    <div className="flex items-center gap-2 mb-4">
                       <div className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
                         <BadgeCheck className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-400" />
                       </div>
@@ -3069,11 +3204,28 @@ export default function JobDetailClient() {
                         {locale === "ka" ? "დაქირავებული ხართ" : "You're Hired"}
                       </h3>
                     </div>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
-                      {locale === "ka"
-                        ? `${job.clientId?.name || "კლიენტმა"} დაგიქირავათ`
-                        : `${job.clientId?.name || "The client"} hired you`}
-                    </p>
+                    {/* Client info - clickable */}
+                    <Link
+                      href={`/users/${job.clientId?.id}`}
+                      className="flex items-center gap-3 group mb-4"
+                    >
+                      <Avatar
+                        src={job.clientId?.avatar}
+                        name={job.clientId?.name || "Client"}
+                        size="lg"
+                        className="w-12 h-12 group-hover:ring-2 group-hover:ring-[#C4735B]/50 transition-all"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-body font-semibold text-neutral-900 dark:text-white truncate group-hover:text-[#C4735B] transition-colors">
+                          {job.clientId?.accountType === 'organization'
+                            ? job.clientId?.companyName || job.clientId?.name
+                            : job.clientId?.name || "Client"}
+                        </p>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                          {locale === "ka" ? "კლიენტი" : "Client"}
+                        </p>
+                      </div>
+                    </Link>
                     {/* Phone CTA for pro to call client */}
                     {job.clientId?.phone && (
                       <a
