@@ -133,3 +133,41 @@ export function generatePresetRooms(preset: ApartmentPreset): Room[] {
 export function calculateTotalArea(rooms: Room[]): number {
   return rooms.reduce((sum, room) => sum + room.computed.floorArea, 0);
 }
+
+/**
+ * Create a room with custom parameters (from AI analysis)
+ */
+export function createRoomWithParams(params: {
+  name: string;
+  type: RoomType;
+  length: number;
+  width: number;
+  height: number;
+  doors: number;
+  windows: number;
+  flooring: RoomMaterials['flooring'];
+  walls: RoomMaterials['walls'];
+  ceiling: RoomMaterials['ceiling'];
+}): Room {
+  const dimensions: RoomDimensions = {
+    length: params.length,
+    width: params.width,
+    height: params.height,
+    doors: params.doors,
+    windows: params.windows,
+  };
+  const materials: RoomMaterials = {
+    flooring: params.flooring,
+    walls: params.walls,
+    ceiling: params.ceiling,
+  };
+
+  return {
+    id: generateRoomId(),
+    name: params.name,
+    type: params.type,
+    dimensions,
+    materials,
+    computed: calculateSurfaces(dimensions),
+  };
+}

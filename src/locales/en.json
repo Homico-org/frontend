@@ -2689,7 +2689,24 @@
       "total": "Total",
       "estimateRange": "Estimate Range",
       "getQuotes": "Get Professional Quotes",
-      "disclaimer": "This is an estimate. Actual prices may vary based on specific conditions."
+      "disclaimer": "This is an estimate. Actual prices may vary based on specific conditions.",
+      "aiTips": "AI Recommendations",
+      "loadingAI": "Getting AI recommendations...",
+      "aiError": "Could not load AI recommendations",
+      "tryAgain": "Try again",
+      "estimatedTimeline": "Estimated Timeline",
+      "smartTips": "Smart Tips",
+      "aiEstimate": "AI Market Estimate",
+      "aiUpload": {
+        "title": "Upload Project File",
+        "subtitle": "AI will analyze and prefill room configurations",
+        "analyzing": "AI is analyzing your project...",
+        "dropHere": "Drop your project file here",
+        "formats": "Excel, PDF, or floor plan image",
+        "skip": "Skip, I'll enter manually",
+        "notes": "AI Notes"
+      },
+      "aiUploadError": "Could not analyze project file. Please try again or enter manually."
     },
     "compare": {
       "title": "Compare Estimates",
@@ -2726,7 +2743,12 @@
       "sortPriceHigh": "Price: High to Low",
       "sortRating": "Rating: Best First",
       "lowestPrice": "Lowest price",
-      "moreThanLowest": "more than lowest"
+      "moreThanLowest": "more than lowest",
+      "aiAnalysis": "AI Analysis",
+      "aiWinner": "AI Pick",
+      "pros": "Pros",
+      "cons": "Cons",
+      "compareError": "Could not compare estimates. Please try again."
     },
     "analyzer": {
       "title": "Estimate Analyzer",
@@ -2775,7 +2797,9 @@
         "mixed": "Mixed Assessment"
       },
       "errors": {
-        "analysisError": "Failed to analyze estimate. Please try again."
+        "analysisError": "Failed to analyze estimate. Please try again.",
+        "imageNotSupported": "Image files are not yet supported. Please use Excel or PDF, or paste the text directly.",
+        "noTextExtracted": "Could not extract text from the file. Please try a different file or paste the text directly."
       },
       "alerts": {
         "priceNotSpecified": "Price not specified",

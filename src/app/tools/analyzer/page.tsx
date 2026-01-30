@@ -4,6 +4,7 @@ import { useState, useCallback, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { type PriceCategory } from '@/data/priceDatabase';
 import { aiService, EstimateAnalysisResult } from '@/services/ai';
+import * as XLSX from 'xlsx';
 import {
   FileSearch,
   Upload,
@@ -104,6 +105,84 @@ const getFileIcon = (fileName: string) => {
   return FileText;
 };
 
+// Extract text from Excel files
+const extractTextFromExcel = async (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = e.target?.result;
+        const workbook = XLSX.read(data, { type: 'array' });
+        let text = '';
+
+        workbook.SheetNames.forEach((sheetName) => {
+          const sheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as unknown[][];
+
+          jsonData.forEach((row) => {
+            if (Array.isArray(row) && row.length > 0) {
+              const rowText = row.filter(cell => cell !== null && cell !== undefined && cell !== '').join(' - ');
+              if (rowText.trim()) {
+                text += rowText + '\n';
+              }
+            }
+          });
+        });
+
+        resolve(text.trim());
+      } catch (error) {
+        reject(error);
+      }
+    };
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsArrayBuffer(file);
+  });
+};
+
+// Extract text from PDF files
+const extractTextFromPDF = async (file: File): Promise<string> => {
+  const pdfjsLib = await import('pdfjs-dist');
+
+  // Set worker source
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+  let text = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const textContent = await page.getTextContent();
+    const pageText = textContent.items
+      .map((item: any) => item.str)
+      .join(' ');
+    text += pageText + '\n';
+  }
+
+  return text.trim();
+};
+
+// Extract text from file based on type
+const extractTextFromFile = async (file: File): Promise<string> => {
+  const ext = file.name.split('.').pop()?.toLowerCase();
+
+  if (ext === 'xlsx' || ext === 'xls') {
+    return extractTextFromExcel(file);
+  }
+
+  if (ext === 'pdf') {
+    return extractTextFromPDF(file);
+  }
+
+  // For images, we can't extract text client-side without OCR
+  // Return empty string and let the user know
+  if (['jpg', 'jpeg', 'png', 'heic', 'webp'].includes(ext || '')) {
+    throw new Error('IMAGE_NOT_SUPPORTED');
+  }
+
+  throw new Error('Unsupported file type');
+};
+
 export default function AnalyzerPage() {
   const { t, locale } = useLanguage();
 
@@ -136,17 +215,39 @@ export default function AnalyzerPage() {
     }
   }, [locale, t]);
 
-  const handleFileSelect = useCallback((selectedFile: File) => {
+  const handleFileSelect = useCallback(async (selectedFile: File) => {
     setUploadedFile(selectedFile);
-    // For now, show demo since we can't easily extract text from files
-    // In production, you'd use a backend service to extract text from PDFs/images
     setIsAnalyzing(true);
-    setTimeout(() => {
+    setError(null);
+
+    try {
+      const extractedText = await extractTextFromFile(selectedFile);
+
+      if (!extractedText.trim()) {
+        throw new Error('NO_TEXT_EXTRACTED');
+      }
+
+      // Use AI to analyze the extracted text
+      const result = await aiService.analyzeEstimate(extractedText, locale);
+      setAiAnalysis(result);
+      setExpandedCategories(new Set());
+    } catch (err: any) {
+      console.error('File analysis error:', err);
+
+      if (err.message === 'IMAGE_NOT_SUPPORTED') {
+        setError(t('tools.analyzer.errors.imageNotSupported'));
+      } else if (err.message === 'NO_TEXT_EXTRACTED') {
+        setError(t('tools.analyzer.errors.noTextExtracted'));
+      } else {
+        setError(err?.response?.data?.message || err?.message || t('tools.analyzer.errors.analysisError'));
+      }
+
+      // Fallback to demo on error
       setAnalysis(generateDemoAnalysis(t));
+    } finally {
       setIsAnalyzing(false);
-      setExpandedCategories(new Set(['electrical', 'walls']));
-    }, 2000);
-  }, [t]);
+    }
+  }, [t, locale]);
 
   const handleTextAnalyze = useCallback(() => {
     if (!estimateText.trim()) return;

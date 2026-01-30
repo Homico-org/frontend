@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import {
   Calculator,
@@ -12,12 +12,18 @@ import {
   Layers,
   Package,
   Info,
+  Sparkles,
+  Lightbulb,
+  Clock,
+  RefreshCw,
 } from 'lucide-react';
 import { type Room, type WorkCategories, type QualityLevel, type CalculationResult, QUALITY_MULTIPLIERS } from './types';
 import { calculateFullBreakdown } from '@/utils/calculator';
 import { categoryIconMap } from '@/components/tools/prices/categoryIcons';
 import { type PriceCategory } from '@/data/priceDatabase';
 import { Toggle } from '@/components/ui/Toggle';
+import { aiService, RenovationCalculatorResult } from '@/services/ai';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface StepSummaryProps {
   rooms: Room[];
@@ -48,7 +54,11 @@ export function StepSummary({
   onIncludeMaterialsChange,
   t,
 }: StepSummaryProps) {
+  const { locale } = useLanguage();
   const [breakdownView, setBreakdownView] = useState<BreakdownView>('category');
+  const [aiTips, setAiTips] = useState<RenovationCalculatorResult | null>(null);
+  const [isLoadingAI, setIsLoadingAI] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const calculation = useMemo(() => {
     return calculateFullBreakdown(rooms, workCategories, qualityLevel, includeMaterials);
@@ -57,6 +67,48 @@ export function StepSummary({
   const formatCurrency = (amount: number) => amount.toLocaleString() + '₾';
 
   const totalArea = rooms.reduce((sum, room) => sum + room.computed.floorArea, 0);
+
+  // Map quality level to renovation type
+  const getRenovationType = (level: QualityLevel): 'cosmetic' | 'standard' | 'full' | 'luxury' => {
+    switch (level) {
+      case 'economy': return 'cosmetic';
+      case 'standard': return 'standard';
+      case 'premium': return 'luxury';
+      default: return 'standard';
+    }
+  };
+
+  // Fetch AI recommendations
+  const fetchAITips = useCallback(async () => {
+    setIsLoadingAI(true);
+    setAiError(null);
+    try {
+      const bathroomCount = rooms.filter(r => r.type === 'bathroom').length;
+      const hasKitchen = rooms.some(r => r.type === 'kitchen');
+
+      const result = await aiService.calculateRenovation({
+        area: Math.round(totalArea),
+        rooms: rooms.length,
+        bathrooms: bathroomCount || 1,
+        renovationType: getRenovationType(qualityLevel),
+        includeKitchen: hasKitchen,
+        includeFurniture: false,
+        propertyType: 'apartment',
+      }, locale);
+
+      setAiTips(result);
+    } catch (err: any) {
+      console.error('AI tips error:', err);
+      setAiError(t('tools.calculator.aiError'));
+    } finally {
+      setIsLoadingAI(false);
+    }
+  }, [rooms, totalArea, qualityLevel, locale, t]);
+
+  // Fetch AI tips on mount and when key parameters change
+  useEffect(() => {
+    fetchAITips();
+  }, []);
 
   return (
     <div className="space-y-5">
@@ -264,6 +316,98 @@ export function StepSummary({
         </div>
         <div className="text-sm font-medium text-neutral-700 dark:text-neutral-300 tabular-nums">
           {formatCurrency(calculation.lowEstimate)} — {formatCurrency(calculation.highEstimate)}
+        </div>
+      </div>
+
+      {/* AI Tips Section */}
+      <div className="bg-gradient-to-br from-forest-50 to-forest-100 dark:from-forest-900/20 dark:to-forest-800/10 rounded-2xl border border-forest-200 dark:border-forest-800/30 overflow-hidden">
+        <div className="p-4 border-b border-forest-200 dark:border-forest-800/30 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-forest-200 dark:bg-forest-900/40 flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-forest-600 dark:text-forest-400" strokeWidth={1.5} />
+            </div>
+            <h3 className="font-semibold text-forest-800 dark:text-forest-200">
+              {t('tools.calculator.aiTips')}
+            </h3>
+          </div>
+          <button
+            onClick={fetchAITips}
+            disabled={isLoadingAI}
+            className="p-2 rounded-lg bg-forest-200/50 dark:bg-forest-900/30 hover:bg-forest-200 dark:hover:bg-forest-900/50 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 text-forest-600 dark:text-forest-400 ${isLoadingAI ? 'animate-spin' : ''}`} strokeWidth={1.5} />
+          </button>
+        </div>
+
+        <div className="p-4">
+          {isLoadingAI ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="flex items-center gap-3 text-forest-600 dark:text-forest-400">
+                <RefreshCw className="w-5 h-5 animate-spin" strokeWidth={1.5} />
+                <span className="text-sm">{t('tools.calculator.loadingAI')}</span>
+              </div>
+            </div>
+          ) : aiError ? (
+            <div className="text-center py-6">
+              <p className="text-sm text-forest-600 dark:text-forest-400">{aiError}</p>
+              <button
+                onClick={fetchAITips}
+                className="mt-3 text-sm font-medium text-forest-700 dark:text-forest-300 hover:underline"
+              >
+                {t('tools.calculator.tryAgain')}
+              </button>
+            </div>
+          ) : aiTips ? (
+            <div className="space-y-4">
+              {/* Timeline */}
+              {aiTips.timeline && (
+                <div className="flex items-start gap-3 p-3 bg-white/60 dark:bg-neutral-900/40 rounded-xl">
+                  <Clock className="w-5 h-5 text-forest-500 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+                  <div>
+                    <p className="text-sm font-medium text-forest-800 dark:text-forest-200">
+                      {t('tools.calculator.estimatedTimeline')}
+                    </p>
+                    <p className="text-sm text-forest-600 dark:text-forest-400 mt-0.5">
+                      {aiTips.timeline}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Tips */}
+              {aiTips.tips && aiTips.tips.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-forest-800 dark:text-forest-200 flex items-center gap-2">
+                    <Lightbulb className="w-4 h-4" strokeWidth={1.5} />
+                    {t('tools.calculator.smartTips')}
+                  </p>
+                  <ul className="space-y-2">
+                    {aiTips.tips.slice(0, 4).map((tip, index) => (
+                      <li
+                        key={index}
+                        className="flex items-start gap-2 text-sm text-forest-700 dark:text-forest-300 p-2 bg-white/40 dark:bg-neutral-900/30 rounded-lg"
+                      >
+                        <span className="text-forest-500 mt-0.5">•</span>
+                        {tip}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* AI Estimate Comparison */}
+              {aiTips.totalEstimate > 0 && (
+                <div className="p-3 bg-white/60 dark:bg-neutral-900/40 rounded-xl">
+                  <p className="text-xs text-forest-600 dark:text-forest-400 mb-1">
+                    {t('tools.calculator.aiEstimate')}
+                  </p>
+                  <p className="text-lg font-bold text-forest-700 dark:text-forest-300 tabular-nums">
+                    {formatCurrency(aiTips.totalEstimate)}
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : null}
         </div>
       </div>
 
