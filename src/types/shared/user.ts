@@ -177,11 +177,11 @@ export interface ProProfile extends BaseEntity {
   isPremium: boolean;
   premiumTier?: string;
   
-  // Admin Approval
-  isAdminApproved?: boolean;
+  // Admin Approval (legacy - use verificationStatus instead)
   adminApprovedAt?: string;
   adminRejectionReason?: string;
-  
+  verificationNotes?: string;
+
   // Design-specific
   designStyles?: string[];
   

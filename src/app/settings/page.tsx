@@ -654,9 +654,9 @@ function SettingsPageContent() {
 
   // Delete account handler
   const handleDeleteAccount = async () => {
-    const confirmWord = t('common.delete');
+    const confirmWord = t('settings.deleteConfirmWord');
     if (deleteConfirmText !== confirmWord) {
-      setDeleteError(locale === 'ka' ? `გთხოვთ ჩაწეროთ "${confirmWord}" დასადასტურებლად` : `Please type "${confirmWord}" to confirm`);
+      setDeleteError(t('settings.typeWordToConfirm', { word: confirmWord }));
       return;
     }
 
@@ -1098,7 +1098,7 @@ function SettingsPageContent() {
                               } else {
                                 const data = await res.json();
                                 if (res.status === 409) {
-                                  return { success: false, error: locale === 'ka' ? 'მიმდინარე პაროლი არასწორია' : 'Current password is incorrect' };
+                                  return { success: false, error: t('settings.currentPasswordIsIncorrect') };
                                 }
                                 return { success: false, error: data.message };
                               }
@@ -1186,7 +1186,7 @@ function SettingsPageContent() {
                 <AlertTriangle className="w-8 h-8 text-red-500" />
               </div>
               <h3 className="text-xl font-bold text-red-600 dark:text-red-400">
-                {locale === 'ka' ? 'ანგარიშის წაშლა' : 'Delete Account'}
+                {t('settings.deleteAccount')}
               </h3>
               <p className="text-sm mt-2" style={{ color: 'var(--color-text-secondary)' }}>
                 {t('settings.thisActionIsIrreversibleAnd')}
@@ -1229,7 +1229,7 @@ function SettingsPageContent() {
                   type="text"
                   value={deleteConfirmText}
                   onChange={(e) => setDeleteConfirmText(e.target.value)}
-                  placeholder={locale === 'ka' ? 'წაშლა' : 'DELETE'}
+                  placeholder={t('settings.deleteConfirmWord')}
                   disabled={isDeletingAccount}
                   className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-red-500/50 font-mono text-center tracking-widest"
                   style={{
@@ -1264,7 +1264,7 @@ function SettingsPageContent() {
                 <Button
                   variant="destructive"
                   onClick={handleDeleteAccount}
-                  disabled={isDeletingAccount || deleteConfirmText !== (locale === 'ka' ? 'წაშლა' : 'DELETE')}
+                  disabled={isDeletingAccount || deleteConfirmText !== t('settings.deleteConfirmWord')}
                   loading={isDeletingAccount}
                   className="flex-1"
                   leftIcon={!isDeletingAccount ? <Trash2 className="w-4 h-4" /> : undefined}
@@ -1385,7 +1385,7 @@ function SettingsPageContent() {
                       <EyeOff className="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-500" />
                     </div>
                     <span className="text-sm text-yellow-700/90 dark:text-yellow-500/90">
-                      {locale === 'ka' ? 'კლიენტები ვერ ნახავენ თქვენს პროფილს' : 'Clients won\'t see your profile'}
+                      {t('settings.clientsWontSeeYourProfile')}
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
@@ -1427,7 +1427,7 @@ function SettingsPageContent() {
                   disabled={isDeactivating}
                   className="flex-1"
                 >
-                  {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   onClick={handleDeactivateProfile}
@@ -1438,7 +1438,7 @@ function SettingsPageContent() {
                 >
                   {isDeactivating
                     ? (t('settings.pausing'))
-                    : (locale === 'ka' ? 'პროფილის დამალვა' : 'Pause Profile')}
+                    : (t('settings.pauseProfile'))}
                 </Button>
               </div>
             </div>
@@ -1490,7 +1490,7 @@ function SettingsPageContent() {
                   </div>
                   <div>
                     <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                      {locale === 'ka' ? 'ბარათის დამატება' : 'Add Card'}
+                      {t('settings.addCard')}
                     </h3>
                     <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
                       {t('settings.enterYourCardDetails')}
@@ -1624,7 +1624,7 @@ function SettingsPageContent() {
               >
                 {isAddingCard
                   ? (t('settings.adding'))
-                  : (locale === 'ka' ? 'ბარათის დამატება' : 'Add Card')}
+                  : (t('settings.addCard'))}
               </Button>
 
               {/* Security Note */}

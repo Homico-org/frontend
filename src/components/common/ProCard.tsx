@@ -6,6 +6,7 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
+import { storage } from "@/services/storage";
 import { ProProfile, ProStatus } from "@/types";
 import { Briefcase, CheckCircle2, Clock, Eye, Sparkles, Wallet } from "lucide-react";
 import Image from "next/image";
@@ -102,13 +103,13 @@ export default function ProCard({
     if (!service) return null;
     
     const expMap: Record<string, string> = {
-      '1-2': '1-2' + (locale === 'ka' ? 'წ' : 'y'),
-      '3-5': '3-5' + (locale === 'ka' ? 'წ' : 'y'),
-      '5-10': '5-10' + (locale === 'ka' ? 'წ' : 'y'),
-      '10+': '10+' + (locale === 'ka' ? 'წ' : 'y'),
+      '1-2': `1-2${t('timeUnits.year')}`,
+      '3-5': `3-5${t('timeUnits.year')}`,
+      '5-10': `5-10${t('timeUnits.year')}`,
+      '10+': `10+${t('timeUnits.year')}`,
     };
     return expMap[service.experience] || null;
-  }, [servicesWithExperience, locale]);
+  }, [servicesWithExperience, t]);
 
   const currentStatus =
     STATUS_CONFIG[profile.status || ProStatus.AWAY] ||
@@ -116,15 +117,8 @@ export default function ProCard({
   const isTopRated = profile.avgRating >= 4.8 && (profile.completedProjects || 0) >= 5;
   const isPremium = profile.isPremium || false;
 
-  // Avatar priority
-  const isProfileAvatarBroken = profile.avatar?.includes("/uploads/");
-  const rawAvatarUrl =
-    (!isProfileAvatarBroken && profile.avatar) || profile?.avatar;
-  const avatarUrl = rawAvatarUrl
-    ? rawAvatarUrl.startsWith("http") || rawAvatarUrl.startsWith("data:")
-      ? rawAvatarUrl
-      : `${process.env.NEXT_PUBLIC_API_URL}${rawAvatarUrl}`
-    : null;
+  // Avatar URL - use consistent storage.getFileUrl
+  const avatarUrl = profile.avatar ? storage.getFileUrl(profile.avatar) : null;
 
   // Use the maximum of all available project count sources
   // This handles cases where counters weren't incremented for old projects
@@ -236,7 +230,7 @@ export default function ProCard({
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-1.5">
                 {profile.verificationStatus === 'verified' && (
-                  <StatusPill variant="verified" size="xs" locale={locale} />
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                 )}
                 {isTopRated && (
                   <StatusPill variant="topRated" size="xs" locale={locale} label="Top" />
@@ -408,7 +402,7 @@ export default function ProCard({
               {userCategories.length > 3 && (
                 <div className="text-center">
                   <span className="text-[10px] font-medium text-neutral-400">
-                    +{userCategories.length - 3} {locale === 'ka' ? 'კატეგორია' : 'more'}
+                    +{userCategories.length - 3} {t('common.more')}
                   </span>
                 </div>
               )}
@@ -505,10 +499,10 @@ export default function ProCard({
                         return maxYears > 0 ? maxYears : (profile.yearsExperience || 0);
                       }
                       return profile.yearsExperience || 0;
-                    })()} {locale === "ka" ? "წ" : "yr"}
+                    })()} {t('timeUnits.year')}
                   </span>
                   <span className="text-neutral-500 dark:text-neutral-400 font-medium">
-                    {completedJobs} {locale === "ka" ? "პრ" : "jobs"}
+                    {completedJobs} {t('admin.jobs')}
                   </span>
                   <span className="text-neutral-400 dark:text-neutral-600">•</span>
                   {pricing && (

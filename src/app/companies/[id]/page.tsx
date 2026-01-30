@@ -221,7 +221,7 @@ export default function CompanyProfilePage() {
     if (!categoryKey) return "";
     const category = CATEGORIES.find((cat) => cat.key === categoryKey);
     if (category) {
-      return locale === "ka" ? category.nameKa : category.name;
+      return ({ ka: category.nameKa, en: category.name, ru: category.name }[locale] ?? category.name);
     }
     return categoryKey
       .split("-")
@@ -239,7 +239,7 @@ export default function CompanyProfilePage() {
         (sub) => sub.key === subcategoryKey
       );
       if (subcategory) {
-        return locale === "ka" ? subcategory.nameKa : subcategory.name;
+        return ({ ka: subcategory.nameKa, en: subcategory.name, ru: subcategory.name }[locale] ?? subcategory.name);
       }
       for (const sub of category.subcategories) {
         if (sub.children) {
@@ -247,7 +247,7 @@ export default function CompanyProfilePage() {
             (child) => child.key === subcategoryKey
           );
           if (subSub) {
-            return locale === "ka" ? subSub.nameKa : subSub.name;
+            return ({ ka: subSub.nameKa, en: subSub.name, ru: subSub.name }[locale] ?? subSub.name);
           }
         }
       }
@@ -258,23 +258,20 @@ export default function CompanyProfilePage() {
       .join(" ");
   };
 
-  const cityTranslations: Record<string, string> = {
-    tbilisi: "თბილისი",
-    rustavi: "რუსთავი",
-    batumi: "ბათუმი",
-    kutaisi: "ქუთაისი",
-    gori: "გორი",
-    zugdidi: "ზუგდიდი",
-    nationwide: "საქართველოს მასშტაბით",
+  const cityTranslations: Record<string, { ka: string; en?: string; ru?: string }> = {
+    tbilisi: { ka: "თბილისი" },
+    rustavi: { ka: "რუსთავი" },
+    batumi: { ka: "ბათუმი" },
+    kutaisi: { ka: "ქუთაისი" },
+    gori: { ka: "გორი" },
+    zugdidi: { ka: "ზუგდიდი" },
+    nationwide: { ka: "საქართველოს მასშტაბით" },
   };
 
   const translateCity = (city: string) => {
-    if (locale === "ka") {
-      const lowerCity = city.toLowerCase().trim();
-      if (cityTranslations[lowerCity]) {
-        return cityTranslations[lowerCity];
-      }
-    }
+    const lowerCity = city.toLowerCase().trim();
+    const hit = cityTranslations[lowerCity];
+    if (hit) return hit[locale] ?? hit.en ?? hit.ru ?? city;
     return city;
   };
 
@@ -507,9 +504,7 @@ export default function CompanyProfilePage() {
                         <div className="flex items-center gap-1.5 text-[var(--color-text-secondary)]">
                           <Calendar className="w-4 h-4 text-[var(--color-text-tertiary)]" />
                           <span>
-                            {locale === "ka"
-                              ? `დაარსდა ${profile.foundedYear}`
-                              : `Est. ${profile.foundedYear}`}
+                            {t("companies.foundedYear", { year: profile.foundedYear })}
                           </span>
                         </div>
                       )}
@@ -665,9 +660,7 @@ export default function CompanyProfilePage() {
                     variant="secondary"
                     className="w-full mt-4"
                   >
-                    {locale === "ka"
-                      ? `ყველას ნახვა (${profile.teamMembers.length})`
-                      : `View All (${profile.teamMembers.length})`}
+                    {t("companies.viewAllTeam", { count: profile.teamMembers.length })}
                   </Button>
                 )}
               </section>
@@ -774,8 +767,7 @@ export default function CompanyProfilePage() {
                         {t('common.reviews')}
                       </h2>
                       <p className="text-sm text-[var(--color-text-tertiary)]">
-                        {profile.totalReviews}{" "}
-                        {locale === "ka" ? "შეფასება" : "reviews"}
+                        {t("companies.reviewsCount", { count: profile.totalReviews })}
                       </p>
                     </div>
                   </div>
@@ -826,7 +818,7 @@ export default function CompanyProfilePage() {
                                   : review.clientId.name}
                               </p>
                               <p className="text-xs text-[var(--color-text-muted)]">
-                                {formatTimeAgo(review.createdAt, locale as 'en' | 'ka' | 'ru')}
+                                {formatTimeAgo(review.createdAt, t)}
                               </p>
                             </div>
                             {/* Stars */}
@@ -875,9 +867,7 @@ export default function CompanyProfilePage() {
                     variant="outline"
                     className="w-full mt-6"
                   >
-                    {locale === "ka"
-                      ? `ყველა ${profile.totalReviews} შეფასების ნახვა`
-                      : `Read all ${profile.totalReviews} reviews`}
+                    {t("companies.readAllReviews", { count: profile.totalReviews })}
                   </Button>
                 )}
               </section>
@@ -1042,9 +1032,10 @@ export default function CompanyProfilePage() {
                           {t('common.topRated')}
                         </p>
                         <p className="text-xs text-[var(--color-text-tertiary)]">
-                          {locale === "ka"
-                            ? `${profile.avgRating.toFixed(1)} ★ (${profile.totalReviews} შეფასება)`
-                            : `${profile.avgRating.toFixed(1)} ★ from ${profile.totalReviews} reviews`}
+                          {t("companies.topRatedSummary", {
+                            rating: profile.avgRating.toFixed(1),
+                            count: profile.totalReviews,
+                          })}
                         </p>
                       </div>
                     </div>
@@ -1062,9 +1053,7 @@ export default function CompanyProfilePage() {
                             {t('companies.experiencedCompany')}
                           </p>
                           <p className="text-xs text-[var(--color-text-tertiary)]">
-                            {locale === "ka"
-                              ? `${profile.completedProjects}+ დასრულებული პროექტი`
-                              : `${profile.completedProjects}+ completed projects`}
+                            {t("companies.completedProjectsPlus", { count: profile.completedProjects })}
                           </p>
                         </div>
                       </div>

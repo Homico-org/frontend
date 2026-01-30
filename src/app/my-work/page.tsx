@@ -395,7 +395,7 @@ function MyWorkPageContent() {
                         <div className="inline-flex items-center gap-1.5">
                           <Briefcase className="w-4 h-4 text-neutral-400" />
                           <span className="font-medium">
-                            {formatBudget(job)}
+                            {formatBudget(job, t)}
                           </span>
                         </div>
                         {proposal.projectTracking?.currentStage && (

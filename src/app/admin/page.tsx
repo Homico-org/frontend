@@ -488,7 +488,7 @@ function AdminDashboardPageContent() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
           {[
             { label: t('admin.users'), icon: Users, href: '/admin/users', color: THEME.primary, count: stats?.users.total },
-            { label: locale === 'ka' ? 'დამტკიცება' : 'Approvals', icon: UserCheck, href: '/admin/pending-pros', color: '#f59e0b', count: pendingProsCount, badge: pendingProsCount > 0 ? pendingProsCount : undefined },
+            { label: t('admin.approvals'), icon: UserCheck, href: '/admin/pending-pros', color: '#f59e0b', count: pendingProsCount, badge: pendingProsCount > 0 ? pendingProsCount : undefined },
             { label: t('admin.jobs'), icon: Briefcase, href: '/admin/jobs', color: THEME.info, count: stats?.jobs.total },
             { label: t('admin.support'), icon: MessageCircle, href: '/admin/support', color: THEME.warning, count: stats?.support.open, badge: stats?.support.unread },
             { label: t('admin.activityLogs'), icon: ActivityIcon, href: '/admin/activity-logs', color: THEME.success },
@@ -732,7 +732,7 @@ function AdminDashboardPageContent() {
                 className="flex items-center gap-4 mt-4 pt-4 text-xs"
                 style={{ borderTop: `1px solid ${THEME.border}` }}
               >
-                <span style={{ color: THEME.error }}>{stats?.support.open || 0} {locale === 'ka' ? 'ღია' : 'open'}</span>
+                <span style={{ color: THEME.error }}>{stats?.support.open || 0} {t('common.open')}</span>
                 <span style={{ color: THEME.success }}>{stats?.support.resolved || 0} {t('admin.resolved')}</span>
               </div>
             </div>
@@ -932,7 +932,7 @@ function AdminDashboardPageContent() {
                       }}
                       onMouseEnter={(e) => (e.currentTarget.style.background = THEME.surfaceHover)}
                       onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                      title={href ? (locale === 'ka' ? 'გახსნა' : 'Open') : undefined}
+                      title={href ? t('common.open') : undefined}
                     >
                       <div
                         className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -1034,14 +1034,14 @@ function AdminDashboardPageContent() {
               <div className="p-4 space-y-3">
                 {jobsByLocation.length === 0 ? (
                   <p className="text-center py-4 text-sm" style={{ color: THEME.textMuted }}>
-                    {locale === 'ka' ? 'მონაცემები არ არის' : 'No data'}
+                    {t('admin.noData')}
                   </p>
                 ) : (
                   jobsByLocation.slice(0, 5).map((loc) => (
                     <div key={loc._id} className="group">
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-sm truncate" style={{ color: THEME.textMuted }}>
-                          {loc._id || (locale === 'ka' ? 'უცნობი' : 'Unknown')}
+                          {loc._id || t('common.unknown')}
                         </span>
                         <span
                           className="text-xs font-medium ml-2"
@@ -1157,7 +1157,7 @@ function AdminDashboardPageContent() {
                 className="flex items-center gap-1 text-xs font-medium transition-colors hover:opacity-80"
                 style={{ color: THEME.primary }}
               >
-                {locale === 'ka' ? 'ყველა' : 'View all'}
+                {t('common.viewAll')}
                 <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>

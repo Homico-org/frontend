@@ -12,8 +12,7 @@ import { ACCENT_COLOR } from '@/constants/theme';
 type NavItem = {
   key: string;
   href: string;
-  label: string;
-  labelKa: string;
+  labelKey: string;
   icon: typeof Briefcase;
   showFor: 'all' | 'pro' | 'client' | 'authenticated' | 'guest';
 };
@@ -23,16 +22,14 @@ const NAV_ITEMS: NavItem[] = [
   {
     key: 'portfolios',
     href: '/browse/portfolio',
-    label: 'Portfolios',
-    labelKa: 'ნამუშევრები',
+    labelKey: 'nav.portfolios',
     icon: Images,
     showFor: 'guest',
   },
   {
     key: 'tools-guest',
     href: '/tools',
-    label: 'Tools',
-    labelKa: 'ხელსაწყოები',
+    labelKey: 'nav.tools',
     icon: Calculator,
     showFor: 'guest',
   },
@@ -40,40 +37,35 @@ const NAV_ITEMS: NavItem[] = [
   {
     key: 'browse',
     href: '/browse/portfolio',
-    label: 'Browse',
-    labelKa: 'ძიება',
+    labelKey: 'header.browse',
     icon: Search,
     showFor: 'authenticated',
   },
   {
     key: 'find-jobs',
     href: '/browse/jobs',
-    label: 'Jobs',
-    labelKa: 'დასაქმება',
+    labelKey: 'nav.jobs',
     icon: Briefcase,
     showFor: 'pro',
   },
   {
     key: 'my-work',
     href: '/my-work',
-    label: 'My Work',
-    labelKa: 'სამუშაო',
+    labelKey: 'header.myWork',
     icon: FileText,
     showFor: 'pro',
   },
   {
     key: 'my-jobs',
     href: '/my-jobs',
-    label: 'My Jobs',
-    labelKa: 'პროექტები',
+    labelKey: 'header.myJobs',
     icon: Briefcase,
     showFor: 'authenticated',
   },
   {
     key: 'tools',
     href: '/tools',
-    label: 'Tools',
-    labelKa: 'ხელსაწყოები',
+    labelKey: 'nav.tools',
     icon: Calculator,
     showFor: 'authenticated',
   },
@@ -85,7 +77,7 @@ interface MobileBottomNavProps {
 
 export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
   const pathname = usePathname();
-  const { t, locale } = useLanguage();
+  const { t } = useLanguage();
   const { user, isLoading } = useAuth();
 
   const isPro = user?.role === 'pro' || user?.role === 'admin';
@@ -168,7 +160,7 @@ export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
               >
                 <Icon className="w-5 h-5" />
                 <span className="text-[10px] font-medium">
-                  {locale === 'ka' ? item.labelKa : item.label}
+                  {t(item.labelKey)}
                 </span>
               </Link>
             );
@@ -214,7 +206,7 @@ export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
               >
                 <Icon className="w-5 h-5" />
                 <span className="text-[10px] font-medium">
-                  {locale === 'ka' ? item.labelKa : item.label}
+                  {t(item.labelKey)}
                 </span>
               </Link>
             );

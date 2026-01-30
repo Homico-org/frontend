@@ -177,7 +177,7 @@ export default function LoginModal() {
               {/* Login Form */}
               <form onSubmit={handleSubmit} className="space-y-3">
                 <FormGroup>
-                  <Label locale={locale}>
+                  <Label>
                     {t('auth.phoneNumber')}
                   </Label>
                   <PhoneInput
@@ -191,7 +191,7 @@ export default function LoginModal() {
                 </FormGroup>
 
                 <FormGroup>
-                  <Label locale={locale === 'ka' ? 'ka' : 'en'}>
+                  <Label>
                     {t('common.password')}
                   </Label>
                   <PasswordInput

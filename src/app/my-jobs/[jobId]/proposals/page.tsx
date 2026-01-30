@@ -150,24 +150,15 @@ function ProposalsPageContent() {
         setSelectedProposal(null);
 
         if (choice === "direct") {
-          toast.success(
-            locale === "ka" ? "წარმატება" : "Success",
-            locale === "ka"
-              ? "ტელეფონის ნომერი გამოჩნდა"
-              : "Phone number revealed"
-          );
+          toast.success(t("common.success"), t("job.phoneNumberRevealed"));
         } else {
-          toast.success(
-            locale === "ka" ? "წარმატება" : "Success",
-            t("job.markedAsInterested")
-          );
+          toast.success(t("common.success"), t("job.markedAsInterested"));
         }
       } catch (error) {
         const apiErr = error as { response?: { data?: { message?: string } } };
         toast.error(
-          locale === "ka" ? "შეცდომა" : "Error",
-          apiErr.response?.data?.message ||
-            (locale === "ka" ? "ვერ მოხერხდა" : "Failed to process")
+          t("common.error"),
+          apiErr.response?.data?.message || t("job.failedToProcess")
         );
       } finally {
         setIsProcessing(false);
@@ -190,13 +181,13 @@ function ProposalsPageContent() {
 
         setShowRejectConfirm(null);
         toast.success(
-          locale === "ka" ? "წარმატება" : "Success",
+          t("common.success"),
           t("job.proposalRejected")
         );
       } catch (error) {
         const apiErr = error as { response?: { data?: { message?: string } } };
         toast.error(
-          locale === "ka" ? "შეცდომა" : "Error",
+          t("common.error"),
           apiErr.response?.data?.message || t("job.failedToReject")
         );
       } finally {
@@ -213,7 +204,7 @@ function ProposalsPageContent() {
         await api.post(`/jobs/proposals/${proposalId}/accept`);
 
         toast.success(
-          locale === "ka" ? "წარმატება" : "Success",
+          t("common.success"),
           t("job.projectStartedRedirectingToProject")
         );
 
@@ -224,7 +215,7 @@ function ProposalsPageContent() {
       } catch (error) {
         const apiErr = error as { response?: { data?: { message?: string } } };
         toast.error(
-          locale === "ka" ? "შეცდომა" : "Error",
+          t("common.error"),
           apiErr.response?.data?.message || t("job.failedToAccept")
         );
         setIsProcessing(false);
@@ -253,13 +244,13 @@ function ProposalsPageContent() {
         );
 
         toast.success(
-          locale === "ka" ? "წარმატება" : "Success",
+          t("common.success"),
           t("job.revertedToNewProposals")
         );
       } catch (error) {
         const apiErr = error as { response?: { data?: { message?: string } } };
         toast.error(
-          locale === "ka" ? "შეცდომა" : "Error",
+          t("common.error"),
           apiErr.response?.data?.message || t("job.failedToRevert")
         );
       } finally {
@@ -439,7 +430,7 @@ function ProposalsPageContent() {
                   </div>
                   <div className="flex-1">
                     <h2 className="text-sm sm:text-base font-semibold text-neutral-900 dark:text-white">
-                      {locale === "ka" ? "მონიშნული" : "Shortlisted"}
+                      {t("job.shortlisted")}
                     </h2>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400">
                       {t("job.selectOneToStartThe")}
@@ -475,7 +466,7 @@ function ProposalsPageContent() {
                   </div>
                   <div className="flex-1">
                     <h2 className="text-sm sm:text-base font-semibold text-neutral-500 dark:text-neutral-400">
-                      {locale === "ka" ? "უარყოფილი" : "Rejected"}
+                      {t("common.rejected")}
                     </h2>
                   </div>
                   <Badge variant="default" size="sm">
@@ -618,7 +609,7 @@ function ProposalCard({
                 size="sm"
                 icon={<X className="w-3 h-3" />}
               >
-                {locale === "ka" ? "უარყოფილი" : "Rejected"}
+                {t("common.rejected")}
               </Badge>
             )}
           </div>
@@ -692,7 +683,7 @@ function ProposalCard({
                 size="sm"
                 leftIcon={<X className="w-4 h-4" />}
               >
-                {locale === "ka" ? "უარყოფა" : "Reject"}
+                {t("job.reject")}
               </Button>
               <Button variant="ghost" size="sm" asChild>
                 <Link href={`/professionals/${pro?.id}`}>
@@ -734,7 +725,7 @@ function ProposalCard({
               )}
               <Button variant="ghost" size="sm" asChild>
                 <Link href={`/professionals/${pro?.id}`}>
-                  {locale === "ka" ? "პროფილი" : "Profile"}
+                  {t("common.profile")}
                 </Link>
               </Button>
               {/* Revert to Pending Button */}

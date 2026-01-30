@@ -501,7 +501,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                         <div className="flex items-center gap-3 my-4">
                           <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
                           <Badge variant="secondary" size="xs">
-                            {formatChatDateSeparator(msg.createdAt, locale as Locale)}
+                            {formatChatDateSeparator(msg.createdAt, t, locale as Locale)}
                           </Badge>
                           <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
                         </div>

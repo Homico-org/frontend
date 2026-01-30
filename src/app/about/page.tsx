@@ -10,62 +10,46 @@ import { Mail, HelpCircle, Shield, Star, Users, Lightbulb } from 'lucide-react';
 // Note: For SEO, metadata is defined in layout.tsx for this route
 
 export default function AboutPage() {
-  const { t, locale } = useLanguage();
+  const { t } = useLanguage();
 
   const stats = [
     {
-      valueEn: '1000+',
-      valueKa: '1000+',
-      labelEn: 'Professionals',
-      labelKa: 'პროფესიონალი',
+      value: t('about.stats.professionalsValue'),
+      label: t('about.stats.professionalsLabel'),
     },
     {
-      valueEn: '50+',
-      valueKa: '50+',
-      labelEn: 'Categories',
-      labelKa: 'კატეგორია',
+      value: t('about.stats.categoriesValue'),
+      label: t('about.stats.categoriesLabel'),
     },
     {
-      valueEn: 'Tbilisi',
-      valueKa: 'თბილისი',
-      labelEn: 'Service Area',
-      labelKa: 'მომსახურების ზონა',
+      value: t('about.stats.serviceAreaValue'),
+      label: t('about.stats.serviceAreaLabel'),
     },
     {
-      valueEn: '24/7',
-      valueKa: '24/7',
-      labelEn: 'Support',
-      labelKa: 'მხარდაჭერა',
+      value: t('about.stats.supportValue'),
+      label: t('about.stats.supportLabel'),
     },
   ];
 
   const values = [
     {
-      titleEn: 'Trust & Transparency',
-      titleKa: 'ნდობა და გამჭვირვალობა',
-      descriptionEn: 'We verify professionals and enable honest reviews so you can make informed decisions.',
-      descriptionKa: 'ჩვენ ვამოწმებთ პროფესიონალებს და ვუზრუნველყოფთ გულწრფელ შეფასებებს ინფორმირებული გადაწყვეტილებებისთვის.',
+      title: t('about.values.trustTransparency.title'),
+      description: t('about.values.trustTransparency.description'),
       icon: <Shield className="w-5 h-5" />,
     },
     {
-      titleEn: 'Quality First',
-      titleKa: 'ხარისხი პირველ რიგში',
-      descriptionEn: 'We partner with skilled professionals who take pride in their craft and deliver excellence.',
-      descriptionKa: 'ჩვენ ვთანამშრომლობთ გამოცდილ პროფესიონალებთან, რომლებიც ამაყობენ თავიანთი ხელობით.',
+      title: t('about.values.qualityFirst.title'),
+      description: t('about.values.qualityFirst.description'),
       icon: <Star className="w-5 h-5" />,
     },
     {
-      titleEn: 'Community Focus',
-      titleKa: 'საზოგადოებაზე ორიენტირება',
-      descriptionEn: 'We support local professionals and help communities thrive by connecting people who need work done.',
-      descriptionKa: 'ჩვენ ვუჭერთ მხარს ადგილობრივ პროფესიონალებს და ვეხმარებით საზოგადოების განვითარებას.',
+      title: t('about.values.communityFocus.title'),
+      description: t('about.values.communityFocus.description'),
       icon: <Users className="w-5 h-5" />,
     },
     {
-      titleEn: 'Innovation',
-      titleKa: 'ინოვაცია',
-      descriptionEn: 'We continuously improve our platform to make finding and hiring professionals easier than ever.',
-      descriptionKa: 'ჩვენ მუდმივად ვაუმჯობესებთ პლატფორმას პროფესიონალების პოვნისა და დაქირავების გასამარტივებლად.',
+      title: t('about.values.innovation.title'),
+      description: t('about.values.innovation.description'),
       icon: <Lightbulb className="w-5 h-5" />,
     },
   ];
@@ -94,9 +78,7 @@ export default function AboutPage() {
               {t('about.connectingPeopleWithTheBest')}
             </h1>
             <p className="text-base sm:text-lg text-white/70 max-w-2xl mx-auto leading-relaxed">
-              {locale === 'ka'
-                ? 'Homico არის საქართველოს პირველი პლატფორმა, რომელიც აკავშირებს კლიენტებს ვერიფიცირებულ სახლის მომსახურების პროფესიონალებთან.'
-                : 'Homico is Georgia\'s premier platform connecting clients with verified home service professionals.'}
+              {t('about.heroBlurb')}
             </p>
           </div>
         </div>
@@ -109,8 +91,8 @@ export default function AboutPage() {
             {stats.map((stat, index) => (
               <StatCard
                 key={index}
-                value={locale === 'ka' ? stat.valueKa : stat.valueEn}
-                label={locale === 'ka' ? stat.labelKa : stat.labelEn}
+                value={stat.value}
+                label={stat.label}
               />
             ))}
           </div>
@@ -125,9 +107,7 @@ export default function AboutPage() {
               {t('about.ourMission')}
             </h2>
             <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed">
-              {locale === 'ka'
-                ? 'ჩვენი მიზანია გავამარტივოთ სანდო პროფესიონალების პოვნა და დაქირავება საქართველოში. ვქმნით პლატფორმას, სადაც ხარისხი, ნდობა და პროფესიონალიზმი პირველ ადგილზეა.'
-                : 'Our goal is to make finding and hiring trusted professionals in Georgia simple and reliable. We\'re building a platform where quality, trust, and professionalism come first.'}
+              {t('about.missionBlurb')}
             </p>
           </div>
 
@@ -162,8 +142,8 @@ export default function AboutPage() {
             {values.map((value, index) => (
               <FeatureCard
                 key={index}
-                title={locale === 'ka' ? value.titleKa : value.titleEn}
-                description={locale === 'ka' ? value.descriptionKa : value.descriptionEn}
+                title={value.title}
+                description={value.description}
                 icon={value.icon}
               />
             ))}
@@ -178,9 +158,7 @@ export default function AboutPage() {
             {t('about.getInTouch')}
           </h2>
           <p className="text-neutral-600 dark:text-neutral-400 mb-8">
-            {locale === 'ka'
-              ? 'გაქვთ კითხვები ან წინადადებები? სიამოვნებით მოგისმენთ.'
-              : 'Have questions or suggestions? We\'d love to hear from you.'}
+            {t('about.contactBlurb')}
           </p>
 
           <div className="inline-flex flex-col sm:flex-row items-center gap-4 sm:gap-6">

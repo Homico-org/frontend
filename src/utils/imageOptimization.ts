@@ -18,6 +18,8 @@ export interface ImageTransformOptions {
 export const IMAGE_PRESETS = {
   // Thumbnails for cards and lists - smaller for faster loading
   thumbnail: { width: 300, height: 225, quality: 'auto' as const, format: 'auto' as const, crop: 'fill' as const },
+  // Small thumbnail for lightbox strips
+  thumbnailSmall: { width: 96, height: 96, quality: 'auto' as const, format: 'auto' as const, crop: 'fill' as const },
   // Avatar images - small, face-focused
   avatar: { width: 80, height: 80, quality: 'auto' as const, format: 'auto' as const, crop: 'fill' as const, gravity: 'face' as const },
   avatarLarge: { width: 150, height: 150, quality: 'auto' as const, format: 'auto' as const, crop: 'fill' as const, gravity: 'face' as const },
@@ -25,6 +27,8 @@ export const IMAGE_PRESETS = {
   hero: { width: 1200, height: 630, quality: 'auto' as const, format: 'auto' as const, crop: 'fill' as const },
   // Full size optimized
   full: { quality: 'auto' as const, format: 'auto' as const },
+  // Lightbox - large view but optimized for web (max 1400px wide, good quality)
+  lightbox: { width: 1400, quality: 'auto' as const, format: 'auto' as const, crop: 'fit' as const },
   // Job card images - optimized for grid display (matches Cloudinary eager transform)
   jobCard: { width: 400, height: 250, quality: 'auto' as const, format: 'auto' as const, crop: 'fill' as const },
   // Job card small - for mobile or list view

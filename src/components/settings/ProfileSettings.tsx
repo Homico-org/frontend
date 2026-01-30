@@ -247,7 +247,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
         <div className="border-t border-neutral-200 dark:border-neutral-800 pt-5 sm:pt-6">
           <div className="grid gap-3 sm:gap-4">
             <FormGroup>
-              <Label locale={locale}>{t('common.fullName')}</Label>
+              <Label>{t('common.fullName')}</Label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
@@ -255,7 +255,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
             </FormGroup>
 
             <FormGroup>
-              <Label locale={locale === 'ka' ? 'ka' : 'en'}>{t('common.email')}</Label>
+              <Label>{t('common.email')}</Label>
               <div className="flex flex-col sm:flex-row gap-2">
                 <div className="flex-1 min-w-0">
                   <Input
@@ -282,7 +282,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
             </FormGroup>
 
             <FormGroup>
-              <Label locale={locale === 'ka' ? 'ka' : 'en'}>{t('common.phone')}</Label>
+              <Label>{t('common.phone')}</Label>
               <div className="flex flex-col sm:flex-row gap-2">
                 <div className="flex-1 min-w-0">
                   <Input
@@ -292,15 +292,13 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
                     placeholder={t("common.phone")}
                     rightIcon={formData.phone ? (
                       <Badge variant="success" size="xs" icon={<Check className="w-3 h-3" />}>
-                        {locale === 'ka' ? 'დადასტურებული' : 'Verified'}
+                        {t('common.verified')}
                       </Badge>
                     ) : undefined}
                   />
                 </div>
                 <Button variant="outline" onClick={onOpenPhoneModal} className="w-full sm:w-auto">
-                  {formData.phone
-                    ? (locale === 'ka' ? 'შეცვლა' : 'Change')
-                    : (locale === 'ka' ? 'დამატება' : 'Add')}
+                  {formData.phone ? t('settings.change') : t('common.add')}
                 </Button>
               </div>
               <p className="mt-1 text-xs text-neutral-400">
@@ -309,7 +307,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
             </FormGroup>
 
             <FormGroup>
-              <Label locale={locale === 'ka' ? 'ka' : 'en'}>{t("settings.city")}</Label>
+              <Label>{t("settings.city")}</Label>
               <Select
                 value={formData.city}
                 onChange={(value: string) => setFormData(prev => ({ ...prev, city: value }))}

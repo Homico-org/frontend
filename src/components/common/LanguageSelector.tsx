@@ -15,7 +15,7 @@ const LANGUAGES = [
 ];
 
 export default function LanguageSelector({ variant = 'default' }: LanguageSelectorProps) {
-  const { locale, setLocale } = useLanguage();
+  const { locale, setLocale, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useClickOutside<HTMLDivElement>(() => setIsOpen(false), isOpen);
 
@@ -33,7 +33,7 @@ export default function LanguageSelector({ variant = 'default' }: LanguageSelect
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="flex items-center justify-center h-9 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all"
-          title={locale === 'ka' ? 'ენის შეცვლა' : 'Change language'}
+          title={t('common.changeLanguage')}
         >
           <span className="text-[13px] font-semibold text-neutral-700 dark:text-neutral-200">{currentLang.short}</span>
         </button>

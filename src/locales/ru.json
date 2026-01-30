@@ -57,6 +57,8 @@
     "price": "Цена",
     "budget": "Бюджет",
     "negotiable": "По договорённости",
+    "perSqmShort": "/м²",
+    "perHourShort": "/ч",
     "total": "Всего",
     "all": "Все",
     "none": "Нет",
@@ -75,6 +77,8 @@
     "home": "Главная",
     "help": "Помощь",
     "settings": "Настройки",
+    "unknown": "Неизвестно",
+    "changeLanguage": "Сменить язык",
     "profile": "Профиль",
     "account": "Аккаунт",
     "notifications": "Уведомления",
@@ -102,6 +106,12 @@
     "before": "До",
     "after": "После",
     "beforeAfter": "До/После",
+    "changes": "Изменения",
+    "field": "Поле",
+    "rawDetails": "Raw детали",
+    "last7DaysShort": "7д",
+    "last30DaysShort": "30д",
+    "pageOf": "Страница {page} из {total}",
     "items": "Элементы",
     "reviews": "Отзывы",
     "rating": "Рейтинг",
@@ -242,6 +252,11 @@
     "yearsExperience": "Лет опыта",
     "yearsOfExperience": "Лет опыта"
   },
+  "nav": {
+    "portfolios": "Портфолио",
+    "tools": "Инструменты",
+    "jobs": "Работы"
+  },
   "validation": {
     "required": "Это поле обязательно",
     "invalidEmail": "Неверный формат email",
@@ -287,6 +302,15 @@
     "perMonth": "/мес",
     "perYear": "/год",
     "perSqm": "/м²"
+  },
+  "dates": {
+    "today": "Сегодня",
+    "yesterday": "Вчера",
+    "daysAgo": "{count} дней назад",
+    "weeksAgo": "{count} недель назад",
+    "monthsAgo": "{count} месяцев назад",
+    "weekAgo": "{count} неделю назад",
+    "monthAgo": "{count} месяц назад"
   },
   "auth": {
     "login": "Войти",
@@ -554,6 +578,7 @@
     "jobAddress": "Адрес работы",
     "jobDeletedSuccessfully": "Работа успешно удалена",
     "jobRenewedFor30Days": "Работа продлена на 30 дней",
+    "searchMyJobsPlaceholder": "Поиск по названию, категории или локации...",
     "land": "Земля",
     "locationBudget": "Местоположение и бюджет",
     "manageYourActiveListingsAnd": "Управляйте активными объявлениями и...",
@@ -619,6 +644,24 @@
     "yourRating": "Ваша оценка",
     "youreHired": "Вы наняты"
   },
+  "jobComments": {
+    "title": "Заинтересованные специалисты",
+    "subtitle": "{total} специалист(ов)",
+    "subtitleWithInteresting": "{total} специалист(ов) • {interesting} интересн.",
+    "expressInterestPlaceholder": "Выразите интерес к этой работе...",
+    "replyPlaceholder": "Напишите ответ...",
+    "reply": "Ответить",
+    "showProfileLink": "Показывать ссылку на мой профиль",
+    "expressInterest": "Выразить интерес",
+    "confirmDelete": "Вы уверены, что хотите удалить этот комментарий?",
+    "interesting": "Интересные",
+    "verificationRequiredToExpressInterest": "Для выражения интереса требуется верификация профиля",
+    "completeVerificationCta": "Пройти верификацию →",
+    "alreadyExpressedInterest": "Вы уже выразили интерес. Вы можете отредактировать ваш комментарий ниже.",
+    "noInterestingYet": "Пока нет интересных специалистов",
+    "noInterestYet": "Пока никто не выразил интерес",
+    "beFirstToReachOut": "Будьте первым, кто свяжется с клиентом"
+  },
   "jobDetail": {
     "propertyType": {
       "apartment": "Квартира",
@@ -658,6 +701,9 @@
     "stageUpdated": "Этап обновлён",
     "requestSent": "Запрос отправлен",
     "proposalSubmitted": "Предложение успешно отправлено",
+    "verificationRequiredToSubmitProposals": "Для отправки предложений требуется верификация профиля",
+    "completeVerificationCta": "Пройти верификацию →",
+    "moreEvents": "+ {count} ещё событий",
     "failedToUpdateStage": "Не удалось обновить этап",
     "failedToSendRequest": "Не удалось отправить запрос",
     "projectCompleted": "Проект завершён",
@@ -713,6 +759,33 @@
     "youHiredTheProfessional": "Вы наняли специалиста",
     "yourFeedbackHelpsOtherClients": "Ваш отзыв помогает другим клиентам",
     "youveBeenHiredForThis": "Вас наняли на эту"
+  },
+  "postJob": {
+    "steps": {
+      "category": "Категория",
+      "location": "Местоположение и бюджет",
+      "details": "Детали",
+      "review": "Обзор"
+    },
+    "locationBudgetSubtitle": "Укажите адрес проекта и бюджет",
+    "photosRequirementHelp": "Требуется минимум 1 фото. Фото помогают специалистам лучше понять ваш проект.",
+    "addAtLeastOnePhotoToContinue": "Пожалуйста, добавьте минимум 1 фото, чтобы продолжить",
+    "photosAddedSuccess": "Добавлено фото: {count} — специалистам будет проще понять ваш проект!",
+    "hints": {
+      "architecture": "Для архитектурных проектов кадастровый код помогает специалистам понять регистрацию участка и требования по зонированию.",
+      "design": "Укажите общую площадь и количество комнат, чтобы дизайнеры могли дать более точную оценку.",
+      "craftsmen": "Укажите площадь работ для точной оценки. Для электрики или сантехники также можно указать количество точек.",
+      "homecare": "Укажите площадь обслуживания для точной оценки уборки или обслуживания."
+    },
+    "fields": {
+      "electricalPoints": "Электрические точки",
+      "plumbingPoints": "Сантехнические точки",
+      "unitsOrPoints": "Единицы/точки",
+      "lightPoints": "Точки освещения"
+    },
+    "units": {
+      "pointsShort": "тч"
+    }
   },
   "proposal": {
     "title": "Предложение",
@@ -773,6 +846,12 @@
     "startingPrice": "Начальная цена",
     "perSqm": "за м²",
     "showPhone": "Показать телефон",
+    "zoomAvatar": "Увеличить аватар",
+    "servicesAndExperience": "Услуги и опыт",
+    "pendingApprovalTitle": "Ваш профиль на рассмотрении",
+    "pendingApprovalDescription": "Администратор проверяет ваш профиль. После одобрения вы будете видны клиентам.",
+    "needsUpdatesTitle": "Профиль требует изменений",
+    "editProfile": "Редактировать профиль",
     "profileNotFound": "Профиль не найден",
     "addProject": "Добавить проект",
     "editProject": "Редактировать проект",
@@ -1208,6 +1287,9 @@
     "theme": "Тема",
     "saveChanges": "Сохранить изменения",
     "deleteAccount": "Удалить аккаунт",
+    "deleteConfirmWord": "DELETE",
+    "typeWordToConfirm": "Введите \"{word}\", чтобы подтвердить",
+    "clientsWontSeeYourProfile": "Клиенты не увидят ваш профиль",
     "deleteAccountWarning": "Это действие необратимо",
     "deactivateAccount": "Деактивировать аккаунт",
     "changePassword": "Изменить пароль",
@@ -1980,6 +2062,9 @@
     "reports": "Отчёты",
     "support": "Поддержка",
     "activityLogs": "Журнал активности",
+    "activityLogsSearchPlaceholder": "Поиск: email / name / userId / targetId",
+    "activityLogsNoBeforeAfterChanges": "Этот лог не содержит изменений До/После (пока не записано).",
+    "failedToLoadActivityLogs": "Не удалось загрузить журнал активности",
     "settings": "Настройки",
     "totalUsers": "Всего пользователей",
     "totalJobs": "Всего работ",
@@ -2022,6 +2107,7 @@
     "activityOverview": "Обзор активности",
     "admins": "Администраторы",
     "approve": "Одобрить",
+    "approvals": "Одобрение",
     "clients": "Клиенты",
     "companies": "Компании",
     "confirmReject": "Подтвердить отклонение",
@@ -2067,6 +2153,26 @@
     "pendingReview": "Ожидает отзыва",
     "posted": "Опубликовано",
     "professionals": "Специалисты",
+    "pendingPros": {
+      "title": "Одобрение специалистов",
+      "subtitle": "Просматривайте и одобряйте новых специалистов",
+      "approved": "Одобрен",
+      "professionalDetails": "Детали специалиста",
+      "bio": "О себе",
+      "pricing": "Стоимость",
+      "services": "Услуги",
+      "categories": "Категории",
+      "portfolio": "Портфолио",
+      "rejectProfessional": "Отклонить специалиста",
+      "rejectReasonHelp": "Пожалуйста, укажите причину отклонения. Она будет отправлена специалисту.",
+      "failedToLoadData": "Не удалось загрузить данные",
+      "failedToApprove": "Не удалось одобрить",
+      "approvedToast": "Одобрено",
+      "rejectedToast": "Отклонено",
+      "failedToReject": "Не удалось отклонить",
+      "noPendingProfessionals": "Нет специалистов на рассмотрении",
+      "noProfessionalsFound": "Специалисты не найдены"
+    },
     "proposals": "Предложения",
     "recentJobs": "Недавние работы",
     "recentUsers": "Недавние пользователи",
@@ -2114,7 +2220,28 @@
     "viewClient": "Просмотреть клиента",
     "viewDetails": "Подробнее",
     "viewJob": "Просмотр работы",
-    "week": "Неделя"
+    "week": "Неделя",
+    "approvals": "Одобрения",
+    "unknown": "Неизвестно",
+    "openTooltip": "Открыть",
+    "verificationPanel": "Панель верификации администратора",
+    "currentStatus": "Текущий статус",
+    "notes": "Заметки",
+    "updateStatus": "Обновить статус",
+    "updateVerificationStatus": "Обновить статус верификации",
+    "verificationStatus": "Статус верификации",
+    "verificationNotes": "Заметки (видимые профессионалу)",
+    "notesPlaceholder": "Добавить заметку для профессионала...",
+    "notifyUserSms": "Уведомить пользователя по SMS",
+    "saveChanges": "Сохранить изменения",
+    "selectStatus": "Выберите статус",
+    "statusPending": "Ожидает",
+    "statusSubmitted": "Отправлено",
+    "statusVerified": "Подтверждено",
+    "statusRejected": "Отклонено",
+    "verificationUpdated": "Статус верификации обновлён",
+    "verificationUpdateFailed": "Не удалось обновить верификацию",
+    "noteFromAdmin": "Заметка от администратора"
   },
   "card": {
     "negotiable": "По договорённости",
@@ -2258,7 +2385,9 @@
     "constructionCompany": "Строительная компания",
     "constructionService": "Строительные услуги",
     "contactUs": "Свяжитесь с нами",
+    "foundedYear": "Осн. {year}",
     "employees": "Сотрудники",
+    "viewAllTeam": "Показать все ({count})",
     "experiencedCompany": "Опытная компания",
     "helloImInterestedInYour": "Здравствуйте, я заинтересован в вашей",
     "hour": "Час",
@@ -2271,7 +2400,11 @@
     "sorryThisCompanyDoesntExist": "К сожалению, эта компания не существует",
     "trustSafety": "Доверие и безопасность",
     "trustedExperienced": "Надёжный и опытный",
-    "verifiedCompany": "Подтверждённая компания"
+    "verifiedCompany": "Подтверждённая компания",
+    "reviewsCount": "{count} отзывов",
+    "readAllReviews": "Прочитать все {count} отзывов",
+    "topRatedSummary": "{rating} ★ от {count} отзывов",
+    "completedProjectsPlus": "{count}+ завершённых проектов"
   },
   "categories": {
     "renovation": "Ремонт",
@@ -2297,14 +2430,45 @@
   "about": {
     "aboutUs": "О нас",
     "connectingPeopleWithTheBest": "Связываем людей с лучшими",
+    "heroBlurb": "Homico — ведущая платформа в Грузии, которая соединяет клиентов с верифицированными специалистами по домашним услугам.",
     "getInTouch": "Связаться",
+    "contactBlurb": "Есть вопросы или предложения? Будем рады услышать вас.",
     "helpCenter": "Центр помощи",
     "homicoWasBornFromA": "Homico был создан из...",
     "howItWorks": "Как это работает",
     "ourMission": "Наша миссия",
+    "missionBlurb": "Наша цель — сделать поиск и найм надёжных специалистов в Грузии простым и удобным. Мы создаём платформу, где качество, доверие и профессионализм — на первом месте.",
     "ourStory": "Наша история",
     "ourValues": "Наши ценности",
     "privacyPolicy": "Политика конфиденциальности",
+    "stats": {
+      "professionalsValue": "1000+",
+      "professionalsLabel": "Специалисты",
+      "categoriesValue": "50+",
+      "categoriesLabel": "Категории",
+      "serviceAreaValue": "Тбилиси",
+      "serviceAreaLabel": "Зона обслуживания",
+      "supportValue": "24/7",
+      "supportLabel": "Поддержка"
+    },
+    "values": {
+      "trustTransparency": {
+        "title": "Доверие и прозрачность",
+        "description": "Мы проверяем специалистов и поддерживаем честные отзывы, чтобы вы могли принимать взвешенные решения."
+      },
+      "qualityFirst": {
+        "title": "Качество прежде всего",
+        "description": "Мы сотрудничаем с квалифицированными специалистами, которые гордятся своим делом и обеспечивают отличный результат."
+      },
+      "communityFocus": {
+        "title": "Фокус на сообщество",
+        "description": "Мы поддерживаем местных специалистов и помогаем сообществам развиваться, соединяя людей, которым нужна работа, с теми, кто её выполняет."
+      },
+      "innovation": {
+        "title": "Инновации",
+        "description": "Мы постоянно улучшаем платформу, чтобы поиск и найм специалистов были проще, чем когда-либо."
+      }
+    },
     "tbilisiGeorgia": "Тбилиси, Грузия",
     "termsOfService": "Условия использования",
     "todayHomicoConnectsThousandsOf": "Сегодня Homico соединяет тысячи...",
@@ -2352,6 +2516,33 @@
   },
   "tools": {
     "back": "Инструменты",
+    "home": {
+      "featuredBadge": "Популярный",
+      "analyzer": {
+        "title": "Анализ сметы",
+        "description": "Загрузите смету подрядчика и получите детальный AI-анализ. Узнайте, что справедливая цена, а что нет.",
+        "cta": "Загрузить смету",
+        "tag": "AI анализ"
+      },
+      "prices": {
+        "title": "База цен",
+        "description": "Поиск 100+ рыночных цен на ремонтные работы в Тбилиси. Актуальные цены на 2024 год.",
+        "cta": "Смотреть цены",
+        "tag": "100+ позиций"
+      },
+      "calculator": {
+        "title": "Калькулятор ремонта",
+        "description": "Рассчитайте примерный бюджет по параметрам квартиры. Получите детальную оценку за минуты.",
+        "cta": "Рассчитать",
+        "tag": "Мгновенно"
+      },
+      "compare": {
+        "title": "Сравнение предложений",
+        "description": "Сравните до 5 предложений подрядчиков и найдите лучшее. Смотрите детальное сравнение.",
+        "cta": "Сравнить",
+        "tag": "До 5"
+      }
+    },
     "prices": {
       "title": "База цен",
       "subtitle": "Рыночные цены на ремонтные работы в Тбилиси",

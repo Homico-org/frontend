@@ -178,8 +178,16 @@ export default function ProfessionalDetailClient({
   const [editedBasePrice, setEditedBasePrice] = useState("");
   const [editedMaxPrice, setEditedMaxPrice] = useState("");
 
+  // Admin verification panel state
+  const [showAdminVerificationModal, setShowAdminVerificationModal] = useState(false);
+  const [adminVerificationStatus, setAdminVerificationStatus] = useState<string>("");
+  const [adminVerificationNotes, setAdminVerificationNotes] = useState("");
+  const [adminNotifyUser, setAdminNotifyUser] = useState(true);
+  const [isAdminSaving, setIsAdminSaving] = useState(false);
+
   // Check if current user is viewing their own profile
   const isOwner = user?.id === profile?.id;
+  const isAdmin = user?.role === "admin";
 
   const fetchProfileAbortRef = useRef<AbortController | null>(null);
   const profileFetchInFlightRef = useRef<string | null>(null);
@@ -508,9 +516,7 @@ export default function ProfessionalDetailClient({
 
   const getShareText = () => {
     if (!profile) return "";
-    return locale === "ka"
-      ? `${profile.name} - ${profile.title} | Homico`
-      : `${profile.name} - ${profile.title} | Homico`;
+    return `${profile.name} - ${profile.title} | Homico`;
   };
 
   const handleShareFacebook = () => {
@@ -682,6 +688,41 @@ export default function ProfessionalDetailClient({
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // Admin verification update handler
+  const handleAdminVerificationUpdate = async () => {
+    if (!isAdmin || !profile) return;
+    setIsAdminSaving(true);
+    try {
+      const response = await api.patch(`/admin/pros/${profile.id}/verification`, {
+        status: adminVerificationStatus,
+        notes: adminVerificationNotes || undefined,
+        notifyUser: adminNotifyUser,
+      });
+
+      const updated = response?.data as ProProfile | undefined;
+      if (updated) {
+        setProfile((prev) => {
+          if (!prev) return updated;
+          return { ...prev, ...updated };
+        });
+      }
+
+      setShowAdminVerificationModal(false);
+      toast.success(t("admin.verificationUpdated") || "Verification status updated");
+    } catch (err) {
+      toast.error(t("admin.verificationUpdateFailed") || "Failed to update verification");
+    } finally {
+      setIsAdminSaving(false);
+    }
+  };
+
+  const openAdminVerificationModal = () => {
+    setAdminVerificationStatus(profile?.verificationStatus || "pending");
+    setAdminVerificationNotes(profile?.verificationNotes || "");
+    setAdminNotifyUser(true);
+    setShowAdminVerificationModal(true);
   };
 
   const handleSaveAbout = async (data: { description: string }) => {
@@ -863,7 +904,11 @@ export default function ProfessionalDetailClient({
   const getCategoryLabel = (categoryKey: string) => {
     if (!categoryKey) return "";
     const category = CATEGORIES.find((cat) => cat.key === categoryKey);
-    if (category) return locale === "ka" ? category.nameKa : category.name;
+    if (category)
+      return (
+        ({ ka: category.nameKa, en: category.name, ru: category.name }[locale] ??
+          category.name)
+      );
     return categoryKey
       .split("-")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -884,13 +929,14 @@ export default function ProfessionalDetailClient({
 
   // Experience level labels - matches StepSelectServices options
   const getExperienceLabel = (experience: string) => {
-    const labels: Record<string, { en: string; ka: string }> = {
-      "1-2": { en: "1-2y", ka: "1-2წ" },
-      "3-5": { en: "3-5y", ka: "3-5წ" },
-      "5-10": { en: "5-10y", ka: "5-10წ" },
-      "10+": { en: "10+y", ka: "10+წ" },
+    const year = t("timeUnits.year");
+    const labels: Record<string, string> = {
+      "1-2": `1-2${year}`,
+      "3-5": `3-5${year}`,
+      "5-10": `5-10${year}`,
+      "10+": `10+${year}`,
     };
-    return labels[experience]?.[locale === "ka" ? "ka" : "en"] || experience;
+    return labels[experience] || experience;
   };
 
   // Get service with experience from selectedServices array
@@ -911,13 +957,23 @@ export default function ProfessionalDetailClient({
         (sub) => sub.key === subcategoryKey
       );
       if (subcategory)
-        return locale === "ka" ? subcategory.nameKa : subcategory.name;
+        return (
+          ({
+            ka: subcategory.nameKa,
+            en: subcategory.name,
+            ru: subcategory.name,
+          }[locale] ?? subcategory.name)
+        );
       for (const sub of category.subcategories) {
         if (sub.children) {
           const subSub = sub.children.find(
             (child) => child.key === subcategoryKey
           );
-          if (subSub) return locale === "ka" ? subSub.nameKa : subSub.name;
+          if (subSub)
+            return (
+              ({ ka: subSub.nameKa, en: subSub.name, ru: subSub.name }[locale] ??
+                subSub.name)
+            );
         }
       }
     }
@@ -1104,13 +1160,13 @@ export default function ProfessionalDetailClient({
 
   const translateCity = (city: string) => {
     const lowerCity = city.toLowerCase().trim();
-    if (locale === "ka") {
-      if (cityTranslationsKa[lowerCity]) return cityTranslationsKa[lowerCity];
-    } else {
-      // For English/Russian, translate Georgian text to English
-      if (cityTranslationsEn[city]) return cityTranslationsEn[city];
-      if (cityTranslationsEn[lowerCity]) return cityTranslationsEn[lowerCity];
-    }
+    const mapByLocale: Record<typeof locale, Record<string, string>> = {
+      ka: cityTranslationsKa,
+      en: cityTranslationsEn,
+      ru: cityTranslationsEn,
+    };
+    const map = mapByLocale[locale] || cityTranslationsEn;
+    return map[city] || map[lowerCity] || city;
     return city;
   };
 
@@ -1232,7 +1288,7 @@ export default function ProfessionalDetailClient({
       <HeaderSpacer />
 
       {/* Pending Approval Banner - Only visible to the pro owner */}
-      {isOwner && profile && profile.isAdminApproved === false && (
+      {isOwner && profile && profile.verificationStatus !== 'verified' && (
         <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
             <div className="p-2 rounded-full bg-amber-100 dark:bg-amber-800/30">
@@ -1252,15 +1308,16 @@ export default function ProfessionalDetailClient({
             </div>
             <div className="flex-1">
               <p className="font-medium text-amber-800 dark:text-amber-200">
-                {locale === "ka"
-                  ? "თქვენი პროფილი განხილვის პროცესშია"
-                  : "Your profile is pending approval"}
+                {t("professional.pendingApprovalTitle")}
               </p>
               <p className="text-sm text-amber-700 dark:text-amber-300">
-                {locale === "ka"
-                  ? "ადმინისტრატორი განიხილავს თქვენს პროფილს. დამტკიცების შემდეგ გახდებით ხილული კლიენტებისთვის."
-                  : "An administrator is reviewing your profile. Once approved, you will be visible to clients."}
+                {t("professional.pendingApprovalDescription")}
               </p>
+              {profile.verificationNotes && (
+                <p className="text-sm mt-2 p-2 bg-amber-100 dark:bg-amber-800/40 rounded text-amber-800 dark:text-amber-200">
+                  <span className="font-medium">{t("admin.noteFromAdmin") || "Note from admin"}:</span> {profile.verificationNotes}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -1275,9 +1332,7 @@ export default function ProfessionalDetailClient({
             </div>
             <div className="flex-1">
               <p className="font-medium text-red-800 dark:text-red-200">
-                {locale === "ka"
-                  ? "თქვენი პროფილი საჭიროებს გადახედვას"
-                  : "Your profile needs updates"}
+                {t("professional.needsUpdatesTitle")}
               </p>
               <p className="text-sm text-red-700 dark:text-red-300">
                 {profile.adminRejectionReason}
@@ -1288,7 +1343,36 @@ export default function ProfessionalDetailClient({
               onClick={() => router.push("/pro/profile-setup")}
               className="bg-red-600 hover:bg-red-700 text-white"
             >
-              {locale === "ka" ? "რედაქტირება" : "Edit Profile"}
+              {t("professional.editProfile")}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Admin Verification Panel - Only visible to admins */}
+      {isAdmin && profile && (
+        <div className="bg-indigo-50 dark:bg-indigo-900/20 border-b border-indigo-200 dark:border-indigo-800">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
+            <div className="p-2 rounded-full bg-indigo-100 dark:bg-indigo-800/30">
+              <BadgeCheck className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-indigo-800 dark:text-indigo-200">
+                {t("admin.verificationPanel") || "Admin Verification Panel"}
+              </p>
+              <p className="text-sm text-indigo-700 dark:text-indigo-300">
+                {t("admin.currentStatus") || "Current Status"}: <span className="font-semibold capitalize">{profile.verificationStatus || "pending"}</span>
+                {profile.verificationNotes && (
+                  <span className="ml-2">| {t("admin.notes") || "Notes"}: {profile.verificationNotes}</span>
+                )}
+              </p>
+            </div>
+            <Button
+              size="sm"
+              onClick={openAdminVerificationModal}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+            >
+              {t("admin.updateStatus") || "Update Status"}
             </Button>
           </div>
         </div>
@@ -1381,7 +1465,7 @@ export default function ProfessionalDetailClient({
                     type="button"
                     onClick={() => setShowAvatarZoom(true)}
                     className="cursor-zoom-in group"
-                    aria-label={locale === "ka" ? "ავატარის გადიდება" : "Zoom avatar"}
+                    aria-label={t("professional.zoomAvatar")}
                   >
                     <Image
                       src={avatarSrc}
@@ -1610,9 +1694,7 @@ export default function ProfessionalDetailClient({
                   (profile.subcategories?.length ?? 0) > 0) && (
                   <div className="sm:hidden mt-3">
                     <p className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold mb-2">
-                      {locale === "ka"
-                        ? "სერვისები და გამოცდილება"
-                        : "Services & Experience"}
+                      {t("professional.servicesAndExperience")}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {profile.selectedServices && profile.selectedServices.length > 0 ? (
@@ -1623,7 +1705,7 @@ export default function ProfessionalDetailClient({
                               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs font-medium text-neutral-800 dark:text-neutral-200 border border-neutral-200/60 dark:border-neutral-700"
                             >
                               <span className="truncate max-w-[160px]">
-                                {locale === "ka" ? service.nameKa : service.name}
+                                {({ ka: service.nameKa, en: service.name, ru: service.name }[locale] ?? service.name)}
                               </span>
                               <span className="text-[10px] font-semibold text-[#C4735B] bg-[#C4735B]/10 px-1.5 py-0.5 rounded">
                                 {getExperienceLabel(service.experience)}
@@ -1633,7 +1715,7 @@ export default function ProfessionalDetailClient({
                           {profile.selectedServices.length > 3 && (
                             <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs font-medium text-neutral-600 dark:text-neutral-300 border border-neutral-200/60 dark:border-neutral-700">
                               +{profile.selectedServices.length - 3}{" "}
-                              {locale === "ka" ? "სხვა" : "more"}
+                              {t("common.more")}
                             </span>
                           )}
                         </>
@@ -1660,7 +1742,7 @@ export default function ProfessionalDetailClient({
                           {(profile.subcategories?.length || 0) > 3 && (
                             <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs font-medium text-neutral-600 dark:text-neutral-300 border border-neutral-200/60 dark:border-neutral-700">
                               +{(profile.subcategories?.length || 0) - 3}{" "}
-                              {locale === "ka" ? "სხვა" : "more"}
+                              {t("common.more")}
                             </span>
                           )}
                         </>
@@ -1674,9 +1756,7 @@ export default function ProfessionalDetailClient({
                   (profile.subcategories?.length ?? 0) > 0) && (
                   <div className="hidden sm:block mt-3 p-3 rounded-xl bg-neutral-50/80 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
                     <p className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold mb-2">
-                      {locale === "ka"
-                        ? "სერვისები და გამოცდილება"
-                        : "Services & Experience"}
+                      {t("professional.servicesAndExperience")}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {profile.selectedServices &&
@@ -1690,9 +1770,7 @@ export default function ProfessionalDetailClient({
                                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 shadow-sm"
                               >
                                 <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200">
-                                  {locale === "ka"
-                                    ? service.nameKa
-                                    : service.name}
+                                  {({ ka: service.nameKa, en: service.name, ru: service.name }[locale] ?? service.name)}
                                 </span>
                                 <span className="text-[10px] font-semibold text-[#C4735B] bg-[#C4735B]/10 px-1.5 py-0.5 rounded">
                                   {getExperienceLabel(service.experience)}
@@ -1702,7 +1780,7 @@ export default function ProfessionalDetailClient({
                           {profile.selectedServices.length > 6 && (
                             <span className="flex items-center px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-700 text-xs font-medium text-neutral-500">
                               +{profile.selectedServices.length - 6}{" "}
-                              {locale === "ka" ? "სხვა" : "more"}
+                              {t("common.more")}
                             </span>
                           )}
                         </>
@@ -1731,7 +1809,7 @@ export default function ProfessionalDetailClient({
                           {(profile.subcategories?.length || 0) > 6 && (
                             <span className="flex items-center px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-700 text-xs font-medium text-neutral-500">
                               +{(profile.subcategories?.length || 0) - 6}{" "}
-                              {locale === "ka" ? "სხვა" : "more"}
+                              {t("common.more")}
                             </span>
                           )}
                         </>
@@ -1959,14 +2037,14 @@ export default function ProfessionalDetailClient({
                     setProfile((prev) =>
                       prev ? { ...prev, customServices } : prev
                     );
-                    toast.success(locale === "ka" ? "შენახულია" : "Saved");
+                    toast.success(t("common.saved"));
                   }}
                   onSaveSocialLinks={async (socialLinks) => {
                     await api.patch("/users/me/pro-profile", socialLinks);
                     setProfile((prev) =>
                       prev ? { ...prev, ...socialLinks } : prev
                     );
-                    toast.success(locale === "ka" ? "შენახულია" : "Saved");
+                    toast.success(t("common.saved"));
                   }}
                 />
               </div>
@@ -2190,8 +2268,10 @@ export default function ProfessionalDetailClient({
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={storage.getFileUrl(currentItem)}
+                    src={storage.getOptimizedImageUrl(currentItem, 'lightbox')}
                     alt=""
+                    loading="eager"
+                    fetchPriority="high"
                     className="max-w-full max-h-[70vh] object-contain rounded-lg"
                   />
                 )}
@@ -2218,8 +2298,9 @@ export default function ProfessionalDetailClient({
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={storage.getFileUrl(img)}
+                          src={storage.getOptimizedImageUrl(img, 'thumbnailSmall')}
                           alt=""
+                          loading="lazy"
                           className="w-full h-full object-cover"
                         />
                       </button>
@@ -2368,6 +2449,77 @@ export default function ProfessionalDetailClient({
         variant="danger"
         isLoading={isSaving}
       />
+
+      {/* ========== ADMIN VERIFICATION MODAL ========== */}
+      <Modal
+        isOpen={showAdminVerificationModal}
+        onClose={() => setShowAdminVerificationModal(false)}
+      >
+        <div className="space-y-4 p-6">
+          <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-4">
+            {t("admin.updateVerificationStatus") || "Update Verification Status"}
+          </h2>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+              {t("admin.verificationStatus") || "Verification Status"}
+            </label>
+            <Select
+              value={adminVerificationStatus}
+              onChange={(value: string) => setAdminVerificationStatus(value)}
+              options={[
+                { value: "pending", label: t("admin.statusPending") || "Pending" },
+                { value: "submitted", label: t("admin.statusSubmitted") || "Submitted" },
+                { value: "verified", label: t("admin.statusVerified") || "Verified" },
+                { value: "rejected", label: t("admin.statusRejected") || "Rejected" },
+              ]}
+              placeholder={t("admin.selectStatus") || "Select status"}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+              {t("admin.verificationNotes") || "Notes (visible to professional)"}
+            </label>
+            <textarea
+              value={adminVerificationNotes}
+              onChange={(e) => setAdminVerificationNotes(e.target.value)}
+              placeholder={t("admin.notesPlaceholder") || "Add notes for the professional..."}
+              className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white resize-none"
+              rows={3}
+            />
+          </div>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={adminNotifyUser}
+              onChange={(e) => setAdminNotifyUser(e.target.checked)}
+              className="w-4 h-4 rounded border-neutral-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            <span className="text-sm text-neutral-700 dark:text-neutral-300">
+              {t("admin.notifyUserSms") || "Notify user via SMS"}
+            </span>
+          </label>
+
+          <div className="flex gap-3 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowAdminVerificationModal(false)}
+              className="flex-1"
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button
+              onClick={handleAdminVerificationUpdate}
+              loading={isAdminSaving}
+              disabled={!adminVerificationStatus}
+              className="flex-1 bg-indigo-600 hover:bg-indigo-700"
+            >
+              {t("admin.saveChanges") || "Save Changes"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
@@ -2528,7 +2680,7 @@ function ProjectFormModal({
       }
     } catch {
       toast.error(
-        locale === "ka" ? "შეცდომა" : "Error",
+        t("common.error"),
         t("common.uploadFailed")
       );
     } finally {
@@ -2550,7 +2702,7 @@ function ProjectFormModal({
       for (const file of Array.from(files)) {
         const error = validateFile(file, "video");
         if (error) {
-          toast.error(locale === "ka" ? "შეცდომა" : "Error", error);
+          toast.error(t("common.error"), error);
           continue;
         }
         const url = await uploadFile(file);
@@ -2561,8 +2713,8 @@ function ProjectFormModal({
       }
     } catch {
       toast.error(
-        locale === "ka" ? "შეცდომა" : "Error",
-        locale === "ka" ? "ატვირთვა ვერ მოხერხდა" : "Upload failed"
+        t("common.error"),
+        t("common.uploadFailed")
       );
     } finally {
       setIsUploading(false);
@@ -2577,7 +2729,7 @@ function ProjectFormModal({
 
     const error = validateFile(file, "image");
     if (error) {
-      toast.error(locale === "ka" ? "შეცდომა" : "Error", error);
+      toast.error(t("common.error"), error);
       return;
     }
 
@@ -2590,8 +2742,8 @@ function ProjectFormModal({
       }
     } catch {
       toast.error(
-        locale === "ka" ? "შეცდომა" : "Error",
-        locale === "ka" ? "ატვირთვა ვერ მოხერხდა" : "Upload failed"
+        t("common.error"),
+        t("common.uploadFailed")
       );
     } finally {
       setIsUploading(false);
@@ -2606,7 +2758,7 @@ function ProjectFormModal({
 
     const error = validateFile(file, "image");
     if (error) {
-      toast.error(locale === "ka" ? "შეცდომა" : "Error", error);
+      toast.error(t("common.error"), error);
       return;
     }
 
@@ -2623,8 +2775,8 @@ function ProjectFormModal({
       }
     } catch {
       toast.error(
-        locale === "ka" ? "შეცდომა" : "Error",
-        locale === "ka" ? "ატვირთვა ვერ მოხერხდა" : "Upload failed"
+        t("common.error"),
+        t("common.uploadFailed")
       );
     } finally {
       setIsUploading(false);
@@ -2643,7 +2795,7 @@ function ProjectFormModal({
   const handleSubmit = () => {
     if (!title.trim()) {
       toast.error(
-        locale === "ka" ? "შეცდომა" : "Error",
+        t("common.error"),
         t("professional.titleIsRequired")
       );
       return;
@@ -2654,7 +2806,7 @@ function ProjectFormModal({
       beforeAfterPairs.length === 0
     ) {
       toast.error(
-        locale === "ka" ? "შეცდომა" : "Error",
+        t("common.error"),
         t("professional.atLeastOneMediaItem")
       );
       return;
@@ -2977,7 +3129,7 @@ function ProjectFormModal({
                   <span className="w-1 h-1 rounded-full bg-neutral-300" />
                   MP4, MOV, WebM
                   <span className="w-1 h-1 rounded-full bg-neutral-300" />
-                  {locale === "ka" ? "მაქს" : "Max"} 100MB
+                  {t("common.max")} 100MB
                 </p>
                 <input
                   ref={videoInputRef}
@@ -3047,7 +3199,7 @@ function ProjectFormModal({
                   <div className="relative flex gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-2 border-amber-300 dark:border-amber-700">
                     <div className="flex-1 space-y-1.5">
                       <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-amber-600 bg-amber-100 dark:bg-amber-800/30 px-2 py-0.5 rounded-full">
-                        ✓ {locale === "ka" ? "მანამდე" : "Before"}
+                        ✓ {t("common.before")}
                       </span>
                       <div className="aspect-[4/3] rounded-lg overflow-hidden ring-2 ring-amber-300 dark:ring-amber-600">
                         <Image
@@ -3066,7 +3218,7 @@ function ProjectFormModal({
                     </div>
                     <div className="flex-1 space-y-1.5">
                       <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-amber-600 bg-amber-100 dark:bg-amber-800/30 px-2 py-0.5 rounded-full">
-                        {locale === "ka" ? "შემდეგ" : "After"}?
+                        {t("common.after")}?
                       </span>
                       <button
                         onClick={() => afterInputRef.current?.click()}

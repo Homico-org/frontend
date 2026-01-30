@@ -55,7 +55,9 @@
     "amount": "თანხა",
     "price": "ფასი",
     "budget": "ბიუჯეტი",
-    "negotiable": "შეთანხმებით",
+    "negotiable": "მოლაპარაკებით",
+    "perSqmShort": "/მ²",
+    "perHourShort": "/სთ",
     "total": "სულ",
     "all": "ყველა",
     "none": "არცერთი",
@@ -74,6 +76,8 @@
     "home": "მთავარი",
     "help": "დახმარება",
     "settings": "პარამეტრები",
+    "unknown": "უცნობი",
+    "changeLanguage": "ენის შეცვლა",
     "profile": "პროფილი",
     "account": "ანგარიში",
     "notifications": "შეტყობინებები",
@@ -101,6 +105,12 @@
     "before": "მანამდე",
     "after": "შემდეგ",
     "beforeAfter": "მანამდე/შემდეგ",
+    "changes": "ცვლილებები",
+    "field": "ველი",
+    "rawDetails": "Raw დეტალები",
+    "last7DaysShort": "7 დღე",
+    "last30DaysShort": "30 დღე",
+    "pageOf": "გვერდი {page} / {total}",
     "items": "ელემენტი",
     "reviews": "შეფასებები",
     "rating": "რეიტინგი",
@@ -242,6 +252,11 @@
     "yearsExperience": "წელი",
     "yearsOfExperience": "წელი"
   },
+  "nav": {
+    "portfolios": "ნამუშევრები",
+    "tools": "ხელსაწყოები",
+    "jobs": "დასაქმება"
+  },
   "validation": {
     "required": "ეს ველი სავალდებულოა",
     "invalidEmail": "არასწორი ელ-ფოსტის ფორმატი",
@@ -287,6 +302,15 @@
     "perMonth": "/თვე",
     "perYear": "/წელი",
     "perSqm": "/მ²"
+  },
+  "dates": {
+    "today": "დღეს",
+    "yesterday": "გუშინ",
+    "daysAgo": "{count} დღის წინ",
+    "weeksAgo": "{count} კვირის წინ",
+    "monthsAgo": "{count} თვის წინ",
+    "weekAgo": "{count} კვირის წინ",
+    "monthAgo": "{count} თვის წინ"
   },
   "auth": {
     "login": "შესვლა",
@@ -554,6 +578,7 @@
     "jobAddress": "სამუშაოს მისამართი",
     "jobDeletedSuccessfully": "სამუშაო წარმატებით წაიშალა",
     "jobRenewedFor30Days": "სამუშაო განახლდა 30 დღით",
+    "searchMyJobsPlaceholder": "ძებნა სათაურით, კატეგორიით ან მდებარეობით...",
     "land": "მიწა",
     "locationBudget": "ლოკაცია და ბიუჯეტი",
     "manageYourActiveListingsAnd": "მართეთ თქვენი აქტიური განცხადებები",
@@ -619,6 +644,24 @@
     "yourRating": "თქვენი შეფასება",
     "youreHired": "თქვენ დაგიქირავეს"
   },
+  "jobComments": {
+    "title": "დაინტერესებული პროფესიონალები",
+    "subtitle": "{total} პროფესიონალი",
+    "subtitleWithInteresting": "{total} პროფესიონალი • {interesting} საინტერესო",
+    "expressInterestPlaceholder": "გამოხატე დაინტერესება ამ სამუშაოზე...",
+    "replyPlaceholder": "დაწერე პასუხი...",
+    "reply": "პასუხი",
+    "showProfileLink": "ჩემი პროფილის ბმულის ჩვენება",
+    "expressInterest": "დაინტერესების გამოხატვა",
+    "confirmDelete": "ნამდვილად გსურთ ამ კომენტარის წაშლა?",
+    "interesting": "საინტერესო",
+    "verificationRequiredToExpressInterest": "დაინტერესების გამოსახატავად საჭიროა პროფილის ვერიფიკაცია",
+    "completeVerificationCta": "გაიარეთ ვერიფიკაცია →",
+    "alreadyExpressedInterest": "თქვენ უკვე გამოხატეთ დაინტერესება. შეგიძლიათ დაარედაქტიროთ თქვენი კომენტარი ქვემოთ.",
+    "noInterestingYet": "ჯერ არ არის საინტერესო პროფესიონალები",
+    "noInterestYet": "ჯერ არავის გამოუხატავს დაინტერესება",
+    "beFirstToReachOut": "იყავი პირველი ვინც დაეკონტაქტება დამკვეთს"
+  },
   "jobDetail": {
     "propertyType": {
       "apartment": "ბინა",
@@ -658,6 +701,9 @@
     "stageUpdated": "სტატუსი განახლდა",
     "requestSent": "მოთხოვნა გაიგზავნა",
     "proposalSubmitted": "წინადადება წარმატებით გაიგზავნა",
+    "verificationRequiredToSubmitProposals": "წინადადების გასაგზავნად საჭიროა პროფილის ვერიფიკაცია",
+    "completeVerificationCta": "გაიარეთ ვერიფიკაცია →",
+    "moreEvents": "+ {count} სხვა მოვლენა",
     "failedToUpdateStage": "სტატუსი ვერ განახლდა",
     "failedToSendRequest": "მოთხოვნა ვერ გაიგზავნა",
     "projectCompleted": "პროექტი დასრულდა",
@@ -713,6 +759,33 @@
     "youHiredTheProfessional": "თქვენ დაიქირავეთ პროფესიონალი",
     "yourFeedbackHelpsOtherClients": "თქვენი შეფასება ეხმარება სხვა კლიენტებს",
     "youveBeenHiredForThis": "თქვენ დაგიქირავეს ამ პროექტისთვის"
+  },
+  "postJob": {
+    "steps": {
+      "category": "კატეგორია",
+      "location": "ლოკაცია და ბიუჯეტი",
+      "details": "დეტალები",
+      "review": "გადახედვა"
+    },
+    "locationBudgetSubtitle": "მიუთითეთ პროექტის მისამართი და ბიუჯეტი",
+    "photosRequirementHelp": "მინიმუმ 1 ფოტო საჭიროა. ფოტოები ეხმარება პროფესიონალებს უკეთ გაიგონ თქვენი პროექტი.",
+    "addAtLeastOnePhotoToContinue": "გთხოვთ დაამატოთ მინიმუმ 1 ფოტო გასაგრძელებლად",
+    "photosAddedSuccess": "{count} ფოტო დამატებულია - პროფესიონალები უკეთ გაიგებენ შენს პროექტს!",
+    "hints": {
+      "architecture": "არქიტექტურული პროექტებისთვის საკადასტრო კოდი ეხმარება პროფესიონალებს მიწის რეგისტრაციისა და ზონირების მოთხოვნების გაგებაში.",
+      "design": "მიუთითე საერთო ფართი და ოთახების რაოდენობა, რომ დიზაინერებმა შეძლონ ზუსტი შეფასების მოწოდება.",
+      "craftsmen": "მიუთითე სამუშაო ფართი ზუსტი ფასისთვის. ელექტრო ან სანტექნიკის სამუშაოებისთვის შეგიძლია მიუთითო წერტილების რაოდენობა.",
+      "homecare": "მიუთითე მოსასუფთავებელი ან მოსავლელი ფართი ზუსტი შეფასებისთვის."
+    },
+    "fields": {
+      "electricalPoints": "ელექტრო წერტილები",
+      "plumbingPoints": "სანტექნიკის წერტილები",
+      "unitsOrPoints": "ერთეულები/წერტილები",
+      "lightPoints": "სანათი წერტილები"
+    },
+    "units": {
+      "pointsShort": "წრტ"
+    }
   },
   "proposal": {
     "title": "შეთავაზება",
@@ -774,6 +847,12 @@
     "startingPrice": "საწყისი ფასი",
     "perSqm": "კვ.მ",
     "showPhone": "ტელეფონის ნახვა",
+    "zoomAvatar": "ავატარის გადიდება",
+    "servicesAndExperience": "სერვისები და გამოცდილება",
+    "pendingApprovalTitle": "თქვენი პროფილი განხილვის პროცესშია",
+    "pendingApprovalDescription": "ადმინისტრატორი განიხილავს თქვენს პროფილს. დამტკიცების შემდეგ გახდებით ხილული კლიენტებისთვის.",
+    "needsUpdatesTitle": "თქვენი პროფილი საჭიროებს გადახედვას",
+    "editProfile": "რედაქტირება",
     "profileNotFound": "პროფილი ვერ მოიძებნა",
     "addProject": "პროექტის დამატება",
     "editProject": "პროექტის რედაქტირება",
@@ -1208,6 +1287,9 @@
     "theme": "თემა",
     "saveChanges": "ცვლილებების შენახვა",
     "deleteAccount": "ანგარიშის წაშლა",
+    "deleteConfirmWord": "წაშლა",
+    "typeWordToConfirm": "გთხოვთ ჩაწეროთ \"{word}\" დასადასტურებლად",
+    "clientsWontSeeYourProfile": "კლიენტები ვერ ნახავენ თქვენს პროფილს",
     "deleteAccountWarning": "ეს მოქმედება სამუდამოა და ვერ გაუქმდება",
     "deactivateAccount": "ანგარიშის დეაქტივაცია",
     "changePassword": "პაროლის შეცვლა",
@@ -1980,6 +2062,9 @@
     "reports": "რეპორტები",
     "support": "მხარდაჭერა",
     "activityLogs": "აქტივობის ჟურნალი",
+    "activityLogsSearchPlaceholder": "ძებნა: ელ-ფოსტა / სახელი / userId / targetId",
+    "activityLogsNoBeforeAfterChanges": "ამ ჩანაწერს არ აქვს before/after ცვლილებები (ჯერ არ არის ჩაწერილი ლოგებში).",
+    "failedToLoadActivityLogs": "ვერ მოხერხდა აქტივობის ჩატვირთვა",
     "settings": "პარამეტრები",
     "totalUsers": "სულ მომხმარებლები",
     "totalJobs": "სულ სამუშაოები",
@@ -2022,6 +2107,7 @@
     "activityOverview": "აქტივობის მიმოხილვა",
     "admins": "ადმინები",
     "approve": "დამტკიცება",
+    "approvals": "დამტკიცება",
     "clients": "კლიენტები",
     "companies": "კომპანიები",
     "confirmReject": "უარყოფის დადასტურება",
@@ -2067,6 +2153,26 @@
     "pendingReview": "გადამოწმების მოლოდინში",
     "posted": "განთავსებული",
     "professionals": "პროფესიონალები",
+    "pendingPros": {
+      "title": "პროფესიონალების დამტკიცება",
+      "subtitle": "განიხილეთ და დაამტკიცეთ ახალი პროფესიონალები",
+      "approved": "დამტკიცებული",
+      "professionalDetails": "პროფესიონალის დეტალები",
+      "bio": "ბიო",
+      "pricing": "ფასი",
+      "services": "სერვისები",
+      "categories": "კატეგორიები",
+      "portfolio": "პორტფოლიო",
+      "rejectProfessional": "პროფესიონალის უარყოფა",
+      "rejectReasonHelp": "გთხოვთ მიუთითოთ უარყოფის მიზეზი. ეს ინფორმაცია გაეგზავნება პროფესიონალს.",
+      "failedToLoadData": "ვერ მოხერხდა მონაცემების ჩატვირთვა",
+      "failedToApprove": "ვერ მოხერხდა დამტკიცება",
+      "approvedToast": "დამტკიცებულია",
+      "rejectedToast": "უარყოფილია",
+      "failedToReject": "ვერ მოხერხდა უარყოფა",
+      "noPendingProfessionals": "მოლოდინში არ არის პროფესიონალები",
+      "noProfessionalsFound": "პროფესიონალები ვერ მოიძებნა"
+    },
     "proposals": "წინადადებები",
     "recentJobs": "ბოლო სამუშაოები",
     "recentUsers": "ბოლო მომხმარებლები",
@@ -2114,7 +2220,28 @@
     "viewClient": "კლიენტის ნახვა",
     "viewDetails": "დეტალების ნახვა",
     "viewJob": "სამუშაოს ნახვა",
-    "week": "კვირა"
+    "week": "კვირა",
+    "approvals": "დამტკიცება",
+    "unknown": "უცნობი",
+    "openTooltip": "გახსნა",
+    "verificationPanel": "ადმინისტრატორის ვერიფიკაციის პანელი",
+    "currentStatus": "მიმდინარე სტატუსი",
+    "notes": "შენიშვნები",
+    "updateStatus": "სტატუსის განახლება",
+    "updateVerificationStatus": "ვერიფიკაციის სტატუსის განახლება",
+    "verificationStatus": "ვერიფიკაციის სტატუსი",
+    "verificationNotes": "შენიშვნები (პროფესიონალისთვის ხილული)",
+    "notesPlaceholder": "დაამატეთ შენიშვნა პროფესიონალისთვის...",
+    "notifyUserSms": "შეატყობინეთ მომხმარებელს SMS-ით",
+    "saveChanges": "ცვლილებების შენახვა",
+    "selectStatus": "აირჩიეთ სტატუსი",
+    "statusPending": "მოლოდინში",
+    "statusSubmitted": "გაგზავნილი",
+    "statusVerified": "ვერიფიცირებული",
+    "statusRejected": "უარყოფილი",
+    "verificationUpdated": "ვერიფიკაციის სტატუსი განახლდა",
+    "verificationUpdateFailed": "ვერიფიკაციის განახლება ვერ მოხერხდა",
+    "noteFromAdmin": "ადმინისტრატორის შენიშვნა"
   },
   "card": {
     "negotiable": "შეთანხმებით",
@@ -2258,7 +2385,9 @@
     "constructionCompany": "სამშენებლო კომპანია",
     "constructionService": "სამშენებლო და მომსახურება",
     "contactUs": "დაგვიკავშირდით",
+    "foundedYear": "დაარსდა {year}",
     "employees": "თანამშრომლები",
+    "viewAllTeam": "ყველას ნახვა ({count})",
     "experiencedCompany": "გამოცდილი კომპანია",
     "helloImInterestedInYour": "გამარჯობა! მაინტერესებს თქვენი",
     "hour": "საათი",
@@ -2271,7 +2400,11 @@
     "sorryThisCompanyDoesntExist": "სამწუხაროდ, ეს კომპანია არ არსებობს",
     "trustSafety": "სანდოობა და უსაფრთხოება",
     "trustedExperienced": "სანდო და გამოცდილი",
-    "verifiedCompany": "ვერიფიცირებული კომპანია"
+    "verifiedCompany": "ვერიფიცირებული კომპანია",
+    "reviewsCount": "{count} შეფასება",
+    "readAllReviews": "ყველა {count} შეფასების ნახვა",
+    "topRatedSummary": "{rating} ★ ({count} შეფასება)",
+    "completedProjectsPlus": "{count}+ დასრულებული პროექტი"
   },
   "categories": {
     "renovation": "რემონტი",
@@ -2297,14 +2430,45 @@
   "about": {
     "aboutUs": "ჩვენ შესახებ",
     "connectingPeopleWithTheBest": "ხალხის დაკავშირება საუკეთესო პროფესიონალებთან",
+    "heroBlurb": "Homico არის საქართველოს პირველი პლატფორმა, რომელიც აკავშირებს კლიენტებს ვერიფიცირებულ სახლის მომსახურების პროფესიონალებთან.",
     "getInTouch": "დაგვიკავშირდით",
+    "contactBlurb": "გაქვთ კითხვები ან წინადადებები? სიამოვნებით მოგისმენთ.",
     "helpCenter": "დახმარების ცენტრი",
     "homicoWasBornFromA": "Homico დაიბადა...",
     "howItWorks": "როგორ მუშაობს",
     "ourMission": "ჩვენი მისია",
+    "missionBlurb": "ჩვენი მიზანია გავამარტივოთ სანდო პროფესიონალების პოვნა და დაქირავება საქართველოში. ვქმნით პლატფორმას, სადაც ხარისხი, ნდობა და პროფესიონალიზმი პირველ ადგილზეა.",
     "ourStory": "ჩვენი ისტორია",
     "ourValues": "ჩვენი ღირებულებები",
     "privacyPolicy": "კონფიდენციალურობის პოლიტიკა",
+    "stats": {
+      "professionalsValue": "1000+",
+      "professionalsLabel": "პროფესიონალი",
+      "categoriesValue": "50+",
+      "categoriesLabel": "კატეგორია",
+      "serviceAreaValue": "თბილისი",
+      "serviceAreaLabel": "მომსახურების ზონა",
+      "supportValue": "24/7",
+      "supportLabel": "მხარდაჭერა"
+    },
+    "values": {
+      "trustTransparency": {
+        "title": "ნდობა და გამჭვირვალობა",
+        "description": "ჩვენ ვამოწმებთ პროფესიონალებს და ვუზრუნველყოფთ გულწრფელ შეფასებებს ინფორმირებული გადაწყვეტილებებისთვის."
+      },
+      "qualityFirst": {
+        "title": "ხარისხი პირველ რიგში",
+        "description": "ჩვენ ვთანამშრომლობთ გამოცდილ პროფესიონალებთან, რომლებიც ამაყობენ თავიანთი ხელობით."
+      },
+      "communityFocus": {
+        "title": "საზოგადოებაზე ორიენტირება",
+        "description": "ჩვენ ვუჭერთ მხარს ადგილობრივ პროფესიონალებს და ვეხმარებით საზოგადოების განვითარებას."
+      },
+      "innovation": {
+        "title": "ინოვაცია",
+        "description": "ჩვენ მუდმივად ვაუმჯობესებთ პლატფორმას პროფესიონალების პოვნისა და დაქირავების გასამარტივებლად."
+      }
+    },
     "tbilisiGeorgia": "თბილისი, საქართველო",
     "termsOfService": "მომსახურების პირობები",
     "todayHomicoConnectsThousandsOf": "დღეს Homico აკავშირებს ათასობით...",
@@ -2352,6 +2516,33 @@
   },
   "tools": {
     "back": "ხელსაწყოები",
+    "home": {
+      "featuredBadge": "პოპულარული",
+      "analyzer": {
+        "title": "ანგარიშის ანალიზი",
+        "description": "ატვირთე კონტრაქტორის ანგარიში და მიიღე AI-ით დეტალური ანალიზი. გაიგე რა არის სამართლიანი ფასი და რა - არა.",
+        "cta": "ატვირთე ანგარიში",
+        "tag": "AI ანალიზი"
+      },
+      "prices": {
+        "title": "ფასების ბაზა",
+        "description": "მოძებნე 100+ სარემონტო სამუშაოს საბაზრო ფასები თბილისში. განახლებული ფასები 2024 წლისთვის.",
+        "cta": "ნახე ფასები",
+        "tag": "100+ პოზიცია"
+      },
+      "calculator": {
+        "title": "რემონტის კალკულატორი",
+        "description": "გამოთვალე სავარაუდო ბიუჯეტი ბინის პარამეტრების მიხედვით. მიიღე დეტალური შეფასება წუთებში.",
+        "cta": "გამოთვალე",
+        "tag": "99% სიზუსტე"
+      },
+      "compare": {
+        "title": "შეთავაზებების შედარება",
+        "description": "შეადარე 5-მდე კონტრაქტორის შეთავაზება და იპოვე საუკეთესო. ნახე დეტალური შედარება.",
+        "cta": "შეადარე",
+        "tag": "5-მდე"
+      }
+    },
     "prices": {
       "title": "ფასების ბაზა",
       "subtitle": "სარემონტო სამუშაოების საბაზრო ფასები თბილისში",

@@ -140,7 +140,6 @@ const JobCard = React.memo(function JobCard({
   };
 
   const isUrgent = daysLeft !== null && daysLeft <= 2 && daysLeft > 0;
-  const isExpired = daysLeft === 0;
 
   return (
     <Link href={`/jobs/${job.id}`} className="group block">
@@ -151,7 +150,6 @@ const JobCard = React.memo(function JobCard({
           border border-neutral-200/70 dark:border-neutral-800
           shadow-sm hover:shadow-lg hover:shadow-neutral-900/[0.08] dark:hover:shadow-black/30
           transition-all duration-300 hover:-translate-y-0.5
-          ${isExpired ? "opacity-60" : ""}
         `}
       >
         {/* Main card layout */}

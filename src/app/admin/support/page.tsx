@@ -72,7 +72,7 @@ type StatusFilter = 'all' | 'open' | 'in_progress' | 'resolved' | 'closed';
 
 function AdminSupportPageContent() {
   const { user, isAuthenticated, isLoading: authLoading, token } = useAuth();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const router = useRouter();
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [stats, setStats] = useState<TicketStats | null>(null);
@@ -652,7 +652,7 @@ function AdminSupportPageContent() {
                                 {ticket.userId?.name}
                               </p>
                               <span className="text-[10px] flex-shrink-0" style={{ color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace" }}>
-                                {formatDateRelative(ticket.lastMessageAt)}
+                                {formatDateRelative(ticket.lastMessageAt, t, locale as 'en' | 'ka' | 'ru')}
                               </span>
                             </div>
                             <p className="text-xs truncate mb-1.5" style={{ color: THEME.textMuted }}>

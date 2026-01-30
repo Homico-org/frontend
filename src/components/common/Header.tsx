@@ -16,18 +16,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Avatar from "./Avatar";
+import LanguageSelector from "./LanguageSelector";
 
 export default function Header() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const { openLoginModal } = useAuthModal();
   const { flatCategories } = useCategories();
-  const { t, locale, setLocale } = useLanguage();
+  const { t, locale } = useLanguage();
   const { unreadCount } = useNotifications();
   const pathname = usePathname();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [showLangDropdown, setShowLangDropdown] = useState(false);
-  const langDropdownRef = useClickOutside<HTMLDivElement>(() => setShowLangDropdown(false), showLangDropdown);
   const dropdownRef = useClickOutside<HTMLDivElement>(() => setShowDropdown(false), showDropdown);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
@@ -194,66 +193,7 @@ export default function Header() {
           {/* My Work & My Jobs buttons removed from tablet - they're in the bottom navigation */}
 
           {/* Language Selector */}
-          <div className="relative" ref={langDropdownRef}>
-            <button
-              onClick={() => setShowLangDropdown(!showLangDropdown)}
-              className="flex items-center justify-center h-9 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all"
-              title={locale === 'ka' ? 'ენის შეცვლა' : 'Change language'}
-            >
-              <span className="text-[13px] font-semibold text-neutral-700 dark:text-neutral-200">
-                {locale === 'ka' ? 'ქართ' : locale === 'en' ? 'Eng' : 'Рус'}
-              </span>
-            </button>
-
-            {showLangDropdown && (
-              <div className="absolute right-0 top-full mt-2 w-36 rounded-xl overflow-hidden z-[70] animate-scale-in bg-white dark:bg-neutral-800 shadow-xl border border-neutral-200 dark:border-neutral-700">
-                <div className="py-1">
-                  <button
-                    onClick={() => {
-                      setLocale('ka' as Locale);
-                      setShowLangDropdown(false);
-                    }}
-                    className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors ${
-                      locale === 'ka'
-                        ? 'bg-[#C4735B]/10 text-[#C4735B] font-semibold'
-                        : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700'
-                    }`}
-                  >
-                    <span>ქართული</span>
-                    <span className="text-xs font-medium opacity-60">ქართ</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setLocale('en' as Locale);
-                      setShowLangDropdown(false);
-                    }}
-                    className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors ${
-                      locale === 'en'
-                        ? 'bg-[#C4735B]/10 text-[#C4735B] font-semibold'
-                        : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700'
-                    }`}
-                  >
-                    <span>English</span>
-                    <span className="text-xs font-medium opacity-60">Eng</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setLocale('ru' as Locale);
-                      setShowLangDropdown(false);
-                    }}
-                    className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors ${
-                      locale === 'ru'
-                        ? 'bg-[#C4735B]/10 text-[#C4735B] font-semibold'
-                        : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700'
-                    }`}
-                  >
-                    <span>Русский</span>
-                    <span className="text-xs font-medium opacity-60">Рус</span>
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+          <LanguageSelector variant="icon" />
 
           {isLoading ? (
             <Skeleton className="w-9 h-9 rounded-xl" />
