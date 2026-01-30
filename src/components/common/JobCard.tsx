@@ -139,6 +139,8 @@ const JobCard = React.memo(function JobCard({
     return parts[0]?.trim() || loc.substring(0, 20);
   };
 
+  const isExpired =
+    !!job.deadline && new Date(job.deadline).getTime() < Date.now();
   const isUrgent = daysLeft !== null && daysLeft <= 2 && daysLeft > 0;
 
   return (
