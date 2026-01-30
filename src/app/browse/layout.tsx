@@ -213,7 +213,7 @@ const TABS = [
     key: "tools",
     route: "/tools",
     label: "Tools",
-    labelKa: "ხელსაწყოები",
+    labelKa: "კალკულატორები",
     labelRu: "Инструменты",
     icon: Wrench,
     showFor: "all" as const,

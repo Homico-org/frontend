@@ -77,6 +77,49 @@ export interface ChatMessage {
   content: string;
 }
 
+export interface ProjectAnalysisRoom {
+  name: string;
+  type: 'living' | 'bedroom' | 'bathroom' | 'kitchen' | 'hallway' | 'balcony';
+  length: number;
+  width: number;
+  height: number;
+  doors: number;
+  windows: number;
+  flooring: 'laminate' | 'parquet' | 'tile' | 'vinyl' | 'carpet';
+  walls: 'paint' | 'wallpaper' | 'tile' | 'decorative_plaster';
+  ceiling: 'paint' | 'stretch' | 'drywall' | 'suspended';
+}
+
+export interface ProjectAnalysisResult {
+  rooms: ProjectAnalysisRoom[];
+  totalArea: number;
+  workSuggestions: {
+    demolition: boolean;
+    electrical: {
+      outlets: number;
+      switches: number;
+      lightingPoints: number;
+      acPoints: number;
+    };
+    plumbing: {
+      toilets: number;
+      sinks: number;
+      showers: number;
+      bathtubs: number;
+    };
+    heating: {
+      radiators: number;
+      underfloorArea: number;
+    };
+    doorsWindows: {
+      interiorDoors: number;
+      entranceDoor: boolean;
+    };
+  };
+  qualityLevel: 'economy' | 'standard' | 'premium';
+  notes: string[];
+}
+
 /**
  * AI Service - Frontend API client for AI tools
  */
@@ -149,6 +192,24 @@ export const aiService = {
       locale,
     });
     return response.data.response;
+  },
+
+  /**
+   * Analyze project file or image and extract room/work configurations
+   */
+  async analyzeProject(
+    projectText: string,
+    locale: string = 'en',
+    imageBase64?: string,
+    imageMimeType?: string
+  ): Promise<ProjectAnalysisResult> {
+    const response = await api.post('/ai/analyze-project', {
+      projectText: projectText || undefined,
+      imageBase64,
+      imageMimeType,
+      locale,
+    });
+    return response.data;
   },
 };
 

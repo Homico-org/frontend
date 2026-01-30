@@ -4,6 +4,8 @@ import { useState, useCallback, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { type PriceCategory } from '@/data/priceDatabase';
+import { aiService, CompareEstimatesResult } from '@/services/ai';
+import * as XLSX from 'xlsx';
 import {
   Scale,
   Plus,
@@ -29,6 +31,10 @@ import {
   PieChart,
   Eye,
   EyeOff,
+  Sparkles,
+  AlertTriangle,
+  ThumbsUp,
+  ThumbsDown,
 } from 'lucide-react';
 
 // UI Components
@@ -105,12 +111,73 @@ const getFileIcon = (fileName: string) => {
   return FileText;
 };
 
+// Extract text from Excel files
+const extractTextFromExcel = async (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = e.target?.result;
+        const workbook = XLSX.read(data, { type: 'array' });
+        let text = '';
+        workbook.SheetNames.forEach((sheetName) => {
+          const sheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as unknown[][];
+          jsonData.forEach((row) => {
+            if (Array.isArray(row) && row.length > 0) {
+              const rowText = row.filter(cell => cell !== null && cell !== undefined && cell !== '').join(' - ');
+              if (rowText.trim()) {
+                text += rowText + '\n';
+              }
+            }
+          });
+        });
+        resolve(text.trim());
+      } catch (error) {
+        reject(error);
+      }
+    };
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsArrayBuffer(file);
+  });
+};
+
+// Extract text from PDF files
+const extractTextFromPDF = async (file: File): Promise<string> => {
+  const pdfjsLib = await import('pdfjs-dist');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let text = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const textContent = await page.getTextContent();
+    const pageText = textContent.items.map((item: any) => item.str).join(' ');
+    text += pageText + '\n';
+  }
+  return text.trim();
+};
+
+// Extract text from file based on type
+const extractTextFromFile = async (file: File): Promise<string> => {
+  const ext = file.name.split('.').pop()?.toLowerCase();
+  if (ext === 'xlsx' || ext === 'xls') {
+    return extractTextFromExcel(file);
+  }
+  if (ext === 'pdf') {
+    return extractTextFromPDF(file);
+  }
+  throw new Error('Unsupported file type');
+};
+
 export default function ComparePage() {
   const { t, locale } = useLanguage();
 
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isComparing, setIsComparing] = useState(false);
   const [estimates, setEstimates] = useState<ContractorEstimate[] | null>(null);
+  const [aiComparison, setAiComparison] = useState<CompareEstimatesResult | null>(null);
+  const [comparisonError, setComparisonError] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>('default');
   const [viewMode, setViewMode] = useState<ViewMode>('table');
@@ -139,26 +206,117 @@ export default function ComparePage() {
     setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
-  const handleCompare = useCallback(() => {
+  const handleCompare = useCallback(async () => {
     if (uploadedFiles.length < 2) return;
     setIsComparing(true);
-    setTimeout(() => {
-      setEstimates(generateDemoEstimates().slice(0, uploadedFiles.length));
-      setIsComparing(false);
-    }, 2000);
-  }, [uploadedFiles]);
+    setComparisonError(null);
 
-  const handleDemo = useCallback(() => {
-    setIsComparing(true);
-    setTimeout(() => {
-      setEstimates(generateDemoEstimates());
+    try {
+      // Extract text from all files
+      const estimatesData = await Promise.all(
+        uploadedFiles.map(async (file, index) => {
+          try {
+            const content = await extractTextFromFile(file);
+            return {
+              name: file.name.replace(/\.[^/.]+$/, '') || `Contractor ${index + 1}`,
+              content,
+            };
+          } catch {
+            return {
+              name: file.name.replace(/\.[^/.]+$/, '') || `Contractor ${index + 1}`,
+              content: `File: ${file.name} (could not extract text)`,
+            };
+          }
+        })
+      );
+
+      // Use AI to compare
+      const result = await aiService.compareEstimates(estimatesData, locale);
+      setAiComparison(result);
+
+      // Also set demo estimates for visual chart (fallback display)
+      setEstimates(generateDemoEstimates().slice(0, uploadedFiles.length));
+    } catch (err: any) {
+      console.error('Compare error:', err);
+      setComparisonError(err?.response?.data?.message || err?.message || t('tools.compare.compareError'));
+      // Fallback to demo
+      setEstimates(generateDemoEstimates().slice(0, uploadedFiles.length));
+    } finally {
       setIsComparing(false);
-    }, 1500);
-  }, []);
+    }
+  }, [uploadedFiles, locale, t]);
+
+  const handleDemo = useCallback(async () => {
+    setIsComparing(true);
+    setComparisonError(null);
+
+    try {
+      // Demo estimates text
+      const demoEstimates = [
+        {
+          name: 'Contractor A',
+          content: `Renovation Estimate - Contractor A
+Demolition: 1,200₾
+Electrical work (56 points): 14,000₾
+Plumbing (10 points): 3,500₾
+Heating system: 5,200₾
+Wall plastering (120 sqm): 25,000₾
+Flooring (80 sqm): 11,500₾
+Ceiling work: 6,800₾
+Painting: 4,800₾
+Tiling (40 sqm): 6,500₾
+Doors and windows: 4,200₾
+Total: 82,700₾`,
+        },
+        {
+          name: 'Contractor B',
+          content: `Renovation Estimate - Contractor B
+Demolition: 1,100₾
+Electrical (56 points): 12,500₾
+Plumbing work: 4,200₾
+Heating: 4,800₾
+Walls (plastering + putty): 22,000₾
+Floor installation: 9,800₾
+Ceiling: 7,200₾
+Painting work: 4,200₾
+Tile work: 5,800₾
+Doors/windows: 3,800₾
+Total: 75,400₾`,
+        },
+        {
+          name: 'Contractor C',
+          content: `Estimate from Contractor C
+Demolition work: 1,400₾
+Electrical installation: 16,200₾
+Plumbing: 3,800₾
+Heating system installation: 5,800₾
+Wall finishing: 28,000₾
+Flooring: 13,000₾
+Ceiling installation: 6,500₾
+Paint work: 5,200₾
+Tiling: 7,200₾
+Doors and windows installation: 4,500₾
+Grand Total: 91,600₾`,
+        },
+      ];
+
+      const result = await aiService.compareEstimates(demoEstimates, locale);
+      setAiComparison(result);
+      setEstimates(generateDemoEstimates());
+    } catch (err: any) {
+      console.error('Demo compare error:', err);
+      setComparisonError(err?.response?.data?.message || err?.message || t('tools.compare.compareError'));
+      setEstimates(generateDemoEstimates());
+    } finally {
+      setIsComparing(false);
+    }
+  }, [locale, t]);
 
   const resetComparison = useCallback(() => {
     setUploadedFiles([]);
     setEstimates(null);
+    setAiComparison(null);
+    setComparisonError(null);
     setIsComparing(false);
   }, []);
 
@@ -839,6 +997,102 @@ export default function ComparePage() {
                 </div>
               )}
 
+              {/* AI Analysis Section */}
+              {aiComparison && (
+                <div className="bg-gradient-to-br from-forest-50 to-forest-100 dark:from-forest-900/20 dark:to-forest-800/10 rounded-2xl border border-forest-200 dark:border-forest-800/30 overflow-hidden">
+                  <div className="p-4 border-b border-forest-200 dark:border-forest-800/30 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-forest-200 dark:bg-forest-900/40 flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-forest-600 dark:text-forest-400" strokeWidth={1.5} />
+                    </div>
+                    <h3 className="font-semibold text-forest-800 dark:text-forest-200">
+                      {t('tools.compare.aiAnalysis')}
+                    </h3>
+                  </div>
+
+                  <div className="p-5 space-y-5">
+                    {/* AI Summary */}
+                    <div className="p-4 bg-white/60 dark:bg-neutral-900/40 rounded-xl">
+                      <p className="text-sm text-forest-700 dark:text-forest-300 leading-relaxed">
+                        {aiComparison.summary}
+                      </p>
+                    </div>
+
+                    {/* Detailed Comparison */}
+                    <div className="space-y-4">
+                      {aiComparison.comparison.map((item, index) => (
+                        <div key={index} className="p-4 bg-white/60 dark:bg-neutral-900/40 rounded-xl">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-10 h-10 rounded-lg ${contractorColors[index]?.bg || 'bg-neutral-500'} flex items-center justify-center text-white font-bold`}>
+                                {index + 1}
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-neutral-900 dark:text-white">{item.name}</h4>
+                                <p className="text-sm text-forest-600 dark:text-forest-400 font-medium">
+                                  {formatCurrency(item.totalPrice)}
+                                </p>
+                              </div>
+                            </div>
+                            {aiComparison.winner.index === index && (
+                              <span className="inline-flex items-center gap-1 px-3 py-1 bg-forest-500 text-white text-xs font-bold rounded-full">
+                                <Trophy className="w-3 h-3" strokeWidth={2} />
+                                {t('tools.compare.aiWinner')}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Pros & Cons */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                            {item.pros.length > 0 && (
+                              <div className="space-y-1">
+                                <p className="text-xs font-medium text-forest-600 dark:text-forest-400 flex items-center gap-1">
+                                  <ThumbsUp className="w-3 h-3" strokeWidth={2} />
+                                  {t('tools.compare.pros')}
+                                </p>
+                                <ul className="space-y-1">
+                                  {item.pros.slice(0, 3).map((pro, i) => (
+                                    <li key={i} className="text-xs text-neutral-600 dark:text-neutral-400 flex items-start gap-1.5">
+                                      <span className="text-forest-500 mt-0.5">+</span>
+                                      {pro}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {item.cons.length > 0 && (
+                              <div className="space-y-1">
+                                <p className="text-xs font-medium text-red-600 dark:text-red-400 flex items-center gap-1">
+                                  <ThumbsDown className="w-3 h-3" strokeWidth={2} />
+                                  {t('tools.compare.cons')}
+                                </p>
+                                <ul className="space-y-1">
+                                  {item.cons.slice(0, 3).map((con, i) => (
+                                    <li key={i} className="text-xs text-neutral-600 dark:text-neutral-400 flex items-start gap-1.5">
+                                      <span className="text-red-500 mt-0.5">−</span>
+                                      {con}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Error Display */}
+              {comparisonError && (
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                    <p className="text-sm text-red-700 dark:text-red-300">{comparisonError}</p>
+                  </div>
+                </div>
+              )}
+
               {/* Recommendation */}
               <div className="bg-terracotta-50 dark:bg-terracotta-900/20 rounded-2xl p-6 border border-terracotta-200/50 dark:border-terracotta-800/30">
                 <div className="flex items-start gap-4">
@@ -850,7 +1104,15 @@ export default function ComparePage() {
                       {t('tools.compare.recommendation')}
                     </h3>
                     <p className="text-terracotta-700 dark:text-terracotta-400 leading-relaxed">
-                      <strong>{bestValueWinner?.name}</strong> {t('tools.compare.recommendationText')} <Star className="w-4 h-4 inline text-amber-500 fill-current" />{bestValueWinner?.rating} - {formatCurrency(bestValueWinner?.total ?? 0)}
+                      {aiComparison ? (
+                        <>
+                          <strong>{aiComparison.winner.name}</strong> — {aiComparison.recommendation}
+                        </>
+                      ) : (
+                        <>
+                          <strong>{bestValueWinner?.name}</strong> {t('tools.compare.recommendationText')} <Star className="w-4 h-4 inline text-amber-500 fill-current" />{bestValueWinner?.rating} - {formatCurrency(bestValueWinner?.total ?? 0)}
+                        </>
+                      )}
                     </p>
                   </div>
                 </div>
