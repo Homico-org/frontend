@@ -297,7 +297,7 @@ export default function CompanyEmployeesPage() {
                 placeholder={t('company.allRoles')}
                 size="sm"
                 options={[
-                  { value: '', label: locale === 'ka' ? 'ყველა როლი' : 'All Roles' },
+                  { value: '', label: t('company.allRoles') },
                   { value: 'owner', label: t('company.owner') },
                   { value: 'manager', label: t('company.manager') },
                   { value: 'worker', label: t('company.worker') },
@@ -309,9 +309,9 @@ export default function CompanyEmployeesPage() {
                 placeholder={t('company.allStatus')}
                 size="sm"
                 options={[
-                  { value: '', label: locale === 'ka' ? 'ყველა სტატუსი' : 'All Status' },
-                  { value: 'active', label: locale === 'ka' ? 'აქტიური' : 'Active' },
-                  { value: 'pending', label: locale === 'ka' ? 'მოლოდინში' : 'Pending' },
+                  { value: '', label: t('company.allStatus') },
+                  { value: 'active', label: t('common.active') },
+                  { value: 'pending', label: t('common.pending') },
                   { value: 'inactive', label: t('company.inactive') },
                 ]}
               />
@@ -484,7 +484,7 @@ export default function CompanyEmployeesPage() {
               style={{ background: ACCENT }}
             >
               <UserPlus className="w-4 h-4" />
-              {locale === 'ka' ? 'მოწვევა' : 'Invite Employee'}
+              {t('company.inviteEmployee')}
             </Link>
           </div>
         )}

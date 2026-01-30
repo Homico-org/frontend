@@ -235,7 +235,7 @@ export default function StepAccount({
         {/* Name and Email */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <FormGroup>
-            <Label required locale={locale}>
+            <Label required>
               {t('common.fullName')}
             </Label>
             <Input
@@ -250,8 +250,8 @@ export default function StepAccount({
             />
           </FormGroup>
           <FormGroup>
-            <Label locale={locale}>
-              {locale === "ka" ? "ელ-ფოსტა" : "Email"}
+            <Label>
+              {t('common.email')}
               <span className="ml-1 text-neutral-400 font-normal">
                 ({t('common.optional')})
               </span>
@@ -267,7 +267,7 @@ export default function StepAccount({
 
         {/* Phone section */}
         <FormGroup>
-          <Label required locale={locale}>
+          <Label required>
             {t('common.phone')}
           </Label>
 
@@ -316,7 +316,7 @@ export default function StepAccount({
         {/* Password fields */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <FormGroup>
-            <Label required locale={locale}>
+            <Label required>
               {t('common.password')}
             </Label>
             <PasswordInput
@@ -328,7 +328,7 @@ export default function StepAccount({
             />
           </FormGroup>
           <FormGroup>
-            <Label required locale={locale}>
+            <Label required>
               {t('register.repeatPassword')}
             </Label>
             <PasswordInput

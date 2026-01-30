@@ -49,12 +49,7 @@ interface MediaFile {
   type: "image" | "video";
 }
 
-const STEPS: { id: Step; label: string; labelKa: string; labelRu: string }[] = [
-  { id: "category", label: "Category", labelKa: "კატეგორია", labelRu: "Категория" },
-  { id: "location", label: "Location & Budget", labelKa: "ლოკაცია და ბიუჯეტი", labelRu: "Местоположение и бюджет" },
-  { id: "details", label: "Details", labelKa: "დეტალები", labelRu: "Детали" },
-  { id: "review", label: "Review", labelKa: "გადახედვა", labelRu: "Обзор" },
-];
+const STEP_IDS: Step[] = ["category", "location", "details", "review"];
 
 // Category icons - Custom illustrated style
 function PostJobPageContent() {
@@ -107,48 +102,42 @@ function PostJobPageContent() {
     fields: Array<{
       key: string;
       type: "text" | "number";
-      labelEn: string;
-      labelKa: string;
-      placeholderEn: string;
-      placeholderKa: string;
+      labelKey: string;
+      placeholder: string;
       required?: boolean;
       suffix?: string;
+      suffixKey?: string;
     }>;
-    hintEn: string;
-    hintKa: string;
+    hintKey: string;
   }> = {
     // Architecture - needs cadastral and area
     architecture: {
       fields: [
-        { key: "areaSize", type: "number", labelEn: "Area", labelKa: "ფართი", placeholderEn: "100", placeholderKa: "100", suffix: "m²" },
+        { key: "areaSize", type: "number", labelKey: "job.area", placeholder: "100", suffix: "m²" },
       ],
-      hintEn: "For architectural projects, the cadastral ID helps professionals understand the land registration and zoning requirements.",
-      hintKa: "არქიტექტურული პროექტებისთვის საკადასტრო კოდი ეხმარება პროფესიონალებს მიწის რეგისტრაციისა და ზონირების მოთხოვნების გაგებაში.",
+      hintKey: "postJob.hints.architecture",
     },
     // Interior Design - needs area and room count
     design: {
       fields: [
-        { key: "areaSize", type: "number", labelEn: "Area", labelKa: "ფართი", placeholderEn: "80", placeholderKa: "80", suffix: "m²" },
-        { key: "roomCount", type: "number", labelEn: "Rooms", labelKa: "ოთახები", placeholderEn: "3", placeholderKa: "3", required: true },
+        { key: "areaSize", type: "number", labelKey: "job.area", placeholder: "80", suffix: "m²" },
+        { key: "roomCount", type: "number", labelKey: "job.rooms", placeholder: "3", required: true },
       ],
-      hintEn: "Specify the total area and number of rooms to help designers provide accurate estimates for your interior project.",
-      hintKa: "მიუთითე საერთო ფართი და ოთახების რაოდენობა, რომ დიზაინერებმა შეძლონ ზუსტი შეფასების მოწოდება.",
+      hintKey: "postJob.hints.design",
     },
     // Craftsmen/Construction - mixed based on subcategory
     craftsmen: {
       fields: [
-        { key: "areaSize", type: "number", labelEn: "Area", labelKa: "ფართი", placeholderEn: "50", placeholderKa: "50", suffix: "m²" },
+        { key: "areaSize", type: "number", labelKey: "job.area", placeholder: "50", suffix: "m²" },
       ],
-      hintEn: "Provide the work area size for accurate pricing. For electrical or plumbing work, you can also specify points count.",
-      hintKa: "მიუთითე სამუშაო ფართი ზუსტი ფასისთვის. ელექტრო ან სანტექნიკის სამუშაოებისთვის შეგიძლია მიუთითო წერტილების რაოდენობა.",
+      hintKey: "postJob.hints.craftsmen",
     },
     // Home care - area based
     homecare: {
       fields: [
-        { key: "areaSize", type: "number", labelEn: "Area", labelKa: "ფართი", placeholderEn: "100", placeholderKa: "100", suffix: "m²" },
+        { key: "areaSize", type: "number", labelKey: "job.area", placeholder: "100", suffix: "m²" },
       ],
-      hintEn: "Specify the area to be serviced for accurate cleaning or maintenance quotes.",
-      hintKa: "მიუთითე მოსასუფთავებელი ან მოსავლელი ფართი ზუსტი შეფასებისთვის.",
+      hintKey: "postJob.hints.homecare",
     },
   };
 
@@ -156,32 +145,31 @@ function PostJobPageContent() {
   const subcategoryFieldsOverride: Record<string, Array<{
     key: string;
     type: "text" | "number";
-    labelEn: string;
-    labelKa: string;
-    placeholderEn: string;
-    placeholderKa: string;
+    labelKey: string;
+    placeholder: string;
     required?: boolean;
     suffix?: string;
+    suffixKey?: string;
   }>> = {
     // Electrical work - points based
     "electrical": [
-      { key: "pointsCount", type: "number", labelEn: "Electrical points", labelKa: "ელექტრო წერტილები", placeholderEn: "20", placeholderKa: "20", suffix: "წრტ" },
-      { key: "areaSize", type: "number", labelEn: "Area", labelKa: "ფართი", placeholderEn: "80", placeholderKa: "80", suffix: "m²" },
+      { key: "pointsCount", type: "number", labelKey: "postJob.fields.electricalPoints", placeholder: "20", suffixKey: "postJob.units.pointsShort" },
+      { key: "areaSize", type: "number", labelKey: "job.area", placeholder: "80", suffix: "m²" },
     ],
     // Plumbing - points based
     "plumbing": [
-      { key: "pointsCount", type: "number", labelEn: "Plumbing points", labelKa: "სანტექნიკის წერტილები", placeholderEn: "10", placeholderKa: "10", suffix: "წრტ" },
-      { key: "areaSize", type: "number", labelEn: "Area", labelKa: "ფართი", placeholderEn: "80", placeholderKa: "80", suffix: "m²" },
+      { key: "pointsCount", type: "number", labelKey: "postJob.fields.plumbingPoints", placeholder: "10", suffixKey: "postJob.units.pointsShort" },
+      { key: "areaSize", type: "number", labelKey: "job.area", placeholder: "80", suffix: "m²" },
     ],
     // HVAC - points and area
     "hvac": [
-      { key: "pointsCount", type: "number", labelEn: "Units/Points", labelKa: "ერთეულები/წერტილები", placeholderEn: "5", placeholderKa: "5", suffix: "წრტ" },
-      { key: "areaSize", type: "number", labelEn: "Area", labelKa: "ფართი", placeholderEn: "100", placeholderKa: "100", suffix: "m²" },
+      { key: "pointsCount", type: "number", labelKey: "postJob.fields.unitsOrPoints", placeholder: "5", suffixKey: "postJob.units.pointsShort" },
+      { key: "areaSize", type: "number", labelKey: "job.area", placeholder: "100", suffix: "m²" },
     ],
     // Lighting
     "lighting": [
-      { key: "pointsCount", type: "number", labelEn: "Light points", labelKa: "სანათი წერტილები", placeholderEn: "15", placeholderKa: "15", suffix: "წრტ" },
-      { key: "roomCount", type: "number", labelEn: "Rooms", labelKa: "ოთახები", placeholderEn: "4", placeholderKa: "4", required: true },
+      { key: "pointsCount", type: "number", labelKey: "postJob.fields.lightPoints", placeholder: "15", suffixKey: "postJob.units.pointsShort" },
+      { key: "roomCount", type: "number", labelKey: "job.rooms", placeholder: "4", required: true },
     ],
   };
 
@@ -201,9 +189,7 @@ function PostJobPageContent() {
   // Get hint for current selection
   const getActiveHint = () => {
     if (selectedCategory && categoryFieldsConfig[selectedCategory]) {
-      return locale === "ka"
-        ? categoryFieldsConfig[selectedCategory].hintKa
-        : categoryFieldsConfig[selectedCategory].hintEn;
+      return t(categoryFieldsConfig[selectedCategory].hintKey);
     }
     return t('job.describeInDetailWhatYou');
   };
@@ -274,8 +260,9 @@ function PostJobPageContent() {
   };
 
   // Step navigation
-  const getCurrentStepIndex = () => STEPS.findIndex((s) => s.id === currentStep);
-  const progressPercent = ((getCurrentStepIndex() + 1) / STEPS.length) * 100;
+  const getCurrentStepIndex = () => STEP_IDS.indexOf(currentStep);
+  const progressPercent = ((getCurrentStepIndex() + 1) / STEP_IDS.length) * 100;
+  const getStepLabel = (step: Step) => t(`postJob.steps.${step}`);
 
   const canProceedFromCategory = () => {
     if (!selectedCategory || !selectedSubcategory || !formData.propertyType) return false;
@@ -311,8 +298,8 @@ function PostJobPageContent() {
 
   const handleNext = () => {
     const stepIndex = getCurrentStepIndex();
-    if (stepIndex < STEPS.length - 1) {
-      setCurrentStep(STEPS[stepIndex + 1].id);
+    if (stepIndex < STEP_IDS.length - 1) {
+      setCurrentStep(STEP_IDS[stepIndex + 1]);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (currentStep === "review") {
       handleSubmit();
@@ -322,7 +309,7 @@ function PostJobPageContent() {
   const handleBack = () => {
     const stepIndex = getCurrentStepIndex();
     if (stepIndex > 0) {
-      setCurrentStep(STEPS[stepIndex - 1].id);
+      setCurrentStep(STEP_IDS[stepIndex - 1]);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
       backOrNavigate(router, "/browse");
@@ -381,27 +368,9 @@ function PostJobPageContent() {
         });
       }
 
-      // Calculate deadline based on timing selection
-      const getDeadlineFromTiming = (timing: string): string | null => {
-        const now = new Date();
-        switch (timing) {
-          case 'asap':
-            // 3 days from now for urgent/ASAP
-            return new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
-          case 'this_week':
-            // 7 days from now
-            return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
-          case 'this_month':
-            // 30 days from now
-            return new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
-          case 'flexible':
-          default:
-            // No deadline for flexible
-            return null;
-        }
-      };
-
-      const deadline = getDeadlineFromTiming(formData.timing);
+      // All jobs expire in 30 days from posting
+      const now = new Date();
+      const deadline = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
       const jobData: Record<string, unknown> = {
         title: formData.title,
@@ -416,10 +385,8 @@ function PostJobPageContent() {
         budgetMax: formData.budgetType === "negotiable" ? 0 : (formData.budgetMax ? Number(formData.budgetMax) : Number(formData.budgetMin)),
       };
 
-      // Add deadline if not flexible
-      if (deadline) {
-        jobData.deadline = deadline;
-      }
+      // All jobs have a 30-day deadline
+      jobData.deadline = deadline;
 
       // Add category-specific fields if they have values
       if (formData.cadastralId) jobData.cadastralId = formData.cadastralId;
@@ -496,9 +463,9 @@ function PostJobPageContent() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-3 text-sm text-neutral-600">
-              <span className="font-semibold text-[#C4735B]">{getCurrentStepIndex() + 1}/{STEPS.length}</span>
+              <span className="font-semibold text-[#C4735B]">{getCurrentStepIndex() + 1}/{STEP_IDS.length}</span>
               <span className="hidden sm:inline text-neutral-300">•</span>
-              <span className="hidden sm:inline font-medium">{locale === "ka" ? STEPS[getCurrentStepIndex()].labelKa : locale === "ru" ? STEPS[getCurrentStepIndex()].labelRu : STEPS[getCurrentStepIndex()].label}</span>
+              <span className="hidden sm:inline font-medium">{getStepLabel(currentStep)}</span>
             </div>
             <Progress value={progressPercent} size="default" className="flex-1" />
             <span className="text-sm font-semibold text-[#C4735B]">
@@ -570,7 +537,7 @@ function PostJobPageContent() {
                       {getActiveFields().map((field) => (
                         <div key={field.key}>
                           <label className="block text-sm font-medium text-neutral-600 mb-2">
-                            {locale === "ka" ? field.labelKa : field.labelEn}
+                            {t(field.labelKey)}
                             {field.required && " *"}
                           </label>
                           <div className="relative">
@@ -587,14 +554,14 @@ function PostJobPageContent() {
                                 }
                                 updateFormData(field.key, value);
                               }}
-                              placeholder={locale === "ka" ? field.placeholderKa : field.placeholderEn}
+                              placeholder={field.placeholder}
                               className={`w-full px-4 py-3 rounded-xl border border-neutral-200 bg-white text-base placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 transition-all ${
-                                field.suffix ? "pr-12" : ""
+                                field.suffix || field.suffixKey ? "pr-12" : ""
                               }`}
                             />
-                            {field.suffix && (
+                            {(field.suffix || field.suffixKey) && (
                               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-neutral-400 font-medium">
-                                {field.suffix}
+                                {field.suffixKey ? t(field.suffixKey) : field.suffix}
                               </span>
                             )}
                           </div>
@@ -704,7 +671,7 @@ function PostJobPageContent() {
                   {t('job.locationBudget')}
                 </h2>
                 <p className="text-base text-neutral-500 mb-6">
-                  {locale === "ka" ? "მიუთითეთ პროექტის მისამართი და ბიუჯეტი" : "Specify the project address and budget"}
+                  {t("postJob.locationBudgetSubtitle")}
                 </p>
 
                 <div className="space-y-6">
@@ -765,7 +732,7 @@ function PostJobPageContent() {
             <div className="max-w-3xl mx-auto space-y-6">
               <div>
                 <h1 className="text-2xl lg:text-3xl font-bold text-neutral-900 mb-2">
-                  {locale === "ka" ? "პროექტის დეტალები" : "Project Details"}
+                  {t("job.projectDetails")}
                 </h1>
                 <p className="text-base text-neutral-500">
                   {t('job.describeWhatNeedsToBe')}
@@ -824,9 +791,7 @@ function PostJobPageContent() {
                         {t('job.addPhotos')} <span className="text-[#C4735B]">*</span>
                       </label>
                       <p className="text-sm text-neutral-500 leading-relaxed">
-                        {locale === "ka"
-                          ? "მინიმუმ 1 ფოტო საჭიროა. ფოტოები ეხმარება პროფესიონალებს უკეთ გაიგონ თქვენი პროექტი."
-                          : "At least 1 photo is required. Photos help professionals better understand your project."}
+                        {t("postJob.photosRequirementHelp")}
                       </p>
                     </div>
                   </div>
@@ -907,9 +872,10 @@ function PostJobPageContent() {
                     <div className="mt-4 flex items-center gap-2 text-sm text-emerald-600">
                       <Check className="w-4 h-4" />
                       <span>
-                        {locale === "ka"
-                          ? `${existingMedia.length + mediaFiles.length} ფოტო დამატებულია - პროფესიონალები უკეთ გაიგებენ შენს პროექტს!`
-                          : `${existingMedia.length + mediaFiles.length} photo${(existingMedia.length + mediaFiles.length) > 1 ? 's' : ''} added - pros will better understand your project!`}
+                        {t("postJob.photosAddedSuccess", {
+                          count: existingMedia.length + mediaFiles.length,
+                          plural: (existingMedia.length + mediaFiles.length) > 1 ? "s" : "",
+                        })}
                       </span>
                     </div>
                   )}
@@ -921,9 +887,7 @@ function PostJobPageContent() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                       </svg>
                       <span>
-                        {locale === "ka"
-                          ? "გთხოვთ დაამატოთ მინიმუმ 1 ფოტო გასაგრძელებლად"
-                          : "Please add at least 1 photo to continue"}
+                        {t("postJob.addAtLeastOnePhotoToContinue")}
                       </span>
                     </div>
                   )}
@@ -955,7 +919,7 @@ function PostJobPageContent() {
                   </h3>
                   <Button variant="ghost" size="sm" onClick={() => goToStep("category")} className="text-[#C4735B]">
                     <Pencil className="w-4 h-4 mr-1" />
-                    {locale === "ka" ? "შეცვლა" : "Edit"}
+                    {t("common.edit")}
                   </Button>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">
@@ -1021,7 +985,7 @@ function PostJobPageContent() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       </div>
-                      {locale === "ka" ? "ბიუჯეტი" : "Budget"}
+                      {t("common.budget")}
                     </h3>
                     <Button variant="ghost" size="sm" onClick={() => goToStep("location")} className="text-[#C4735B] h-8 w-8 p-0">
                       <Pencil className="w-4 h-4" />
@@ -1114,7 +1078,7 @@ function PostJobPageContent() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
                       </svg>
                     </div>
-                    {locale === "ka" ? "აღწერა" : "Description"}
+                    {t("common.description")}
                   </h3>
                   <Button variant="ghost" size="sm" onClick={() => goToStep("details")} className="text-[#C4735B] h-8 w-8 p-0">
                     <Pencil className="w-4 h-4" />

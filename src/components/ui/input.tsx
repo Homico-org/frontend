@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
 const inputVariants = cva(
@@ -166,13 +167,12 @@ export interface LabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> 
   required?: boolean;
   optional?: boolean;
   hint?: string;
-  locale?: 'en' | 'ka' | 'ru';
 }
 
 const Label = React.forwardRef<HTMLLabelElement, LabelProps>(
-  ({ className, children, required, optional, hint, locale = 'en', ...props }, ref) => {
-    const requiredText = locale === 'ka' ? '*' : '*';
-    const optionalText = locale === 'ka' ? 'არასავალდებულო' : 'optional';
+  ({ className, children, required, optional, hint, ...props }, ref) => {
+    const { t } = useLanguage();
+    const optionalText = t('common.optional');
     
     return (
       <div className="flex items-center justify-between mb-2">
@@ -187,7 +187,7 @@ const Label = React.forwardRef<HTMLLabelElement, LabelProps>(
           {children}
           {required && (
             <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-              {requiredText}
+              *
             </span>
           )}
           {optional && (

@@ -222,7 +222,7 @@ function MyJobsPageContent() {
       setDeleteModalJob(null);
     } catch (err) {
       toast.error(
-        locale === "ka" ? "შეცდომა" : "Error",
+        t("common.error"),
         t("job.failedToDeleteJob")
       );
     } finally {
@@ -244,12 +244,12 @@ function MyJobsPageContent() {
       );
 
       toast.success(
-        locale === "ka" ? "წარმატება" : "Success",
+        t("common.success"),
         t("job.jobRenewedFor30Days")
       );
     } catch (err) {
       toast.error(
-        locale === "ka" ? "შეცდომა" : "Error",
+        t("common.error"),
         t("job.failedToRenewJob")
       );
     } finally {
@@ -317,11 +317,7 @@ function MyJobsPageContent() {
             <div className="relative">
               <Input
                 type="text"
-                placeholder={
-                  locale === "ka"
-                    ? "ძებნა სათაურით, კატეგორიით ან მდებარეობით..."
-                    : "Search by title, category, or location..."
-                }
+                placeholder={t("job.searchMyJobsPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 leftIcon={<Search className="w-4 h-4" />}
@@ -448,7 +444,7 @@ function MyJobsPageContent() {
                               icon={<Check className="w-3 h-3" />}
                               className="shadow-lg backdrop-blur-sm"
                             >
-                              {locale === "ka" ? "დაქირავებული" : "Hired"}
+                              {t("common.hired")}
                             </Badge>
                           )}
                           {isClosed && (
@@ -457,7 +453,7 @@ function MyJobsPageContent() {
                               size="sm"
                               className="shadow-lg backdrop-blur-sm"
                             >
-                              {locale === "ka" ? "დახურული" : "Closed"}
+                              {t("job.closed")}
                             </Badge>
                           )}
                           {isExpired && (
@@ -467,7 +463,7 @@ function MyJobsPageContent() {
                               icon={<Clock className="w-3 h-3" />}
                               className="shadow-lg backdrop-blur-sm"
                             >
-                              {locale === "ka" ? "ვადაგასული" : "Expired"}
+                              {t("job.expired")}
                             </Badge>
                           )}
                         </div>
@@ -547,10 +543,7 @@ function MyJobsPageContent() {
                               )}
                               <span className="flex items-center gap-1 text-[10px] sm:text-[11px] text-neutral-400">
                                 <Clock className="w-3 h-3" />
-                                {formatTimeAgo(
-                                  job.createdAt,
-                                  locale as "en" | "ka" | "ru"
-                                )}
+                                {formatTimeAgo(job.createdAt, t)}
                               </span>
                             </div>
 
@@ -666,11 +659,7 @@ function MyJobsPageContent() {
                                 <div className="flex flex-col">
                                   <span className="text-sm font-semibold text-[#C4735B]">
                                     {job.proposalCount}{" "}
-                                    {locale === "ka"
-                                      ? "შეთავაზება"
-                                      : job.proposalCount === 1
-                                        ? "Proposal"
-                                        : "Proposals"}
+                                    {t("job.proposals")}
                                   </span>
                                   {job.proposalCount === 1 &&
                                     job.recentProposals?.[0]?.proId?.name && (
@@ -776,9 +765,7 @@ function MyJobsPageContent() {
                               >
                                 {renewingJobId === job.id
                                   ? t("job.renewing")
-                                  : locale === "ka"
-                                    ? "განახლება"
-                                    : "Renew"}
+                                  : t("job.renew")}
                               </Button>
                             )}
                           </div>

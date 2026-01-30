@@ -162,11 +162,7 @@ function AdminActivityLogsPageContent() {
       setActivityTypes(typesRes.data || []);
     } catch (err) {
         console.error("Failed to fetch activity logs:", err);
-        toast.error(
-          locale === "ka"
-            ? "ვერ მოხერხდა აქტივობის ჩატვირთვა"
-            : "Failed to load activity logs"
-        );
+        toast.error(t("admin.failedToLoadActivityLogs"));
     } finally {
         hasLoadedRef.current = true;
       setIsLoading(false);
@@ -489,11 +485,7 @@ function AdminActivityLogsPageContent() {
               />
               <input
                 type="text"
-                placeholder={
-                  locale === "ka"
-                    ? "ძებნა: ელ-ფოსტა / სახელი / userId / targetId"
-                    : "Search: email / name / userId / targetId"
-                }
+                placeholder={t("admin.activityLogsSearchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-all"
@@ -509,8 +501,8 @@ function AdminActivityLogsPageContent() {
                 [
                   { key: "all", label: t("common.all") },
                   { key: "today", label: t("common.today") },
-                  { key: "7d", label: locale === "ka" ? "7 დღე" : "7d" },
-                  { key: "30d", label: locale === "ka" ? "30 დღე" : "30d" },
+                  { key: "7d", label: t("common.last7DaysShort") },
+                  { key: "30d", label: t("common.last30DaysShort") },
                 ] as const
               ).map((opt) => (
                 <button
@@ -683,7 +675,8 @@ function AdminActivityLogsPageContent() {
                       )}
                       {changes.length > 0 && (
                         <p className="text-xs" style={{ color: THEME.textDim }}>
-                          {locale === "ka" ? "ცვლილებები:" : "Changes:"}{" "}
+                          {t("common.changes")}{" "}
+                          <span style={{ color: THEME.textDim }}>:</span>{" "}
                           <span style={{ color: THEME.textMuted }}>
                             {changes
                               .map((c) => c.field)
@@ -741,9 +734,7 @@ function AdminActivityLogsPageContent() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between mt-6">
             <p className="text-sm" style={{ color: THEME.textMuted }}>
-              {locale === "ka"
-                ? `გვერდი ${page} / ${totalPages}`
-                : `Page ${page} of ${totalPages}`}
+              {t("common.pageOf", { page, total: totalPages })}
             </p>
             <div className="flex items-center gap-2">
               <button
@@ -848,7 +839,7 @@ function AdminActivityLogsPageContent() {
                   style={{ color: THEME.text }}
                 >
                   <User className="w-4 h-4" style={{ color: THEME.primary }} />
-                  {locale === "ka" ? "მომხმარებელი" : "User"}
+                  {t("admin.user")}
                 </h4>
                 <div
                   className="rounded-xl p-4"
@@ -922,9 +913,7 @@ function AdminActivityLogsPageContent() {
                           className="w-4 h-4"
                           style={{ color: THEME.primary }}
                         />
-                        {locale === "ka"
-                          ? "ცვლილებები (Before / After)"
-                          : "Changes (Before / After)"}
+                        {t("common.changes")} ({t("common.beforeAfter")})
                       </h4>
 
                       {getChanges(selectedLog).length > 0 ? (
@@ -943,13 +932,13 @@ function AdminActivityLogsPageContent() {
                             }}
                           >
                             <div className="col-span-4">
-                              {locale === "ka" ? "ველი" : "Field"}
+                              {t("common.field")}
                             </div>
                             <div className="col-span-4">
-                              {locale === "ka" ? "Before" : "Before"}
+                              {t("common.before")}
                             </div>
                             <div className="col-span-4">
-                              {locale === "ka" ? "After" : "After"}
+                              {t("common.after")}
                             </div>
                           </div>
                           {getChanges(selectedLog)
@@ -1010,9 +999,7 @@ function AdminActivityLogsPageContent() {
                             className="text-sm"
                             style={{ color: THEME.textMuted }}
                           >
-                            {locale === "ka"
-                              ? "ამ ჩანაწერს არ აქვს before/after ცვლილებები (ჯერ არ არის ჩაწერილი ლოგებში)."
-                              : "This log does not include before/after changes (not recorded yet)."}
+                            {t("admin.activityLogsNoBeforeAfterChanges")}
                           </p>
                         </div>
                       )}
@@ -1028,7 +1015,7 @@ function AdminActivityLogsPageContent() {
                           className="w-4 h-4"
                           style={{ color: THEME.primary }}
                         />
-                        {locale === "ka" ? "Raw დეტალები" : "Raw Details"}
+                        {t("common.rawDetails")}
                   </h4>
                   <div
                     className="rounded-xl p-4 overflow-x-auto"

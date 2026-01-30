@@ -99,7 +99,7 @@ export default function ReviewItem({
             <MultiStarDisplay rating={review.rating} size="sm" />
           </div>
           <p className="text-xs text-neutral-400 mb-2">
-            {formatTimeAgo(review.createdAt, locale)}
+            {formatTimeAgo(review.createdAt, t)}
             {review.projectTitle && (
               <span className="ml-2 text-neutral-500">
                 • {review.projectTitle}

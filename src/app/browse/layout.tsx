@@ -17,6 +17,7 @@ import {
   Plus,
   Search,
   Users,
+  Wrench,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -208,6 +209,15 @@ const TABS = [
     icon: Users,
     showFor: "all" as const,
   },
+  {
+    key: "tools",
+    route: "/tools",
+    label: "Tools",
+    labelKa: "ხელსაწყოები",
+    labelRu: "Инструменты",
+    icon: Wrench,
+    showFor: "all" as const,
+  },
 ];
 
 // Helper to count active filters for Jobs
@@ -315,7 +325,9 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
     ? "jobs"
     : pathname.includes("/browse/portfolio")
       ? "portfolio"
-      : "professionals";
+      : pathname.includes("/tools")
+        ? "tools"
+        : "professionals";
 
   // Get visible tabs based on user role
   const visibleTabs = TABS.filter(

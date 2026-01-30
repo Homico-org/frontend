@@ -385,7 +385,7 @@ export default function CompanyProposalsPage() {
                           )}
                           <span className="flex items-center gap-1.5">
                             <Calendar className="w-4 h-4" />
-                            {formatTimeAgo(proposal.createdAt, locale as 'en' | 'ka' | 'ru')}
+                            {formatTimeAgo(proposal.createdAt, t)}
                           </span>
                           {proposal.estimatedDuration && (
                             <span className="flex items-center gap-1.5">

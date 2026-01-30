@@ -42,7 +42,7 @@ import type {
 } from "@/types/shared";
 import { isHighLevelCategory } from "@/utils/categoryHelpers";
 import { formatBudget as formatBudgetUtil } from "@/utils/currencyUtils";
-import { formatTimeAgoCompact } from "@/utils/dateUtils";
+import { formatDateMonthDay, formatTimeAgoCompact } from "@/utils/dateUtils";
 import {
   AlertCircle,
   Armchair,
@@ -1177,9 +1177,7 @@ export default function JobDetailClient() {
       case "stage_changed":
         const fromLabel = STAGES.find((s) => s.key === meta?.fromStage);
         const toLabel = STAGES.find((s) => s.key === meta?.toStage);
-        return locale === "ka"
-          ? `${fromLabel?.labelKa || meta?.fromStage || "—"} → ${toLabel?.labelKa || meta?.toStage}`
-          : `${fromLabel?.label || meta?.fromStage || "—"} → ${toLabel?.label || meta?.toStage}`;
+        return `${({ ka: fromLabel?.labelKa, en: fromLabel?.label, ru: fromLabel?.label }[locale] ?? meta?.fromStage ?? "—")} → ${({ ka: toLabel?.labelKa, en: toLabel?.label, ru: toLabel?.label }[locale] ?? meta?.toStage ?? "—")}`;
       case "poll_created":
         return `"${meta?.pollTitle}"`;
       case "poll_voted":
@@ -1205,24 +1203,14 @@ export default function JobDetailClient() {
 
   // Format history time
   const formatHistoryTime = (dateStr: string) => {
-    const date = new Date(dateStr);
     const now = new Date();
+    const date = new Date(dateStr);
     const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return t("common.justNow");
-    if (diffMins < 60)
-      return locale === "ka" ? `${diffMins} წთ წინ` : `${diffMins}m ago`;
-    if (diffHours < 24)
-      return locale === "ka" ? `${diffHours} სთ წინ` : `${diffHours}h ago`;
     if (diffDays < 7)
-      return locale === "ka" ? `${diffDays} დღე წინ` : `${diffDays}d ago`;
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
+      return formatTimeAgoCompact(dateStr, locale);
+    return formatDateMonthDay(dateStr, locale);
   };
 
   const filteredHistory =
@@ -1525,13 +1513,13 @@ export default function JobDetailClient() {
     try {
       await api.patch(`/jobs/projects/${job.id}/stage`, { stage: "review" });
       toast.success(
-        locale === "ka" ? "წარმატება" : "Success",
+        t("common.success"),
         t("jobDetail.requestSent")
       );
     } catch (err) {
       setProjectStage(previousStage);
       toast.error(
-        locale === "ka" ? "შეცდომა" : "Error",
+        t("common.error"),
         t("jobDetail.failedToSendRequest")
       );
     } finally {
@@ -1645,10 +1633,10 @@ export default function JobDetailClient() {
         setJob((prev) => (prev ? { ...prev, title: editTitle } : prev));
       }
       setShowTitleEdit(false);
-      toast.success(locale === "ka" ? "შენახულია" : "Saved");
+      toast.success(t("common.saved"));
     } catch (err) {
       console.error("Failed to save title:", err);
-      toast.error(locale === "ka" ? "შენახვა ვერ მოხერხდა" : "Failed to save");
+      toast.error(t("jobDetail.failedToSave"));
     } finally {
       setIsSavingTitle(false);
     }
@@ -1696,10 +1684,10 @@ export default function JobDetailClient() {
         );
       }
       setShowPropertyEdit(false);
-      toast.success(locale === "ka" ? "შენახულია" : "Saved");
+      toast.success(t("common.saved"));
     } catch (err) {
       console.error("Failed to save property details:", err);
-      toast.error(locale === "ka" ? "შენახვა ვერ მოხერხდა" : "Failed to save");
+      toast.error(t("jobDetail.failedToSave"));
     } finally {
       setIsSavingProperty(false);
     }
@@ -1716,10 +1704,10 @@ export default function JobDetailClient() {
         setJob((prev) => (prev ? { ...prev, workTypes: editWorkTypes } : prev));
       }
       setShowWorkTypesEdit(false);
-      toast.success(locale === "ka" ? "შენახულია" : "Saved");
+      toast.success(t("common.saved"));
     } catch (err) {
       console.error("Failed to save work types:", err);
-      toast.error(locale === "ka" ? "შენახვა ვერ მოხერხდა" : "Failed to save");
+      toast.error(t("jobDetail.failedToSave"));
     } finally {
       setIsSavingWorkTypes(false);
     }
@@ -1736,10 +1724,10 @@ export default function JobDetailClient() {
         setJob((prev) => (prev ? { ...prev, ...editRequirements } : prev));
       }
       setShowRequirementsEdit(false);
-      toast.success(locale === "ka" ? "შენახულია" : "Saved");
+      toast.success(t("common.saved"));
     } catch (err) {
       console.error("Failed to save requirements:", err);
-      toast.error(locale === "ka" ? "შენახვა ვერ მოხერხდა" : "Failed to save");
+      toast.error(t("jobDetail.failedToSave"));
     } finally {
       setIsSavingRequirements(false);
     }
@@ -1792,7 +1780,7 @@ export default function JobDetailClient() {
     if (job.budgetType === "negotiable") {
       return t("common.negotiable");
     }
-    return formatBudgetUtil(job, locale as "en" | "ka" | "ru");
+    return formatBudgetUtil(job, t);
   };
 
   const getTimeAgo = (dateString: string) =>
@@ -2045,7 +2033,7 @@ export default function JobDetailClient() {
                       <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
                         <Users className="w-4 h-4" />
                         <span>
-                          {job.proposalCount || 0} {locale === "ka" ? "შეთავაზება" : "proposals"}
+                          {job.proposalCount || 0} {t("jobDetail.proposals")}
                         </span>
                       </div>
                     ))}
@@ -2139,7 +2127,7 @@ export default function JobDetailClient() {
                   ) : (
                     <div className="flex items-center gap-1.5">
                       <Users className="w-4 h-4" />
-                      <span>{job.proposalCount || 0} {locale === "ka" ? "შეთავაზება" : "proposals"}</span>
+                      <span>{job.proposalCount || 0} {t("jobDetail.proposals")}</span>
                     </div>
                   )
                 )}
@@ -2188,7 +2176,7 @@ export default function JobDetailClient() {
                       <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
                         <DoorOpen className="w-4 h-4 text-neutral-500" />
                         <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                          {job.roomCount} {locale === "ka" ? "ოთახი" : "rooms"}
+                          {job.roomCount} {t("jobDetail.rooms")}
                         </span>
                       </div>
                     )}
@@ -2198,11 +2186,7 @@ export default function JobDetailClient() {
                         <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                           {(() => {
                             const date = new Date(job.deadline);
-                            if (locale === "ka") {
-                              const months = ["იან", "თებ", "მარ", "აპრ", "მაი", "ივნ", "ივლ", "აგვ", "სექ", "ოქტ", "ნოე", "დეკ"];
-                              return `${date.getDate()} ${months[date.getMonth()]}`;
-                            }
-                            return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+                            return formatDateMonthDay(date.toISOString(), locale);
                           })()}
                         </span>
                       </div>
@@ -2258,15 +2242,13 @@ export default function JobDetailClient() {
                   <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
                   <div className="flex-1">
                     <p className="text-sm text-amber-800 dark:text-amber-200 font-medium">
-                      {locale === 'ka'
-                        ? 'წინადადების გასაგზავნად საჭიროა პროფილის ვერიფიკაცია'
-                        : 'Profile verification required to submit proposals'}
+                      {t("jobDetail.verificationRequiredToSubmitProposals")}
                     </p>
                     <Link
                       href="/settings"
                       className="text-sm text-amber-700 dark:text-amber-300 underline hover:no-underline"
                     >
-                      {locale === 'ka' ? 'გაიარეთ ვერიფიკაცია →' : 'Complete verification →'}
+                      {t("jobDetail.completeVerificationCta")}
                     </Link>
                   </div>
                 </div>
@@ -2372,14 +2354,10 @@ export default function JobDetailClient() {
                   {/* Filter Tabs */}
                   <div className="flex items-center gap-1 px-4 py-3 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
                     {[
-                      { key: "all", label: "All", labelKa: "ყველა" },
-                        {
-                          key: "client",
-                          label: "Client",
-                          labelKa: "კლიენტი",
-                        },
-                      { key: "pro", label: "Pro", labelKa: "სპეციალისტი" },
-                      ].map((f) => (
+                      { key: "all", label: t("common.all") },
+                      { key: "client", label: t("common.client") },
+                      { key: "pro", label: t("jobDetail.pro") },
+                    ].map((f) => (
                       <button
                         key={f.key}
                           onClick={() =>
@@ -2396,7 +2374,7 @@ export default function JobDetailClient() {
                               : {}
                           }
                       >
-                        {locale === "ka" ? f.labelKa : f.label}
+                        {f.label}
                       </button>
                     ))}
                   </div>
@@ -2450,16 +2428,12 @@ export default function JobDetailClient() {
                                         size="xs"
                                       >
                                       {event.userRole === "client"
-                                          ? locale === "ka"
-                                            ? "კლიენტი"
-                                            : "Client"
+                                          ? t("common.client")
                                           : t("jobDetail.pro")}
                                     </Badge>
                                   </div>
                                   <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
-                                      {locale === "ka"
-                                        ? config.labelKa
-                                        : config.label}
+                                      {({ ka: config.labelKa, en: config.label, ru: config.label }[locale] ?? config.label)}
                                     {description && (
                                         <span className="text-neutral-500">
                                           {" "}
@@ -2480,9 +2454,7 @@ export default function JobDetailClient() {
                         {filteredHistory.length > 30 && (
                           <div className="mt-4 text-center">
                             <span className="text-xs text-neutral-400">
-                              {locale === "ka" 
-                                ? `+ ${filteredHistory.length - 30} სხვა მოვლენა` 
-                                : `+ ${filteredHistory.length - 30} more events`}
+                              {t("jobDetail.moreEvents", { count: filteredHistory.length - 30 })}
                             </span>
                           </div>
                         )}
@@ -2552,7 +2524,7 @@ export default function JobDetailClient() {
                       <button
                         onClick={openPropertyEditModal}
                         className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                        title={locale === "ka" ? "რედაქტირება" : "Edit"}
+                        title={t("common.edit")}
                       >
                         <Edit3 className="w-4 h-4" />
                       </button>
@@ -2620,28 +2592,7 @@ export default function JobDetailClient() {
                         icon={<Calendar className="w-5 h-5" />}
                             label={t("jobDetail.deadline")}
                         value={(() => {
-                          const date = new Date(job.deadline);
-                          if (locale === "ka") {
-                                const months = [
-                                  "იან",
-                                  "თებ",
-                                  "მარ",
-                                  "აპრ",
-                                  "მაი",
-                                  "ივნ",
-                                  "ივლ",
-                                  "აგვ",
-                                  "სექ",
-                                  "ოქტ",
-                                  "ნოე",
-                                  "დეკ",
-                                ];
-                            return `${date.getDate()} ${months[date.getMonth()]}`;
-                          }
-                              return date.toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                              });
+                          return formatDateMonthDay(job.deadline, locale);
                         })()}
                       />
                     )}
@@ -2666,7 +2617,7 @@ export default function JobDetailClient() {
                       <button
                         onClick={openWorkTypesEditModal}
                         className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                        title={locale === "ka" ? "რედაქტირება" : "Edit"}
+                        title={t("common.edit")}
                       >
                         <Edit3 className="w-4 h-4" />
                       </button>
@@ -2709,7 +2660,7 @@ export default function JobDetailClient() {
                       <button
                         onClick={openRequirementsEditModal}
                         className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                        title={locale === "ka" ? "რედაქტირება" : "Edit"}
+                        title={t("common.edit")}
                       >
                         <Edit3 className="w-4 h-4" />
                       </button>
@@ -2859,9 +2810,7 @@ export default function JobDetailClient() {
                               {t("jobDetail.projectStatus")}
                     </h3>
                           <p className="text-xs text-neutral-500">
-                              {locale === "ka"
-                                ? STAGES[getStageIndex(projectStage)]?.labelKa
-                                : STAGES[getStageIndex(projectStage)]?.label}
+                              {({ ka: STAGES[getStageIndex(projectStage)]?.labelKa, en: STAGES[getStageIndex(projectStage)]?.label, ru: STAGES[getStageIndex(projectStage)]?.label }[locale] ?? STAGES[getStageIndex(projectStage)]?.label)}
                           </p>
                         </div>
                       </div>
@@ -3063,9 +3012,7 @@ export default function JobDetailClient() {
                                       }
                                     `}
                                       >
-                                        {locale === "ka"
-                                          ? stage.labelKa
-                                          : stage.label}
+                                        {({ ka: stage.labelKa, en: stage.label, ru: stage.label }[locale] ?? stage.label)}
                                     </span>
                                     {isCurrent && (
                                       <span 
@@ -3142,7 +3089,7 @@ export default function JobDetailClient() {
                         <Check className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-400" />
                       </div>
                       <h3 className="font-display text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                        {locale === "ka" ? "დაქირავებული" : "Hired"}
+                        {t("common.hired")}
                       </h3>
                     </div>
                     <Link
@@ -3200,7 +3147,7 @@ export default function JobDetailClient() {
                         <BadgeCheck className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-400" />
                       </div>
                       <h3 className="font-display text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                        {locale === "ka" ? "დაქირავებული ხართ" : "You're Hired"}
+                        {t("jobDetail.youveBeenHired")}
                       </h3>
                     </div>
                     {/* Client info - clickable */}
@@ -3221,7 +3168,7 @@ export default function JobDetailClient() {
                             : job.clientId?.name || "Client"}
                         </p>
                         <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                          {locale === "ka" ? "კლიენტი" : "Client"}
+                          {t("common.client")}
                         </p>
                       </div>
                     </Link>
@@ -3371,7 +3318,7 @@ export default function JobDetailClient() {
         icon={<Trash2 className="w-6 h-6 text-red-500" />}
         variant="danger"
         cancelLabel={t("common.cancel")}
-        confirmLabel={locale === "ka" ? "წაშლა" : "Delete"}
+        confirmLabel={t("common.delete")}
         isLoading={isDeleting}
         loadingLabel="..."
       >
@@ -3480,7 +3427,7 @@ export default function JobDetailClient() {
               onClick={() => setShowDescriptionEdit(false)}
               disabled={isSavingDescription}
             >
-              {locale === "ka" ? "გაუქმება" : "Cancel"}
+              {t("common.cancel")}
             </Button>
             <Button
               onClick={handleSaveDescription}
@@ -3515,14 +3462,14 @@ export default function JobDetailClient() {
               onClick={() => setShowTitleEdit(false)}
               disabled={isSavingTitle}
             >
-              {locale === "ka" ? "გაუქმება" : "Cancel"}
+              {t("common.cancel")}
             </Button>
             <Button
               onClick={handleSaveTitle}
               loading={isSavingTitle}
               disabled={!editTitle.trim()}
             >
-              {locale === "ka" ? "შენახვა" : "Save"}
+              {t("common.save")}
             </Button>
           </div>
         </div>
@@ -3723,13 +3670,13 @@ export default function JobDetailClient() {
               onClick={() => setShowPropertyEdit(false)}
               disabled={isSavingProperty}
             >
-              {locale === "ka" ? "გაუქმება" : "Cancel"}
+              {t("common.cancel")}
             </Button>
             <Button
               onClick={handleSavePropertyDetails}
               loading={isSavingProperty}
             >
-              {locale === "ka" ? "შენახვა" : "Save"}
+              {t("common.save")}
             </Button>
           </div>
         </div>
@@ -3743,7 +3690,7 @@ export default function JobDetailClient() {
       >
         <div className="p-6">
           <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-6">
-            {locale === "ka" ? "სამუშაოს ტიპები" : "Work Types"}
+            {t("jobDetail.workTypes")}
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[50vh] overflow-y-auto">
             {allWorkTypes.map((type) => {
@@ -3776,10 +3723,10 @@ export default function JobDetailClient() {
               onClick={() => setShowWorkTypesEdit(false)}
               disabled={isSavingWorkTypes}
             >
-              {locale === "ka" ? "გაუქმება" : "Cancel"}
+              {t("common.cancel")}
             </Button>
             <Button onClick={handleSaveWorkTypes} loading={isSavingWorkTypes}>
-              {locale === "ka" ? "შენახვა" : "Save"}
+              {t("common.save")}
             </Button>
           </div>
         </div>
@@ -3793,7 +3740,7 @@ export default function JobDetailClient() {
       >
         <div className="p-6">
           <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-6">
-            {locale === "ka" ? "მოთხოვნები" : "Requirements"}
+            {t("jobDetail.requirements")}
           </h2>
           <div className="space-y-4">
             {/* Furniture Included */}
@@ -3886,13 +3833,13 @@ export default function JobDetailClient() {
               onClick={() => setShowRequirementsEdit(false)}
               disabled={isSavingRequirements}
             >
-              {locale === "ka" ? "გაუქმება" : "Cancel"}
+              {t("common.cancel")}
             </Button>
             <Button
               onClick={handleSaveRequirements}
               loading={isSavingRequirements}
             >
-              {locale === "ka" ? "შენახვა" : "Save"}
+              {t("common.save")}
             </Button>
           </div>
         </div>

@@ -232,7 +232,7 @@ function AdminReportsPageContent() {
     { label: t('admin.totalReports'), value: stats?.total || 0, icon: Flag, color: THEME.primary },
     { label: t('common.pending'), value: stats?.pending || 0, icon: Clock, color: THEME.warning },
     { label: t('admin.resolved'), value: stats?.resolved || 0, icon: CheckCircle, color: THEME.success },
-    { label: locale === 'ka' ? 'გადაუდებელი' : 'Urgent', value: stats?.urgent || 0, icon: AlertTriangle, color: THEME.error },
+    { label: t('admin.urgent'), value: stats?.urgent || 0, icon: AlertTriangle, color: THEME.error },
   ];
 
   if (isLoading) {
@@ -369,10 +369,10 @@ function AdminReportsPageContent() {
               size="sm"
               options={[
                 { value: 'all', label: t('admin.allTypes') },
-                { value: 'user', label: locale === 'ka' ? 'მომხმარებელი' : 'User' },
-                { value: 'job', label: locale === 'ka' ? 'სამუშაო' : 'Job' },
-                { value: 'order', label: locale === 'ka' ? 'შეკვეთა' : 'Order' },
-                { value: 'payment', label: locale === 'ka' ? 'გადახდა' : 'Payment' },
+                { value: 'user', label: t('admin.user') },
+                { value: 'job', label: t('admin.job') },
+                { value: 'order', label: t('admin.order') },
+                { value: 'payment', label: t('admin.payment') },
               ]}
             />
             <Select
@@ -381,9 +381,9 @@ function AdminReportsPageContent() {
               size="sm"
               options={[
                 { value: 'all', label: t('admin.allStatus') },
-                { value: 'pending', label: locale === 'ka' ? 'მოლოდინში' : 'Pending' },
+                { value: 'pending', label: t('common.pending') },
                 { value: 'investigating', label: t('admin.investigating') },
-                { value: 'resolved', label: locale === 'ka' ? 'გადაჭრილი' : 'Resolved' },
+                { value: 'resolved', label: t('admin.resolved') },
                 { value: 'dismissed', label: t('admin.dismissed') },
               ]}
             />
@@ -576,7 +576,7 @@ function AdminReportsPageContent() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between mt-6">
             <p className="text-sm" style={{ color: THEME.textMuted }}>
-              {locale === 'ka' ? `გვერდი ${page} / ${totalPages}` : `Page ${page} of ${totalPages}`}
+              {t('common.pageOf', { page, total: totalPages })}
             </p>
             <div className="flex items-center gap-2">
               <button

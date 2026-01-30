@@ -91,7 +91,7 @@ const CommentForm = ({
         <textarea
           value={formData.content}
           onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-          placeholder={isReply ? "Write a reply..." : "Express your interest in this job..."}
+          placeholder={isReply ? t("jobComments.replyPlaceholder") : t("jobComments.expressInterestPlaceholder")}
           className="w-full p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg resize-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent dark:bg-neutral-800 dark:text-white"
           rows={isReply ? 2 : 4}
           maxLength={2000}
@@ -106,7 +106,7 @@ const CommentForm = ({
           {/* Phone Number */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-              Phone Number (optional)
+              {t("common.phone")} ({t("common.optional")})
             </label>
             <input
               type="tel"
@@ -126,7 +126,7 @@ const CommentForm = ({
               className="w-4 h-4 text-[#C4735B] rounded focus:ring-[#C4735B]"
             />
             <span className="text-sm text-neutral-700 dark:text-neutral-300">
-              Show link to my profile
+              {t("jobComments.showProfileLink")}
             </span>
           </label>
         </>
@@ -144,11 +144,11 @@ const CommentForm = ({
           disabled={isSubmitting || !formData.content.trim()}
           className="bg-[#C4735B] hover:bg-[#A85D4A] text-white"
         >
-          {isSubmitting ? "Submitting..." : isEditing ? "Update" : isReply ? "Reply" : "Express Interest"}
+          {isSubmitting ? t("common.loading") : isEditing ? t("common.update") : isReply ? t("jobComments.reply") : t("jobComments.expressInterest")}
         </Button>
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
         )}
       </div>
@@ -172,6 +172,7 @@ const CommentItem = ({
   onRefresh: () => void;
   depth?: number;
 }) => {
+  const { t } = useLanguage();
   const [isReplying, setIsReplying] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -186,7 +187,7 @@ const CommentItem = ({
   const author = comment.author as CommentAuthor | undefined;
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this comment?")) return;
+    if (!confirm(t("jobComments.confirmDelete"))) return;
     setIsDeleting(true);
     try {
       await api.delete(`/jobs/comments/${comment.id}`);
@@ -429,7 +430,7 @@ const CommentItem = ({
 // Main Comments Section Component
 export default function JobCommentsSection({ jobId, clientId, isJobOwner }: JobCommentsSectionProps) {
   const { user } = useAuth();
-  const { t, locale } = useLanguage();
+  const { t } = useLanguage();
   const [comments, setComments] = useState<JobComment[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [interestingCount, setInterestingCount] = useState(0);
@@ -484,12 +485,12 @@ export default function JobCommentsSection({ jobId, clientId, isJobOwner }: JobC
               <svg className="w-5 h-5 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
               </svg>
-              {locale === "ka" ? "დაინტერესებული პროფესიონალები" : "Interested Professionals"}
+              {t("jobComments.title")}
             </h3>
             <p className="text-sm text-neutral-500 mt-0.5">
-              {locale === "ka"
-                ? `${totalCount} პროფესიონალი${interestingCount > 0 ? ` • ${interestingCount} საინტერესო` : ""}`
-                : `${totalCount} professional${totalCount !== 1 ? "s" : ""}${interestingCount > 0 ? ` • ${interestingCount} interesting` : ""}`}
+              {interestingCount > 0
+                ? t("jobComments.subtitleWithInteresting", { total: totalCount, interesting: interestingCount })
+                : t("jobComments.subtitle", { total: totalCount })}
             </p>
           </div>
 
@@ -504,7 +505,7 @@ export default function JobCommentsSection({ jobId, clientId, isJobOwner }: JobC
                     : "text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
                 }`}
               >
-                {locale === "ka" ? "ყველა" : "All"}
+                {t("common.all")}
               </button>
               <button
                 onClick={() => setFilter("interesting")}
@@ -517,7 +518,7 @@ export default function JobCommentsSection({ jobId, clientId, isJobOwner }: JobC
                 <svg className="w-3 h-3 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
-                {locale === "ka" ? "საინტერესო" : "Interesting"}
+                {t("jobComments.interesting")}
               </button>
             </div>
           )}
@@ -542,7 +543,7 @@ export default function JobCommentsSection({ jobId, clientId, isJobOwner }: JobC
               onClick={() => setShowForm(true)}
               className="w-full p-3 text-left text-neutral-500 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:border-[#C4735B] transition-colors"
             >
-              {locale === "ka" ? "გამოხატე დაინტერესება ამ სამუშაოზე..." : "Express your interest in this job..."}
+              {t("jobComments.expressInterestPlaceholder")}
             </button>
           )}
         </div>
@@ -557,15 +558,13 @@ export default function JobCommentsSection({ jobId, clientId, isJobOwner }: JobC
             </svg>
             <div className="flex-1">
               <p className="text-sm text-amber-800 dark:text-amber-200 font-medium">
-                {locale === "ka"
-                  ? "დაინტერესების გამოსახატავად საჭიროა პროფილის ვერიფიკაცია"
-                  : "Profile verification required to express interest"}
+                {t("jobComments.verificationRequiredToExpressInterest")}
               </p>
               <Link
                 href="/settings"
                 className="text-sm text-amber-700 dark:text-amber-300 underline hover:no-underline"
               >
-                {locale === "ka" ? "გაიარეთ ვერიფიკაცია →" : "Complete verification →"}
+                {t("jobComments.completeVerificationCta")}
               </Link>
             </div>
           </div>
@@ -580,9 +579,7 @@ export default function JobCommentsSection({ jobId, clientId, isJobOwner }: JobC
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             <span className="text-sm">
-              {locale === "ka"
-                ? "თქვენ უკვე გამოხატეთ დაინტერესება. შეგიძლიათ დაარედაქტიროთ თქვენი კომენტარი ქვემოთ."
-                : "You've already expressed interest. You can edit your comment below."}
+              {t("jobComments.alreadyExpressedInterest")}
             </span>
           </div>
         </div>
@@ -611,14 +608,10 @@ export default function JobCommentsSection({ jobId, clientId, isJobOwner }: JobC
               </svg>
             </div>
             <h4 className="text-neutral-900 dark:text-white font-medium mb-1">
-              {filter === "interesting"
-                ? (locale === "ka" ? "არ არის საინტერესო პროფესიონალები" : "No interesting professionals yet")
-                : (locale === "ka" ? "ჯერ არავის გამოუხატავს დაინტერესება" : "No one has expressed interest yet")}
+              {filter === "interesting" ? t("jobComments.noInterestingYet") : t("jobComments.noInterestYet")}
             </h4>
             <p className="text-sm text-neutral-500">
-              {locale === "ka"
-                ? "იყავი პირველი ვინც დაეკონტაქტება დამკვეთს"
-                : "Be the first to reach out to the client"}
+              {t("jobComments.beFirstToReachOut")}
             </p>
           </div>
         ) : (

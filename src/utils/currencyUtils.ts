@@ -66,6 +66,11 @@ interface BudgetInfo {
 }
 
 /**
+ * Translation function type for i18n support
+ */
+type TranslationFn = (key: string) => string;
+
+/**
  * Format a price input with space separators (e.g., "1 500" for display)
  * Used for formatting input values in forms
  */
@@ -99,10 +104,13 @@ export function formatNumberWithSpaces(value: number | string): string {
 
 /**
  * Format a job budget based on its type
+ * @param budget - Budget information object
+ * @param t - Translation function from useLanguage hook
+ * @param currency - Currency type (default: GEL)
  */
 export function formatBudget(
   budget: BudgetInfo,
-  locale: 'en' | 'ka' | 'ru' = 'en',
+  t: TranslationFn,
   currency: Currency = 'GEL'
 ): string | null {
   const symbol = currencySymbols[currency] || '₾';
@@ -121,14 +129,14 @@ export function formatBudget(
         : null;
     case 'per_sqm':
       return budget.pricePerUnit
-        ? `${symbol}${budget.pricePerUnit}/${locale === 'ka' ? 'მ²' : 'sqm'}`
+        ? `${symbol}${budget.pricePerUnit}${t('common.perSqmShort')}`
         : null;
     case 'hourly':
       return budget.pricePerUnit
-        ? `${symbol}${budget.pricePerUnit}/${locale === 'ka' ? 'სთ' : 'hr'}`
+        ? `${symbol}${budget.pricePerUnit}${t('common.perHourShort')}`
         : null;
     case 'flexible':
-      return locale === 'ka' ? 'მოლაპარაკებით' : 'Negotiable';
+      return t('common.negotiable');
     default:
       return null;
   }

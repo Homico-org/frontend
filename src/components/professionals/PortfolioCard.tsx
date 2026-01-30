@@ -180,7 +180,7 @@ export default function PortfolioCard({
                 }`}
               >
                 <Image
-                  src={storage.getOptimizedImageUrl(img, "thumbnail")}
+                  src={storage.getOptimizedImageUrl(img, "thumbnailSmall")}
                   alt=""
                   fill
                   sizes="96px"

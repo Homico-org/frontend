@@ -93,7 +93,7 @@ export default function ProposalFormModal({
     if (job.budgetMax) {
       return `${formatNumberWithSpaces(job.budgetMax.toString())} ₾`;
     }
-    return locale === 'ka' ? 'შეთანხმებით' : 'Negotiable';
+    return t('common.negotiable');
   };
 
   return (
@@ -131,7 +131,7 @@ export default function ProposalFormModal({
                   <Banknote className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <p className="text-neutral-400 text-[10px] uppercase tracking-wide">{locale === 'ka' ? 'ბიუჯეტი' : 'Budget'}</p>
+                  <p className="text-neutral-400 text-[10px] uppercase tracking-wide">{t('common.budget')}</p>
                   <p className="font-semibold text-neutral-700 dark:text-neutral-200">{formatBudget()}</p>
                 </div>
               </div>
@@ -143,7 +143,7 @@ export default function ProposalFormModal({
                     <MapPin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div>
-                    <p className="text-neutral-400 text-[10px] uppercase tracking-wide">{locale === 'ka' ? 'მდებარეობა' : 'Location'}</p>
+                    <p className="text-neutral-400 text-[10px] uppercase tracking-wide">{t('common.location')}</p>
                     <p className="font-medium text-neutral-700 dark:text-neutral-200 capitalize">{job.location}</p>
                   </div>
                 </div>

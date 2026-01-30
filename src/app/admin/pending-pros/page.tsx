@@ -12,23 +12,23 @@ import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
 import { formatDateShort } from '@/utils/dateUtils';
 import {
-    AlertTriangle,
-    ArrowLeft,
-    CheckCircle,
-    ChevronLeft,
-    ChevronRight,
-    Clock,
-    DollarSign,
-    ExternalLink,
-    Eye,
-    Mail,
-    MapPin,
-    Phone,
-    RefreshCw,
-    UserCheck,
-    Users,
-    X,
-    XCircle,
+  AlertTriangle,
+  ArrowLeft,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  DollarSign,
+  ExternalLink,
+  Eye,
+  Mail,
+  MapPin,
+  Phone,
+  RefreshCw,
+  UserCheck,
+  Users,
+  X,
+  XCircle,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -61,7 +61,7 @@ interface PendingPro {
   pricingModel?: string;
   yearsExperience?: number;
   isProfileCompleted?: boolean;
-  isAdminApproved?: boolean;
+  verificationStatus?: 'pending' | 'verified' | 'rejected';
   adminRejectionReason?: string;
   createdAt: string;
   portfolioProjects?: Array<{
@@ -81,7 +81,7 @@ interface PendingProsStats {
 
 function AdminPendingProsPageContent() {
   const { isAuthenticated } = useAuth();
-  const { locale } = useLanguage();
+  const { locale, t } = useLanguage();
   const toast = useToast();
   const router = useRouter();
   const { categories, getCategoryByKey, getSubcategoriesForCategory } = useCategories();
@@ -118,13 +118,13 @@ function AdminPendingProsPageContent() {
       setTotalPages(response.data.totalPages);
     } catch (error) {
       console.error('Error fetching pending pros:', error);
-      setErrorMessage(locale === 'ka' ? 'ვერ მოხერხდა მონაცემების ჩატვირთვა' : 'Failed to load data');
+      setErrorMessage(t('admin.pendingPros.failedToLoadData'));
     } finally {
       hasLoadedOnceRef.current = true;
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [page, statusFilter, locale]);
+  }, [page, statusFilter, t]);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -148,19 +148,19 @@ function AdminPendingProsPageContent() {
   const handleApprove = async (proId: string) => {
     if (!proId) {
       console.error('Cannot approve: pro ID is undefined');
-      toast.error(locale === 'ka' ? 'ვერ მოხერხდა დამტკიცება' : 'Failed to approve');
+      toast.error(t('admin.pendingPros.failedToApprove'));
       return;
     }
     try {
       setActionLoading(proId);
       await api.patch(`/admin/pros/${proId}/approve`);
-      toast.success(locale === 'ka' ? 'დამტკიცებულია' : 'Approved');
+      toast.success(t('admin.pendingPros.approvedToast'));
       fetchPendingPros();
       fetchStats();
       setSelectedPro(null);
     } catch (error) {
       console.error('Error approving pro:', error);
-      toast.error(locale === 'ka' ? 'ვერ მოხერხდა დამტკიცება' : 'Failed to approve');
+      toast.error(t('admin.pendingPros.failedToApprove'));
     } finally {
       setActionLoading(null);
     }
@@ -175,7 +175,7 @@ function AdminPendingProsPageContent() {
       await api.patch(`/admin/pros/${proId}/reject`, {
         reason: rejectReason,
       });
-      toast.success(locale === 'ka' ? 'უარყოფილია' : 'Rejected');
+      toast.success(t('admin.pendingPros.rejectedToast'));
       fetchPendingPros();
       fetchStats();
       setRejectModalPro(null);
@@ -183,15 +183,20 @@ function AdminPendingProsPageContent() {
       setSelectedPro(null);
     } catch (error) {
       console.error('Error rejecting pro:', error);
-      toast.error(locale === 'ka' ? 'ვერ მოხერხდა უარყოფა' : 'Failed to reject');
+      toast.error(t('admin.pendingPros.failedToReject'));
     } finally {
       setActionLoading(null);
     }
   };
 
+  const getServiceLabel = (service: { name?: string; nameKa?: string }) => (
+    ({ ka: service.nameKa, en: service.name, ru: service.name }[locale] ?? service.name ?? service.nameKa ?? '')
+  );
+
   const getCategoryLabel = (key: string) => {
     const cat = getCategoryByKey(key);
-    return locale === 'ka' ? cat?.nameKa || key : cat?.name || key;
+    const fallback = cat?.name || cat?.nameKa || key;
+    return ({ ka: cat?.nameKa, en: cat?.name, ru: cat?.name }[locale] ?? fallback);
   };
 
   const getSubcategoryLabel = (key: string) => {
@@ -199,18 +204,20 @@ function AdminPendingProsPageContent() {
       const subs = getSubcategoriesForCategory(cat.key);
       const sub = subs.find(s => s.key === key);
       if (sub) {
-        return locale === 'ka' ? sub.nameKa || sub.name : sub.name;
+        const fallback = sub.name || sub.nameKa || key;
+        return ({ ka: sub.nameKa, en: sub.name, ru: sub.name }[locale] ?? fallback);
       }
     }
     return key;
   };
 
   const getExperienceLabel = (exp: string) => {
+    const yearUnit = t('timeUnits.year');
     const labels: Record<string, string> = {
-      '1-2': '1-2 წელი',
-      '3-5': '3-5 წელი',
-      '5-10': '5-10 წელი',
-      '10+': '10+ წელი',
+      '1-2': `1-2 ${yearUnit}`,
+      '3-5': `3-5 ${yearUnit}`,
+      '5-10': `5-10 ${yearUnit}`,
+      '10+': `10+ ${yearUnit}`,
     };
     return labels[exp] || exp;
   };
@@ -242,10 +249,10 @@ function AdminPendingProsPageContent() {
               </button>
               <div>
                 <h1 className="text-xl font-semibold" style={{ color: THEME.text }}>
-                  {locale === 'ka' ? 'პროფესიონალების დამტკიცება' : 'Professional Approvals'}
+                  {t('admin.pendingPros.title')}
                 </h1>
                 <p className="text-sm" style={{ color: THEME.textMuted }}>
-                  {locale === 'ka' ? 'განხილეთ და დაამტკიცეთ ახალი პროფესიონალები' : 'Review and approve new professionals'}
+                  {t('admin.pendingPros.subtitle')}
                 </p>
               </div>
             </div>
@@ -297,7 +304,7 @@ function AdminPendingProsPageContent() {
                 <div>
                   <p className="text-2xl font-bold" style={{ color: THEME.text }}>{stats.pending}</p>
                   <p className="text-sm" style={{ color: THEME.textMuted }}>
-                    {locale === 'ka' ? 'მოლოდინში' : 'Pending'}
+                    {t('common.pending')}
                   </p>
                 </div>
               </div>
@@ -319,7 +326,7 @@ function AdminPendingProsPageContent() {
                 <div>
                   <p className="text-2xl font-bold" style={{ color: THEME.text }}>{stats.approved}</p>
                   <p className="text-sm" style={{ color: THEME.textMuted }}>
-                    {locale === 'ka' ? 'დამტკიცებული' : 'Approved'}
+                    {t('admin.pendingPros.approved')}
                   </p>
                 </div>
               </div>
@@ -341,7 +348,7 @@ function AdminPendingProsPageContent() {
                 <div>
                   <p className="text-2xl font-bold" style={{ color: THEME.text }}>{stats.rejected}</p>
                   <p className="text-sm" style={{ color: THEME.textMuted }}>
-                    {locale === 'ka' ? 'უარყოფილი' : 'Rejected'}
+                    {t('common.rejected')}
                   </p>
                 </div>
               </div>
@@ -363,7 +370,7 @@ function AdminPendingProsPageContent() {
                 <div>
                   <p className="text-2xl font-bold" style={{ color: THEME.text }}>{stats.total}</p>
                   <p className="text-sm" style={{ color: THEME.textMuted }}>
-                    {locale === 'ka' ? 'სულ' : 'Total'}
+                    {t('common.total')}
                   </p>
                 </div>
               </div>
@@ -380,7 +387,7 @@ function AdminPendingProsPageContent() {
             <div className="p-8 text-center">
               <RefreshCw className="w-8 h-8 mx-auto mb-4 animate-spin" style={{ color: THEME.textMuted }} />
               <p style={{ color: THEME.textMuted }}>
-                {locale === 'ka' ? 'იტვირთება...' : 'Loading...'}
+                {t('common.loading')}
               </p>
             </div>
           ) : pros.length === 0 ? (
@@ -388,8 +395,8 @@ function AdminPendingProsPageContent() {
               <UserCheck className="w-12 h-12 mx-auto mb-4" style={{ color: THEME.textMuted }} />
               <p style={{ color: THEME.text }}>
                 {statusFilter === 'pending' 
-                  ? (locale === 'ka' ? 'მოლოდინში არ არის პროფესიონალები' : 'No pending professionals')
-                  : (locale === 'ka' ? 'პროფესიონალები ვერ მოიძებნა' : 'No professionals found')
+                  ? t('admin.pendingPros.noPendingProfessionals')
+                  : t('admin.pendingPros.noProfessionalsFound')
                 }
               </p>
             </div>
@@ -415,22 +422,22 @@ function AdminPendingProsPageContent() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-semibold truncate" style={{ color: THEME.text }}>{pro.name}</h3>
-                        {pro.isAdminApproved === true && (
+                        {pro.verificationStatus === 'verified' && (
                           <span className="px-2 py-0.5 rounded-full text-xs font-medium"
                             style={{ background: `${THEME.success}20`, color: THEME.success }}>
-                            {locale === 'ka' ? 'დამტკიცებული' : 'Approved'}
+                            {t('admin.pendingPros.approved')}
                           </span>
                         )}
-                        {pro.adminRejectionReason && (
+                        {pro.verificationStatus === 'rejected' && (
                           <span className="px-2 py-0.5 rounded-full text-xs font-medium"
                             style={{ background: `${THEME.error}20`, color: THEME.error }}>
-                            {locale === 'ka' ? 'უარყოფილი' : 'Rejected'}
+                            {t('common.rejected')}
                           </span>
                         )}
-                        {!pro.isAdminApproved && !pro.adminRejectionReason && (
+                        {pro.verificationStatus !== 'verified' && pro.verificationStatus !== 'rejected' && (
                           <span className="px-2 py-0.5 rounded-full text-xs font-medium"
                             style={{ background: `${THEME.warning}20`, color: THEME.warning }}>
-                            {locale === 'ka' ? 'მოლოდინში' : 'Pending'}
+                            {t('common.pending')}
                           </span>
                         )}
                       </div>
@@ -460,7 +467,7 @@ function AdminPendingProsPageContent() {
                             className="px-2 py-0.5 rounded-full text-xs font-medium"
                             style={{ background: `${THEME.primary}20`, color: THEME.primary }}
                           >
-                            {locale === 'ka' ? service.nameKa : service.name}
+                            {getServiceLabel(service)}
                           </span>
                         ))}
                         {(pro.selectedServices?.length || 0) > 3 && (
@@ -496,7 +503,7 @@ function AdminPendingProsPageContent() {
                             style={{ borderColor: THEME.error, color: THEME.error }}
                           >
                             <XCircle className="w-4 h-4 mr-1" />
-                            {locale === 'ka' ? 'უარყოფა' : 'Reject'}
+                            {t('admin.reject')}
                           </Button>
                           <Button
                             size="sm"
@@ -508,7 +515,7 @@ function AdminPendingProsPageContent() {
                             style={{ background: THEME.success, color: '#fff' }}
                           >
                             <CheckCircle className="w-4 h-4 mr-1" />
-                            {locale === 'ka' ? 'დამტკიცება' : 'Approve'}
+                            {t('admin.approve')}
                           </Button>
                         </>
                       )}
@@ -541,7 +548,7 @@ function AdminPendingProsPageContent() {
                 disabled={page === 1}
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
-                {locale === 'ka' ? 'წინა' : 'Previous'}
+                {t('common.previous')}
               </Button>
               <span style={{ color: THEME.textMuted }}>
                 {page} / {totalPages}
@@ -552,7 +559,7 @@ function AdminPendingProsPageContent() {
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
               >
-                {locale === 'ka' ? 'შემდეგი' : 'Next'}
+                {t('common.next')}
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
@@ -572,7 +579,7 @@ function AdminPendingProsPageContent() {
               style={{ background: THEME.surfaceLight, borderBottom: `1px solid ${THEME.border}` }}
             >
               <h2 className="text-lg font-semibold" style={{ color: THEME.text }}>
-                {locale === 'ka' ? 'პროფესიონალის დეტალები' : 'Professional Details'}
+                {t('admin.pendingPros.professionalDetails')}
               </h2>
               <button
                 onClick={() => setSelectedPro(null)}
@@ -619,7 +626,7 @@ function AdminPendingProsPageContent() {
               {selectedPro.bio && (
                 <div className="mb-6">
                   <h4 className="text-sm font-medium mb-2" style={{ color: THEME.textMuted }}>
-                    {locale === 'ka' ? 'ბიო' : 'Bio'}
+                    {t('admin.pendingPros.bio')}
                   </h4>
                   <p style={{ color: THEME.text }}>{selectedPro.bio}</p>
                 </div>
@@ -629,7 +636,7 @@ function AdminPendingProsPageContent() {
               {(selectedPro.basePrice || selectedPro.maxPrice) && (
                 <div className="mb-6">
                   <h4 className="text-sm font-medium mb-2" style={{ color: THEME.textMuted }}>
-                    {locale === 'ka' ? 'ფასი' : 'Pricing'}
+                    {t('admin.pendingPros.pricing')}
                   </h4>
                   <div className="flex items-center gap-2">
                     <DollarSign className="w-5 h-5" style={{ color: THEME.success }} />
@@ -651,7 +658,7 @@ function AdminPendingProsPageContent() {
               {selectedPro.selectedServices && selectedPro.selectedServices.length > 0 && (
                 <div className="mb-6">
                   <h4 className="text-sm font-medium mb-2" style={{ color: THEME.textMuted }}>
-                    {locale === 'ka' ? 'სერვისები' : 'Services'}
+                    {t('admin.pendingPros.services')}
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {selectedPro.selectedServices.map((service, i) => (
@@ -660,7 +667,7 @@ function AdminPendingProsPageContent() {
                         className="px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2"
                         style={{ background: `${THEME.primary}20`, color: THEME.primary }}
                       >
-                        {locale === 'ka' ? service.nameKa : service.name}
+                        {getServiceLabel(service)}
                         <span className="text-xs opacity-75">
                           {getExperienceLabel(service.experience)}
                         </span>
@@ -674,7 +681,7 @@ function AdminPendingProsPageContent() {
               {!selectedPro.selectedServices?.length && selectedPro.selectedCategories && selectedPro.selectedCategories.length > 0 && (
                 <div className="mb-6">
                   <h4 className="text-sm font-medium mb-2" style={{ color: THEME.textMuted }}>
-                    {locale === 'ka' ? 'კატეგორიები' : 'Categories'}
+                    {t('admin.pendingPros.categories')}
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {selectedPro.selectedCategories.map((cat, i) => (
@@ -694,7 +701,7 @@ function AdminPendingProsPageContent() {
               {selectedPro.portfolioProjects && selectedPro.portfolioProjects.length > 0 && (
                 <div className="mb-6">
                   <h4 className="text-sm font-medium mb-2" style={{ color: THEME.textMuted }}>
-                    {locale === 'ka' ? 'პორტფოლიო' : 'Portfolio'} ({selectedPro.portfolioProjects.length})
+                    {t('admin.pendingPros.portfolio')} ({selectedPro.portfolioProjects.length})
                   </h4>
                   <div className="grid grid-cols-3 gap-2">
                     {selectedPro.portfolioProjects.slice(0, 6).map((project, i) => (
@@ -727,7 +734,7 @@ function AdminPendingProsPageContent() {
                     <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: THEME.error }} />
                     <div>
                       <h4 className="font-medium mb-1" style={{ color: THEME.error }}>
-                        {locale === 'ka' ? 'უარყოფის მიზეზი' : 'Rejection Reason'}
+                        {t('admin.rejectionReason')}
                       </h4>
                       <p className="text-sm" style={{ color: THEME.error }}>
                         {selectedPro.adminRejectionReason}
@@ -749,10 +756,10 @@ function AdminPendingProsPageContent() {
                 >
                   <Button variant="outline" className="w-full">
                     <Eye className="w-4 h-4 mr-2" />
-                    {locale === 'ka' ? 'პროფილის ნახვა' : 'View Profile'}
+                    {t('common.viewProfile')}
                   </Button>
                 </Link>
-                {!selectedPro.isAdminApproved && (
+                {selectedPro.verificationStatus !== 'verified' && selectedPro.verificationStatus !== 'rejected' && (
                   <>
                     <Button
                       variant="outline"
@@ -764,7 +771,7 @@ function AdminPendingProsPageContent() {
                       style={{ borderColor: THEME.error, color: THEME.error }}
                     >
                       <XCircle className="w-4 h-4 mr-2" />
-                      {locale === 'ka' ? 'უარყოფა' : 'Reject'}
+                      {t('admin.reject')}
                     </Button>
                     <Button
                       onClick={() => handleApprove(getProId(selectedPro))}
@@ -773,7 +780,7 @@ function AdminPendingProsPageContent() {
                       style={{ background: THEME.success, color: '#fff' }}
                     >
                       <CheckCircle className="w-4 h-4 mr-2" />
-                      {locale === 'ka' ? 'დამტკიცება' : 'Approve'}
+                      {t('admin.approve')}
                     </Button>
                   </>
                 )}
@@ -795,7 +802,7 @@ function AdminPendingProsPageContent() {
               style={{ borderBottom: `1px solid ${THEME.border}` }}
             >
               <h2 className="text-lg font-semibold" style={{ color: THEME.text }}>
-                {locale === 'ka' ? 'პროფესიონალის უარყოფა' : 'Reject Professional'}
+                {t('admin.pendingPros.rejectProfessional')}
               </h2>
               <button
                 onClick={() => {
@@ -810,14 +817,12 @@ function AdminPendingProsPageContent() {
             </div>
             <div className="p-6">
               <p className="mb-4" style={{ color: THEME.textMuted }}>
-                {locale === 'ka' 
-                  ? 'გთხოვთ მიუთითოთ უარყოფის მიზეზი. ეს ინფორმაცია გაეგზავნება პროფესიონალს.'
-                  : 'Please provide a reason for rejection. This will be sent to the professional.'}
+                {t('admin.pendingPros.rejectReasonHelp')}
               </p>
               <Textarea
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
-                placeholder={locale === 'ka' ? 'უარყოფის მიზეზი...' : 'Reason for rejection...'}
+                placeholder={t('admin.enterRejectionReason')}
                 rows={4}
                 className="mb-4"
                 style={{ background: THEME.surface, borderColor: THEME.border, color: THEME.text }}
@@ -831,7 +836,7 @@ function AdminPendingProsPageContent() {
                   }}
                   className="flex-1"
                 >
-                  {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   onClick={handleReject}
@@ -839,7 +844,7 @@ function AdminPendingProsPageContent() {
                   className="flex-1"
                   style={{ background: THEME.error, color: '#fff' }}
                 >
-                  {locale === 'ka' ? 'უარყოფა' : 'Reject'}
+                  {t('admin.reject')}
                 </Button>
               </div>
             </div>
