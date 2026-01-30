@@ -2746,7 +2746,10 @@
         "potentialSavings": "Potential Savings",
         "alerts": "Alerts",
         "byCategory": "By Category",
-        "confidence": "Analysis Confidence"
+        "confidence": "Analysis Confidence",
+        "redFlags": "Red Flags",
+        "lineItems": "Line Items",
+        "recommendations": "Recommendations"
       },
       "status": {
         "low": "Low",
@@ -2760,6 +2763,20 @@
       "analyzeAnother": "Analyze Another",
       "marketAvg": "Market avg",
       "items": "items",
+      "pasteText": "Paste Text",
+      "uploadFile": "Upload File",
+      "pasteEstimate": "Paste your estimate here",
+      "textPlaceholder": "Paste the contractor's estimate text here...\n\nExample:\nElectrical points (56 pcs) - 60₾ each = 3,360₾\nElectrical panel - 450₾\nPlastering (120 sqm) - 35₾/sqm = 4,200₾",
+      "analyzeButton": "Analyze with AI",
+      "assessment": {
+        "fair": "Fair Pricing",
+        "expensive": "Overpriced",
+        "cheap": "Below Market",
+        "mixed": "Mixed Assessment"
+      },
+      "errors": {
+        "analysisError": "Failed to analyze estimate. Please try again."
+      },
       "alerts": {
         "priceNotSpecified": "Price not specified",
         "aboveMarket": "above market average"
