@@ -573,19 +573,16 @@ export default function Header() {
                 </Button>
               </div>
 
-              {/* Mobile: Burger menu button */}
+              {/* Mobile: Make signup visible (no hidden CTA) */}
               <Button
-                variant="secondary"
-                size="icon"
-                onClick={() => setShowMobileMenu(true)}
-                className="sm:hidden"
-                aria-label="Open menu"
+                size="sm"
+                asChild
+                className="sm:hidden h-9 px-4 rounded-xl font-semibold"
+                style={{ backgroundColor: ACCENT_COLOR, color: "#fff" }}
               >
-                <div className="flex flex-col gap-1.5 w-5">
-                  <span className="block h-0.5 w-full rounded-full bg-neutral-600 dark:bg-neutral-400" />
-                  <span className="block h-0.5 w-3/4 rounded-full bg-neutral-600 dark:bg-neutral-400" />
-                  <span className="block h-0.5 w-1/2 rounded-full bg-neutral-600 dark:bg-neutral-400" />
-                </div>
+                <Link href="/register">
+                  {t("header.signUp")}
+                </Link>
               </Button>
             </>
           )}

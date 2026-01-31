@@ -40,7 +40,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname();
 
   // Check if this page uses a custom layout
-  const hasCustomLayout = CUSTOM_LAYOUT_PATHS.some(path => pathname.startsWith(path));
+  const hasCustomLayout = pathname === '/' || CUSTOM_LAYOUT_PATHS.some(path => pathname.startsWith(path));
 
   // If page has custom layout, just render children (they handle their own nav)
   if (hasCustomLayout) {
