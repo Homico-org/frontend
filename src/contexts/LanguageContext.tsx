@@ -17,6 +17,11 @@ interface LanguageContextType {
   locale: Locale;
   setLocale: (locale: Locale) => void;
   t: (key: string, params?: Record<string, string | number>) => string;
+  /**
+   * Pick a localized string from a per-locale map (useful for backend-provided
+   * fields like `name` / `nameKa` that aren't in the translation JSON).
+   */
+  pick: (values: Partial<Record<Locale, string | undefined>>, fallback?: string) => string;
   country: string;
   setCountry: (country: string) => void;
 }
@@ -230,14 +235,22 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     return value;
   }, [locale]);
 
+  const pick = useCallback(
+    (values: Partial<Record<Locale, string | undefined>>, fallback = ''): string => {
+      return values[locale] ?? values.en ?? values.ka ?? values.ru ?? fallback;
+    },
+    [locale]
+  );
+
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(() => ({
     locale,
     setLocale,
     t,
+    pick,
     country,
     setCountry: handleSetCountry
-  }), [locale, setLocale, t, country, handleSetCountry]);
+  }), [locale, setLocale, t, pick, country, handleSetCountry]);
 
   return (
     <LanguageContext.Provider value={contextValue}>

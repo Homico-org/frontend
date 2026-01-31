@@ -82,7 +82,12 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
               </button>
             ) : (
               <Link href="/" className="flex items-center">
-                <Image src="/icon.svg" alt="Homico" width={100} height={24} className="h-5 sm:h-6 w-auto" />
+                <span className="flex items-center gap-2">
+                  <Image src="/favicon.png" alt="Homico" width={24} height={24} className="h-6 w-6 rounded-[7px]" />
+                  <span className="text-base font-semibold tracking-wide text-neutral-900 dark:text-white">
+                    Homico
+                  </span>
+                </span>
               </Link>
             )}
 

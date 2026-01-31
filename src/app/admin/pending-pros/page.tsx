@@ -81,7 +81,7 @@ interface PendingProsStats {
 
 function AdminPendingProsPageContent() {
   const { isAuthenticated } = useAuth();
-  const { locale, t } = useLanguage();
+  const { locale, t, pick } = useLanguage();
   const toast = useToast();
   const router = useRouter();
   const { categories, getCategoryByKey, getSubcategoriesForCategory } = useCategories();
@@ -189,14 +189,13 @@ function AdminPendingProsPageContent() {
     }
   };
 
-  const getServiceLabel = (service: { name?: string; nameKa?: string }) => (
-    ({ ka: service.nameKa, en: service.name, ru: service.name }[locale] ?? service.name ?? service.nameKa ?? '')
-  );
+  const getServiceLabel = (service: { name?: string; nameKa?: string }) =>
+    pick({ ka: service.nameKa, en: service.name, ru: service.name }, service.name ?? service.nameKa ?? '');
 
   const getCategoryLabel = (key: string) => {
     const cat = getCategoryByKey(key);
     const fallback = cat?.name || cat?.nameKa || key;
-    return ({ ka: cat?.nameKa, en: cat?.name, ru: cat?.name }[locale] ?? fallback);
+    return pick({ ka: cat?.nameKa, en: cat?.name, ru: cat?.name }, fallback);
   };
 
   const getSubcategoryLabel = (key: string) => {
@@ -205,7 +204,7 @@ function AdminPendingProsPageContent() {
       const sub = subs.find(s => s.key === key);
       if (sub) {
         const fallback = sub.name || sub.nameKa || key;
-        return ({ ka: sub.nameKa, en: sub.name, ru: sub.name }[locale] ?? fallback);
+        return pick({ ka: sub.nameKa, en: sub.name, ru: sub.name }, fallback);
       }
     }
     return key;

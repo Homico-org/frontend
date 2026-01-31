@@ -119,14 +119,19 @@ export default function Header() {
       <div className="h-full max-w-[1800px] mx-auto px-4 sm:px-6 flex items-center justify-between">
         {/* Logo */}
         <Link href="/browse" className="flex items-center">
-          <Image
-            src="/icon.svg"
-            alt="Homico"
-            width={120}
-            height={30}
-            className="h-7 w-auto dark:invert"
-            priority
-          />
+          <span className="flex items-center gap-2">
+            <Image
+              src="/favicon.png"
+              alt="Homico"
+              width={28}
+              height={28}
+              className="h-7 w-7 rounded-[8px]"
+              priority
+            />
+            <span className="text-[18px] font-semibold tracking-wide text-neutral-900 dark:text-white">
+              Homico
+            </span>
+          </span>
         </Link>
 
         {/* Right side - Actions + Profile */}
@@ -607,11 +612,11 @@ export default function Header() {
             {/* Menu Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
               <Image
-                src="/icon.svg"
+                src="/favicon.png"
                 alt="Homico"
-                width={100}
-                height={25}
-                className="h-6 w-auto dark:invert"
+                width={28}
+                height={28}
+                className="h-7 w-7 rounded-[8px]"
               />
               <Button
                 variant="secondary"

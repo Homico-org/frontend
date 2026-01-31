@@ -4,11 +4,14 @@ import dynamic from 'next/dynamic';
 import AppBackground from './AppBackground';
 import AppLayout from './AppLayout';
 import ProProfileGuard from './ProProfileGuard';
-import { useLanguage } from "@/contexts/LanguageContext";
 
-// Dynamically import LoginModal to reduce initial bundle size
+// Dynamically import modals to reduce initial bundle size
 const LoginModal = dynamic(() => import("@/components/auth/LoginModal"), {
-  ssr: false, // Modal doesn't need SSR
+  ssr: false,
+});
+
+const PWAInstallPrompt = dynamic(() => import("./PWAInstallPrompt"), {
+  ssr: false,
 });
 
 interface ClientLayoutProps {
@@ -25,6 +28,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
         </AppLayout>
       </ProProfileGuard>
       <LoginModal />
+      <PWAInstallPrompt />
     </>
   );
 }

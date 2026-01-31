@@ -20,7 +20,12 @@ import { ArrowLeft, HelpCircle } from 'lucide-react';
 function Logo({ className = '' }: { className?: string }) {
   return (
     <Link href="/" className={`flex items-center ${className}`}>
-      <Image src="/icon.svg" alt="Homico" width={120} height={30} className="h-6 sm:h-7 w-auto" />
+      <span className="flex items-center gap-2">
+        <Image src="/favicon.png" alt="Homico" width={28} height={28} className="h-7 w-7 rounded-[8px]" />
+        <span className="text-[18px] font-semibold tracking-wide text-neutral-900 dark:text-white">
+          Homico
+        </span>
+      </span>
     </Link>
   );
 }

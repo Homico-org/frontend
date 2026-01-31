@@ -82,7 +82,7 @@ export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
     return (
       <>
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#0a0a0a] border-t border-neutral-200 dark:border-neutral-800 safe-area-bottom">
-          <div className="flex items-center justify-around h-14 px-2">
+          <div className="flex items-center justify-around h-16 px-2">
             {/* Skeleton placeholders */}
             <div className="flex flex-col items-center justify-center gap-1 flex-1 py-1.5">
               <Skeleton className="w-5 h-5 rounded" />
@@ -98,7 +98,7 @@ export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
             </div>
           </div>
         </nav>
-        <div className="lg:hidden h-14" />
+        <div className="lg:hidden h-[calc(4rem+env(safe-area-inset-bottom))]" />
       </>
     );
   }
@@ -138,7 +138,7 @@ export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
   return (
     <>
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#0a0a0a] border-t border-neutral-200 dark:border-neutral-800 safe-area-bottom">
-        <div className="flex items-center justify-around h-14 px-2">
+        <div className="flex items-center justify-around h-16 px-2">
           {/* Left side items */}
           {leftItems.map((item) => {
             const isActive = activeKey === item.key;
@@ -209,7 +209,7 @@ export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
         </div>
       </nav>
       {/* Spacer for bottom nav */}
-      <div className="lg:hidden h-14" />
+      <div className="lg:hidden h-[calc(4rem+env(safe-area-inset-bottom))]" />
     </>
   );
 }
