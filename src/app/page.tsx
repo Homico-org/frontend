@@ -33,6 +33,7 @@ import {
   ChevronRight,
   ChevronDown,
   MousePointer,
+  Loader2,
 } from 'lucide-react';
 
 // Categories - matching actual database structure
@@ -274,6 +275,7 @@ export default function HomePage() {
   const [mounted, setMounted] = useState(false);
   const [stats, setStats] = useState({ activePros: 0, projectsCompleted: 0, avgRating: 4.8, avgResponseTime: '<1' });
   const [featureSliderPaused, setFeatureSliderPaused] = useState(false);
+  const [videoLoading, setVideoLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const parallaxOffset = useParallax(0.3);
   const parallaxOffsetSlow = useParallax(0.15);
@@ -310,22 +312,37 @@ export default function HomePage() {
   const handleVideoFullscreen = async () => {
     if (videoRef.current) {
       const video = videoRef.current;
-      video.muted = false;
-      video.currentTime = 0;
+      setVideoLoading(true);
 
-      try {
-        if (video.requestFullscreen) {
-          await video.requestFullscreen();
-        } else if ((video as HTMLVideoElement & { webkitEnterFullscreen?: () => void }).webkitEnterFullscreen) {
-          // iOS Safari
-          (video as HTMLVideoElement & { webkitEnterFullscreen: () => void }).webkitEnterFullscreen();
-        } else if ((video as HTMLVideoElement & { webkitRequestFullscreen?: () => void }).webkitRequestFullscreen) {
-          await (video as HTMLVideoElement & { webkitRequestFullscreen: () => Promise<void> }).webkitRequestFullscreen();
+      // Wait for video to be ready to play
+      const playVideo = async () => {
+        video.muted = false;
+        video.currentTime = 0;
+
+        try {
+          if (video.requestFullscreen) {
+            await video.requestFullscreen();
+          } else if ((video as HTMLVideoElement & { webkitEnterFullscreen?: () => void }).webkitEnterFullscreen) {
+            // iOS Safari
+            (video as HTMLVideoElement & { webkitEnterFullscreen: () => void }).webkitEnterFullscreen();
+          } else if ((video as HTMLVideoElement & { webkitRequestFullscreen?: () => void }).webkitRequestFullscreen) {
+            await (video as HTMLVideoElement & { webkitRequestFullscreen: () => Promise<void> }).webkitRequestFullscreen();
+          }
+          await video.play();
+        } catch {
+          // Fallback: just play inline if fullscreen fails
+          video.play();
         }
-        video.play();
-      } catch {
-        // Fallback: just play inline if fullscreen fails
-        video.play();
+        setVideoLoading(false);
+      };
+
+      // If video is ready, play immediately
+      if (video.readyState >= 3) {
+        playVideo();
+      } else {
+        // Wait for video to buffer enough
+        video.addEventListener('canplay', () => playVideo(), { once: true });
+        video.load();
       }
 
       // Handle fullscreen exit - pause and reset
@@ -334,6 +351,7 @@ export default function HomePage() {
           video.pause();
           video.currentTime = 0;
           video.muted = true;
+          setVideoLoading(false);
           document.removeEventListener('fullscreenchange', handleFullscreenChange);
           document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
         }
@@ -565,6 +583,7 @@ export default function HomePage() {
                               src={FEATURE_FLOWS[activeFeature].mediaUrl}
                               loop
                               playsInline
+                              preload="auto"
                               className="absolute inset-0 w-full h-full object-cover"
                               onError={() => handleGifError(FEATURE_FLOWS[activeFeature].id)}
                             />
@@ -572,13 +591,18 @@ export default function HomePage() {
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-center justify-center">
                               <button
                                 onClick={handleVideoFullscreen}
-                                className="group flex flex-col items-center gap-3 transition-transform hover:scale-105"
+                                disabled={videoLoading}
+                                className="group flex flex-col items-center gap-3 transition-transform hover:scale-105 disabled:opacity-90"
                               >
                                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/95 shadow-2xl flex items-center justify-center group-hover:bg-white transition-all">
-                                  <Play className="w-7 h-7 sm:w-8 sm:h-8 text-[#C4735B] ml-1" fill="currentColor" />
+                                  {videoLoading ? (
+                                    <Loader2 className="w-7 h-7 sm:w-8 sm:h-8 text-[#C4735B] animate-spin" />
+                                  ) : (
+                                    <Play className="w-7 h-7 sm:w-8 sm:h-8 text-[#C4735B] ml-1" fill="currentColor" />
+                                  )}
                                 </div>
                                 <span className="text-white text-sm font-medium px-4 py-1.5 rounded-full bg-black/30 backdrop-blur-sm">
-                                  {t('landing.watchDemo')}
+                                  {videoLoading ? t('landing.loading') : t('landing.watchDemo')}
                                 </span>
                               </button>
                             </div>
