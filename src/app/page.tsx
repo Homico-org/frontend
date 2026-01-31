@@ -35,24 +35,20 @@ import {
   MousePointer,
 } from 'lucide-react';
 
-// Categories
+// Categories - matching actual database structure
 const TOP_CATEGORIES = [
   { slug: 'design', label: 'landing.catDesign', icon: Paintbrush },
   { slug: 'renovation', label: 'landing.catRenovation', icon: Hammer },
-  { slug: 'plumbing', label: 'landing.catPlumbing', icon: Wrench },
-  { slug: 'electrical', label: 'landing.catElectrical', icon: Zap },
-  { slug: 'painting', label: 'landing.catPainting', icon: Paintbrush },
-  { slug: 'hvac', label: 'landing.catHVAC', icon: Thermometer },
-  { slug: 'cleaning', label: 'landing.catCleaning', icon: Sparkles },
-  { slug: 'homecare', label: 'landing.catHomeCare', icon: Home },
+  { slug: 'architecture', label: 'landing.catArchitecture', icon: Home },
+  { slug: 'services', label: 'landing.catServices', icon: Sparkles },
 ];
 
 // Features
 const FEATURE_FLOWS = [
-  { id: 'post-job', icon: FileText, titleKey: 'landing.featurePostJob', descKey: 'landing.featurePostJobDesc', gifUrl: '/gifs/post-job.gif', color: 'from-blue-500/10 to-indigo-500/10', iconBg: 'bg-blue-500/10', iconColor: 'text-blue-600' },
-  { id: 'browse-pros', icon: Search, titleKey: 'landing.featureBrowsePros', descKey: 'landing.featureBrowseProsDesc', gifUrl: '/gifs/browse-pros.gif', color: 'from-emerald-500/10 to-teal-500/10', iconBg: 'bg-emerald-500/10', iconColor: 'text-emerald-600' },
-  { id: 'get-proposals', icon: MessageSquare, titleKey: 'landing.featureGetProposals', descKey: 'landing.featureGetProposalsDesc', gifUrl: '/gifs/get-proposals.gif', color: 'from-amber-500/10 to-orange-500/10', iconBg: 'bg-amber-500/10', iconColor: 'text-amber-600' },
-  { id: 'hire-review', icon: UserCheck, titleKey: 'landing.featureHireReview', descKey: 'landing.featureHireReviewDesc', gifUrl: '/gifs/hire-review.gif', color: 'from-purple-500/10 to-pink-500/10', iconBg: 'bg-purple-500/10', iconColor: 'text-purple-600' },
+  { id: 'post-job', icon: FileText, titleKey: 'landing.featurePostJob', descKey: 'landing.featurePostJobDesc', gifUrl: '/features/post-job.png', color: 'from-blue-500/10 to-indigo-500/10', iconBg: 'bg-blue-500/10', iconColor: 'text-blue-600' },
+  { id: 'browse-pros', icon: Search, titleKey: 'landing.featureBrowsePros', descKey: 'landing.featureBrowseProsDesc', gifUrl: '/features/browse-pros.png', color: 'from-emerald-500/10 to-teal-500/10', iconBg: 'bg-emerald-500/10', iconColor: 'text-emerald-600' },
+  { id: 'get-proposals', icon: MessageSquare, titleKey: 'landing.featureGetProposals', descKey: 'landing.featureGetProposalsDesc', gifUrl: '/features/get-proposals.png', color: 'from-amber-500/10 to-orange-500/10', iconBg: 'bg-amber-500/10', iconColor: 'text-amber-600' },
+  { id: 'hire-review', icon: UserCheck, titleKey: 'landing.featureHireReview', descKey: 'landing.featureHireReviewDesc', gifUrl: '/features/hire-review.png', color: 'from-purple-500/10 to-pink-500/10', iconBg: 'bg-purple-500/10', iconColor: 'text-purple-600' },
 ];
 
 // Live activity names (Georgian names)
