@@ -286,17 +286,19 @@ function AdminSupportPageContent() {
   const selectTicket = async (ticket: SupportTicket) => {
     setSelectedTicket(ticket);
     setOtherUserTyping(false); // Reset typing indicator when switching tickets
-    // Mark as read
+    // Mark as read - call API first, then update local state only if successful
     if (ticket.hasUnreadUserMessages) {
       try {
-        await api.patch(`/support/tickets/${ticket._id}/read`);
-        // Update local state
-        setTickets(prev => prev.map(t =>
-          t._id === ticket._id ? { ...t, hasUnreadUserMessages: false } : t
-        ));
-        setSelectedTicket(prev => prev ? { ...prev, hasUnreadUserMessages: false } : null);
-        // Optimistically update unread stats so the top card reflects reality immediately
-        setStats(prev => prev ? { ...prev, unread: Math.max(0, (prev.unread || 0) - 1) } : prev);
+        const response = await api.patch(`/support/tickets/${ticket._id}/read`);
+        // Only update local state if backend confirms success
+        if (response.data?.success !== false) {
+          setTickets(prev => prev.map(t =>
+            t._id === ticket._id ? { ...t, hasUnreadUserMessages: false } : t
+          ));
+          setSelectedTicket(prev => prev ? { ...prev, hasUnreadUserMessages: false } : null);
+          // Update unread stats
+          setStats(prev => prev ? { ...prev, unread: Math.max(0, (prev.unread || 0) - 1) } : prev);
+        }
       } catch (err) {
         console.error('Failed to mark as read:', err);
       }
