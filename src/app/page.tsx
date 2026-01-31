@@ -45,10 +45,10 @@ const TOP_CATEGORIES = [
 
 // Features
 const FEATURE_FLOWS = [
-  { id: 'post-job', icon: FileText, titleKey: 'landing.featurePostJob', descKey: 'landing.featurePostJobDesc', gifUrl: '/features/post-job.png', color: 'from-blue-500/10 to-indigo-500/10', iconBg: 'bg-blue-500/10', iconColor: 'text-blue-600' },
-  { id: 'browse-pros', icon: Search, titleKey: 'landing.featureBrowsePros', descKey: 'landing.featureBrowseProsDesc', gifUrl: '/features/browse-pros.png', color: 'from-emerald-500/10 to-teal-500/10', iconBg: 'bg-emerald-500/10', iconColor: 'text-emerald-600' },
-  { id: 'get-proposals', icon: MessageSquare, titleKey: 'landing.featureGetProposals', descKey: 'landing.featureGetProposalsDesc', gifUrl: '/features/get-proposals.png', color: 'from-amber-500/10 to-orange-500/10', iconBg: 'bg-amber-500/10', iconColor: 'text-amber-600' },
-  { id: 'hire-review', icon: UserCheck, titleKey: 'landing.featureHireReview', descKey: 'landing.featureHireReviewDesc', gifUrl: '/features/hire-review.png', color: 'from-purple-500/10 to-pink-500/10', iconBg: 'bg-purple-500/10', iconColor: 'text-purple-600' },
+  { id: 'post-job', icon: FileText, titleKey: 'landing.featurePostJob', descKey: 'landing.featurePostJobDesc', mediaUrl: '/features/post-job.mov', isVideo: true, color: 'from-blue-500/10 to-indigo-500/10', iconBg: 'bg-blue-500/10', iconColor: 'text-blue-600' },
+  { id: 'browse-pros', icon: Search, titleKey: 'landing.featureBrowsePros', descKey: 'landing.featureBrowseProsDesc', mediaUrl: '/features/browse-pros.png', isVideo: false, color: 'from-emerald-500/10 to-teal-500/10', iconBg: 'bg-emerald-500/10', iconColor: 'text-emerald-600' },
+  { id: 'get-proposals', icon: MessageSquare, titleKey: 'landing.featureGetProposals', descKey: 'landing.featureGetProposalsDesc', mediaUrl: '/features/get-proposals.png', isVideo: false, color: 'from-amber-500/10 to-orange-500/10', iconBg: 'bg-amber-500/10', iconColor: 'text-amber-600' },
+  { id: 'hire-review', icon: UserCheck, titleKey: 'landing.featureHireReview', descKey: 'landing.featureHireReviewDesc', mediaUrl: '/features/hire-review.png', isVideo: false, color: 'from-purple-500/10 to-pink-500/10', iconBg: 'bg-purple-500/10', iconColor: 'text-purple-600' },
 ];
 
 // Live activity names (Georgian names)
@@ -274,6 +274,7 @@ export default function HomePage() {
   const [mounted, setMounted] = useState(false);
   const [stats, setStats] = useState({ activePros: 0, projectsCompleted: 0, avgRating: 4.8, avgResponseTime: '<1' });
   const [featureSliderPaused, setFeatureSliderPaused] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const parallaxOffset = useParallax(0.3);
   const parallaxOffsetSlow = useParallax(0.15);
 
@@ -305,6 +306,42 @@ export default function HomePage() {
   }, [featureSliderPaused]);
 
   const handleGifError = (id: string) => setGifErrors((p) => ({ ...p, [id]: true }));
+
+  const handleVideoFullscreen = async () => {
+    if (videoRef.current) {
+      const video = videoRef.current;
+      video.muted = false;
+      video.currentTime = 0;
+
+      try {
+        if (video.requestFullscreen) {
+          await video.requestFullscreen();
+        } else if ((video as HTMLVideoElement & { webkitEnterFullscreen?: () => void }).webkitEnterFullscreen) {
+          // iOS Safari
+          (video as HTMLVideoElement & { webkitEnterFullscreen: () => void }).webkitEnterFullscreen();
+        } else if ((video as HTMLVideoElement & { webkitRequestFullscreen?: () => void }).webkitRequestFullscreen) {
+          await (video as HTMLVideoElement & { webkitRequestFullscreen: () => Promise<void> }).webkitRequestFullscreen();
+        }
+        video.play();
+      } catch {
+        // Fallback: just play inline if fullscreen fails
+        video.play();
+      }
+
+      // Handle fullscreen exit - pause and reset
+      const handleFullscreenChange = () => {
+        if (!document.fullscreenElement) {
+          video.pause();
+          video.currentTime = 0;
+          video.muted = true;
+          document.removeEventListener('fullscreenchange', handleFullscreenChange);
+          document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+        }
+      };
+      document.addEventListener('fullscreenchange', handleFullscreenChange);
+      document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    }
+  };
 
   const scrollToContent = () => {
     window.scrollTo({ top: window.innerHeight * 0.8, behavior: 'smooth' });
@@ -473,13 +510,13 @@ export default function HomePage() {
 
         {/* ========== FEATURES ========== */}
         <section className="py-10 sm:py-14 lg:py-16 relative">
-          <div
-            className="mx-4 sm:mx-6 lg:mx-auto max-w-6xl"
-            onMouseEnter={() => setFeatureSliderPaused(true)}
-            onMouseLeave={() => setFeatureSliderPaused(false)}
-          >
+          <div className="mx-4 sm:mx-6 lg:mx-auto max-w-6xl">
             <GlassCard className="rounded-2xl sm:rounded-3xl border-neutral-200/30 dark:border-neutral-700/30">
-            <div className="p-5 sm:p-8 lg:p-10">
+            <div
+              className="p-5 sm:p-8 lg:p-10"
+              onMouseEnter={() => setFeatureSliderPaused(true)}
+              onMouseLeave={() => setFeatureSliderPaused(false)}
+            >
               <AnimatedSection className="text-center max-w-lg mx-auto mb-8">
                 <h2 className="text-xl sm:text-2xl lg:text-[28px] font-bold text-neutral-900 dark:text-white">
                   {t('landing.featuresTitle')}
@@ -520,8 +557,36 @@ export default function HomePage() {
                   <div className="order-2 lg:order-1">
                     <div className={`relative aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden bg-gradient-to-br ${FEATURE_FLOWS[activeFeature].color} border border-neutral-200/30 transition-all duration-500`}>
                       {!gifErrors[FEATURE_FLOWS[activeFeature].id] ? (
-                        <Image src={FEATURE_FLOWS[activeFeature].gifUrl} alt="" fill className="object-cover"
-                          onError={() => handleGifError(FEATURE_FLOWS[activeFeature].id)} unoptimized />
+                        FEATURE_FLOWS[activeFeature].isVideo ? (
+                          <>
+                            <video
+                              ref={videoRef}
+                              key={FEATURE_FLOWS[activeFeature].id}
+                              src={FEATURE_FLOWS[activeFeature].mediaUrl}
+                              loop
+                              playsInline
+                              className="absolute inset-0 w-full h-full object-cover"
+                              onError={() => handleGifError(FEATURE_FLOWS[activeFeature].id)}
+                            />
+                            {/* Watch Demo overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-center justify-center">
+                              <button
+                                onClick={handleVideoFullscreen}
+                                className="group flex flex-col items-center gap-3 transition-transform hover:scale-105"
+                              >
+                                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/95 shadow-2xl flex items-center justify-center group-hover:bg-white transition-all">
+                                  <Play className="w-7 h-7 sm:w-8 sm:h-8 text-[#C4735B] ml-1" fill="currentColor" />
+                                </div>
+                                <span className="text-white text-sm font-medium px-4 py-1.5 rounded-full bg-black/30 backdrop-blur-sm">
+                                  {t('landing.watchDemo')}
+                                </span>
+                              </button>
+                            </div>
+                          </>
+                        ) : (
+                          <Image src={FEATURE_FLOWS[activeFeature].mediaUrl} alt="" fill className="object-cover"
+                            onError={() => handleGifError(FEATURE_FLOWS[activeFeature].id)} unoptimized />
+                        )
                       ) : (
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-neutral-400">
                           <div className={`w-14 h-14 rounded-xl ${FEATURE_FLOWS[activeFeature].iconBg} flex items-center justify-center mb-3`}>
