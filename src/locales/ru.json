@@ -407,6 +407,7 @@
     "title": "Обзор",
     "professionals": "Специалисты",
     "jobs": "Работы",
+    "tools": "Инструменты",
     "searchProfessionals": "Поиск специалистов...",
     "searchJobs": "Поиск работ...",
     "allCategories": "Все категории",
@@ -425,6 +426,7 @@
     "noResults": "Результаты не найдены",
     "tryDifferentFilters": "Попробуйте другие фильтры",
     "clearFilters": "Сбросить фильтры",
+    "clearFilter": "Сбросить",
     "showMore": "Показать ещё",
     "minPrice": "Мин. цена",
     "maxPrice": "Макс. цена",
@@ -758,7 +760,8 @@
     "writeAReview": "Написать отзыв",
     "youHiredTheProfessional": "Вы наняли специалиста",
     "yourFeedbackHelpsOtherClients": "Ваш отзыв помогает другим клиентам",
-    "youveBeenHiredForThis": "Вас наняли на эту"
+    "youveBeenHiredForThis": "Вас наняли на этот проект",
+    "youveBeenHired": "Вас наняли на эту работу!"
   },
   "postJob": {
     "steps": {
@@ -1945,6 +1948,7 @@
     "noHistoryYet": "Истории пока нет",
     "summary": "Сводка",
     "history": "История",
+    "clientConfirmedCompletion": "Клиент подтвердил завершение",
     "overview": "Обзор",
     "chat": "Чат",
     "polls": "Опросы",

@@ -3,7 +3,6 @@
 import EmptyState from "@/components/common/EmptyState";
 import ProCard from "@/components/common/ProCard";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { SkeletonProCardGrid } from "@/components/ui/Skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBrowseContext } from "@/contexts/BrowseContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -68,32 +67,17 @@ export default function ProfessionalsPage() {
         const profiles = result.data as ProProfile[];
         const pagination = result.pagination || {};
 
-        console.log("profiles", profiles);
         if (reset) {
           setResults(profiles);
-          // initializeLikeStates(
-          //   profiles.map((p: ProProfile) => ({
-          //     id: p._id,
-          //     isLiked: p.isLiked || false,
-          //     likeCount: p.likeCount || 0,
-          //   }))
-          // );
         } else {
           setResults((prev) => [...prev, ...profiles]);
-          // initializeLikeStates(
-          //   profiles.map((p: ProProfile) => ({
-          //     id: p._id,
-          //     isLiked: p.isLiked || false,
-          //     likeCount: p.likeCount || 0,
-          //   }))
-          // );
         }
 
         setTotalCount(
-          pagination.total || result.total || result.totalCount || 0
+          pagination.total || result.total || result.totalCount || 0,
         );
         setHasMore(
-          pagination.hasMore ?? (profiles.length === 12 && profiles.length > 0)
+          pagination.hasMore ?? (profiles.length === 12 && profiles.length > 0),
         );
       } catch (error) {
         console.error("Error fetching professionals:", error);
@@ -112,7 +96,7 @@ export default function ProfessionalsPage() {
       selectedCity,
       budgetMin,
       budgetMax,
-    ]
+    ],
   );
 
   // Track if initial fetch has been done to prevent double fetching
@@ -191,7 +175,7 @@ export default function ProfessionalsPage() {
           setPage((prev) => prev + 1);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     if (loaderRef.current) {
@@ -215,7 +199,22 @@ export default function ProfessionalsPage() {
 
   // Compact Loading skeleton - matches new card design
   const ProfessionalsSkeleton = () => (
-    <SkeletonProCardGrid count={8} columns={4} className="gap-3 sm:gap-4" />
+    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div
+          key={i}
+          className="bg-white dark:bg-neutral-900 rounded-xl p-3 sm:p-5 border border-neutral-200/70 dark:border-neutral-800/80"
+        >
+          <div className="flex items-start gap-3 sm:flex-col sm:items-center">
+            <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-full bg-neutral-200 dark:bg-neutral-700 animate-pulse flex-shrink-0" />
+            <div className="flex-1 min-w-0 sm:w-full sm:mt-3">
+              <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-3/4 sm:mx-auto animate-pulse mb-2" />
+              <div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded w-1/2 sm:mx-auto animate-pulse" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 
   // Empty state using shared component
@@ -237,7 +236,7 @@ export default function ProfessionalsPage() {
       {isLoading ? (
         <ProfessionalsSkeleton />
       ) : results.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
           {results.map((profile, index) => (
             <div
               key={profile.id || `pro-${index}`}
@@ -263,7 +262,7 @@ export default function ProfessionalsPage() {
           <div className="flex items-center gap-3 px-4 py-2 sm:gap-4 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl glass-card">
             <LoadingSpinner size="sm" variant="border" color="#E07B4F" />
             <span className="text-xs sm:text-sm font-medium text-[var(--color-text-secondary)]">
-              {t('browse.loadingMore')}
+              {t("browse.loadingMore")}
             </span>
           </div>
         )}

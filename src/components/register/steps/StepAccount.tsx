@@ -10,7 +10,7 @@ import { PasswordInput } from "@/components/ui/PasswordInput";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 import { CountryCode, useLanguage } from "@/contexts/LanguageContext";
 import { SocialIcon } from "@/components/icons";
-import { MessageSquare } from "lucide-react";
+import { ArrowRight, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import type {
@@ -63,7 +63,7 @@ export interface AccountStepProps {
   canProceed: boolean;
   onNext: () => void;
   onSwitchType: () => void;
-  
+
   // UI options
   showFooter?: boolean; // Hide footer for pro registration (page has its own footer)
 }
@@ -98,18 +98,20 @@ export default function StepAccount({
   const isPro = userType === "pro";
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
+    <div className="space-y-3 sm:space-y-4">
+      {/* Header */}
+      <div className="mb-1">
+        <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-neutral-900 mb-0.5 sm:mb-1">
           {isPro
-            ? t('register.professionalAccount')
-            : t('register.createAccount')}
+            ? t("register.professionalAccount")
+            : t("register.createAccount")}
         </h1>
-        <p className="text-sm text-neutral-500">
-          {t('register.fillInYourBasicInformation')}
+        <p className="text-xs sm:text-sm text-neutral-500">
+          {t("register.fillInYourBasicInformation")}
         </p>
       </div>
 
+      {/* Error Alert */}
       {error && (
         <Alert variant="error" size="sm">
           {error}
@@ -122,21 +124,21 @@ export default function StepAccount({
           e.preventDefault();
           onNext();
         }}
-        className="space-y-4"
+        className="space-y-3 sm:space-y-4"
       >
         {/* Avatar Upload for Pro */}
         {isPro && (
           <Card
-            className={`flex items-center gap-4 p-4 border-2 transition-all ${
+            className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 border-2 transition-all ${
               uploadedAvatarUrl
                 ? "border-emerald-500/50"
                 : "border-[#C4735B] ring-4 ring-[#C4735B]/10"
             }`}
           >
-            <div className="relative">
+            <div className="relative shrink-0">
               <div
                 onClick={() => avatarInputRef.current?.click()}
-                className={`w-20 h-20 rounded-full overflow-hidden cursor-pointer border-2 border-dashed transition-all ${
+                className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden cursor-pointer border-2 border-dashed transition-all ${
                   avatarPreview
                     ? "border-transparent"
                     : "border-[#C4735B] hover:border-[#A85D47]"
@@ -151,7 +153,7 @@ export default function StepAccount({
                 ) : (
                   <div className="w-full h-full bg-[#C4735B]/10 flex items-center justify-center">
                     <svg
-                      className="w-8 h-8 text-[#C4735B]"
+                      className="w-6 h-6 sm:w-8 sm:h-8 text-[#C4735B]"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -174,7 +176,7 @@ export default function StepAccount({
               </div>
               {avatarUploading && (
                 <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center">
-                  <LoadingSpinner size="lg" color="white" />
+                  <LoadingSpinner size="md" color="white" />
                 </div>
               )}
               {avatarPreview && !avatarUploading && (
@@ -186,10 +188,10 @@ export default function StepAccount({
                   }}
                   variant="destructive"
                   size="icon"
-                  className="absolute -top-1 -right-1 w-6 h-6 rounded-full"
+                  className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 rounded-full"
                 >
                   <svg
-                    className="w-3 h-3"
+                    className="w-2.5 h-2.5 sm:w-3 sm:h-3"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -211,80 +213,72 @@ export default function StepAccount({
                 className="hidden"
               />
             </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-sm font-medium text-neutral-900">
-                  {t('register.profilePhoto')}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
+                <h3 className="text-xs sm:text-sm font-medium text-neutral-900">
+                  {t("register.profilePhoto")}
                 </h3>
-                <span className="text-[10px] text-[#C4735B] font-medium">
-                  {t('common.required')}
+                <span className="text-[9px] sm:text-[10px] text-[#C4735B] font-medium">
+                  {t("common.required")}
                 </span>
               </div>
-              <p className="text-xs text-neutral-500">
-                {t('register.uploadARealPhotoOf')}
+              <p className="text-[10px] sm:text-xs text-neutral-500">
+                {t("register.uploadARealPhotoOf")}
               </p>
               {uploadedAvatarUrl && (
                 <Badge variant="success" size="xs" className="mt-1">
-                  {t('register.uploaded')}
+                  {t("register.uploaded")}
                 </Badge>
               )}
             </div>
           </Card>
         )}
 
-        {/* Name and Email */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* Name and Email - Stack on mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
           <FormGroup>
-            <Label required>
-              {t('common.fullName')}
-            </Label>
+            <Label required>{t("common.fullName")}</Label>
             <Input
               type="text"
               value={formData.fullName}
               onChange={(e) => handleInputChange("fullName", e.target.value)}
-              placeholder={t('register.giorgiBeridze')}
+              placeholder={t("register.giorgiBeridze")}
               required
               autoComplete="off"
               data-form-type="other"
-              className="bg-white dark:bg-neutral-900"
+              className="bg-white dark:bg-neutral-900 h-10 sm:h-11 text-sm"
             />
           </FormGroup>
           <FormGroup>
-            <Label>
-              {t('common.email')}
-              <span className="ml-1 text-neutral-400 font-normal">
-                ({t('common.optional')})
-              </span>
-            </Label>
+            <Label optional>{t("common.email")}</Label>
             <Input
               type="email"
               value={formData.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
               placeholder="name@example.com"
+              className="h-10 sm:h-11 text-sm"
             />
           </FormGroup>
         </div>
 
         {/* Phone section */}
         <FormGroup>
-          <Label required>
-            {t('common.phone')}
-          </Label>
+          <Label required>{t("common.phone")}</Label>
 
-          {/* Channel toggle */}
-          <div className="flex gap-2 mb-2">
+          {/* Channel toggle - Smaller on mobile */}
+          <div className="flex gap-1.5 sm:gap-2 mb-2">
             <Button
               type="button"
               onClick={() => setVerificationChannel("sms")}
               variant="ghost"
               size="sm"
-              className={
+              className={`h-8 sm:h-9 px-2.5 sm:px-3 text-xs sm:text-sm ${
                 verificationChannel === "sms"
                   ? "bg-[#C4735B] text-white hover:bg-[#A85D47] hover:text-white shadow-sm"
                   : "bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-700"
-              }
+              }`}
             >
-              <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
+              <MessageSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 sm:mr-1.5" />
               SMS
             </Button>
             <Button
@@ -292,13 +286,13 @@ export default function StepAccount({
               onClick={() => setVerificationChannel("whatsapp")}
               variant="ghost"
               size="sm"
-              className={
+              className={`h-8 sm:h-9 px-2.5 sm:px-3 text-xs sm:text-sm ${
                 verificationChannel === "whatsapp"
                   ? "bg-[#25D366] text-white hover:bg-[#1da851] hover:text-white shadow-sm"
                   : "bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-700"
-              }
+              }`}
             >
-              <SocialIcon name="whatsapp" size="sm" className="mr-1.5" />
+              <SocialIcon name="whatsapp" size="sm" className="mr-1 sm:mr-1.5" />
               WhatsApp
             </Button>
           </div>
@@ -313,63 +307,82 @@ export default function StepAccount({
           />
         </FormGroup>
 
-        {/* Password fields */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* Password fields - Stack on mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
           <FormGroup>
-            <Label required>
-              {t('common.password')}
-            </Label>
+            <Label required>{t("common.password")}</Label>
             <PasswordInput
               value={formData.password}
               onChange={(e) => handleInputChange("password", e.target.value)}
-              placeholder={t('register.min6Chars')}
+              placeholder={t("register.min6Chars")}
               required
               minLength={6}
+              className="h-10 sm:h-11"
             />
           </FormGroup>
           <FormGroup>
-            <Label required>
-              {t('register.repeatPassword')}
-            </Label>
+            <Label required>{t("register.repeatPassword")}</Label>
             <PasswordInput
               value={repeatPassword}
               onChange={(e) => setRepeatPassword(e.target.value)}
-              placeholder={t('register.repeat')}
+              placeholder={t("register.repeat")}
               required
               minLength={6}
+              className="h-10 sm:h-11"
               error={
                 repeatPassword && formData.password !== repeatPassword
-                  ? t('validation.passwordsNotMatch')
+                  ? t("validation.passwordsNotMatch")
                   : undefined
               }
             />
           </FormGroup>
         </div>
 
-        {/* Terms */}
-        <label className="flex items-start gap-2.5 cursor-pointer">
+        {/* Terms - Better touch target */}
+        <label className="flex items-start gap-2.5 sm:gap-3 cursor-pointer p-2 -mx-2 rounded-lg active:bg-neutral-50 transition-colors">
           <input
             type="checkbox"
             checked={agreedToTerms}
             onChange={(e) => setAgreedToTerms(e.target.checked)}
-            className="mt-0.5 w-4 h-4 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
+            className="mt-0.5 w-4 h-4 sm:w-5 sm:h-5 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
           />
-          <span className="text-xs text-neutral-600 leading-relaxed">
+          <span className="text-xs sm:text-sm text-neutral-600 leading-relaxed">
             {locale === "ka" ? (
               <>
                 ვეთანხმები{" "}
                 <Link
                   href="/terms"
-                  className="text-[#C4735B] hover:underline"
+                  className="text-[#C4735B] hover:underline font-medium"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   პირობებს
                 </Link>{" "}
                 და{" "}
                 <Link
                   href="/privacy"
-                  className="text-[#C4735B] hover:underline"
+                  className="text-[#C4735B] hover:underline font-medium"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   კონფიდენციალურობას
+                </Link>
+              </>
+            ) : locale === "ru" ? (
+              <>
+                Я согласен с{" "}
+                <Link
+                  href="/terms"
+                  className="text-[#C4735B] hover:underline font-medium"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Условиями
+                </Link>{" "}
+                и{" "}
+                <Link
+                  href="/privacy"
+                  className="text-[#C4735B] hover:underline font-medium"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Политикой конфиденциальности
                 </Link>
               </>
             ) : (
@@ -377,14 +390,16 @@ export default function StepAccount({
                 I agree to{" "}
                 <Link
                   href="/terms"
-                  className="text-[#C4735B] hover:underline"
+                  className="text-[#C4735B] hover:underline font-medium"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   Terms
                 </Link>{" "}
                 &{" "}
                 <Link
                   href="/privacy"
-                  className="text-[#C4735B] hover:underline"
+                  className="text-[#C4735B] hover:underline font-medium"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   Privacy
                 </Link>
@@ -393,48 +408,37 @@ export default function StepAccount({
           </span>
         </label>
 
-        {/* Submit - only show if showFooter is true (for client registration or standalone) */}
+        {/* Submit Button - Sticky on mobile for better UX */}
         {showFooter && (
-          <Button
-            type="submit"
-            disabled={isLoading || !canProceed}
-            loading={isLoading}
-            className="w-full"
-            size="lg"
-          >
-            {isPro
-              ? t('common.continue')
-              : t('register.createAccount')}
-            <svg
-              className="w-4 h-4 ml-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div className="pt-2">
+            <Button
+              type="submit"
+              disabled={isLoading || !canProceed}
+              loading={isLoading}
+              className="w-full h-11 sm:h-12 text-sm sm:text-base"
+              size="lg"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 8l4 4m0 0l-4 4m4-4H3"
-              />
-            </svg>
-          </Button>
+              {isPro ? t("common.continue") : t("register.createAccount")}
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
+            </Button>
+          </div>
         )}
       </form>
 
       {/* Switch type button */}
-      <div className="pt-3 border-t border-neutral-100">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onSwitchType}
-          className="text-neutral-500 hover:text-[#C4735B]"
-        >
-          {isPro
-            ? t('register.backToClientRegistration')
-            : t('register.registerAsProfessional')}
-        </Button>
-      </div>
+      {showFooter && (
+        <div className="pt-3 sm:pt-4 border-t border-neutral-100">
+          <button
+            type="button"
+            onClick={onSwitchType}
+            className="w-full py-2 text-xs sm:text-sm text-neutral-500 hover:text-[#C4735B] transition-colors text-center"
+          >
+            {isPro
+              ? t("register.backToClientRegistration")
+              : t("register.registerAsProfessional")}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

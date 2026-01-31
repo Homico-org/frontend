@@ -381,7 +381,7 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
           {/* Navigation Tabs */}
           <div className="px-3 pb-4">
             <nav className="space-y-1">
-              {visibleTabs.map((tab) => {
+              {visibleTabs.filter(tab => tab.key !== 'tools').map((tab) => {
                 const isActive = activeTab === tab.key;
                 const Icon = tab.icon;
                 return (
@@ -416,6 +416,40 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
             </nav>
           </div>
 
+          {/* Tools Section - Separated */}
+          <div className="px-3 pb-4">
+            <div className="border-t border-neutral-100 dark:border-neutral-800 pt-3 mb-2">
+              <span className="px-3 text-xs font-semibold tracking-wider text-neutral-400 uppercase">
+                {t("browse.tools")}
+              </span>
+            </div>
+            <Link
+              href="/tools"
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                activeTab === "tools"
+                  ? ""
+                  : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+              }`}
+              style={
+                activeTab === "tools"
+                  ? {
+                      backgroundColor: `${ACCENT_COLOR}15`,
+                      color: ACCENT_COLOR,
+                    }
+                  : {}
+              }
+            >
+              <Wrench className="w-5 h-5" />
+              <span>
+                {locale === "ka"
+                  ? "კალკულატორები"
+                  : locale === "ru"
+                    ? "Инструменты"
+                    : "Tools"}
+              </span>
+            </Link>
+          </div>
+
           {/* Filters Section */}
           <div className="flex-1 overflow-y-auto border-t border-neutral-100 dark:border-neutral-800">
             {isJobsPage ? (
@@ -432,9 +466,42 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
 
         {/* Scrollable Content */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 bg-white dark:bg-neutral-950">
-          {/* Mobile Sticky Search Bar */}
-          <div className="lg:hidden sticky top-0 z-20 bg-white dark:bg-neutral-950 border-b border-neutral-100 dark:border-neutral-800 px-3 py-2">
-            <div className="flex items-center gap-2">
+          {/* Mobile Sticky Header with Tabs and Search */}
+          <div className="lg:hidden sticky top-0 z-20 bg-white dark:bg-neutral-950 border-b border-neutral-100 dark:border-neutral-800">
+            {/* Mobile Tab Switcher */}
+            <div className="flex items-center gap-2 px-3 pt-3 pb-2 overflow-x-auto scrollbar-hide">
+              {visibleTabs.map((tab) => {
+                const isActive = activeTab === tab.key;
+                const Icon = tab.icon;
+                return (
+                  <Link
+                    key={tab.key}
+                    href={tab.route}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
+                      isActive
+                        ? "text-white shadow-sm"
+                        : "text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800"
+                    }`}
+                    style={
+                      isActive
+                        ? { backgroundColor: ACCENT_COLOR }
+                        : {}
+                    }
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>
+                      {locale === "ka"
+                        ? tab.labelKa
+                        : locale === "ru"
+                          ? tab.labelRu
+                          : tab.label}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+            {/* Search Bar */}
+            <div className="flex items-center gap-2 px-3 pb-2">
               <div className="flex-1">
                 {isJobsPage ? (
                   <JobsSearchInput />
@@ -526,6 +593,17 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
           </div>
         </div>
       )}
+
+      {/* Scrollbar hide utility */}
+      <style jsx>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 }

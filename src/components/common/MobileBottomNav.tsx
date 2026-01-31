@@ -33,14 +33,22 @@ const NAV_ITEMS: NavItem[] = [
     icon: Calculator,
     showFor: 'guest',
   },
-  // Authenticated navigation
+  // Client navigation (authenticated, not pro)
   {
     key: 'browse',
     href: '/browse/portfolio',
     labelKey: 'header.browse',
     icon: Search,
-    showFor: 'authenticated',
+    showFor: 'client',
   },
+  {
+    key: 'my-jobs-client',
+    href: '/my-jobs',
+    labelKey: 'header.myJobs',
+    icon: Briefcase,
+    showFor: 'client',
+  },
+  // Pro navigation
   {
     key: 'find-jobs',
     href: '/browse/jobs',
@@ -49,25 +57,11 @@ const NAV_ITEMS: NavItem[] = [
     showFor: 'pro',
   },
   {
-    key: 'my-work',
-    href: '/my-work',
-    labelKey: 'header.myWork',
-    icon: FileText,
-    showFor: 'pro',
-  },
-  {
     key: 'my-jobs',
     href: '/my-jobs',
     labelKey: 'header.myJobs',
-    icon: Briefcase,
-    showFor: 'authenticated',
-  },
-  {
-    key: 'tools',
-    href: '/tools',
-    labelKey: 'nav.tools',
-    icon: Calculator,
-    showFor: 'authenticated',
+    icon: FileText,
+    showFor: 'pro',
   },
 ];
 
@@ -121,14 +115,14 @@ export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
 
   // Determine active tab
   const getActiveKey = () => {
-    if (pathname.includes('/tools')) return isAuthenticated ? 'tools' : 'tools-guest';
-    if (pathname.includes('/my-work')) return 'my-work';
-    if (pathname.includes('/my-proposals')) return 'my-work'; // Redirect case
-    if (pathname.includes('/my-jobs')) return 'my-jobs';
+    if (pathname.includes('/tools')) return isAuthenticated ? '' : 'tools-guest';
+    if (pathname.includes('/my-work')) return 'my-jobs';
+    if (pathname.includes('/my-proposals')) return 'my-jobs';
+    if (pathname.includes('/my-jobs')) return isPro ? 'my-jobs' : 'my-jobs-client';
     if (pathname.includes('/browse/jobs')) return 'find-jobs';
-    if (pathname.includes('/browse/professionals')) return isAuthenticated ? 'browse' : 'professionals';
-    if (pathname.includes('/browse/portfolio')) return isAuthenticated ? 'browse' : 'portfolios';
-    if (pathname.includes('/browse')) return isAuthenticated ? 'browse' : 'portfolios';
+    if (pathname.includes('/browse/professionals')) return isPro ? '' : 'browse';
+    if (pathname.includes('/browse/portfolio')) return isPro ? '' : (isAuthenticated ? 'browse' : 'portfolios');
+    if (pathname.includes('/browse')) return isPro ? '' : (isAuthenticated ? 'browse' : 'portfolios');
     return '';
   };
 

@@ -407,6 +407,7 @@
     "title": "Browse",
     "professionals": "Professionals",
     "jobs": "Jobs",
+    "tools": "Tools",
     "searchProfessionals": "Search professionals...",
     "searchJobs": "Search jobs...",
     "allCategories": "All categories",
@@ -425,6 +426,7 @@
     "noResults": "No results found",
     "tryDifferentFilters": "Try different filters",
     "clearFilters": "Clear filters",
+    "clearFilter": "Clear",
     "showMore": "Show more",
     "minPrice": "Min price",
     "maxPrice": "Max price",
@@ -758,7 +760,8 @@
     "writeAReview": "Write A Review",
     "youHiredTheProfessional": "You Hired The Professional",
     "yourFeedbackHelpsOtherClients": "Your Feedback Helps Other Clients",
-    "youveBeenHiredForThis": "Youve Been Hired For This"
+    "youveBeenHiredForThis": "Youve Been Hired For This",
+    "youveBeenHired": "You've been hired for this job!"
   },
   "postJob": {
     "steps": {
@@ -1945,6 +1948,7 @@
     "noHistoryYet": "No history yet",
     "summary": "Summary",
     "history": "History",
+    "clientConfirmedCompletion": "Client confirmed completion",
     "overview": "Overview",
     "chat": "Chat",
     "polls": "Polls",

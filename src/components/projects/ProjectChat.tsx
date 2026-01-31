@@ -314,7 +314,6 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
     socketRef.current = socket;
 
     socket.on('connect', () => {
-      console.log('[ProjectChat] Connected to WebSocket');
       socket.emit('joinProjectChat', jobId);
     });
 

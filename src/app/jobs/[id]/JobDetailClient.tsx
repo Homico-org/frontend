@@ -83,7 +83,7 @@ import {
   Users,
   Vote,
   X,
-  Zap
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -178,7 +178,7 @@ const workTypeKeys: Record<string, string> = {
 // Category illustrations for jobs without images
 const getCategoryIllustration = (
   category?: string,
-  subcategory?: string
+  subcategory?: string,
 ): React.ReactNode => {
   const key = subcategory || category || "other";
 
@@ -321,7 +321,7 @@ const getCategoryIllustration = (
                 height="35"
                 rx="2"
               />
-            ))
+            )),
           )}
         </g>
         <g fill="#06B6D4" opacity="0.2">
@@ -715,7 +715,7 @@ export default function JobDetailClient() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(
-    null
+    null,
   );
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showInviteProsModal, setShowInviteProsModal] = useState(false);
@@ -727,11 +727,11 @@ export default function JobDetailClient() {
   const [isPollsExpanded, setIsPollsExpanded] = useState(true);
   const [isResourcesExpanded, setIsResourcesExpanded] = useState(true);
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
-  
+
   // Sidebar navigation state for hired projects
   const [activeSidebarTab, setActiveSidebarTab] =
     useState<ProjectSidebarTab>("details");
-  
+
   // Unread counts for sidebar badges
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [unreadPollsCount, setUnreadPollsCount] = useState(0);
@@ -788,7 +788,7 @@ export default function JobDetailClient() {
   const [historyEvents, setHistoryEvents] = useState<HistoryEvent[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [historyFilter, setHistoryFilter] = useState<"all" | "client" | "pro">(
-    "all"
+    "all",
   );
   const historyLoadedRef = useRef(false);
 
@@ -804,7 +804,7 @@ export default function JobDetailClient() {
   const [showDescriptionEdit, setShowDescriptionEdit] = useState(false);
   const [editDescription, setEditDescription] = useState("");
   const [isSavingDescription, setIsSavingDescription] = useState(false);
-  
+
   // Property details inline edit
   const [showPropertyEdit, setShowPropertyEdit] = useState(false);
   const [editPropertyData, setEditPropertyData] = useState({
@@ -820,12 +820,12 @@ export default function JobDetailClient() {
     deadline: "",
   });
   const [isSavingProperty, setIsSavingProperty] = useState(false);
-  
+
   // Work types inline edit
   const [showWorkTypesEdit, setShowWorkTypesEdit] = useState(false);
   const [editWorkTypes, setEditWorkTypes] = useState<string[]>([]);
   const [isSavingWorkTypes, setIsSavingWorkTypes] = useState(false);
-  
+
   // Requirements inline edit
   const [showRequirementsEdit, setShowRequirementsEdit] = useState(false);
   const [editRequirements, setEditRequirements] = useState({
@@ -835,7 +835,7 @@ export default function JobDetailClient() {
     occupiedDuringWork: false,
   });
   const [isSavingRequirements, setIsSavingRequirements] = useState(false);
-  
+
   // Title inline edit
   const [showTitleEdit, setShowTitleEdit] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -843,7 +843,7 @@ export default function JobDetailClient() {
 
   const isOwner = user && job?.clientId && user.id === job.clientId.id;
   const isPro = user?.role === "pro" || user?.role === "admin";
-  
+
   // Check if current user is the hired pro for this job
   // hiredPro structure can vary:
   // - hiredPro.id is the pro's user ID at top level
@@ -851,13 +851,13 @@ export default function JobDetailClient() {
   // - After _id->id transform, it might be in different places
   const getHiredProUserId = (): string | null => {
     if (!job?.hiredPro) return null;
-    
-    const hiredPro = job.hiredPro as { 
-      userId?: string | { id?: string; _id?: string }; 
+
+    const hiredPro = job.hiredPro as {
+      userId?: string | { id?: string; _id?: string };
       id?: string;
       _id?: string;
     };
-    
+
     // Try top-level id first
     if (hiredPro.id) return hiredPro.id;
     if (hiredPro._id) return hiredPro._id;
@@ -869,7 +869,7 @@ export default function JobDetailClient() {
         return hiredPro.userId.id || hiredPro.userId._id || null;
       }
     }
-    
+
     return null;
   };
   const hiredProUserId = getHiredProUserId();
@@ -922,7 +922,6 @@ export default function JobDetailClient() {
     });
 
     socketRef.current.on("connect", () => {
-      console.log("[JobDetail] WebSocket connected");
       // Join the project room for this job
       socketRef.current?.emit("joinProjectChat", job.id);
     });
@@ -931,24 +930,22 @@ export default function JobDetailClient() {
     socketRef.current.on(
       "projectStageUpdate",
       (data: { jobId: string; stage: string; progress: number }) => {
-      if (data.jobId === job.id) {
-        setProjectStage(data.stage as ProjectStage);
-      }
-      }
+        if (data.jobId === job.id) {
+          setProjectStage(data.stage as ProjectStage);
+        }
+      },
     );
 
     // Listen for poll updates (will trigger re-render in PollsTab)
     socketRef.current.on(
       "projectPollUpdate",
       (data: { type: string; poll: Record<string, unknown> }) => {
-      console.log("[JobDetail] Poll update:", data);
-      // PollsTab component handles its own state, this is just for logging
-      }
+        // PollsTab component handles its own state, this is just for logging
+      },
     );
 
     // Listen for materials updates (will trigger re-render in ProjectWorkspace)
     socketRef.current.on("projectMaterialsUpdate", (data: { type: string }) => {
-      console.log("[JobDetail] Materials update:", data);
       // ProjectWorkspace component handles its own state, this is just for logging
     });
 
@@ -1177,7 +1174,7 @@ export default function JobDetailClient() {
       case "stage_changed":
         const fromLabel = STAGES.find((s) => s.key === meta?.fromStage);
         const toLabel = STAGES.find((s) => s.key === meta?.toStage);
-        return `${({ ka: fromLabel?.labelKa, en: fromLabel?.label, ru: fromLabel?.label }[locale] ?? meta?.fromStage ?? "—")} → ${({ ka: toLabel?.labelKa, en: toLabel?.label, ru: toLabel?.label }[locale] ?? meta?.toStage ?? "—")}`;
+        return `${{ ka: fromLabel?.labelKa, en: fromLabel?.label, ru: fromLabel?.label }[locale] ?? meta?.fromStage ?? "—"} → ${{ ka: toLabel?.labelKa, en: toLabel?.label, ru: toLabel?.label }[locale] ?? meta?.toStage ?? "—"}`;
       case "poll_created":
         return `"${meta?.pollTitle}"`;
       case "poll_voted":
@@ -1196,6 +1193,8 @@ export default function JobDetailClient() {
       case "attachment_added":
       case "attachment_removed":
         return meta?.fileName || "";
+      case "project_completed":
+        return t("projects.clientConfirmedCompletion");
       default:
         return meta?.description || "";
     }
@@ -1208,14 +1207,13 @@ export default function JobDetailClient() {
     const diffMs = now.getTime() - date.getTime();
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffDays < 7)
-      return formatTimeAgoCompact(dateStr, locale);
+    if (diffDays < 7) return formatTimeAgoCompact(dateStr, locale);
     return formatDateMonthDay(dateStr, locale);
   };
 
   const filteredHistory =
     historyFilter === "all"
-    ? historyEvents
+      ? historyEvents
       : historyEvents.filter((e) => e.userRole === historyFilter);
 
   // Submit review handler (and optionally confirm completion)
@@ -1233,8 +1231,8 @@ export default function JobDetailClient() {
       (typeof hiredProUser === "object"
         ? hiredProUser?.id || hiredProUser?._id
         : hiredProUser) ||
-                  job.hiredPro?.id ||
-                  projectProId || // Fallback to project tracking proId
+      job.hiredPro?.id ||
+      projectProId || // Fallback to project tracking proId
       "";
 
     // Validate proId
@@ -1262,14 +1260,14 @@ export default function JobDetailClient() {
 
       // Then submit review
       await api.post("/reviews", reviewData);
-      
+
       setShowReviewModal(false);
       setIsCompletionFlow(false);
       setHasSubmittedReview(true);
       setSuccess(
         isCompletionFlow
           ? t("jobDetail.projectCompletedAndReviewSubmitted")
-          : t("jobDetail.reviewSubmittedSuccessfully")
+          : t("jobDetail.reviewSubmittedSuccessfully"),
       );
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
@@ -1293,7 +1291,7 @@ export default function JobDetailClient() {
         setIsCompletionFlow(false);
       } else {
         setError(t("jobDetail.failedToSubmitReview"));
-      setTimeout(() => setError(""), 3000);
+        setTimeout(() => setError(""), 3000);
       }
     } finally {
       setIsSubmittingReview(false);
@@ -1409,15 +1407,15 @@ export default function JobDetailClient() {
             !!project.completedAt &&
             !project.clientConfirmedAt;
           setIsClientConfirmed(
-            !!project.clientConfirmedAt || isLegacyCompleted
+            !!project.clientConfirmedAt || isLegacyCompleted,
           );
-          
+
           // Store pro ID from project tracking as fallback
           if (project.proId) {
             const proIdValue =
               typeof project.proId === "object"
                 ? project.proId._id || project.proId.id
-              : project.proId;
+                : project.proId;
             setProjectProId(proIdValue);
           }
         }
@@ -1438,7 +1436,7 @@ export default function JobDetailClient() {
 
       try {
         const response = await api.get(
-          `/jobs/projects/${job.id}/unread-counts`
+          `/jobs/projects/${job.id}/unread-counts`,
         );
         setUnreadChatCount(response.data.chat || 0);
         setUnreadPollsCount(response.data.polls || 0);
@@ -1454,7 +1452,7 @@ export default function JobDetailClient() {
   // Clear unread counts when switching tabs
   useEffect(() => {
     if (!job?.id) return;
-    
+
     if (activeSidebarTab === "chat" && unreadChatCount > 0) {
       api.post(`/jobs/projects/${job.id}/messages/read`).catch(() => {});
       setUnreadChatCount(0);
@@ -1499,7 +1497,7 @@ export default function JobDetailClient() {
     if (!job?.id || !isOwner) return;
     // Open review modal in completion flow mode
     setIsCompletionFlow(true);
-      setShowReviewModal(true);
+    setShowReviewModal(true);
   };
 
   // Handle client request changes
@@ -1512,16 +1510,10 @@ export default function JobDetailClient() {
 
     try {
       await api.patch(`/jobs/projects/${job.id}/stage`, { stage: "review" });
-      toast.success(
-        t("common.success"),
-        t("jobDetail.requestSent")
-      );
+      toast.success(t("common.success"), t("jobDetail.requestSent"));
     } catch (err) {
       setProjectStage(previousStage);
-      toast.error(
-        t("common.error"),
-        t("jobDetail.failedToSendRequest")
-      );
+      toast.error(t("common.error"), t("jobDetail.failedToSendRequest"));
     } finally {
       setIsUpdatingStage(false);
     }
@@ -1534,13 +1526,13 @@ export default function JobDetailClient() {
 
     try {
       const response = await api.post(`/jobs/${params.id}/proposals`, {
-            ...proposalData,
-            proposedPrice: proposalData.proposedPrice
-              ? parseFloat(proposalData.proposedPrice)
-              : undefined,
-            estimatedDuration: proposalData.estimatedDuration
-              ? parseInt(proposalData.estimatedDuration)
-              : undefined,
+        ...proposalData,
+        proposedPrice: proposalData.proposedPrice
+          ? parseFloat(proposalData.proposedPrice)
+          : undefined,
+        estimatedDuration: proposalData.estimatedDuration
+          ? parseInt(proposalData.estimatedDuration)
+          : undefined,
       });
 
       setSuccess(t("jobDetail.proposalSubmittedSuccessfully"));
@@ -1563,7 +1555,7 @@ export default function JobDetailClient() {
       setError(
         error.response?.data?.message ||
           error.message ||
-          "Failed to submit proposal"
+          "Failed to submit proposal",
       );
     } finally {
       setIsSubmitting(false);
@@ -1609,7 +1601,7 @@ export default function JobDetailClient() {
         setJob(res.data);
       } else {
         setJob((prev) =>
-          prev ? { ...prev, description: editDescription } : prev
+          prev ? { ...prev, description: editDescription } : prev,
         );
       }
       setShowDescriptionEdit(false);
@@ -1669,7 +1661,7 @@ export default function JobDetailClient() {
         : null;
       if (editPropertyData.deadline)
         updateData.deadline = editPropertyData.deadline;
-      
+
       const res = await api.put(`/jobs/${job.id}`, updateData);
       if (res?.data) {
         setJob(res.data);
@@ -1680,7 +1672,7 @@ export default function JobDetailClient() {
                 ...prev,
                 ...updateData,
               } as PageJob)
-            : prev
+            : prev,
         );
       }
       setShowPropertyEdit(false);
@@ -1697,7 +1689,9 @@ export default function JobDetailClient() {
     if (!job?.id) return;
     setIsSavingWorkTypes(true);
     try {
-      const res = await api.put(`/jobs/${job.id}`, { workTypes: editWorkTypes });
+      const res = await api.put(`/jobs/${job.id}`, {
+        workTypes: editWorkTypes,
+      });
       if (res?.data) {
         setJob(res.data);
       } else {
@@ -1845,25 +1839,23 @@ export default function JobDetailClient() {
 
       {/* Header / Hero */}
       <section className="relative bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-6">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6">
           {/* Back button + Edit/Delete buttons row (only when job is not hired) */}
-          <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center justify-between mb-4 sm:mb-5">
             <BackButton href="/browse/jobs" />
             {isOwner && !isHired && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <button
                   onClick={() => setShowInviteProsModal(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-[#C4735B] bg-[#C4735B]/10 hover:bg-[#C4735B]/20 transition-all"
+                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-1.5 rounded-lg text-sm font-medium text-[#C4735B] bg-[#C4735B]/10 hover:bg-[#C4735B]/20 active:bg-[#C4735B]/30 transition-all"
                   title={t("job.invitePros")}
                 >
                   <UserPlus className="w-4 h-4" />
-                  <span className="hidden sm:inline">
-                    {t("job.invite")}
-                  </span>
+                  <span className="hidden sm:inline">{t("job.invite")}</span>
                 </button>
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                  className="p-2 sm:p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 transition-all"
                   title={t("common.delete")}
                 >
                   <Trash2 className="w-4 h-4" />
@@ -1875,7 +1867,7 @@ export default function JobDetailClient() {
           {/* Conditional Layout: With images = 2 columns, Without images = single column compact */}
           {allMedia.length > 0 ? (
             /* WITH IMAGES: Side-by-side layout */
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 pb-2 sm:pb-0">
               {/* Left: Image Gallery */}
               <div className="space-y-2 relative">
                 {/* Edit Media Button for Owner */}
@@ -1949,7 +1941,9 @@ export default function JobDetailClient() {
                   {isOpen && (
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-xs font-semibold">{t("common.active")}</span>
+                      <span className="text-xs font-semibold">
+                        {t("common.active")}
+                      </span>
                     </span>
                   )}
                   {isHired && (
@@ -1958,7 +1952,9 @@ export default function JobDetailClient() {
                       style={{ backgroundColor: `${ACCENT}20`, color: ACCENT }}
                     >
                       <Check className="w-3 h-3" />
-                      <span className="text-xs font-semibold">{t("common.hired")}</span>
+                      <span className="text-xs font-semibold">
+                        {t("common.hired")}
+                      </span>
                     </span>
                   )}
                   <span
@@ -1976,62 +1972,68 @@ export default function JobDetailClient() {
                 </div>
 
                 {/* Title */}
-                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-neutral-900 dark:text-white mb-4 leading-tight">
+                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-neutral-900 dark:text-white mb-3 sm:mb-4 leading-tight">
                   {job.title}
                 </h1>
 
                 {/* Quick stats */}
-                <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-3 sm:mb-4">
                   {job.location && (
-                    <span className="flex items-center gap-1.5">
-                      <MapPin className="w-4 h-4" />
-                      <span className="truncate max-w-[180px]">{job.location}</span>
+                    <span className="flex items-center gap-1 sm:gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                      <span className="truncate max-w-[140px] sm:max-w-[180px]">
+                        {job.location}
+                      </span>
                     </span>
                   )}
-                  <span className="flex items-center gap-1.5">
-                    <Clock className="w-4 h-4" />
+                  <span className="flex items-center gap-1 sm:gap-1.5">
+                    <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                     {getTimeAgo(job.createdAt)}
                   </span>
                 </div>
 
                 {/* Budget highlight */}
-                <div className="flex items-center gap-3 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 mb-4">
+                <div className="flex items-center gap-2.5 sm:gap-3 p-3 sm:p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 mb-3 sm:mb-4">
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center"
+                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0"
                     style={{ backgroundColor: `${ACCENT}15` }}
                   >
-                    <span className="text-lg" style={{ color: ACCENT }}>₾</span>
+                    <span className="text-base sm:text-lg" style={{ color: ACCENT }}>
+                      ₾
+                    </span>
                   </div>
                   <div>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                    <p className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       {t("common.budget")}
                     </p>
-                    <p className="text-xl font-bold text-neutral-900 dark:text-white">
+                    <p className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white">
                       {budgetDisplay}
                     </p>
                   </div>
                 </div>
 
                 {/* Stats row */}
-                <div className="flex items-center gap-6 text-sm mb-3">
-                  <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
-                    <Eye className="w-4 h-4" />
-                    <span>{job.viewCount || 0} {t("jobDetail.views")}</span>
+                <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-xs sm:text-sm mb-3">
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-neutral-600 dark:text-neutral-400">
+                    <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span>
+                      {job.viewCount || 0} {t("jobDetail.views")}
+                    </span>
                   </div>
                   {!isHired &&
                     (isOwner ? (
                       <Link
                         href={`/my-jobs/${job.id}/proposals`}
-                        className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-[#C4735B] transition-colors"
+                        className="flex items-center gap-1.5 sm:gap-2 text-neutral-600 dark:text-neutral-400 hover:text-[#C4735B] active:opacity-70 transition-colors"
                       >
-                        <Users className="w-4 h-4" />
+                        <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         <span className="underline underline-offset-2">
                           {job.proposalCount || 0} {t("jobDetail.proposals")}
                         </span>
                       </Link>
                     ) : (
-                      <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
-                        <Users className="w-4 h-4" />
+                      <div className="flex items-center gap-1.5 sm:gap-2 text-neutral-600 dark:text-neutral-400">
+                        <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         <span>
                           {job.proposalCount || 0} {t("jobDetail.proposals")}
                         </span>
@@ -2066,7 +2068,9 @@ export default function JobDetailClient() {
                 {isOpen && (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-xs font-semibold">{t("common.active")}</span>
+                    <span className="text-xs font-semibold">
+                      {t("common.active")}
+                    </span>
                   </span>
                 )}
                 {isHired && (
@@ -2075,7 +2079,9 @@ export default function JobDetailClient() {
                     style={{ backgroundColor: `${ACCENT}20`, color: ACCENT }}
                   >
                     <Check className="w-3 h-3" />
-                    <span className="text-xs font-semibold">{t("common.hired")}</span>
+                    <span className="text-xs font-semibold">
+                      {t("common.hired")}
+                    </span>
                   </span>
                 )}
                 <span
@@ -2102,7 +2108,9 @@ export default function JobDetailClient() {
                 {job.location && (
                   <span className="flex items-center gap-1.5">
                     <MapPin className="w-4 h-4" />
-                    <span className="truncate max-w-[200px]">{job.location}</span>
+                    <span className="truncate max-w-[200px]">
+                      {job.location}
+                    </span>
                   </span>
                 )}
                 <span className="flex items-center gap-1.5">
@@ -2111,10 +2119,12 @@ export default function JobDetailClient() {
                 </span>
                 <div className="flex items-center gap-1.5">
                   <Eye className="w-4 h-4" />
-                  <span>{job.viewCount || 0} {t("jobDetail.views")}</span>
+                  <span>
+                    {job.viewCount || 0} {t("jobDetail.views")}
+                  </span>
                 </div>
-                {!isHired && (
-                  isOwner ? (
+                {!isHired &&
+                  (isOwner ? (
                     <Link
                       href={`/my-jobs/${job.id}/proposals`}
                       className="flex items-center gap-1.5 hover:text-[#C4735B] transition-colors"
@@ -2127,10 +2137,11 @@ export default function JobDetailClient() {
                   ) : (
                     <div className="flex items-center gap-1.5">
                       <Users className="w-4 h-4" />
-                      <span>{job.proposalCount || 0} {t("jobDetail.proposals")}</span>
+                      <span>
+                        {job.proposalCount || 0} {t("jobDetail.proposals")}
+                      </span>
                     </div>
-                  )
-                )}
+                  ))}
               </div>
 
               {/* Budget + Quick Specs Row */}
@@ -2141,7 +2152,12 @@ export default function JobDetailClient() {
                     className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
                     style={{ backgroundColor: `${ACCENT}15` }}
                   >
-                    <span className="text-base font-semibold" style={{ color: ACCENT }}>₾</span>
+                    <span
+                      className="text-base font-semibold"
+                      style={{ color: ACCENT }}
+                    >
+                      ₾
+                    </span>
                   </div>
                   <div>
                     <p className="text-[10px] text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
@@ -2154,7 +2170,10 @@ export default function JobDetailClient() {
                 </div>
 
                 {/* Quick Specs - show key info inline */}
-                {(job.areaSize != null || job.roomCount != null || job.deadline || job.propertyType) && (
+                {(job.areaSize != null ||
+                  job.roomCount != null ||
+                  job.deadline ||
+                  job.propertyType) && (
                   <div className="flex flex-wrap items-center gap-2">
                     {job.propertyType && (
                       <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
@@ -2186,7 +2205,10 @@ export default function JobDetailClient() {
                         <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                           {(() => {
                             const date = new Date(job.deadline);
-                            return formatDateMonthDay(date.toISOString(), locale);
+                            return formatDateMonthDay(
+                              date.toISOString(),
+                              locale,
+                            );
                           })()}
                         </span>
                       </div>
@@ -2221,7 +2243,7 @@ export default function JobDetailClient() {
 
       {/* Main Content */}
       <main className="relative z-10 bg-[#FAFAFA] dark:bg-[#0A0A0A]">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-4">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-4">
           {/* Submit Proposal button for pro - only when not hired and not owner */}
           {isPro &&
             !isOwner &&
@@ -2229,37 +2251,37 @@ export default function JobDetailClient() {
             !isHired &&
             !myProposal &&
             !isCheckingProposal && (
-            <div className="flex justify-end mb-4">
-              {user?.verificationStatus === 'verified' ? (
-                <Button
-                  onClick={() => setShowProposalForm(true)}
-                  leftIcon={<Send className="w-4 h-4" />}
-                >
-                  {t("jobDetail.submitProposal")}
-                </Button>
-              ) : (
-                <div className="flex items-center gap-3 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
-                  <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-sm text-amber-800 dark:text-amber-200 font-medium">
-                      {t("jobDetail.verificationRequiredToSubmitProposals")}
-                    </p>
-                    <Link
-                      href="/settings"
-                      className="text-sm text-amber-700 dark:text-amber-300 underline hover:no-underline"
-                    >
-                      {t("jobDetail.completeVerificationCta")}
-                    </Link>
+              <div className="flex justify-end mb-4">
+                {user?.verificationStatus === "verified" ? (
+                  <Button
+                    onClick={() => setShowProposalForm(true)}
+                    leftIcon={<Send className="w-4 h-4" />}
+                  >
+                    {t("jobDetail.submitProposal")}
+                  </Button>
+                ) : (
+                  <div className="flex items-center gap-3 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
+                    <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-sm text-amber-800 dark:text-amber-200 font-medium">
+                        {t("jobDetail.verificationRequiredToSubmitProposals")}
+                      </p>
+                      <Link
+                        href="/settings"
+                        className="text-sm text-amber-700 dark:text-amber-300 underline hover:no-underline"
+                      >
+                        {t("jobDetail.completeVerificationCta")}
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
           {isPro && !isOwner && isOpen && !isHired && isCheckingProposal && (
             <div className="flex justify-end mb-4">
-                <div className="flex items-center gap-2 px-6 py-3 rounded-xl font-body text-sm font-semibold text-neutral-400">
-                  <LoadingSpinner size="sm" color="#737373" />
-                </div>
+              <div className="flex items-center gap-2 px-6 py-3 rounded-xl font-body text-sm font-semibold text-neutral-400">
+                <LoadingSpinner size="sm" color="#737373" />
+              </div>
             </div>
           )}
 
@@ -2278,12 +2300,11 @@ export default function JobDetailClient() {
             </div>
           )}
 
-
           {/* Status bar moved to hero section - keeping only sidebar tabs below */}
 
           {/* Two Column Layout (or Three with sidebar for hired projects - except in MVP mode) */}
           <div
-            className={`grid gap-8 pb-24 ${isHired && (isOwner || isHiredPro) ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}
+            className={`grid grid-cols-1 gap-4 sm:gap-6 lg:gap-8 pb-28 sm:pb-24 ${isHired && (isOwner || isHiredPro) ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}
           >
             {/* Desktop Sidebar for hired projects - hidden in MVP mode */}
             {isHired && (isOwner || isHiredPro) && (
@@ -2298,127 +2319,127 @@ export default function JobDetailClient() {
                     unreadResourcesCount={unreadResourcesCount}
                     isProjectStarted={projectStage !== "hired"}
                   />
-              </div>
+                </div>
               </div>
             )}
             {/* Main Content - min-height prevents layout jumping when switching tabs */}
-            <div className="lg:col-span-2 space-y-8 min-h-[500px]">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6 lg:space-y-8 min-h-[400px] sm:min-h-[500px]">
               {/* CHAT TAB CONTENT - hidden in MVP mode */}
               {isHired &&
                 (isOwner || isHiredPro) &&
                 activeSidebarTab === "chat" && (
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden min-h-[450px]">
-                  <ProjectChat
-                    jobId={job.id}
-                    locale={locale}
-                    isClient={!!isOwner}
-                  />
-            </div>
-          )}
+                  <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden min-h-[450px]">
+                    <ProjectChat
+                      jobId={job.id}
+                      locale={locale}
+                      isClient={!!isOwner}
+                    />
+                  </div>
+                )}
 
               {/* POLLS TAB CONTENT - hidden in MVP mode */}
               {isHired &&
                 (isOwner || isHiredPro) &&
                 activeSidebarTab === "polls" && (
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 p-4 md:p-6 min-h-[300px]">
-                  <PollsTab
-                    jobId={job.id}
-                    isPro={isPro || !!isHiredPro}
-                    isClient={isOwner || false}
-                    userId={user?.id}
-                    locale={locale}
-                    embedded={true}
-                  />
-                </div>
-              )}
+                  <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 p-4 md:p-6 min-h-[300px]">
+                    <PollsTab
+                      jobId={job.id}
+                      isPro={isPro || !!isHiredPro}
+                      isClient={isOwner || false}
+                      userId={user?.id}
+                      locale={locale}
+                      embedded={true}
+                    />
+                  </div>
+                )}
 
               {/* RESOURCES TAB CONTENT - hidden in MVP mode */}
               {isHired &&
                 (isOwner || isHiredPro) &&
                 activeSidebarTab === "resources" && (
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 p-4 md:p-6 min-h-[300px]">
-                  <ProjectWorkspace
-                    jobId={job.id}
-                    locale={locale}
-                    isClient={isOwner || false}
-                    embedded={true}
-                  />
-                </div>
-              )}
+                  <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 p-4 md:p-6 min-h-[300px]">
+                    <ProjectWorkspace
+                      jobId={job.id}
+                      locale={locale}
+                      isClient={isOwner || false}
+                      embedded={true}
+                    />
+                  </div>
+                )}
 
               {/* HISTORY TAB CONTENT - hidden in MVP mode */}
               {isHired &&
                 (isOwner || isHiredPro) &&
                 activeSidebarTab === "history" && (
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden min-h-[300px]">
-                  {/* Filter Tabs */}
-                  <div className="flex items-center gap-1 px-4 py-3 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
-                    {[
-                      { key: "all", label: t("common.all") },
-                      { key: "client", label: t("common.client") },
-                      { key: "pro", label: t("jobDetail.pro") },
-                    ].map((f) => (
-                      <button
-                        key={f.key}
+                  <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden min-h-[300px]">
+                    {/* Filter Tabs */}
+                    <div className="flex items-center gap-1 px-4 py-3 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
+                      {[
+                        { key: "all", label: t("common.all") },
+                        { key: "client", label: t("common.client") },
+                        { key: "pro", label: t("jobDetail.pro") },
+                      ].map((f) => (
+                        <button
+                          key={f.key}
                           onClick={() =>
                             setHistoryFilter(f.key as typeof historyFilter)
                           }
-                        className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
-                          historyFilter === f.key
-                            ? "text-white"
-                            : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
-                        }`}
+                          className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+                            historyFilter === f.key
+                              ? "text-white"
+                              : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+                          }`}
                           style={
                             historyFilter === f.key
                               ? { backgroundColor: ACCENT }
                               : {}
                           }
-                      >
-                        {f.label}
-                      </button>
-                    ))}
-                  </div>
-                  {/* History Timeline */}
-                  <div className="p-4 max-h-[600px] overflow-y-auto">
-                    {isLoadingHistory ? (
-                      <div className="flex items-center justify-center py-8">
-                        <LoadingSpinner size="lg" color={ACCENT} />
-                      </div>
-                    ) : filteredHistory.length === 0 ? (
-                      <div className="text-center py-8 text-neutral-500 dark:text-neutral-400">
-                        <History className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                        <p className="text-sm">
+                        >
+                          {f.label}
+                        </button>
+                      ))}
+                    </div>
+                    {/* History Timeline */}
+                    <div className="p-4 max-h-[600px] overflow-y-auto">
+                      {isLoadingHistory ? (
+                        <div className="flex items-center justify-center py-8">
+                          <LoadingSpinner size="lg" color={ACCENT} />
+                        </div>
+                      ) : filteredHistory.length === 0 ? (
+                        <div className="text-center py-8 text-neutral-500 dark:text-neutral-400">
+                          <History className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                          <p className="text-sm">
                             {t("jobDetail.noActivityYet")}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="relative">
-                        {/* Timeline Line */}
-                        <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-neutral-200 dark:bg-neutral-700" />
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="relative">
+                          {/* Timeline Line */}
+                          <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-neutral-200 dark:bg-neutral-700" />
 
-                        <div className="space-y-4">
-                          {filteredHistory.slice(0, 30).map((event, idx) => {
-                            const config = getEventConfig(event.eventType);
-                            const description = getEventDescription(event);
-                            return (
+                          <div className="space-y-4">
+                            {filteredHistory.slice(0, 30).map((event, idx) => {
+                              const config = getEventConfig(event.eventType);
+                              const description = getEventDescription(event);
+                              return (
                                 <div
                                   key={`history-${idx}`}
                                   className="relative flex items-start gap-3 pl-1"
                                 >
-                                <div
-                                  className="relative z-10 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white dark:ring-neutral-900"
+                                  <div
+                                    className="relative z-10 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white dark:ring-neutral-900"
                                     style={{
                                       backgroundColor: config.bgColor,
                                       color: config.color,
                                     }}
-                                >
-                                  {config.icon}
-                                </div>
-                                <div className="flex-1 min-w-0 pt-0.5">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="text-sm font-medium text-neutral-900 dark:text-white">
-                                      {event.userName}
-                                    </span>
+                                  >
+                                    {config.icon}
+                                  </div>
+                                  <div className="flex-1 min-w-0 pt-0.5">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className="text-sm font-medium text-neutral-900 dark:text-white">
+                                        {event.userName}
+                                      </span>
                                       <Badge
                                         variant={
                                           event.userRole === "client"
@@ -2427,346 +2448,352 @@ export default function JobDetailClient() {
                                         }
                                         size="xs"
                                       >
-                                      {event.userRole === "client"
+                                        {event.userRole === "client"
                                           ? t("common.client")
                                           : t("jobDetail.pro")}
-                                    </Badge>
-                                  </div>
-                                  <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
-                                      {({ ka: config.labelKa, en: config.label, ru: config.label }[locale] ?? config.label)}
-                                    {description && (
+                                      </Badge>
+                                    </div>
+                                    <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
+                                      {{
+                                        ka: config.labelKa,
+                                        en: config.label,
+                                        ru: config.label,
+                                      }[locale] ?? config.label}
+                                      {description && (
                                         <span className="text-neutral-500">
                                           {" "}
                                           · {description}
                                         </span>
-                                    )}
-                                  </p>
-                                  <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-1">
-                                    {formatHistoryTime(event.createdAt)}
-                                  </p>
+                                      )}
+                                    </p>
+                                    <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-1">
+                                      {formatHistoryTime(event.createdAt)}
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-
-                        {/* Show more indicator */}
-                        {filteredHistory.length > 30 && (
-                          <div className="mt-4 text-center">
-                            <span className="text-xs text-neutral-400">
-                              {t("jobDetail.moreEvents", { count: filteredHistory.length - 30 })}
-                            </span>
+                              );
+                            })}
                           </div>
-                        )}
-                      </div>
-                    )}
+
+                          {/* Show more indicator */}
+                          {filteredHistory.length > 30 && (
+                            <div className="mt-4 text-center">
+                              <span className="text-xs text-neutral-400">
+                                {t("jobDetail.moreEvents", {
+                                  count: filteredHistory.length - 30,
+                                })}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {/* DETAILS TAB CONTENT (or non-hired job content) */}
               {(!isHired ||
                 !(isOwner || isHiredPro) ||
                 activeSidebarTab === "details") && (
                 <>
-              {/* Description */}
-              <section
-                className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-500 ${
-                  isVisible
-                    ? "opacity-100 translate-y-0"
-                    : "opacity-0 translate-y-4"
-                }`}
-              >
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
+                  {/* Description */}
+                  <section
+                    className={`bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-500 ${
+                      isVisible
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 translate-y-4"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                      <h2 className="font-display text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white">
                         {t("common.description")}
-                </h2>
+                      </h2>
                       {isOwner && !isHired && (
                         <button
                           onClick={() => {
                             setEditDescription(job.description || "");
                             setShowDescriptionEdit(true);
                           }}
-                          className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                          className="w-8 h-8 sm:w-8 sm:h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 active:bg-neutral-300 transition-colors"
                           title={t("common.edit")}
                         >
                           <Edit3 className="w-4 h-4" />
                         </button>
                       )}
                     </div>
-                <p className="font-body text-neutral-600 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
-                  {job.description}
-                </p>
-              </section>
+                    <p className="font-body text-sm sm:text-base text-neutral-600 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
+                      {job.description}
+                    </p>
+                  </section>
 
-              {/* Property Specs */}
-              {(job.propertyType ||
-                job.currentCondition ||
-                job.areaSize != null ||
-                job.roomCount != null ||
-                job.floorCount != null ||
-                job.deadline ||
-                job.cadastralId ||
-                job.landArea != null ||
-                job.pointsCount != null) && (
-                <section
-                  className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-600 ${
-                    isVisible
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-4"
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
+                  {/* Property Specs */}
+                  {(job.propertyType ||
+                    job.currentCondition ||
+                    job.areaSize != null ||
+                    job.roomCount != null ||
+                    job.floorCount != null ||
+                    job.deadline ||
+                    job.cadastralId ||
+                    job.landArea != null ||
+                    job.pointsCount != null) && (
+                    <section
+                      className={`bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-600 ${
+                        isVisible
+                          ? "opacity-100 translate-y-0"
+                          : "opacity-0 translate-y-4"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-4 sm:mb-6">
+                        <h2 className="font-display text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white">
                           {t("jobDetail.propertyDetails")}
-                    </h2>
-                    {isOwner && !isHired && (
-                      <button
-                        onClick={openPropertyEditModal}
-                        className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                        title={t("common.edit")}
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {job.propertyType && (
-                      <SpecCard
-                        icon={<Home className="w-5 h-5" />}
+                        </h2>
+                        {isOwner && !isHired && (
+                          <button
+                            onClick={openPropertyEditModal}
+                            className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 active:bg-neutral-300 transition-colors"
+                            title={t("common.edit")}
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4">
+                        {job.propertyType && (
+                          <SpecCard
+                            icon={<Home className="w-5 h-5" />}
                             label={t("common.type")}
-                        value={getPropertyTypeLabel(job.propertyType)}
-                      />
-                    )}
-                    {job.currentCondition && (
-                      <SpecCard
-                        icon={<Hammer className="w-5 h-5" />}
-                        label={t("job.condition")}
-                        value={getConditionLabel(job.currentCondition)}
-                      />
-                    )}
-                    {job.areaSize != null && (
-                      <SpecCard
-                        icon={<Ruler className="w-5 h-5" />}
+                            value={getPropertyTypeLabel(job.propertyType)}
+                          />
+                        )}
+                        {job.currentCondition && (
+                          <SpecCard
+                            icon={<Hammer className="w-5 h-5" />}
+                            label={t("job.condition")}
+                            value={getConditionLabel(job.currentCondition)}
+                          />
+                        )}
+                        {job.areaSize != null && (
+                          <SpecCard
+                            icon={<Ruler className="w-5 h-5" />}
                             label={t("jobDetail.area")}
-                        value={`${job.areaSize} მ²`}
-                      />
-                    )}
-                    {job.landArea != null && (
-                      <SpecCard
-                        icon={<Mountain className="w-5 h-5" />}
+                            value={`${job.areaSize} მ²`}
+                          />
+                        )}
+                        {job.landArea != null && (
+                          <SpecCard
+                            icon={<Mountain className="w-5 h-5" />}
                             label={t("jobDetail.landArea")}
-                        value={`${job.landArea} მ²`}
-                      />
-                    )}
-                    {job.roomCount != null && (
-                      <SpecCard
-                        icon={<DoorOpen className="w-5 h-5" />}
+                            value={`${job.landArea} მ²`}
+                          />
+                        )}
+                        {job.roomCount != null && (
+                          <SpecCard
+                            icon={<DoorOpen className="w-5 h-5" />}
                             label={t("jobDetail.rooms")}
-                        value={job.roomCount.toString()}
-                      />
-                    )}
-                    {job.pointsCount != null && (
-                      <SpecCard
-                        icon={<Zap className="w-5 h-5" />}
+                            value={job.roomCount.toString()}
+                          />
+                        )}
+                        {job.pointsCount != null && (
+                          <SpecCard
+                            icon={<Zap className="w-5 h-5" />}
                             label={t("jobDetail.points")}
-                        value={job.pointsCount.toString()}
-                      />
-                    )}
-                    {job.floorCount != null && (
-                      <SpecCard
-                        icon={<Layers className="w-5 h-5" />}
+                            value={job.pointsCount.toString()}
+                          />
+                        )}
+                        {job.floorCount != null && (
+                          <SpecCard
+                            icon={<Layers className="w-5 h-5" />}
                             label={t("jobDetail.floors")}
-                        value={job.floorCount.toString()}
-                      />
-                    )}
-                    {job.cadastralId && (
-                      <SpecCard
-                        icon={<Map className="w-5 h-5" />}
+                            value={job.floorCount.toString()}
+                          />
+                        )}
+                        {job.cadastralId && (
+                          <SpecCard
+                            icon={<Map className="w-5 h-5" />}
                             label={t("jobDetail.cadastral")}
-                        value={job.cadastralId}
-                      />
-                    )}
-                    {job.deadline && (
-                      <SpecCard
-                        icon={<Calendar className="w-5 h-5" />}
+                            value={job.cadastralId}
+                          />
+                        )}
+                        {job.deadline && (
+                          <SpecCard
+                            icon={<Calendar className="w-5 h-5" />}
                             label={t("jobDetail.deadline")}
-                        value={(() => {
-                          return formatDateMonthDay(job.deadline, locale);
-                        })()}
-                      />
-                    )}
-                  </div>
-                </section>
-              )}
-
-              {/* Work Types */}
-              {job.workTypes && job.workTypes.length > 0 && (
-                <section
-                  className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-700 ${
-                    isVisible
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-4"
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
-                          {t("jobDetail.workTypes")}
-                    </h2>
-                    {isOwner && !isHired && (
-                      <button
-                        onClick={openWorkTypesEditModal}
-                        className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                        title={t("common.edit")}
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {job.workTypes.map((type) => (
-                      <span
-                        key={type}
-                        className="px-4 py-2 rounded-xl font-body text-sm font-medium transition-all hover:scale-105"
-                        style={{
-                          backgroundColor: `${ACCENT}10`,
-                          color: ACCENT,
-                        }}
-                      >
-                        {getWorkTypeLabel(type)}
-                      </span>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* Requirements */}
-              {(job.furnitureIncluded ||
-                job.visualizationNeeded ||
-                job.materialsProvided ||
-                job.occupiedDuringWork) && (
-                <section
-                  className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-[800ms] ${
-                    isVisible
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-4"
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
-                          {t("jobDetail.requirements")}
-                    </h2>
-                    {isOwner && !isHired && (
-                      <button
-                        onClick={openRequirementsEditModal}
-                        className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                        title={t("common.edit")}
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    {job.furnitureIncluded && (
-                      <RequirementBadge
-                        icon={<Armchair className="w-4 h-4" />}
-                            text={t("jobDetail.furnitureSelection")}
-                      />
-                    )}
-                    {job.visualizationNeeded && (
-                      <RequirementBadge
-                        icon={<Sparkles className="w-4 h-4" />}
-                            text={t("jobDetail.3dVisualization")}
-                      />
-                    )}
-                    {job.materialsProvided && (
-                      <RequirementBadge
-                        icon={<Package className="w-4 h-4" />}
-                            text={t("jobDetail.materialsProvided")}
-                      />
-                    )}
-                    {job.occupiedDuringWork && (
-                      <RequirementBadge
-                        icon={<Users className="w-4 h-4" />}
-                            text={t("jobDetail.occupiedDuringWork")}
-                      />
-                    )}
-                  </div>
-                </section>
-              )}
-
-              {/* References */}
-              {job.references && job.references.length > 0 && (
-                <section
-                  className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-[900ms] ${
-                    isVisible
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-4"
-                  }`}
-                >
-                  <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white mb-4">
-                        {t("jobDetail.references")}
-                  </h2>
-                  <div className="space-y-2">
-                    {job.references.map((ref, idx) => (
-                      <a
-                        key={idx}
-                        href={ref.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-4 p-4 rounded-xl border border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-all group"
-                      >
-                        <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center flex-shrink-0">
-                          {ref.type === "pinterest" ? (
-                            <svg
-                              className="w-5 h-5"
-                              style={{ color: "#E60023" }}
-                              viewBox="0 0 24 24"
-                              fill="currentColor"
-                            >
-                              <path d="M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z" />
-                            </svg>
-                          ) : ref.type === "instagram" ? (
-                            <svg
-                              className="w-5 h-5"
-                              style={{ color: "#E4405F" }}
-                              viewBox="0 0 24 24"
-                              fill="currentColor"
-                            >
-                              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
-                            </svg>
-                          ) : (
-                            <ExternalLink className="w-5 h-5 text-neutral-400" />
-                          )}
-                        </div>
-                        <span className="font-body text-sm text-neutral-600 dark:text-neutral-300 truncate flex-1">
-                          {ref.title ||
-                            (() => {
-                              try {
-                                return new URL(ref.url).hostname;
-                              } catch {
-                                return ref.url;
-                              }
+                            value={(() => {
+                              return formatDateMonthDay(job.deadline, locale);
                             })()}
-                        </span>
-                        <ChevronRight className="w-4 h-4 text-neutral-300 group-hover:text-neutral-500 group-hover:translate-x-1 transition-all" />
-                      </a>
-                    ))}
-                  </div>
-                </section>
-              )}
+                          />
+                        )}
+                      </div>
+                    </section>
+                  )}
 
-              {/* My Proposal - only show when not hired (pending/rejected/withdrawn) */}
+                  {/* Work Types */}
+                  {job.workTypes && job.workTypes.length > 0 && (
+                    <section
+                      className={`bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-700 ${
+                        isVisible
+                          ? "opacity-100 translate-y-0"
+                          : "opacity-0 translate-y-4"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-3 sm:mb-4">
+                        <h2 className="font-display text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white">
+                          {t("jobDetail.workTypes")}
+                        </h2>
+                        {isOwner && !isHired && (
+                          <button
+                            onClick={openWorkTypesEditModal}
+                            className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                            title={t("common.edit")}
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                        {job.workTypes.map((type) => (
+                          <span
+                            key={type}
+                            className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-body text-xs sm:text-sm font-medium transition-all hover:scale-105"
+                            style={{
+                              backgroundColor: `${ACCENT}10`,
+                              color: ACCENT,
+                            }}
+                          >
+                            {getWorkTypeLabel(type)}
+                          </span>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Requirements */}
+                  {(job.furnitureIncluded ||
+                    job.visualizationNeeded ||
+                    job.materialsProvided ||
+                    job.occupiedDuringWork) && (
+                    <section
+                      className={`bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-[800ms] ${
+                        isVisible
+                          ? "opacity-100 translate-y-0"
+                          : "opacity-0 translate-y-4"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-3 sm:mb-4">
+                        <h2 className="font-display text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white">
+                          {t("jobDetail.requirements")}
+                        </h2>
+                        {isOwner && !isHired && (
+                          <button
+                            onClick={openRequirementsEditModal}
+                            className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                            title={t("common.edit")}
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                        {job.furnitureIncluded && (
+                          <RequirementBadge
+                            icon={<Armchair className="w-4 h-4" />}
+                            text={t("jobDetail.furnitureSelection")}
+                          />
+                        )}
+                        {job.visualizationNeeded && (
+                          <RequirementBadge
+                            icon={<Sparkles className="w-4 h-4" />}
+                            text={t("jobDetail.3dVisualization")}
+                          />
+                        )}
+                        {job.materialsProvided && (
+                          <RequirementBadge
+                            icon={<Package className="w-4 h-4" />}
+                            text={t("jobDetail.materialsProvided")}
+                          />
+                        )}
+                        {job.occupiedDuringWork && (
+                          <RequirementBadge
+                            icon={<Users className="w-4 h-4" />}
+                            text={t("jobDetail.occupiedDuringWork")}
+                          />
+                        )}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* References */}
+                  {job.references && job.references.length > 0 && (
+                    <section
+                      className={`bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-[900ms] ${
+                        isVisible
+                          ? "opacity-100 translate-y-0"
+                          : "opacity-0 translate-y-4"
+                      }`}
+                    >
+                      <h2 className="font-display text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white mb-3 sm:mb-4">
+                        {t("jobDetail.references")}
+                      </h2>
+                      <div className="space-y-2">
+                        {job.references.map((ref, idx) => (
+                          <a
+                            key={idx}
+                            href={ref.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 active:bg-neutral-100 transition-all group"
+                          >
+                            <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center flex-shrink-0">
+                              {ref.type === "pinterest" ? (
+                                <svg
+                                  className="w-5 h-5"
+                                  style={{ color: "#E60023" }}
+                                  viewBox="0 0 24 24"
+                                  fill="currentColor"
+                                >
+                                  <path d="M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z" />
+                                </svg>
+                              ) : ref.type === "instagram" ? (
+                                <svg
+                                  className="w-5 h-5"
+                                  style={{ color: "#E4405F" }}
+                                  viewBox="0 0 24 24"
+                                  fill="currentColor"
+                                >
+                                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                                </svg>
+                              ) : (
+                                <ExternalLink className="w-5 h-5 text-neutral-400" />
+                              )}
+                            </div>
+                            <span className="font-body text-sm text-neutral-600 dark:text-neutral-300 truncate flex-1">
+                              {ref.title ||
+                                (() => {
+                                  try {
+                                    return new URL(ref.url).hostname;
+                                  } catch {
+                                    return ref.url;
+                                  }
+                                })()}
+                            </span>
+                            <ChevronRight className="w-4 h-4 text-neutral-300 group-hover:text-neutral-500 group-hover:translate-x-1 transition-all" />
+                          </a>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* My Proposal - only show when not hired (pending/rejected/withdrawn) */}
                   {myProposal &&
                     isPro &&
                     !isHiredPro &&
                     myProposal.status !== "accepted" && (
-                <MyProposalCard
-                  proposal={{
-                    id: myProposal.id,
-                    coverLetter: myProposal.coverLetter,
-                    proposedPrice: myProposal.proposedPrice,
-                    estimatedDuration: myProposal.estimatedDuration,
+                      <MyProposalCard
+                        proposal={{
+                          id: myProposal.id,
+                          coverLetter: myProposal.coverLetter,
+                          proposedPrice: myProposal.proposedPrice,
+                          estimatedDuration: myProposal.estimatedDuration,
                           estimatedDurationUnit:
                             myProposal.estimatedDurationUnit as
                               | "days"
@@ -2778,11 +2805,11 @@ export default function JobDetailClient() {
                             | "accepted"
                             | "rejected"
                             | "withdrawn",
-                    createdAt: myProposal.createdAt,
-                  }}
+                          createdAt: myProposal.createdAt,
+                        }}
                         locale={locale as "en" | "ka" | "ru"}
-                />
-              )}
+                      />
+                    )}
                 </>
               )}
 
@@ -2791,76 +2818,82 @@ export default function JobDetailClient() {
                 isHired &&
                 activeSidebarTab === "details" &&
                 false && (
-                <section className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden">
-                  {/* Header with progress */}
-                  <div className="p-4 border-b border-neutral-100 dark:border-neutral-800">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div 
-                          className="w-10 h-10 rounded-xl flex items-center justify-center"
-                          style={{ backgroundColor: `${ACCENT}15` }}
-                        >
+                  <section className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden">
+                    {/* Header with progress */}
+                    <div className="p-4 border-b border-neutral-100 dark:border-neutral-800">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-10 h-10 rounded-xl flex items-center justify-center"
+                            style={{ backgroundColor: `${ACCENT}15` }}
+                          >
                             <BarChart3
                               className="w-5 h-5"
                               style={{ color: ACCENT }}
                             />
-                        </div>
-                        <div>
-                          <h3 className="font-display text-base font-semibold text-neutral-900 dark:text-white">
+                          </div>
+                          <div>
+                            <h3 className="font-display text-base font-semibold text-neutral-900 dark:text-white">
                               {t("jobDetail.projectStatus")}
-                    </h3>
-                          <p className="text-xs text-neutral-500">
-                              {({ ka: STAGES[getStageIndex(projectStage)]?.labelKa, en: STAGES[getStageIndex(projectStage)]?.label, ru: STAGES[getStageIndex(projectStage)]?.label }[locale] ?? STAGES[getStageIndex(projectStage)]?.label)}
-                          </p>
+                            </h3>
+                            <p className="text-xs text-neutral-500">
+                              {{
+                                ka: STAGES[getStageIndex(projectStage)]
+                                  ?.labelKa,
+                                en: STAGES[getStageIndex(projectStage)]?.label,
+                                ru: STAGES[getStageIndex(projectStage)]?.label,
+                              }[locale] ??
+                                STAGES[getStageIndex(projectStage)]?.label}
+                            </p>
+                          </div>
+                        </div>
+                        <div
+                          className="text-lg font-bold"
+                          style={{ color: ACCENT }}
+                        >
+                          {STAGES[getStageIndex(projectStage)]?.progress || 0}%
                         </div>
                       </div>
-                      <div 
-                        className="text-lg font-bold"
-                        style={{ color: ACCENT }}
-                      >
-                          {STAGES[getStageIndex(projectStage)]?.progress || 0}%
-                      </div>
-                    </div>
-                    {/* Progress Bar */}
+                      {/* Progress Bar */}
                       <div className="h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                         <div
-                        className="h-full rounded-full transition-all duration-700 ease-out"
+                          className="h-full rounded-full transition-all duration-700 ease-out"
                           style={{
                             width: `${STAGES[getStageIndex(projectStage)]?.progress || 0}%`,
-                          background: `linear-gradient(90deg, ${ACCENT} 0%, ${ACCENT_LIGHT} 100%)`,
+                            background: `linear-gradient(90deg, ${ACCENT} 0%, ${ACCENT_LIGHT} 100%)`,
                           }}
                         />
                       </div>
                     </div>
 
-                  <div className="p-4">
-                    {/* Client Actions when project is completed but not yet confirmed */}
+                    <div className="p-4">
+                      {/* Client Actions when project is completed but not yet confirmed */}
                       {isOwner &&
                         projectStage === "completed" &&
                         !isClientConfirmed && (
-                      <div className="mb-4 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-                        <div className="flex items-start gap-3 mb-3">
-                          <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+                          <div className="mb-4 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                            <div className="flex items-start gap-3 mb-3">
+                              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
                                   {t("jobDetail.workCompleted")}
-                            </p>
-                            <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">
+                                </p>
+                                <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">
                                   {t(
-                                    "jobDetail.pleaseReviewAndConfirmCompletion"
+                                    "jobDetail.pleaseReviewAndConfirmCompletion",
                                   )}
-                        </p>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={handleClientConfirm}
-                            disabled={isUpdatingStage}
-                            loading={isUpdatingStage}
-                            size="sm"
-                            className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={handleClientConfirm}
+                                disabled={isUpdatingStage}
+                                loading={isUpdatingStage}
+                                size="sm"
+                                className="flex-1 bg-emerald-600 hover:bg-emerald-700"
                                 leftIcon={
                                   !isUpdatingStage ? (
                                     <BadgeCheck className="w-4 h-4" />
@@ -2868,180 +2901,184 @@ export default function JobDetailClient() {
                                 }
                               >
                                 {t("common.confirm")}
-                          </Button>
-                          <Button
-                            onClick={handleClientRequestChanges}
-                            disabled={isUpdatingStage}
-                            variant="outline"
-                            size="sm"
-                            leftIcon={<RotateCcw className="w-4 h-4" />}
-                          >
+                              </Button>
+                              <Button
+                                onClick={handleClientRequestChanges}
+                                disabled={isUpdatingStage}
+                                variant="outline"
+                                size="sm"
+                                leftIcon={<RotateCcw className="w-4 h-4" />}
+                              >
                                 {t("jobDetail.changes")}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
+                              </Button>
+                            </div>
+                          </div>
+                        )}
 
-                    {/* Leave Review button when project is confirmed but no review yet */}
+                      {/* Leave Review button when project is confirmed but no review yet */}
                       {isOwner &&
                         projectStage === "completed" &&
                         isClientConfirmed &&
                         !hasSubmittedReview && (
-                      <div className="mb-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-                        <div className="flex items-start gap-3 mb-3">
-                          <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                            <Star className="w-4 h-4 text-amber-600" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                          <div className="mb-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                            <div className="flex items-start gap-3 mb-3">
+                              <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                                <Star className="w-4 h-4 text-amber-600" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
                                   {t("jobDetail.leaveAReview")}
-                            </p>
-                            <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                                </p>
+                                <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
                                   {t("jobDetail.yourFeedbackHelpsOtherClients")}
-                        </p>
-                          </div>
-                        </div>
-                        <Button
-                          type="button"
-                          onClick={() => setShowReviewModal(true)}
-                          size="sm"
-                          className="w-full bg-amber-600 hover:bg-amber-700"
-                          leftIcon={<Star className="w-4 h-4" />}
-                        >
+                                </p>
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              onClick={() => setShowReviewModal(true)}
+                              size="sm"
+                              className="w-full bg-amber-600 hover:bg-amber-700"
+                              leftIcon={<Star className="w-4 h-4" />}
+                            >
                               {t("jobDetail.writeAReview")}
-                        </Button>
-                      </div>
-                    )}
+                            </Button>
+                          </div>
+                        )}
 
-                    {/* Stage Timeline */}
-                    <div className="space-y-0">
-                      {STAGES.map((stage, index) => {
-                        const currentIndex = getStageIndex(projectStage);
-                        const isStageCompleted = index < currentIndex;
-                        const isCurrent = index === currentIndex;
-                        const isNext = index === currentIndex + 1;
+                      {/* Stage Timeline */}
+                      <div className="space-y-0">
+                        {STAGES.map((stage, index) => {
+                          const currentIndex = getStageIndex(projectStage);
+                          const isStageCompleted = index < currentIndex;
+                          const isCurrent = index === currentIndex;
+                          const isNext = index === currentIndex + 1;
                           const canAdvance =
                             isHiredPro && isNext && !isUpdatingStage;
-                        const isLast = index === STAGES.length - 1;
+                          const isLast = index === STAGES.length - 1;
 
-                        return (
+                          return (
                             <div
                               key={stage.key}
                               className="flex items-stretch gap-3"
                             >
-                            {/* Timeline indicator */}
-                            <div className="flex flex-col items-center">
-                              <div
-                            className={`
+                              {/* Timeline indicator */}
+                              <div className="flex flex-col items-center">
+                                <div
+                                  className={`
                                   w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
                                   transition-all duration-300
                               ${
                                 isStageCompleted
                                   ? "bg-emerald-500 text-white"
-                                : isCurrent
+                                  : isCurrent
                                     ? "text-white shadow-lg"
-                                  : canAdvance
+                                    : canAdvance
                                       ? "bg-white dark:bg-neutral-800 border-2 border-dashed text-neutral-400"
                                       : "bg-neutral-100 dark:bg-neutral-800 text-neutral-400"
                               }
                             `}
-                            style={{
+                                  style={{
                                     backgroundColor: isCurrent
                                       ? ACCENT
                                       : undefined,
                                     borderColor: canAdvance
                                       ? ACCENT
                                       : undefined,
-                            }}
-                          >
-                            {isUpdatingStage && isCurrent ? (
-                                  <LoadingSpinner size="xs" color="white" />
-                            ) : isStageCompleted ? (
-                                  <Check className="w-4 h-4" />
-                                ) : (
+                                  }}
+                                >
+                                  {isUpdatingStage && isCurrent ? (
+                                    <LoadingSpinner size="xs" color="white" />
+                                  ) : isStageCompleted ? (
+                                    <Check className="w-4 h-4" />
+                                  ) : (
                                     <span className="text-xs font-bold">
                                       {index + 1}
                                     </span>
-                                )}
-                              </div>
-                              {/* Connecting line */}
-                              {!isLast && (
-                                <div 
-                                  className={`w-0.5 flex-1 min-h-[24px] transition-colors duration-300 ${
-                                    isStageCompleted 
+                                  )}
+                                </div>
+                                {/* Connecting line */}
+                                {!isLast && (
+                                  <div
+                                    className={`w-0.5 flex-1 min-h-[24px] transition-colors duration-300 ${
+                                      isStageCompleted
                                         ? "bg-emerald-500"
                                         : "bg-neutral-200 dark:bg-neutral-700"
-                                  }`}
-                                />
-                              )}
-                            </div>
+                                    }`}
+                                  />
+                                )}
+                              </div>
 
-                            {/* Stage content */}
+                              {/* Stage content */}
                               <div
                                 className={`flex-1 pb-4 ${isLast ? "pb-0" : ""}`}
                               >
-                              <button
+                                <button
                                   onClick={() =>
                                     canAdvance && handleStageChange(stage.key)
                                   }
-                                disabled={!canAdvance}
-                                className={`
+                                  disabled={!canAdvance}
+                                  className={`
                                   w-full text-left p-3 rounded-xl transition-all duration-200
                                   ${
                                     isCurrent
                                       ? "bg-[#C4735B]/10 border border-[#C4735B]/20"
-                                    : canAdvance
+                                      : canAdvance
                                         ? "bg-white dark:bg-neutral-800 border border-dashed border-[#C4735B]/40 hover:border-solid hover:border-[#C4735B] hover:shadow-md cursor-pointer"
-                                      : isStageCompleted
+                                        : isStageCompleted
                                           ? "bg-emerald-50/50 dark:bg-emerald-900/10"
                                           : ""
                                   }
                                 `}
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
                                       <span
                                         className={`
                                       text-sm font-medium
                                       ${
                                         isStageCompleted
                                           ? "text-emerald-600 dark:text-emerald-400"
-                                        : isCurrent
+                                          : isCurrent
                                             ? "text-[#C4735B] font-semibold"
                                             : "text-neutral-500 dark:text-neutral-400"
                                       }
                                     `}
                                       >
-                                        {({ ka: stage.labelKa, en: stage.label, ru: stage.label }[locale] ?? stage.label)}
-                                    </span>
-                                    {isCurrent && (
-                                      <span 
-                                        className="text-[10px] px-1.5 py-0.5 rounded-full font-medium text-white"
-                                        style={{ backgroundColor: ACCENT }}
-                                      >
-                                          {t("jobDetail.current")}
+                                        {{
+                                          ka: stage.labelKa,
+                                          en: stage.label,
+                                          ru: stage.label,
+                                        }[locale] ?? stage.label}
                                       </span>
-                                    )}
-                                  </div>
-                            {canAdvance && (
+                                      {isCurrent && (
+                                        <span
+                                          className="text-[10px] px-1.5 py-0.5 rounded-full font-medium text-white"
+                                          style={{ backgroundColor: ACCENT }}
+                                        >
+                                          {t("jobDetail.current")}
+                                        </span>
+                                      )}
+                                    </div>
+                                    {canAdvance && (
                                       <div
                                         className="flex items-center gap-1 text-xs font-medium"
                                         style={{ color: ACCENT }}
                                       >
                                         <span>{t("common.next")}</span>
-                                      <ChevronRight className="w-4 h-4" />
-                                    </div>
-                            )}
-                                </div>
-                          </button>
+                                        <ChevronRight className="w-4 h-4" />
+                                      </div>
+                                    )}
+                                  </div>
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                </section>
-              )}
+                  </section>
+                )}
 
               {/* LEGACY: Project Chat moved to sidebar tabs - HIDDEN */}
 
@@ -3057,9 +3094,9 @@ export default function JobDetailClient() {
               )}
             </div>
 
-            {/* Sidebar */}
-            <div className="lg:col-span-1">
-              <div className="sticky top-24 space-y-6">
+            {/* Sidebar - visible on all screens, stacked on mobile */}
+            <div className="lg:col-span-1 order-first lg:order-last">
+              <div className="lg:sticky lg:top-24 space-y-4 sm:space-y-6">
                 {/* Client Card */}
                 <ClientCard
                   client={{
@@ -3078,7 +3115,7 @@ export default function JobDetailClient() {
                 {/* Hired Professional Card - with phone for client */}
                 {isHired && job.hiredPro && isOwner && (
                   <div
-                    className={`rounded-2xl p-5 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-700/80 transition-all duration-700 delay-600 ${
+                    className={`rounded-xl sm:rounded-2xl p-4 sm:p-5 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-700/80 transition-all duration-700 delay-600 ${
                       isVisible
                         ? "opacity-100 translate-y-0"
                         : "opacity-0 translate-y-4"
@@ -3136,7 +3173,7 @@ export default function JobDetailClient() {
                 {/* Hired by banner for pro - show client info and phone */}
                 {isHired && isHiredPro && (
                   <div
-                    className={`rounded-2xl p-5 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-700/80 transition-all duration-700 delay-600 ${
+                    className={`rounded-xl sm:rounded-2xl p-4 sm:p-5 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-700/80 transition-all duration-700 delay-600 ${
                       isVisible
                         ? "opacity-100 translate-y-0"
                         : "opacity-0 translate-y-4"
@@ -3163,7 +3200,7 @@ export default function JobDetailClient() {
                       />
                       <div className="min-w-0 flex-1">
                         <p className="font-body font-semibold text-neutral-900 dark:text-white truncate group-hover:text-[#C4735B] transition-colors">
-                          {job.clientId?.accountType === 'organization'
+                          {job.clientId?.accountType === "organization"
                             ? job.clientId?.companyName || job.clientId?.name
                             : job.clientId?.name || "Client"}
                         </p>
@@ -3194,41 +3231,41 @@ export default function JobDetailClient() {
 
                 {/* Share Section - Only show when job is not hired */}
                 {!isHired && (
-                <div className="group rounded-2xl bg-gradient-to-br from-white to-neutral-50/80 dark:from-neutral-900 dark:to-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
-                        style={{
-                          background: `linear-gradient(135deg, ${ACCENT}15 0%, ${ACCENT}25 100%)`,
+                  <div className="group rounded-xl sm:rounded-2xl bg-gradient-to-br from-white to-neutral-50/80 dark:from-neutral-900 dark:to-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 p-3 sm:p-4">
+                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                      <div className="flex items-center gap-2.5 sm:gap-3">
+                        <div
+                          className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center shadow-sm"
+                          style={{
+                            background: `linear-gradient(135deg, ${ACCENT}15 0%, ${ACCENT}25 100%)`,
                             border: `1px solid ${ACCENT}20`,
-                        }}
-                      >
+                          }}
+                        >
                           <Share2
-                            className="w-5 h-5"
+                            className="w-4 h-4 sm:w-5 sm:h-5"
                             style={{ color: ACCENT }}
                           />
-                      </div>
-                      <div className="text-left">
-                        <span className="font-body font-semibold text-neutral-900 dark:text-white block">
+                        </div>
+                        <div className="text-left">
+                          <span className="font-body font-semibold text-sm sm:text-base text-neutral-900 dark:text-white block">
                             {t("common.share")}
-                        </span>
-                        <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                          </span>
+                          <span className="text-xs text-neutral-500 dark:text-neutral-400">
                             #{job.jobNumber || job.id.slice(-6)}
-                        </span>
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3">
                       <Button
                         size="icon"
                         onClick={() => {
-                            const url = `${window.location.origin}/jobs/${job.id}`;
+                          const url = `${window.location.origin}/jobs/${job.id}`;
                           const text = job.title;
                           window.open(
                             `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`,
                             "facebook-share",
-                            "width=580,height=400"
+                            "width=580,height=400",
                           );
                         }}
                         className="bg-[#1877F2] hover:bg-[#166FE5] text-white"
@@ -3240,7 +3277,7 @@ export default function JobDetailClient() {
                         size="icon"
                         variant="secondary"
                         onClick={async () => {
-                            const url = `${window.location.origin}/jobs/${job.id}`;
+                          const url = `${window.location.origin}/jobs/${job.id}`;
                           if (navigator.share) {
                             try {
                               await navigator.share({
@@ -3265,7 +3302,7 @@ export default function JobDetailClient() {
                         size="icon"
                         variant="secondary"
                         onClick={async () => {
-                            const url = `${window.location.origin}/jobs/${job.id}`;
+                          const url = `${window.location.origin}/jobs/${job.id}`;
                           await navigator.clipboard.writeText(url);
                           setCopyToast(true);
                           setTimeout(() => setCopyToast(false), 2000);
@@ -3274,14 +3311,33 @@ export default function JobDetailClient() {
                       >
                         <Copy className="w-5 h-5" />
                       </Button>
+                    </div>
                   </div>
-                </div>
                 )}
               </div>
             </div>
           </div>
         </div>
       </main>
+
+      {/* Mobile Sticky CTA for Submit Proposal */}
+      {isPro &&
+        !isOwner &&
+        isOpen &&
+        !isHired &&
+        !myProposal &&
+        !isCheckingProposal &&
+        user?.verificationStatus === "verified" && (
+          <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 p-4 safe-area-bottom">
+            <Button
+              onClick={() => setShowProposalForm(true)}
+              leftIcon={<Send className="w-4 h-4" />}
+              className="w-full h-12 text-base"
+            >
+              {t("jobDetail.submitProposal")}
+            </Button>
+          </div>
+        )}
 
       {/* Proposal Form Modal */}
       <ProposalFormModal
@@ -3293,16 +3349,20 @@ export default function JobDetailClient() {
         locale={locale}
         proposalData={proposalData}
         onDataChange={setProposalData}
-        job={job ? {
-          title: job.title,
-          budgetMin: job.budgetMin,
-          budgetMax: job.budgetMax,
-          location: job.location,
-          category: job.category,
-          subcategory: job.subcategory,
-          propertyType: job.propertyType,
-          propertySize: job.areaSize,
-        } : undefined}
+        job={
+          job
+            ? {
+                title: job.title,
+                budgetMin: job.budgetMin,
+                budgetMax: job.budgetMax,
+                location: job.location,
+                category: job.category,
+                subcategory: job.subcategory,
+                propertyType: job.propertyType,
+                propertySize: job.areaSize,
+              }
+            : undefined
+        }
       />
 
       {/* Delete Confirmation Modal */}
@@ -3382,19 +3442,19 @@ export default function JobDetailClient() {
       />
 
       {/* Review Modal */}
-        <ReviewModal
-          isOpen={showReviewModal}
+      <ReviewModal
+        isOpen={showReviewModal}
         onClose={() => {
           setShowReviewModal(false);
           setIsCompletionFlow(false);
         }}
-          onSubmit={handleSubmitReview}
-          isSubmitting={isSubmittingReview}
-          locale={locale}
-          rating={reviewRating}
-          onRatingChange={setReviewRating}
-          text={reviewText}
-          onTextChange={setReviewText}
+        onSubmit={handleSubmitReview}
+        isSubmitting={isSubmittingReview}
+        locale={locale}
+        rating={reviewRating}
+        onRatingChange={setReviewRating}
+        text={reviewText}
+        onTextChange={setReviewText}
         pro={
           job?.hiredPro || {
             name: "Professional",
@@ -3502,9 +3562,9 @@ export default function JobDetailClient() {
                 placeholder={t("common.select")}
                 options={Object.entries(propertyTypeKeys).map(
                   ([key, translationKey]) => ({
-                  value: key,
+                    value: key,
                     label: t(translationKey),
-                  })
+                  }),
                 )}
               />
             </div>
@@ -3525,9 +3585,9 @@ export default function JobDetailClient() {
                 placeholder={t("common.select")}
                 options={Object.entries(conditionKeys).map(
                   ([key, translationKey]) => ({
-                  value: key,
+                    value: key,
                     label: t(translationKey),
-                  })
+                  }),
                 )}
               />
             </div>
@@ -3701,9 +3761,9 @@ export default function JobDetailClient() {
                   type="button"
                   onClick={() => {
                     setEditWorkTypes((prev) =>
-                      isSelected 
+                      isSelected
                         ? prev.filter((t) => t !== type)
-                        : [...prev, type]
+                        : [...prev, type],
                     );
                   }}
                   className={`px-4 py-3 rounded-xl text-sm font-medium transition-all border ${

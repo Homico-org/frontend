@@ -34,12 +34,23 @@ const nextConfig = {
   },
 }
 
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV !== 'production',
+  fallbacks: {
+    document: '/offline',
+  },
+});
+const nextConfigWithPWA = withPWA(nextConfig);
+
 // Only enable Sentry release/sourcemap upload in production *when auth is configured*.
 // Runtime Sentry (capturing errors) is still controlled by sentry.*.config.ts and does NOT require an auth token.
 if (process.env.NODE_ENV === 'production' && process.env.SENTRY_AUTH_TOKEN) {
   const { withSentryConfig } = require("@sentry/nextjs");
 
-  module.exports = withSentryConfig(nextConfig, {
+  module.exports = withSentryConfig(nextConfigWithPWA, {
     // For all available options, see:
     // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
@@ -80,5 +91,5 @@ if (process.env.NODE_ENV === 'production' && process.env.SENTRY_AUTH_TOKEN) {
     },
   });
 } else {
-  module.exports = nextConfig;
+  module.exports = nextConfigWithPWA;
 }

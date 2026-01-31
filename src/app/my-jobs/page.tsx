@@ -260,15 +260,15 @@ function MyJobsPageContent() {
   // Initial loading skeleton
   if (authLoading || isInitialLoading) {
     return (
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        <Skeleton className="w-32 h-8 mb-2" />
-        <Skeleton className="w-64 h-5 mb-6" />
-        <div className="space-y-4">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-6">
+        <Skeleton className="w-28 sm:w-32 h-7 sm:h-8 mb-2" />
+        <Skeleton className="w-48 sm:w-64 h-4 sm:h-5 mb-4 sm:mb-6 hidden sm:block" />
+        <div className="space-y-3 sm:space-y-4">
           {[1, 2, 3].map((i) => (
             <SkeletonCard
               key={i}
               variant="horizontal"
-              className="h-56 sm:h-44"
+              className="h-40 sm:h-44"
             />
           ))}
         </div>
@@ -279,41 +279,32 @@ function MyJobsPageContent() {
   return (
     <div className="flex flex-col">
       {/* ==================== MAIN CONTENT ==================== */}
-      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-6">
-        {/* ==================== PAGE HEADER WITH BACK BUTTON ==================== */}
-        <div className="mb-8">
-          <div className="flex items-start gap-4">
-            <BackButton showLabel={false} className="mt-1" />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-3 mb-1">
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white tracking-tight">
-                    {t("job.myJobs")}
-                  </h1>
-                  <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#C4735B]/10 text-[#C4735B]">
-                    <Briefcase className="w-3.5 h-3.5" />
-                    <span className="text-xs font-semibold">{visibleJobs.length}</span>
-                  </div>
-                </div>
-                <Button
-                  asChild
-                  size="sm"
-                  className="rounded-full"
-                  leftIcon={<Plus className="w-4 h-4" />}
-                >
-                  <Link href="/post-job">{t("job.addJob")}</Link>
-                </Button>
-              </div>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400 hidden sm:block">
-                {t("job.manageYourActiveListingsAnd")}
-              </p>
+      <main className="flex-1 max-w-6xl mx-auto w-full px-3 sm:px-6 py-4 sm:py-6">
+        {/* ==================== PAGE HEADER ==================== */}
+        <div className="flex items-center justify-between gap-2 mb-4 sm:mb-6">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <BackButton showLabel={false} />
+            <h1 className="text-lg sm:text-2xl font-bold text-neutral-900 dark:text-white truncate">
+              {t("job.myJobs")}
+            </h1>
+            <div className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-full bg-[#C4735B]/10 text-[#C4735B] flex-shrink-0">
+              <Briefcase className="w-3 h-3" />
+              <span className="text-[10px] sm:text-xs font-semibold">{visibleJobs.length}</span>
             </div>
           </div>
+          <Button
+            asChild
+            size="sm"
+            className="rounded-full text-xs sm:text-sm px-3 sm:px-4 flex-shrink-0"
+            leftIcon={<Plus className="w-3.5 h-3.5" />}
+          >
+            <Link href="/post-job">{t("common.add")}</Link>
+          </Button>
         </div>
 
         {/* Search */}
         {jobs.length > 0 && (
-          <div className="mb-6">
+          <div className="mb-4 sm:mb-6">
             <div className="relative">
               <Input
                 type="text"
@@ -321,7 +312,7 @@ function MyJobsPageContent() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 leftIcon={<Search className="w-4 h-4" />}
-                className="pr-10"
+                className="pr-10 text-sm sm:text-base"
               />
               {searchQuery && (
                 <button
@@ -360,7 +351,7 @@ function MyJobsPageContent() {
             size="md"
           />
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {visibleJobs.map((job) => {
               const firstImage = job.media?.[0]?.url || job.images?.[0];
               const isHired = job.status === "in_progress";
@@ -389,173 +380,299 @@ function MyJobsPageContent() {
 
                     {/* Mobile: Vertical Stack Layout */}
                     <div className="flex flex-col sm:flex-row">
-                      {/* ===== IMAGE SECTION ===== */}
-                      <div className="relative w-full sm:w-52 lg:w-64 flex-shrink-0 bg-gradient-to-br from-neutral-100 to-neutral-50 dark:from-neutral-800 dark:to-neutral-900 overflow-hidden">
-                        {firstImage ? (
+                      {/* ===== IMAGE SECTION - Only show on mobile if has image ===== */}
+                      {firstImage ? (
+                        <div className="relative w-full sm:w-52 lg:w-64 flex-shrink-0 bg-gradient-to-br from-neutral-100 to-neutral-50 dark:from-neutral-800 dark:to-neutral-900 overflow-hidden">
                           <img
                             src={storage.getFileUrl(firstImage)}
                             alt=""
-                            className="w-full h-44 sm:h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                            style={{ minHeight: "176px" }}
+                            className="w-full h-36 sm:h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            style={{ minHeight: "144px" }}
                           />
-                        ) : (
-                          <div className="w-full h-44 sm:h-full min-h-[176px] flex items-center justify-center">
-                            <div className="text-center">
-                              <div className="w-14 h-14 rounded-2xl bg-neutral-200/50 dark:bg-neutral-700/50 flex items-center justify-center mx-auto mb-2">
-                                <FileText className="w-6 h-6 text-neutral-400 dark:text-neutral-500" />
-                              </div>
-                              <span className="text-xs text-neutral-400">
-                                {t("job.noImage")}
+
+                          {/* Gradient overlay on image */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+                          {/* Status Badge on image */}
+                          <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 z-10">
+                            {isOpen && (
+                              <Badge
+                                variant="success"
+                                size="sm"
+                                dot
+                                dotColor="success"
+                                className="shadow-lg backdrop-blur-sm"
+                              >
+                                {t("common.open")}
+                              </Badge>
+                            )}
+                            {isShortlisted && (
+                              <Badge
+                                variant="info"
+                                size="sm"
+                                icon={<Users className="w-3 h-3" />}
+                                className="shadow-lg backdrop-blur-sm"
+                              >
+                                {t("job.shortlisted")} ({job.shortlistedCount})
+                              </Badge>
+                            )}
+                            {isHired && (
+                              <Badge
+                                variant="premium"
+                                size="sm"
+                                icon={<Check className="w-3 h-3" />}
+                                className="shadow-lg backdrop-blur-sm"
+                              >
+                                {t("common.hired")}
+                              </Badge>
+                            )}
+                            {isClosed && (
+                              <Badge
+                                variant="default"
+                                size="sm"
+                                className="shadow-lg backdrop-blur-sm"
+                              >
+                                {t("job.closed")}
+                              </Badge>
+                            )}
+                            {isExpired && (
+                              <Badge
+                                variant="warning"
+                                size="sm"
+                                icon={<Clock className="w-3 h-3" />}
+                                className="shadow-lg backdrop-blur-sm"
+                              >
+                                {t("job.expired")}
+                              </Badge>
+                            )}
+                          </div>
+
+                          {/* Location badge on image */}
+                          {job.location && (
+                            <div className="absolute bottom-2.5 left-2.5 sm:bottom-3 sm:left-3 z-10">
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-black/50 backdrop-blur-sm text-white text-[10px] font-medium">
+                                <MapPin className="w-3 h-3" />
+                                {job.location}
                               </span>
                             </div>
-                          </div>
-                        )}
+                          )}
 
-                        {/* Gradient overlay on image */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-
-                        {/* Status Badge */}
-                        <div className="absolute top-3 left-3 z-10">
-                          {isOpen && (
-                            <Badge
-                              variant="success"
-                              size="sm"
-                              dot
-                              dotColor="success"
-                              className="shadow-lg backdrop-blur-sm"
-                            >
-                              {t("common.open")}
-                            </Badge>
-                          )}
-                          {isShortlisted && (
-                            <Badge
-                              variant="info"
-                              size="sm"
-                              icon={<Users className="w-3 h-3" />}
-                              className="shadow-lg backdrop-blur-sm"
-                            >
-                              {t("job.shortlisted")} ({job.shortlistedCount})
-                            </Badge>
-                          )}
-                          {isHired && (
-                            <Badge
-                              variant="premium"
-                              size="sm"
-                              icon={<Check className="w-3 h-3" />}
-                              className="shadow-lg backdrop-blur-sm"
-                            >
-                              {t("common.hired")}
-                            </Badge>
-                          )}
-                          {isClosed && (
-                            <Badge
-                              variant="default"
-                              size="sm"
-                              className="shadow-lg backdrop-blur-sm"
-                            >
-                              {t("job.closed")}
-                            </Badge>
-                          )}
-                          {isExpired && (
-                            <Badge
-                              variant="warning"
-                              size="sm"
-                              icon={<Clock className="w-3 h-3" />}
-                              className="shadow-lg backdrop-blur-sm"
-                            >
-                              {t("job.expired")}
-                            </Badge>
-                          )}
-                        </div>
-
-                        {/* Location badge on image */}
-                        {job.location && (
-                          <div className="absolute bottom-3 left-3 z-10">
-                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-black/50 backdrop-blur-sm text-white text-[10px] font-medium">
-                              <MapPin className="w-3 h-3" />
-                              {job.location}
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Mobile: Action buttons overlay */}
-                        <div className="absolute top-3 right-3 flex items-center gap-1.5 sm:hidden z-10">
-                          {isOpen && (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                asChild
-                                onClick={(e) => e.stopPropagation()}
-                                className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md shadow-lg w-8 h-8"
-                              >
-                                <Link href={`/post-job?edit=${job.id}`}>
-                                  <Edit3 className="w-3.5 h-3.5" />
-                                </Link>
-                              </Button>
+                          {/* Mobile: Action buttons overlay on image */}
+                          <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 sm:hidden z-10">
+                            {isOpen && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  asChild
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md shadow-lg w-8 h-8"
+                                >
+                                  <Link href={`/post-job?edit=${job.id}`}>
+                                    <Edit3 className="w-3.5 h-3.5" />
+                                  </Link>
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDeleteModalJob(job);
+                                  }}
+                                  disabled={deletingJobId === job.id}
+                                  className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md shadow-lg w-8 h-8 text-neutral-400 hover:text-red-500"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </Button>
+                              </>
+                            )}
+                            {isExpired && (
                               <Button
                                 variant="ghost"
                                 size="icon"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setDeleteModalJob(job);
+                                  handleRenewJob(job.id);
                                 }}
-                                disabled={deletingJobId === job.id}
-                                className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md shadow-lg w-8 h-8 text-neutral-400 hover:text-red-500"
+                                disabled={renewingJobId === job.id}
+                                loading={renewingJobId === job.id}
+                                className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md shadow-lg w-8 h-8 text-amber-600"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <RefreshCw className="w-3.5 h-3.5" />
                               </Button>
-                            </>
-                          )}
-                          {isExpired && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleRenewJob(job.id);
-                              }}
-                              disabled={renewingJobId === job.id}
-                              loading={renewingJobId === job.id}
-                              className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md shadow-lg w-8 h-8 text-amber-600"
-                            >
-                              <RefreshCw className="w-3.5 h-3.5" />
-                            </Button>
-                          )}
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        /* Desktop only: Show placeholder when no image */
+                        <div className="hidden sm:flex relative w-52 lg:w-64 flex-shrink-0 bg-gradient-to-br from-neutral-100 to-neutral-50 dark:from-neutral-800 dark:to-neutral-900 items-center justify-center min-h-[176px]">
+                          <div className="text-center">
+                            <div className="w-12 h-12 rounded-xl bg-neutral-200/50 dark:bg-neutral-700/50 flex items-center justify-center mx-auto mb-1.5">
+                              <FileText className="w-5 h-5 text-neutral-400 dark:text-neutral-500" />
+                            </div>
+                            <span className="text-[10px] text-neutral-400">
+                              {t("job.noImage")}
+                            </span>
+                          </div>
+
+                          {/* Status Badge on placeholder */}
+                          <div className="absolute top-3 left-3 z-10">
+                            {isOpen && (
+                              <Badge
+                                variant="success"
+                                size="sm"
+                                dot
+                                dotColor="success"
+                                className="shadow-lg"
+                              >
+                                {t("common.open")}
+                              </Badge>
+                            )}
+                            {isShortlisted && (
+                              <Badge
+                                variant="info"
+                                size="sm"
+                                icon={<Users className="w-3 h-3" />}
+                                className="shadow-lg"
+                              >
+                                {t("job.shortlisted")} ({job.shortlistedCount})
+                              </Badge>
+                            )}
+                            {isHired && (
+                              <Badge
+                                variant="premium"
+                                size="sm"
+                                icon={<Check className="w-3 h-3" />}
+                                className="shadow-lg"
+                              >
+                                {t("common.hired")}
+                              </Badge>
+                            )}
+                            {isClosed && (
+                              <Badge
+                                variant="default"
+                                size="sm"
+                                className="shadow-lg"
+                              >
+                                {t("job.closed")}
+                              </Badge>
+                            )}
+                            {isExpired && (
+                              <Badge
+                                variant="warning"
+                                size="sm"
+                                icon={<Clock className="w-3 h-3" />}
+                                className="shadow-lg"
+                              >
+                                {t("job.expired")}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      )}
 
                       {/* ===== CONTENT SECTION ===== */}
-                      <div className="flex-1 p-5 flex flex-col">
+                      <div className="flex-1 p-3 sm:p-5 flex flex-col">
                         <div className="flex items-start justify-between flex-1">
                           <div className="flex-1 min-w-0">
-                            {/* Category Tags & Time */}
-                            <div className="flex items-center gap-2 mb-2 flex-wrap">
-                              <span className="px-2 py-0.5 rounded-full bg-[#C4735B]/10 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-[#C4735B]">
+                            {/* Mobile: Status badge + Actions row (only when no image) */}
+                            {!firstImage && (
+                              <div className="flex items-center justify-between mb-1.5 sm:hidden">
+                                <div>
+                                  {isOpen && (
+                                    <Badge variant="success" size="sm" dot dotColor="success">
+                                      {t("common.open")}
+                                    </Badge>
+                                  )}
+                                  {isShortlisted && (
+                                    <Badge variant="info" size="sm" icon={<Users className="w-3 h-3" />}>
+                                      {t("job.shortlisted")} ({job.shortlistedCount})
+                                    </Badge>
+                                  )}
+                                  {isHired && (
+                                    <Badge variant="premium" size="sm" icon={<Check className="w-3 h-3" />}>
+                                      {t("common.hired")}
+                                    </Badge>
+                                  )}
+                                  {isClosed && (
+                                    <Badge variant="default" size="sm">{t("job.closed")}</Badge>
+                                  )}
+                                  {isExpired && (
+                                    <Badge variant="warning" size="sm" icon={<Clock className="w-3 h-3" />}>
+                                      {t("job.expired")}
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-0.5">
+                                  {isOpen && (
+                                    <>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        asChild
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="w-7 h-7"
+                                      >
+                                        <Link href={`/post-job?edit=${job.id}`}>
+                                          <Edit3 className="w-3.5 h-3.5" />
+                                        </Link>
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setDeleteModalJob(job);
+                                        }}
+                                        disabled={deletingJobId === job.id}
+                                        className="w-7 h-7 text-neutral-400 hover:text-red-500"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </Button>
+                                    </>
+                                  )}
+                                  {isExpired && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleRenewJob(job.id);
+                                      }}
+                                      disabled={renewingJobId === job.id}
+                                      loading={renewingJobId === job.id}
+                                      className="w-7 h-7 text-amber-600"
+                                    >
+                                      <RefreshCw className="w-3.5 h-3.5" />
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Category Tags & Time & Location */}
+                            <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2 flex-wrap text-[10px] sm:text-[11px]">
+                              <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-[#C4735B]/10 font-semibold uppercase tracking-wider text-[#C4735B]">
                                 {getCategoryLabel(job.category)}
                               </span>
-                              {(job.subcategory || job.skills?.[0]) && (
-                                <span className="px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-[10px] sm:text-[11px] font-medium text-neutral-500">
-                                  {getCategoryLabel(
-                                    job.subcategory || job.skills?.[0] || ""
-                                  )}
-                                </span>
-                              )}
-                              <span className="flex items-center gap-1 text-[10px] sm:text-[11px] text-neutral-400">
-                                <Clock className="w-3 h-3" />
+                              <span className="flex items-center gap-1 text-neutral-400">
+                                <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                 {formatTimeAgo(job.createdAt, t)}
                               </span>
+                              {job.location && (
+                                <span className="flex items-center gap-1 text-neutral-400 truncate max-w-[140px] sm:max-w-none">
+                                  <MapPin className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" />
+                                  <span className="truncate">{job.location}</span>
+                                </span>
+                              )}
                             </div>
 
-                            {/* Title with animated underline */}
-                            <div className="group/title inline-block mb-2">
-                              <h3 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white line-clamp-2 group-hover:text-[#C4735B] transition-colors duration-300">
-                                {job.title}
-                              </h3>
-                              <span className="block w-0 h-0.5 bg-gradient-to-r from-[#C4735B] to-[#D4937B] group-hover:w-full transition-all duration-500 rounded-full" />
-                            </div>
+                            {/* Title */}
+                            <h3 className="text-sm sm:text-lg font-bold text-neutral-900 dark:text-white line-clamp-2 group-hover:text-[#C4735B] transition-colors duration-300 mb-0.5 sm:mb-1">
+                              {job.title}
+                            </h3>
 
-                            {/* Description - Hidden on very small screens */}
+                            {/* Description - Hidden on mobile */}
                             <p className="hidden sm:block text-sm text-neutral-500 dark:text-neutral-400 line-clamp-2 leading-relaxed">
                               {job.description}
                             </p>
@@ -610,13 +727,13 @@ function MyJobsPageContent() {
                         </div>
 
                         {/* ===== FOOTER SECTION ===== */}
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800 gap-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-neutral-100 dark:border-neutral-800 gap-2.5 sm:gap-3">
                           {/* Left: Proposals or Hired Pro */}
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                             {isOpen && job.proposalCount > 0 && (
                               <>
                                 {/* Stacked Avatars with ring effect */}
-                                <div className="flex -space-x-2.5">
+                                <div className="flex -space-x-2">
                                   {[
                                     ...Array(Math.min(job.proposalCount, 3)),
                                   ].map((_, i) => {
@@ -629,7 +746,7 @@ function MyJobsPageContent() {
                                     return (
                                       <div
                                         key={i}
-                                        className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-neutral-200 dark:bg-neutral-700 border-2 border-white dark:border-neutral-900 overflow-hidden ring-2 ring-[#C4735B]/0 group-hover:ring-[#C4735B]/20 transition-all duration-300"
+                                        className="relative w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-neutral-200 dark:bg-neutral-700 border-2 border-white dark:border-neutral-900 overflow-hidden ring-2 ring-[#C4735B]/0 group-hover:ring-[#C4735B]/20 transition-all duration-300"
                                         style={{ zIndex: 3 - i }}
                                       >
                                         {proposal?.proId?.avatar ? (
@@ -641,7 +758,7 @@ function MyJobsPageContent() {
                                             className="w-full h-full object-cover"
                                           />
                                         ) : (
-                                          <div className="w-full h-full flex items-center justify-center text-xs font-semibold text-neutral-500 dark:text-neutral-400 bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-600 dark:to-neutral-700">
+                                          <div className="w-full h-full flex items-center justify-center text-[10px] sm:text-xs font-semibold text-neutral-500 dark:text-neutral-400 bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-600 dark:to-neutral-700">
                                             {initial || (
                                               <Users className="w-3 h-3" />
                                             )}
@@ -651,19 +768,19 @@ function MyJobsPageContent() {
                                     );
                                   })}
                                   {job.proposalCount > 3 && (
-                                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#C4735B]/10 border-2 border-white dark:border-neutral-900 flex items-center justify-center text-xs font-bold text-[#C4735B]">
+                                    <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-[#C4735B]/10 border-2 border-white dark:border-neutral-900 flex items-center justify-center text-[10px] sm:text-xs font-bold text-[#C4735B]">
                                       +{job.proposalCount - 3}
                                     </div>
                                   )}
                                 </div>
-                                <div className="flex flex-col">
-                                  <span className="text-sm font-semibold text-[#C4735B]">
+                                <div className="flex flex-col min-w-0">
+                                  <span className="text-[13px] sm:text-sm font-semibold text-[#C4735B]">
                                     {job.proposalCount}{" "}
                                     {t("job.proposals")}
                                   </span>
                                   {job.proposalCount === 1 &&
                                     job.recentProposals?.[0]?.proId?.name && (
-                                      <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                                      <span className="text-[10px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
                                         {t("job.from")}{" "}
                                         {job.recentProposals[0].proId.name}
                                       </span>
@@ -672,18 +789,18 @@ function MyJobsPageContent() {
                               </>
                             )}
                             {isOpen && job.proposalCount === 0 && (
-                              <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30">
-                                <span className="relative flex h-2.5 w-2.5">
+                              <div className="flex items-center gap-2 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30">
+                                <span className="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5">
                                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+                                  <span className="relative inline-flex rounded-full h-full w-full bg-amber-500"></span>
                                 </span>
-                                <span className="text-xs font-medium text-amber-700 dark:text-amber-400">
+                                <span className="text-[11px] sm:text-xs font-medium text-amber-700 dark:text-amber-400">
                                   {t("job.awaitingProposals")}
                                 </span>
                               </div>
                             )}
                             {isHired && job.hiredPro && (
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2 sm:gap-3">
                                 <div className="relative">
                                   <Avatar
                                     src={
@@ -696,17 +813,17 @@ function MyJobsPageContent() {
                                       "Pro"
                                     }
                                     size="sm"
-                                    className="w-9 h-9 ring-2 ring-[#C4735B]/20"
+                                    className="w-8 h-8 sm:w-9 sm:h-9 ring-2 ring-[#C4735B]/20"
                                   />
-                                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-green-500 border-2 border-white dark:border-neutral-900 flex items-center justify-center">
-                                    <Check className="w-2.5 h-2.5 text-white" />
+                                  <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-green-500 border-2 border-white dark:border-neutral-900 flex items-center justify-center">
+                                    <Check className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-white" />
                                   </div>
                                 </div>
-                                <div>
-                                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#C4735B] block">
+                                <div className="min-w-0">
+                                  <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-[#C4735B] block">
                                     {t("common.hired")}
                                   </span>
-                                  <span className="text-sm font-semibold text-neutral-900 dark:text-white">
+                                  <span className="text-[13px] sm:text-sm font-semibold text-neutral-900 dark:text-white truncate block">
                                     {job.hiredPro.name ||
                                       job.hiredPro.userId?.name ||
                                       "Professional"}
@@ -715,9 +832,9 @@ function MyJobsPageContent() {
                               </div>
                             )}
                             {isExpired && (
-                              <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30">
-                                <Clock className="w-4 h-4 text-amber-600" />
-                                <span className="text-xs font-medium text-amber-700 dark:text-amber-400">
+                              <div className="flex items-center gap-2 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30">
+                                <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600" />
+                                <span className="text-[11px] sm:text-xs font-medium text-amber-700 dark:text-amber-400">
                                   {t("job.expired")}
                                 </span>
                               </div>
@@ -735,15 +852,15 @@ function MyJobsPageContent() {
                                   e.stopPropagation();
                                   handleViewProposals(job.id);
                                 }}
-                                className="group/btn"
+                                className="group/btn w-full sm:w-auto justify-center text-[13px] sm:text-sm"
                               >
                                 <Link
                                   href={`/my-jobs/${job.id}/proposals`}
                                   className="flex items-center gap-2"
                                 >
-                                  <Eye className="w-4 h-4" />
+                                  <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                   {t("job.viewProposals")}
-                                  <ArrowRight className="w-3.5 h-3.5 opacity-0 -ml-1 group-hover/btn:opacity-100 group-hover/btn:ml-0 transition-all" />
+                                  <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 opacity-0 -ml-1 group-hover/btn:opacity-100 group-hover/btn:ml-0 transition-all" />
                                 </Link>
                               </Button>
                             )}
@@ -758,10 +875,10 @@ function MyJobsPageContent() {
                                 size="sm"
                                 leftIcon={
                                   !renewingJobId || renewingJobId !== job.id ? (
-                                    <RefreshCw className="w-4 h-4" />
+                                    <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                   ) : undefined
                                 }
-                                className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-lg shadow-amber-500/20"
+                                className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-lg shadow-amber-500/20 w-full sm:w-auto justify-center text-[13px] sm:text-sm"
                               >
                                 {renewingJobId === job.id
                                   ? t("job.renewing")

@@ -67,7 +67,7 @@ const translations = {
 };
 
 /**
- * UserTypeSelector - Split screen design with illustrations
+ * UserTypeSelector - Mobile-first split design with illustrations
  */
 export default function UserTypeSelector({
   onSelect,
@@ -78,16 +78,94 @@ export default function UserTypeSelector({
 
   return (
     <div className={`${className}`}>
-      {/* Mobile Layout - Stacked */}
-      <div className="md:hidden space-y-4">
-        {/* Client Card */}
+      {/* Mobile Layout - Stacked cards */}
+      <div className="md:hidden space-y-3">
+        {/* Client Card - Mobile */}
         <button
           onClick={() => onSelect('client')}
-          className="group w-full bg-white rounded-3xl border-2 border-neutral-200 hover:border-neutral-300 hover:shadow-xl transition-all duration-300 overflow-hidden text-left"
+          className="group w-full bg-white rounded-2xl border-2 border-neutral-200 hover:border-neutral-300 active:scale-[0.98] transition-all duration-200 overflow-hidden text-left shadow-sm"
+        >
+          <div className="flex items-center gap-3 p-4">
+            {/* Small illustration */}
+            <div className="relative w-16 h-16 shrink-0 rounded-xl bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 overflow-hidden">
+              <Image
+                src={ILLUSTRATIONS.client}
+                alt=""
+                fill
+                className="object-contain p-1"
+              />
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base font-bold text-neutral-900 mb-0.5">
+                {t.client.title}
+              </h3>
+              <p className="text-xs text-neutral-500 line-clamp-2">
+                {t.client.description}
+              </p>
+            </div>
+
+            {/* Arrow */}
+            <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center shrink-0 group-hover:bg-neutral-200 transition-colors">
+              <ArrowRight className="w-4 h-4 text-neutral-600" />
+            </div>
+          </div>
+        </button>
+
+        {/* Pro Card - Mobile (Featured) */}
+        <button
+          onClick={() => onSelect('pro')}
+          className="group relative w-full bg-gradient-to-br from-[#1a1a1a] via-[#252525] to-[#1a1a1a] rounded-2xl overflow-hidden text-left active:scale-[0.98] transition-all duration-200 shadow-lg"
+        >
+          {/* Badge */}
+          {t.pro.badge && (
+            <div className="absolute top-3 right-3 z-10">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#C4735B] text-white text-[10px] font-bold uppercase tracking-wide shadow-lg">
+                <Sparkles className="w-2.5 h-2.5" />
+                {t.pro.badge}
+              </span>
+            </div>
+          )}
+
+          <div className="flex items-center gap-3 p-4">
+            {/* Small illustration */}
+            <div className="relative w-16 h-16 shrink-0 rounded-xl bg-gradient-to-br from-[#C4735B]/20 to-[#C4735B]/5 overflow-hidden">
+              <Image
+                src={ILLUSTRATIONS.pro}
+                alt=""
+                fill
+                className="object-contain p-1"
+              />
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base font-bold text-white mb-0.5">
+                {t.pro.title}
+              </h3>
+              <p className="text-xs text-neutral-400 line-clamp-2">
+                {t.pro.description}
+              </p>
+            </div>
+
+            {/* Arrow */}
+            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center shrink-0 group-hover:bg-[#C4735B] transition-colors">
+              <ArrowRight className="w-4 h-4 text-white" />
+            </div>
+          </div>
+        </button>
+      </div>
+
+      {/* Tablet Layout - Medium cards */}
+      <div className="hidden md:grid lg:hidden grid-cols-2 gap-4 max-w-2xl mx-auto">
+        {/* Client Side - Tablet */}
+        <button
+          onClick={() => onSelect('client')}
+          className="group relative bg-white rounded-2xl border-2 border-neutral-200 hover:border-neutral-300 overflow-hidden text-left transition-all duration-300 hover:shadow-xl active:scale-[0.98]"
         >
           {/* Illustration */}
-          <div className="relative h-40 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(99,102,241,0.1),transparent_60%)]" />
+          <div className="relative h-36 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 overflow-hidden">
             <Image
               src={ILLUSTRATIONS.client}
               alt=""
@@ -95,34 +173,34 @@ export default function UserTypeSelector({
               className="object-contain object-center p-4 group-hover:scale-105 transition-transform duration-500"
             />
           </div>
-          
+
           {/* Content */}
-          <div className="p-5">
-            <p className="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">
+          <div className="p-4">
+            <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">
               {t.client.label}
             </p>
-            <h3 className="text-xl font-bold text-neutral-900 mb-2">
+            <h3 className="text-lg font-bold text-neutral-900 mb-1.5">
               {t.client.title}
             </h3>
-            <p className="text-sm text-neutral-500 mb-4 line-clamp-2">
+            <p className="text-sm text-neutral-500 mb-3 line-clamp-2">
               {t.client.description}
             </p>
-            <div className="flex items-center gap-2 text-neutral-900 font-semibold group-hover:gap-3 transition-all">
+            <div className="flex items-center gap-2 text-neutral-900 font-semibold text-sm group-hover:gap-3 transition-all">
               <span>{t.client.cta}</span>
               <ArrowRight className="w-4 h-4" />
             </div>
           </div>
         </button>
 
-        {/* Pro Card */}
+        {/* Pro Side - Tablet */}
         <button
           onClick={() => onSelect('pro')}
-          className="group relative w-full bg-gradient-to-br from-[#1a1a1a] via-[#252525] to-[#1a1a1a] rounded-3xl overflow-hidden text-left hover:shadow-xl hover:shadow-neutral-900/20 transition-all duration-300"
+          className="group relative bg-gradient-to-br from-[#1a1a1a] via-[#252525] to-[#1a1a1a] rounded-2xl overflow-hidden text-left transition-all duration-300 hover:shadow-xl active:scale-[0.98]"
         >
           {/* Badge */}
           {t.pro.badge && (
-            <div className="absolute top-4 right-4 z-10">
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#C4735B] text-white text-[10px] font-bold uppercase tracking-wide shadow-lg">
+            <div className="absolute top-3 right-3 z-20">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#C4735B] text-white text-[10px] font-bold shadow-lg">
                 <Sparkles className="w-3 h-3" />
                 {t.pro.badge}
               </span>
@@ -130,7 +208,7 @@ export default function UserTypeSelector({
           )}
 
           {/* Illustration */}
-          <div className="relative h-40 overflow-hidden">
+          <div className="relative h-36 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-transparent to-transparent z-10" />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(196,115,91,0.2),transparent_60%)]" />
             <Image
@@ -140,29 +218,29 @@ export default function UserTypeSelector({
               className="object-contain object-center p-4 group-hover:scale-105 transition-transform duration-500"
             />
           </div>
-          
+
           {/* Content */}
-          <div className="p-5 pt-0 relative z-10">
-            <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">
+          <div className="p-4 pt-0 relative z-10">
+            <p className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-1">
               {t.pro.label}
             </p>
-            <h3 className="text-xl font-bold text-white mb-2">
+            <h3 className="text-lg font-bold text-white mb-1.5">
               {t.pro.title}
             </h3>
-            <p className="text-sm text-neutral-400 mb-4 line-clamp-2">
+            <p className="text-sm text-neutral-400 mb-3 line-clamp-2">
               {t.pro.description}
             </p>
-            <div className="flex items-center gap-2 text-[#C4735B] font-semibold group-hover:gap-3 transition-all">
+            <div className="flex items-center gap-2 text-[#C4735B] font-semibold text-sm group-hover:gap-3 transition-all">
               <span>{t.pro.cta}</span>
               <ArrowRight className="w-4 h-4" />
+            </div>
           </div>
-        </div>
         </button>
       </div>
 
-      {/* Desktop Layout - Split Screen */}
-      <div className="hidden md:grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-        {/* Client Side */}
+      {/* Desktop Layout - Large Split Screen */}
+      <div className="hidden lg:grid lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        {/* Client Side - Desktop */}
         <button
           onClick={() => onSelect('client')}
           className="group relative bg-white rounded-3xl border-2 border-neutral-200 hover:border-neutral-300 overflow-hidden text-left transition-all duration-500 hover:shadow-2xl hover:-translate-y-1"
@@ -178,7 +256,7 @@ export default function UserTypeSelector({
               className="object-contain object-center p-6 group-hover:scale-110 transition-transform duration-700 ease-out"
             />
           </div>
-          
+
           {/* Content */}
           <div className="p-6">
             <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">
@@ -190,7 +268,7 @@ export default function UserTypeSelector({
             <p className="text-neutral-500 mb-6 leading-relaxed">
               {t.client.description}
             </p>
-            
+
             {/* CTA */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-neutral-900 font-semibold group-hover:gap-3 transition-all">
@@ -206,7 +284,7 @@ export default function UserTypeSelector({
           <div className="absolute inset-0 bg-gradient-to-t from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
         </button>
 
-        {/* Pro Side */}
+        {/* Pro Side - Desktop */}
         <button
           onClick={() => onSelect('pro')}
           className="group relative bg-gradient-to-br from-[#1a1a1a] via-[#252525] to-[#1a1a1a] rounded-3xl overflow-hidden text-left transition-all duration-500 hover:shadow-2xl hover:shadow-neutral-900/40 hover:-translate-y-1"
@@ -235,7 +313,7 @@ export default function UserTypeSelector({
               className="object-contain object-center p-6 group-hover:scale-110 transition-transform duration-700 ease-out"
             />
           </div>
-          
+
           {/* Content */}
           <div className="relative z-10 p-6 pt-0">
             <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
@@ -247,7 +325,7 @@ export default function UserTypeSelector({
             <p className="text-neutral-400 mb-6 leading-relaxed">
               {t.pro.description}
             </p>
-            
+
             {/* CTA */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-[#C4735B] font-semibold group-hover:gap-3 transition-all">

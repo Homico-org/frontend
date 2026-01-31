@@ -167,8 +167,8 @@ export default function CreatePollModal({
         icon={<Image className="w-6 h-6 text-[#C4735B]" />}
       />
 
-      <ModalBody className="max-h-[60vh] overflow-y-auto">
-        <div className="space-y-5">
+      <ModalBody className="max-h-[45vh] overflow-y-auto">
+        <div className="space-y-4">
           {/* Error message */}
           {error && (
             <Alert variant="error" size="sm" showIcon={false}>{error}</Alert>
@@ -257,7 +257,7 @@ export default function CreatePollModal({
               {options.map((option, index) => (
                 <div key={option.id} className="relative group">
                   {optionType === 'image' ? (
-                    <div className="aspect-square rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-600 overflow-hidden relative">
+                    <div className="aspect-[4/3] rounded-lg border-2 border-dashed border-neutral-300 dark:border-neutral-600 overflow-hidden relative">
                       {option.imageUrl || option.imagePreview ? (
                         <>
                           <img
@@ -286,7 +286,7 @@ export default function CreatePollModal({
                           variant="ghost"
                           onClick={() => fileInputRefs.current[index]?.click()}
                           disabled={uploadingIndex === index}
-                          className="absolute inset-0 flex flex-col items-center justify-center text-neutral-400 hover:text-[#C4735B] h-full w-full rounded-xl"
+                          className="absolute inset-0 flex flex-col items-center justify-center text-neutral-400 hover:text-[#C4735B] h-full w-full rounded-lg"
                         >
                           {uploadingIndex === index ? (
                             <LoadingSpinner size="md" color="currentColor" />

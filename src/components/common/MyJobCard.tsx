@@ -72,12 +72,12 @@ const MyJobCard = React.memo(function MyJobCard({
   return (
     <div className="group relative">
       <Link href={`/jobs/${job.id}`} className="block">
-        <div className="bg-white dark:bg-neutral-900 rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 transition-all duration-200 hover:shadow-md">
-          
+        <div className="bg-white dark:bg-neutral-900 rounded-lg sm:rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 transition-all duration-200 sm:hover:shadow-md">
+
           {/* Compact Header with Image */}
-          <div className="flex gap-3 p-3">
+          <div className="flex gap-2 sm:gap-3 p-2 sm:p-3">
             {/* Thumbnail */}
-            <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex-shrink-0">
+            <div className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-md sm:rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex-shrink-0">
               {firstImage && !imageError ? (
                 <>
                   <img
@@ -92,7 +92,7 @@ const MyJobCard = React.memo(function MyJobCard({
                 </>
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#D4846C] to-[#A85D4A]">
-                  <svg className="w-6 h-6 text-white/80" viewBox="0 0 56 60" fill="none">
+                  <svg className="w-4 h-4 sm:w-6 sm:h-6 text-white/80" viewBox="0 0 56 60" fill="none">
                     <rect x="0" y="0" width="8" height="40" rx="2" fill="currentColor" />
                     <rect x="32" y="0" width="8" height="40" rx="2" fill="currentColor" />
                     <path d="M8 20 Q20 5 32 20" stroke="currentColor" strokeWidth="8" fill="none" strokeLinecap="round" />
@@ -104,48 +104,49 @@ const MyJobCard = React.memo(function MyJobCard({
             {/* Content */}
             <div className="flex-1 min-w-0">
               {/* Title */}
-              <h3 className="font-semibold text-sm text-neutral-900 dark:text-white leading-tight line-clamp-1 mb-1">
+              <h3 className="font-semibold text-xs sm:text-sm text-neutral-900 dark:text-white leading-tight line-clamp-1 mb-0.5 sm:mb-1">
                 {job.title}
               </h3>
-              
-              {/* Category & Location */}
-              <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 mb-1.5">
+
+              {/* Category - Location hidden on mobile */}
+              <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400 mb-1 sm:mb-1.5">
                 <span className="truncate">{getCategoryLabel(job.category)}</span>
                 {job.location && (
-                  <>
+                  <span className="hidden sm:inline-flex items-center gap-1.5">
                     <span>·</span>
                     <span className="truncate">{truncateLocation(job.location)}</span>
-                  </>
+                  </span>
                 )}
               </div>
 
               {/* Budget */}
-              <div className="text-sm font-semibold text-[#C4735B]">
+              <div className="text-xs sm:text-sm font-semibold text-[#C4735B]">
                 {formattedBudget}
               </div>
             </div>
           </div>
 
-          {/* Stats Footer */}
-          <div className="flex items-center justify-between px-3 py-2 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
-            <div className="flex items-center gap-4">
+          {/* Stats Footer - compact on mobile */}
+          <div className="flex items-center justify-between px-2 py-1.5 sm:px-3 sm:py-2 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
+            <div className="flex items-center gap-2 sm:gap-4">
               {/* Proposals */}
-              <div className={`flex items-center gap-1.5 ${proposalCount > 0 ? 'text-[#C4735B]' : 'text-neutral-400'}`}>
-                <MessageSquare className="w-4 h-4" />
-                <span className="text-xs font-medium">
-                  {proposalCount} {locale === 'ka' ? 'შეთავაზება' : 'proposals'}
+              <div className={`flex items-center gap-1 sm:gap-1.5 ${proposalCount > 0 ? 'text-[#C4735B]' : 'text-neutral-400'}`}>
+                <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-[10px] sm:text-xs font-medium">
+                  {proposalCount}
+                  <span className="hidden sm:inline"> {locale === 'ka' ? 'შეთავაზება' : 'proposals'}</span>
                 </span>
               </div>
-              
+
               {/* Views */}
-              <div className="flex items-center gap-1.5 text-neutral-400">
-                <Eye className="w-4 h-4" />
-                <span className="text-xs font-medium">{viewCount}</span>
+              <div className="flex items-center gap-1 sm:gap-1.5 text-neutral-400">
+                <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-[10px] sm:text-xs font-medium">{viewCount}</span>
               </div>
             </div>
 
             {/* Time */}
-            <span className="text-xs text-neutral-400">
+            <span className="text-[10px] sm:text-xs text-neutral-400">
               {timeAgo}
             </span>
           </div>
@@ -154,7 +155,7 @@ const MyJobCard = React.memo(function MyJobCard({
 
       {/* Proposal notification badge */}
       {proposalCount > 0 && (
-        <div className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1.5 rounded-full bg-[#C4735B] text-white text-xs font-semibold flex items-center justify-center shadow-sm">
+        <div className="absolute -top-1 -right-1 sm:-top-1.5 sm:-right-1.5 min-w-[16px] sm:min-w-[20px] h-4 sm:h-5 px-1 sm:px-1.5 rounded-full bg-[#C4735B] text-white text-[10px] sm:text-xs font-semibold flex items-center justify-center shadow-sm">
           {proposalCount > 99 ? '99+' : proposalCount}
         </div>
       )}

@@ -407,6 +407,7 @@
     "title": "დათვალიერება",
     "professionals": "სპეციალისტები",
     "jobs": "სამუშაოები",
+    "tools": "ხელსაწყოები",
     "searchProfessionals": "მოძებნე სპეციალისტი...",
     "searchJobs": "მოძებნე სამუშაო...",
     "allCategories": "ყველა კატეგორია",
@@ -425,6 +426,7 @@
     "noResults": "შედეგები არ მოიძებნა",
     "tryDifferentFilters": "სცადე სხვა ფილტრები",
     "clearFilters": "ფილტრების გასუფთავება",
+    "clearFilter": "გასუფთავება",
     "showMore": "მეტის ჩვენება",
     "minPrice": "მინ. ფასი",
     "maxPrice": "მაქს. ფასი",
@@ -758,7 +760,8 @@
     "writeAReview": "შეფასების დაწერა",
     "youHiredTheProfessional": "თქვენ დაიქირავეთ პროფესიონალი",
     "yourFeedbackHelpsOtherClients": "თქვენი შეფასება ეხმარება სხვა კლიენტებს",
-    "youveBeenHiredForThis": "თქვენ დაგიქირავეს ამ პროექტისთვის"
+    "youveBeenHiredForThis": "თქვენ დაგიქირავეს ამ პროექტისთვის",
+    "youveBeenHired": "თქვენ დაგიქირავეს ამ სამუშაოზე!"
   },
   "postJob": {
     "steps": {
@@ -1945,6 +1948,7 @@
     "noHistoryYet": "ისტორია ცარიელია",
     "summary": "შეჯამება",
     "history": "ისტორია",
+    "clientConfirmedCompletion": "კლიენტმა დაადასტურა დასრულება",
     "overview": "მიმოხილვა",
     "chat": "ჩატი",
     "polls": "გამოკითხვები",

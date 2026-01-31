@@ -7,15 +7,15 @@ import LanguageSelector from '@/components/common/LanguageSelector';
 import { Progress } from '@/components/ui/progress';
 import { Alert } from '@/components/ui/Alert';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, HelpCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
 const STEP_CONFIG = {
-  phone: { index: 0, titleEn: 'Verify Phone', titleKa: 'ტელეფონის ვერიფიკაცია' },
-  profile: { index: 1, titleEn: 'Your Profile', titleKa: 'თქვენი პროფილი' },
-  services: { index: 2, titleEn: 'Your Services', titleKa: 'თქვენი სერვისები' },
-  complete: { index: 3, titleEn: 'Complete', titleKa: 'დასრულება' },
+  phone: { index: 0, titleEn: 'Verify Phone', titleKa: 'ტელეფონის ვერიფიკაცია', titleRu: 'Подтверждение телефона' },
+  profile: { index: 1, titleEn: 'Your Profile', titleKa: 'თქვენი პროფილი', titleRu: 'Ваш профиль' },
+  services: { index: 2, titleEn: 'Your Services', titleKa: 'თქვენი სერვისები', titleRu: 'Ваши услуги' },
+  complete: { index: 3, titleEn: 'Complete', titleKa: 'დასრულება', titleRu: 'Завершено' },
 };
 
 interface ProRegistrationProps {
@@ -29,6 +29,12 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
   const currentStepConfig = STEP_CONFIG[reg.currentStep];
   const totalSteps = Object.keys(STEP_CONFIG).length - 1; // Exclude 'complete'
   const progressPercent = ((currentStepConfig.index) / totalSteps) * 100;
+
+  const getStepTitle = () => {
+    if (locale === 'ka') return currentStepConfig.titleKa;
+    if (locale === 'ru') return currentStepConfig.titleRu;
+    return currentStepConfig.titleEn;
+  };
 
   // Show avatar cropper modal
   if (reg.showAvatarCropper && reg.rawAvatarImage) {
@@ -45,7 +51,7 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
   // Complete screen - full screen success
   if (reg.currentStep === 'complete') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#FBF9F7] via-[#FAF8F5] to-[#F5F0EC] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-[#FBF9F7] via-[#FAF8F5] to-[#F5F0EC] flex items-center justify-center p-3 sm:p-4">
         <StepComplete
           fullName={reg.fullName}
           avatarPreview={reg.avatarPreview}
@@ -60,22 +66,23 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
 
   return (
     <div className="min-h-screen bg-[#FAFAF9] flex flex-col">
-      {/* Header */}
+      {/* Header - Mobile optimized */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-neutral-100">
-        <div className="max-w-lg mx-auto px-4">
-          <div className="h-14 flex items-center justify-between">
+        <div className="max-w-lg mx-auto px-3 sm:px-4">
+          {/* Top row */}
+          <div className="h-12 sm:h-14 flex items-center justify-between">
             {/* Back / Logo */}
             {reg.currentStep !== 'phone' ? (
               <button
                 onClick={reg.handleBack}
-                className="flex items-center gap-2 text-neutral-500 hover:text-neutral-900 transition-colors"
+                className="flex items-center gap-1.5 sm:gap-2 text-neutral-500 hover:text-neutral-900 transition-colors -ml-1 p-1"
               >
-                <ArrowLeft className="w-5 h-5" />
-                <span className="text-sm font-medium">{t('common.back')}</span>
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-xs sm:text-sm font-medium">{t('common.back')}</span>
               </button>
             ) : (
               <Link href="/" className="flex items-center">
-                <Image src="/icon.svg" alt="Homico" width={100} height={24} className="h-6 w-auto" />
+                <Image src="/icon.svg" alt="Homico" width={100} height={24} className="h-5 sm:h-6 w-auto" />
               </Link>
             )}
 
@@ -84,21 +91,27 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
               <LanguageSelector variant="compact" />
               <Link
                 href="/help"
-                className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors"
+                className="hidden sm:block text-xs text-neutral-500 hover:text-neutral-900 transition-colors"
               >
                 {t('common.help')}
+              </Link>
+              <Link
+                href="/help"
+                className="sm:hidden w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 text-neutral-500"
+              >
+                <HelpCircle className="w-4 h-4" />
               </Link>
             </div>
           </div>
 
-          {/* Progress */}
-          <div className="pb-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">
+          {/* Progress - Compact on mobile */}
+          <div className="pb-2.5 sm:pb-3">
+            <div className="flex items-center justify-between mb-1 sm:mb-1.5">
+              <span className="text-[9px] sm:text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">
                 {currentStepConfig.index + 1}/{totalSteps}
               </span>
-              <span className="text-[10px] font-semibold text-[#C4735B] uppercase tracking-wider">
-                {locale === 'ka' ? currentStepConfig.titleKa : currentStepConfig.titleEn}
+              <span className="text-[9px] sm:text-[10px] font-semibold text-[#C4735B] uppercase tracking-wider">
+                {getStepTitle()}
               </span>
             </div>
             <Progress value={progressPercent} size="sm" indicatorVariant="gradient" />
@@ -108,13 +121,13 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col">
-        <div className="flex-1 px-4 py-6">
+        <div className="flex-1 px-3 sm:px-4 py-4 sm:py-6 max-w-lg mx-auto w-full">
           {/* Error Alert */}
           {reg.error && (
             <Alert
               variant="error"
               size="sm"
-              className="fixed top-20 left-4 right-4 max-w-lg mx-auto z-50"
+              className="mb-4"
               dismissible
               onDismiss={() => reg.setError('')}
             >
@@ -166,21 +179,21 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
           )}
 
           {reg.currentStep === 'services' && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <StepSelectServices
                 selectedServices={reg.selectedServices}
                 onServicesChange={reg.setSelectedServices}
               />
-              
+
               {/* Continue Button for Services Step */}
               <button
                 onClick={reg.handleNext}
                 disabled={reg.selectedServices.length === 0 || reg.isLoading}
-                className="w-full max-w-xs mx-auto block py-2.5 rounded-xl font-medium text-sm text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-[#C4735B] hover:bg-[#A85D47] active:scale-[0.98]"
+                className="w-full py-2.5 sm:py-3 rounded-xl font-medium text-sm sm:text-base text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-[#C4735B] hover:bg-[#A85D47] active:scale-[0.98]"
               >
                 {reg.isLoading ? (
                   <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24">
+                    <svg className="animate-spin w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
@@ -196,10 +209,10 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
 
         {/* Footer - Switch to Client */}
         {reg.currentStep === 'phone' && !reg.showOtp && (
-          <div className="py-4 text-center border-t border-neutral-100">
+          <div className="py-3 sm:py-4 text-center border-t border-neutral-100 px-3 sm:px-4">
             <button
               onClick={onSwitchToClient}
-              className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors"
+              className="text-xs sm:text-sm text-neutral-500 hover:text-neutral-900 transition-colors"
             >
               {t('register.lookingForPro')}{' '}
               <span className="font-medium text-[#C4735B]">{t('register.registerAsClient')}</span>

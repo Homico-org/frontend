@@ -104,56 +104,56 @@ export default function InviteProToJobModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="md">
-      <div className="p-5">
-        <div className="flex items-center justify-between mb-4">
+      <div className="p-4 sm:p-5">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
           <div className="min-w-0">
-            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
+            <h2 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-white">
               {t("professional.inviteToJob")}
             </h2>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 truncate">
+            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 truncate">
               {proName ? `${proName}` : ""}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 transition-colors"
+            className="p-1.5 sm:p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 transition-colors"
             aria-label={t("common.close") || "Close"}
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-10">
+          <div className="flex items-center justify-center py-8 sm:py-10">
             <LoadingSpinner size="lg" />
           </div>
         ) : !hasJobs ? (
-          <div className="py-6 space-y-3">
+          <div className="py-4 sm:py-6 space-y-2.5 sm:space-y-3">
             <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-300">
-              <Briefcase className="w-5 h-5" />
-              <span className="text-sm font-medium">
+              <Briefcase className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="text-xs sm:text-sm font-medium">
                 {initialJobs !== undefined
                   ? t("professional.noMatchingJobsToInvite")
                   : t("professional.noOpenJobsToInvite")}
               </span>
             </div>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
               {initialJobs !== undefined
                 ? t("professional.adjustJobSkillsToInvite")
                 : t("professional.postJobToInvite")}
             </p>
             <div className="flex gap-2 justify-end pt-2">
-              <Button variant="outline" onClick={onClose}>
+              <Button variant="outline" onClick={onClose} className="text-sm h-9 sm:h-10">
                 {t("common.cancel")}
               </Button>
               <Link href="/post-job">
-                <Button>{t("job.postJob") || t("common.create")}</Button>
+                <Button className="text-sm h-9 sm:h-10">{t("job.postJob") || t("common.create")}</Button>
               </Link>
             </div>
           </div>
         ) : (
           <>
-            <div className="space-y-2 max-h-[45vh] overflow-y-auto pr-1">
+            <div className="space-y-1.5 sm:space-y-2 max-h-[50vh] sm:max-h-[45vh] overflow-y-auto pr-1">
               {jobs.map((job) => {
                 const isSelected = job.id === selectedJobId;
                 return (
@@ -161,30 +161,30 @@ export default function InviteProToJobModal({
                     key={job.id}
                     type="button"
                     onClick={() => setSelectedJobId(job.id)}
-                    className={`w-full text-left p-3 rounded-xl border transition-all ${
+                    className={`w-full text-left p-2.5 sm:p-3 rounded-lg sm:rounded-xl border transition-all ${
                       isSelected
                         ? "border-[#C4735B] bg-[#C4735B]/5"
                         : "border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600"
                     }`}
                   >
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-2.5 sm:gap-3">
                       <div
-                        className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center ${
+                        className={`mt-0.5 w-4 h-4 sm:w-5 sm:h-5 rounded-md border-2 flex items-center justify-center ${
                           isSelected
                             ? "bg-[#C4735B] border-[#C4735B]"
                             : "border-neutral-300 dark:border-neutral-600"
                         }`}
                       >
-                        {isSelected && <Check className="w-3 h-3 text-white" />}
+                        {isSelected && <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="font-medium text-sm text-neutral-900 dark:text-white truncate">
+                        <div className="font-medium text-xs sm:text-sm text-neutral-900 dark:text-white truncate">
                           {job.title}
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                        <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 sm:mt-1">
                           {job.location && (
                             <span className="inline-flex items-center gap-1 truncate">
-                              <MapPin className="w-3.5 h-3.5" />
+                              <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                               <span className="truncate">{job.location}</span>
                             </span>
                           )}
@@ -196,23 +196,23 @@ export default function InviteProToJobModal({
               })}
             </div>
 
-            <div className="flex items-center justify-between gap-3 pt-4">
-              <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+            <div className="flex items-center justify-between gap-2 sm:gap-3 pt-3 sm:pt-4 pb-2 sm:pb-0">
+              <div className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400 truncate hidden sm:block">
                 {selectedJob ? selectedJob.title : ""}
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={onClose} disabled={isSending}>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button variant="outline" onClick={onClose} disabled={isSending} className="flex-1 sm:flex-none text-sm h-9 sm:h-10">
                   {t("common.cancel")}
                 </Button>
                 <Button
                   onClick={handleInvite}
                   disabled={!selectedJobId || isSending}
-                  className="gap-2"
+                  className="flex-1 sm:flex-none gap-1.5 sm:gap-2 text-sm h-9 sm:h-10"
                 >
                   {isSending ? (
                     <LoadingSpinner size="sm" color="white" />
                   ) : (
-                    <Send className="w-4 h-4" />
+                    <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   )}
                   {t("job.invite")}
                 </Button>

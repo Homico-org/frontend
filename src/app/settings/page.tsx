@@ -808,13 +808,13 @@ function SettingsPageContent() {
         <Header />
         <HeaderSpacer />
 
-      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-8">
-        <div className="mb-4">
+      <div className="relative z-10 max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-6 sm:pb-8">
+        <div className="mb-3 sm:mb-4">
           <BackButton />
         </div>
-        <div className="mb-6 sm:mb-8">
+        <div className="mb-4 sm:mb-8">
           <h1
-            className="text-xl sm:text-2xl font-serif font-medium"
+            className="text-lg sm:text-2xl font-serif font-medium"
             style={{ color: 'var(--color-text-primary)' }}
           >
             {t('settings.title')}
@@ -913,7 +913,7 @@ function SettingsPageContent() {
         </div>
 
         {/* Mobile: Accordion Layout */}
-        <div className="sm:hidden space-y-3">
+        <div className="sm:hidden space-y-2">
           {tabs.map((tab) => {
             const isOpen = activeTab === tab.id;
             return (
@@ -923,9 +923,9 @@ function SettingsPageContent() {
               >
                 <button
                   onClick={() => setActiveTab(isOpen ? '' : tab.id)}
-                  className="w-full flex items-center justify-between px-4 py-3.5 text-left"
+                  className="w-full flex items-center justify-between px-3 py-3 text-left active:bg-neutral-50 dark:active:bg-neutral-800/50"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isOpen ? 'bg-[#E07B4F]' : 'bg-neutral-100 dark:bg-neutral-800'}`}>
                       <tab.icon className={`h-4 w-4 ${isOpen ? 'text-white' : 'text-neutral-600 dark:text-neutral-400'}`} />
                     </div>
@@ -933,12 +933,12 @@ function SettingsPageContent() {
                       {tab.label}
                     </span>
                   </div>
-                  <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {isOpen && (
-                  <div className="px-4 pb-4 border-t border-neutral-100 dark:border-neutral-800">
-                    <div className="pt-4">
+                  <div className="px-3 pb-3 border-t border-neutral-100 dark:border-neutral-800">
+                    <div className="pt-3">
                       {tab.id === 'profile' && (
                         <ProfileSettings
                           isMobile
@@ -1156,7 +1156,7 @@ function SettingsPageContent() {
 
       {/* Delete Account Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
           {/* Backdrop with blur */}
           <div
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -1169,52 +1169,57 @@ function SettingsPageContent() {
             }}
           />
 
-          {/* Modal */}
+          {/* Modal - Sheet on mobile */}
           <div
-            className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-fade-in"
+            className="relative w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl animate-slide-up sm:animate-fade-in max-h-[90vh] overflow-y-auto"
             style={{ backgroundColor: 'var(--color-bg-primary)' }}
           >
+            {/* Drag handle - mobile only */}
+            <div className="sm:hidden flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+            </div>
+
             {/* Header with gradient */}
             <div
-              className="p-6 text-center"
+              className="p-4 sm:p-6 text-center"
               style={{
                 background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%)',
                 borderBottom: '1px solid rgba(239, 68, 68, 0.15)',
               }}
             >
-              <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
-                <AlertTriangle className="w-8 h-8 text-red-500" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-red-500" />
               </div>
-              <h3 className="text-xl font-bold text-red-600 dark:text-red-400">
+              <h3 className="text-lg sm:text-xl font-bold text-red-600 dark:text-red-400">
                 {t('settings.deleteAccount')}
               </h3>
-              <p className="text-sm mt-2" style={{ color: 'var(--color-text-secondary)' }}>
+              <p className="text-xs sm:text-sm mt-1.5 sm:mt-2" style={{ color: 'var(--color-text-secondary)' }}>
                 {t('settings.thisActionIsIrreversibleAnd')}
               </p>
             </div>
 
             {/* Content */}
-            <div className="p-6 space-y-5">
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
               {/* Warning list */}
-              <div className="space-y-2.5">
-                <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+              <div className="space-y-2">
+                <p className="text-xs sm:text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
                   {t('settings.thisWillPermanentlyDelete')}
                 </p>
-                <ul className="space-y-2 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                   <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
                     {t('settings.yourProfileAndPersonalInformation')}
                   </li>
                   <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
                     {t('settings.allPostedJobsAndProposals')}
                   </li>
                   <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
                     {t('settings.messagesAndReviews')}
                   </li>
                   <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
                     {t('settings.savedCardsAndPaymentHistory')}
                   </li>
                 </ul>
@@ -1222,7 +1227,7 @@ function SettingsPageContent() {
 
               {/* Confirmation input */}
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2" style={{ color: 'var(--color-text-primary)' }}>
                   {t('settings.typeDeleteToConfirm')}
                 </label>
                 <input
@@ -1231,7 +1236,7 @@ function SettingsPageContent() {
                   onChange={(e) => setDeleteConfirmText(e.target.value)}
                   placeholder={t('settings.deleteConfirmWord')}
                   disabled={isDeletingAccount}
-                  className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-red-500/50 font-mono text-center tracking-widest"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-red-500/50 font-mono text-center tracking-widest text-sm sm:text-base"
                   style={{
                     backgroundColor: 'var(--color-bg-elevated)',
                     border: '1px solid rgba(239, 68, 68, 0.3)',
@@ -1248,7 +1253,7 @@ function SettingsPageContent() {
               )}
 
               {/* Action buttons */}
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-2 sm:gap-3 pt-2 pb-2 sm:pb-0">
                 <Button
                   variant="secondary"
                   onClick={() => {
@@ -1257,7 +1262,7 @@ function SettingsPageContent() {
                     setDeleteError('');
                   }}
                   disabled={isDeletingAccount}
-                  className="flex-1"
+                  className="flex-1 h-10 sm:h-11 text-sm"
                 >
                   {t('common.cancel')}
                 </Button>
@@ -1266,7 +1271,7 @@ function SettingsPageContent() {
                   onClick={handleDeleteAccount}
                   disabled={isDeletingAccount || deleteConfirmText !== t('settings.deleteConfirmWord')}
                   loading={isDeletingAccount}
-                  className="flex-1"
+                  className="flex-1 h-10 sm:h-11 text-sm"
                   leftIcon={!isDeletingAccount ? <Trash2 className="w-4 h-4" /> : undefined}
                 >
                   {isDeletingAccount
@@ -1281,7 +1286,7 @@ function SettingsPageContent() {
 
       {/* Deactivate Profile Modal */}
       {showDeactivateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -1295,44 +1300,49 @@ function SettingsPageContent() {
             }}
           />
 
-          {/* Modal */}
+          {/* Modal - Sheet on mobile */}
           <div
-            className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-fade-in"
+            className="relative w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl animate-slide-up sm:animate-fade-in max-h-[90vh] overflow-y-auto"
             style={{ backgroundColor: 'var(--color-bg-primary)' }}
           >
+            {/* Drag handle - mobile only */}
+            <div className="sm:hidden flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+            </div>
+
             {/* Header */}
             <div
-              className="p-6 text-center"
+              className="p-4 sm:p-6 text-center"
               style={{
                 background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.1) 0%, rgba(234, 179, 8, 0.05) 100%)',
                 borderBottom: '1px solid rgba(234, 179, 8, 0.15)',
               }}
             >
-              <div className="w-16 h-16 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center mx-auto mb-4">
-                <BriefcaseBusiness className="w-8 h-8 text-yellow-600" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <BriefcaseBusiness className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-600" />
               </div>
-              <h3 className="text-xl font-bold text-yellow-600 dark:text-yellow-500">
+              <h3 className="text-lg sm:text-xl font-bold text-yellow-600 dark:text-yellow-500">
                 {t('settings.pauseProfile')}
               </h3>
-              <p className="text-sm mt-2" style={{ color: 'var(--color-text-secondary)' }}>
+              <p className="text-xs sm:text-sm mt-1.5 sm:mt-2" style={{ color: 'var(--color-text-secondary)' }}>
                 {t('settings.yourProfileWillBeTemporarily')}
               </p>
             </div>
 
             {/* Content */}
-            <div className="p-6 space-y-5">
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
               {/* Until date (optional) */}
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2" style={{ color: 'var(--color-text-primary)' }}>
                   {t('settings.returnDateOptional')}
                 </label>
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-                    <Calendar className="w-5 h-5 text-yellow-600" />
+                  <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" />
                   </div>
                   {!deactivateUntilInput && (
                     <div
-                      className="absolute left-12 top-1/2 -translate-y-1/2 pointer-events-none text-sm"
+                      className="absolute left-10 sm:left-12 top-1/2 -translate-y-1/2 pointer-events-none text-xs sm:text-sm"
                       style={{ color: 'var(--color-text-tertiary)' }}
                     >
                       {t('settings.selectDate')}
@@ -1343,7 +1353,7 @@ function SettingsPageContent() {
                     value={deactivateUntilInput}
                     onChange={(e) => setDeactivateUntilInput(e.target.value)}
                     min={new Date().toISOString().split("T")[0]}
-                    className={`w-full pl-12 pr-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-yellow-500/50 ${!deactivateUntilInput ? 'text-transparent' : ''}`}
+                    className={`w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-yellow-500/50 text-sm sm:text-base ${!deactivateUntilInput ? 'text-transparent' : ''}`}
                     style={{
                       backgroundColor: 'var(--color-bg-elevated)',
                       border: '1px solid var(--color-border)',
@@ -1351,14 +1361,14 @@ function SettingsPageContent() {
                     }}
                   />
                 </div>
-                <p className="text-xs mt-1.5" style={{ color: 'var(--color-text-tertiary)' }}>
+                <p className="text-[10px] sm:text-xs mt-1 sm:mt-1.5" style={{ color: 'var(--color-text-tertiary)' }}>
                   {t('settings.ifNotSetYouCan')}
                 </p>
               </div>
 
               {/* Reason (optional) */}
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2" style={{ color: 'var(--color-text-primary)' }}>
                   {t('settings.reasonOptional')}
                 </label>
                 <Select
@@ -1375,32 +1385,32 @@ function SettingsPageContent() {
               </div>
 
               {/* Info */}
-              <div className="p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/50">
-                <p className="font-medium text-yellow-700 dark:text-yellow-500 text-sm mb-3">
+              <div className="p-3 sm:p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/50">
+                <p className="font-medium text-yellow-700 dark:text-yellow-500 text-xs sm:text-sm mb-2 sm:mb-3">
                   {t('settings.whatHappens')}
                 </p>
-                <div className="space-y-2.5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 rounded-lg bg-yellow-100 dark:bg-yellow-800/40 flex items-center justify-center flex-shrink-0">
-                      <EyeOff className="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-500" />
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-yellow-100 dark:bg-yellow-800/40 flex items-center justify-center flex-shrink-0">
+                      <EyeOff className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-600 dark:text-yellow-500" />
                     </div>
-                    <span className="text-sm text-yellow-700/90 dark:text-yellow-500/90">
+                    <span className="text-xs sm:text-sm text-yellow-700/90 dark:text-yellow-500/90">
                       {t('settings.clientsWontSeeYourProfile')}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 rounded-lg bg-yellow-100 dark:bg-yellow-800/40 flex items-center justify-center flex-shrink-0">
-                      <MessageCircle className="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-500" />
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-yellow-100 dark:bg-yellow-800/40 flex items-center justify-center flex-shrink-0">
+                      <MessageCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-600 dark:text-yellow-500" />
                     </div>
-                    <span className="text-sm text-yellow-700/90 dark:text-yellow-500/90">
+                    <span className="text-xs sm:text-sm text-yellow-700/90 dark:text-yellow-500/90">
                       {t('settings.existingMessagesWillBePreserved')}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 rounded-lg bg-yellow-100 dark:bg-yellow-800/40 flex items-center justify-center flex-shrink-0">
-                      <RefreshCw className="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-500" />
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-yellow-100 dark:bg-yellow-800/40 flex items-center justify-center flex-shrink-0">
+                      <RefreshCw className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-600 dark:text-yellow-500" />
                     </div>
-                    <span className="text-sm text-yellow-700/90 dark:text-yellow-500/90">
+                    <span className="text-xs sm:text-sm text-yellow-700/90 dark:text-yellow-500/90">
                       {t('settings.youCanReactivateAnytime')}
                     </span>
                   </div>
@@ -1415,7 +1425,7 @@ function SettingsPageContent() {
               )}
 
               {/* Action buttons */}
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-2 sm:gap-3 pt-2 pb-2 sm:pb-0">
                 <Button
                   variant="secondary"
                   onClick={() => {
@@ -1425,7 +1435,7 @@ function SettingsPageContent() {
                     setDeactivationError('');
                   }}
                   disabled={isDeactivating}
-                  className="flex-1"
+                  className="flex-1 h-10 sm:h-11 text-sm"
                 >
                   {t('common.cancel')}
                 </Button>
@@ -1433,7 +1443,7 @@ function SettingsPageContent() {
                   onClick={handleDeactivateProfile}
                   disabled={isDeactivating}
                   loading={isDeactivating}
-                  className="flex-1 bg-yellow-500 hover:bg-yellow-600"
+                  className="flex-1 h-10 sm:h-11 text-sm bg-yellow-500 hover:bg-yellow-600"
                   leftIcon={!isDeactivating ? <BriefcaseBusiness className="w-4 h-4" /> : undefined}
                 >
                   {isDeactivating
@@ -1466,7 +1476,7 @@ function SettingsPageContent() {
 
       {/* Add Card Modal */}
       {showAddCardModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -1476,23 +1486,28 @@ function SettingsPageContent() {
             }}
           />
 
-          {/* Modal */}
+          {/* Modal - Sheet on mobile */}
           <div
-            className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-fade-in"
+            className="relative w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl animate-slide-up sm:animate-fade-in max-h-[90vh] overflow-y-auto"
             style={{ backgroundColor: 'var(--color-bg-primary)' }}
           >
+            {/* Drag handle - mobile only */}
+            <div className="sm:hidden flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+            </div>
+
             {/* Header */}
-            <div className="p-5 border-b" style={{ borderColor: 'var(--color-border)' }}>
+            <div className="p-4 sm:p-5 border-b" style={{ borderColor: 'var(--color-border)' }}>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#E07B4F]/10">
-                    <CreditCard className="w-5 h-5 text-[#E07B4F]" />
+                <div className="flex items-center gap-2.5 sm:gap-3">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center bg-[#E07B4F]/10">
+                    <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-[#E07B4F]" />
                   </div>
                   <div>
-                    <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                    <h3 className="font-semibold text-sm sm:text-base" style={{ color: 'var(--color-text-primary)' }}>
                       {t('settings.addCard')}
                     </h3>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
+                    <p className="text-[10px] sm:text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
                       {t('settings.enterYourCardDetails')}
                     </p>
                   </div>
@@ -1511,10 +1526,10 @@ function SettingsPageContent() {
             </div>
 
             {/* Content */}
-            <div className="p-5 space-y-4">
+            <div className="p-4 sm:p-5 space-y-3 sm:space-y-4">
               {/* Card Number */}
               <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+                <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
                   {t('settings.cardNumber')}
                 </label>
                 <input
@@ -1527,7 +1542,7 @@ function SettingsPageContent() {
                   }))}
                   placeholder="0000 0000 0000 0000"
                   maxLength={19}
-                  className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F]"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F] text-sm sm:text-base"
                   style={{
                     backgroundColor: 'var(--color-bg-elevated)',
                     border: '1px solid var(--color-border)',
@@ -1537,9 +1552,9 @@ function SettingsPageContent() {
               </div>
 
               {/* Expiry and Cardholder in row */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+                  <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
                     {t('settings.expiry')}
                   </label>
                   <input
@@ -1552,7 +1567,7 @@ function SettingsPageContent() {
                     }))}
                     placeholder="MM/YY"
                     maxLength={5}
-                    className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F]"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F] text-sm sm:text-base"
                     style={{
                       backgroundColor: 'var(--color-bg-elevated)',
                       border: '1px solid var(--color-border)',
@@ -1561,7 +1576,7 @@ function SettingsPageContent() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+                  <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
                     {t('settings.cvv')}
                   </label>
                   <input
@@ -1569,7 +1584,7 @@ function SettingsPageContent() {
                     inputMode="numeric"
                     placeholder="***"
                     maxLength={4}
-                    className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F]"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F] text-sm sm:text-base"
                     style={{
                       backgroundColor: 'var(--color-bg-elevated)',
                       border: '1px solid var(--color-border)',
@@ -1581,7 +1596,7 @@ function SettingsPageContent() {
 
               {/* Cardholder Name */}
               <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+                <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
                   {t('settings.cardholderName')}
                 </label>
                 <input
@@ -1592,7 +1607,7 @@ function SettingsPageContent() {
                     cardholderName: e.target.value.toUpperCase()
                   }))}
                   placeholder="JOHN DOE"
-                  className="w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F] uppercase"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F] uppercase text-sm sm:text-base"
                   style={{
                     backgroundColor: 'var(--color-bg-elevated)',
                     border: '1px solid var(--color-border)',
@@ -1602,14 +1617,14 @@ function SettingsPageContent() {
               </div>
 
               {/* Set as default checkbox */}
-              <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
+              <label className="flex items-center gap-2.5 sm:gap-3 cursor-pointer p-2.5 sm:p-3 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
                 <input
                   type="checkbox"
                   checked={cardFormData.setAsDefault}
                   onChange={(e) => setCardFormData(prev => ({ ...prev, setAsDefault: e.target.checked }))}
-                  className="w-5 h-5 rounded border-neutral-300 text-[#E07B4F] focus:ring-[#E07B4F]"
+                  className="w-4 h-4 sm:w-5 sm:h-5 rounded border-neutral-300 text-[#E07B4F] focus:ring-[#E07B4F]"
                 />
-                <span className="text-sm" style={{ color: 'var(--color-text-primary)' }}>
+                <span className="text-xs sm:text-sm" style={{ color: 'var(--color-text-primary)' }}>
                   {t('settings.setAsDefaultCard')}
                 </span>
               </label>
@@ -1619,7 +1634,7 @@ function SettingsPageContent() {
                 onClick={handleAddCard}
                 disabled={isAddingCard || !cardFormData.cardNumber || !cardFormData.cardExpiry || !cardFormData.cardholderName}
                 loading={isAddingCard}
-                className="w-full"
+                className="w-full h-10 sm:h-11 text-sm"
                 leftIcon={!isAddingCard ? <CreditCard className="w-4 h-4" /> : undefined}
               >
                 {isAddingCard
@@ -1628,9 +1643,9 @@ function SettingsPageContent() {
               </Button>
 
               {/* Security Note */}
-              <div className="flex items-center gap-2 justify-center pt-2">
-                <Lock className="w-3.5 h-3.5" style={{ color: 'var(--color-text-tertiary)' }} />
-                <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+              <div className="flex items-center gap-2 justify-center pt-1 sm:pt-2 pb-2 sm:pb-0">
+                <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5" style={{ color: 'var(--color-text-tertiary)' }} />
+                <span className="text-[10px] sm:text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
                   {t('settings.yourDataIsSecure')}
                 </span>
               </div>

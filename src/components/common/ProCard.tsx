@@ -211,209 +211,205 @@ export default function ProCard({
       <Link href={`/professionals/${profile.id}`} className="group block">
         {/* Card Container with Premium Effects */}
         <div className={`relative transition-all duration-500 ${isPremium ? 'game-card-premium' : ''}`}>
-          {/* Premium border glow effect */}
-          <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-[#C4735B]/0 via-[#C4735B]/0 to-[#C4735B]/0 group-hover:from-[#C4735B]/25 group-hover:via-[#D4937B]/15 group-hover:to-[#C4735B]/25 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-[1px]" />
-          
+          {/* Premium border glow effect - hidden on mobile for performance */}
+          <div className="hidden sm:block absolute -inset-[1px] rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#C4735B]/0 via-[#C4735B]/0 to-[#C4735B]/0 group-hover:from-[#C4735B]/25 group-hover:via-[#D4937B]/15 group-hover:to-[#C4735B]/25 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-[1px]" />
+
           {/* Main Card */}
-          <div className="relative bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80 shadow-[0_1px_0_rgba(0,0,0,0.03),0_8px_24px_-18px_rgba(0,0,0,0.35)] group-hover:border-[#C4735B]/25 transition-all duration-500 group-hover:shadow-[0_20px_50px_-12px_rgba(196,115,91,0.15)] group-hover:-translate-y-0.5 p-5">
-            
-            {/* Shine effect overlay */}
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-30">
+          <div className="relative bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80 shadow-sm sm:shadow-[0_1px_0_rgba(0,0,0,0.03),0_8px_24px_-18px_rgba(0,0,0,0.35)] group-hover:border-[#C4735B]/25 transition-all duration-500 sm:group-hover:shadow-[0_20px_50px_-12px_rgba(196,115,91,0.15)] sm:group-hover:-translate-y-0.5 p-3 sm:p-5">
+
+            {/* Shine effect overlay - desktop only */}
+            <div className="hidden sm:block absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-30">
               <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
             </div>
 
-            {/* Decorative corner accents */}
-            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[#C4735B]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-20 h-20 bg-gradient-to-tr from-[#C4735B]/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100 pointer-events-none" />
-
-            {/* Top Row - Badges */}
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-1.5">
-                {profile.verificationStatus === 'verified' && (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                )}
-                {isTopRated && (
-                  <StatusPill variant="topRated" size="xs" locale={locale} label="Top" />
-                )}
-              </div>
-              
-              {/* Status badge on right */}
-              <div className="flex items-center gap-1.5">
-                <span className={`w-2 h-2 rounded-full ${currentStatus.color} animate-pulse`} />
-                <span className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400">
-                  {t(currentStatus.labelKey)}
-                </span>
-              </div>
-            </div>
-
-            {/* Avatar - Centered with enhanced effects */}
-            <div className="flex flex-col items-center mb-5">
-              <div className="relative group/avatar">
-                {/* Avatar ring effect on hover */}
-                <div className={`absolute -inset-1.5 rounded-full ${currentStatus.ringColor} ring-2 ring-transparent group-hover/avatar:ring-[#C4735B]/30 transition-all duration-300`} />
-                
-                <div className="relative w-20 h-20 rounded-full overflow-hidden bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-700 dark:to-neutral-800 ring-2 ring-white dark:ring-neutral-900 shadow-lg group-hover:-translate-y-0.5 transition-transform duration-300">
+            {/* Top Row - Avatar + Info (Mobile: Horizontal layout) */}
+            <div className="flex items-start gap-3 sm:flex-col sm:items-center">
+              {/* Avatar */}
+              <div className="relative flex-shrink-0">
+                <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-full overflow-hidden bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-700 dark:to-neutral-800 ring-2 ring-white dark:ring-neutral-900 shadow-md">
                   {avatarUrl && !imageError ? (
                     <Image
                       src={avatarUrl}
                       alt={profile.name}
                       fill
-                      sizes="80px"
+                      sizes="(max-width: 640px) 56px, 80px"
                       className={`object-cover transition-all duration-500 group-hover:scale-105 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
                       onLoad={() => setImageLoaded(true)}
                       onError={() => setImageError(true)}
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-neutral-400 dark:text-neutral-500 bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-700 dark:to-neutral-800">
+                    <div className="w-full h-full flex items-center justify-center text-xl sm:text-2xl font-bold text-neutral-400 dark:text-neutral-500">
                       {profile.name.charAt(0)}
                     </div>
                   )}
                 </div>
-                
-                {/* Status indicator - enhanced */}
+                {/* Status indicator */}
                 <span
-                  className={`absolute bottom-0.5 right-0.5 w-5 h-5 rounded-full ${currentStatus.color} border-[3px] border-white dark:border-neutral-900 shadow-md`}
+                  className={`absolute bottom-0 right-0 w-4 h-4 sm:w-5 sm:h-5 rounded-full ${currentStatus.color} border-2 sm:border-[3px] border-white dark:border-neutral-900 shadow-sm`}
                 />
               </div>
-            </div>
 
-            {/* Name - Centered with animated underline */}
-            <div className="text-center mb-3">
-              <div className="relative inline-block">
-                <h3 className="font-semibold text-[15px] text-neutral-900 dark:text-white leading-snug line-clamp-1 group-hover:text-[#C4735B] transition-colors duration-300">
-                  {profile.name}
-                </h3>
-                {/* Animated underline */}
-                <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-gradient-to-r from-[#C4735B] via-[#D4937B] to-[#C4735B] group-hover:w-full transition-all duration-500 ease-out rounded-full" />
-              </div>
-            </div>
+              {/* Mobile: Name + Stats inline */}
+              <div className="flex-1 min-w-0 sm:w-full sm:text-center sm:mt-3">
+                {/* Name + Badges */}
+                <div className="flex items-center gap-1.5 sm:justify-center mb-1">
+                  <h3 className="font-semibold text-sm sm:text-[15px] text-neutral-900 dark:text-white leading-snug truncate sm:line-clamp-1 group-hover:text-[#C4735B] transition-colors duration-300">
+                    {profile.name}
+                  </h3>
+                  {profile.verificationStatus === 'verified' && (
+                    <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 flex-shrink-0" />
+                  )}
+                  {isTopRated && (
+                    <span className="hidden sm:inline-flex">
+                      <StatusPill variant="topRated" size="xs" locale={locale} label="Top" />
+                    </span>
+                  )}
+                </div>
 
-            {/* Rating or New Badge */}
-            <div className="flex justify-center mb-4">
-              {(profile.totalReviews || 0) > 0 ? (
-                <StarRating
-                  rating={profile.avgRating > 0 ? profile.avgRating : 5.0}
-                  reviewCount={profile.totalReviews}
-                  showCount
-                  size="sm"
-                />
-              ) : (
-                <Badge variant="success" size="xs" icon={<Sparkles className="w-3 h-3" />}>
-                  {t('card.new')}
-                </Badge>
-              )}
-            </div>
+                {/* Rating */}
+                <div className="flex items-center sm:justify-center mb-1.5 sm:mb-3">
+                  {(profile.totalReviews || 0) > 0 ? (
+                    <StarRating
+                      rating={profile.avgRating > 0 ? profile.avgRating : 5.0}
+                      reviewCount={profile.totalReviews}
+                      showCount
+                      size="xs"
+                    />
+                  ) : (
+                    <Badge variant="success" size="xs" icon={<Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3" />}>
+                      {t('card.new')}
+                    </Badge>
+                  )}
+                </div>
 
-            {/* Stats Row - Enhanced */}
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-50 dark:bg-neutral-800/50 group-hover:bg-[#C4735B]/5 transition-colors duration-300">
-                <Clock className="w-3.5 h-3.5 text-neutral-400 group-hover:text-[#C4735B]/70 transition-colors" />
-                <span className="text-[12px] font-medium text-neutral-600 dark:text-neutral-400">
-                  {(() => {
-                    // Calculate max years from selectedServices or use yearsExperience
-                    if (servicesWithExperience && servicesWithExperience.length > 0) {
-                      const expToYears: Record<string, number> = { '1-2': 2, '3-5': 5, '5-10': 10, '10+': 15 };
-                      const maxYears = Math.max(...servicesWithExperience.map(s => expToYears[s.experience] || 0));
-                      return maxYears > 0 ? maxYears : (profile.yearsExperience || 0);
-                    }
-                    return profile.yearsExperience || 0;
-                  })()} {t('timeUnits.year')}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-50 dark:bg-neutral-800/50 group-hover:bg-[#C4735B]/5 transition-colors duration-300">
-                <Briefcase className="w-3.5 h-3.5 text-neutral-400 group-hover:text-[#C4735B]/70 transition-colors" />
-                <span className="text-[12px] font-medium text-neutral-600 dark:text-neutral-400">
-                  {completedJobs} {t('admin.job')}
-                </span>
-              </div>
-            </div>
+                {/* Mobile: Compact stats row */}
+                <div className="flex items-center gap-2 text-[10px] sm:hidden text-neutral-500 dark:text-neutral-400">
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {(() => {
+                      if (servicesWithExperience && servicesWithExperience.length > 0) {
+                        const expToYears: Record<string, number> = { '1-2': 2, '3-5': 5, '5-10': 10, '10+': 15 };
+                        const maxYears = Math.max(...servicesWithExperience.map(s => expToYears[s.experience] || 0));
+                        return maxYears > 0 ? maxYears : (profile.yearsExperience || 0);
+                      }
+                      return profile.yearsExperience || 0;
+                    })()}{t('timeUnits.year')}
+                  </span>
+                  <span className="text-neutral-300 dark:text-neutral-600">•</span>
+                  <span className="flex items-center gap-1">
+                    <Briefcase className="w-3 h-3" />
+                    {completedJobs}
+                  </span>
+                  {pricing && (
+                    <>
+                      <span className="text-neutral-300 dark:text-neutral-600">•</span>
+                      <span className="text-[#C4735B] font-medium truncate">
+                        {pricing.value || pricing.label}
+                      </span>
+                    </>
+                  )}
+                </div>
 
-            {/* Pricing + Views */}
-            <div className="flex items-center justify-center gap-2.5 mb-4 flex-wrap">
-              {pricing && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#C4735B]/10 dark:bg-[#C4735B]/15 border border-[#C4735B]/25 dark:border-[#C4735B]/30 shadow-sm">
-                  <Wallet className="w-3.5 h-3.5 text-[#C4735B]" />
-                  <span className="text-[12px] font-semibold text-neutral-800 dark:text-neutral-100">
-                    {pricing.label}
-                    {pricing.value ? (
-                      <>
-                        <span className="text-neutral-400 dark:text-neutral-500">:</span>{" "}
-                        <span className="text-[#C4735B] font-bold">{pricing.value}</span>
-                      </>
-                    ) : null}
+                {/* Mobile: Category */}
+                <div className="mt-1.5 sm:hidden">
+                  <span className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full">
+                    {getCategoryLabel(userCategories[0])}
                   </span>
                 </div>
-              )}
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-50 dark:bg-neutral-800/50 group-hover:bg-[#C4735B]/5 transition-colors duration-300">
-                <Eye className="w-3.5 h-3.5 text-neutral-400 group-hover:text-[#C4735B]/70 transition-colors" />
-                <span className="text-[12px] font-medium text-neutral-600 dark:text-neutral-400">
-                  {viewsCount}
-                </span>
               </div>
             </div>
 
-            {/* Bio - Short preview */}
-            {profile.bio && (
-              <div className="mb-4">
-                <p className="text-[12px] text-neutral-600 dark:text-neutral-400 text-center line-clamp-2 leading-relaxed">
-                  {profile.bio}
-                </p>
+            {/* Desktop: Full stats and categories */}
+            <div className="hidden sm:block">
+              {/* Stats Row */}
+              <div className="flex items-center justify-center gap-3 mb-3 mt-4">
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-neutral-50 dark:bg-neutral-800/50">
+                  <Clock className="w-3 h-3 text-neutral-400" />
+                  <span className="text-[11px] font-medium text-neutral-600 dark:text-neutral-400">
+                    {(() => {
+                      if (servicesWithExperience && servicesWithExperience.length > 0) {
+                        const expToYears: Record<string, number> = { '1-2': 2, '3-5': 5, '5-10': 10, '10+': 15 };
+                        const maxYears = Math.max(...servicesWithExperience.map(s => expToYears[s.experience] || 0));
+                        return maxYears > 0 ? maxYears : (profile.yearsExperience || 0);
+                      }
+                      return profile.yearsExperience || 0;
+                    })()} {t('timeUnits.year')}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-neutral-50 dark:bg-neutral-800/50">
+                  <Briefcase className="w-3 h-3 text-neutral-400" />
+                  <span className="text-[11px] font-medium text-neutral-600 dark:text-neutral-400">
+                    {completedJobs} {t('admin.job')}
+                  </span>
+                </div>
               </div>
-            )}
 
-            {/* Divider - Enhanced */}
-            <div className="h-px bg-gradient-to-r from-transparent via-neutral-200 dark:via-neutral-700 to-transparent mb-4" />
-
-            {/* Categories with Subcategories - Enhanced */}
-            <div className="space-y-2.5">
-              {userCategories.slice(0, 3).map((cat, i) => {
-                const subcatsForThisCat = getSubcatsForCategory(cat);
-                const displaySubcats = subcatsForThisCat.slice(0, 3);
-
-                return (
-                  <div key={i} className="text-center">
-                    <span className="text-[11px] font-semibold text-neutral-700 dark:text-neutral-300 group-hover:text-[#C4735B] transition-colors duration-300">
-                      {getCategoryLabel(cat)}
+              {/* Pricing */}
+              {pricing && (
+                <div className="flex justify-center mb-3">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#C4735B]/10 border border-[#C4735B]/20">
+                    <Wallet className="w-3 h-3 text-[#C4735B]" />
+                    <span className="text-[11px] font-semibold text-neutral-700 dark:text-neutral-200">
+                      {pricing.value ? (
+                        <span className="text-[#C4735B]">{pricing.value}</span>
+                      ) : (
+                        pricing.label
+                      )}
                     </span>
-                    {displaySubcats.length > 0 && (
-                      <div className="flex flex-wrap justify-center gap-1.5 mt-1.5">
-                        {displaySubcats.map((subcat, j) => {
-                          const exp = getServiceExperience(subcat);
-                          return (
+                  </div>
+                </div>
+              )}
+
+              {/* Divider */}
+              <div className="h-px bg-gradient-to-r from-transparent via-neutral-200 dark:via-neutral-700 to-transparent mb-3" />
+
+              {/* Categories with Subcategories */}
+              <div className="space-y-2">
+                {userCategories.slice(0, 2).map((cat, i) => {
+                  const subcatsForThisCat = getSubcatsForCategory(cat);
+                  const displaySubcats = subcatsForThisCat.slice(0, 2);
+
+                  return (
+                    <div key={i} className="text-center">
+                      <span className="text-[10px] font-semibold text-neutral-700 dark:text-neutral-300">
+                        {getCategoryLabel(cat)}
+                      </span>
+                      {displaySubcats.length > 0 && (
+                        <div className="flex flex-wrap justify-center gap-1 mt-1">
+                          {displaySubcats.map((subcat, j) => (
                             <span
                               key={j}
-                              className="px-2.5 py-0.5 text-[10px] font-medium text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 rounded-full group-hover:bg-[#C4735B]/10 group-hover:text-[#C4735B]/80 transition-colors duration-300"
+                              className="px-2 py-0.5 text-[9px] font-medium text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 rounded-full"
                             >
                               {getCategoryLabel(subcat)}
-                              {exp && <span className="ml-1 text-[#C4735B]">{exp}</span>}
                             </span>
-                          );
-                        })}
-                        {subcatsForThisCat.length > 3 && (
-                          <span className="text-[10px] font-medium text-neutral-400 px-1.5">
-                            +{subcatsForThisCat.length - 3}
-                          </span>
-                        )}
-                      </div>
-                    )}
+                          ))}
+                          {subcatsForThisCat.length > 2 && (
+                            <span className="text-[9px] font-medium text-neutral-400 px-1">
+                              +{subcatsForThisCat.length - 2}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {userCategories.length > 2 && (
+                  <div className="text-center">
+                    <span className="text-[9px] font-medium text-neutral-400">
+                      +{userCategories.length - 2} {t('common.more')}
+                    </span>
                   </div>
-                );
-              })}
-              {userCategories.length > 3 && (
-                <div className="text-center">
-                  <span className="text-[10px] font-medium text-neutral-400">
-                    +{userCategories.length - 3} {t('common.more')}
-                  </span>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
 
           {/* Premium Badge */}
           {isPremium && (
             <div className="absolute -top-1 -right-1 z-20">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg border-2 border-white">
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-white">
+              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg border-2 border-white">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 sm:w-4 sm:h-4 text-white">
                   <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
                 </svg>
               </div>

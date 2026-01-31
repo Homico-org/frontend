@@ -201,9 +201,20 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
     }
   };
 
-  // Skeleton loading - Grid style
+  // Skeleton loading - Grid style (mobile-first)
   const FeedSkeleton = () => (
-    <SkeletonCardGrid count={8} columns={4} />
+    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80">
+          <div className="aspect-[4/3] bg-neutral-200 dark:bg-neutral-700 animate-pulse" />
+          <div className="p-2.5 sm:p-4">
+            <div className="h-3 sm:h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-1/3 animate-pulse mb-2" />
+            <div className="h-4 sm:h-5 bg-neutral-200 dark:bg-neutral-700 rounded w-full animate-pulse mb-2" />
+            <div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded w-2/3 animate-pulse" />
+          </div>
+        </div>
+      ))}
+    </div>
   );
 
   // Empty state using shared component
@@ -227,8 +238,8 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
         <FeedEmptyState />
       ) : (
         <>
-          {/* Grid Layout */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {/* Grid Layout - Mobile first: 2 columns */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
             {feedItems.map((item, index) => (
               <div
                 key={item.id || `feed-item-${index}`}
@@ -251,11 +262,11 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
           </div>
 
           {/* Load More / Loader */}
-          <div ref={loaderRef} className="flex justify-center py-12">
+          <div ref={loaderRef} className="flex justify-center py-6 sm:py-12">
             {isLoadingMore && (
-              <div className="flex items-center gap-3">
-                <LoadingSpinner size="md" color={ACCENT_COLOR} />
-                <span className="text-sm text-neutral-500">
+              <div className="flex items-center gap-2 sm:gap-3 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-neutral-100 dark:bg-neutral-800">
+                <LoadingSpinner size="sm" color={ACCENT_COLOR} />
+                <span className="text-xs sm:text-sm text-neutral-500">
                   {t('common.loading')}
                 </span>
               </div>

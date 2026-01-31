@@ -131,20 +131,20 @@ export function ProfileSidebarMobile({
   const menuItems: SidebarMenuItem[] = [
     {
       key: "about",
-      icon: <FileText className="w-4 h-4" />,
+      icon: <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />,
       label: "About",
       labelKa: "შესახებ",
     },
     {
       key: "portfolio",
-      icon: <FolderKanban className="w-4 h-4" />,
+      icon: <FolderKanban className="w-3.5 h-3.5 sm:w-4 sm:h-4" />,
       label: "Portfolio",
       labelKa: "ნამუშევრები",
       count: portfolioCount,
     },
     {
       key: "reviews",
-      icon: <MessageSquareQuote className="w-4 h-4" />,
+      icon: <MessageSquareQuote className="w-3.5 h-3.5 sm:w-4 sm:h-4" />,
       label: "Reviews",
       labelKa: "შეფასებები",
       count: reviewsCount,
@@ -152,7 +152,7 @@ export function ProfileSidebarMobile({
   ];
 
   return (
-    <div className="grid grid-cols-3 gap-2 p-1 bg-neutral-100/80 dark:bg-neutral-800/50 rounded-2xl">
+    <div className="grid grid-cols-3 gap-1.5 sm:gap-2 p-0.5 sm:p-1 bg-neutral-100/80 dark:bg-neutral-800/50 rounded-xl sm:rounded-2xl">
       {menuItems.map((item) => {
         const isActive = activeTab === item.key;
 
@@ -161,8 +161,8 @@ export function ProfileSidebarMobile({
             key={item.key}
             onClick={() => onTabChange(item.key)}
             className={`
-              relative flex flex-col items-center justify-center gap-1.5 px-2 py-3 rounded-xl
-              font-semibold text-[11px] leading-tight transition-all duration-300 ease-out
+              relative flex flex-col items-center justify-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-2.5 sm:py-3 rounded-lg sm:rounded-xl
+              font-semibold text-[10px] sm:text-[11px] leading-tight transition-all duration-300 ease-out
               ${isActive
                 ? "text-white shadow-lg shadow-[#C4735B]/30"
                 : "text-neutral-600 dark:text-neutral-300 hover:bg-white/50 dark:hover:bg-neutral-700/50"
@@ -184,7 +184,7 @@ export function ProfileSidebarMobile({
               <Badge
                 variant={isActive ? "secondary" : "outline"}
                 size="xs"
-                className={`absolute -top-0.5 -right-0.5 !min-w-[20px] !h-[20px] !px-1 !text-[10px] !font-bold transition-all ${
+                className={`absolute -top-0.5 -right-0.5 !min-w-[18px] sm:!min-w-[20px] !h-[18px] sm:!h-[20px] !px-1 !text-[9px] sm:!text-[10px] !font-bold transition-all ${
                   isActive
                     ? "!bg-white !text-[#C4735B] !border-white shadow-sm"
                     : "!bg-neutral-200 dark:!bg-neutral-700 !text-neutral-600 dark:!text-neutral-300"

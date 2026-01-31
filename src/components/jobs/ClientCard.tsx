@@ -44,23 +44,23 @@ export default function ClientCard({
   const profileUrl = `/users/${client._id}`;
 
   const AvatarAndName = (
-    <div className={`flex items-center gap-4 ${linkToProfile ? 'group cursor-pointer' : ''}`}>
+    <div className={`flex items-center gap-3 sm:gap-4 ${linkToProfile ? 'group cursor-pointer' : ''}`}>
       <Avatar
         src={client.avatar}
         name={client.name}
         size="lg"
-        className={`w-14 h-14 ring-2 ring-neutral-100 dark:ring-neutral-800 ${
+        className={`w-12 h-12 sm:w-14 sm:h-14 ring-2 ring-neutral-100 dark:ring-neutral-800 ${
           linkToProfile ? 'group-hover:ring-[#C4735B]/50 transition-all' : ''
         }`}
       />
-      <div className="min-w-0">
-        <p className={`font-body font-semibold text-neutral-900 dark:text-white truncate ${
+      <div className="min-w-0 flex-1">
+        <p className={`font-body font-semibold text-sm sm:text-base text-neutral-900 dark:text-white truncate ${
           linkToProfile ? 'group-hover:text-[#C4735B] transition-colors' : ''
         }`}>
           {displayName}
         </p>
         {client.city && (
-          <p className="font-body text-sm text-neutral-500 dark:text-neutral-400 flex items-center gap-1">
+          <p className="font-body text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 flex items-center gap-1">
             <MapPin className="w-3 h-3" />
             {client.city}
           </p>
@@ -71,14 +71,14 @@ export default function ClientCard({
 
   return (
     <div
-      className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-500 ${
+      className={`bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-500 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
       } ${className}`}
     >
-      <h3 className="font-display text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-4">
+      <h3 className="font-display text-xs sm:text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-3 sm:mb-4">
         {label}
       </h3>
-      <div className="mb-4">
+      <div className="mb-3 sm:mb-4">
         {linkToProfile && client._id ? (
           <Link href={profileUrl}>
             {AvatarAndName}

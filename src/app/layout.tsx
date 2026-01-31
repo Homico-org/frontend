@@ -4,7 +4,14 @@ import Providers from "@/components/common/Providers";
 import ToastContainer from "@/components/common/Toast";
 import "@/styles/globals.css";
 import * as Sentry from "@sentry/nextjs";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+
+export const viewport: Viewport = {
+  themeColor: "#C4735B",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
 
 export function generateMetadata(): Metadata {
   return {
@@ -74,9 +81,19 @@ export function generateMetadata(): Metadata {
       },
     },
     icons: {
-      icon: "/favicon.png",
+      icon: [
+        { url: "/favicon.png" },
+        { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+        { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+      ],
       shortcut: "/favicon.png",
-      apple: "/favicon.png",
+      apple: "/apple-touch-icon.png",
+    },
+    manifest: "/manifest.webmanifest",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: "Homico",
     },
     verification: {
       google: "j0mOXsOhfeaKO7Z94EVIl7Rmek8eNsWj8a4fLbFcfgo",

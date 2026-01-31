@@ -7,18 +7,18 @@ import { ReactNode, useCallback, useEffect } from 'react';
 import { ACCENT_COLOR, ACCENT_HOVER } from '@/constants/theme';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
-// Modal size variants
+// Modal size variants - responsive for mobile bottom sheet
 const modalVariants = cva(
-  'relative w-full rounded-2xl overflow-hidden shadow-2xl animate-fade-in',
+  'relative w-full overflow-hidden shadow-2xl',
   {
     variants: {
       size: {
-        sm: 'max-w-sm',
-        md: 'max-w-md',
-        lg: 'max-w-lg',
-        xl: 'max-w-xl',
-        '2xl': 'max-w-2xl',
-        full: 'max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)]',
+        sm: 'sm:max-w-sm',
+        md: 'sm:max-w-md',
+        lg: 'sm:max-w-lg',
+        xl: 'sm:max-w-xl',
+        '2xl': 'sm:max-w-2xl',
+        full: 'sm:max-w-[calc(100vw-2rem)] sm:max-h-[calc(100vh-2rem)]',
       },
     },
     defaultVariants: {
@@ -28,7 +28,7 @@ const modalVariants = cva(
 );
 
 // Modal header variants for different types
-const headerVariants = cva('p-6 text-center', {
+const headerVariants = cva('p-4 sm:p-6 text-center', {
   variants: {
     variant: {
       default: '',
@@ -143,22 +143,33 @@ export function Modal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
       {/* Backdrop with blur */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-backdrop"
         onClick={closeOnBackdrop ? handleClose : undefined}
       />
 
-      {/* Modal container */}
+      {/* Modal container - Bottom sheet on mobile, centered on desktop */}
       <div
-        className={cn(modalVariants({ size }), 'max-h-[90vh] overflow-y-auto', className)}
+        className={cn(
+          modalVariants({ size }),
+          'max-h-[92vh] sm:max-h-[90vh] overflow-y-auto',
+          'rounded-t-3xl sm:rounded-2xl',
+          'animate-slide-up-sheet sm:animate-fade-in',
+          className
+        )}
         style={{ backgroundColor: 'var(--color-bg-primary)' }}
       >
+        {/* Drag handle for mobile */}
+        <div className="sm:hidden flex justify-center pt-3 pb-1 sticky top-0 z-20" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+          <div className="w-12 h-1.5 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+        </div>
+
         {showCloseButton && !preventClose && (
           <button
             onClick={handleClose}
-            className="absolute top-4 right-4 p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors z-10"
+            className="absolute top-4 sm:top-4 right-4 p-2.5 sm:p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 active:bg-neutral-200 transition-colors z-10"
           >
             <X className="w-5 h-5 text-neutral-500" />
           </button>
@@ -230,7 +241,7 @@ interface ModalBodyProps {
  * Modal body container
  */
 export function ModalBody({ children, className }: ModalBodyProps) {
-  return <div className={cn('p-6', className)}>{children}</div>;
+  return <div className={cn('p-4 sm:p-6', className)}>{children}</div>;
 }
 
 interface ModalFooterProps {
@@ -243,7 +254,7 @@ interface ModalFooterProps {
  */
 export function ModalFooter({ children, className }: ModalFooterProps) {
   return (
-    <div className={cn('flex gap-3 px-6 pb-6', className)}>{children}</div>
+    <div className={cn('flex gap-3 px-4 sm:px-6 pb-8 sm:pb-6', className)}>{children}</div>
   );
 }
 
@@ -294,11 +305,11 @@ export function ModalActions({
   };
 
   return (
-    <div className={cn('flex gap-3 pt-2', className)}>
+    <div className={cn('flex flex-col-reverse sm:flex-row gap-2.5 sm:gap-3 pt-2', className)}>
       <button
         onClick={onCancel}
         disabled={isLoading}
-        className="flex-1 py-3 rounded-xl font-medium transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50"
+        className="flex-1 py-3.5 sm:py-3 rounded-xl font-medium text-base sm:text-sm transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800 active:bg-neutral-200 disabled:opacity-50"
         style={{
           border: '1px solid var(--color-border)',
           color: 'var(--color-text-primary)',
@@ -310,7 +321,7 @@ export function ModalActions({
         onClick={onConfirm}
         disabled={isLoading || confirmDisabled}
         className={cn(
-          'flex-1 py-3 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2 disabled:cursor-not-allowed',
+          'flex-1 py-3.5 sm:py-3 text-white rounded-xl font-medium text-base sm:text-sm transition-all flex items-center justify-center gap-2 disabled:cursor-not-allowed active:opacity-80',
           variant === 'accent' ? 'hover:opacity-90' : buttonColors[variant]
         )}
         style={getAccentButtonStyle()}

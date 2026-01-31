@@ -1290,10 +1290,10 @@ export default function ProfessionalDetailClient({
       {/* Pending Approval Banner - Only visible to the pro owner */}
       {isOwner && profile && profile.verificationStatus !== 'verified' && (
         <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
-            <div className="p-2 rounded-full bg-amber-100 dark:bg-amber-800/30">
+          <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
+            <div className="p-1.5 sm:p-2 rounded-full bg-amber-100 dark:bg-amber-800/30 flex-shrink-0">
               <svg
-                className="w-5 h-5 text-amber-600 dark:text-amber-400"
+                className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 dark:text-amber-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -1306,15 +1306,15 @@ export default function ProfessionalDetailClient({
                 />
               </svg>
             </div>
-            <div className="flex-1">
-              <p className="font-medium text-amber-800 dark:text-amber-200">
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-xs sm:text-sm text-amber-800 dark:text-amber-200">
                 {t("professional.pendingApprovalTitle")}
               </p>
-              <p className="text-sm text-amber-700 dark:text-amber-300">
+              <p className="text-[10px] sm:text-sm text-amber-700 dark:text-amber-300 line-clamp-2 sm:line-clamp-none">
                 {t("professional.pendingApprovalDescription")}
               </p>
               {profile.verificationNotes && (
-                <p className="text-sm mt-2 p-2 bg-amber-100 dark:bg-amber-800/40 rounded text-amber-800 dark:text-amber-200">
+                <p className="text-[10px] sm:text-sm mt-1.5 sm:mt-2 p-1.5 sm:p-2 bg-amber-100 dark:bg-amber-800/40 rounded text-amber-800 dark:text-amber-200">
                   <span className="font-medium">{t("admin.noteFromAdmin") || "Note from admin"}:</span> {profile.verificationNotes}
                 </p>
               )}
@@ -1326,22 +1326,22 @@ export default function ProfessionalDetailClient({
       {/* Rejected Profile Banner */}
       {isOwner && profile && profile.adminRejectionReason && (
         <div className="bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
-            <div className="p-2 rounded-full bg-red-100 dark:bg-red-800/30">
-              <X className="w-5 h-5 text-red-600 dark:text-red-400" />
+          <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
+            <div className="p-1.5 sm:p-2 rounded-full bg-red-100 dark:bg-red-800/30 flex-shrink-0">
+              <X className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 dark:text-red-400" />
             </div>
-            <div className="flex-1">
-              <p className="font-medium text-red-800 dark:text-red-200">
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-xs sm:text-sm text-red-800 dark:text-red-200">
                 {t("professional.needsUpdatesTitle")}
               </p>
-              <p className="text-sm text-red-700 dark:text-red-300">
+              <p className="text-[10px] sm:text-sm text-red-700 dark:text-red-300 line-clamp-2 sm:line-clamp-none">
                 {profile.adminRejectionReason}
               </p>
             </div>
             <Button
               size="sm"
               onClick={() => router.push("/pro/profile-setup")}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm flex-shrink-0"
             >
               {t("professional.editProfile")}
             </Button>
@@ -1352,25 +1352,25 @@ export default function ProfessionalDetailClient({
       {/* Admin Verification Panel - Only visible to admins */}
       {isAdmin && profile && (
         <div className="bg-indigo-50 dark:bg-indigo-900/20 border-b border-indigo-200 dark:border-indigo-800">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
-            <div className="p-2 rounded-full bg-indigo-100 dark:bg-indigo-800/30">
-              <BadgeCheck className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+          <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
+            <div className="p-1.5 sm:p-2 rounded-full bg-indigo-100 dark:bg-indigo-800/30 flex-shrink-0">
+              <BadgeCheck className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600 dark:text-indigo-400" />
             </div>
-            <div className="flex-1">
-              <p className="font-medium text-indigo-800 dark:text-indigo-200">
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-xs sm:text-sm text-indigo-800 dark:text-indigo-200">
                 {t("admin.verificationPanel") || "Admin Verification Panel"}
               </p>
-              <p className="text-sm text-indigo-700 dark:text-indigo-300">
+              <p className="text-[10px] sm:text-sm text-indigo-700 dark:text-indigo-300 truncate sm:whitespace-normal">
                 {t("admin.currentStatus") || "Current Status"}: <span className="font-semibold capitalize">{profile.verificationStatus || "pending"}</span>
                 {profile.verificationNotes && (
-                  <span className="ml-2">| {t("admin.notes") || "Notes"}: {profile.verificationNotes}</span>
+                  <span className="hidden sm:inline ml-2">| {t("admin.notes") || "Notes"}: {profile.verificationNotes}</span>
                 )}
               </p>
             </div>
             <Button
               size="sm"
               onClick={openAdminVerificationModal}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm flex-shrink-0"
             >
               {t("admin.updateStatus") || "Update Status"}
             </Button>
@@ -1384,16 +1384,16 @@ export default function ProfessionalDetailClient({
         className={`relative transition-all duration-700 ${isVisible ? "opacity-100" : "opacity-0"}`}
       >
         {/* Navigation row */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 py-3 sm:py-4">
           <div className="flex justify-between items-center">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => backOrNavigate(router, "/browse")}
-              className="rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-all"
+              className="rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-all h-9 sm:h-10 px-2.5 sm:px-3"
               leftIcon={<ChevronLeft className="w-4 h-4" />}
             >
-              {t("common.back")}
+              <span className="hidden sm:inline">{t("common.back")}</span>
             </Button>
 
             {/* Share button with dropdown */}
@@ -1402,31 +1402,31 @@ export default function ProfessionalDetailClient({
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowShareMenu(!showShareMenu)}
-                className="rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-all"
+                className="rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-all h-9 sm:h-10 px-2.5 sm:px-3"
                 leftIcon={<Share2 className="w-4 h-4" />}
               >
-                {t("common.share")}
+                <span className="hidden sm:inline">{t("common.share")}</span>
               </Button>
 
               {/* Share dropdown menu */}
               {showShareMenu && (
-                <div className="absolute top-full right-0 mt-2 bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 py-2 min-w-[180px] animate-in fade-in slide-in-from-top-2 duration-200 z-50">
+                <div className="absolute top-full right-0 mt-2 bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 py-1.5 sm:py-2 min-w-[160px] sm:min-w-[180px] animate-in fade-in slide-in-from-top-2 duration-200 z-50">
                   <button
                     onClick={handleShareFacebook}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                    className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                   >
-                    <div className="w-8 h-8 rounded-full bg-[#1877F2] flex items-center justify-center">
-                      <Facebook className="w-4 h-4 text-white" />
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#1877F2] flex items-center justify-center flex-shrink-0">
+                      <Facebook className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                     </div>
                     <span>Facebook</span>
                   </button>
                   <button
                     onClick={handleShareWhatsApp}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                    className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                   >
-                    <div className="w-8 h-8 rounded-full bg-[#25D366] flex items-center justify-center">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#25D366] flex items-center justify-center flex-shrink-0">
                       <svg
-                        className="w-4 h-4 text-white"
+                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white"
                         fill="currentColor"
                         viewBox="0 0 24 24"
                       >
@@ -1437,13 +1437,13 @@ export default function ProfessionalDetailClient({
                   </button>
                   <button
                     onClick={handleCopyLink}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                    className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                   >
-                    <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center flex-shrink-0">
                       {copySuccess ? (
-                        <Check className="w-4 h-4 text-emerald-600" />
+                        <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
                       ) : (
-                        <Link2 className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
+                        <Link2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-600 dark:text-neutral-400" />
                       )}
                     </div>
                     <span>{t("common.copyLink")}</span>
@@ -1455,9 +1455,9 @@ export default function ProfessionalDetailClient({
         </div>
 
         {/* Profile card */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-6">
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl shadow-lg shadow-neutral-900/[0.03] dark:shadow-black/20 border border-neutral-200/60 dark:border-neutral-800 p-6 md:p-8">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-6">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 pb-4 sm:pb-6">
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl sm:rounded-3xl shadow-lg shadow-neutral-900/[0.03] dark:shadow-black/20 border border-neutral-200/60 dark:border-neutral-800 p-4 sm:p-6 md:p-8">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-4 sm:gap-6">
               {/* Avatar */}
               <div className="relative flex-shrink-0 self-start">
                 {avatarUrl ? (
@@ -1472,22 +1472,22 @@ export default function ProfessionalDetailClient({
                       alt={profile.name}
                       width={112}
                       height={112}
-                      className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover shadow-md ring-1 ring-neutral-200/50 dark:ring-neutral-700 group-hover:shadow-lg transition-shadow"
+                      className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl sm:rounded-2xl object-cover shadow-md ring-1 ring-neutral-200/50 dark:ring-neutral-700 group-hover:shadow-lg transition-shadow"
                     />
                   </button>
                 ) : (
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl flex items-center justify-center text-white text-4xl font-semibold bg-gradient-to-br from-[#C4735B] to-[#A85D4A] shadow-md">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl sm:rounded-2xl flex items-center justify-center text-white text-3xl sm:text-4xl font-semibold bg-gradient-to-br from-[#C4735B] to-[#A85D4A] shadow-md">
                     {profile.name.charAt(0)}
                   </div>
                 )}
                 {profile.verificationStatus === "verified" && (
-                  <div className="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full bg-emerald-500 border-[3px] border-white dark:border-neutral-900 flex items-center justify-center shadow-sm">
-                    <BadgeCheck className="w-4 h-4 text-white" />
+                  <div className="absolute -bottom-1 -right-1 sm:-bottom-1.5 sm:-right-1.5 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-emerald-500 border-2 sm:border-[3px] border-white dark:border-neutral-900 flex items-center justify-center shadow-sm">
+                    <BadgeCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                   </div>
                 )}
                 {profile.isAvailable && !profile.verificationStatus && (
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 border-[3px] border-white dark:border-neutral-900 flex items-center justify-center">
-                    <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                  <div className="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-500 border-2 sm:border-[3px] border-white dark:border-neutral-900 flex items-center justify-center">
+                    <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-white animate-pulse" />
                   </div>
                 )}
               </div>
@@ -1522,8 +1522,8 @@ export default function ProfessionalDetailClient({
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-start gap-2 mb-1">
-                    <h1 className="text-2xl sm:text-[28px] font-bold text-neutral-900 dark:text-white truncate tracking-tight">
+                  <div className="flex items-center justify-start gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
+                    <h1 className="text-xl sm:text-2xl md:text-[28px] font-bold text-neutral-900 dark:text-white truncate tracking-tight">
                       {profile.name}
                     </h1>
                     {isOwner && (
@@ -1532,10 +1532,10 @@ export default function ProfessionalDetailClient({
                           setEditedName(profile.name);
                           setIsEditingName(true);
                         }}
-                        className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                        className="p-1 sm:p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                         title={t("common.edit")}
                       >
-                        <Edit3 className="w-4 h-4 text-neutral-400" />
+                        <Edit3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-400" />
                       </button>
                     )}
                   </div>
@@ -1543,12 +1543,12 @@ export default function ProfessionalDetailClient({
                 {/* Title/Tagline */}
                 {isOwner ? (
                   isEditingTitle ? (
-                    <div className="flex items-center gap-2 mb-3">
+                    <div className="flex items-center gap-2 mb-2 sm:mb-3">
                       <Input
                         value={editedTitle}
                         onChange={(e) => setEditedTitle(e.target.value)}
                         placeholder={t("professional.addTagline")}
-                        className="text-sm max-w-[280px]"
+                        className="text-sm max-w-[200px] sm:max-w-[280px]"
                         autoFocus
                         onKeyDown={(e) => {
                           if (e.key === "Enter") handleSaveTitle();
@@ -1571,13 +1571,13 @@ export default function ProfessionalDetailClient({
                       </Button>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-start gap-2 mb-3">
+                    <div className="flex items-center justify-start gap-1.5 sm:gap-2 mb-2 sm:mb-3">
                       {profile.title && !isCategoryBasedTitle(profile.title) ? (
-                        <p className="text-base text-[#C4735B] font-medium truncate">
+                        <p className="text-sm sm:text-base text-[#C4735B] font-medium truncate">
                           {profile.title}
                         </p>
                       ) : (
-                        <p className="text-sm text-neutral-400 dark:text-neutral-500 italic">
+                        <p className="text-xs sm:text-sm text-neutral-400 dark:text-neutral-500 italic">
                           {t("professional.addTagline")}
                         </p>
                       )}
@@ -1591,33 +1591,33 @@ export default function ProfessionalDetailClient({
                           );
                           setIsEditingTitle(true);
                         }}
-                        className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                        className="p-1 sm:p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                         title={t("common.edit")}
                       >
-                        <Edit3 className="w-3.5 h-3.5 text-neutral-400" />
+                        <Edit3 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-400" />
                       </button>
                     </div>
                   )
                 ) : (
                   profile.title &&
                   !isCategoryBasedTitle(profile.title) && (
-                    <p className="text-base text-[#C4735B] font-medium mb-3 truncate">
+                    <p className="text-sm sm:text-base text-[#C4735B] font-medium mb-2 sm:mb-3 truncate">
                       {profile.title}
                     </p>
                   )
                 )}
 
                 {/* Stats - Modern pill badges */}
-                <div className="flex items-center justify-start flex-wrap gap-2 text-xs sm:text-sm">
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700">
-                    <Eye className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
+                <div className="flex items-center justify-start flex-wrap gap-1.5 sm:gap-2 text-[10px] sm:text-xs md:text-sm">
+                  <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700">
+                    <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-500 dark:text-neutral-400" />
                     <span className="font-semibold text-neutral-700 dark:text-neutral-200">
                       {profile.profileViewCount ?? 0}
                     </span>
                   </div>
                   {profile.avgRating > 0 && (
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-800/40">
-                      <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                    <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-800/40">
+                      <Star className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-amber-400 text-amber-400" />
                       <span className="font-semibold text-amber-700 dark:text-amber-300">
                         {profile.avgRating.toFixed(1)}
                       </span>
@@ -1627,9 +1627,9 @@ export default function ProfessionalDetailClient({
                     </div>
                   )}
                   {profile.serviceAreas.length > 0 && (
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700">
-                      <MapPin className="w-3.5 h-3.5 text-[#C4735B]" />
-                      <span className="text-neutral-700 dark:text-neutral-200">
+                    <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700">
+                      <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C4735B]" />
+                      <span className="text-neutral-700 dark:text-neutral-200 truncate max-w-[80px] sm:max-w-none">
                         {translateCity(profile.serviceAreas[0])}
                       </span>
                     </div>
@@ -1657,8 +1657,8 @@ export default function ProfessionalDetailClient({
                     }
 
                     return maxYears > 0 ? (
-                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#C4735B]/10 dark:bg-[#C4735B]/20 border border-[#C4735B]/20 dark:border-[#C4735B]/30">
-                        <Briefcase className="w-3.5 h-3.5 text-[#C4735B]" />
+                      <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-[#C4735B]/10 dark:bg-[#C4735B]/20 border border-[#C4735B]/20 dark:border-[#C4735B]/30">
+                        <Briefcase className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C4735B]" />
                         <span className="font-medium text-[#C4735B] dark:text-[#D4937B]">
                           {maxYears}+ {t("professional.yrs")}
                         </span>
@@ -1669,20 +1669,20 @@ export default function ProfessionalDetailClient({
 
                 {/* Categories - Main expertise areas */}
                 {profile.categories?.length > 0 && (
-                  <div className="flex flex-wrap justify-start gap-1.5 mt-3">
+                  <div className="flex flex-wrap justify-start gap-1 sm:gap-1.5 mt-2 sm:mt-3">
                     {(profile.categories.length > 2
                       ? profile.categories.slice(0, 2)
                       : profile.categories
                     ).map((cat, idx) => (
                       <span
                         key={`cat-${idx}`}
-                        className="px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-[#C4735B] to-[#D4937B] text-white shadow-sm"
+                        className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-gradient-to-r from-[#C4735B] to-[#D4937B] text-white shadow-sm"
                       >
                         {getCategoryLabel(cat)}
                       </span>
                     ))}
                     {profile.categories.length > 2 && (
-                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 border border-neutral-200/60 dark:border-neutral-700">
+                      <span className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 border border-neutral-200/60 dark:border-neutral-700">
                         +{profile.categories.length - 2}
                       </span>
                     )}
@@ -1692,28 +1692,28 @@ export default function ProfessionalDetailClient({
                 {/* Services with Experience - mobile compact */}
                 {((profile.selectedServices?.length ?? 0) > 0 ||
                   (profile.subcategories?.length ?? 0) > 0) && (
-                  <div className="sm:hidden mt-3">
-                    <p className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold mb-2">
+                  <div className="sm:hidden mt-2">
+                    <p className="text-[9px] uppercase tracking-wider text-neutral-400 font-semibold mb-1.5">
                       {t("professional.servicesAndExperience")}
                     </p>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1.5">
                       {profile.selectedServices && profile.selectedServices.length > 0 ? (
                         <>
                           {profile.selectedServices.slice(0, 3).map((service, idx) => (
                             <span
                               key={`m-svc-${idx}`}
-                              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs font-medium text-neutral-800 dark:text-neutral-200 border border-neutral-200/60 dark:border-neutral-700"
+                              className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-[10px] font-medium text-neutral-800 dark:text-neutral-200 border border-neutral-200/60 dark:border-neutral-700"
                             >
-                              <span className="truncate max-w-[160px]">
+                              <span className="truncate max-w-[120px]">
                                 {({ ka: service.nameKa, en: service.name, ru: service.name }[locale] ?? service.name)}
                               </span>
-                              <span className="text-[10px] font-semibold text-[#C4735B] bg-[#C4735B]/10 px-1.5 py-0.5 rounded">
+                              <span className="text-[9px] font-semibold text-[#C4735B] bg-[#C4735B]/10 px-1 py-0.5 rounded">
                                 {getExperienceLabel(service.experience)}
                               </span>
                             </span>
                           ))}
                           {profile.selectedServices.length > 3 && (
-                            <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs font-medium text-neutral-600 dark:text-neutral-300 border border-neutral-200/60 dark:border-neutral-700">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-[10px] font-medium text-neutral-600 dark:text-neutral-300 border border-neutral-200/60 dark:border-neutral-700">
                               +{profile.selectedServices.length - 3}{" "}
                               {t("common.more")}
                             </span>
@@ -1726,13 +1726,13 @@ export default function ProfessionalDetailClient({
                             return (
                               <span
                                 key={`m-sub-${idx}`}
-                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs font-medium text-neutral-800 dark:text-neutral-200 border border-neutral-200/60 dark:border-neutral-700"
+                                className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-[10px] font-medium text-neutral-800 dark:text-neutral-200 border border-neutral-200/60 dark:border-neutral-700"
                               >
-                                <span className="truncate max-w-[160px]">
+                                <span className="truncate max-w-[120px]">
                                   {getSubcategoryLabel(sub)}
                                 </span>
                                 {experience && (
-                                  <span className="text-[10px] font-semibold text-[#C4735B] bg-[#C4735B]/10 px-1.5 py-0.5 rounded">
+                                  <span className="text-[9px] font-semibold text-[#C4735B] bg-[#C4735B]/10 px-1 py-0.5 rounded">
                                     {getExperienceLabel(experience)}
                                   </span>
                                 )}
@@ -1740,7 +1740,7 @@ export default function ProfessionalDetailClient({
                             );
                           })}
                           {(profile.subcategories?.length || 0) > 3 && (
-                            <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs font-medium text-neutral-600 dark:text-neutral-300 border border-neutral-200/60 dark:border-neutral-700">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-[10px] font-medium text-neutral-600 dark:text-neutral-300 border border-neutral-200/60 dark:border-neutral-700">
                               +{(profile.subcategories?.length || 0) - 3}{" "}
                               {t("common.more")}
                             </span>
@@ -1754,8 +1754,8 @@ export default function ProfessionalDetailClient({
                 {/* Services with Experience - Detailed skills (desktop) */}
                 {((profile.selectedServices?.length ?? 0) > 0 ||
                   (profile.subcategories?.length ?? 0) > 0) && (
-                  <div className="hidden sm:block mt-3 p-3 rounded-xl bg-neutral-50/80 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
-                    <p className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold mb-2">
+                  <div className="hidden sm:block mt-3 p-2.5 sm:p-3 rounded-lg sm:rounded-xl bg-neutral-50/80 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
+                    <p className="text-[9px] sm:text-[10px] uppercase tracking-wider text-neutral-400 font-semibold mb-1.5 sm:mb-2">
                       {t("professional.servicesAndExperience")}
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -1820,17 +1820,17 @@ export default function ProfessionalDetailClient({
               </div>
 
               {/* Price & CTA - Right side */}
-              <div className="flex flex-col gap-3 flex-shrink-0 w-full sm:w-auto sm:items-end">
+              <div className="flex flex-col gap-2 sm:gap-3 flex-shrink-0 w-full sm:w-auto sm:items-end">
                 {pricingMeta && (
                   <div className="text-left sm:text-right">
                     {!isOwner || !isEditingPricing ? (
                       <div className="flex items-start gap-2 justify-between sm:justify-end">
                         <div className="flex flex-col items-start sm:items-end">
-                          <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400 dark:text-neutral-500 mb-0.5">
+                          <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold text-neutral-400 dark:text-neutral-500 mb-0.5">
                             {pricingMeta.typeLabel}
                           </span>
                           {pricingMeta.valueLabel && (
-                            <span className="text-2xl font-bold text-[#C4735B] dark:text-[#D4937B]">
+                            <span className="text-xl sm:text-2xl font-bold text-[#C4735B] dark:text-[#D4937B]">
                               {pricingMeta.valueLabel}
                             </span>
                           )}
@@ -1838,10 +1838,10 @@ export default function ProfessionalDetailClient({
                         {isOwner && (
                           <button
                             onClick={openPricingEdit}
-                            className="mt-1 w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                            className="mt-1 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
                             title={t("common.edit")}
                           >
-                            <Edit3 className="w-4 h-4" />
+                            <Edit3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                           </button>
                         )}
                       </div>
@@ -1978,7 +1978,7 @@ export default function ProfessionalDetailClient({
       </section>
 
       {/* ========== MOBILE TAB NAVIGATION ========== */}
-      <div className="lg:hidden sticky top-[60px] z-30 bg-[var(--color-bg-app)]/95 dark:bg-[#0A0A0A]/95 backdrop-blur-lg border-b border-neutral-200/50 dark:border-neutral-800/50 px-4 py-3">
+      <div className="lg:hidden sticky top-[56px] sm:top-[60px] z-30 bg-[var(--color-bg-app)]/95 dark:bg-[#0A0A0A]/95 backdrop-blur-lg border-b border-neutral-200/50 dark:border-neutral-800/50 px-3 sm:px-4 py-2 sm:py-3">
         <ProfileSidebarMobile
           activeTab={activeTab}
           onTabChange={setActiveTab}
@@ -1989,8 +1989,8 @@ export default function ProfessionalDetailClient({
       </div>
 
       {/* ========== MAIN CONTENT WITH SIDEBAR ========== */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 pb-28 lg:pb-12">
-        <div className="flex gap-6">
+      <main className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 pb-24 sm:pb-28 lg:pb-12">
+        <div className="flex gap-4 sm:gap-6">
           {/* Desktop Sidebar */}
           <aside className="hidden lg:block w-56 flex-shrink-0">
             <div className="sticky top-[80px] bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/60 dark:border-neutral-800 p-3 shadow-lg shadow-neutral-900/[0.03] dark:shadow-black/20">
@@ -2005,7 +2005,7 @@ export default function ProfessionalDetailClient({
           </aside>
 
           {/* Content Area */}
-          <div className="flex-1 min-w-0 space-y-8">
+          <div className="flex-1 min-w-0 space-y-6 sm:space-y-8">
             {/* ABOUT TAB */}
             {activeTab === "about" && (
               <div className="min-h-[300px]">
@@ -2124,7 +2124,7 @@ export default function ProfessionalDetailClient({
 
       {/* ========== FLOATING BUTTON - MOBILE ========== */}
       <div
-        className={`lg:hidden fixed bottom-6 left-4 right-4 z-40 transition-all duration-300 ${
+        className={`lg:hidden fixed bottom-4 sm:bottom-6 left-3 right-3 sm:left-4 sm:right-4 z-40 transition-all duration-300 ${
           showFloatingButton
             ? "translate-y-0 opacity-100"
             : "translate-y-20 opacity-0 pointer-events-none"
@@ -2134,31 +2134,31 @@ export default function ProfessionalDetailClient({
         {myOpenJobsLoaded && myMatchingOpenJobs.length > 0 && (
           <button
             onClick={() => setShowInviteToJobModal(true)}
-            className="w-full flex items-center justify-center gap-2 py-3.5 mb-2 rounded-2xl text-neutral-700 dark:text-neutral-200 font-semibold text-sm bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-lg shadow-neutral-900/10 dark:shadow-black/30"
+            className="w-full flex items-center justify-center gap-2 py-3 sm:py-3.5 mb-2 rounded-xl sm:rounded-2xl text-neutral-700 dark:text-neutral-200 font-semibold text-sm bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-lg shadow-neutral-900/10 dark:shadow-black/30"
           >
-            <Briefcase className="w-5 h-5" />
+            <Briefcase className="w-4 h-4 sm:w-5 sm:h-5" />
             {t("professional.inviteToJob")}
           </button>
         )}
         {phoneRevealed && profile.phone ? (
           <a
             href={`tel:${profile.phone.replace(/\s/g, "")}`}
-            className="block w-full py-4 rounded-2xl text-white font-semibold text-base bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-xl shadow-emerald-500/30 text-center"
+            className="block w-full py-3.5 sm:py-4 rounded-xl sm:rounded-2xl text-white font-semibold text-sm sm:text-base bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-xl shadow-emerald-500/30 text-center"
           >
             <span className="flex items-center justify-center gap-2">
-              <Phone className="w-5 h-5" />
+              <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
               {formatGeorgianPhoneDisplay(profile.phone)}
             </span>
           </a>
         ) : (
           <button
             onClick={handleContact}
-            className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-white font-semibold text-base bg-gradient-to-r from-[#C4735B] to-[#A85D4A] shadow-xl shadow-[#C4735B]/30"
+            className="w-full flex items-center justify-center gap-2 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl text-white font-semibold text-sm sm:text-base bg-gradient-to-r from-[#C4735B] to-[#A85D4A] shadow-xl shadow-[#C4735B]/30"
           >
             {isBasicTier ? (
-              <Phone className="w-5 h-5" />
+              <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
             ) : (
-              <MessageSquare className="w-5 h-5" />
+              <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
             )}
             {isBasicTier
               ? t("professional.showPhone")
@@ -2196,30 +2196,30 @@ export default function ProfessionalDetailClient({
               onClick={() => setSelectedProject(null)}
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-4">
-                <h3 className="text-white font-semibold text-lg truncate max-w-[70%]">
+              <div className="flex items-center justify-between p-3 sm:p-4">
+                <h3 className="text-white font-semibold text-sm sm:text-lg truncate max-w-[70%]">
                   {selectedProject.title}
                 </h3>
                 <Button
                   variant="ghost"
-                  size="icon"
+                  size="icon-sm"
                   onClick={() => setSelectedProject(null)}
                   className="rounded-full bg-white/10 text-white hover:bg-white/20 hover:text-white"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
               </div>
 
               {/* Main Media */}
               <div
-                className="flex-1 flex items-center justify-center relative px-4"
+                className="flex-1 flex items-center justify-center relative px-2 sm:px-4"
                 onClick={(e) => e.stopPropagation()}
               >
                 {totalMedia > 1 && (
                   <>
                     <Button
                       variant="ghost"
-                      size="icon-lg"
+                      size="icon"
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedProject((prev) =>
@@ -2233,13 +2233,13 @@ export default function ProfessionalDetailClient({
                             : null
                         );
                       }}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:text-white z-10"
+                      className="absolute left-1 sm:left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:text-white z-10 w-9 h-9 sm:w-12 sm:h-12"
                     >
-                      <ChevronLeft className="w-6 h-6" />
+                      <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
                     </Button>
                     <Button
                       variant="ghost"
-                      size="icon-lg"
+                      size="icon"
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedProject((prev) =>
@@ -2252,9 +2252,9 @@ export default function ProfessionalDetailClient({
                             : null
                         );
                       }}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:text-white z-10"
+                      className="absolute right-1 sm:right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:text-white z-10 w-9 h-9 sm:w-12 sm:h-12"
                     >
-                      <ChevronRight className="w-6 h-6" />
+                      <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
                     </Button>
                   </>
                 )}
@@ -2263,7 +2263,7 @@ export default function ProfessionalDetailClient({
                     src={storage.getFileUrl(currentItem)}
                     controls
                     autoPlay
-                    className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                    className="max-w-full max-h-[60vh] sm:max-h-[70vh] object-contain rounded-lg"
                   />
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -2272,15 +2272,15 @@ export default function ProfessionalDetailClient({
                     alt=""
                     loading="eager"
                     fetchPriority="high"
-                    className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                    className="max-w-full max-h-[60vh] sm:max-h-[70vh] object-contain rounded-lg"
                   />
                 )}
               </div>
 
               {/* Thumbnail Strip */}
               {totalMedia > 1 && (
-                <div className="p-4" onClick={(e) => e.stopPropagation()}>
-                  <div className="flex justify-start gap-2 overflow-x-auto pb-2">
+                <div className="p-2 sm:p-4" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex justify-start gap-1.5 sm:gap-2 overflow-x-auto pb-2">
                     {/* Image thumbnails */}
                     {selectedProject.images.map((img, idx) => (
                       <button
@@ -2290,9 +2290,9 @@ export default function ProfessionalDetailClient({
                             prev ? { ...prev, currentIndex: idx } : null
                           )
                         }
-                        className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 transition-all ${
+                        className={`relative w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-md sm:rounded-lg overflow-hidden flex-shrink-0 transition-all ${
                           idx === selectedProject.currentIndex
-                            ? "ring-2 ring-[#C4735B] ring-offset-2 ring-offset-black"
+                            ? "ring-2 ring-[#C4735B] ring-offset-1 sm:ring-offset-2 ring-offset-black"
                             : "opacity-60 hover:opacity-100"
                         }`}
                       >
@@ -2316,9 +2316,9 @@ export default function ProfessionalDetailClient({
                               prev ? { ...prev, currentIndex: mediaIdx } : null
                             )
                           }
-                          className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 transition-all ${
+                          className={`relative w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-md sm:rounded-lg overflow-hidden flex-shrink-0 transition-all ${
                             mediaIdx === selectedProject.currentIndex
-                              ? "ring-2 ring-indigo-500 ring-offset-2 ring-offset-black"
+                              ? "ring-2 ring-indigo-500 ring-offset-1 sm:ring-offset-2 ring-offset-black"
                               : "opacity-60 hover:opacity-100"
                           }`}
                         >
@@ -2342,8 +2342,8 @@ export default function ProfessionalDetailClient({
                       );
                     })}
                   </div>
-                  <div className="text-center mt-2">
-                    <span className="text-white/60 text-sm">
+                  <div className="text-center mt-1.5 sm:mt-2">
+                    <span className="text-white/60 text-xs sm:text-sm">
                       {selectedProject.currentIndex + 1} / {totalMedia}
                     </span>
                   </div>
@@ -2356,7 +2356,7 @@ export default function ProfessionalDetailClient({
       {/* ========== AVATAR ZOOM (FULLSCREEN) ========== */}
       {showAvatarZoom && avatarUrl && (
         <div
-          className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4"
+          className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-2 sm:p-4"
           onClick={() => setShowAvatarZoom(false)}
           role="dialog"
           aria-modal="true"
@@ -2367,14 +2367,14 @@ export default function ProfessionalDetailClient({
               e.stopPropagation();
               setShowAvatarZoom(false);
             }}
-            className="absolute top-4 right-4 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center"
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center"
             aria-label={t("common.close") || "Close"}
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           <div
-            className="relative w-full max-w-4xl h-[75vh] sm:h-[80vh]"
+            className="relative w-full max-w-4xl h-[70vh] sm:h-[75vh] md:h-[80vh]"
             onClick={(e) => e.stopPropagation()}
           >
             <Image
@@ -2829,35 +2829,35 @@ function ProjectFormModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
-      <div className="max-h-[80vh] overflow-hidden flex flex-col">
+      <div className="max-h-[90vh] sm:max-h-[80vh] overflow-hidden flex flex-col rounded-t-2xl sm:rounded-2xl">
         {/* Premium Header with Gradient */}
-        <div className="relative px-6 py-5 bg-gradient-to-br from-[#C4735B] via-[#B8654D] to-[#A65D47]">
+        <div className="relative px-4 sm:px-6 py-4 sm:py-5 bg-gradient-to-br from-[#C4735B] via-[#B8654D] to-[#A65D47]">
           <div className="absolute inset-0 overflow-hidden">
             <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10 blur-xl" />
             <div className="absolute bottom-0 left-0 w-32 h-16 rounded-full bg-black/5 blur-2xl" />
           </div>
           <div className="relative flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-white">{modalTitle}</h2>
-              <p className="text-white/70 text-sm mt-0.5">
+              <h2 className="text-base sm:text-xl font-bold text-white">{modalTitle}</h2>
+              <p className="text-white/70 text-xs sm:text-sm mt-0.5">
                 {t("professional.showcaseYourBestWork")}
               </p>
             </div>
             <button
               onClick={onClose}
-              className="w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto space-y-5 px-6 py-6">
+        <div className="flex-1 overflow-y-auto space-y-4 sm:space-y-5 px-4 sm:px-6 py-4 sm:py-6 pb-6 sm:pb-6">
           {/* Title */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-2">
-              <span className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center text-[#C4735B] text-xs">
+            <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-1.5 sm:mb-2">
+              <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center text-[#C4735B] text-[10px] sm:text-xs">
                 1
               </span>
               {t("common.title")}
@@ -2872,22 +2872,22 @@ function ProjectFormModal({
 
           {/* Location */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-2">
-              <MapPin className="w-4 h-4 text-[#C4735B]" />
+            <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-1.5 sm:mb-2">
+              <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C4735B]" />
               {t("common.location")}
             </label>
             <AddressPicker
               value={location}
               onChange={(address) => setLocation(address)}
               locale={locale}
-              className="[&_.map-container]:h-40"
+              className="[&_.map-container]:h-32 sm:[&_.map-container]:h-40"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-2">
-              <span className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center text-[#C4735B] text-xs">
+            <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-1.5 sm:mb-2">
+              <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center text-[#C4735B] text-[10px] sm:text-xs">
                 2
               </span>
               {t("common.description")}
@@ -2897,29 +2897,29 @@ function ProjectFormModal({
               onChange={(e) => setDescription(e.target.value)}
               placeholder={t("professional.whatDidYouDoMaterials")}
               rows={2}
-              className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent focus:bg-white dark:focus:bg-neutral-800 resize-none transition-all"
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 text-sm sm:text-base text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent focus:bg-white dark:focus:bg-neutral-800 resize-none transition-all"
             />
           </div>
 
           {/* Media Section */}
-          <div className="bg-neutral-50 dark:bg-neutral-800/30 rounded-2xl p-4 border border-neutral-100 dark:border-neutral-800">
-            <div className="flex items-center justify-between mb-4">
-              <label className="flex items-center gap-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-                <span className="w-5 h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center text-[#C4735B] text-xs">
+          <div className="bg-neutral-50 dark:bg-neutral-800/30 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+                <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center text-[#C4735B] text-[10px] sm:text-xs">
                   3
                 </span>
                 {t("professional.mediaFiles")}
                 <span className="text-red-400">*</span>
               </label>
               {totalMedia > 0 && (
-                <span className="px-2.5 py-1 bg-[#C4735B] text-white text-xs font-medium rounded-full">
+                <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 bg-[#C4735B] text-white text-[10px] sm:text-xs font-medium rounded-full">
                   {totalMedia} {t("common.files")}
                 </span>
               )}
             </div>
 
             {/* Media Type Tabs - Premium Design */}
-            <div className="grid grid-cols-3 gap-2 mb-4">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2 mb-3 sm:mb-4">
               {[
                 {
                   key: "images" as const,
@@ -2946,23 +2946,23 @@ function ProjectFormModal({
                   <button
                     key={tab.key}
                     onClick={() => setActiveMediaTab(tab.key)}
-                    className={`relative flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${
+                    className={`relative flex flex-col items-center gap-1 sm:gap-1.5 p-2 sm:p-3 rounded-lg sm:rounded-xl border-2 transition-all ${
                       isActive
                         ? "border-[#C4735B] bg-[#C4735B]/5 shadow-sm"
                         : "border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-600"
                     }`}
                   >
                     <Icon
-                      className={`w-5 h-5 ${isActive ? "text-[#C4735B]" : "text-neutral-400"}`}
+                      className={`w-4 h-4 sm:w-5 sm:h-5 ${isActive ? "text-[#C4735B]" : "text-neutral-400"}`}
                     />
                     <span
-                      className={`text-xs font-medium ${isActive ? "text-[#C4735B]" : "text-neutral-500"}`}
+                      className={`text-[10px] sm:text-xs font-medium ${isActive ? "text-[#C4735B]" : "text-neutral-500"}`}
                     >
                       {tab.label}
                     </span>
                     {tab.count > 0 && (
                       <span
-                        className={`absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center ${
+                        className={`absolute -top-1 -right-1 sm:-top-1.5 sm:-right-1.5 w-4 h-4 sm:w-5 sm:h-5 rounded-full text-[9px] sm:text-[10px] font-bold flex items-center justify-center ${
                           isActive
                             ? "bg-[#C4735B] text-white"
                             : "bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300"
@@ -2978,25 +2978,25 @@ function ProjectFormModal({
 
             {/* Images Tab */}
             {activeMediaTab === "images" && (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {images.length === 0 ? (
                   // Empty State - Large Upload Area
                   <button
                     onClick={() => imageInputRef.current?.click()}
                     disabled={isUploading}
-                    className="w-full py-10 rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800/50 flex flex-col items-center justify-center text-neutral-400 hover:border-[#C4735B] hover:text-[#C4735B] hover:bg-[#C4735B]/5 transition-all group"
+                    className="w-full py-8 sm:py-10 rounded-lg sm:rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800/50 flex flex-col items-center justify-center text-neutral-400 hover:border-[#C4735B] hover:text-[#C4735B] hover:bg-[#C4735B]/5 transition-all group"
                   >
                     {isUploading && uploadingType === "images" ? (
                       <LoadingSpinner size="lg" color="#C4735B" />
                     ) : (
                       <>
-                        <div className="w-14 h-14 rounded-2xl bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center mb-3 group-hover:bg-[#C4735B]/10 group-hover:scale-110 transition-all">
-                          <ImageIcon className="w-7 h-7" />
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center mb-2 sm:mb-3 group-hover:bg-[#C4735B]/10 group-hover:scale-110 transition-all">
+                          <ImageIcon className="w-6 h-6 sm:w-7 sm:h-7" />
                         </div>
-                        <span className="text-sm font-medium">
+                        <span className="text-xs sm:text-sm font-medium">
                           {t("professional.choosePhotos")}
                         </span>
-                        <span className="text-xs mt-1 text-neutral-400">
+                        <span className="text-[10px] sm:text-xs mt-1 text-neutral-400">
                           {t("professional.orDragAndDrop")}
                         </span>
                       </>
@@ -3004,7 +3004,7 @@ function ProjectFormModal({
                   </button>
                 ) : (
                   // Image Grid with Add Button
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 sm:gap-2">
                     {images.map((img, idx) => (
                       <div
                         key={idx}
@@ -3059,31 +3059,31 @@ function ProjectFormModal({
 
             {/* Videos Tab */}
             {activeMediaTab === "videos" && (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {videos.length === 0 ? (
                   <button
                     onClick={() => videoInputRef.current?.click()}
                     disabled={isUploading}
-                    className="w-full py-10 rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800/50 flex flex-col items-center justify-center text-neutral-400 hover:border-[#C4735B] hover:text-[#C4735B] hover:bg-[#C4735B]/5 transition-all group"
+                    className="w-full py-8 sm:py-10 rounded-lg sm:rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800/50 flex flex-col items-center justify-center text-neutral-400 hover:border-[#C4735B] hover:text-[#C4735B] hover:bg-[#C4735B]/5 transition-all group"
                   >
                     {isUploading && uploadingType === "videos" ? (
                       <LoadingSpinner size="lg" color="#C4735B" />
                     ) : (
                       <>
-                        <div className="w-14 h-14 rounded-2xl bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center mb-3 group-hover:bg-[#C4735B]/10 group-hover:scale-110 transition-all">
-                          <Video className="w-7 h-7" />
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center mb-2 sm:mb-3 group-hover:bg-[#C4735B]/10 group-hover:scale-110 transition-all">
+                          <Video className="w-6 h-6 sm:w-7 sm:h-7" />
                         </div>
-                        <span className="text-sm font-medium">
+                        <span className="text-xs sm:text-sm font-medium">
                           {t("professional.uploadVideo")}
                         </span>
-                        <span className="text-xs mt-1 text-neutral-400">
+                        <span className="text-[10px] sm:text-xs mt-1 text-neutral-400">
                           MP4, MOV, WebM
                         </span>
                       </>
                     )}
                   </button>
                 ) : (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
                     {videos.map((vid, idx) => (
                       <div
                         key={idx}
@@ -3294,21 +3294,21 @@ function ProjectFormModal({
         </div>
 
         {/* Footer Actions - Fixed at Bottom */}
-        <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
-          <p className="text-xs text-neutral-400 hidden sm:block">
+        <div className="flex items-center justify-between gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
+          <p className="text-[10px] sm:text-xs text-neutral-400 hidden sm:block">
             {totalMedia === 0
               ? t("professional.addAtLeastOneFile")
               : `${totalMedia} ${t("professional.filesReady")}`}
           </p>
-          <div className="flex gap-2 ml-auto">
-            <Button variant="ghost" onClick={onClose} disabled={isLoading}>
+          <div className="flex gap-2 w-full sm:w-auto sm:ml-auto">
+            <Button variant="ghost" onClick={onClose} disabled={isLoading} className="flex-1 sm:flex-none text-sm">
               {t("common.cancel")}
             </Button>
             <Button
               onClick={handleSubmit}
               loading={isLoading}
               disabled={totalMedia === 0 || !title.trim()}
-              className="min-w-[120px]"
+              className="flex-1 sm:flex-none sm:min-w-[120px] text-sm"
             >
               {initialData ? t("common.update") : t("professional.addProject")}
             </Button>

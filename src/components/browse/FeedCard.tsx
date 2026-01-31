@@ -112,33 +112,34 @@ const FeedCard = React.memo(function FeedCard({
       <div
         className={`relative transition-all duration-500 ${isPremium ? "game-card-premium" : ""}`}
       >
-        {/* Premium border glow effect */}
-        <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-[#C4735B]/0 via-[#C4735B]/0 to-[#C4735B]/0 group-hover:from-[#C4735B]/30 group-hover:via-[#D4937B]/15 group-hover:to-[#C4735B]/30 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-[1px]" />
+        {/* Premium border glow effect - hidden on mobile for performance */}
+        <div className="hidden sm:block absolute -inset-[1px] rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#C4735B]/0 via-[#C4735B]/0 to-[#C4735B]/0 group-hover:from-[#C4735B]/30 group-hover:via-[#D4937B]/15 group-hover:to-[#C4735B]/30 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-[1px]" />
 
         {/* Main Card */}
-        <div className="relative bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80 shadow-[0_1px_0_rgba(0,0,0,0.03),0_8px_24px_-18px_rgba(0,0,0,0.35)] group-hover:border-[#C4735B]/25 transition-all duration-500 group-hover:shadow-[0_20px_50px_-12px_rgba(196,115,91,0.15)] group-hover:-translate-y-0.5">
-          {/* Shine effect overlay */}
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-30">
+        <div className="relative bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80 shadow-sm sm:shadow-[0_1px_0_rgba(0,0,0,0.03),0_8px_24px_-18px_rgba(0,0,0,0.35)] group-hover:border-[#C4735B]/25 transition-all duration-500 sm:group-hover:shadow-[0_20px_50px_-12px_rgba(196,115,91,0.15)] sm:group-hover:-translate-y-0.5">
+          {/* Shine effect overlay - desktop only */}
+          <div className="hidden sm:block absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-30">
             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
           </div>
 
-          {/* Decorative corner accent */}
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[#C4735B]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none" />
+          {/* Decorative corner accent - desktop only */}
+          <div className="hidden sm:block absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[#C4735B]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none" />
 
           {/* Image Section */}
           <div className="relative">
             {/* Source Badge - Homico Verified or External */}
             {item.isVerified !== undefined && (
-              <div className="absolute top-3 left-3 z-20">
+              <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-20">
                 {item.isVerified ? (
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/90 backdrop-blur-md text-white text-[11px] font-semibold shadow-lg border border-white/20">
-                    <BadgeCheck className="w-3.5 h-3.5" />
-                    {t("browse.viaHomico")}
+                  <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-emerald-500/90 backdrop-blur-md text-white text-[9px] sm:text-[11px] font-semibold shadow-lg border border-white/20">
+                    <BadgeCheck className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" />
+                    <span className="hidden sm:inline">{t("browse.viaHomico")}</span>
+                    <span className="sm:hidden">✓</span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-md text-white text-[11px] font-medium shadow-lg border border-white/10">
-                    <Globe className="w-3.5 h-3.5" />
-                    {t("browse.external")}
+                  <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-black/50 backdrop-blur-md text-white text-[9px] sm:text-[11px] font-medium shadow-lg border border-white/10">
+                    <Globe className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" />
+                    <span className="hidden sm:inline">{t("browse.external")}</span>
                   </div>
                 )}
               </div>
@@ -285,37 +286,37 @@ const FeedCard = React.memo(function FeedCard({
                 {/* Gradient overlay for text readability */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-                {/* Image navigation arrows - enhanced */}
+                {/* Image navigation arrows - hidden on mobile, show on hover for desktop */}
                 {hasMultipleImages && (
                   <>
                     <button
                       onClick={prevImage}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg hover:bg-white hover:scale-110"
+                      className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/95 backdrop-blur-sm items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg hover:bg-white hover:scale-110"
                     >
-                      <ChevronLeft className="w-5 h-5 text-neutral-700" />
+                      <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-700" />
                     </button>
                     <button
                       onClick={nextImage}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg hover:bg-white hover:scale-110"
+                      className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/95 backdrop-blur-sm items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg hover:bg-white hover:scale-110"
                     >
-                      <ChevronRight className="w-5 h-5 text-neutral-700" />
+                      <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-700" />
                     </button>
 
-                    {/* Image dots indicator - enhanced */}
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 px-2 py-1 rounded-full bg-black/30 backdrop-blur-sm">
-                      {allMedia.slice(0, 5).map((_, idx) => (
+                    {/* Image dots indicator */}
+                    <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 flex gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-black/30 backdrop-blur-sm">
+                      {allMedia.slice(0, 4).map((_, idx) => (
                         <div
                           key={idx}
-                          className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                          className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full transition-all duration-300 ${
                             idx === currentImageIndex
-                              ? "bg-white w-3"
+                              ? "bg-white w-2 sm:w-3"
                               : "bg-white/50"
                           }`}
                         />
                       ))}
-                      {allMedia.length > 5 && (
-                        <span className="text-[10px] text-white/70 ml-0.5">
-                          +{allMedia.length - 5}
+                      {allMedia.length > 4 && (
+                        <span className="text-[8px] sm:text-[10px] text-white/70 ml-0.5">
+                          +{allMedia.length - 4}
                         </span>
                       )}
                     </div>
@@ -326,78 +327,77 @@ const FeedCard = React.memo(function FeedCard({
           </div>
 
           {/* Content Section */}
-          <div className="p-4">
-            {/* Service Type (subtitle; clearer than a second badge) */}
-            <div className="flex items-center gap-1.5 mb-1 text-[12px] font-semibold text-[#C4735B]">
-              <Briefcase className="w-3.5 h-3.5" />
+          <div className="p-2.5 sm:p-4">
+            {/* Service Type (subtitle) */}
+            <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1 text-[10px] sm:text-[12px] font-semibold text-[#C4735B]">
+              <Briefcase className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               <span className="truncate">{getCategoryLabel()}</span>
             </div>
 
-            {/* Title Row with animated underline */}
-            <div className="flex items-start justify-between gap-3 mb-2">
+            {/* Title Row */}
+            <div className="flex items-start justify-between gap-2 sm:gap-3 mb-1.5 sm:mb-2">
               <div className="relative min-w-0 flex-1">
-                <h3 className="font-semibold text-base text-neutral-900 dark:text-white leading-tight line-clamp-2 group-hover:text-[#C4735B] transition-colors duration-300">
+                <h3 className="font-semibold text-[13px] sm:text-base text-neutral-900 dark:text-white leading-tight line-clamp-2 group-hover:text-[#C4735B] transition-colors duration-300">
                   {item.title}
                 </h3>
-                {/* Animated underline */}
-                <span className="absolute -bottom-0.5 left-0 w-0 h-[2px] bg-gradient-to-r from-[#C4735B] via-[#D4937B] to-[#C4735B] group-hover:w-full transition-all duration-500 ease-out rounded-full" />
+                {/* Animated underline - desktop only */}
+                <span className="hidden sm:block absolute -bottom-0.5 left-0 w-0 h-[2px] bg-gradient-to-r from-[#C4735B] via-[#D4937B] to-[#C4735B] group-hover:w-full transition-all duration-500 ease-out rounded-full" />
               </div>
 
               {/* Rating or New badge */}
               {item.pro.rating && item.pro.rating > 0 ? (
                 <StarRating
                   rating={item.pro.rating}
-                  size="sm"
+                  size="xs"
                   starColor={ACCENT_COLOR}
                   className="flex-shrink-0 [&>span]:!text-[#C4735B]"
                 />
               ) : isNew ? (
                 <StatusPill
                   variant="new"
-                  size="sm"
+                  size="xs"
                   locale={locale as "en" | "ka" | "ru"}
                 />
               ) : null}
             </div>
 
-            {/* Description or Bio */}
+            {/* Description or Bio - hidden on mobile, max 2 lines on desktop */}
             {(item.description || item.pro.bio) && (
-              <p className="text-sm text-neutral-500 dark:text-neutral-400 line-clamp-2 mb-4 leading-relaxed">
+              <p className="hidden sm:line-clamp-2 text-sm text-neutral-500 dark:text-neutral-400 mb-4 leading-relaxed">
                 {item.description || item.pro.bio}
               </p>
             )}
 
-            {/* Bottom Row - Avatar + Name on left, Category tag on right */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5 min-w-0 group/pro">
+            {/* Bottom Row - Avatar + Name */}
+            <div className="flex items-center">
+              <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 group/pro">
                 {/* Avatar with hover ring */}
                 <div className="relative">
                   <Avatar
                     src={item.pro.avatar}
                     name={item.pro.name}
-                    size="sm"
+                    size="xs"
+                    className="w-5 h-5 sm:w-7 sm:h-7"
                   />
-                  <div className="absolute -inset-0.5 rounded-full border-2 border-transparent group-hover/pro:border-[#C4735B]/30 transition-all duration-300" />
+                  <div className="hidden sm:block absolute -inset-0.5 rounded-full border-2 border-transparent group-hover/pro:border-[#C4735B]/30 transition-all duration-300" />
                 </div>
                 {/* Name with hover color */}
-                <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300 truncate group-hover/pro:text-[#C4735B] transition-colors duration-300">
+                <span className="text-[11px] sm:text-sm font-medium text-neutral-700 dark:text-neutral-300 truncate group-hover/pro:text-[#C4735B] transition-colors duration-300">
                   {item.pro.name}
                 </span>
               </div>
-              {/* right side intentionally empty (avoid duplicate category badge) */}
-              <div />
             </div>
           </div>
         </div>
 
         {/* Premium Ribbon */}
         {isPremium && (
-          <div className="absolute -top-1 -right-1 z-20">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg border-2 border-white">
+          <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 z-20">
+            <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg border-[1.5px] sm:border-2 border-white">
               <svg
                 viewBox="0 0 24 24"
                 fill="currentColor"
-                className="w-4 h-4 text-white"
+                className="w-2.5 h-2.5 sm:w-4 sm:h-4 text-white"
               >
                 <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
               </svg>

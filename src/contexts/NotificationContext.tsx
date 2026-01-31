@@ -177,7 +177,6 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   // Handle new notification from WebSocket
   const handleNewNotification = useCallback((rawNotification: RawNotification) => {
     const notification = transformNotification(rawNotification);
-    console.log('[Notifications] New notification received:', notification.type);
 
     // Add to notifications list (at the beginning)
     setNotifications(prev => {
@@ -232,7 +231,6 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     socketRef.current = socket;
 
     socket.on('connect', () => {
-      console.log('[Notifications] WebSocket connected');
       setIsConnected(true);
 
       // Clear any reconnect timeout
@@ -243,7 +241,6 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     });
 
     socket.on('disconnect', (reason) => {
-      console.log('[Notifications] WebSocket disconnected:', reason);
       setIsConnected(false);
     });
 

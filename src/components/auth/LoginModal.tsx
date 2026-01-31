@@ -119,29 +119,38 @@ export default function LoginModal() {
   if (!isLoginModalOpen) return null;
 
   return (
-      <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center sm:p-4">
         {/* Backdrop */}
         <div
           className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
           onClick={closeLoginModal}
         />
 
-        {/* Modal Container */}
+        {/* Modal Container - Bottom sheet on mobile, centered on desktop */}
         <div
-          className={`relative w-full max-w-[380px] transition-all duration-400 ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
-          style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
+          className={`relative w-full sm:max-w-[380px] transition-all duration-300 ${
+            isVisible
+              ? 'opacity-100 translate-y-0 sm:scale-100'
+              : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'
+          }`}
+          style={{ transitionTimingFunction: 'cubic-bezier(0.32, 0.72, 0, 1)' }}
         >
           {/* Modal Card */}
           <div
-            className="relative bg-white rounded-2xl shadow-2xl overflow-hidden"
+            className="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Drag handle for mobile */}
+            <div className="sm:hidden flex justify-center pt-3 pb-1">
+              <div className="w-12 h-1.5 rounded-full bg-neutral-300" />
+            </div>
+
             {/* Close Button */}
             <Button
               onClick={closeLoginModal}
               variant="ghost"
               size="icon"
-              className="absolute top-3 right-3 w-8 h-8 rounded-full z-10"
+              className="absolute top-3 sm:top-3 right-3 w-9 h-9 sm:w-8 sm:h-8 rounded-full z-10"
               aria-label="Close"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -150,7 +159,7 @@ export default function LoginModal() {
             </Button>
 
             {/* Content */}
-            <div className="px-6 pt-8 pb-6">
+            <div className="px-5 sm:px-6 pt-4 sm:pt-8 pb-8 sm:pb-6">
               {/* Header */}
               <div className="text-center mb-5">
                 <IconBadge
@@ -175,7 +184,7 @@ export default function LoginModal() {
               )}
 
               {/* Login Form */}
-              <form onSubmit={handleSubmit} className="space-y-3">
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-3">
                 <FormGroup>
                   <Label>
                     {t('auth.phoneNumber')}
@@ -206,7 +215,7 @@ export default function LoginModal() {
                   <Link
                     href="/forgot-password"
                     onClick={closeLoginModal}
-                    className="text-xs font-medium text-[#E07B4F] hover:text-[#C4735B] transition-colors"
+                    className="text-sm sm:text-xs font-medium text-[#E07B4F] hover:text-[#C4735B] active:opacity-70 transition-colors py-1"
                   >
                     {t('auth.forgotPassword')}
                   </Link>
@@ -216,19 +225,19 @@ export default function LoginModal() {
                   type="submit"
                   disabled={isLoading}
                   loading={isLoading}
-                  className="w-full"
+                  className="w-full h-12 sm:h-10 text-base sm:text-sm"
                 >
                   {t('auth.signIn')}
                 </Button>
               </form>
 
               {/* Sign Up Link */}
-              <p className="text-center text-xs text-neutral-500 mt-4">
+              <p className="text-center text-sm sm:text-xs text-neutral-500 mt-5 sm:mt-4">
                 {locale === 'ka' ? 'არ გაქვს ანგარიში?' : "Don't have an account?"}{' '}
                 <Link
                   href="/register"
                   onClick={closeLoginModal}
-                  className="font-semibold text-[#E07B4F] hover:text-[#C4735B] transition-colors"
+                  className="font-semibold text-[#E07B4F] hover:text-[#C4735B] active:opacity-70 transition-colors"
                 >
                   {t('auth.signUp')}
                 </Link>

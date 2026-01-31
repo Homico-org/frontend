@@ -14,12 +14,12 @@ export interface RequirementBadgeProps {
 export default function RequirementBadge({ icon, text, className = '' }: RequirementBadgeProps) {
   return (
     <div
-      className={`flex items-center gap-3 p-3 rounded-xl bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/30 ${className}`}
+      className={`flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-lg sm:rounded-xl bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/30 ${className}`}
     >
-      <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md sm:rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 flex-shrink-0">
         {icon}
       </div>
-      <span className="font-body text-sm text-neutral-700 dark:text-neutral-300">
+      <span className="font-body text-xs sm:text-sm text-neutral-700 dark:text-neutral-300">
         {text}
       </span>
     </div>

@@ -340,23 +340,23 @@ function AdminDashboardPageContent() {
 
   if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: THEME.surface }}>
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: THEME.surface }}>
         <div className="text-center">
           <div className="relative inline-block">
             <div
-              className="w-20 h-20 rounded-2xl flex items-center justify-center animate-pulse"
+              className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl flex items-center justify-center animate-pulse"
               style={{ background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primaryDark})` }}
             >
-              <BarChart3 className="w-10 h-10 text-white" />
+              <BarChart3 className="w-7 h-7 sm:w-10 sm:h-10 text-white" />
             </div>
             <div
-              className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full flex items-center justify-center animate-bounce"
+              className="absolute -bottom-1.5 -right-1.5 sm:-bottom-2 sm:-right-2 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center animate-bounce"
               style={{ background: THEME.warning }}
             >
-              <Zap className="w-4 h-4 text-black" />
+              <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-black" />
             </div>
           </div>
-          <p className="mt-6 text-sm" style={{ color: THEME.textMuted }}>
+          <p className="mt-4 sm:mt-6 text-xs sm:text-sm" style={{ color: THEME.textMuted }}>
             {t('admin.loadingDashboard')}
           </p>
         </div>
@@ -366,23 +366,23 @@ function AdminDashboardPageContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: THEME.surface }}>
-        <div className="text-center max-w-md mx-auto px-4">
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: THEME.surface }}>
+        <div className="text-center max-w-md mx-auto">
           <div
-            className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6"
+            className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6"
             style={{ background: `${THEME.error}20` }}
           >
-            <AlertCircle className="w-10 h-10" style={{ color: THEME.error }} />
+            <AlertCircle className="w-7 h-7 sm:w-10 sm:h-10" style={{ color: THEME.error }} />
           </div>
-          <h2 className="text-xl font-semibold mb-2" style={{ color: THEME.text }}>
+          <h2 className="text-base sm:text-xl font-semibold mb-1.5 sm:mb-2" style={{ color: THEME.text }}>
             {t('admin.errorLoadingDashboard')}
           </h2>
-          <p className="text-sm mb-6" style={{ color: THEME.textMuted }}>
+          <p className="text-xs sm:text-sm mb-4 sm:mb-6" style={{ color: THEME.textMuted }}>
             {error}
           </p>
           <button
             onClick={() => fetchDashboardData()}
-            className="px-6 py-3 rounded-xl text-white font-medium transition-all hover:opacity-90"
+            className="px-4 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base text-white font-medium transition-all hover:opacity-90"
             style={{ background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primaryDark})` }}
           >
             {t('common.tryAgain')}
@@ -407,36 +407,36 @@ function AdminDashboardPageContent() {
           borderBottom: `1px solid ${THEME.border}`,
         }}
       >
-        <div className="max-w-[1800px] mx-auto px-6 py-4">
+        <div className="max-w-[1800px] mx-auto px-3 py-2.5 sm:px-6 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2.5 sm:gap-4">
               {/* Logo */}
               <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
+                className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center"
                 style={{
                   background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primaryDark})`,
                   boxShadow: `0 8px 32px ${THEME.primary}40`,
                 }}
               >
-                <Layers className="w-6 h-6 text-white" />
+                <Layers className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
               <div>
                 <h1
-                  className="text-xl font-semibold tracking-tight"
+                  className="text-base sm:text-xl font-semibold tracking-tight"
                   style={{ color: THEME.text, fontFamily: "'Inter', sans-serif" }}
                 >
                   {t('admin.controlCenter')}
                 </h1>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: THEME.success }} />
-                  <span className="text-xs" style={{ color: THEME.textMuted, fontFamily: "'JetBrains Mono', monospace" }}>
+                <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5">
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full animate-pulse" style={{ background: THEME.success }} />
+                  <span className="text-[10px] sm:text-xs" style={{ color: THEME.textMuted, fontFamily: "'JetBrains Mono', monospace" }}>
                     {lastUpdated ? formatTimeAgoCompact(lastUpdated.toISOString(), locale as 'en' | 'ka' | 'ru') : 'syncing...'}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               {/* Quick Stats Pills */}
               <div className="hidden lg:flex items-center gap-2">
                 {stats?.support.unread && stats.support.unread > 0 && (
@@ -455,7 +455,7 @@ function AdminDashboardPageContent() {
               {/* Actions */}
               <Link
                 href="/browse"
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all hover:scale-105"
+                className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:gap-2 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-sm font-medium transition-all sm:hover:scale-105"
                 style={{
                   background: THEME.surfaceLight,
                   border: `1px solid ${THEME.border}`,
@@ -468,7 +468,7 @@ function AdminDashboardPageContent() {
               <button
                 onClick={() => fetchDashboardData(true)}
                 disabled={isRefreshing}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all hover:scale-105 disabled:opacity-50"
+                className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:gap-2 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-sm font-medium transition-all sm:hover:scale-105 disabled:opacity-50"
                 style={{
                   background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primaryDark})`,
                   color: 'white',
@@ -483,20 +483,20 @@ function AdminDashboardPageContent() {
         </div>
       </header>
 
-      <main className="max-w-[1800px] mx-auto px-6 py-8">
+      <main className="max-w-[1800px] mx-auto px-3 py-4 sm:px-6 sm:py-8">
         {/* Quick Actions - Prominent at top */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
+        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 mb-4 sm:mb-8">
           {[
             { label: t('admin.users'), icon: Users, href: '/admin/users', color: THEME.primary, count: stats?.users.total },
             { label: t('admin.approvals'), icon: UserCheck, href: '/admin/pending-pros', color: '#f59e0b', count: pendingProsCount, badge: pendingProsCount > 0 ? pendingProsCount : undefined },
             { label: t('admin.jobs'), icon: Briefcase, href: '/admin/jobs', color: THEME.info, count: stats?.jobs.total },
             { label: t('admin.support'), icon: MessageCircle, href: '/admin/support', color: THEME.warning, count: stats?.support.open, badge: stats?.support.unread },
             { label: t('admin.activityLogs'), icon: ActivityIcon, href: '/admin/activity-logs', color: THEME.success },
-          ].map((action) => (
+          ].map((action, index) => (
             <Link
               key={action.label}
               href={action.href}
-              className="group relative overflow-hidden rounded-2xl p-4 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+              className={`group relative overflow-hidden rounded-xl sm:rounded-2xl p-2.5 sm:p-4 transition-all duration-300 sm:hover:scale-[1.02] sm:hover:shadow-lg ${index >= 3 ? 'hidden sm:block' : ''}`}
               style={{
                 background: `linear-gradient(135deg, ${THEME.surfaceLight}, ${THEME.surface})`,
                 border: `1px solid ${THEME.border}`,
@@ -511,28 +511,28 @@ function AdminDashboardPageContent() {
               {/* Badge for unread */}
               {action.badge && action.badge > 0 && (
                 <div
-                  className="absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold animate-pulse"
+                  className="absolute top-1.5 right-1.5 sm:top-3 sm:right-3 w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-[8px] sm:text-[10px] font-bold animate-pulse"
                   style={{ background: THEME.error, color: 'white' }}
                 >
                   {action.badge}
                 </div>
               )}
 
-              <div className="relative flex items-center gap-3">
+              <div className="relative flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3">
                 <div
-                  className="w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-3"
+                  className="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-300 sm:group-hover:scale-110 sm:group-hover:rotate-3"
                   style={{
                     background: `linear-gradient(135deg, ${action.color}, ${action.color}B0)`,
                     boxShadow: `0 4px 12px ${action.color}30`,
                   }}
                 >
-                  <action.icon className="w-5 h-5 text-white" />
+                  <action.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <span className="font-semibold text-sm block" style={{ color: THEME.text }}>{action.label}</span>
+                <div className="flex-1 min-w-0 text-center sm:text-left">
+                  <span className="font-semibold text-[10px] sm:text-sm block truncate" style={{ color: THEME.text }}>{action.label}</span>
                   {action.count !== undefined && (
                     <span
-                      className="text-xs"
+                      className="text-[9px] sm:text-xs hidden sm:inline"
                       style={{ color: THEME.textMuted, fontFamily: "'JetBrains Mono', monospace" }}
                     >
                       {action.count?.toLocaleString() || 0}
@@ -540,7 +540,7 @@ function AdminDashboardPageContent() {
                   )}
                 </div>
                 <ArrowUpRight
-                  className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                  className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 hidden sm:block"
                   style={{ color: action.color }}
                 />
               </div>
@@ -549,10 +549,10 @@ function AdminDashboardPageContent() {
         </div>
 
         {/* Main Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
           {/* Users Card */}
           <div
-            className="group relative overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02]"
+            className="group relative overflow-hidden rounded-xl sm:rounded-2xl p-3 sm:p-6 transition-all duration-300 sm:hover:scale-[1.02]"
             style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
           >
             <div
@@ -560,37 +560,37 @@ function AdminDashboardPageContent() {
               style={{ background: `radial-gradient(circle at top right, ${THEME.primary}10, transparent 70%)` }}
             />
             <div className="relative">
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start justify-between mb-2 sm:mb-4">
                 <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center"
+                  className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center"
                   style={{ background: `${THEME.primary}20` }}
                 >
-                  <Users className="w-6 h-6" style={{ color: THEME.primary }} />
+                  <Users className="w-4 h-4 sm:w-6 sm:h-6" style={{ color: THEME.primary }} />
                 </div>
                 {stats && stats.users.growth !== 0 && (
                   <div
-                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold"
+                    className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-semibold"
                     style={{
                       background: stats.users.growth > 0 ? `${THEME.success}20` : `${THEME.error}20`,
                       color: stats.users.growth > 0 ? THEME.success : THEME.error,
                     }}
                   >
-                    {stats.users.growth > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                    {stats.users.growth > 0 ? <TrendingUp className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> : <TrendingDown className="w-2.5 h-2.5 sm:w-3 sm:h-3" />}
                     {Math.abs(stats.users.growth)}%
                   </div>
                 )}
               </div>
               <p
-                className="text-4xl font-bold tracking-tight"
+                className="text-xl sm:text-4xl font-bold tracking-tight"
                 style={{ color: THEME.text, fontFamily: "'JetBrains Mono', monospace" }}
               >
                 {stats?.users.total.toLocaleString() || '0'}
               </p>
-              <p className="text-sm mt-1" style={{ color: THEME.textMuted }}>
+              <p className="text-[10px] sm:text-sm mt-0.5 sm:mt-1" style={{ color: THEME.textMuted }}>
                 {t('admin.totalUsers')}
               </p>
               <div
-                className="flex items-center gap-4 mt-4 pt-4 text-xs"
+                className="hidden sm:flex items-center gap-4 mt-4 pt-4 text-xs"
                 style={{ borderTop: `1px solid ${THEME.border}` }}
               >
                 <span style={{ color: THEME.success }}>+{stats?.users.today || 0} {t('common.today')}</span>
@@ -601,7 +601,7 @@ function AdminDashboardPageContent() {
 
           {/* Jobs Card */}
           <div
-            className="group relative overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02]"
+            className="group relative overflow-hidden rounded-xl sm:rounded-2xl p-3 sm:p-6 transition-all duration-300 sm:hover:scale-[1.02]"
             style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
           >
             <div
@@ -609,37 +609,37 @@ function AdminDashboardPageContent() {
               style={{ background: `radial-gradient(circle at top right, ${THEME.info}10, transparent 70%)` }}
             />
             <div className="relative">
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start justify-between mb-2 sm:mb-4">
                 <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center"
+                  className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center"
                   style={{ background: `${THEME.info}20` }}
                 >
-                  <Briefcase className="w-6 h-6" style={{ color: THEME.info }} />
+                  <Briefcase className="w-4 h-4 sm:w-6 sm:h-6" style={{ color: THEME.info }} />
                 </div>
                 {stats && stats.jobs.growth !== 0 && (
                   <div
-                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold"
+                    className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-semibold"
                     style={{
                       background: stats.jobs.growth > 0 ? `${THEME.success}20` : `${THEME.error}20`,
                       color: stats.jobs.growth > 0 ? THEME.success : THEME.error,
                     }}
                   >
-                    {stats.jobs.growth > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                    {stats.jobs.growth > 0 ? <TrendingUp className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> : <TrendingDown className="w-2.5 h-2.5 sm:w-3 sm:h-3" />}
                     {Math.abs(stats.jobs.growth)}%
                   </div>
                 )}
               </div>
               <p
-                className="text-4xl font-bold tracking-tight"
+                className="text-xl sm:text-4xl font-bold tracking-tight"
                 style={{ color: THEME.text, fontFamily: "'JetBrains Mono', monospace" }}
               >
                 {stats?.jobs.total.toLocaleString() || '0'}
               </p>
-              <p className="text-sm mt-1" style={{ color: THEME.textMuted }}>
+              <p className="text-[10px] sm:text-sm mt-0.5 sm:mt-1" style={{ color: THEME.textMuted }}>
                 {t('admin.totalJobs')}
               </p>
               <div
-                className="flex items-center gap-4 mt-4 pt-4 text-xs"
+                className="hidden sm:flex items-center gap-4 mt-4 pt-4 text-xs"
                 style={{ borderTop: `1px solid ${THEME.border}` }}
               >
                 <span style={{ color: THEME.success }}>{stats?.jobs.open || 0} {t('common.open')}</span>
@@ -650,7 +650,7 @@ function AdminDashboardPageContent() {
 
           {/* Proposals Card */}
           <div
-            className="group relative overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02]"
+            className="group relative overflow-hidden rounded-xl sm:rounded-2xl p-3 sm:p-6 transition-all duration-300 sm:hover:scale-[1.02]"
             style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
           >
             <div
@@ -658,32 +658,32 @@ function AdminDashboardPageContent() {
               style={{ background: `radial-gradient(circle at top right, ${THEME.warning}10, transparent 70%)` }}
             />
             <div className="relative">
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start justify-between mb-2 sm:mb-4">
                 <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center"
+                  className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center"
                   style={{ background: `${THEME.warning}20` }}
                 >
-                  <FileText className="w-6 h-6" style={{ color: THEME.warning }} />
+                  <FileText className="w-4 h-4 sm:w-6 sm:h-6" style={{ color: THEME.warning }} />
                 </div>
                 <div
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold"
+                  className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-semibold"
                   style={{ background: `${THEME.primary}20`, color: THEME.primary }}
                 >
-                  <Target className="w-3 h-3" />
+                  <Target className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                   {stats?.proposals.acceptanceRate || 0}%
                 </div>
               </div>
               <p
-                className="text-4xl font-bold tracking-tight"
+                className="text-xl sm:text-4xl font-bold tracking-tight"
                 style={{ color: THEME.text, fontFamily: "'JetBrains Mono', monospace" }}
               >
                 {stats?.proposals.total.toLocaleString() || '0'}
               </p>
-              <p className="text-sm mt-1" style={{ color: THEME.textMuted }}>
+              <p className="text-[10px] sm:text-sm mt-0.5 sm:mt-1" style={{ color: THEME.textMuted }}>
                 {t('admin.totalProposals')}
               </p>
               <div
-                className="flex items-center gap-4 mt-4 pt-4 text-xs"
+                className="hidden sm:flex items-center gap-4 mt-4 pt-4 text-xs"
                 style={{ borderTop: `1px solid ${THEME.border}` }}
               >
                 <span style={{ color: THEME.warning }}>{stats?.proposals.pending || 0} {t('common.pending')}</span>
@@ -694,7 +694,7 @@ function AdminDashboardPageContent() {
 
           {/* Support Card */}
           <div
-            className="group relative overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02]"
+            className="group relative overflow-hidden rounded-xl sm:rounded-2xl p-3 sm:p-6 transition-all duration-300 sm:hover:scale-[1.02]"
             style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
           >
             <div
@@ -702,34 +702,34 @@ function AdminDashboardPageContent() {
               style={{ background: `radial-gradient(circle at top right, ${THEME.error}10, transparent 70%)` }}
             />
             <div className="relative">
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start justify-between mb-2 sm:mb-4">
                 <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center"
+                  className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center"
                   style={{ background: `${THEME.error}20` }}
                 >
-                  <MessageCircle className="w-6 h-6" style={{ color: THEME.error }} />
+                  <MessageCircle className="w-4 h-4 sm:w-6 sm:h-6" style={{ color: THEME.error }} />
                 </div>
                 {stats && stats.support.unread > 0 && (
                   <div
-                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold animate-pulse"
+                    className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-semibold animate-pulse"
                     style={{ background: `${THEME.error}20`, color: THEME.error }}
                   >
-                    <Radio className="w-3 h-3" />
+                    <Radio className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                     {stats.support.unread}
                   </div>
                 )}
               </div>
               <p
-                className="text-4xl font-bold tracking-tight"
+                className="text-xl sm:text-4xl font-bold tracking-tight"
                 style={{ color: THEME.text, fontFamily: "'JetBrains Mono', monospace" }}
               >
                 {stats?.support.total.toLocaleString() || '0'}
               </p>
-              <p className="text-sm mt-1" style={{ color: THEME.textMuted }}>
+              <p className="text-[10px] sm:text-sm mt-0.5 sm:mt-1" style={{ color: THEME.textMuted }}>
                 {t('admin.supportTickets')}
               </p>
               <div
-                className="flex items-center gap-4 mt-4 pt-4 text-xs"
+                className="hidden sm:flex items-center gap-4 mt-4 pt-4 text-xs"
                 style={{ borderTop: `1px solid ${THEME.border}` }}
               >
                 <span style={{ color: THEME.error }}>{stats?.support.open || 0} {t('common.open')}</span>
@@ -740,23 +740,23 @@ function AdminDashboardPageContent() {
         </div>
 
         {/* Charts & Distribution Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6 mb-4 sm:mb-8">
           {/* Main Chart */}
           <div
-            className="lg:col-span-8 rounded-2xl p-6"
+            className="lg:col-span-8 rounded-xl sm:rounded-2xl p-3 sm:p-6"
             style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
           >
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-4 sm:mb-6">
               <div>
-                <h3 className="text-lg font-semibold" style={{ color: THEME.text }}>
+                <h3 className="text-sm sm:text-lg font-semibold" style={{ color: THEME.text }}>
                   {t('admin.activityOverview')}
                 </h3>
-                <p className="text-sm mt-0.5" style={{ color: THEME.textMuted }}>
+                <p className="text-[10px] sm:text-sm mt-0.5" style={{ color: THEME.textMuted }}>
                   {t('admin.last14Days')}
                 </p>
               </div>
               <div
-                className="flex items-center gap-1 p-1 rounded-xl"
+                className="flex items-center gap-0.5 sm:gap-1 p-0.5 sm:p-1 rounded-lg sm:rounded-xl self-start sm:self-auto"
                 style={{ background: THEME.surface }}
               >
                 {[
@@ -767,7 +767,7 @@ function AdminDashboardPageContent() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveChart(tab.id as typeof activeChart)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                    className="px-2 py-1 sm:px-3 sm:py-1.5 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-medium transition-all"
                     style={{
                       background: activeChart === tab.id ? tab.color : 'transparent',
                       color: activeChart === tab.id ? 'white' : THEME.textMuted,
@@ -780,7 +780,7 @@ function AdminDashboardPageContent() {
             </div>
 
             {/* Chart */}
-            <div className="relative h-48">
+            <div className="relative h-32 sm:h-48">
               {/* Grid lines */}
               <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
                 {[0, 1, 2, 3].map((i) => (
@@ -819,11 +819,11 @@ function AdminDashboardPageContent() {
             </div>
 
             {/* X-axis labels */}
-            <div className="flex justify-between mt-3 px-1">
-              <span className="text-[10px]" style={{ color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace" }}>
+            <div className="flex justify-between mt-2 sm:mt-3 px-1">
+              <span className="text-[8px] sm:text-[10px]" style={{ color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace" }}>
                 {chartData[0]?._id?.slice(5) || ''}
               </span>
-              <span className="text-[10px]" style={{ color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace" }}>
+              <span className="text-[8px] sm:text-[10px]" style={{ color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace" }}>
                 {chartData[chartData.length - 1]?._id?.slice(5) || ''}
               </span>
             </div>
@@ -831,17 +831,17 @@ function AdminDashboardPageContent() {
 
           {/* User Distribution */}
           <div
-            className="lg:col-span-4 rounded-2xl p-6"
+            className="lg:col-span-4 rounded-xl sm:rounded-2xl p-3 sm:p-6"
             style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
           >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold" style={{ color: THEME.text }}>
+            <div className="flex items-center justify-between mb-3 sm:mb-6">
+              <h3 className="text-sm sm:text-lg font-semibold" style={{ color: THEME.text }}>
                 {t('admin.userBreakdown')}
               </h3>
-              <PieChart className="w-5 h-5" style={{ color: THEME.textMuted }} />
+              <PieChart className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: THEME.textMuted }} />
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-2.5 sm:space-y-4">
               {[
                 { label: t('admin.clients'), value: stats?.users.clients || 0, icon: Users, color: THEME.primary },
                 { label: t('admin.professionals'), value: stats?.users.pros || 0, icon: Shield, color: THEME.info },
@@ -851,17 +851,17 @@ function AdminDashboardPageContent() {
                 const percentage = stats?.users.total ? Math.round((item.value / stats.users.total) * 100) : 0;
                 return (
                   <div key={item.label} className="group">
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
                       <div
-                        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                        className="w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center flex-shrink-0"
                         style={{ background: `${item.color}20` }}
                       >
-                        <item.icon className="w-4 h-4" style={{ color: item.color }} />
+                        <item.icon className="w-3 h-3 sm:w-4 sm:h-4" style={{ color: item.color }} />
                       </div>
                       <div className="flex-1 flex items-center justify-between">
-                        <span className="text-sm" style={{ color: THEME.textMuted }}>{item.label}</span>
+                        <span className="text-xs sm:text-sm" style={{ color: THEME.textMuted }}>{item.label}</span>
                         <span
-                          className="text-sm font-semibold"
+                          className="text-xs sm:text-sm font-semibold"
                           style={{ color: THEME.text, fontFamily: "'JetBrains Mono', monospace" }}
                         >
                           {item.value.toLocaleString()}
@@ -869,7 +869,7 @@ function AdminDashboardPageContent() {
                       </div>
                     </div>
                     <div
-                      className="h-1.5 rounded-full overflow-hidden"
+                      className="h-1 sm:h-1.5 rounded-full overflow-hidden"
                       style={{ background: THEME.surface }}
                     >
                       <div
@@ -888,31 +888,31 @@ function AdminDashboardPageContent() {
         </div>
 
         {/* Activity & Categories Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6 mb-4 sm:mb-8">
           {/* Live Activity */}
           <div
-            className="lg:col-span-6 rounded-2xl overflow-hidden"
+            className="lg:col-span-6 rounded-xl sm:rounded-2xl overflow-hidden"
             style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
           >
             <div
-              className="px-6 py-4 flex items-center justify-between"
+              className="px-3 py-2.5 sm:px-6 sm:py-4 flex items-center justify-between"
               style={{ borderBottom: `1px solid ${THEME.border}` }}
             >
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: THEME.success }} />
-                <h3 className="font-semibold" style={{ color: THEME.text }}>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full animate-pulse" style={{ background: THEME.success }} />
+                <h3 className="font-semibold text-sm sm:text-base" style={{ color: THEME.text }}>
                   {t('admin.liveActivity')}
                 </h3>
               </div>
-              <span className="text-xs" style={{ color: THEME.textDim }}>
+              <span className="text-[10px] sm:text-xs" style={{ color: THEME.textDim }}>
                 {activities.length} {t('admin.events')}
               </span>
             </div>
-            <div className="max-h-[400px] overflow-y-auto">
+            <div className="max-h-[280px] sm:max-h-[400px] overflow-y-auto">
               {activities.length === 0 ? (
-                <div className="p-12 text-center">
-                  <ActivityIcon className="w-12 h-12 mx-auto mb-3" style={{ color: THEME.textDim }} />
-                  <p style={{ color: THEME.textMuted }}>{t('admin.noRecentActivity')}</p>
+                <div className="p-8 sm:p-12 text-center">
+                  <ActivityIcon className="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-2 sm:mb-3" style={{ color: THEME.textDim }} />
+                  <p className="text-xs sm:text-sm" style={{ color: THEME.textMuted }}>{t('admin.noRecentActivity')}</p>
                 </div>
               ) : (
                 activities.slice(0, 12).map((activity, i) => {
@@ -924,7 +924,7 @@ function AdminDashboardPageContent() {
                     <Link
                       href={href || '#'}
                       key={`activity-${i}-${activity.type}-${activity.date}`}
-                      className="px-6 py-3 flex items-center gap-4 transition-colors"
+                      className="px-3 py-2 sm:px-6 sm:py-3 flex items-center gap-2.5 sm:gap-4 transition-colors"
                       style={{
                         borderBottom: i < 11 ? `1px solid ${THEME.border}` : 'none',
                         cursor: href ? 'pointer' : 'default',
@@ -935,20 +935,20 @@ function AdminDashboardPageContent() {
                       title={href ? t('common.open') : undefined}
                     >
                       <div
-                        className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                        className="w-7 h-7 sm:w-9 sm:h-9 rounded-md sm:rounded-lg flex items-center justify-center flex-shrink-0"
                         style={{ background: `${color}15` }}
                       >
-                        <Icon className="w-4 h-4" style={{ color }} />
+                        <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color }} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm truncate" style={{ color: THEME.text }}>
+                        <p className="text-xs sm:text-sm truncate" style={{ color: THEME.text }}>
                           <span className="font-medium">{msg.name}</span>
                           <span style={{ color: THEME.textMuted }}> {msg.action}</span>
-                          {msg.extra && <span style={{ color: THEME.textDim }}> · {msg.extra}</span>}
+                          <span className="hidden sm:inline" style={{ color: THEME.textDim }}>{msg.extra && ` · ${msg.extra}`}</span>
                         </p>
                       </div>
                       <span
-                        className="text-xs flex-shrink-0"
+                        className="text-[10px] sm:text-xs flex-shrink-0"
                         style={{ color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace" }}
                       >
                         {formatTimeAgoCompact(activity.date, locale as 'en' | 'ka' | 'ru')}
@@ -961,44 +961,44 @@ function AdminDashboardPageContent() {
           </div>
 
           {/* Categories & Locations */}
-          <div className="lg:col-span-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="lg:col-span-6 grid grid-cols-2 gap-2 sm:gap-6">
             {/* Jobs by Category */}
             <div
-              className="rounded-2xl overflow-hidden"
+              className="rounded-xl sm:rounded-2xl overflow-hidden"
               style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
             >
               <div
-                className="px-5 py-4 flex items-center justify-between"
+                className="px-3 py-2.5 sm:px-5 sm:py-4 flex items-center justify-between"
                 style={{ borderBottom: `1px solid ${THEME.border}` }}
               >
-                <div className="flex items-center gap-2">
-                  <Tag className="w-4 h-4" style={{ color: THEME.textMuted }} />
-                  <h3 className="font-semibold text-sm" style={{ color: THEME.text }}>
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Tag className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: THEME.textMuted }} />
+                  <h3 className="font-semibold text-xs sm:text-sm" style={{ color: THEME.text }}>
                     {t('common.categories')}
                   </h3>
                 </div>
               </div>
-              <div className="p-4 space-y-3">
+              <div className="p-2.5 sm:p-4 space-y-2 sm:space-y-3">
                 {jobsByCategory.length === 0 ? (
-                  <p className="text-center py-4 text-sm" style={{ color: THEME.textMuted }}>
+                  <p className="text-center py-3 sm:py-4 text-xs sm:text-sm" style={{ color: THEME.textMuted }}>
                     {t('admin.noData')}
                   </p>
                 ) : (
                   jobsByCategory.slice(0, 5).map((cat) => (
                     <div key={cat._id} className="group">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-sm truncate" style={{ color: THEME.textMuted }}>
+                      <div className="flex items-center justify-between mb-1 sm:mb-1.5">
+                        <span className="text-[10px] sm:text-sm truncate" style={{ color: THEME.textMuted }}>
                           {getSafeCategoryLabel(cat._id)}
                         </span>
                         <span
-                          className="text-xs font-medium ml-2"
+                          className="text-[10px] sm:text-xs font-medium ml-1 sm:ml-2"
                           style={{ color: THEME.text, fontFamily: "'JetBrains Mono', monospace" }}
                         >
                           {cat.count}
                         </span>
                       </div>
                       <div
-                        className="h-1.5 rounded-full overflow-hidden"
+                        className="h-1 sm:h-1.5 rounded-full overflow-hidden"
                         style={{ background: THEME.surface }}
                       >
                         <div
@@ -1017,41 +1017,41 @@ function AdminDashboardPageContent() {
 
             {/* Jobs by Location */}
             <div
-              className="rounded-2xl overflow-hidden"
+              className="rounded-xl sm:rounded-2xl overflow-hidden"
               style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
             >
               <div
-                className="px-5 py-4 flex items-center justify-between"
+                className="px-3 py-2.5 sm:px-5 sm:py-4 flex items-center justify-between"
                 style={{ borderBottom: `1px solid ${THEME.border}` }}
               >
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" style={{ color: THEME.textMuted }} />
-                  <h3 className="font-semibold text-sm" style={{ color: THEME.text }}>
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: THEME.textMuted }} />
+                  <h3 className="font-semibold text-xs sm:text-sm" style={{ color: THEME.text }}>
                     {t('admin.locations')}
                   </h3>
                 </div>
               </div>
-              <div className="p-4 space-y-3">
+              <div className="p-2.5 sm:p-4 space-y-2 sm:space-y-3">
                 {jobsByLocation.length === 0 ? (
-                  <p className="text-center py-4 text-sm" style={{ color: THEME.textMuted }}>
+                  <p className="text-center py-3 sm:py-4 text-xs sm:text-sm" style={{ color: THEME.textMuted }}>
                     {t('admin.noData')}
                   </p>
                 ) : (
                   jobsByLocation.slice(0, 5).map((loc) => (
                     <div key={loc._id} className="group">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-sm truncate" style={{ color: THEME.textMuted }}>
+                      <div className="flex items-center justify-between mb-1 sm:mb-1.5">
+                        <span className="text-[10px] sm:text-sm truncate" style={{ color: THEME.textMuted }}>
                           {loc._id || t('common.unknown')}
                         </span>
                         <span
-                          className="text-xs font-medium ml-2"
+                          className="text-[10px] sm:text-xs font-medium ml-1 sm:ml-2"
                           style={{ color: THEME.text, fontFamily: "'JetBrains Mono', monospace" }}
                         >
                           {loc.count}
                         </span>
                       </div>
                       <div
-                        className="h-1.5 rounded-full overflow-hidden"
+                        className="h-1 sm:h-1.5 rounded-full overflow-hidden"
                         style={{ background: THEME.surface }}
                       >
                         <div
@@ -1071,53 +1071,53 @@ function AdminDashboardPageContent() {
         </div>
 
         {/* Recent Items Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 mb-4 sm:mb-8">
           {/* Recent Users */}
           <div
-            className="rounded-2xl overflow-hidden"
+            className="rounded-xl sm:rounded-2xl overflow-hidden"
             style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
           >
             <div
-              className="px-6 py-4 flex items-center justify-between"
+              className="px-3 py-2.5 sm:px-6 sm:py-4 flex items-center justify-between"
               style={{ borderBottom: `1px solid ${THEME.border}` }}
             >
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4" style={{ color: THEME.textMuted }} />
-                <h3 className="font-semibold" style={{ color: THEME.text }}>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: THEME.textMuted }} />
+                <h3 className="font-semibold text-sm sm:text-base" style={{ color: THEME.text }}>
                   {t('admin.recentUsers')}
                 </h3>
               </div>
               <Link
                 href="/admin/users"
-                className="flex items-center gap-1 text-xs font-medium transition-colors hover:opacity-80"
+                className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs font-medium transition-colors hover:opacity-80"
                 style={{ color: THEME.primary }}
               >
                 {t('common.viewAll')}
-                <ChevronRight className="w-3.5 h-3.5" />
+                <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               </Link>
             </div>
             <div>
               {recentUsers.length === 0 ? (
-                <div className="p-12 text-center">
-                  <Users className="w-12 h-12 mx-auto mb-3" style={{ color: THEME.textDim }} />
-                  <p style={{ color: THEME.textMuted }}>{t('admin.noUsersYet')}</p>
+                <div className="p-8 sm:p-12 text-center">
+                  <Users className="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-2 sm:mb-3" style={{ color: THEME.textDim }} />
+                  <p className="text-xs sm:text-sm" style={{ color: THEME.textMuted }}>{t('admin.noUsersYet')}</p>
                 </div>
               ) : (
-                recentUsers.map((user, i) => (
+                recentUsers.slice(0, 4).map((user, i) => (
                   <div
                     key={user._id}
-                    className="px-6 py-3 flex items-center gap-4 transition-colors"
-                    style={{ borderBottom: i < recentUsers.length - 1 ? `1px solid ${THEME.border}` : 'none' }}
+                    className="px-3 py-2 sm:px-6 sm:py-3 flex items-center gap-2.5 sm:gap-4 transition-colors"
+                    style={{ borderBottom: i < Math.min(recentUsers.length, 4) - 1 ? `1px solid ${THEME.border}` : 'none' }}
                     onMouseEnter={(e) => e.currentTarget.style.background = THEME.surfaceHover}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
-                    <Avatar src={user.avatar} name={user.name} size="sm" />
+                    <Avatar src={user.avatar} name={user.name} size="sm" className="w-7 h-7 sm:w-8 sm:h-8" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate" style={{ color: THEME.text }}>{user.name}</p>
-                      <p className="text-xs truncate" style={{ color: THEME.textDim }}>{user.email}</p>
+                      <p className="text-xs sm:text-sm font-medium truncate" style={{ color: THEME.text }}>{user.name}</p>
+                      <p className="text-[10px] sm:text-xs truncate hidden sm:block" style={{ color: THEME.textDim }}>{user.email}</p>
                     </div>
                     <span
-                      className="px-2.5 py-1 text-xs font-medium rounded-lg"
+                      className="px-1.5 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-md sm:rounded-lg"
                       style={{
                         background: user.role === 'pro' ? `${THEME.info}20` :
                                    user.role === 'company' ? '#8B5CF620' :
@@ -1139,76 +1139,74 @@ function AdminDashboardPageContent() {
 
           {/* Recent Jobs */}
           <div
-            className="rounded-2xl overflow-hidden"
+            className="rounded-xl sm:rounded-2xl overflow-hidden"
             style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
           >
             <div
-              className="px-6 py-4 flex items-center justify-between"
+              className="px-3 py-2.5 sm:px-6 sm:py-4 flex items-center justify-between"
               style={{ borderBottom: `1px solid ${THEME.border}` }}
             >
-              <div className="flex items-center gap-2">
-                <Briefcase className="w-4 h-4" style={{ color: THEME.textMuted }} />
-                <h3 className="font-semibold" style={{ color: THEME.text }}>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Briefcase className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: THEME.textMuted }} />
+                <h3 className="font-semibold text-sm sm:text-base" style={{ color: THEME.text }}>
                   {t('admin.recentJobs')}
                 </h3>
               </div>
               <Link
                 href="/admin/jobs"
-                className="flex items-center gap-1 text-xs font-medium transition-colors hover:opacity-80"
+                className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs font-medium transition-colors hover:opacity-80"
                 style={{ color: THEME.primary }}
               >
                 {t('common.viewAll')}
-                <ChevronRight className="w-3.5 h-3.5" />
+                <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               </Link>
             </div>
             <div>
               {recentJobs.length === 0 ? (
-                <div className="p-12 text-center">
-                  <Briefcase className="w-12 h-12 mx-auto mb-3" style={{ color: THEME.textDim }} />
-                  <p style={{ color: THEME.textMuted }}>{t('admin.noJobsYet')}</p>
+                <div className="p-8 sm:p-12 text-center">
+                  <Briefcase className="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-2 sm:mb-3" style={{ color: THEME.textDim }} />
+                  <p className="text-xs sm:text-sm" style={{ color: THEME.textMuted }}>{t('admin.noJobsYet')}</p>
                 </div>
               ) : (
-                recentJobs.map((job, i) => {
+                recentJobs.slice(0, 4).map((job, i) => {
                   const jobId = job?._id || job?.id;
                   return (
                   <div
                     key={jobId || `job-${i}`}
-                    className="px-6 py-3 transition-colors"
-                    style={{ borderBottom: i < recentJobs.length - 1 ? `1px solid ${THEME.border}` : 'none' }}
+                    className="px-3 py-2 sm:px-6 sm:py-3 transition-colors"
+                    style={{ borderBottom: i < Math.min(recentJobs.length, 4) - 1 ? `1px solid ${THEME.border}` : 'none' }}
                     onMouseEnter={(e) => e.currentTarget.style.background = THEME.surfaceHover}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start justify-between gap-2 sm:gap-4">
                       <div className="flex-1 min-w-0">
                         <Link
                           href={jobId ? `/jobs/${jobId}` : '#'}
-                          className="text-sm font-medium truncate inline-flex items-center gap-1 hover:underline"
+                          className="text-xs sm:text-sm font-medium truncate inline-flex items-center gap-0.5 sm:gap-1 hover:underline"
                           style={{
                             color: THEME.text,
                             pointerEvents: jobId ? 'auto' : 'none',
                             opacity: jobId ? 1 : 0.6,
                           }}
                         >
-                          {job.title}
-                          <ArrowUpRight className="w-3.5 h-3.5" style={{ color: THEME.textDim }} />
+                          <span className="truncate">{job.title}</span>
+                          <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" style={{ color: THEME.textDim }} />
                         </Link>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs truncate" style={{ color: THEME.textDim }}>
+                        <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1">
+                          <span className="text-[10px] sm:text-xs truncate" style={{ color: THEME.textDim }}>
                             {getSafeCategoryLabel(job.category)}
                           </span>
                           {job.location && (
-                            <>
-                              <span style={{ color: THEME.textDim }}>·</span>
-                              <span className="text-xs flex items-center gap-0.5" style={{ color: THEME.textDim }}>
-                                <MapPin className="w-3 h-3" />
-                                {job.location}
-                              </span>
-                            </>
+                            <span className="hidden sm:inline-flex items-center gap-0.5 text-xs" style={{ color: THEME.textDim }}>
+                              <span>·</span>
+                              <MapPin className="w-3 h-3" />
+                              {job.location}
+                            </span>
                           )}
                         </div>
                       </div>
                       <span
-                        className="px-2.5 py-1 text-xs font-medium rounded-lg flex-shrink-0"
+                        className="px-1.5 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-md sm:rounded-lg flex-shrink-0"
                         style={{
                           background: job.status === 'open' ? `${THEME.success}20` :
                                      job.status === 'in_progress' ? `${THEME.warning}20` :
