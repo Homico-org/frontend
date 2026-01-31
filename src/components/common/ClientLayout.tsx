@@ -28,7 +28,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
         </AppLayout>
       </ProProfileGuard>
       <LoginModal />
-      <PWAInstallPrompt />
+      {/* <PWAInstallPrompt /> */}
     </>
   );
 }
