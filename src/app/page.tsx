@@ -292,10 +292,11 @@ export default function HomePage() {
       });
   }, []);
 
+  // Temporarily redirect all users to browse page (landing page disabled)
   useEffect(() => {
     if (isLoading) return;
     if (user?.role === 'pro') { router.replace('/browse/jobs'); return; }
-    if (user) router.replace('/browse/portfolio');
+    router.replace('/browse/portfolio');
   }, [router, user, isLoading]);
 
   // Auto-slide features - restarts fresh when pause state changes
@@ -364,6 +365,12 @@ export default function HomePage() {
   const scrollToContent = () => {
     window.scrollTo({ top: window.innerHeight * 0.8, behavior: 'smooth' });
   };
+
+  // Temporarily disabled: redirect all users to browse page
+  // Return null to prevent landing page flash during redirect
+  if (!isLoading) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-[#FAFAF8] dark:bg-neutral-950 overflow-x-hidden">
