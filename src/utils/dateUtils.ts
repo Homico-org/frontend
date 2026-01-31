@@ -4,6 +4,64 @@
 
 export type Locale = 'en' | 'ka' | 'ru';
 
+// Some environments may not have full ICU data for Georgian (ka-GE) and will
+// fall back to English month names. We detect that and provide a deterministic
+// Georgian month mapping as a fallback.
+const EN_MONTH_TOKENS = [
+  // Long
+  'january',
+  'february',
+  'march',
+  'april',
+  'may',
+  'june',
+  'july',
+  'august',
+  'september',
+  'october',
+  'november',
+  'december',
+  // Short
+  'jan',
+  'feb',
+  'mar',
+  'apr',
+  'jun',
+  'jul',
+  'aug',
+  'sep',
+  'sept',
+  'oct',
+  'nov',
+  'dec',
+];
+
+const KA_MONTHS_SHORT = [
+  'იან',
+  'თებ',
+  'მარ',
+  'აპრ',
+  'მაი',
+  'ივნ',
+  'ივლ',
+  'აგვ',
+  'სექ',
+  'ოქტ',
+  'ნოე',
+  'დეკ',
+] as const;
+
+function containsEnglishMonth(formatted: string): boolean {
+  const s = formatted.toLowerCase();
+  return EN_MONTH_TOKENS.some((m) => s.includes(m));
+}
+
+function formatKaMonthDay(date: Date): string {
+  const day = date.getDate();
+  const month = KA_MONTHS_SHORT[date.getMonth()] ?? '';
+  return `${day} ${month}`;
+}
+
 // Translation function type (matches useLanguage().t)
 export type TranslateFunction = (key: string, params?: Record<string, string | number>) => string;
 
@@ -152,10 +210,17 @@ export function formatDateUK(dateString: string): string {
  */
 export function formatDateMonthDay(dateString: string, locale: Locale = 'en'): string {
   const localeMap = { en: 'en-US', ka: 'ka-GE', ru: 'ru-RU' };
-  return new Date(dateString).toLocaleDateString(localeMap[locale], {
+  const date = new Date(dateString);
+  const formatted = date.toLocaleDateString(localeMap[locale], {
     month: 'short',
     day: 'numeric',
   });
+
+  if (locale === 'ka' && containsEnglishMonth(formatted)) {
+    return formatKaMonthDay(date);
+  }
+
+  return formatted;
 }
 
 /**
