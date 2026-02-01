@@ -685,8 +685,8 @@ export function useRegistration(): UseRegistrationReturn {
   }, [userType, uploadedAvatarUrl, formData, repeatPassword, agreedToTerms]);
 
   const canProceedFromCategory = useCallback(() => {
-    return formData.selectedCategories.length > 0;
-  }, [formData.selectedCategories]);
+    return formData.selectedCategories.length > 0 && formData.selectedSubcategories.length > 0;
+  }, [formData.selectedCategories, formData.selectedSubcategories]);
 
   const canProceedFromServices = useCallback(() => {
     return portfolioProjects.length > 0 && portfolioProjects.some(p => p.images.length > 0 || p.videos.length > 0 || p.beforeAfterPairs.length > 0);

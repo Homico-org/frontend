@@ -692,9 +692,10 @@ export default function ProfessionalDetailClient({
 
   // Admin verification update handler
   const handleAdminVerificationUpdate = async () => {
-    if (!isAdmin || !profile) return;
+    if (!isAdmin || !profile?.id) return;
     setIsAdminSaving(true);
     try {
+      console.log('[Admin] Updating verification for pro:', profile.id, 'to status:', adminVerificationStatus);
       const response = await api.patch(`/admin/pros/${profile.id}/verification`, {
         status: adminVerificationStatus,
         notes: adminVerificationNotes || undefined,
@@ -702,16 +703,19 @@ export default function ProfessionalDetailClient({
       });
 
       const updated = response?.data as ProProfile | undefined;
+      console.log('[Admin] Update response:', updated?.verificationStatus);
+
       if (updated) {
         setProfile((prev) => {
           if (!prev) return updated;
-          return { ...prev, ...updated };
+          return { ...prev, verificationStatus: updated.verificationStatus, verificationNotes: updated.verificationNotes };
         });
       }
 
       setShowAdminVerificationModal(false);
       toast.success(t("admin.verificationUpdated") || "Verification status updated");
     } catch (err) {
+      console.error('[Admin] Update failed:', err);
       toast.error(t("admin.verificationUpdateFailed") || "Failed to update verification");
     } finally {
       setIsAdminSaving(false);
