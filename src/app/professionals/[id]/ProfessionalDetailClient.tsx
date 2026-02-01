@@ -1672,11 +1672,11 @@ export default function ProfessionalDetailClient({
                 </div>
 
                 {/* Categories - Main expertise areas */}
-                {profile.categories?.length > 0 && (
+                {proCategories.length > 0 && (
                   <div className="flex flex-wrap justify-start gap-1 sm:gap-1.5 mt-2 sm:mt-3">
-                    {(profile.categories.length > 2
-                      ? profile.categories.slice(0, 2)
-                      : profile.categories
+                    {(proCategories.length > 2
+                      ? proCategories.slice(0, 2)
+                      : proCategories
                     ).map((cat, idx) => (
                       <span
                         key={`cat-${idx}`}
@@ -1685,9 +1685,9 @@ export default function ProfessionalDetailClient({
                         {getCategoryLabel(cat)}
                       </span>
                     ))}
-                    {profile.categories.length > 2 && (
+                    {proCategories.length > 2 && (
                       <span className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 border border-neutral-200/60 dark:border-neutral-700">
-                        +{profile.categories.length - 2}
+                        +{proCategories.length - 2}
                       </span>
                     )}
                   </div>
@@ -1695,7 +1695,7 @@ export default function ProfessionalDetailClient({
 
                 {/* Services with Experience - mobile compact */}
                 {((profile.selectedServices?.length ?? 0) > 0 ||
-                  (profile.subcategories?.length ?? 0) > 0) && (
+                  proSubcategories.length > 0) && (
                   <div className="sm:hidden mt-2">
                     <p className="text-[9px] uppercase tracking-wider text-neutral-400 font-semibold mb-1.5">
                       {t("professional.servicesAndExperience")}
@@ -1725,7 +1725,7 @@ export default function ProfessionalDetailClient({
                         </>
                       ) : (
                         <>
-                          {(profile.subcategories || []).slice(0, 3).map((sub, idx) => {
+                          {proSubcategories.slice(0, 3).map((sub, idx) => {
                             const experience = getServiceExperience(sub);
                             return (
                               <span
@@ -1743,9 +1743,9 @@ export default function ProfessionalDetailClient({
                               </span>
                             );
                           })}
-                          {(profile.subcategories?.length || 0) > 3 && (
+                          {proSubcategories.length > 3 && (
                             <span className="inline-flex items-center px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-[10px] font-medium text-neutral-600 dark:text-neutral-300 border border-neutral-200/60 dark:border-neutral-700">
-                              +{(profile.subcategories?.length || 0) - 3}{" "}
+                              +{proSubcategories.length - 3}{" "}
                               {t("common.more")}
                             </span>
                           )}
@@ -1757,7 +1757,7 @@ export default function ProfessionalDetailClient({
 
                 {/* Services with Experience - Detailed skills (desktop) */}
                 {((profile.selectedServices?.length ?? 0) > 0 ||
-                  (profile.subcategories?.length ?? 0) > 0) && (
+                  proSubcategories.length > 0) && (
                   <div className="hidden sm:block mt-3 p-2.5 sm:p-3 rounded-lg sm:rounded-xl bg-neutral-50/80 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
                     <p className="text-[9px] sm:text-[10px] uppercase tracking-wider text-neutral-400 font-semibold mb-1.5 sm:mb-2">
                       {t("professional.servicesAndExperience")}
@@ -1790,8 +1790,8 @@ export default function ProfessionalDetailClient({
                         </>
                       ) : (
                         <>
-                          {profile.subcategories
-                            ?.slice(0, 6)
+                          {proSubcategories
+                            .slice(0, 6)
                             .map((sub, idx) => {
                               const experience = getServiceExperience(sub);
                               return (
@@ -1810,9 +1810,9 @@ export default function ProfessionalDetailClient({
                                 </div>
                               );
                             })}
-                          {(profile.subcategories?.length || 0) > 6 && (
+                          {proSubcategories.length > 6 && (
                             <span className="flex items-center px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-700 text-xs font-medium text-neutral-500">
-                              +{(profile.subcategories?.length || 0) - 6}{" "}
+                              +{proSubcategories.length - 6}{" "}
                               {t("common.more")}
                             </span>
                           )}
