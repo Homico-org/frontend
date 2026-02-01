@@ -15,7 +15,7 @@ const CATEGORY_LABELS: Record<string, { en: string; ka: string; ru: string }> = 
   // Subcategories - Renovation
   plumbing: { en: 'Plumbing', ka: 'სანტექნიკა', ru: 'Сантехника' },
   electrical: { en: 'Electrical', ka: 'ელექტრობა', ru: 'Электрика' },
-  electricity: { en: 'Electricity', ka: 'ელექტროსანტექნიკა', ru: 'Электричество' },
+  electricity: { en: 'Electricity', ka: 'ელექტროობა', ru: 'Электричество' },
   painting: { en: 'Painting', ka: 'შეღებვა', ru: 'Покраска' },
   mural: { en: 'Mural', ka: 'მალიარი', ru: 'Роспись' },
   flooring: { en: 'Flooring', ka: 'იატაკი', ru: 'Полы' },

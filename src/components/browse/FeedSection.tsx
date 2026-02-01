@@ -239,11 +239,11 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
       ) : (
         <>
           {/* Grid Layout - Mobile first: 2 columns */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 items-stretch">
             {feedItems.map((item, index) => (
               <div
                 key={item.id || `feed-item-${index}`}
-                className="animate-fade-in"
+                className="animate-fade-in h-full"
                 style={{ animationDelay: `${(index % 12) * 40}ms` }}
               >
                 <FeedCard

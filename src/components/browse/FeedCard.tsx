@@ -10,6 +10,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { getCategoryLabelStatic } from "@/hooks/useCategoryLabels";
 import { storage } from "@/services/storage";
 import { FeedItem, FeedItemType } from "@/types";
+import { motion } from "framer-motion";
 import {
   BadgeCheck,
   Briefcase,
@@ -107,16 +108,21 @@ const FeedCard = React.memo(function FeedCard({
   const proId = item.pro.id || (item.pro as { _id?: string })._id;
 
   return (
-    <Link href={`/professionals/${proId}`} className="group block">
+    <Link href={`/professionals/${proId}`} className="group block h-full">
       {/* Card Container with Premium Effects */}
-      <div
-        className={`relative transition-all duration-500 ${isPremium ? "game-card-premium" : ""}`}
+      <motion.div
+        className={`relative transition-all duration-500 h-full ${isPremium ? "game-card-premium" : ""}`}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
       >
         {/* Premium border glow effect - hidden on mobile for performance */}
         <div className="hidden sm:block absolute -inset-[1px] rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#C4735B]/0 via-[#C4735B]/0 to-[#C4735B]/0 group-hover:from-[#C4735B]/30 group-hover:via-[#D4937B]/15 group-hover:to-[#C4735B]/30 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-[1px]" />
 
         {/* Main Card */}
-        <div className="relative bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80 shadow-sm sm:shadow-[0_1px_0_rgba(0,0,0,0.03),0_8px_24px_-18px_rgba(0,0,0,0.35)] group-hover:border-[#C4735B]/25 transition-all duration-500 sm:group-hover:shadow-[0_20px_50px_-12px_rgba(196,115,91,0.15)] sm:group-hover:-translate-y-0.5">
+        <div className="relative h-full flex flex-col bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80 shadow-sm sm:shadow-[0_1px_0_rgba(0,0,0,0.03),0_8px_24px_-18px_rgba(0,0,0,0.35)] group-hover:border-[#C4735B]/25 transition-all duration-500 sm:group-hover:shadow-[0_20px_50px_-12px_rgba(196,115,91,0.15)] sm:group-hover:-translate-y-0.5">
           {/* Shine effect overlay - desktop only */}
           <div className="hidden sm:block absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-30">
             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
@@ -327,7 +333,7 @@ const FeedCard = React.memo(function FeedCard({
           </div>
 
           {/* Content Section */}
-          <div className="p-2.5 sm:p-4">
+          <div className="p-2.5 sm:p-4 flex-1 flex flex-col">
             {/* Service Type (subtitle) */}
             <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1 text-[10px] sm:text-[12px] font-semibold text-[#C4735B]">
               <Briefcase className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
@@ -369,7 +375,7 @@ const FeedCard = React.memo(function FeedCard({
             )}
 
             {/* Bottom Row - Avatar + Name */}
-            <div className="flex items-center">
+            <div className="flex items-center mt-auto">
               <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 group/pro">
                 {/* Avatar with hover ring */}
                 <div className="relative">
@@ -392,7 +398,12 @@ const FeedCard = React.memo(function FeedCard({
 
         {/* Premium Ribbon */}
         {isPremium && (
-          <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 z-20">
+          <motion.div
+            className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 z-20"
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+          >
             <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg border-[1.5px] sm:border-2 border-white">
               <svg
                 viewBox="0 0 24 24"
@@ -402,9 +413,9 @@ const FeedCard = React.memo(function FeedCard({
                 <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
               </svg>
             </div>
-          </div>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
     </Link>
   );
 });

@@ -414,11 +414,11 @@ export default function JobsPage() {
           )}
 
           {/* Jobs Grid - 2 columns on mobile */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-5 items-stretch">
             {displayedJobs.map((job, index) => (
               <div
                 key={job.id}
-                className="animate-fade-in"
+                className="animate-fade-in h-full"
                 style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}
               >
                 <JobCard

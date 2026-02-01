@@ -236,11 +236,11 @@ export default function ProfessionalsPage() {
       {isLoading ? (
         <ProfessionalsSkeleton />
       ) : results.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 items-stretch">
           {results.map((profile, index) => (
             <div
               key={profile.id || `pro-${index}`}
-              className="animate-stagger"
+              className="animate-stagger h-full"
               style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}
             >
               <ProCard

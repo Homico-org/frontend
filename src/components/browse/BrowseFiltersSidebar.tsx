@@ -329,8 +329,8 @@ export default function BrowseFiltersSidebar({
   };
 
   return (
-    <aside className="w-full h-full overflow-y-auto overflow-x-hidden bg-[#FAF9F8] flex flex-col">
-      <div className="p-3 space-y-2.5 flex-1">
+    <aside className="w-full h-full overflow-hidden bg-[#FAF9F8] flex flex-col">
+      <div className="p-3 space-y-2.5 flex-1 overflow-y-auto overflow-x-hidden min-h-0">
 
         {/* Clear filters button */}
         {hasActiveFiltersLocal && (

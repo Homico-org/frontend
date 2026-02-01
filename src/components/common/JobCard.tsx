@@ -8,6 +8,7 @@ import type { Job } from "@/types/shared";
 import { formatCurrency, formatPriceRange } from "@/utils/currencyUtils";
 import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { motion } from "framer-motion";
 import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import {
   Bookmark,
@@ -144,18 +145,23 @@ const JobCard = React.memo(function JobCard({
   const isUrgent = daysLeft !== null && daysLeft <= 2 && daysLeft > 0;
 
   return (
-    <Link href={`/jobs/${job.id}`} className="group block">
-      <div
+    <Link href={`/jobs/${job.id}`} className="group block h-full">
+      <motion.div
         ref={cardRef}
         className={`
-          relative bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden
+          relative h-full flex flex-col bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden
           border border-neutral-200/70 dark:border-neutral-800
           shadow-sm hover:shadow-lg hover:shadow-neutral-900/[0.08] dark:hover:shadow-black/30
-          transition-all duration-300 sm:hover:-translate-y-0.5
+          transition-all duration-300
         `}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        whileHover={{ scale: 1.02, y: -2 }}
+        whileTap={{ scale: 0.98 }}
       >
         {/* Main card layout */}
-        <div className={`flex ${hasImages ? "flex-col" : "flex-col"}`}>
+        <div className="flex flex-col flex-1">
 
           {/* Image section - only if has images */}
           {hasImages && (
@@ -219,7 +225,7 @@ const JobCard = React.memo(function JobCard({
           )}
 
           {/* Content section */}
-          <div className="p-2.5 sm:p-4 flex flex-col gap-2 sm:gap-3">
+          <div className="p-2.5 sm:p-4 flex flex-col gap-2 sm:gap-3 flex-1">
             {/* Top row: Category + badges + time */}
             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
               <span className="px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-[11px] font-semibold rounded bg-[#C4735B]/10 text-[#C4735B]">
@@ -266,7 +272,7 @@ const JobCard = React.memo(function JobCard({
             <div className="hidden sm:block h-px bg-neutral-100 dark:bg-neutral-800" />
 
             {/* Bottom row: Client + Budget + Stats */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mt-auto">
               {/* Client info - smaller on mobile */}
               <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                 <Avatar
@@ -308,7 +314,7 @@ const JobCard = React.memo(function JobCard({
         </div>
 
         {/* Save button - floating */}
-        <button
+        <motion.button
           type="button"
           onClick={(e) => {
             e.preventDefault();
@@ -317,22 +323,29 @@ const JobCard = React.memo(function JobCard({
           }}
           className={`
             absolute top-2 right-2 sm:top-3 sm:right-3 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center
-            transition-all duration-200 sm:hover:scale-110
+            transition-all duration-200
             ${hasImages
               ? "bg-white/90 dark:bg-black/60 shadow-sm"
               : "bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
             }
           `}
+          whileHover={{ scale: 1.15 }}
+          whileTap={{ scale: 0.9 }}
         >
-          <Bookmark
-            className={`w-3 h-3 sm:w-4 sm:h-4 transition-colors ${
-              isSaved
-                ? "fill-amber-500 text-amber-500"
-                : "text-neutral-500 dark:text-neutral-400"
-            }`}
-          />
-        </button>
-      </div>
+          <motion.div
+            animate={isSaved ? { scale: [1, 1.3, 1] } : {}}
+            transition={{ duration: 0.3 }}
+          >
+            <Bookmark
+              className={`w-3 h-3 sm:w-4 sm:h-4 transition-colors ${
+                isSaved
+                  ? "fill-amber-500 text-amber-500"
+                  : "text-neutral-500 dark:text-neutral-400"
+              }`}
+            />
+          </motion.div>
+        </motion.button>
+      </motion.div>
     </Link>
   );
 });

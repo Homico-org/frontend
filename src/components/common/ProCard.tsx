@@ -8,6 +8,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
 import { storage } from "@/services/storage";
 import { ProProfile, ProStatus } from "@/types";
+import { motion } from "framer-motion";
 import { Briefcase, CheckCircle2, Clock, Eye, Sparkles, Wallet } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -208,14 +209,21 @@ export default function ProCard({
   // Default/Compact variant
   if (variant === "compact" || variant === "default") {
     return (
-      <Link href={`/professionals/${profile.id}`} className="group block">
+      <Link href={`/professionals/${profile.id}`} className="group block h-full">
         {/* Card Container with Premium Effects */}
-        <div className={`relative transition-all duration-500 ${isPremium ? 'game-card-premium' : ''}`}>
+        <motion.div
+          className={`relative transition-all duration-500 h-full ${isPremium ? 'game-card-premium' : ''}`}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
           {/* Premium border glow effect - hidden on mobile for performance */}
           <div className="hidden sm:block absolute -inset-[1px] rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#C4735B]/0 via-[#C4735B]/0 to-[#C4735B]/0 group-hover:from-[#C4735B]/25 group-hover:via-[#D4937B]/15 group-hover:to-[#C4735B]/25 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-[1px]" />
 
           {/* Main Card */}
-          <div className="relative bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80 shadow-sm sm:shadow-[0_1px_0_rgba(0,0,0,0.03),0_8px_24px_-18px_rgba(0,0,0,0.35)] group-hover:border-[#C4735B]/25 transition-all duration-500 sm:group-hover:shadow-[0_20px_50px_-12px_rgba(196,115,91,0.15)] sm:group-hover:-translate-y-0.5 p-3 sm:p-5">
+          <div className="relative h-full flex flex-col bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80 shadow-sm sm:shadow-[0_1px_0_rgba(0,0,0,0.03),0_8px_24px_-18px_rgba(0,0,0,0.35)] group-hover:border-[#C4735B]/25 transition-all duration-500 sm:group-hover:shadow-[0_20px_50px_-12px_rgba(196,115,91,0.15)] sm:group-hover:-translate-y-0.5 p-3 sm:p-5">
 
             {/* Shine effect overlay - desktop only */}
             <div className="hidden sm:block absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-30">
@@ -363,59 +371,95 @@ export default function ProCard({
               {/* Divider */}
               <div className="h-px bg-gradient-to-r from-transparent via-neutral-200 dark:via-neutral-700 to-transparent mb-3" />
 
-              {/* Categories with Subcategories */}
+              {/* Categories with Subcategories - Enhanced Display */}
               <div className="space-y-2">
-                {userCategories.slice(0, 2).map((cat, i) => {
-                  const subcatsForThisCat = getSubcatsForCategory(cat);
-                  const displaySubcats = subcatsForThisCat.slice(0, 2);
+                {(() => {
+                  // Collect all subcategories across all categories
+                  const allSubcats = userCategories.flatMap(cat =>
+                    getSubcatsForCategory(cat).map(subKey => ({ subKey, catKey: cat }))
+                  );
+                  const totalSubcats = allSubcats.length;
+
+                  // If 4 or fewer subcategories, show them all in a flowing layout
+                  if (totalSubcats <= 4) {
+                    return (
+                      <motion.div
+                        className="flex flex-wrap justify-center gap-1.5"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.1 }}
+                      >
+                        {allSubcats.map(({ subKey }, j) => (
+                          <motion.span
+                            key={j}
+                            className="px-2.5 py-1 text-[10px] font-medium text-neutral-600 dark:text-neutral-300 bg-gradient-to-br from-neutral-100 to-neutral-50 dark:from-neutral-800 dark:to-neutral-800/50 rounded-full border border-neutral-200/50 dark:border-neutral-700/50 shadow-sm"
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.1 + j * 0.05 }}
+                            whileHover={{ scale: 1.05, backgroundColor: "rgba(196, 115, 91, 0.1)" }}
+                          >
+                            {getCategoryLabel(subKey)}
+                          </motion.span>
+                        ))}
+                      </motion.div>
+                    );
+                  }
+
+                  // If more than 4 subcategories, show first 3 + overflow badge
+                  const displaySubcats = allSubcats.slice(0, 3);
+                  const remaining = totalSubcats - 3;
 
                   return (
-                    <div key={i} className="text-center">
-                      <span className="text-[10px] font-semibold text-neutral-700 dark:text-neutral-300">
-                        {getCategoryLabel(cat)}
-                      </span>
-                      {displaySubcats.length > 0 && (
-                        <div className="flex flex-wrap justify-center gap-1 mt-1">
-                          {displaySubcats.map((subcat, j) => (
-                            <span
-                              key={j}
-                              className="px-2 py-0.5 text-[9px] font-medium text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 rounded-full"
-                            >
-                              {getCategoryLabel(subcat)}
-                            </span>
-                          ))}
-                          {subcatsForThisCat.length > 2 && (
-                            <span className="text-[9px] font-medium text-neutral-400 px-1">
-                              +{subcatsForThisCat.length - 2}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    <motion.div
+                      className="flex flex-wrap justify-center gap-1.5"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.1 }}
+                    >
+                      {displaySubcats.map(({ subKey }, j) => (
+                        <motion.span
+                          key={j}
+                          className="px-2.5 py-1 text-[10px] font-medium text-neutral-600 dark:text-neutral-300 bg-gradient-to-br from-neutral-100 to-neutral-50 dark:from-neutral-800 dark:to-neutral-800/50 rounded-full border border-neutral-200/50 dark:border-neutral-700/50 shadow-sm"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.1 + j * 0.05 }}
+                          whileHover={{ scale: 1.05, backgroundColor: "rgba(196, 115, 91, 0.1)" }}
+                        >
+                          {getCategoryLabel(subKey)}
+                        </motion.span>
+                      ))}
+                      <motion.span
+                        className="px-2.5 py-1 text-[10px] font-semibold text-[#C4735B] bg-[#C4735B]/10 rounded-full border border-[#C4735B]/20"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.25 }}
+                        whileHover={{ scale: 1.1 }}
+                      >
+                        +{remaining} {t('common.more')}
+                      </motion.span>
+                    </motion.div>
                   );
-                })}
-                {userCategories.length > 2 && (
-                  <div className="text-center">
-                    <span className="text-[9px] font-medium text-neutral-400">
-                      +{userCategories.length - 2} {t('common.more')}
-                    </span>
-                  </div>
-                )}
+                })()}
               </div>
             </div>
           </div>
 
           {/* Premium Badge */}
           {isPremium && (
-            <div className="absolute -top-1 -right-1 z-20">
+            <motion.div
+              className="absolute -top-1 -right-1 z-20"
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            >
               <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg border-2 border-white">
                 <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 sm:w-4 sm:h-4 text-white">
                   <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
                 </svg>
               </div>
-            </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
       </Link>
     );
   }
@@ -423,12 +467,19 @@ export default function ProCard({
   // Horizontal variant - Enhanced
   if (variant === "horizontal") {
     return (
-      <Link href={`/professionals/${profile.id}`} className="group block">
-        <div className={`relative transition-all duration-500 ${isPremium ? 'game-card-premium' : ''}`}>
+      <Link href={`/professionals/${profile.id}`} className="group block h-full">
+        <motion.div
+          className={`relative transition-all duration-500 h-full ${isPremium ? 'game-card-premium' : ''}`}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
+        >
           {/* Premium border glow */}
           <div className="absolute -inset-[1px] rounded-xl bg-gradient-to-r from-[#C4735B]/0 via-[#C4735B]/0 to-[#C4735B]/0 group-hover:from-[#C4735B]/20 group-hover:via-[#D4937B]/10 group-hover:to-[#C4735B]/20 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-[1px]" />
-          
-          <div className="relative bg-white dark:bg-neutral-900 rounded-xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80 shadow-[0_1px_0_rgba(0,0,0,0.03),0_10px_24px_-22px_rgba(0,0,0,0.35)] group-hover:border-[#C4735B]/25 transition-all duration-500 group-hover:shadow-lg p-3.5">
+
+          <div className="relative h-full bg-white dark:bg-neutral-900 rounded-xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80 shadow-[0_1px_0_rgba(0,0,0,0.03),0_10px_24px_-22px_rgba(0,0,0,0.35)] group-hover:border-[#C4735B]/25 transition-all duration-500 group-hover:shadow-lg p-3.5">
             <div className="flex items-center gap-3.5">
               {/* Avatar - Enhanced */}
               <div className="relative flex-shrink-0 group/avatar">
@@ -519,15 +570,20 @@ export default function ProCard({
 
           {/* Premium Badge */}
           {isPremium && (
-            <div className="absolute -top-1 -right-1 z-20">
+            <motion.div
+              className="absolute -top-1 -right-1 z-20"
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            >
               <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg border-2 border-white">
                 <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-white">
                   <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
                 </svg>
               </div>
-            </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
       </Link>
     );
   }
