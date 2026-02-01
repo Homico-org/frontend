@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, ReactNode, useState, useCallback } from "react";
+import { createContext, useContext, ReactNode, useState, useCallback, useEffect } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 interface BrowseContextType {
   selectedCategory: string | null;
@@ -69,6 +70,44 @@ export function BrowseProvider({
   const [selectedCity, setSelectedCity] = useState<string>('tbilisi');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('recommended');
+
+  // URL sync
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Sync state to URL when filters change
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    if (selectedCategory) {
+      params.set('category', selectedCategory);
+    }
+    if (selectedSubcategories.length > 0) {
+      params.set('subcategories', selectedSubcategories.join(','));
+    }
+    if (minRating > 0) {
+      params.set('minRating', minRating.toString());
+    }
+    if (budgetMin !== null) {
+      params.set('budgetMin', budgetMin.toString());
+    }
+    if (budgetMax !== null) {
+      params.set('budgetMax', budgetMax.toString());
+    }
+    if (searchQuery) {
+      params.set('search', searchQuery);
+    }
+
+    const queryString = params.toString();
+    const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
+
+    // Only update if URL actually changed
+    const currentParams = searchParams.toString();
+    if (queryString !== currentParams) {
+      router.replace(newUrl, { scroll: false });
+    }
+  }, [selectedCategory, selectedSubcategories, minRating, budgetMin, budgetMax, searchQuery, pathname, router, searchParams]);
 
   // For backward compatibility - return first subcategory or null
   const selectedSubcategory = selectedSubcategories.length > 0 ? selectedSubcategories[0] : null;
