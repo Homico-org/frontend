@@ -494,7 +494,7 @@ function AdminDashboardPageContent() {
             { label: t('admin.activityLogs'), icon: ActivityIcon, href: '/admin/activity-logs', color: THEME.success },
           ].map((action, index) => (
             <Link
-              key={action.label}
+              key={action.href}
               href={action.href}
               className={`group relative overflow-hidden rounded-xl sm:rounded-2xl p-2.5 sm:p-4 transition-all duration-300 sm:hover:scale-[1.02] sm:hover:shadow-lg ${index >= 3 ? 'hidden sm:block' : ''}`}
               style={{
@@ -843,14 +843,14 @@ function AdminDashboardPageContent() {
 
             <div className="space-y-2.5 sm:space-y-4">
               {[
-                { label: t('admin.clients'), value: stats?.users.clients || 0, icon: Users, color: THEME.primary },
-                { label: t('admin.professionals'), value: stats?.users.pros || 0, icon: Shield, color: THEME.info },
-                { label: t('admin.companies'), value: stats?.users.companies || 0, icon: Building2, color: '#8B5CF6' },
-                { label: t('admin.verifiedPros'), value: stats?.users.verifiedPros || 0, icon: UserCheck, color: THEME.success },
+                { id: 'clients', label: t('admin.clients'), value: stats?.users.clients || 0, icon: Users, color: THEME.primary },
+                { id: 'pros', label: t('admin.professionals'), value: stats?.users.pros || 0, icon: Shield, color: THEME.info },
+                { id: 'companies', label: t('admin.companies'), value: stats?.users.companies || 0, icon: Building2, color: '#8B5CF6' },
+                { id: 'verifiedPros', label: t('admin.verifiedPros'), value: stats?.users.verifiedPros || 0, icon: UserCheck, color: THEME.success },
               ].map((item) => {
                 const percentage = stats?.users.total ? Math.round((item.value / stats.users.total) * 100) : 0;
                 return (
-                  <div key={item.label} className="group">
+                  <div key={item.id} className="group">
                     <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
                       <div
                         className="w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center flex-shrink-0"
@@ -984,8 +984,8 @@ function AdminDashboardPageContent() {
                     {t('admin.noData')}
                   </p>
                 ) : (
-                  jobsByCategory.slice(0, 5).map((cat) => (
-                    <div key={cat._id} className="group">
+                  jobsByCategory.slice(0, 5).map((cat, i) => (
+                    <div key={`${cat._id || 'unknown'}-${i}`} className="group">
                       <div className="flex items-center justify-between mb-1 sm:mb-1.5">
                         <span className="text-[10px] sm:text-sm truncate" style={{ color: THEME.textMuted }}>
                           {getSafeCategoryLabel(cat._id)}
@@ -1037,8 +1037,8 @@ function AdminDashboardPageContent() {
                     {t('admin.noData')}
                   </p>
                 ) : (
-                  jobsByLocation.slice(0, 5).map((loc) => (
-                    <div key={loc._id} className="group">
+                  jobsByLocation.slice(0, 5).map((loc, i) => (
+                    <div key={`${loc._id || 'unknown'}-${i}`} className="group">
                       <div className="flex items-center justify-between mb-1 sm:mb-1.5">
                         <span className="text-[10px] sm:text-sm truncate" style={{ color: THEME.textMuted }}>
                           {loc._id || t('common.unknown')}
@@ -1105,7 +1105,7 @@ function AdminDashboardPageContent() {
               ) : (
                 recentUsers.slice(0, 4).map((user, i) => (
                   <div
-                    key={user._id}
+                    key={user?._id || user?.id || user?.uid || `${user?.email || user?.phone || user?.name || 'user'}-${i}`}
                     className="px-3 py-2 sm:px-6 sm:py-3 flex items-center gap-2.5 sm:gap-4 transition-colors"
                     style={{ borderBottom: i < Math.min(recentUsers.length, 4) - 1 ? `1px solid ${THEME.border}` : 'none' }}
                     onMouseEnter={(e) => e.currentTarget.style.background = THEME.surfaceHover}
