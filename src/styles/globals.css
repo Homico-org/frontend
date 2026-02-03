@@ -1763,10 +1763,10 @@ img:not(.loading) {
 /* Mobile drawer slide-in animation */
 @keyframes slide-in-left {
   from {
-    transform: translateX(-100%);
+    left: -100%;
   }
   to {
-    transform: translateX(0);
+    left: 0;
   }
 }
 

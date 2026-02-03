@@ -451,7 +451,8 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
           </div>
 
           {/* Filters Section */}
-          <div className="flex-1 overflow-y-auto border-t border-neutral-100 dark:border-neutral-800">
+          {/* Let the sidebar component handle scrolling (avoid nested scroll containers) */}
+          <div className="flex-1 min-h-0 border-t border-neutral-100 dark:border-neutral-800">
             {isJobsPage ? (
               <JobsSidebar />
             ) : (
@@ -579,7 +580,8 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
                 <X className="w-4 h-4 text-neutral-500" />
               </button>
             </div>
-            <div className="overflow-y-auto h-[calc(100%-52px)]">
+            {/* Let the sidebar component handle scrolling (avoid nested scroll containers) */}
+            <div className="h-[calc(100%-52px)] min-h-0">
               {isJobsPage ? (
                 <JobsSidebar />
               ) : (

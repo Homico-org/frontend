@@ -10,7 +10,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { getCategoryLabelStatic } from '@/hooks/useCategoryLabels';
 import { ChevronDown, Facebook, HelpCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // Muted terracotta color matching design
 const ACCENT_COLOR = '#C47B65';
@@ -74,13 +74,17 @@ function CategoryAccordion({
 
       {/* Subcategories (animated content) */}
       <div
-        className="overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+        className="overflow-hidden overflow-y-auto transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
         style={{
+          // Let the sidebar scroll handle long lists (avoid nested scroll containers)
           maxHeight: isExpanded ? height : 0,
           opacity: isExpanded ? 1 : 0,
         }}
       >
-        <div ref={contentRef} className="px-3 pb-2.5 space-y-1.5">
+        <div
+          ref={contentRef}
+          className="px-3 pb-2.5 space-y-1.5"
+        >
           {subcategories.map((sub, index) => {
             const isSelected = selectedSubcategories.includes(sub.key);
             const subLabel = getCategoryLabelStatic(sub.key, locale);
@@ -262,11 +266,11 @@ export default function BrowseFiltersSidebar({
       }
     }
     // If category is set, make sure it's expanded
-    else if (selectedCategory && !expandedCategories[selectedCategory]) {
-      setExpandedCategories(prev => ({
-        ...prev,
-        [selectedCategory]: true,
-      }));
+    else if (selectedCategory) {
+      setExpandedCategories(prev => {
+        if (prev[selectedCategory]) return prev;
+        return { ...prev, [selectedCategory]: true };
+      });
     }
   }, [selectedCategory, selectedSubcategories, categories, getSubcategoriesForCategory]);
 
@@ -329,8 +333,12 @@ export default function BrowseFiltersSidebar({
   };
 
   return (
-    <aside className="w-full h-full overflow-hidden bg-[#FAF9F8] flex flex-col">
-      <div className="p-3 space-y-2.5 flex-1 overflow-y-auto overflow-x-hidden min-h-0">
+    <aside className="w-full h-full min-h-0 bg-[#FAF9F8] flex flex-col">
+      {/* Content (scrolls) */}
+      <div
+        className="p-3 space-y-2.5 flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
 
         {/* Clear filters button */}
         {hasActiveFiltersLocal && (
@@ -453,7 +461,7 @@ export default function BrowseFiltersSidebar({
       </div>
 
       {/* Footer: Help + Social */}
-      <div className="p-3 border-t border-neutral-200/70 bg-white/70 backdrop-blur">
+      <div className="p-3 border-t border-neutral-200/70 bg-white/70 backdrop-blur flex-shrink-0">
         <div className="flex items-center justify-between gap-3">
           <Link
             href="/help"

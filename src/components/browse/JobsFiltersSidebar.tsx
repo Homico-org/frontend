@@ -218,7 +218,10 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
     filters.showFavoritesOnly;
 
   return (
-    <aside className="w-full h-full overflow-y-auto overflow-x-hidden flex flex-col">
+    <aside
+      className="w-full h-full overflow-y-auto overflow-x-hidden flex flex-col"
+      style={{ WebkitOverflowScrolling: 'touch' }}
+    >
       <div className="px-4 py-3 flex-1">
         {/* Clear filters button */}
         {hasActiveFilters && (

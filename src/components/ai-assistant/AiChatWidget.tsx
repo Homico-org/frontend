@@ -6,6 +6,7 @@ import { Minimize2, Send, Sparkles, Trash2, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import RichContentRenderer from './RichContentRenderer';
 import { ChatMessage, SuggestedAction } from './types';
 import { useAiChat } from './useAiChat';
 
@@ -24,6 +25,15 @@ function MessageBubble({ message, locale }: { message: ChatMessage; locale: stri
       >
         <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
 
+        {/* Rich Content */}
+        {!isUser && message.richContent && message.richContent.length > 0 && (
+          <div className="mt-2">
+            {message.richContent.map((content, idx) => (
+              <RichContentRenderer key={idx} content={content} locale={locale} />
+            ))}
+          </div>
+        )}
+
         {/* Suggested Actions */}
         {!isUser && message.suggestedActions && message.suggestedActions.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-3 pt-2 border-t border-neutral-100">
@@ -39,7 +49,12 @@ function MessageBubble({ message, locale }: { message: ChatMessage; locale: stri
 
 // Suggested action button
 function SuggestedActionButton({ action, locale }: { action: SuggestedAction; locale: string }) {
-  const label = locale === 'ka' && action.labelKa ? action.labelKa : action.label;
+  const label =
+    locale === 'ka' && action.labelKa
+      ? action.labelKa
+      : locale === 'ru' && action.labelRu
+        ? action.labelRu
+        : action.label;
 
   if (action.type === 'link' && action.url) {
     return (
@@ -80,32 +95,32 @@ function WelcomeMessage({ locale }: { locale: string }) {
   const welcomeMessages = {
     en: {
       title: 'Hi! I\'m Homico AI 👋',
-      subtitle: 'Your AI renovation assistant. I can help you with:',
+      subtitle: 'Your intelligent renovation assistant. I can help you with:',
       items: [
-        'Cost estimates for renovation projects',
-        'Finding the right professional',
-        'Planning your renovation',
-        'Understanding the process',
+        'Finding the best professionals',
+        'Real price estimates from our database',
+        'Step-by-step platform guidance',
+        'Renovation planning advice',
       ],
     },
     ka: {
       title: 'გამარჯობა! მე ვარ Homico AI 👋',
-      subtitle: 'თქვენი AI რემონტის ასისტენტი. შემიძლია დაგეხმაროთ:',
+      subtitle: 'თქვენი ინტელექტუალური რემონტის ასისტენტი. შემიძლია დაგეხმაროთ:',
       items: [
-        'რემონტის ხარჯთაღრიცხვაში',
-        'სწორი სპეციალისტის პოვნაში',
+        'საუკეთესო პროფესიონალების პოვნაში',
+        'რეალური ფასების შეფასებაში',
+        'პლატფორმის გამოყენების ახსნაში',
         'რემონტის დაგეგმვაში',
-        'პროცესის გაგებაში',
       ],
     },
     ru: {
       title: 'Привет! Я Homico AI 👋',
-      subtitle: 'Ваш AI-ассистент по ремонту. Я могу помочь с:',
+      subtitle: 'Ваш интеллектуальный ассистент по ремонту. Я могу помочь с:',
       items: [
-        'Оценка стоимости ремонта',
-        'Поиск нужного специалиста',
-        'Планирование ремонта',
-        'Понимание процесса',
+        'Поиском лучших специалистов',
+        'Реальными оценками цен из базы',
+        'Пошаговым руководством по платформе',
+        'Планированием ремонта',
       ],
     },
   };
@@ -119,7 +134,7 @@ function WelcomeMessage({ locale }: { locale: string }) {
       </div>
       <h3 className="font-bold text-neutral-900 mb-1">{content.title}</h3>
       <p className="text-sm text-neutral-500 mb-3">{content.subtitle}</p>
-      <ul className="text-left text-sm text-neutral-600 space-y-1.5 max-w-[200px] mx-auto">
+      <ul className="text-left text-sm text-neutral-600 space-y-1.5 max-w-[220px] mx-auto">
         {content.items.map((item, idx) => (
           <li key={idx} className="flex items-start gap-2">
             <Sparkles className="w-3.5 h-3.5 text-[#C4735B] mt-0.5 flex-shrink-0" />
@@ -201,19 +216,19 @@ export default function AiChatWidget() {
   // Quick prompts for empty state
   const quickPrompts = {
     en: [
-      'How much does a bathroom renovation cost?',
-      'How do I find a reliable contractor?',
-      'What should I know before starting renovation?',
+      'Who is the best plumber?',
+      'How do I register as a professional?',
+      'What does bathroom renovation cost?',
     ],
     ka: [
+      'ვინ არის საუკეთესო სანტექნიკოსი?',
+      'როგორ დავრეგისტრირდე პროფესიონალად?',
       'რა ღირს აბაზანის რემონტი?',
-      'როგორ ვიპოვო საიმედო ხელოსანი?',
-      'რა უნდა ვიცოდე რემონტის დაწყებამდე?',
     ],
     ru: [
+      'Кто лучший сантехник?',
+      'Как зарегистрироваться как специалист?',
       'Сколько стоит ремонт ванной?',
-      'Как найти надежного мастера?',
-      'Что нужно знать перед началом ремонта?',
     ],
   };
 
@@ -239,14 +254,14 @@ export default function AiChatWidget() {
 
         {/* Tooltip */}
         <div className="absolute bottom-full right-0 mb-2 px-3 py-1.5 bg-neutral-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-          {locale === 'ka' ? 'Homico - AI ასისტენტი' : locale === 'ru' ? 'Homico - AI Ассистент' : 'Homico - AI Assistant'}
+          {locale === 'ka' ? 'Homico AI - ინტელექტუალური ასისტენტი' : locale === 'ru' ? 'Homico AI - Умный Ассистент' : 'Homico AI - Smart Assistant'}
           <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-neutral-900" />
         </div>
       </button>
 
       {/* Chat Panel - fullscreen on mobile, positioned panel on desktop */}
       {isOpen && (
-        <div className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 z-50 sm:w-[380px] sm:max-w-[calc(100vw-48px)] sm:h-[600px] sm:max-h-[calc(100vh-120px)] bg-[#FAFAF9] sm:rounded-2xl shadow-2xl shadow-black/20 flex flex-col overflow-hidden sm:border sm:border-neutral-200">
+        <div className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 z-50 sm:w-[400px] sm:max-w-[calc(100vw-48px)] sm:h-[650px] sm:max-h-[calc(100vh-120px)] bg-[#FAFAF9] sm:rounded-2xl shadow-2xl shadow-black/20 flex flex-col overflow-hidden sm:border sm:border-neutral-200">
           {/* Header */}
           <div className="bg-gradient-to-r from-[#C4735B] to-[#A85D47] px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -256,7 +271,7 @@ export default function AiChatWidget() {
               <div>
                 <h2 className="text-white font-semibold text-sm">Homico AI</h2>
                 <p className="text-white/70 text-xs">
-                  {locale === 'ka' ? 'AI ასისტენტი' : locale === 'ru' ? 'AI Ассистент' : 'AI Assistant'}
+                  {locale === 'ka' ? 'ინტელექტუალური ასისტენტი' : locale === 'ru' ? 'Умный Ассистент' : 'Smart Assistant'}
                 </p>
               </div>
             </div>
@@ -356,10 +371,10 @@ export default function AiChatWidget() {
             </div>
             <p className="text-[10px] text-neutral-400 text-center mt-2">
               {locale === 'ka'
-                ? 'Homico შეიძლება შეცდეს. გადაამოწმეთ მნიშვნელოვანი ინფორმაცია.'
+                ? 'Homico AI შეიძლება შეცდეს. გადაამოწმეთ მნიშვნელოვანი ინფორმაცია.'
                 : locale === 'ru'
-                ? 'Homico может ошибаться. Проверяйте важную информацию.'
-                : 'Homico can make mistakes. Verify important information.'}
+                ? 'Homico AI может ошибаться. Проверяйте важную информацию.'
+                : 'Homico AI can make mistakes. Verify important information.'}
             </p>
           </div>
         </div>
