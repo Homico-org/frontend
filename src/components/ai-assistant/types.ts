@@ -1,14 +1,130 @@
+// Rich Content Types
+export enum RichContentType {
+  PROFESSIONAL_CARD = 'PROFESSIONAL_CARD',
+  PROFESSIONAL_LIST = 'PROFESSIONAL_LIST',
+  CATEGORY_LIST = 'CATEGORY_LIST',
+  REVIEW_LIST = 'REVIEW_LIST',
+  PRICE_INFO = 'PRICE_INFO',
+  FEATURE_EXPLANATION = 'FEATURE_EXPLANATION',
+}
+
+export interface ProfessionalCardData {
+  id: string;
+  uid: number;
+  name: string;
+  avatar?: string;
+  title?: string;
+  isVerified: boolean;
+  isPremium: boolean;
+  avgRating: number;
+  totalReviews: number;
+  primaryCategory: string;
+  primaryCategoryKa?: string;
+  priceRange?: {
+    min?: number;
+    max?: number;
+    model: 'fixed' | 'range' | 'byAgreement' | 'per_sqm';
+    currency: string;
+  };
+  portfolioCount: number;
+  completedJobs: number;
+  profileUrl: string;
+}
+
+export interface CategoryItem {
+  key: string;
+  name: string;
+  nameKa?: string;
+  icon?: string;
+  subcategoryCount?: number;
+  professionalCount?: number;
+}
+
+export interface ReviewItem {
+  id: string;
+  rating: number;
+  text?: string;
+  clientName: string;
+  isAnonymous: boolean;
+  isVerified: boolean;
+  source: 'homico' | 'external';
+  projectTitle?: string;
+  createdAt: string;
+}
+
+export interface PriceRange {
+  label: string;
+  labelKa?: string;
+  min: number;
+  max: number;
+  currency: string;
+}
+
+export interface PriceInfo {
+  category: string;
+  categoryKa?: string;
+  averagePrice?: {
+    min: number;
+    max: number;
+    currency: string;
+  };
+  priceRanges: PriceRange[];
+  professionalCount: number;
+  note?: string;
+  noteKa?: string;
+}
+
+export interface FeatureStep {
+  step: number;
+  title: string;
+  titleKa?: string;
+  titleRu?: string;
+  description: string;
+  descriptionKa?: string;
+  descriptionRu?: string;
+  icon?: string;
+}
+
+export interface FeatureExplanation {
+  feature: string;
+  title: string;
+  titleKa?: string;
+  titleRu?: string;
+  description: string;
+  descriptionKa?: string;
+  descriptionRu?: string;
+  steps?: FeatureStep[];
+  actionUrl?: string;
+  actionLabel?: string;
+  actionLabelKa?: string;
+  actionLabelRu?: string;
+}
+
+export interface RichContent {
+  type: RichContentType;
+  data:
+    | ProfessionalCardData
+    | ProfessionalCardData[]
+    | CategoryItem[]
+    | ReviewItem[]
+    | PriceInfo
+    | FeatureExplanation;
+}
+
+// Chat Types
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   createdAt?: string;
   suggestedActions?: SuggestedAction[];
+  richContent?: RichContent[];
 }
 
 export interface SuggestedAction {
   type: 'link' | 'action';
   label: string;
   labelKa?: string;
+  labelRu?: string;
   url?: string;
   action?: string;
 }
@@ -24,4 +140,5 @@ export interface ChatSession {
 export interface SendMessageResponse {
   response: string;
   suggestedActions?: SuggestedAction[];
+  richContent?: RichContent[];
 }

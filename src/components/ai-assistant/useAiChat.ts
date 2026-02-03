@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { ChatMessage, ChatSession, SendMessageResponse, SuggestedAction } from './types';
+import { useState, useCallback } from 'react';
+import { ChatMessage, SendMessageResponse } from './types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
@@ -51,7 +51,13 @@ export function useAiChat() {
         const data = await findResponse.json();
         if (data.session) {
           setSessionId(data.session.sessionId);
-          setMessages(data.session.messages || []);
+          // Map messages to include richContent from metadata
+          const mappedMessages = (data.session.messages || []).map((msg: any) => ({
+            ...msg,
+            richContent: msg.metadata?.richContent,
+            suggestedActions: msg.metadata?.suggestedActions || msg.suggestedActions,
+          }));
+          setMessages(mappedMessages);
           setIsInitialized(true);
           setIsLoading(false);
           return;
@@ -129,12 +135,13 @@ export function useAiChat() {
 
       const data: SendMessageResponse = await response.json();
 
-      // Add assistant response
+      // Add assistant response with rich content
       const assistantMessage: ChatMessage = {
         role: 'assistant',
         content: data.response,
         createdAt: new Date().toISOString(),
         suggestedActions: data.suggestedActions,
+        richContent: data.richContent,
       };
       setMessages(prev => [...prev, assistantMessage]);
     } catch (err) {

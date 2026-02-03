@@ -74,9 +74,13 @@ const CATEGORY_LABELS: Record<string, { en: string; ka: string; ru: string }> = 
   welder: { en: 'Welder', ka: 'შემდუღებელი', ru: 'Сварщик' },
   locksmith: { en: 'Locksmith', ka: 'საკეტების ოსტატი', ru: 'Слесарь' },
   glasswork: { en: 'Glasswork', ka: 'მინის სამუშაოები', ru: 'Стекольные работы' },
+  mirrors: { en: 'Mirrors', ka: 'სარკეები', ru: 'Зеркала' },
+  'shower-glass': { en: 'Shower Glass / Partitions', ka: 'შხაპკაბინა / შუშის ტიხრები', ru: 'Душевое стекло / перегородки' },
+  'facade-glazing': { en: 'Facade Glazing', ka: 'ფასადის მოჭიქვა', ru: 'Фасадное остекление' },
   upholstery: { en: 'Upholstery', ka: 'რბილი ავეჯის აღდგენა', ru: 'Обивка мебели' },
   'furniture-repair': { en: 'Furniture Repair', ka: 'ავეჯის შეკეთება', ru: 'Ремонт мебели' },
   'furniture-assembly': { en: 'Furniture Assembly', ka: 'ავეჯის აწყობა', ru: 'Сборка мебели' },
+  woodwork: { en: 'Woodwork', ka: 'ხის სამუშაოები', ru: 'Деревянные работы' },
 
   // Additional renovation subcategories
   concrete: { en: 'Concrete', ka: 'ბეტონი', ru: 'Бетон' },
