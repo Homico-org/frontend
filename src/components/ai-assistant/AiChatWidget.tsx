@@ -231,10 +231,10 @@ export default function AiChatWidget() {
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Button - positioned above mobile navbar */}
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-6 right-6 z-50 group ${isOpen ? 'hidden' : ''}`}
+        className={`fixed bottom-24 right-4 sm:bottom-6 sm:right-6 z-40 group ${isOpen ? 'hidden' : ''}`}
         aria-label="Open AI Assistant"
       >
         {/* Pulse animation ring */}
@@ -266,9 +266,9 @@ export default function AiChatWidget() {
         </div>
       </button>
 
-      {/* Chat Panel */}
+      {/* Chat Panel - fullscreen on mobile, positioned panel on desktop */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-48px)] h-[600px] max-h-[calc(100vh-120px)] bg-[#FAFAF9] rounded-2xl shadow-2xl shadow-black/20 flex flex-col overflow-hidden border border-neutral-200">
+        <div className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 z-50 sm:w-[380px] sm:max-w-[calc(100vw-48px)] sm:h-[600px] sm:max-h-[calc(100vh-120px)] bg-[#FAFAF9] sm:rounded-2xl shadow-2xl shadow-black/20 flex flex-col overflow-hidden sm:border sm:border-neutral-200">
           {/* Header */}
           <div className="bg-gradient-to-r from-[#C4735B] to-[#A85D47] px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
