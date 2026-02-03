@@ -2,6 +2,7 @@ import ClientLayout from "@/components/common/ClientLayout";
 import EnvBadge from "@/components/common/EnvBadge";
 import Providers from "@/components/common/Providers";
 import ToastContainer from "@/components/common/Toast";
+import { AiChatWidget } from "@/components/ai-assistant";
 import "@/styles/globals.css";
 import * as Sentry from "@sentry/nextjs";
 import type { Metadata, Viewport } from "next";
@@ -194,6 +195,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <Providers>
           <ClientLayout>{children}</ClientLayout>
           <ToastContainer />
+          <AiChatWidget />
           <EnvBadge />
         </Providers>
       </body>
