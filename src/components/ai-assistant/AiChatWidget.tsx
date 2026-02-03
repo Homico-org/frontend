@@ -3,7 +3,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Minimize2, Send, Sparkles, Trash2, X } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -115,17 +114,8 @@ function WelcomeMessage({ locale }: { locale: string }) {
 
   return (
     <div className="text-center py-4">
-      <div className="w-16 h-16 mx-auto mb-3 relative">
-        <Image
-          src="/homi-mascot.png"
-          alt="Homi"
-          fill
-          className="object-contain"
-          onError={(e) => {
-            // Fallback if image not found
-            (e.target as HTMLImageElement).style.display = 'none';
-          }}
-        />
+      <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-[#C4735B] to-[#A85D47] rounded-full flex items-center justify-center shadow-lg shadow-[#C4735B]/20">
+        <Sparkles className="w-8 h-8 text-white" />
       </div>
       <h3 className="font-bold text-neutral-900 mb-1">{content.title}</h3>
       <p className="text-sm text-neutral-500 mb-3">{content.subtitle}</p>
@@ -244,19 +234,7 @@ export default function AiChatWidget() {
 
         {/* Button */}
         <div className="relative w-16 h-16 bg-gradient-to-br from-[#C4735B] to-[#A85D47] rounded-full shadow-lg shadow-[#C4735B]/30 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-110 group-active:scale-95">
-          <Image
-            src="/homi-mascot.png"
-            alt="Homi AI Assistant"
-            width={48}
-            height={48}
-            className="object-contain"
-            onError={(e) => {
-              // Fallback to sparkles icon if mascot not found
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
-          {/* Fallback icon */}
-          <Sparkles className="w-7 h-7 text-white absolute" />
+          <Sparkles className="w-7 h-7 text-white" />
         </div>
 
         {/* Tooltip */}
@@ -272,18 +250,8 @@ export default function AiChatWidget() {
           {/* Header */}
           <div className="bg-gradient-to-r from-[#C4735B] to-[#A85D47] px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center overflow-hidden">
-                <Image
-                  src="/homi-mascot.png"
-                  alt="Homi"
-                  width={32}
-                  height={32}
-                  className="object-contain"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
-                />
-                <Sparkles className="w-5 h-5 text-white absolute" />
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div>
                 <h2 className="text-white font-semibold text-sm">Homico AI</h2>
