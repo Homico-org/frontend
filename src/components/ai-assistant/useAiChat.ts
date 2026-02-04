@@ -38,8 +38,9 @@ export function useAiChat() {
     setError(null);
 
     try {
+      const anonymousId = getAnonymousId();
       // First, try to find an active session
-      const findResponse = await fetch(`${API_URL}/ai-assistant/sessions/active`, {
+      const findResponse = await fetch(`${API_URL}/ai-assistant/sessions/active?anonymousId=${encodeURIComponent(anonymousId)}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -51,11 +52,13 @@ export function useAiChat() {
         const data = await findResponse.json();
         if (data.session) {
           setSessionId(data.session.sessionId);
-          // Map messages to include richContent from metadata
+          // Map messages defensively (server may return either top-level fields or metadata)
           const mappedMessages = (data.session.messages || []).map((msg: any) => ({
-            ...msg,
-            richContent: msg.metadata?.richContent,
-            suggestedActions: msg.metadata?.suggestedActions || msg.suggestedActions,
+            role: msg.role,
+            content: msg.content,
+            createdAt: msg.createdAt,
+            richContent: msg.richContent ?? msg.metadata?.richContent,
+            suggestedActions: msg.suggestedActions ?? msg.metadata?.suggestedActions,
           }));
           setMessages(mappedMessages);
           setIsInitialized(true);
@@ -72,7 +75,7 @@ export function useAiChat() {
           ...getAuthHeaders(),
         },
         body: JSON.stringify({
-          anonymousId: getAnonymousId(),
+          anonymousId,
           context: {
             preferredLocale: locale,
             userRole: userRole || 'guest',
