@@ -11,7 +11,15 @@ import { ChatMessage, SuggestedAction } from './types';
 import { useAiChat } from './useAiChat';
 
 // Message bubble component
-function MessageBubble({ message, locale }: { message: ChatMessage; locale: string }) {
+function MessageBubble({
+  message,
+  locale,
+  onAction,
+}: {
+  message: ChatMessage;
+  locale: string;
+  onAction: (action: SuggestedAction) => void;
+}) {
   const isUser = message.role === 'user';
 
   return (
@@ -38,7 +46,7 @@ function MessageBubble({ message, locale }: { message: ChatMessage; locale: stri
         {!isUser && message.suggestedActions && message.suggestedActions.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-3 pt-2 border-t border-neutral-100">
             {message.suggestedActions.map((action, idx) => (
-              <SuggestedActionButton key={idx} action={action} locale={locale} />
+              <SuggestedActionButton key={idx} action={action} locale={locale} onAction={onAction} />
             ))}
           </div>
         )}
@@ -48,7 +56,15 @@ function MessageBubble({ message, locale }: { message: ChatMessage; locale: stri
 }
 
 // Suggested action button
-function SuggestedActionButton({ action, locale }: { action: SuggestedAction; locale: string }) {
+function SuggestedActionButton({
+  action,
+  locale,
+  onAction,
+}: {
+  action: SuggestedAction;
+  locale: string;
+  onAction: (action: SuggestedAction) => void;
+}) {
   const label =
     locale === 'ka' && action.labelKa
       ? action.labelKa
@@ -69,7 +85,11 @@ function SuggestedActionButton({ action, locale }: { action: SuggestedAction; lo
   }
 
   return (
-    <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-neutral-100 text-neutral-700 rounded-full hover:bg-neutral-200 transition-colors">
+    <button
+      type="button"
+      onClick={() => onAction(action)}
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-neutral-100 text-neutral-700 rounded-full hover:bg-neutral-200 transition-colors"
+    >
       {label}
     </button>
   );
@@ -202,6 +222,16 @@ export default function AiChatWidget() {
     await sendMessage(message, locale, pathname);
   }, [inputValue, isLoading, sendMessage, locale, pathname]);
 
+  const handleSuggestedAction = useCallback(async (
+    action: SuggestedAction,
+  ) => {
+    if (action.type === 'action') {
+      const text = action.action || action.label;
+      if (!text?.trim()) return;
+      await sendMessage(text, locale, pathname);
+    }
+  }, [sendMessage, locale, pathname]);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -327,7 +357,7 @@ export default function AiChatWidget() {
               </>
             ) : (
               messages.map((message, idx) => (
-                <MessageBubble key={idx} message={message} locale={locale} />
+                <MessageBubble key={idx} message={message} locale={locale} onAction={handleSuggestedAction} />
               ))
             )}
 
