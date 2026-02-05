@@ -6,6 +6,8 @@ export enum RichContentType {
   REVIEW_LIST = 'REVIEW_LIST',
   PRICE_INFO = 'PRICE_INFO',
   FEATURE_EXPLANATION = 'FEATURE_EXPLANATION',
+  FEATURE_LIST = 'FEATURE_LIST',
+  FAQ_LIST = 'FAQ_LIST',
 }
 
 export interface ProfessionalCardData {
@@ -100,6 +102,16 @@ export interface FeatureExplanation {
   actionLabelRu?: string;
 }
 
+export interface FaqItem {
+  question: string;
+  questionKa?: string;
+  questionRu?: string;
+  answer: string;
+  answerKa?: string;
+  answerRu?: string;
+  relatedFeature?: string;
+}
+
 export interface RichContent {
   type: RichContentType;
   data:
@@ -108,7 +120,9 @@ export interface RichContent {
     | CategoryItem[]
     | ReviewItem[]
     | PriceInfo
-    | FeatureExplanation;
+    | FeatureExplanation
+    | FeatureExplanation[]
+    | FaqItem[];
 }
 
 // Chat Types
