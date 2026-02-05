@@ -13,6 +13,7 @@ import {
   CategoryItem,
   FeatureExplanation,
   FeatureStep,
+  FaqItem,
   PriceInfo,
   ProfessionalCardData,
   ReviewItem,
@@ -76,6 +77,22 @@ export default function RichContentRenderer({
       return (
         <FeatureExplanationRenderer
           feature={content.data as FeatureExplanation}
+          locale={locale}
+        />
+      );
+
+    case RichContentType.FEATURE_LIST:
+      return (
+        <FeatureListRenderer
+          features={content.data as FeatureExplanation[]}
+          locale={locale}
+        />
+      );
+
+    case RichContentType.FAQ_LIST:
+      return (
+        <FaqListRenderer
+          faqs={content.data as FaqItem[]}
           locale={locale}
         />
       );
@@ -352,6 +369,104 @@ function FeatureExplanationRenderer({
           <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       )}
+    </div>
+  );
+}
+
+function FeatureListRenderer({
+  features,
+  locale,
+}: {
+  features: FeatureExplanation[];
+  locale: string;
+}) {
+  if (!features?.length) return null;
+
+  const getTitle = (f: FeatureExplanation) =>
+    locale === 'ka' ? f.titleKa : locale === 'ru' ? f.titleRu : f.title;
+
+  const getDescription = (f: FeatureExplanation) =>
+    locale === 'ka'
+      ? f.descriptionKa
+      : locale === 'ru'
+        ? f.descriptionRu
+        : f.description;
+
+  const getActionLabel = (f: FeatureExplanation) =>
+    locale === 'ka'
+      ? f.actionLabelKa
+      : locale === 'ru'
+        ? f.actionLabelRu
+        : f.actionLabel;
+
+  return (
+    <div className="mt-3 space-y-2">
+      {features.slice(0, 5).map((f) => (
+        <div
+          key={f.feature}
+          className="p-3 bg-white rounded-xl border border-neutral-200"
+        >
+          <p className="text-sm font-semibold text-neutral-900">
+            {getTitle(f) || f.feature}
+          </p>
+          <p className="text-xs text-neutral-600 mt-1">
+            {getDescription(f)}
+          </p>
+          {f.actionUrl && (
+            <Link
+              href={f.actionUrl}
+              className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-[#C4735B] hover:underline"
+            >
+              {getActionLabel(f) || (locale === 'ka' ? 'გახსნა' : locale === 'ru' ? 'Открыть' : 'Open')}
+              <ArrowRight className="w-3 h-3" />
+            </Link>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function FaqListRenderer({
+  faqs,
+  locale,
+}: {
+  faqs: FaqItem[];
+  locale: string;
+}) {
+  if (!faqs?.length) return null;
+
+  const getQ = (f: FaqItem) =>
+    locale === 'ka' ? f.questionKa : locale === 'ru' ? f.questionRu : f.question;
+
+  const getA = (f: FaqItem) =>
+    locale === 'ka' ? f.answerKa : locale === 'ru' ? f.answerRu : f.answer;
+
+  return (
+    <div className="mt-3 p-4 bg-gradient-to-br from-neutral-50 to-white rounded-xl border border-neutral-200">
+      <div className="flex items-center gap-2 mb-3">
+        <CheckCircle2 className="w-4 h-4 text-[#C4735B]" />
+        <span className="font-medium text-neutral-900">
+          {locale === 'ka' ? 'ხშირი კითხვები' : locale === 'ru' ? 'Частые вопросы' : 'FAQs'}
+        </span>
+      </div>
+
+      <div className="space-y-2">
+        {faqs.slice(0, 4).map((f, idx) => (
+          <details
+            key={`${idx}-${f.relatedFeature || ''}`}
+            className="group rounded-lg border border-neutral-200 bg-white px-3 py-2"
+          >
+            <summary className="cursor-pointer list-none text-sm font-medium text-neutral-800 flex items-center justify-between gap-2">
+              <span className="min-w-0">{getQ(f)}</span>
+              <span className="text-neutral-400 group-open:rotate-90 transition-transform">›</span>
+            </summary>
+            <p className="mt-2 text-xs text-neutral-600 leading-relaxed whitespace-pre-wrap">
+              {getA(f)}
+            </p>
+          </details>
+        ))}
+      </div>
     </div>
   );
 }
