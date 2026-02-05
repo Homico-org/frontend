@@ -141,6 +141,8 @@ export interface SuggestedAction {
   labelRu?: string;
   url?: string;
   action?: string;
+  actionKa?: string;
+  actionRu?: string;
 }
 
 export interface ChatSession {
