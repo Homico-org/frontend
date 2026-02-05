@@ -172,6 +172,7 @@ export default function AiChatWidget() {
   const [showPulse, setShowPulse] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const isMobileRef = useRef<boolean>(false);
 
   const { locale, t } = useLanguage();
   const { user } = useAuth();
@@ -214,6 +215,48 @@ export default function AiChatWidget() {
     }
   }, [isOpen]);
 
+  // Track mobile breakpoint (Tailwind `sm` is 640px)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const mql = window.matchMedia('(max-width: 639px)');
+    const update = () => {
+      isMobileRef.current = mql.matches;
+    };
+
+    update();
+    if (typeof mql.addEventListener === 'function') {
+      mql.addEventListener('change', update);
+      return () => mql.removeEventListener('change', update);
+    }
+    // Safari fallback
+    // eslint-disable-next-line deprecation/deprecation
+    mql.addListener?.(update);
+    return () => {
+      // eslint-disable-next-line deprecation/deprecation
+      mql.removeListener?.(update);
+    };
+  }, []);
+
+  // On mobile, close chat when route changes
+  useEffect(() => {
+    if (isOpen && isMobileRef.current) {
+      setIsOpen(false);
+    }
+  }, [pathname, isOpen]);
+
+  const handleChatClickCapture = useCallback((e: React.MouseEvent) => {
+    if (!isMobileRef.current) return;
+    if (!isOpen) return;
+
+    const target = e.target as HTMLElement | null;
+    const anchor = target?.closest?.('a');
+    if (!anchor) return;
+
+    // Let normal navigation proceed, but collapse widget immediately
+    setIsOpen(false);
+  }, [isOpen]);
+
   const handleSend = useCallback(async () => {
     if (!inputValue.trim() || isLoading) return;
 
@@ -226,7 +269,14 @@ export default function AiChatWidget() {
     action: SuggestedAction,
   ) => {
     if (action.type === 'action') {
-      const text = action.action || action.label;
+      const localizedAction =
+        locale === 'ka'
+          ? action.actionKa
+          : locale === 'ru'
+            ? action.actionRu
+            : action.action;
+
+      const text = localizedAction || action.action || action.label;
       if (!text?.trim()) return;
       await sendMessage(text, locale, pathname);
     }
@@ -291,7 +341,10 @@ export default function AiChatWidget() {
 
       {/* Chat Panel - fullscreen on mobile, positioned panel on desktop */}
       {isOpen && (
-        <div className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 z-50 sm:w-[400px] sm:max-w-[calc(100vw-48px)] sm:h-[650px] sm:max-h-[calc(100vh-120px)] bg-[#FAFAF9] sm:rounded-2xl shadow-2xl shadow-black/20 flex flex-col overflow-hidden sm:border sm:border-neutral-200">
+        <div
+          onClickCapture={handleChatClickCapture}
+          className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 z-50 sm:w-[400px] sm:max-w-[calc(100vw-48px)] sm:h-[650px] sm:max-h-[calc(100vh-120px)] bg-[#FAFAF9] sm:rounded-2xl shadow-2xl shadow-black/20 flex flex-col overflow-hidden sm:border sm:border-neutral-200"
+        >
           {/* Header */}
           <div className="bg-gradient-to-r from-[#C4735B] to-[#A85D47] px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
