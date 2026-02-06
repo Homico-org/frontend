@@ -18,13 +18,17 @@ import {
   ChevronRight,
   Clock,
   DollarSign,
+  Edit2,
   Eye,
   FileText,
   Filter,
   MapPin,
   Play,
   RefreshCw,
+  Star,
   Tag,
+  Trash2,
+  Users,
   X,
   XCircle,
 } from "lucide-react";
@@ -62,6 +66,25 @@ interface JobStats {
   thisMonth: number;
 }
 
+interface Proposal {
+  _id: string;
+  proId: {
+    _id: string;
+    name: string;
+    email: string;
+    avatar?: string;
+    phone?: string;
+    avgRating?: number;
+    totalReviews?: number;
+    verificationStatus?: string;
+    city?: string;
+  };
+  proposedPrice: number;
+  message?: string;
+  status: string;
+  createdAt: string;
+}
+
 type JobStatusFilter = "all" | "open" | "in_progress" | "completed" | "cancelled";
 
 function AdminJobsPageContent() {
@@ -78,6 +101,23 @@ function AdminJobsPageContent() {
   const [totalPages, setTotalPages] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const hasLoadedRef = useRef(false);
+
+  // Modal states
+  const [selectedJob, setSelectedJob] = useState<AdminJob | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showProposalsModal, setShowProposalsModal] = useState(false);
+  const [proposals, setProposals] = useState<Proposal[]>([]);
+  const [isLoadingProposals, setIsLoadingProposals] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    description: "",
+    status: "open" as AdminJob["status"],
+    budgetAmount: 0,
+    location: "",
+  });
 
   const fetchData = useCallback(
     async (showRefresh = false) => {
@@ -196,6 +236,77 @@ function AdminJobsPageContent() {
   const getClientId = (job: AdminJob) => {
     const clientIdRaw = (job as any)?.clientId?.id || (job as any)?.clientId?._id;
     return typeof clientIdRaw === "string" ? clientIdRaw : clientIdRaw?.toString?.() || "";
+  };
+
+  // Open edit modal
+  const handleEditClick = (job: AdminJob, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedJob(job);
+    setEditForm({
+      title: job.title,
+      description: job.description || "",
+      status: job.status,
+      budgetAmount: job.budget?.min || 0,
+      location: job.location || "",
+    });
+    setShowEditModal(true);
+  };
+
+  // Save job edits
+  const handleSaveJob = async () => {
+    if (!selectedJob) return;
+    setIsSaving(true);
+    try {
+      const jobId = getJobId(selectedJob);
+      await api.patch(`/admin/jobs/${jobId}`, editForm);
+      setShowEditModal(false);
+      fetchData(true);
+    } catch (err) {
+      console.error("Failed to update job:", err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Open delete modal
+  const handleDeleteClick = (job: AdminJob, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedJob(job);
+    setShowDeleteModal(true);
+  };
+
+  // Confirm delete
+  const handleConfirmDelete = async () => {
+    if (!selectedJob) return;
+    setIsDeleting(true);
+    try {
+      const jobId = getJobId(selectedJob);
+      await api.delete(`/admin/jobs/${jobId}`);
+      setShowDeleteModal(false);
+      fetchData(true);
+    } catch (err) {
+      console.error("Failed to delete job:", err);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Open proposals modal
+  const handleViewProposals = async (job: AdminJob, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedJob(job);
+    setShowProposalsModal(true);
+    setIsLoadingProposals(true);
+    try {
+      const jobId = getJobId(job);
+      const res = await api.get(`/admin/jobs/${jobId}/proposals`);
+      setProposals(res.data || []);
+    } catch (err) {
+      console.error("Failed to fetch proposals:", err);
+      setProposals([]);
+    } finally {
+      setIsLoadingProposals(false);
+    }
   };
 
   if (isLoading) {
@@ -468,16 +579,29 @@ function AdminJobsPageContent() {
                           >
                             {formatDateTimeShort(job.createdAt, locale as "en" | "ka" | "ru")}
                           </p>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (jobId) router.push(`/jobs/${jobId}`);
-                            }}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform active:scale-90"
-                            style={{ background: `${THEME.info}20` }}
-                          >
-                            <Eye className="w-4 h-4" style={{ color: THEME.info }} />
-                          </button>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={(e) => handleViewProposals(job, e)}
+                              className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform active:scale-90"
+                              style={{ background: `${THEME.accent}20` }}
+                            >
+                              <Users className="w-4 h-4" style={{ color: THEME.accent }} />
+                            </button>
+                            <button
+                              onClick={(e) => handleEditClick(job, e)}
+                              className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform active:scale-90"
+                              style={{ background: `${THEME.warning}20` }}
+                            >
+                              <Edit2 className="w-4 h-4" style={{ color: THEME.warning }} />
+                            </button>
+                            <button
+                              onClick={(e) => handleDeleteClick(job, e)}
+                              className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform active:scale-90"
+                              style={{ background: `${THEME.error}20` }}
+                            >
+                              <Trash2 className="w-4 h-4" style={{ color: THEME.error }} />
+                            </button>
+                          </div>
                         </div>
                       </div>
                       {/* Client Row */}
@@ -622,7 +746,15 @@ function AdminJobsPageContent() {
                       </div>
 
                       {/* Actions */}
-                      <div className="col-span-2 flex items-center justify-end gap-2">
+                      <div className="col-span-2 flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={(e) => handleViewProposals(job, e)}
+                          className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+                          style={{ background: `${THEME.accent}20` }}
+                          title={t("admin.viewProposals")}
+                        >
+                          <Users className="w-4 h-4" style={{ color: THEME.accent }} />
+                        </button>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -634,6 +766,22 @@ function AdminJobsPageContent() {
                           title={t("admin.viewJob")}
                         >
                           <Eye className="w-4 h-4" style={{ color: THEME.info }} />
+                        </button>
+                        <button
+                          onClick={(e) => handleEditClick(job, e)}
+                          className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+                          style={{ background: `${THEME.warning}20` }}
+                          title={t("common.edit")}
+                        >
+                          <Edit2 className="w-4 h-4" style={{ color: THEME.warning }} />
+                        </button>
+                        <button
+                          onClick={(e) => handleDeleteClick(job, e)}
+                          className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+                          style={{ background: `${THEME.error}20` }}
+                          title={t("common.delete")}
+                        >
+                          <Trash2 className="w-4 h-4" style={{ color: THEME.error }} />
                         </button>
                       </div>
                     </div>
@@ -705,6 +853,272 @@ function AdminJobsPageContent() {
           </div>
         )}
       </main>
+
+      {/* Edit Job Modal */}
+      {showEditModal && selectedJob && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.6)" }}>
+          <div
+            className="w-full max-w-lg rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
+            style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold" style={{ color: THEME.text }}>
+                {t("admin.editJob")}
+              </h2>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center"
+                style={{ background: THEME.surface }}
+              >
+                <X className="w-4 h-4" style={{ color: THEME.textMuted }} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1.5" style={{ color: THEME.textMuted }}>
+                  {t("common.title")}
+                </label>
+                <input
+                  type="text"
+                  value={editForm.title}
+                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-lg text-sm"
+                  style={{ background: THEME.surface, border: `1px solid ${THEME.border}`, color: THEME.text }}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1.5" style={{ color: THEME.textMuted }}>
+                  {t("common.description")}
+                </label>
+                <textarea
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  rows={4}
+                  className="w-full px-4 py-2.5 rounded-lg text-sm resize-none"
+                  style={{ background: THEME.surface, border: `1px solid ${THEME.border}`, color: THEME.text }}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1.5" style={{ color: THEME.textMuted }}>
+                  {t("common.status")}
+                </label>
+                <select
+                  value={editForm.status}
+                  onChange={(e) => setEditForm({ ...editForm, status: e.target.value as AdminJob["status"] })}
+                  className="w-full px-4 py-2.5 rounded-lg text-sm"
+                  style={{ background: THEME.surface, border: `1px solid ${THEME.border}`, color: THEME.text }}
+                >
+                  <option value="open">{t("common.open")}</option>
+                  <option value="in_progress">{t("common.inProgress")}</option>
+                  <option value="completed">{t("common.completed")}</option>
+                  <option value="cancelled">{t("common.cancelled")}</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1.5" style={{ color: THEME.textMuted }}>
+                  {t("common.budget")} (₾)
+                </label>
+                <input
+                  type="number"
+                  value={editForm.budgetAmount}
+                  onChange={(e) => setEditForm({ ...editForm, budgetAmount: Number(e.target.value) })}
+                  className="w-full px-4 py-2.5 rounded-lg text-sm"
+                  style={{ background: THEME.surface, border: `1px solid ${THEME.border}`, color: THEME.text }}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1.5" style={{ color: THEME.textMuted }}>
+                  {t("common.location")}
+                </label>
+                <input
+                  type="text"
+                  value={editForm.location}
+                  onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-lg text-sm"
+                  style={{ background: THEME.surface, border: `1px solid ${THEME.border}`, color: THEME.text }}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 mt-6">
+              <Button
+                variant="secondary"
+                onClick={() => setShowEditModal(false)}
+                style={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
+              >
+                {t("common.cancel")}
+              </Button>
+              <Button
+                onClick={handleSaveJob}
+                loading={isSaving}
+                style={{ background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primaryDark})` }}
+              >
+                {t("common.save")}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && selectedJob && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.6)" }}>
+          <div
+            className="w-full max-w-md rounded-2xl p-6"
+            style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+          >
+            <div className="flex items-center gap-4 mb-4">
+              <div
+                className="w-12 h-12 rounded-xl flex items-center justify-center"
+                style={{ background: `${THEME.error}20` }}
+              >
+                <Trash2 className="w-6 h-6" style={{ color: THEME.error }} />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold" style={{ color: THEME.text }}>
+                  {t("admin.deleteJob")}
+                </h2>
+                <p className="text-sm" style={{ color: THEME.textMuted }}>
+                  {t("admin.deleteJobConfirmation")}
+                </p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-lg mb-6" style={{ background: THEME.surface }}>
+              <p className="font-medium text-sm" style={{ color: THEME.text }}>
+                {selectedJob.title}
+              </p>
+              <p className="text-xs mt-1" style={{ color: THEME.textDim }}>
+                {selectedJob.proposalCount || 0} {t("admin.proposals")} • {selectedJob.clientId?.name}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-3">
+              <Button
+                variant="secondary"
+                onClick={() => setShowDeleteModal(false)}
+                style={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
+              >
+                {t("common.cancel")}
+              </Button>
+              <Button
+                onClick={handleConfirmDelete}
+                loading={isDeleting}
+                style={{ background: THEME.error }}
+              >
+                {t("common.delete")}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Proposals Modal */}
+      {showProposalsModal && selectedJob && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.6)" }}>
+          <div
+            className="w-full max-w-2xl rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
+            style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-lg font-semibold" style={{ color: THEME.text }}>
+                  {t("admin.jobProposals")}
+                </h2>
+                <p className="text-sm" style={{ color: THEME.textMuted }}>
+                  {selectedJob.title}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowProposalsModal(false)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center"
+                style={{ background: THEME.surface }}
+              >
+                <X className="w-4 h-4" style={{ color: THEME.textMuted }} />
+              </button>
+            </div>
+
+            {isLoadingProposals ? (
+              <div className="py-12 text-center">
+                <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: THEME.primary }} />
+                <p className="text-sm mt-3" style={{ color: THEME.textMuted }}>{t("common.loading")}</p>
+              </div>
+            ) : proposals.length === 0 ? (
+              <div className="py-12 text-center">
+                <Users className="w-12 h-12 mx-auto mb-3" style={{ color: THEME.textDim }} />
+                <p className="text-sm" style={{ color: THEME.textMuted }}>{t("admin.noProposalsYet")}</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {proposals.map((proposal) => (
+                  <div
+                    key={proposal._id}
+                    className="p-4 rounded-xl"
+                    style={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <Avatar src={proposal.proId?.avatar} name={proposal.proId?.name || "Pro"} size="md" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm" style={{ color: THEME.text }}>
+                            {proposal.proId?.name || "Unknown"}
+                          </p>
+                          {proposal.proId?.verificationStatus === "verified" && (
+                            <CheckCircle className="w-4 h-4" style={{ color: THEME.success }} />
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {proposal.proId?.avgRating ? (
+                            <span className="flex items-center gap-1 text-xs" style={{ color: THEME.warning }}>
+                              <Star className="w-3 h-3 fill-current" />
+                              {proposal.proId.avgRating.toFixed(1)}
+                            </span>
+                          ) : null}
+                          {proposal.proId?.city && (
+                            <span className="flex items-center gap-1 text-xs" style={{ color: THEME.textDim }}>
+                              <MapPin className="w-3 h-3" />
+                              {proposal.proId.city}
+                            </span>
+                          )}
+                          {proposal.proId?.phone && (
+                            <span className="text-xs" style={{ color: THEME.textDim }}>
+                              {proposal.proId.phone}
+                            </span>
+                          )}
+                        </div>
+                        {proposal.message && (
+                          <p className="text-xs mt-2 line-clamp-2" style={{ color: THEME.textMuted }}>
+                            {proposal.message}
+                          </p>
+                        )}
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="font-semibold" style={{ color: THEME.accent, fontFamily: "'JetBrains Mono', monospace" }}>
+                          ₾{proposal.proposedPrice}
+                        </p>
+                        <span
+                          className="inline-block px-2 py-0.5 rounded-md text-xs font-medium mt-1"
+                          style={{
+                            background: proposal.status === "accepted" ? `${THEME.success}20` : proposal.status === "rejected" ? `${THEME.error}20` : `${THEME.warning}20`,
+                            color: proposal.status === "accepted" ? THEME.success : proposal.status === "rejected" ? THEME.error : THEME.warning,
+                          }}
+                        >
+                          {proposal.status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
