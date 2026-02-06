@@ -543,7 +543,26 @@ export default function ProfessionalDetailClient({
       toast.success(t("common.linkCopied"));
       setTimeout(() => setCopySuccess(false), 2000);
       setShowShareMenu(false);
-    } catch {
+    } catch (err) {
+      // Some browsers (notably iOS Safari) can throw NotReadableError / NotAllowedError
+      // even on user gesture. Fall back to legacy copy if possible.
+      try {
+        const input = document.createElement("input");
+        input.value = getShareUrl();
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        document.body.removeChild(input);
+        setCopySuccess(true);
+        toast.success(t("common.linkCopied"));
+        setTimeout(() => setCopySuccess(false), 2000);
+        setShowShareMenu(false);
+        return;
+      } catch {
+        // ignore
+      }
+
+      console.error("Failed to copy link:", err);
       toast.error(t("common.error"));
     }
   };
@@ -2399,26 +2418,30 @@ export default function ProfessionalDetailClient({
         onClose={() => setShowContactModal(false)}
         onSend={async (msg: string) => {
           if (!user) return;
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/conversations/start`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-              },
-              body: JSON.stringify({ proId: profile?.id, message: msg }),
+          try {
+            const response = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/conversations/start`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                },
+                body: JSON.stringify({ proId: profile?.id, message: msg }),
+              }
+            );
+            if (!response.ok) {
+              throw new Error("Failed to send message");
             }
-          );
-          if (response.ok) {
             setShowContactModal(false);
             toast.success(t("common.messageSent"));
             trackEvent(AnalyticsEvent.CONVERSATION_START, {
               proId: profile?.id,
               proName: profile?.name,
             });
-          } else {
-            throw new Error("Failed to send message");
+          } catch (err) {
+            console.error("Failed to start conversation:", err);
+            toast.error(t("common.error"));
           }
         }}
         name={profile?.name || ""}
@@ -2604,6 +2627,22 @@ function ProjectFormModal({
   const afterInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
 
+  const isNotReadableError = (err: unknown): boolean => {
+    // DOMException in browsers
+    if (typeof DOMException !== "undefined" && err instanceof DOMException) {
+      return err.name === "NotReadableError";
+    }
+    // Axios/other wrappers may serialize to plain object
+    return typeof err === "object" && err !== null && (err as any).name === "NotReadableError";
+  };
+
+  const fileReadErrorText =
+    locale === "ka"
+      ? "ფაილი ვერ წაიკითხა. სცადეთ ისევ არჩევა (iCloud-იდან გადმოწერეთ და შემდეგ ატვირთეთ)."
+      : locale === "ru"
+        ? "Не удалось прочитать файл. Выберите заново (если iCloud — сначала скачайте)."
+        : "Couldn't read the file. Please reselect it (if it's from iCloud, download it first).";
+
   // File size limits
   const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
   const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB
@@ -2656,7 +2695,10 @@ function ProjectFormModal({
       formData.append("file", file);
       const response = await api.post("/upload", formData);
       return response.data.url || response.data.filename;
-    } catch {
+    } catch (err) {
+      if (isNotReadableError(err)) {
+        throw err;
+      }
       return null;
     }
   };
@@ -2676,17 +2718,27 @@ function ProjectFormModal({
           toast.error(t("common.error"), error);
           continue;
         }
-        const url = await uploadFile(file);
-        if (url) newImages.push(url);
+        try {
+          const url = await uploadFile(file);
+          if (url) newImages.push(url);
+        } catch (err) {
+          if (isNotReadableError(err)) {
+            toast.error(t("common.error"), fileReadErrorText);
+          } else {
+            toast.error(t("common.error"), t("common.uploadFailed"));
+          }
+        }
       }
       if (newImages.length > 0) {
         setImages((prev) => [...prev, ...newImages]);
       }
-    } catch {
-      toast.error(
-        t("common.error"),
-        t("common.uploadFailed")
-      );
+    } catch (err) {
+      if (isNotReadableError(err)) {
+        toast.error(t("common.error"), fileReadErrorText);
+      } else {
+        toast.error(t("common.error"), t("common.uploadFailed"));
+      }
+      console.error("Image upload failed:", err);
     } finally {
       setIsUploading(false);
       setUploadingType(null);
@@ -2709,17 +2761,27 @@ function ProjectFormModal({
           toast.error(t("common.error"), error);
           continue;
         }
-        const url = await uploadFile(file);
-        if (url) newVideos.push(url);
+        try {
+          const url = await uploadFile(file);
+          if (url) newVideos.push(url);
+        } catch (err) {
+          if (isNotReadableError(err)) {
+            toast.error(t("common.error"), fileReadErrorText);
+          } else {
+            toast.error(t("common.error"), t("common.uploadFailed"));
+          }
+        }
       }
       if (newVideos.length > 0) {
         setVideos((prev) => [...prev, ...newVideos]);
       }
-    } catch {
-      toast.error(
-        t("common.error"),
-        t("common.uploadFailed")
-      );
+    } catch (err) {
+      if (isNotReadableError(err)) {
+        toast.error(t("common.error"), fileReadErrorText);
+      } else {
+        toast.error(t("common.error"), t("common.uploadFailed"));
+      }
+      console.error("Video upload failed:", err);
     } finally {
       setIsUploading(false);
       setUploadingType(null);
@@ -2744,11 +2806,13 @@ function ProjectFormModal({
       if (url) {
         setPendingBeforeImage(url);
       }
-    } catch {
-      toast.error(
-        t("common.error"),
-        t("common.uploadFailed")
-      );
+    } catch (err) {
+      if (isNotReadableError(err)) {
+        toast.error(t("common.error"), fileReadErrorText);
+      } else {
+        toast.error(t("common.error"), t("common.uploadFailed"));
+      }
+      console.error("Before image upload failed:", err);
     } finally {
       setIsUploading(false);
       setUploadingType(null);
@@ -2777,11 +2841,13 @@ function ProjectFormModal({
         ]);
         setPendingBeforeImage(null);
       }
-    } catch {
-      toast.error(
-        t("common.error"),
-        t("common.uploadFailed")
-      );
+    } catch (err) {
+      if (isNotReadableError(err)) {
+        toast.error(t("common.error"), fileReadErrorText);
+      } else {
+        toast.error(t("common.error"), t("common.uploadFailed"));
+      }
+      console.error("After image upload failed:", err);
     } finally {
       setIsUploading(false);
       setUploadingType(null);
