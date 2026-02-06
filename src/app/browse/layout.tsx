@@ -611,27 +611,20 @@ function BrowseLayoutContent({ children }: { children: ReactNode }) {
 }
 
 function BrowseLayoutWithParams({ children }: { children: ReactNode }) {
-  const { t } = useLanguage();
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const isJobsPage = pathname.includes("/browse/jobs");
 
-  const content = (
-    <BrowseProvider
-      initialCategory={searchParams.get("category")}
-      initialSubcategory={searchParams.get("subcategory")}
-      initialSubcategories={searchParams.get("subcategories")?.split(",").filter(Boolean) || []}
-    >
-      <BrowseLayoutContent>{children}</BrowseLayoutContent>
-    </BrowseProvider>
+  // Always wrap with JobsProvider to avoid hydration issues when navigating between pages
+  return (
+    <JobsProvider>
+      <BrowseProvider
+        initialCategory={searchParams.get("category")}
+        initialSubcategory={searchParams.get("subcategory")}
+        initialSubcategories={searchParams.get("subcategories")?.split(",").filter(Boolean) || []}
+      >
+        <BrowseLayoutContent>{children}</BrowseLayoutContent>
+      </BrowseProvider>
+    </JobsProvider>
   );
-
-  // Wrap with JobsProvider if on jobs page
-  if (isJobsPage) {
-    return <JobsProvider>{content}</JobsProvider>;
-  }
-
-  return content;
 }
 
 export default function BrowseLayout({ children }: { children: ReactNode }) {

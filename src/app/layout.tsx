@@ -4,7 +4,6 @@ import Providers from "@/components/common/Providers";
 import ToastContainer from "@/components/common/Toast";
 import { AiChatWidget } from "@/components/ai-assistant";
 import "@/styles/globals.css";
-import * as Sentry from "@sentry/nextjs";
 import type { Metadata, Viewport } from "next";
 
 export const viewport: Viewport = {
@@ -99,9 +98,6 @@ export function generateMetadata(): Metadata {
     verification: {
       google: "j0mOXsOhfeaKO7Z94EVIl7Rmek8eNsWj8a4fLbFcfgo",
     },
-    other: {
-      ...Sentry.getTraceData(),
-    },
   };
 }
 
@@ -113,6 +109,33 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Chrome/Android PWA meta (pairs with appleWebApp capable) */}
+        <meta name="mobile-web-app-capable" content="yes" />
+
+        {/* iOS Safari/WKWebView safety: some 3P scripts assume messageHandlers exists */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function () {
+                try {
+                  var w = window;
+                  if (!w.webkit) w.webkit = {};
+                  if (!w.webkit.messageHandlers) {
+                    var stub = { postMessage: function () {} };
+                    if (typeof Proxy === 'function') {
+                      w.webkit.messageHandlers = new Proxy({}, {
+                        get: function () { return stub; }
+                      });
+                    } else {
+                      w.webkit.messageHandlers = {};
+                    }
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+
         {/* Google Analytics (gtag.js) */}
         <script
           async
