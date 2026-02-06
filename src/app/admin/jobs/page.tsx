@@ -79,8 +79,8 @@ interface Proposal {
     verificationStatus?: string;
     city?: string;
   };
-  proposedPrice: number;
-  message?: string;
+  proposedPrice?: number;
+  coverLetter?: string;
   status: string;
   createdAt: string;
 }
@@ -949,14 +949,14 @@ function AdminJobsPageContent() {
               <Button
                 variant="secondary"
                 onClick={() => setShowEditModal(false)}
-                style={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
+                style={{ background: THEME.surface, border: `1px solid ${THEME.border}`, color: THEME.text }}
               >
                 {t("common.cancel")}
               </Button>
               <Button
                 onClick={handleSaveJob}
                 loading={isSaving}
-                style={{ background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primaryDark})` }}
+                style={{ background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primaryDark})`, color: "#fff" }}
               >
                 {t("common.save")}
               </Button>
@@ -1002,14 +1002,14 @@ function AdminJobsPageContent() {
               <Button
                 variant="secondary"
                 onClick={() => setShowDeleteModal(false)}
-                style={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
+                style={{ background: THEME.surface, border: `1px solid ${THEME.border}`, color: THEME.text }}
               >
                 {t("common.cancel")}
               </Button>
               <Button
                 onClick={handleConfirmDelete}
                 loading={isDeleting}
-                style={{ background: THEME.error }}
+                style={{ background: THEME.error, color: "#fff" }}
               >
                 {t("common.delete")}
               </Button>
@@ -1091,9 +1091,9 @@ function AdminJobsPageContent() {
                             </span>
                           )}
                         </div>
-                        {proposal.message && (
+                        {proposal.coverLetter && (
                           <p className="text-xs mt-2 line-clamp-2" style={{ color: THEME.textMuted }}>
-                            {proposal.message}
+                            {proposal.coverLetter}
                           </p>
                         )}
                       </div>

@@ -2245,7 +2245,12 @@
     "statusRejected": "Rejected",
     "verificationUpdated": "Verification status updated",
     "verificationUpdateFailed": "Failed to update verification",
-    "noteFromAdmin": "Note from admin"
+    "noteFromAdmin": "Note from admin",
+    "editJob": "Edit Job",
+    "viewProposals": "View Proposals",
+    "jobProposals": "Job Proposals",
+    "noProposalsYet": "No proposals yet",
+    "deleteJobConfirmation": "This action cannot be undone. All proposals will also be deleted."
   },
   "card": {
     "negotiable": "Negotiable",

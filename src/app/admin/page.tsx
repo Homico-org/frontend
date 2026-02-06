@@ -5,11 +5,11 @@ import Avatar from '@/components/common/Avatar';
 import { ADMIN_THEME as THEME } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { getCategoryLabelStatic } from '@/hooks/useCategoryLabels';
 import { api } from '@/lib/api';
 import { formatTimeAgoCompact } from '@/utils/dateUtils';
 import { logApiError } from '@/utils/errorUtils';
 import { getAdminActivityColor } from '@/utils/statusUtils';
-import { getCategoryLabelStatic } from '@/hooks/useCategoryLabels';
 import {
   Activity as ActivityIcon,
   AlertCircle,

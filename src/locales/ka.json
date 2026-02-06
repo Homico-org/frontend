@@ -2244,7 +2244,12 @@
     "statusRejected": "უარყოფილი",
     "verificationUpdated": "ვერიფიკაციის სტატუსი განახლდა",
     "verificationUpdateFailed": "ვერიფიკაციის განახლება ვერ მოხერხდა",
-    "noteFromAdmin": "ადმინისტრატორის შენიშვნა"
+    "noteFromAdmin": "ადმინისტრატორის შენიშვნა",
+    "editJob": "განცხადების რედაქტირება",
+    "viewProposals": "შეთავაზებების ნახვა",
+    "jobProposals": "განცხადების შეთავაზებები",
+    "noProposalsYet": "შეთავაზებები ჯერ არ არის",
+    "deleteJobConfirmation": "ეს მოქმედება ვერ გაუქმდება. ყველა შეთავაზება ასევე წაიშლება."
   },
   "card": {
     "negotiable": "შეთანხმებით",

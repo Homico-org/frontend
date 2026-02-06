@@ -2245,7 +2245,12 @@
     "statusRejected": "Отклонено",
     "verificationUpdated": "Статус верификации обновлён",
     "verificationUpdateFailed": "Не удалось обновить верификацию",
-    "noteFromAdmin": "Заметка от администратора"
+    "noteFromAdmin": "Заметка от администратора",
+    "editJob": "Редактировать заказ",
+    "viewProposals": "Просмотр предложений",
+    "jobProposals": "Предложения по заказу",
+    "noProposalsYet": "Предложений пока нет",
+    "deleteJobConfirmation": "Это действие нельзя отменить. Все предложения также будут удалены."
   },
   "card": {
     "negotiable": "По договорённости",
