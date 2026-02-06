@@ -2244,13 +2244,14 @@ export default function JobDetailClient() {
       {/* Main Content */}
       <main className="relative z-10 bg-[#FAFAFA] dark:bg-[#0A0A0A]">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-4">
-          {/* Submit Proposal button for pro - only when not hired and not owner */}
+          {/* Submit Proposal button for pro - only for design/architecture categories */}
           {isPro &&
             !isOwner &&
             isOpen &&
             !isHired &&
             !myProposal &&
-            !isCheckingProposal && (
+            !isCheckingProposal &&
+            isHighLevelCategory(job?.category) && (
               <div className="flex justify-end mb-4">
                 {user?.verificationStatus === "verified" ? (
                   <Button
@@ -3320,14 +3321,15 @@ export default function JobDetailClient() {
         </div>
       </main>
 
-      {/* Mobile Sticky CTA for Submit Proposal */}
+      {/* Mobile Sticky CTA for Submit Proposal - only for design/architecture */}
       {isPro &&
         !isOwner &&
         isOpen &&
         !isHired &&
         !myProposal &&
         !isCheckingProposal &&
-        user?.verificationStatus === "verified" && (
+        user?.verificationStatus === "verified" &&
+        isHighLevelCategory(job?.category) && (
           <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 p-4 safe-area-bottom">
             <Button
               onClick={() => setShowProposalForm(true)}

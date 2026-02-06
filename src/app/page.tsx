@@ -426,14 +426,14 @@ export default function HomePage() {
       });
   }, []);
 
-  // Redirect logged-in users to the main app; guests see landing
+  // Redirect all users to the main app (landing page temporarily disabled)
   useEffect(() => {
     if (isLoading) return;
-    if (!user) return;
-    if (user.role === "pro") {
+    if (user?.role === "pro") {
       router.replace("/browse/jobs");
       return;
     }
+    // Redirect everyone (including guests) to browse/portfolio - landing page temporarily disabled
     router.replace("/browse/portfolio");
   }, [router, user, isLoading]);
 
@@ -529,9 +529,14 @@ export default function HomePage() {
     window.scrollTo({ top: window.innerHeight * 0.8, behavior: "smooth" });
   };
 
-  // Avoid landing page flash while redirecting logged-in users
+  // Landing page temporarily disabled - redirect everyone to browse/portfolio
+  // Avoid flash while redirecting
   if (isLoading) return null;
-  if (user) return null;
+
+  // TEMPORARY: Landing page disabled - always redirect, never show landing
+  // To re-enable: change `false` to `!user` below
+  const showLandingPage = false; // was: !user
+  if (!showLandingPage) return null;
 
   return (
     <div className="min-h-screen bg-[#FAFAF8] dark:bg-neutral-950 overflow-x-hidden">

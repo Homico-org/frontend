@@ -298,17 +298,14 @@ export default function AiChatWidget() {
     en: [
       'Who is the best plumber?',
       'How do I register as a professional?',
-      'What does bathroom renovation cost?',
     ],
     ka: [
       'ვინ არის საუკეთესო სანტექნიკოსი?',
       'როგორ დავრეგისტრირდე პროფესიონალად?',
-      'რა ღირს აბაზანის რემონტი?',
     ],
     ru: [
       'Кто лучший сантехник?',
       'Как зарегистрироваться как специалист?',
-      'Сколько стоит ремонт ванной?',
     ],
   };
 
