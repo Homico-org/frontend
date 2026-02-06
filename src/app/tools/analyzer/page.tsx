@@ -423,7 +423,8 @@ Heating:
     return t(`tools.categories.${category}`);
   };
 
-  const formatCurrency = (amount: number) => amount.toLocaleString() + '₾';
+  const formatCurrency = (amount: number | null | undefined) =>
+    amount != null ? amount.toLocaleString() + '₾' : '—';
 
   const itemsByCategory = analysis?.items.reduce(
     (acc, item) => {
