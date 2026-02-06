@@ -229,11 +229,9 @@ export default function AiChatWidget() {
       mql.addEventListener('change', update);
       return () => mql.removeEventListener('change', update);
     }
-    // Safari fallback
-    // eslint-disable-next-line deprecation/deprecation
+    // Safari fallback (addListener/removeListener are deprecated but needed for older Safari)
     mql.addListener?.(update);
     return () => {
-      // eslint-disable-next-line deprecation/deprecation
       mql.removeListener?.(update);
     };
   }, []);
