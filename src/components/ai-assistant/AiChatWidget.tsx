@@ -284,9 +284,13 @@ export default function AiChatWidget() {
   }, []);
 
   // On mobile, close chat when route changes
+  const prevPathnameRef = useRef(pathname);
   useEffect(() => {
-    if (isOpen && isMobileRef.current) {
-      setIsOpen(false);
+    if (prevPathnameRef.current !== pathname) {
+      prevPathnameRef.current = pathname;
+      if (isOpen && isMobileRef.current) {
+        setIsOpen(false);
+      }
     }
   }, [pathname, isOpen]);
 
