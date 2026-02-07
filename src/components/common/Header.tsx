@@ -472,17 +472,27 @@ export default function Header() {
                 </Button>
               </div>
 
-              {/* Mobile: Make signup visible (no hidden CTA) */}
-              <Button
-                size="sm"
-                asChild
-                className="sm:hidden h-9 px-4 rounded-xl font-semibold"
-                style={{ backgroundColor: ACCENT_COLOR, color: "#fff" }}
-              >
-                <Link href="/register">
-                  {t("header.signUp")}
-                </Link>
-              </Button>
+              {/* Mobile: Login + Register */}
+              <div className="flex sm:hidden items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => openLoginModal()}
+                  className="h-9 px-3 rounded-xl font-semibold"
+                >
+                  {t("common.login")}
+                </Button>
+                <Button
+                  size="sm"
+                  asChild
+                  className="h-9 px-4 rounded-xl font-semibold"
+                  style={{ backgroundColor: ACCENT_COLOR, color: "#fff" }}
+                >
+                  <Link href="/register">
+                    {t("header.signUp")}
+                  </Link>
+                </Button>
+              </div>
             </>
           )}
         </div>
