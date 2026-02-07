@@ -9,9 +9,7 @@ export default function PortfolioPage() {
   const [topRatedActive] = useState(false);
 
   return (
-    <FeedSection
-      selectedCategory={selectedCategory}
-      topRatedActive={topRatedActive}
-    />
+    <FeedSection selectedCategory={selectedCategory} topRatedActive={topRatedActive} />
   );
 }
+

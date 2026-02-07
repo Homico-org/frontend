@@ -20,7 +20,7 @@ export default function UIShowcase() {
             <span className="text-lg font-semibold text-neutral-800">UI Components</span>
             <span className="text-xs text-neutral-400">temp</span>
           </div>
-          <Button variant="ghost" href="/browse" size="sm">
+          <Button variant="ghost" href="/portfolio" size="sm">
             Back to App
           </Button>
         </div>
@@ -112,13 +112,13 @@ export default function UIShowcase() {
             {/* As Link */}
             <div className="p-5 rounded-xl border border-neutral-200 bg-white">
               <p className="text-xs text-neutral-500 mb-4 font-mono">
-                {`href="/browse"`}
+                {`href="/portfolio"`}
               </p>
               <div className="flex flex-wrap items-center gap-3">
-                <Button variant="primary" href="/browse" icon={<ButtonIcons.Arrow />} iconPosition="right">
+                <Button variant="primary" href="/portfolio" icon={<ButtonIcons.Arrow />} iconPosition="right">
                   Go to Browse
                 </Button>
-                <Button variant="outline" href="/browse">
+                <Button variant="outline" href="/portfolio">
                   Link Button
                 </Button>
               </div>
@@ -152,7 +152,7 @@ export default function UIShowcase() {
 
 <Button variant="primary">Click me</Button>
 <Button variant="primary" icon={<ButtonIcons.Chat />}>Message</Button>
-<Button href="/browse" variant="outline">Link</Button>
+<Button href="/portfolio" variant="outline">Link</Button>
 <Button variant="primary" fullWidth loading={isLoading}>Submit</Button>`}</pre>
           </div>
         </section>

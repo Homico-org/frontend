@@ -38,7 +38,7 @@ export default function JobDetailHero({
   status,
   isHired = false,
   locale,
-  backHref = "/browse/jobs",
+  backHref = "/jobs",
   onMediaClick,
   categoryIllustration,
 }: JobDetailHeroProps) {

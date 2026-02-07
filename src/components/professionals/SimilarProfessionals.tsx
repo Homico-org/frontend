@@ -101,7 +101,7 @@ export default function SimilarProfessionals({
     return null;
   }
 
-  const browseUrl = `/browse/professionals?${subcategories.length > 0 ? `subcategories=${subcategories.join(',')}` : `category=${categories[0] || ""}`}`;
+  const browseUrl = `/professionals?${subcategories.length > 0 ? `subcategories=${subcategories.join(',')}` : `category=${categories[0] || ""}`}`;
   const useMarquee = professionals.length > MARQUEE_THRESHOLD;
 
   return (

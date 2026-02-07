@@ -14,7 +14,7 @@ import { Users } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function ProfessionalsPage() {
-  const { t, locale } = useLanguage();
+  const { t } = useLanguage();
   const { user } = useAuth();
   const { trackEvent } = useAnalytics();
   const {
@@ -34,18 +34,13 @@ export default function ProfessionalsPage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [totalCount, setTotalCount] = useState(0);
   const loaderRef = useRef<HTMLDivElement>(null);
 
-  // Fetch professionals
   const fetchProfessionals = useCallback(
     async (pageNum: number, reset = false) => {
       try {
-        if (reset) {
-          setIsLoading(true);
-        } else {
-          setIsLoadingMore(true);
-        }
+        if (reset) setIsLoading(true);
+        else setIsLoadingMore(true);
 
         const params = new URLSearchParams();
         params.append("page", pageNum.toString());
@@ -67,15 +62,9 @@ export default function ProfessionalsPage() {
         const profiles = result.data as ProProfile[];
         const pagination = result.pagination || {};
 
-        if (reset) {
-          setResults(profiles);
-        } else {
-          setResults((prev) => [...prev, ...profiles]);
-        }
+        if (reset) setResults(profiles);
+        else setResults((prev) => [...prev, ...profiles]);
 
-        setTotalCount(
-          pagination.total || result.total || result.totalCount || 0,
-        );
         setHasMore(
           pagination.hasMore ?? (profiles.length === 12 && profiles.length > 0),
         );
@@ -99,14 +88,10 @@ export default function ProfessionalsPage() {
     ],
   );
 
-  // Track if initial fetch has been done to prevent double fetching
   const hasFetchedRef = useRef(false);
-  // Track previous filter key to prevent duplicate fetches
   const prevFiltersRef = useRef<string | null>(null);
 
-  // Reset and fetch when filters change
   useEffect(() => {
-    // Create a filter key to compare against previous filters
     const filterKey = JSON.stringify({
       selectedCategory,
       selectedSubcategories,
@@ -118,12 +103,8 @@ export default function ProfessionalsPage() {
       budgetMax,
     });
 
-    // Skip if filters haven't changed and we've already fetched
-    if (prevFiltersRef.current === filterKey && hasFetchedRef.current) {
-      return;
-    }
+    if (prevFiltersRef.current === filterKey && hasFetchedRef.current) return;
 
-    // Track analytics events only when filters actually change (not initial mount)
     if (hasFetchedRef.current && prevFiltersRef.current !== filterKey) {
       if (searchQuery) {
         trackEvent(AnalyticsEvent.SEARCH, {
@@ -132,9 +113,7 @@ export default function ProfessionalsPage() {
         });
       }
       if (selectedCategory) {
-        trackEvent(AnalyticsEvent.CATEGORY_SELECT, {
-          category: selectedCategory,
-        });
+        trackEvent(AnalyticsEvent.CATEGORY_SELECT, { category: selectedCategory });
       }
       if (selectedSubcategories.length > 0) {
         trackEvent(AnalyticsEvent.SUBCATEGORY_SELECT, {
@@ -144,7 +123,6 @@ export default function ProfessionalsPage() {
       }
     }
 
-    // Update refs and fetch
     prevFiltersRef.current = filterKey;
     hasFetchedRef.current = true;
     setPage(1);
@@ -162,34 +140,22 @@ export default function ProfessionalsPage() {
     trackEvent,
   ]);
 
-  // Infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (
-          entries[0].isIntersecting &&
-          hasMore &&
-          !isLoading &&
-          !isLoadingMore
-        ) {
+        if (entries[0].isIntersecting && hasMore && !isLoading && !isLoadingMore) {
           setPage((prev) => prev + 1);
         }
       },
       { threshold: 0.1 },
     );
 
-    if (loaderRef.current) {
-      observer.observe(loaderRef.current);
-    }
-
+    if (loaderRef.current) observer.observe(loaderRef.current);
     return () => observer.disconnect();
   }, [hasMore, isLoading, isLoadingMore]);
 
-  // Fetch more when page changes
   useEffect(() => {
-    if (page > 1) {
-      fetchProfessionals(page);
-    }
+    if (page > 1) fetchProfessionals(page);
   }, [page, fetchProfessionals]);
 
   const handleProLike = async (proId: string) => {
@@ -197,7 +163,6 @@ export default function ProfessionalsPage() {
     await toggleLike(LikeTargetType.PRO_PROFILE, proId);
   };
 
-  // Compact Loading skeleton - matches new card design
   const ProfessionalsSkeleton = () => (
     <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
       {Array.from({ length: 8 }).map((_, i) => (
@@ -217,7 +182,6 @@ export default function ProfessionalsPage() {
     </div>
   );
 
-  // Empty state using shared component
   const ProfessionalsEmptyState = () => (
     <EmptyState
       icon={Users}
@@ -232,7 +196,6 @@ export default function ProfessionalsPage() {
 
   return (
     <div className="space-y-3 sm:space-y-4">
-      {/* Results Grid */}
       {isLoading ? (
         <ProfessionalsSkeleton />
       ) : results.length > 0 ? (
@@ -256,7 +219,6 @@ export default function ProfessionalsPage() {
         <ProfessionalsEmptyState />
       )}
 
-      {/* Infinite scroll loader */}
       <div ref={loaderRef} className="flex justify-center py-6 sm:py-10">
         {isLoadingMore && (
           <div className="flex items-center gap-3 px-4 py-2 sm:gap-4 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl glass-card">

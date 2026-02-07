@@ -312,7 +312,7 @@ function PostJobPageContent() {
       setCurrentStep(STEP_IDS[stepIndex - 1]);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
-      backOrNavigate(router, "/browse");
+      backOrNavigate(router, "/portfolio");
     }
   };
 

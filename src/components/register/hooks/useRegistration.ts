@@ -303,9 +303,9 @@ export function useRegistration(): UseRegistrationReturn {
         router.replace('/admin');
       } else if (user.role === 'pro' && user.isProfileCompleted === true) {
         // Only redirect completed pro users
-        router.replace('/browse');
+        router.replace('/jobs');
       } else if (user.role === 'client') {
-        router.replace('/browse');
+        router.replace('/portfolio');
       }
       // Pro users with incomplete profile stay on register page
     }
@@ -761,7 +761,7 @@ export function useRegistration(): UseRegistrationReturn {
         }));
         router.push('/pro/profile-setup');
       } else {
-        router.push('/browse');
+        router.push('/portfolio');
       }
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.');

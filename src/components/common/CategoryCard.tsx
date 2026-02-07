@@ -10,7 +10,7 @@ interface CategoryCardProps {
 
 export default function CategoryCard({ name, icon, slug, count }: CategoryCardProps) {
   return (
-    <Link href={`/browse?category=${slug}`} className="group block">
+    <Link href={`/professionals?category=${slug}`} className="group block">
       <div className="relative bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-neutral-200/50 dark:hover:shadow-none hover:border-[#C4735B]/30 dark:hover:border-[#C4735B]/40 hover:-translate-y-0.5">
         {/* Gradient background on hover */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#C4735B]/5 via-transparent to-[#C4735B]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

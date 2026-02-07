@@ -316,7 +316,7 @@ function MobileStickyBar({ t }: { t: (key: string) => string }) {
           variant="outline"
           className="flex-1 h-10 text-[13px]"
         >
-          <Link href="/browse/portfolio">{t("landing.browsePros")}</Link>
+          <Link href="/professionals">{t("landing.browsePros")}</Link>
         </Button>
       </div>
     </div>
@@ -426,15 +426,18 @@ export default function HomePage() {
       });
   }, []);
 
-  // Redirect all users to the main app (landing page temporarily disabled)
+  // Redirect users to the main app
   useEffect(() => {
     if (isLoading) return;
-    if (user?.role === "pro") {
-      router.replace("/browse/jobs");
+    if (!user) {
+      router.replace("/portfolio");
       return;
     }
-    // Redirect everyone (including guests) to browse/portfolio - landing page temporarily disabled
-    router.replace("/browse/portfolio");
+    if (user.role === "pro" || user.role === "admin") {
+      router.replace("/jobs");
+      return;
+    }
+    router.replace("/portfolio");
   }, [router, user, isLoading]);
 
   // Auto-slide features - restarts fresh when pause state changes
@@ -577,8 +580,8 @@ export default function HomePage() {
 
               <div className="hidden md:flex items-center gap-1">
                 {[
-                  { href: "/browse/portfolio", label: t("header.browse") },
-                  { href: "/browse/jobs", label: t("browse.jobs") },
+                  { href: "/portfolio", label: t("header.browse") },
+                  { href: "/jobs", label: t("browse.jobs") },
                 ].map((item) => (
                   <Link
                     key={item.href}
@@ -681,7 +684,7 @@ export default function HomePage() {
                     className="h-10 sm:h-11 px-5 text-[13px] sm:text-sm border-neutral-200/50 dark:border-neutral-700/50 hover:border-[#C4735B]/40 hover:bg-[#C4735B]/5 backdrop-blur-sm"
                   >
                     <Link
-                      href="/browse/portfolio"
+                      href="/professionals"
                       className="flex items-center gap-2"
                     >
                       <Search className="w-4 h-4" />
@@ -969,9 +972,9 @@ export default function HomePage() {
                           activeFeature === 0
                             ? "/post-job"
                             : activeFeature === 1
-                              ? "/browse/professionals"
+                              ? "/professionals"
                               : activeFeature === 2
-                                ? "/browse/portfolio"
+                                ? "/portfolio"
                                 : "/register"
                         }
                         className="inline-flex items-center gap-1.5 h-9 px-4 text-[13px] font-medium bg-[#C4735B] hover:bg-[#a85d47] text-white rounded-lg group"
@@ -1050,7 +1053,7 @@ export default function HomePage() {
                 </p>
               </div>
               <Link
-                href="/browse/portfolio"
+                href="/portfolio"
                 className="inline-flex items-center gap-1 text-[12px] font-medium text-[#C4735B] hover:text-[#a85d47] group"
               >
                 {t("common.viewAll")}
@@ -1064,8 +1067,8 @@ export default function HomePage() {
                 const subcats = getSubcategoriesForCategory(cat.slug);
                 const subcatKeys = subcats.map((s) => s.key).join(",");
                 const href = subcatKeys
-                  ? `/browse/portfolio?category=${cat.slug}&subcategories=${subcatKeys}`
-                  : `/browse/portfolio?category=${cat.slug}`;
+                  ? `/portfolio?category=${cat.slug}&subcategories=${subcatKeys}`
+                  : `/portfolio?category=${cat.slug}`;
                 return (
                   <AnimatedSection key={cat.slug} stagger index={i}>
                     <Link href={href}>
@@ -1259,7 +1262,7 @@ export default function HomePage() {
                   asChild
                   className="h-10 sm:h-11 px-6 text-[13px] border-white/30 text-white hover:bg-white/10"
                 >
-                  <Link href="/browse/portfolio">{t("header.browse")}</Link>
+                  <Link href="/portfolio">{t("header.browse")}</Link>
                 </Button>
               </div>
             </div>

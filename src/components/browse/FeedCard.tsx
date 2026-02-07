@@ -4,13 +4,12 @@ import Avatar from "@/components/common/Avatar";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { StarRating } from "@/components/ui/StarRating";
 import { StatusPill } from "@/components/ui/StatusPill";
-import { Badge } from "@/components/ui/badge";
 import { ACCENT_COLOR } from "@/constants/theme";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getCategoryLabelStatic } from "@/hooks/useCategoryLabels";
 import { storage } from "@/services/storage";
 import { FeedItem, FeedItemType } from "@/types";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   BadgeCheck,
   Briefcase,
@@ -21,7 +20,10 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+// Auto-slide interval in milliseconds
+const AUTO_SLIDE_INTERVAL = 4000;
 
 interface FeedCardProps {
   item: FeedItem;
@@ -35,6 +37,9 @@ const FeedCard = React.memo(function FeedCard({
   locale = "en",
 }: FeedCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [slideDirection, setSlideDirection] = useState(1); // 1 = forward, -1 = backward
+  const [isHovered, setIsHovered] = useState(false);
+  const autoSlideRef = useRef<NodeJS.Timeout | null>(null);
 
   const { t } = useLanguage();
   const [sliderPosition, setSliderPosition] = useState(50);
@@ -54,6 +59,22 @@ const FeedCard = React.memo(function FeedCard({
   const allMedia = [...item.images, ...(item.videos || [])];
   const totalImages = allMedia.length;
 
+  // Auto-slide effect
+  useEffect(() => {
+    if (!hasMultipleImages || isHovered || isBeforeAfter) return;
+
+    autoSlideRef.current = setInterval(() => {
+      setSlideDirection(1);
+      setCurrentImageIndex((prev) => (prev + 1) % totalImages);
+    }, AUTO_SLIDE_INTERVAL);
+
+    return () => {
+      if (autoSlideRef.current) {
+        clearInterval(autoSlideRef.current);
+      }
+    };
+  }, [hasMultipleImages, isHovered, isBeforeAfter, totalImages]);
+
   // Check if this is a new item (created within last 14 days and no rating)
   const isNew = useMemo(() => {
     if (item.pro.rating && item.pro.rating > 0) return false;
@@ -69,6 +90,7 @@ const FeedCard = React.memo(function FeedCard({
     (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
+      setSlideDirection(1);
       setCurrentImageIndex((prev) => (prev + 1) % totalImages);
     },
     [totalImages]
@@ -78,9 +100,21 @@ const FeedCard = React.memo(function FeedCard({
     (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
+      setSlideDirection(-1);
       setCurrentImageIndex((prev) => (prev - 1 + totalImages) % totalImages);
     },
     [totalImages]
+  );
+
+  // Go to specific slide
+  const goToSlide = useCallback(
+    (index: number, e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setSlideDirection(index > currentImageIndex ? 1 : -1);
+      setCurrentImageIndex(index);
+    },
+    [currentImageIndex]
   );
 
   const handleSliderMove = (
@@ -216,116 +250,180 @@ const FeedCard = React.memo(function FeedCard({
                 </div>
               </div>
             ) : (
-              <div className="relative aspect-[4/3] bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
-                {/* Main Image or Video */}
-                {!imageError &&
-                allMedia.length > 0 &&
-                allMedia[currentImageIndex] ? (
-                  (() => {
-                    const currentMedia = allMedia[currentImageIndex];
-                    const isVideo =
-                      currentMedia.includes(".mp4") ||
-                      currentMedia.includes(".mov") ||
-                      currentMedia.includes(".webm") ||
-                      currentMedia.startsWith("data:video");
+              <div
+                className="relative aspect-[4/3] bg-neutral-100 dark:bg-neutral-800 overflow-hidden"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+              >
+                {/* Animated Image Carousel */}
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {!imageError &&
+                  allMedia.length > 0 &&
+                  allMedia[currentImageIndex] ? (
+                    (() => {
+                      const currentMedia = allMedia[currentImageIndex];
+                      const isVideo =
+                        currentMedia.includes(".mp4") ||
+                        currentMedia.includes(".mov") ||
+                        currentMedia.includes(".webm") ||
+                        currentMedia.startsWith("data:video");
 
-                    if (isVideo) {
-                      return (
-                        <>
-                          <video
-                            src={storage.getFeedCardImageUrl(currentMedia)}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                            muted
-                            playsInline
-                            loop
-                            onMouseEnter={(e) => e.currentTarget.play()}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.pause();
-                              e.currentTarget.currentTime = 0;
-                            }}
-                          />
-                          {/* Video play icon overlay - enhanced */}
-                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover:opacity-0 transition-opacity duration-300">
-                            <div className="w-14 h-14 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-2xl">
-                              <Play className="w-6 h-6 text-white ml-0.5 fill-white" />
+                      if (isVideo) {
+                        return (
+                          <motion.div
+                            key={`video-${currentImageIndex}`}
+                            initial={{ opacity: 0, x: slideDirection * 100 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: slideDirection * -100 }}
+                            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                            className="absolute inset-0"
+                          >
+                            <video
+                              src={storage.getFeedCardImageUrl(currentMedia)}
+                              className="w-full h-full object-cover"
+                              muted
+                              playsInline
+                              loop
+                              autoPlay={isHovered}
+                              onMouseEnter={(e) => e.currentTarget.play()}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.pause();
+                                e.currentTarget.currentTime = 0;
+                              }}
+                            />
+                            {/* Video play icon overlay */}
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover:opacity-0 transition-opacity duration-300">
+                              <motion.div
+                                className="w-14 h-14 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-2xl"
+                                whileHover={{ scale: 1.1 }}
+                              >
+                                <Play className="w-6 h-6 text-white ml-0.5 fill-white" />
+                              </motion.div>
                             </div>
-                          </div>
-                        </>
-                      );
-                    }
+                          </motion.div>
+                        );
+                      }
 
-                    return (
-                      <img
-                        src={storage.getFeedCardImageUrl(currentMedia)}
-                        alt={item.title}
-                        loading="lazy"
-                        decoding="async"
-                        className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
-                        onLoad={() => setImageLoaded(true)}
-                        onError={() => setImageError(true)}
-                      />
-                    );
-                  })()
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-800 dark:to-neutral-700">
-                    <svg
-                      className="w-12 h-12 text-neutral-300 dark:text-neutral-600"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth="1"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
-                      />
-                    </svg>
-                  </div>
-                )}
+                      return (
+                        <motion.div
+                          key={`image-${currentImageIndex}`}
+                          initial={{ opacity: 0, scale: 1.1, x: slideDirection * 50 }}
+                          animate={{ opacity: 1, scale: 1, x: 0 }}
+                          exit={{ opacity: 0, scale: 0.95, x: slideDirection * -50 }}
+                          transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                          className="absolute inset-0"
+                        >
+                          <img
+                            src={storage.getFeedCardImageUrl(currentMedia)}
+                            alt={item.title}
+                            loading="lazy"
+                            decoding="async"
+                            className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
+                            onLoad={() => setImageLoaded(true)}
+                            onError={() => setImageError(true)}
+                          />
+                        </motion.div>
+                      );
+                    })()
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-800 dark:to-neutral-700">
+                      <svg
+                        className="w-12 h-12 text-neutral-300 dark:text-neutral-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="1"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+                        />
+                      </svg>
+                    </div>
+                  )}
+                </AnimatePresence>
 
                 {/* Loading placeholder */}
                 {!imageLoaded && !imageError && allMedia.length > 0 && (
-                  <Skeleton className="absolute inset-0" />
+                  <Skeleton className="absolute inset-0 z-10" />
                 )}
 
                 {/* Gradient overlay for text readability */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10" />
 
-                {/* Image navigation arrows - hidden on mobile, show on hover for desktop */}
+                {/* Image navigation arrows - show on hover */}
                 {hasMultipleImages && (
                   <>
-                    <button
+                    <motion.button
                       onClick={prevImage}
-                      className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/95 backdrop-blur-sm items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg hover:bg-white hover:scale-110"
+                      className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm items-center justify-center shadow-lg z-20"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: isHovered ? 1 : 0, x: isHovered ? 0 : -10 }}
+                      whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,1)" }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
                     >
-                      <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-700" />
-                    </button>
-                    <button
+                      <ChevronLeft className="w-5 h-5 text-neutral-700" />
+                    </motion.button>
+                    <motion.button
                       onClick={nextImage}
-                      className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/95 backdrop-blur-sm items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg hover:bg-white hover:scale-110"
+                      className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm items-center justify-center shadow-lg z-20"
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: isHovered ? 1 : 0, x: isHovered ? 0 : 10 }}
+                      whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,1)" }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
                     >
-                      <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-700" />
-                    </button>
+                      <ChevronRight className="w-5 h-5 text-neutral-700" />
+                    </motion.button>
 
-                    {/* Image dots indicator */}
-                    <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 flex gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-black/30 backdrop-blur-sm">
-                      {allMedia.slice(0, 4).map((_, idx) => (
-                        <div
-                          key={idx}
-                          className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full transition-all duration-300 ${
-                            idx === currentImageIndex
-                              ? "bg-white w-2 sm:w-3"
-                              : "bg-white/50"
-                          }`}
-                        />
-                      ))}
-                      {allMedia.length > 4 && (
-                        <span className="text-[8px] sm:text-[10px] text-white/70 ml-0.5">
-                          +{allMedia.length - 4}
+                    {/* Clean Image Counter Indicator - Centered */}
+                    <motion.div
+                      className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-black/60 backdrop-blur-md">
+                        {/* Progress bar */}
+                        <div className="w-12 h-1 rounded-full bg-white/30 overflow-hidden">
+                          <motion.div
+                            className="h-full bg-white rounded-full"
+                            initial={false}
+                            animate={{
+                              width: `${((currentImageIndex + 1) / totalImages) * 100}%`,
+                            }}
+                            transition={{ duration: 0.3, ease: "easeOut" }}
+                          />
+                        </div>
+                        {/* Counter text */}
+                        <span className="text-[11px] font-semibold text-white tabular-nums">
+                          {currentImageIndex + 1}/{totalImages}
                         </span>
-                      )}
-                    </div>
+                      </div>
+                    </motion.div>
+
+                    {/* Auto-slide progress indicator (shows when not hovered) */}
+                    {!isHovered && (
+                      <motion.div
+                        className="absolute top-0 left-0 right-0 h-0.5 bg-white/20 z-20"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                      >
+                        <motion.div
+                          className="h-full bg-white/80"
+                          initial={{ width: "0%" }}
+                          animate={{ width: "100%" }}
+                          transition={{
+                            duration: AUTO_SLIDE_INTERVAL / 1000,
+                            ease: "linear",
+                            repeat: Infinity,
+                          }}
+                          key={currentImageIndex}
+                        />
+                      </motion.div>
+                    )}
                   </>
                 )}
               </div>

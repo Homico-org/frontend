@@ -7,8 +7,7 @@ import AboutTab from "@/components/professionals/AboutTab";
 import ContactModal from "@/components/professionals/ContactModal";
 import InviteProToJobModal from "@/components/professionals/InviteProToJobModal";
 import PortfolioTab from "@/components/professionals/PortfolioTab";
-import ProfileSidebar, {
-  ProfileSidebarMobile,
+import {
   type ProfileSidebarTab,
 } from "@/components/professionals/ProfileSidebar";
 import ReviewsTab from "@/components/professionals/ReviewsTab";
@@ -48,6 +47,7 @@ import {
   Star,
   X,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -97,6 +97,25 @@ interface PageReview extends BaseEntity {
   isVerified?: boolean;
 }
 
+/** Animated counter that counts up from 0 */
+function AnimatedCounter({ value, decimals = 0, duration = 1.2 }: { value: number; decimals?: number; duration?: number }) {
+  const [display, setDisplay] = useState("0");
+  useEffect(() => {
+    let startTime: number;
+    let frame: number;
+    const animate = (t: number) => {
+      if (!startTime) startTime = t;
+      const progress = Math.min((t - startTime) / (duration * 1000), 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplay((eased * value).toFixed(decimals));
+      if (progress < 1) frame = requestAnimationFrame(animate);
+    };
+    frame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frame);
+  }, [value, decimals, duration]);
+  return <>{display}</>;
+}
+
 export default function ProfessionalDetailClient({
   initialProfile,
 }: {
@@ -133,7 +152,7 @@ export default function ProfessionalDetailClient({
     currentIndex: number;
   } | null>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [activeTab, setActiveTab] = useState<ProfileSidebarTab>("about");
+  const [activeTab, setActiveTab] = useState<ProfileSidebarTab>("portfolio");
 
   const [showFloatingButton, setShowFloatingButton] = useState(false);
   const [phoneRevealed, setPhoneRevealed] = useState(false);
@@ -1258,14 +1277,41 @@ export default function ProfessionalDetailClient({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [lightboxOpen, selectedProject, closeLightbox, nextImage, prevImage]);
 
-  // Loading state
+  // Loading state - skeleton preview
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0A0A0A]">
         <Header />
         <HeaderSpacer />
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <LoadingSpinner size="xl" variant="border" color={ACCENT_COLOR} />
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 py-6 sm:py-8">
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 border border-neutral-200/60 dark:border-neutral-800 shadow-lg shadow-neutral-900/[0.03]">
+            <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl sm:rounded-2xl bg-neutral-200 dark:bg-neutral-800 animate-pulse flex-shrink-0" />
+              <div className="flex-1 space-y-3 sm:space-y-4 w-full">
+                <div className="h-7 sm:h-8 w-48 sm:w-56 bg-neutral-200 dark:bg-neutral-800 rounded-lg animate-pulse" />
+                <div className="h-4 sm:h-5 w-32 sm:w-40 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse" />
+                <div className="flex flex-wrap gap-2">
+                  <div className="h-8 sm:h-9 w-16 bg-neutral-200 dark:bg-neutral-800 rounded-full animate-pulse" />
+                  <div className="h-8 sm:h-9 w-24 bg-neutral-200 dark:bg-neutral-800 rounded-full animate-pulse" />
+                  <div className="h-8 sm:h-9 w-20 bg-neutral-200 dark:bg-neutral-800 rounded-full animate-pulse" />
+                </div>
+                <div className="flex gap-1.5">
+                  <div className="h-7 w-20 bg-neutral-200 dark:bg-neutral-800 rounded-full animate-pulse" />
+                  <div className="h-7 w-20 bg-neutral-200 dark:bg-neutral-800 rounded-full animate-pulse" />
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Tab skeleton */}
+          <div className="flex gap-3 mt-6">
+            <div className="h-10 w-24 bg-neutral-200 dark:bg-neutral-800 rounded-xl animate-pulse" />
+            <div className="h-10 w-24 bg-neutral-200 dark:bg-neutral-800 rounded-xl animate-pulse" />
+            <div className="h-10 w-24 bg-neutral-200 dark:bg-neutral-800 rounded-xl animate-pulse" />
+          </div>
+          <div className="mt-6 space-y-4">
+            <div className="h-32 bg-neutral-200 dark:bg-neutral-800 rounded-2xl animate-pulse" />
+            <div className="h-24 bg-neutral-200 dark:bg-neutral-800 rounded-2xl animate-pulse" />
+          </div>
         </div>
       </div>
     );
@@ -1290,7 +1336,7 @@ export default function ProfessionalDetailClient({
                 {error}
               </p>
             )}
-            <Button onClick={() => router.push("/browse")} className="mt-6">
+            <Button onClick={() => router.push("/professionals")} className="mt-6">
               {t("common.goBack")}
             </Button>
           </div>
@@ -1401,37 +1447,37 @@ export default function ProfessionalDetailClient({
         </div>
       )}
 
-      {/* ========== HERO SECTION ========== */}
-      <section
+      {/* ========== TOP NAVIGATION BAR ========== */}
+      <motion.section
         ref={heroRef}
-        className={`relative transition-all duration-700 ${isVisible ? "opacity-100" : "opacity-0"}`}
+        initial={{ opacity: 0, y: -15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="relative"
       >
-        {/* Navigation row */}
-        <div className="max-w-6xl mx-auto px-3 sm:px-6 py-3 sm:py-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex justify-between items-center">
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => backOrNavigate(router, "/browse")}
-              className="rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-all h-9 sm:h-10 px-2.5 sm:px-3"
+              onClick={() => backOrNavigate(router, "/professionals")}
+              className="rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all h-9 sm:h-10 px-2.5 sm:px-3"
               leftIcon={<ChevronLeft className="w-4 h-4" />}
             >
               <span className="hidden sm:inline">{t("common.back")}</span>
             </Button>
 
-            {/* Share button with dropdown */}
             <div className="relative">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowShareMenu(!showShareMenu)}
-                className="rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-all h-9 sm:h-10 px-2.5 sm:px-3"
+                className="rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all h-9 sm:h-10 px-2.5 sm:px-3"
                 leftIcon={<Share2 className="w-4 h-4" />}
               >
                 <span className="hidden sm:inline">{t("common.share")}</span>
               </Button>
 
-              {/* Share dropdown menu */}
               {showShareMenu && (
                 <div className="absolute top-full right-0 mt-2 bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 py-1.5 sm:py-2 min-w-[160px] sm:min-w-[180px] animate-in fade-in slide-in-from-top-2 duration-200 z-50">
                   <button
@@ -1448,11 +1494,7 @@ export default function ProfessionalDetailClient({
                     className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                   >
                     <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#25D366] flex items-center justify-center flex-shrink-0">
-                      <svg
-                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
+                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                       </svg>
                     </div>
@@ -1476,654 +1518,642 @@ export default function ProfessionalDetailClient({
             </div>
           </div>
         </div>
+      </motion.section>
 
-        {/* Profile card */}
-        <div className="max-w-6xl mx-auto px-3 sm:px-6 pb-4 sm:pb-6">
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl sm:rounded-3xl shadow-lg shadow-neutral-900/[0.03] dark:shadow-black/20 border border-neutral-200/60 dark:border-neutral-800 p-4 sm:p-6 md:p-8">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-4 sm:gap-6">
-              {/* Avatar */}
-              <div className="relative flex-shrink-0 self-start">
-                {avatarUrl ? (
-                  <button
-                    type="button"
-                    onClick={() => setShowAvatarZoom(true)}
-                    className="cursor-zoom-in group"
-                    aria-label={t("professional.zoomAvatar")}
-                  >
-                    <Image
-                      src={avatarSrc}
-                      alt={profile.name}
-                      width={112}
-                      height={112}
-                      className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl sm:rounded-2xl object-cover shadow-md ring-1 ring-neutral-200/50 dark:ring-neutral-700 group-hover:shadow-lg transition-shadow"
-                    />
-                  </button>
-                ) : (
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl sm:rounded-2xl flex items-center justify-center text-white text-3xl sm:text-4xl font-semibold bg-gradient-to-br from-[#C4735B] to-[#A85D4A] shadow-md">
-                    {profile.name.charAt(0)}
+      {/* ========== MOBILE PROFILE CARD ========== */}
+      <motion.div
+        initial={{ opacity: 0, y: 25 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+        className="lg:hidden max-w-7xl mx-auto px-3 sm:px-6 mb-4"
+      >
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl shadow-neutral-900/[0.08] dark:shadow-black/30 border border-neutral-200/60 dark:border-neutral-800 p-4 sm:p-5">
+          <div className="flex items-start gap-4">
+            {/* Avatar */}
+            <div className="relative flex-shrink-0">
+              {avatarUrl ? (
+                <button type="button" onClick={() => setShowAvatarZoom(true)} className="cursor-zoom-in group">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden ring-4 ring-white dark:ring-neutral-900 shadow-xl">
+                    <Image src={avatarSrc} alt={profile.name} width={96} height={96} className="w-full h-full object-cover" />
                   </div>
-                )}
-                {profile.verificationStatus === "verified" && (
-                  <div className="absolute -bottom-1 -right-1 sm:-bottom-1.5 sm:-right-1.5 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-emerald-500 border-2 sm:border-[3px] border-white dark:border-neutral-900 flex items-center justify-center shadow-sm">
-                    <BadgeCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
-                  </div>
-                )}
-                {profile.isAvailable && !profile.verificationStatus && (
-                  <div className="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-500 border-2 sm:border-[3px] border-white dark:border-neutral-900 flex items-center justify-center">
-                    <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-white animate-pulse" />
-                  </div>
-                )}
+                </button>
+              ) : (
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center text-white text-2xl font-bold bg-gradient-to-br from-[#C4735B] to-[#A85D4A] ring-4 ring-white dark:ring-neutral-900 shadow-xl">
+                  {profile.name.charAt(0)}
+                </div>
+              )}
+              {profile.verificationStatus === "verified" && (
+                <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-emerald-500 border-[3px] border-white dark:border-neutral-900 flex items-center justify-center shadow-lg">
+                  <BadgeCheck className="w-4 h-4 text-white" />
+                </div>
+              )}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              {/* Name */}
+              {isOwner && isEditingName ? (
+                <div className="flex items-center gap-2 mb-1">
+                  <Input value={editedName} onChange={(e) => setEditedName(e.target.value)} className="text-lg font-bold max-w-[180px]" autoFocus onKeyDown={(e) => { if (e.key === "Enter") handleSaveName(); if (e.key === "Escape") setIsEditingName(false); }} />
+                  <Button size="sm" onClick={handleSaveName} disabled={isSaving || !editedName.trim()}><Check className="w-4 h-4" /></Button>
+                  <Button size="sm" variant="ghost" onClick={() => setIsEditingName(false)}><X className="w-4 h-4" /></Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 mb-0.5">
+                  <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white tracking-tight truncate">{profile.name}</h1>
+                  {isOwner && (
+                    <button onClick={() => { setEditedName(profile.name); setIsEditingName(true); }} className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex-shrink-0">
+                      <Edit3 className="w-3.5 h-3.5 text-neutral-400" />
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Title */}
+              {profile.title && !isCategoryBasedTitle(profile.title) && (
+                <p className="text-sm text-[#C4735B] font-medium mb-1 truncate">{profile.title}</p>
+              )}
+
+              {/* Availability + Location */}
+              {profile.isAvailable && (
+                <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 font-medium mb-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  {locale === "ka" ? "ხელმისაწვდომია" : "Available Now"}
+                </span>
+              )}
+              {profile.serviceAreas?.length > 0 && (
+                <div className="flex items-center gap-1 text-xs text-neutral-500">
+                  <MapPin className="w-3 h-3" />
+                  <span>{translateCity(profile.serviceAreas[0])}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Mobile pricing */}
+          {pricingMeta && pricingMeta.valueLabel && (
+            <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+              <div>
+                <span className="text-[9px] uppercase tracking-wider font-semibold text-neutral-400">{pricingMeta.typeLabel}</span>
+                <p className="text-lg font-bold text-[#C4735B]">{pricingMeta.valueLabel}</p>
               </div>
+              {isOwner && (
+                <button onClick={openPricingEdit} className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B]">
+                  <Edit3 className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          )}
 
-              {/* Info */}
-              <div className="flex-1 text-left min-w-0">
-                {isOwner && isEditingName ? (
-                  <div className="flex items-center gap-2 mb-2">
-                    <Input
-                      value={editedName}
-                      onChange={(e) => setEditedName(e.target.value)}
-                      className="text-xl font-bold max-w-[220px]"
-                      autoFocus
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleSaveName();
-                        if (e.key === "Escape") setIsEditingName(false);
-                      }}
-                    />
-                    <Button
-                      size="sm"
-                      onClick={handleSaveName}
-                      disabled={isSaving || !editedName.trim()}
-                    >
-                      <Check className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setIsEditingName(false)}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
+          {/* Mobile pricing edit */}
+          {isOwner && isEditingPricing && (
+            <div className="mt-3 space-y-2">
+              <Select size="sm" value={editedPricingModel} onChange={(val) => setEditedPricingModel(val as PricingModel)} options={[
+                { value: PricingModel.FIXED, label: t("common.fixed") },
+                { value: PricingModel.RANGE, label: t("common.priceRange") },
+                { value: PricingModel.PER_SQUARE_METER, label: t("professional.perSqm") },
+                { value: PricingModel.BY_AGREEMENT, label: t("common.negotiable") },
+              ]} />
+              {editedPricingModel !== PricingModel.BY_AGREEMENT && (
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">₾</span>
+                    <input type="number" min="0" inputMode="numeric" value={editedBasePrice} onChange={(e) => setEditedBasePrice(e.target.value)} className="w-full pl-7 pr-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/30" placeholder="0" />
                   </div>
-                ) : (
-                  <div className="flex items-center justify-start gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
-                    <h1 className="text-xl sm:text-2xl md:text-[28px] font-bold text-neutral-900 dark:text-white truncate tracking-tight">
-                      {profile.name}
-                    </h1>
-                    {isOwner && (
-                      <button
-                        onClick={() => {
-                          setEditedName(profile.name);
-                          setIsEditingName(true);
-                        }}
-                        className="p-1 sm:p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                        title={t("common.edit")}
-                      >
-                        <Edit3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-400" />
+                  {editedPricingModel === PricingModel.RANGE && (
+                    <>
+                      <span className="text-neutral-400">—</span>
+                      <div className="relative flex-1">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">₾</span>
+                        <input type="number" min="0" inputMode="numeric" value={editedMaxPrice} onChange={(e) => setEditedMaxPrice(e.target.value)} className="w-full pl-7 pr-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/30" placeholder="0" />
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+              <div className="flex justify-end gap-2">
+                <Button variant="ghost" size="sm" onClick={() => setIsEditingPricing(false)} disabled={isSaving}><X className="w-4 h-4 mr-1" />{t("common.cancel")}</Button>
+                <Button size="sm" onClick={handleSavePricing} loading={isSaving}><Check className="w-4 h-4 mr-1" />{t("common.save")}</Button>
+              </div>
+            </div>
+          )}
+
+          {/* Stats row */}
+          <div className="flex items-center justify-around mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+            <div className="text-center">
+              <p className="text-base font-bold text-neutral-900 dark:text-white">{profile.profileViewCount ?? 0}</p>
+              <p className="text-[10px] text-neutral-500">{locale === "ka" ? "ნახვები" : "Views"}</p>
+            </div>
+            {profile.avgRating > 0 && (
+              <div className="text-center">
+                <p className="text-base font-bold text-neutral-900 dark:text-white flex items-center justify-center gap-1">
+                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                  {profile.avgRating.toFixed(1)}
+                </p>
+                <p className="text-[10px] text-neutral-500">{reviews.length || profile.totalReviews} {locale === "ka" ? "შეფასებები" : "Reviews"}</p>
+              </div>
+            )}
+            {totalCompletedJobs > 0 && (
+              <div className="text-center">
+                <p className="text-base font-bold text-neutral-900 dark:text-white">{totalCompletedJobs}</p>
+                <p className="text-[10px] text-neutral-500">{locale === "ka" ? "დასრულებული" : "Jobs"}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ========== MOBILE TAB NAVIGATION ========== */}
+      <div className="lg:hidden sticky top-[56px] sm:top-[60px] z-30 bg-[var(--color-bg-app)]/95 dark:bg-[#0A0A0A]/95 backdrop-blur-lg border-b border-neutral-200/50 dark:border-neutral-800/50 px-3 sm:px-6">
+        <nav className="flex gap-6 overflow-x-auto scrollbar-hide" aria-label="Profile sections">
+          {([
+            { key: "portfolio" as ProfileSidebarTab, label: locale === "ka" ? "ნამუშევრები" : "Portfolio", count: portfolioProjects.length },
+            { key: "about" as ProfileSidebarTab, label: locale === "ka" ? "შესახებ" : "About" },
+            { key: "reviews" as ProfileSidebarTab, label: locale === "ka" ? "შეფასებები" : "Reviews", count: profile.totalReviews },
+          ]).map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`relative whitespace-nowrap pb-3 pt-3 text-sm font-medium transition-colors ${activeTab === tab.key ? "text-neutral-900 dark:text-white" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
+            >
+              <span className="flex items-center gap-2">
+                {tab.label}
+                {tab.count !== undefined && tab.count > 0 && (
+                  <span className="text-xs text-neutral-400">{tab.count}</span>
+                )}
+              </span>
+              {activeTab === tab.key && (
+                <motion.span layoutId="mobile-tab-indicator" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C4735B] rounded-full" transition={{ type: "spring", stiffness: 500, damping: 35 }} />
+              )}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* ========== MAIN LAYOUT: SIDEBAR + CONTENT (Behance-style) ========== */}
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 pb-32 sm:pb-32 lg:pb-12">
+        <div className="flex gap-6 lg:gap-8">
+
+          {/* ====== DESKTOP SIDEBAR (Behance-style) ====== */}
+          <motion.aside
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
+            className="hidden lg:block w-72 flex-shrink-0"
+          >
+            <div className="sticky top-20 space-y-4 pb-6">
+
+              {/* Profile Card */}
+              <motion.div
+                className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/60 dark:border-neutral-800 shadow-lg shadow-neutral-900/[0.05] dark:shadow-black/20"
+                initial="hidden"
+                animate="show"
+                variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06, delayChildren: 0.2 } } }}
+              >
+                <motion.div variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }} transition={{ duration: 0.35 }} className="p-5 flex flex-col items-center">
+                  {/* Avatar */}
+                  <div className="relative mb-3">
+                    {avatarUrl ? (
+                      <button type="button" onClick={() => setShowAvatarZoom(true)} className="cursor-zoom-in group">
+                        <div className="w-24 h-24 rounded-2xl overflow-hidden ring-4 ring-white dark:ring-neutral-900 shadow-xl group-hover:shadow-2xl transition-all duration-300">
+                          <Image src={avatarSrc} alt={profile.name} width={96} height={96} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        </div>
                       </button>
+                    ) : (
+                      <div className="w-24 h-24 rounded-2xl flex items-center justify-center text-white text-3xl font-bold bg-gradient-to-br from-[#C4735B] to-[#A85D4A] ring-4 ring-white dark:ring-neutral-900 shadow-xl">
+                        {profile.name.charAt(0)}
+                      </div>
+                    )}
+                    {profile.verificationStatus === "verified" && (
+                      <div className="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full bg-emerald-500 border-[3px] border-white dark:border-neutral-900 flex items-center justify-center shadow-lg">
+                        <BadgeCheck className="w-4 h-4 text-white" />
+                      </div>
+                    )}
+                    {profile.isAvailable && profile.verificationStatus !== "verified" && (
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-[3px] border-white dark:border-neutral-900" />
                     )}
                   </div>
-                )}
-                {/* Title/Tagline */}
-                {isOwner ? (
-                  isEditingTitle ? (
-                    <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                      <Input
-                        value={editedTitle}
-                        onChange={(e) => setEditedTitle(e.target.value)}
-                        placeholder={t("professional.addTagline")}
-                        className="text-sm max-w-[200px] sm:max-w-[280px]"
-                        autoFocus
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handleSaveTitle();
-                          if (e.key === "Escape") setIsEditingTitle(false);
-                        }}
-                      />
-                      <Button
-                        size="sm"
-                        onClick={handleSaveTitle}
-                        disabled={isSaving}
-                      >
-                        <Check className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setIsEditingTitle(false)}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
+
+                  {/* Name */}
+                  {isOwner && isEditingName ? (
+                    <div className="flex items-center gap-1.5 mb-1 w-full">
+                      <Input value={editedName} onChange={(e) => setEditedName(e.target.value)} className="text-base font-bold flex-1" autoFocus onKeyDown={(e) => { if (e.key === "Enter") handleSaveName(); if (e.key === "Escape") setIsEditingName(false); }} />
+                      <Button size="sm" onClick={handleSaveName} disabled={isSaving || !editedName.trim()}><Check className="w-3.5 h-3.5" /></Button>
+                      <Button size="sm" variant="ghost" onClick={() => setIsEditingName(false)}><X className="w-3.5 h-3.5" /></Button>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-start gap-1.5 sm:gap-2 mb-2 sm:mb-3">
-                      {profile.title && !isCategoryBasedTitle(profile.title) ? (
-                        <p className="text-sm sm:text-base text-[#C4735B] font-medium truncate">
-                          {profile.title}
-                        </p>
-                      ) : (
-                        <p className="text-xs sm:text-sm text-neutral-400 dark:text-neutral-500 italic">
-                          {t("professional.addTagline")}
-                        </p>
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <h1 className="text-lg font-bold text-neutral-900 dark:text-white text-center">{profile.name}</h1>
+                      {isOwner && (
+                        <button onClick={() => { setEditedName(profile.name); setIsEditingName(true); }} className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+                          <Edit3 className="w-3.5 h-3.5 text-neutral-400" />
+                        </button>
                       )}
-                      <button
-                        onClick={() => {
-                          setEditedTitle(
-                            profile.title &&
-                              !isCategoryBasedTitle(profile.title)
-                              ? profile.title
-                              : ""
-                          );
-                          setIsEditingTitle(true);
-                        }}
-                        className="p-1 sm:p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                        title={t("common.edit")}
-                      >
-                        <Edit3 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-400" />
-                      </button>
                     </div>
-                  )
-                ) : (
-                  profile.title &&
-                  !isCategoryBasedTitle(profile.title) && (
-                    <p className="text-sm sm:text-base text-[#C4735B] font-medium mb-2 sm:mb-3 truncate">
-                      {profile.title}
-                    </p>
-                  )
-                )}
+                  )}
 
-                {/* Stats - Modern pill badges */}
-                <div className="flex items-center justify-start flex-wrap gap-1.5 sm:gap-2 text-[10px] sm:text-xs md:text-sm">
-                  <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700">
-                    <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-500 dark:text-neutral-400" />
-                    <span className="font-semibold text-neutral-700 dark:text-neutral-200">
-                      {profile.profileViewCount ?? 0}
+                  {/* Availability */}
+                  {profile.isAvailable && (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-xs font-medium mb-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      {locale === "ka" ? "ხელმისაწვდომია" : "Available Now"}
                     </span>
-                  </div>
-                  {profile.avgRating > 0 && (
-                    <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-800/40">
-                      <Star className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-amber-400 text-amber-400" />
-                      <span className="font-semibold text-amber-700 dark:text-amber-300">
-                        {profile.avgRating.toFixed(1)}
-                      </span>
-                      <span className="text-amber-600/70 dark:text-amber-400/70">
-                        ({reviews.length || profile.totalReviews})
-                      </span>
-                    </div>
                   )}
-                  {profile.serviceAreas.length > 0 && (
-                    <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700">
-                      <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C4735B]" />
-                      <span className="text-neutral-700 dark:text-neutral-200 truncate max-w-[80px] sm:max-w-none">
-                        {translateCity(profile.serviceAreas[0])}
-                      </span>
-                    </div>
-                  )}
-                  {/* Show years of experience - calculated from selectedServices or yearsExperience */}
-                  {(() => {
-                    // Calculate max experience from selectedServices
-                    let maxYears = profile.yearsExperience || 0;
-                    if (
-                      profile.selectedServices &&
-                      profile.selectedServices.length > 0
-                    ) {
-                      const experienceToYears: Record<string, number> = {
-                        "1-2": 2,
-                        "3-5": 5,
-                        "5-10": 10,
-                        "10+": 15,
-                      };
-                      const calcMax = Math.max(
-                        ...profile.selectedServices.map(
-                          (s) => experienceToYears[s.experience] || 0
-                        )
-                      );
-                      if (calcMax > maxYears) maxYears = calcMax;
-                    }
 
-                    return maxYears > 0 ? (
-                      <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-[#C4735B]/10 dark:bg-[#C4735B]/20 border border-[#C4735B]/20 dark:border-[#C4735B]/30">
-                        <Briefcase className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C4735B]" />
-                        <span className="font-medium text-[#C4735B] dark:text-[#D4937B]">
-                          {maxYears}+ {t("professional.yrs")}
-                        </span>
+                  {/* Title/Tagline */}
+                  {isOwner ? (
+                    isEditingTitle ? (
+                      <div className="flex items-center gap-1.5 mb-2 w-full">
+                        <Input value={editedTitle} onChange={(e) => setEditedTitle(e.target.value)} placeholder={t("professional.addTagline")} className="text-sm flex-1" autoFocus onKeyDown={(e) => { if (e.key === "Enter") handleSaveTitle(); if (e.key === "Escape") setIsEditingTitle(false); }} />
+                        <Button size="sm" onClick={handleSaveTitle} disabled={isSaving}><Check className="w-3.5 h-3.5" /></Button>
+                        <Button size="sm" variant="ghost" onClick={() => setIsEditingTitle(false)}><X className="w-3.5 h-3.5" /></Button>
                       </div>
-                    ) : null;
-                  })()}
-                </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 mb-2">
+                        {profile.title && !isCategoryBasedTitle(profile.title) ? (
+                          <p className="text-sm text-[#C4735B] font-medium text-center">{profile.title}</p>
+                        ) : (
+                          <p className="text-xs text-neutral-400 italic">{t("professional.addTagline")}</p>
+                        )}
+                        <button onClick={() => { setEditedTitle(profile.title && !isCategoryBasedTitle(profile.title) ? profile.title : ""); setIsEditingTitle(true); }} className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+                          <Edit3 className="w-3 h-3 text-neutral-400" />
+                        </button>
+                      </div>
+                    )
+                  ) : (
+                    profile.title && !isCategoryBasedTitle(profile.title) && (
+                      <p className="text-sm text-[#C4735B] font-medium text-center mb-2">{profile.title}</p>
+                    )
+                  )}
 
-                {/* Categories - Main expertise areas */}
-                {proCategories.length > 0 && (
-                  <div className="flex flex-wrap justify-start gap-1 sm:gap-1.5 mt-2 sm:mt-3">
-                    {(proCategories.length > 2
-                      ? proCategories.slice(0, 2)
-                      : proCategories
-                    ).map((cat, idx) => (
-                      <span
-                        key={`cat-${idx}`}
-                        className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-gradient-to-r from-[#C4735B] to-[#D4937B] text-white shadow-sm"
-                      >
-                        {getCategoryLabel(cat)}
-                      </span>
-                    ))}
-                    {proCategories.length > 2 && (
-                      <span className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 border border-neutral-200/60 dark:border-neutral-700">
-                        +{proCategories.length - 2}
-                      </span>
-                    )}
-                  </div>
-                )}
+                  {/* Location */}
+                  {profile.serviceAreas?.length > 0 && (
+                    <div className="flex items-center gap-1.5 text-xs text-neutral-500 mb-3">
+                      <MapPin className="w-3.5 h-3.5" />
+                      <span>{translateCity(profile.serviceAreas[0])}</span>
+                    </div>
+                  )}
 
-                {/* Services with Experience - mobile compact */}
-                {((profile.selectedServices?.length ?? 0) > 0 ||
-                  proSubcategories.length > 0) && (
-                  <div className="sm:hidden mt-2">
-                    <p className="text-[9px] uppercase tracking-wider text-neutral-400 font-semibold mb-1.5">
-                      {t("professional.servicesAndExperience")}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {profile.selectedServices && profile.selectedServices.length > 0 ? (
-                        <>
-                          {profile.selectedServices.slice(0, 3).map((service, idx) => (
-                            <span
-                              key={`m-svc-${idx}`}
-                              className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-[10px] font-medium text-neutral-800 dark:text-neutral-200 border border-neutral-200/60 dark:border-neutral-700"
+                  {/* CTA Buttons */}
+                  {!isOwner && (
+                    <div className="w-full space-y-2 mb-1">
+                      <AnimatePresence mode="wait">
+                        {phoneRevealed && profile.phone ? (
+                          <motion.a
+                            key="phone-revealed"
+                            initial={{ scale: 0.9, opacity: 0, rotateX: -15 }}
+                            animate={{ scale: 1, opacity: 1, rotateX: 0 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                            href={`tel:${profile.phone.replace(/\s/g, "")}`}
+                            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white font-semibold text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/25"
+                            style={{ transformPerspective: 600 }}
+                          >
+                            <motion.span
+                              animate={{ rotate: [0, -15, 15, -10, 10, 0] }}
+                              transition={{ duration: 0.6, delay: 0.15 }}
                             >
-                              <span className="truncate max-w-[120px]">
-                                {({ ka: service.nameKa, en: service.name, ru: service.name }[locale] ?? service.name)}
-                              </span>
-                              <span className="text-[9px] font-semibold text-[#C4735B] bg-[#C4735B]/10 px-1 py-0.5 rounded">
-                                {getExperienceLabel(service.experience)}
-                              </span>
+                              <Phone className="w-4 h-4" />
+                            </motion.span>
+                            {formatGeorgianPhoneDisplay(profile.phone)}
+                          </motion.a>
+                        ) : (
+                          <motion.button
+                            key="contact-cta"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.97 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                            onClick={handleContact}
+                            className="relative w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white font-semibold text-sm bg-gradient-to-r from-[#C4735B] via-[#B5624A] to-[#A85D4A] shadow-lg shadow-[#C4735B]/25 overflow-hidden"
+                          >
+                            {/* Shine sweep */}
+                            <motion.div
+                              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
+                              initial={{ x: '-100%' }}
+                              animate={{ x: '200%' }}
+                              transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 4, ease: "easeInOut" }}
+                            />
+                            <span className="relative flex items-center gap-2">
+                              {isBasicTier ? (
+                                <motion.span animate={{ rotate: [0, -12, 12, -8, 0] }} transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}>
+                                  <Phone className="w-4 h-4" />
+                                </motion.span>
+                              ) : <MessageSquare className="w-4 h-4" />}
+                              {isBasicTier ? t("professional.showPhone") : t("professional.contact")}
                             </span>
-                          ))}
-                          {profile.selectedServices.length > 3 && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-[10px] font-medium text-neutral-600 dark:text-neutral-300 border border-neutral-200/60 dark:border-neutral-700">
-                              +{profile.selectedServices.length - 3}{" "}
-                              {t("common.more")}
-                            </span>
-                          )}
-                        </>
-                      ) : (
-                        <>
-                          {proSubcategories.slice(0, 3).map((sub, idx) => {
-                            const experience = getServiceExperience(sub);
-                            return (
-                              <span
-                                key={`m-sub-${idx}`}
-                                className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-[10px] font-medium text-neutral-800 dark:text-neutral-200 border border-neutral-200/60 dark:border-neutral-700"
-                              >
-                                <span className="truncate max-w-[120px]">
-                                  {getSubcategoryLabel(sub)}
-                                </span>
-                                {experience && (
-                                  <span className="text-[9px] font-semibold text-[#C4735B] bg-[#C4735B]/10 px-1 py-0.5 rounded">
-                                    {getExperienceLabel(experience)}
-                                  </span>
-                                )}
-                              </span>
-                            );
-                          })}
-                          {proSubcategories.length > 3 && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-[10px] font-medium text-neutral-600 dark:text-neutral-300 border border-neutral-200/60 dark:border-neutral-700">
-                              +{proSubcategories.length - 3}{" "}
-                              {t("common.more")}
-                            </span>
-                          )}
-                        </>
+                          </motion.button>
+                        )}
+                      </AnimatePresence>
+                      {myOpenJobsLoaded && myMatchingOpenJobs.length > 0 && (
+                        <motion.button
+                          whileHover={{ scale: 1.02, y: -1 }}
+                          whileTap={{ scale: 0.97 }}
+                          onClick={() => setShowInviteToJobModal(true)}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-neutral-700 dark:text-neutral-200 font-medium text-sm bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-[#C4735B]/30 hover:bg-[#C4735B]/5 transition-colors"
+                        >
+                          <Briefcase className="w-4 h-4" />
+                          {t("professional.inviteToJob")}
+                        </motion.button>
                       )}
                     </div>
-                  </div>
-                )}
+                  )}
+                </motion.div>
 
-                {/* Services with Experience - Detailed skills (desktop) */}
-                {((profile.selectedServices?.length ?? 0) > 0 ||
-                  proSubcategories.length > 0) && (
-                  <div className="hidden sm:block mt-3 p-2.5 sm:p-3 rounded-lg sm:rounded-xl bg-neutral-50/80 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
-                    <p className="text-[9px] sm:text-[10px] uppercase tracking-wider text-neutral-400 font-semibold mb-1.5 sm:mb-2">
-                      {t("professional.servicesAndExperience")}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {profile.selectedServices &&
-                      profile.selectedServices.length > 0 ? (
-                        <>
-                          {profile.selectedServices
-                            .slice(0, 6)
-                            .map((service, idx) => (
-                              <div
-                                key={`svc-${idx}`}
-                                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 shadow-sm"
-                              >
-                                <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200">
-                                  {({ ka: service.nameKa, en: service.name, ru: service.name }[locale] ?? service.name)}
-                                </span>
-                                <span className="text-[10px] font-semibold text-[#C4735B] bg-[#C4735B]/10 px-1.5 py-0.5 rounded">
-                                  {getExperienceLabel(service.experience)}
-                                </span>
-                              </div>
-                            ))}
-                          {profile.selectedServices.length > 6 && (
-                            <span className="flex items-center px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-700 text-xs font-medium text-neutral-500">
-                              +{profile.selectedServices.length - 6}{" "}
-                              {t("common.more")}
-                            </span>
-                          )}
-                        </>
-                      ) : (
-                        <>
-                          {proSubcategories
-                            .slice(0, 6)
-                            .map((sub, idx) => {
-                              const experience = getServiceExperience(sub);
-                              return (
-                                <div
-                                  key={`sub-${idx}`}
-                                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 shadow-sm"
-                                >
-                                  <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200">
-                                    {getSubcategoryLabel(sub)}
-                                  </span>
-                                  {experience && (
-                                    <span className="text-[10px] font-semibold text-[#C4735B] bg-[#C4735B]/10 px-1.5 py-0.5 rounded">
-                                      {getExperienceLabel(experience)}
-                                    </span>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          {proSubcategories.length > 6 && (
-                            <span className="flex items-center px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-700 text-xs font-medium text-neutral-500">
-                              +{proSubcategories.length - 6}{" "}
-                              {t("common.more")}
-                            </span>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Price & CTA - Right side */}
-              <div className="flex flex-col gap-2 sm:gap-3 flex-shrink-0 w-full sm:w-auto sm:items-end">
+                {/* Pricing */}
                 {pricingMeta && (
-                  <div className="text-left sm:text-right">
+                  <motion.div variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }} transition={{ duration: 0.35 }} className="border-t border-neutral-100 dark:border-neutral-800 px-5 py-3">
                     {!isOwner || !isEditingPricing ? (
-                      <div className="flex items-start gap-2 justify-between sm:justify-end">
-                        <div className="flex flex-col items-start sm:items-end">
-                          <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold text-neutral-400 dark:text-neutral-500 mb-0.5">
-                            {pricingMeta.typeLabel}
-                          </span>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400">{pricingMeta.typeLabel}</span>
                           {pricingMeta.valueLabel && (
-                            <span className="text-xl sm:text-2xl font-bold text-[#C4735B] dark:text-[#D4937B]">
-                              {pricingMeta.valueLabel}
-                            </span>
+                            <p className="text-xl font-bold text-[#C4735B] dark:text-[#D4937B]">{pricingMeta.valueLabel}</p>
                           )}
                         </div>
                         {isOwner && (
-                          <button
-                            onClick={openPricingEdit}
-                            className="mt-1 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                            title={t("common.edit")}
-                          >
-                            <Edit3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          <button onClick={openPricingEdit} className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] transition-colors">
+                            <Edit3 className="w-3.5 h-3.5" />
                           </button>
                         )}
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-end">
-                          <div className="min-w-[200px]">
-                            <Select
-                              size="sm"
-                              value={editedPricingModel}
-                              onChange={(val) =>
-                                setEditedPricingModel(val as PricingModel)
-                              }
-                              options={[
-                                { value: PricingModel.FIXED, label: t("common.fixed") },
-                                { value: PricingModel.RANGE, label: t("common.priceRange") },
-                                { value: PricingModel.PER_SQUARE_METER, label: t("professional.perSqm") },
-                                { value: PricingModel.BY_AGREEMENT, label: t("common.negotiable") },
-                              ]}
-                            />
-                          </div>
-
-                          {editedPricingModel !== PricingModel.BY_AGREEMENT && (
-                            <div className="flex items-center gap-2 sm:justify-end">
-                              <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">
-                                  ₾
-                                </span>
-                                <input
-                                  type="number"
-                                  min="0"
-                                  inputMode="numeric"
-                                  value={editedBasePrice}
-                                  onChange={(e) => setEditedBasePrice(e.target.value)}
-                                  className="w-28 pl-7 pr-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/30"
-                                  placeholder="0"
-                                />
-                              </div>
-                              {editedPricingModel === PricingModel.RANGE && (
-                                <>
-                                  <span className="text-neutral-400">—</span>
-                                  <div className="relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">
-                                      ₾
-                                    </span>
-                                    <input
-                                      type="number"
-                                      min="0"
-                                      inputMode="numeric"
-                                      value={editedMaxPrice}
-                                      onChange={(e) => setEditedMaxPrice(e.target.value)}
-                                      className="w-28 pl-7 pr-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/30"
-                                      placeholder="0"
-                                    />
-                                  </div>
-                                </>
-                              )}
-                              {editedPricingModel === PricingModel.PER_SQUARE_METER && (
-                                <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                                  {t("timeUnits.perSqm")}
-                                </span>
-                              )}
+                        <Select size="sm" value={editedPricingModel} onChange={(val) => setEditedPricingModel(val as PricingModel)} options={[
+                          { value: PricingModel.FIXED, label: t("common.fixed") },
+                          { value: PricingModel.RANGE, label: t("common.priceRange") },
+                          { value: PricingModel.PER_SQUARE_METER, label: t("professional.perSqm") },
+                          { value: PricingModel.BY_AGREEMENT, label: t("common.negotiable") },
+                        ]} />
+                        {editedPricingModel !== PricingModel.BY_AGREEMENT && (
+                          <div className="flex items-center gap-2">
+                            <div className="relative flex-1">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">₾</span>
+                              <input type="number" min="0" inputMode="numeric" value={editedBasePrice} onChange={(e) => setEditedBasePrice(e.target.value)} className="w-full pl-7 pr-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/30" placeholder="0" />
                             </div>
-                          )}
-                        </div>
+                            {editedPricingModel === PricingModel.RANGE && (
+                              <>
+                                <span className="text-neutral-400 text-sm">—</span>
+                                <div className="relative flex-1">
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">₾</span>
+                                  <input type="number" min="0" inputMode="numeric" value={editedMaxPrice} onChange={(e) => setEditedMaxPrice(e.target.value)} className="w-full pl-7 pr-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/30" placeholder="0" />
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        )}
                         <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setIsEditingPricing(false)}
-                            disabled={isSaving}
-                          >
-                            <X className="w-4 h-4 mr-1" />
-                            {t("common.cancel")}
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={handleSavePricing}
-                            loading={isSaving}
-                          >
-                            <Check className="w-4 h-4 mr-1" />
-                            {t("common.save")}
-                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => setIsEditingPricing(false)} disabled={isSaving}><X className="w-3.5 h-3.5 mr-1" />{t("common.cancel")}</Button>
+                          <Button size="sm" onClick={handleSavePricing} loading={isSaving}><Check className="w-3.5 h-3.5 mr-1" />{t("common.save")}</Button>
                         </div>
                       </div>
                     )}
-                  </div>
+                  </motion.div>
                 )}
-                {/* Visitor CTA: show inside hero on desktop; mobile uses the fixed bottom button */}
-                {!isOwner && (
-                  <div className="hidden lg:block">
-                    <div className="flex flex-col gap-2.5 items-start sm:items-end">
-                      {phoneRevealed && profile.phone ? (
-                        <a
-                          href={`tel:${profile.phone.replace(/\s/g, "")}`}
-                          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 hover:-translate-y-0.5"
-                        >
-                          <Phone className="w-4 h-4" />
-                          {formatGeorgianPhoneDisplay(profile.phone)}
-                        </a>
+
+                {/* Stats Grid */}
+                <motion.div variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }} transition={{ duration: 0.35 }} className="border-t border-neutral-100 dark:border-neutral-800 px-5 py-3">
+                  <div className="grid grid-cols-2 gap-2">
+                    <motion.div whileHover={{ scale: 1.05, backgroundColor: 'rgba(196,115,91,0.06)' }} transition={{ type: "spring", stiffness: 400, damping: 25 }} className="text-center p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 cursor-default">
+                      <p className="text-base font-bold text-neutral-900 dark:text-white"><AnimatedCounter value={profile.profileViewCount ?? 0} /></p>
+                      <p className="text-[10px] text-neutral-500 mt-0.5">{locale === "ka" ? "ნახვები" : "Views"}</p>
+                    </motion.div>
+                    {profile.avgRating > 0 && (
+                      <motion.div whileHover={{ scale: 1.05, backgroundColor: 'rgba(196,115,91,0.06)' }} transition={{ type: "spring", stiffness: 400, damping: 25 }} className="text-center p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 cursor-default">
+                        <p className="text-base font-bold text-neutral-900 dark:text-white flex items-center justify-center gap-1">
+                          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                          <AnimatedCounter value={profile.avgRating} decimals={1} />
+                        </p>
+                        <p className="text-[10px] text-neutral-500 mt-0.5">{reviews.length || profile.totalReviews} {locale === "ka" ? "შეფასებები" : "Reviews"}</p>
+                      </motion.div>
+                    )}
+                    {totalCompletedJobs > 0 && (
+                      <motion.div whileHover={{ scale: 1.05, backgroundColor: 'rgba(196,115,91,0.06)' }} transition={{ type: "spring", stiffness: 400, damping: 25 }} className="text-center p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 cursor-default">
+                        <p className="text-base font-bold text-neutral-900 dark:text-white"><AnimatedCounter value={totalCompletedJobs} /></p>
+                        <p className="text-[10px] text-neutral-500 mt-0.5">{locale === "ka" ? "დასრულებული" : "Jobs"}</p>
+                      </motion.div>
+                    )}
+                    {(() => {
+                      let maxYears = profile.yearsExperience || 0;
+                      if (profile.selectedServices && profile.selectedServices.length > 0) {
+                        const experienceToYears: Record<string, number> = { "1-2": 2, "3-5": 5, "5-10": 10, "10+": 15 };
+                        const calcMax = Math.max(...profile.selectedServices.map((s) => experienceToYears[s.experience] || 0));
+                        if (calcMax > maxYears) maxYears = calcMax;
+                      }
+                      return maxYears > 0 ? (
+                        <motion.div whileHover={{ scale: 1.05, backgroundColor: 'rgba(196,115,91,0.06)' }} transition={{ type: "spring", stiffness: 400, damping: 25 }} className="text-center p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 cursor-default">
+                          <p className="text-base font-bold text-neutral-900 dark:text-white"><AnimatedCounter value={maxYears} />+</p>
+                          <p className="text-[10px] text-neutral-500 mt-0.5">{locale === "ka" ? "წლის გამოცდ." : "Years Exp."}</p>
+                        </motion.div>
+                      ) : null;
+                    })()}
+                  </div>
+                </motion.div>
+
+                {/* Services */}
+                {((profile.selectedServices?.length ?? 0) > 0 || proSubcategories.length > 0) && (
+                  <motion.div variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }} transition={{ duration: 0.35 }} className="border-t border-neutral-100 dark:border-neutral-800 px-5 py-3">
+                    <h3 className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-2">{locale === "ka" ? "სერვისები და გამოცდილება" : "Services & Experience"}</h3>
+                    <motion.div className="flex flex-wrap gap-1.5" initial="hidden" animate="show" variants={{ hidden: {}, show: { transition: { staggerChildren: 0.04, delayChildren: 0.5 } } }}>
+                      {profile.selectedServices && profile.selectedServices.length > 0 ? (
+                        profile.selectedServices.map((service, idx) => (
+                          <motion.div
+                            key={`svc-${idx}`}
+                            variants={{ hidden: { opacity: 0, scale: 0.8 }, show: { opacity: 1, scale: 1 } }}
+                            transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                            whileHover={{ scale: 1.05, y: -1 }}
+                            className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 text-xs cursor-default hover:border-[#C4735B]/30 hover:bg-[#C4735B]/5 transition-colors"
+                          >
+                            <span className="font-medium text-neutral-700 dark:text-neutral-200">
+                              {({ ka: service.nameKa, en: service.name, ru: service.name }[locale] ?? service.name)}
+                            </span>
+                            <span className="text-[10px] font-bold text-[#C4735B] bg-[#C4735B]/10 px-1 py-0.5 rounded">{getExperienceLabel(service.experience)}</span>
+                          </motion.div>
+                        ))
                       ) : (
-                        <button
-                          onClick={handleContact}
-                          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm bg-gradient-to-r from-[#C4735B] to-[#A85D4A] hover:from-[#B5624A] hover:to-[#9A5242] transition-all shadow-lg shadow-[#C4735B]/25 hover:shadow-xl hover:shadow-[#C4735B]/30 hover:-translate-y-0.5"
-                        >
-                          {isBasicTier ? (
-                            <Phone className="w-4 h-4" />
-                          ) : (
-                            <MessageSquare className="w-4 h-4" />
-                          )}
-                          {isBasicTier
-                            ? t("professional.showPhone")
-                            : t("professional.contact")}
-                        </button>
+                        proSubcategories.map((sub, idx) => {
+                          const experience = getServiceExperience(sub);
+                          return (
+                            <motion.div
+                              key={`sub-${idx}`}
+                              variants={{ hidden: { opacity: 0, scale: 0.8 }, show: { opacity: 1, scale: 1 } }}
+                              transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                              whileHover={{ scale: 1.05, y: -1 }}
+                              className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 text-xs cursor-default hover:border-[#C4735B]/30 hover:bg-[#C4735B]/5 transition-colors"
+                            >
+                              <span className="font-medium text-neutral-700 dark:text-neutral-200">{getSubcategoryLabel(sub)}</span>
+                              {experience && <span className="text-[10px] font-bold text-[#C4735B] bg-[#C4735B]/10 px-1 py-0.5 rounded">{getExperienceLabel(experience)}</span>}
+                            </motion.div>
+                          );
+                        })
                       )}
+                    </motion.div>
+                    {proCategories.length > 0 && (
+                      <motion.div className="flex flex-wrap gap-1.5 mt-2" initial="hidden" animate="show" variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05, delayChildren: 0.7 } } }}>
+                        {proCategories.map((cat, idx) => (
+                          <motion.span
+                            key={`cat-${idx}`}
+                            variants={{ hidden: { opacity: 0, scale: 0.8 }, show: { opacity: 1, scale: 1 } }}
+                            transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                            whileHover={{ scale: 1.08 }}
+                            className="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-gradient-to-r from-[#C4735B] to-[#D4937B] text-white cursor-default"
+                          >
+                            {getCategoryLabel(cat)}
+                          </motion.span>
+                        ))}
+                      </motion.div>
+                    )}
+                  </motion.div>
+                )}
 
-                      {/* Invite pro to one of my open jobs */}
-                      {myOpenJobsLoaded && myMatchingOpenJobs.length > 0 && (
-                        <button
-                          onClick={() => setShowInviteToJobModal(true)}
-                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-neutral-700 dark:text-neutral-200 font-medium text-sm bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-[#C4735B]/30 hover:bg-[#C4735B]/5 dark:hover:bg-[#C4735B]/10 transition-all shadow-sm hover:shadow-md"
-                        >
-                          <Briefcase className="w-4 h-4" />
-                          {t("professional.inviteToJob")}
-                        </button>
+                {/* Member since */}
+                {profile.createdAt && (
+                  <motion.div variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }} transition={{ duration: 0.35 }} className="border-t border-neutral-100 dark:border-neutral-800 px-5 py-3">
+                    <p className="text-[10px] text-neutral-400 uppercase tracking-wider" suppressHydrationWarning>
+                      {locale === "ka" ? "წევრია" : "Member since"}: {new Date(profile.createdAt).toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', { month: 'long', year: 'numeric' })}
+                    </p>
+                  </motion.div>
+                )}
+              </motion.div>
+            </div>
+          </motion.aside>
+
+          {/* ====== CONTENT AREA ====== */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+            className="flex-1 min-w-0"
+          >
+            {/* Desktop Tab Navigation - Behance style horizontal underline tabs */}
+            <div className="hidden lg:block border-b border-neutral-200 dark:border-neutral-800 mb-6">
+              <nav className="flex gap-8" aria-label="Profile sections">
+                {([
+                  { key: "portfolio" as ProfileSidebarTab, label: locale === "ka" ? "ნამუშევრები" : "Portfolio", count: portfolioProjects.length },
+                  { key: "about" as ProfileSidebarTab, label: locale === "ka" ? "შესახებ" : "About" },
+                  { key: "reviews" as ProfileSidebarTab, label: locale === "ka" ? "შეფასებები" : "Reviews", count: reviews.length || profile.totalReviews },
+                ]).map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`relative pb-3 text-sm font-medium transition-colors ${activeTab === tab.key ? "text-neutral-900 dark:text-white" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
+                  >
+                    <span className="flex items-center gap-2">
+                      {tab.label}
+                      {tab.count !== undefined && tab.count > 0 && (
+                        <span className="text-xs text-neutral-400">{tab.count}</span>
                       )}
-                    </div>
+                    </span>
+                    {activeTab === tab.key && (
+                      <motion.span layoutId="desktop-tab-indicator" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C4735B] rounded-full" transition={{ type: "spring", stiffness: 500, damping: 35 }} />
+                    )}
+                  </button>
+                ))}
+              </nav>
+            </div>
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+                className="space-y-6 sm:space-y-8"
+              >
+                {/* ABOUT TAB */}
+                {activeTab === "about" && (
+                  <div className="min-h-[300px]">
+                    <AboutTab
+                      bio={profile.bio}
+                      customServices={profile.customServices}
+                      groupedServices={groupedServices}
+                      selectedServices={profile.selectedServices}
+                      getCategoryLabel={getCategoryLabel}
+                      getSubcategoryLabel={getSubcategoryLabel}
+                      getExperienceLabel={getExperienceLabel}
+                      whatsapp={profile.whatsapp}
+                      telegram={profile.telegram}
+                      facebookUrl={profile.facebookUrl}
+                      instagramUrl={profile.instagramUrl}
+                      linkedinUrl={profile.linkedinUrl}
+                      websiteUrl={profile.websiteUrl}
+                      locale={locale as "en" | "ka" | "ru"}
+                      isAuthenticated={!!user}
+                      onRequireAuth={() => openLoginModal(pathname)}
+                      isOwner={isOwner}
+                      onSaveBio={async (bio) => {
+                        await api.patch("/users/me/pro-profile", { bio });
+                        setProfile((prev) => (prev ? { ...prev, bio } : prev));
+                        toast.success(t("professional.saved"));
+                      }}
+                      onSaveServices={async (customServices) => {
+                        await api.patch("/users/me/pro-profile", { customServices });
+                        setProfile((prev) => prev ? { ...prev, customServices } : prev);
+                        toast.success(t("common.saved"));
+                      }}
+                      onSaveSocialLinks={async (socialLinks) => {
+                        await api.patch("/users/me/pro-profile", socialLinks);
+                        setProfile((prev) => prev ? { ...prev, ...socialLinks } : prev);
+                        toast.success(t("common.saved"));
+                      }}
+                    />
                   </div>
                 )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ========== MOBILE TAB NAVIGATION ========== */}
-      <div className="lg:hidden sticky top-[56px] sm:top-[60px] z-30 bg-[var(--color-bg-app)]/95 dark:bg-[#0A0A0A]/95 backdrop-blur-lg border-b border-neutral-200/50 dark:border-neutral-800/50 px-3 sm:px-4 py-2 sm:py-3">
-        <ProfileSidebarMobile
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          locale={locale}
-          portfolioCount={portfolioProjects.length}
-          reviewsCount={profile.totalReviews}
-        />
-      </div>
+                {/* PORTFOLIO TAB */}
+                {activeTab === "portfolio" && (
+                  <div className="min-h-[300px]">
+                    <PortfolioTab
+                      projects={getUnifiedProjects().map((p) => ({
+                        id: p.id,
+                        title: p.title,
+                        description: p.description,
+                        location: p.location,
+                        images: p.images,
+                        videos: p.videos,
+                        beforeAfter: p.beforeAfter,
+                        isEditable: p.source !== "homico",
+                      }))}
+                      onProjectClick={setSelectedProject}
+                      locale={locale as "en" | "ka" | "ru"}
+                      isOwner={isOwner}
+                      onAddProject={() => setShowAddProjectModal(true)}
+                      onEditProject={(project) =>
+                        setEditingProject({
+                          id: project.id,
+                          title: project.title,
+                          description: project.description,
+                          location: project.location,
+                          images: project.images,
+                          videos: project.videos,
+                          beforeAfter: project.beforeAfter,
+                        })
+                      }
+                      onDeleteProject={(projectId) => setDeleteProjectId(projectId)}
+                    />
+                  </div>
+                )}
 
-      {/* ========== MAIN CONTENT WITH SIDEBAR ========== */}
-      <main className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 pb-24 sm:pb-28 lg:pb-12">
-        <div className="flex gap-4 sm:gap-6">
-          {/* Desktop Sidebar */}
-          <aside className="hidden lg:block w-56 flex-shrink-0">
-            <div className="sticky top-[80px] bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/60 dark:border-neutral-800 p-3 shadow-lg shadow-neutral-900/[0.03] dark:shadow-black/20">
-              <ProfileSidebar
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-                locale={locale}
-                portfolioCount={portfolioProjects.length}
-                reviewsCount={reviews.length || profile.totalReviews}
-              />
-            </div>
-          </aside>
-
-          {/* Content Area */}
-          <div className="flex-1 min-w-0 space-y-6 sm:space-y-8">
-            {/* ABOUT TAB */}
-            {activeTab === "about" && (
-              <div className="min-h-[300px]">
-                <AboutTab
-                  bio={profile.bio}
-                  customServices={profile.customServices}
-                  groupedServices={groupedServices}
-                  getCategoryLabel={getCategoryLabel}
-                  getSubcategoryLabel={getSubcategoryLabel}
-                  whatsapp={profile.whatsapp}
-                  telegram={profile.telegram}
-                  facebookUrl={profile.facebookUrl}
-                  instagramUrl={profile.instagramUrl}
-                  linkedinUrl={profile.linkedinUrl}
-                  websiteUrl={profile.websiteUrl}
-                  locale={locale as "en" | "ka" | "ru"}
-                  isAuthenticated={!!user}
-                  onRequireAuth={() => openLoginModal(pathname)}
-                  isOwner={isOwner}
-                  onSaveBio={async (bio) => {
-                    await api.patch("/users/me/pro-profile", { bio });
-                    setProfile((prev) => (prev ? { ...prev, bio } : prev));
-                    toast.success(t("professional.saved"));
-                  }}
-                  onSaveServices={async (customServices) => {
-                    await api.patch("/users/me/pro-profile", {
-                      customServices,
-                    });
-                    setProfile((prev) =>
-                      prev ? { ...prev, customServices } : prev
-                    );
-                    toast.success(t("common.saved"));
-                  }}
-                  onSaveSocialLinks={async (socialLinks) => {
-                    await api.patch("/users/me/pro-profile", socialLinks);
-                    setProfile((prev) =>
-                      prev ? { ...prev, ...socialLinks } : prev
-                    );
-                    toast.success(t("common.saved"));
-                  }}
-                />
-              </div>
-            )}
-
-            {/* PORTFOLIO TAB */}
-            {activeTab === "portfolio" && (
-              <div className="min-h-[300px]">
-                <PortfolioTab
-                  projects={getUnifiedProjects().map((p) => ({
-                    id: p.id,
-                    title: p.title,
-                    description: p.description,
-                    location: p.location,
-                    images: p.images,
-                    videos: p.videos,
-                    beforeAfter: p.beforeAfter,
-                    isEditable: p.source !== "homico", // Only allow edit/delete for non-Homico projects
-                  }))}
-                  onProjectClick={setSelectedProject}
-                  locale={locale as "en" | "ka" | "ru"}
-                  isOwner={isOwner}
-                  onAddProject={() => setShowAddProjectModal(true)}
-                  onEditProject={(project) =>
-                    setEditingProject({
-                      id: project.id,
-                      title: project.title,
-                      description: project.description,
-                      location: project.location,
-                      images: project.images,
-                      videos: project.videos,
-                      beforeAfter: project.beforeAfter,
-                    })
-                  }
-                  onDeleteProject={(projectId) => setDeleteProjectId(projectId)}
-                />
-              </div>
-            )}
-
-            {/* REVIEWS TAB */}
-            {activeTab === "reviews" && (
-              <div className="min-h-[300px]">
-                <ReviewsTab
-                  reviews={reviews}
-                  avgRating={profile.avgRating}
-                  totalReviews={reviews.length || profile.totalReviews}
-                  locale={locale as "en" | "ka" | "ru"}
-                  isOwner={isOwner}
-                  proId={profile.id}
-                  proName={profile.name}
-                  onReviewSubmitted={fetchReviews}
-                />
-              </div>
-            )}
-
-          </div>
+                {/* REVIEWS TAB */}
+                {activeTab === "reviews" && (
+                  <div className="min-h-[300px]">
+                    <ReviewsTab
+                      reviews={reviews}
+                      avgRating={profile.avgRating}
+                      totalReviews={reviews.length || profile.totalReviews}
+                      locale={locale as "en" | "ka" | "ru"}
+                      isOwner={isOwner}
+                      proId={profile.id}
+                      proName={profile.name}
+                      onReviewSubmitted={fetchReviews}
+                    />
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </motion.div>
         </div>
       </main>
 
@@ -2153,41 +2183,66 @@ export default function ProfessionalDetailClient({
             : "translate-y-20 opacity-0 pointer-events-none"
         }`}
       >
-        {/* Invite pro to job - mobile (only if viewer has open jobs) */}
+        {/* Invite pro to job - mobile */}
         {myOpenJobsLoaded && myMatchingOpenJobs.length > 0 && (
-          <button
+          <motion.button
+            whileTap={{ scale: 0.97 }}
             onClick={() => setShowInviteToJobModal(true)}
             className="w-full flex items-center justify-center gap-2 py-3 sm:py-3.5 mb-2 rounded-xl sm:rounded-2xl text-neutral-700 dark:text-neutral-200 font-semibold text-sm bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-lg shadow-neutral-900/10 dark:shadow-black/30"
           >
             <Briefcase className="w-4 h-4 sm:w-5 sm:h-5" />
             {t("professional.inviteToJob")}
-          </button>
+          </motion.button>
         )}
-        {phoneRevealed && profile.phone ? (
-          <a
-            href={`tel:${profile.phone.replace(/\s/g, "")}`}
-            className="block w-full py-3.5 sm:py-4 rounded-xl sm:rounded-2xl text-white font-semibold text-sm sm:text-base bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-xl shadow-emerald-500/30 text-center"
-          >
-            <span className="flex items-center justify-center gap-2">
-              <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
-              {formatGeorgianPhoneDisplay(profile.phone)}
-            </span>
-          </a>
-        ) : (
-          <button
-            onClick={handleContact}
-            className="w-full flex items-center justify-center gap-2 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl text-white font-semibold text-sm sm:text-base bg-gradient-to-r from-[#C4735B] to-[#A85D4A] shadow-xl shadow-[#C4735B]/30"
-          >
-            {isBasicTier ? (
-              <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
-            ) : (
-              <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
-            )}
-            {isBasicTier
-              ? t("professional.showPhone")
-              : t("professional.contact")}
-          </button>
-        )}
+        <AnimatePresence mode="wait">
+          {phoneRevealed && profile.phone ? (
+            <motion.a
+              key="mobile-phone-revealed"
+              initial={{ scale: 0.92, opacity: 0, rotateX: -12 }}
+              animate={{ scale: 1, opacity: 1, rotateX: 0 }}
+              exit={{ scale: 0.92, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              href={`tel:${profile.phone.replace(/\s/g, "")}`}
+              className="block w-full py-3.5 sm:py-4 rounded-xl sm:rounded-2xl text-white font-semibold text-sm sm:text-base bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-xl shadow-emerald-500/30 text-center"
+              style={{ transformPerspective: 600 }}
+            >
+              <span className="flex items-center justify-center gap-2">
+                <motion.span
+                  animate={{ rotate: [0, -15, 15, -10, 10, 0] }}
+                  transition={{ duration: 0.6, delay: 0.15 }}
+                >
+                  <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
+                </motion.span>
+                {formatGeorgianPhoneDisplay(profile.phone)}
+              </span>
+            </motion.a>
+          ) : (
+            <motion.button
+              key="mobile-contact-cta"
+              whileTap={{ scale: 0.97 }}
+              onClick={handleContact}
+              className="relative w-full flex items-center justify-center gap-2 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl text-white font-semibold text-sm sm:text-base bg-gradient-to-r from-[#C4735B] to-[#A85D4A] shadow-xl shadow-[#C4735B]/30 overflow-hidden"
+            >
+              {/* Shine sweep */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
+                initial={{ x: '-100%' }}
+                animate={{ x: '200%' }}
+                transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 4, ease: "easeInOut" }}
+              />
+              <span className="relative flex items-center justify-center gap-2">
+                {isBasicTier ? (
+                  <motion.span animate={{ rotate: [0, -12, 12, -8, 0] }} transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}>
+                    <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </motion.span>
+                ) : (
+                  <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
+                )}
+                {isBasicTier ? t("professional.showPhone") : t("professional.contact")}
+              </span>
+            </motion.button>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Invite modal */}

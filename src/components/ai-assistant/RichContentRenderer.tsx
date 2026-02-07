@@ -137,7 +137,7 @@ function CategoryListRenderer({
         {categories.map((category) => (
           <Link
             key={category.key}
-            href={`/browse/professionals?category=${category.key}`}
+            href={`/professionals?category=${category.key}`}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 rounded-full text-sm text-neutral-700 hover:text-neutral-900 transition-colors"
           >
             <Grid3X3 className="w-3.5 h-3.5" />

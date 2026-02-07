@@ -35,7 +35,7 @@ export default function BackButton({
     if (href) {
       router.push(href);
     } else {
-      backOrNavigate(router, "/browse");
+      backOrNavigate(router, "/portfolio");
     }
   };
 

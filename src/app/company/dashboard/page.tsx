@@ -182,7 +182,7 @@ export default function CompanyDashboardPage() {
                 <span className="hidden sm:inline">{t('company.invite')}</span>
               </Link>
               <Link
-                href="/browse/jobs"
+                href="/jobs"
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-white transition-all duration-200"
                 style={{ background: ACCENT }}
                 onMouseEnter={(e) => e.currentTarget.style.background = ACCENT_HOVER}
@@ -316,7 +316,7 @@ export default function CompanyDashboardPage() {
             </h2>
             <div className="space-y-2">
               <Link
-                href="/browse/jobs"
+                href="/jobs"
                 className="flex items-center gap-3 p-3 rounded-xl transition-all duration-200 group"
                 style={{ background: 'var(--color-bg-secondary)' }}
               >
@@ -510,7 +510,7 @@ export default function CompanyDashboardPage() {
                     {t('company.noJobsYet')}
                   </p>
                   <Link
-                    href="/browse/jobs"
+                    href="/jobs"
                     className="inline-flex items-center gap-2 mt-3 text-sm font-medium"
                     style={{ color: ACCENT }}
                   >
@@ -585,7 +585,7 @@ export default function CompanyDashboardPage() {
                     {t('company.noProposalsYet')}
                   </p>
                   <Link
-                    href="/browse/jobs"
+                    href="/jobs"
                     className="inline-flex items-center gap-2 mt-3 text-sm font-medium"
                     style={{ color: ACCENT }}
                   >

@@ -178,7 +178,7 @@ export default function NotFound() {
           </Link>
 
           <Link
-            href="/browse"
+            href="/professionals"
             className="group px-8 py-4 bg-transparent text-terracotta-600 dark:text-terracotta-400 font-semibold rounded-2xl border-2 border-terracotta-200 dark:border-terracotta-700/50 hover:border-terracotta-500 dark:hover:border-terracotta-500 hover:bg-terracotta-50 dark:hover:bg-terracotta-500/10 transition-all duration-300"
           >
             <span className="flex items-center gap-2">
@@ -201,7 +201,7 @@ export default function NotFound() {
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             {[
-              { href: '/browse', label: 'სპეციალისტები' },
+              { href: '/professionals', label: 'სპეციალისტები' },
               { href: '/post-job', label: 'პროექტის დამატება' },
               { href: '/become-pro', label: 'გახდი პრო' },
               { href: '/help', label: 'დახმარება' },

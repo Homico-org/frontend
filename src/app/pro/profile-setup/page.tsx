@@ -531,7 +531,7 @@ function ProProfileSetupPageContent() {
   // Auth redirect
   useEffect(() => {
     if (!authLoading && (!user || user.role !== 'pro')) {
-      router.push('/browse');
+      router.push('/portfolio');
     }
   }, [user, authLoading, router]);
 
@@ -751,7 +751,7 @@ function ProProfileSetupPageContent() {
       if (userId) {
         router.push(`/professionals/${userId}`);
       } else {
-        router.push('/browse/professionals');
+        router.push('/professionals');
       }
     } catch (err) {
       const error = err as { message?: string };

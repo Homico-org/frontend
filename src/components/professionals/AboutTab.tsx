@@ -27,6 +27,16 @@ export interface AboutTabProps {
   getCategoryLabel: (categoryKey: string) => string;
   /** Function to get subcategory label */
   getSubcategoryLabel: (subcategoryKey: string) => string;
+  /** Selected services with experience from profile */
+  selectedServices?: {
+    key: string;
+    categoryKey: string;
+    name: string;
+    nameKa: string;
+    experience: string;
+  }[];
+  /** Function to get experience label */
+  getExperienceLabel?: (experience: string) => string;
   /** WhatsApp number */
   whatsapp?: string;
   /** Telegram username */
@@ -61,6 +71,8 @@ export default function AboutTab({
   groupedServices,
   getCategoryLabel,
   getSubcategoryLabel,
+  selectedServices,
+  getExperienceLabel,
   whatsapp,
   telegram,
   facebookUrl,
@@ -320,8 +332,6 @@ export default function AboutTab({
           <p className="text-neutral-400 italic">{t('professional.noServicesListed')}</p>
         )}
       </div>
-
-      {/* Skills section removed - categories now shown in hero */}
 
       {/* Social Links - Only visible to owner for editing (visitors see them in hero) */}
       {isOwner && (

@@ -52,7 +52,7 @@ export function ViewModeProvider({ children }: { children: ReactNode }) {
   const toggleViewMode = () => {
     const newMode = viewMode === 'pro' ? 'client' : 'pro';
     setViewMode(newMode);
-    router.push('/browse');
+    router.push('/portfolio');
   };
 
   // Only allow client mode for pro users and admin

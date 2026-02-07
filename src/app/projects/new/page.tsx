@@ -214,7 +214,7 @@ export default function StartProjectPage() {
                       variant="secondary"
                       size="sm"
                     >
-                      <Link href={`/browse?category=${encodeURIComponent(role.name)}`} className="flex items-center gap-1">
+                      <Link href={`/professionals?category=${encodeURIComponent(role.name)}`} className="flex items-center gap-1">
                         {role.name}
                         <ChevronRight className="w-3 h-3" />
                       </Link>
@@ -226,7 +226,7 @@ export default function StartProjectPage() {
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button asChild variant="secondary">
-                <Link href="/browse">Browse Professionals</Link>
+                <Link href="/professionals">Browse Professionals</Link>
               </Button>
               <Button asChild>
                 <Link href="/projects">View Projects</Link>
@@ -247,7 +247,7 @@ export default function StartProjectPage() {
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="mb-6">
-            <BackButton href="/browse" label="Back" className="mb-4" />
+            <BackButton href="/projects" label="Back" className="mb-4" />
             <h1 className="text-2xl font-bold text-neutral-900">Start Project</h1>
             <p className="text-neutral-500 mt-1">Plan your renovation and build the perfect team</p>
           </div>

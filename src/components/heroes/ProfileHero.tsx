@@ -139,7 +139,7 @@ export default function ProfileHero({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => backOrNavigate(router, "/browse")}
+            onClick={() => backOrNavigate(router, "/portfolio")}
             className="rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm shadow-sm hover:bg-white dark:hover:bg-neutral-800"
             leftIcon={<ChevronLeft className="w-4 h-4" />}
           >

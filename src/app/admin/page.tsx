@@ -454,7 +454,7 @@ function AdminDashboardPageContent() {
 
               {/* Actions */}
               <Link
-                href="/browse"
+                href="/portfolio"
                 className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:gap-2 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-sm font-medium transition-all sm:hover:scale-105"
                 style={{
                   background: THEME.surfaceLight,

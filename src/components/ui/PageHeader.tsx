@@ -27,6 +27,18 @@ export interface PageHeaderProps {
   children?: React.ReactNode;
   /** Additional container class names */
   className?: string;
+  /**
+   * Class names for the padding wrapper inside the header.
+   * Defaults to the standard page padding used in Tools pages.
+   */
+  containerClassName?: string;
+  /**
+   * Class names for the inner width constraint wrapper.
+   * Defaults to `mx-auto max-w-4xl`.
+   *
+   * For embedded contexts (when a parent layout controls width), you can use `max-w-none`.
+   */
+  contentClassName?: string;
   /** Whether to show border at bottom */
   bordered?: boolean;
   /** Background variant */
@@ -62,6 +74,8 @@ export function PageHeader({
   rightContent,
   children,
   className,
+  containerClassName = 'px-4 py-4 sm:px-6 lg:px-8',
+  contentClassName = 'mx-auto max-w-4xl',
   bordered = true,
   variant = 'default',
 }: PageHeaderProps) {
@@ -74,8 +88,8 @@ export function PageHeader({
         className
       )}
     >
-      <div className="px-4 py-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl">
+      <div className={containerClassName}>
+        <div className={contentClassName}>
           {/* Back Link */}
           {backHref && backLabel && (
             <Link

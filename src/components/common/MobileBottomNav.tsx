@@ -21,7 +21,7 @@ const NAV_ITEMS: NavItem[] = [
   // Guest navigation (not logged in)
   {
     key: 'portfolios',
-    href: '/browse/portfolio',
+    href: '/portfolio',
     labelKey: 'nav.portfolios',
     icon: Images,
     showFor: 'guest',
@@ -36,7 +36,7 @@ const NAV_ITEMS: NavItem[] = [
   // Client navigation (authenticated, not pro)
   {
     key: 'browse',
-    href: '/browse/portfolio',
+    href: '/portfolio',
     labelKey: 'header.browse',
     icon: Search,
     showFor: 'client',
@@ -51,9 +51,16 @@ const NAV_ITEMS: NavItem[] = [
   // Pro navigation
   {
     key: 'find-jobs',
-    href: '/browse/jobs',
+    href: '/jobs',
     labelKey: 'nav.jobs',
     icon: Briefcase,
+    showFor: 'pro',
+  },
+  {
+    key: 'my-work',
+    href: '/my-work',
+    labelKey: 'header.myWork',
+    icon: Images,
     showFor: 'pro',
   },
   {
@@ -116,13 +123,12 @@ export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
   // Determine active tab
   const getActiveKey = () => {
     if (pathname.includes('/tools')) return isAuthenticated ? '' : 'tools-guest';
-    if (pathname.includes('/my-work')) return 'my-jobs';
+    if (pathname.includes('/my-work')) return 'my-work';
     if (pathname.includes('/my-proposals')) return 'my-jobs';
     if (pathname.includes('/my-jobs')) return isPro ? 'my-jobs' : 'my-jobs-client';
-    if (pathname.includes('/browse/jobs')) return 'find-jobs';
-    if (pathname.includes('/browse/professionals')) return isPro ? '' : 'browse';
-    if (pathname.includes('/browse/portfolio')) return isPro ? '' : (isAuthenticated ? 'browse' : 'portfolios');
-    if (pathname.includes('/browse')) return isPro ? '' : (isAuthenticated ? 'browse' : 'portfolios');
+    if (pathname.includes('/jobs')) return 'find-jobs';
+    if (pathname.includes('/professionals')) return isPro ? '' : 'browse';
+    if (pathname.includes('/portfolio')) return isPro ? '' : (isAuthenticated ? 'browse' : 'portfolios');
     return '';
   };
 
