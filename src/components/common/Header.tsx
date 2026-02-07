@@ -9,7 +9,7 @@ import { useCategories } from "@/contexts/CategoriesContext";
 import { Locale, useLanguage } from "@/contexts/LanguageContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useClickOutside } from "@/hooks/useClickOutside";
-import { ExternalLink, LogIn, Plus, UserPlus, X } from "lucide-react";
+import { ExternalLink, LogIn, Menu, Plus, UserPlus, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -96,8 +96,10 @@ export default function Header() {
 
         {/* Right side - Actions + Profile */}
         <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 min-w-0">
-          {/* Language Selector */}
-          <LanguageSelector variant="icon" />
+          {/* Language Selector - hidden on mobile when logged out (shown in burger menu) */}
+          <div className={!isAuthenticated ? 'hidden sm:block' : ''}>
+            <LanguageSelector variant="icon" />
+          </div>
 
           {isLoading ? (
             <Skeleton className="w-9 h-9 rounded-xl" />
@@ -472,27 +474,16 @@ export default function Header() {
                 </Button>
               </div>
 
-              {/* Mobile: Login + Register */}
-              <div className="flex sm:hidden items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => openLoginModal()}
-                  className="h-9 px-3 rounded-xl font-semibold"
-                >
-                  {t("common.login")}
-                </Button>
-                <Button
-                  size="sm"
-                  asChild
-                  className="h-9 px-4 rounded-xl font-semibold"
-                  style={{ backgroundColor: ACCENT_COLOR, color: "#fff" }}
-                >
-                  <Link href="/register">
-                    {t("header.signUp")}
-                  </Link>
-                </Button>
-              </div>
+              {/* Mobile: Hamburger menu */}
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => setShowMobileMenu(true)}
+                className="sm:hidden"
+                aria-label="Open menu"
+              >
+                <Menu className="w-5 h-5 text-neutral-700 dark:text-neutral-300" />
+              </Button>
             </>
           )}
         </div>
@@ -517,13 +508,16 @@ export default function Header() {
           >
             {/* Menu Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-              <Image
-                src="/favicon.png"
-                alt="Homico"
-                width={28}
-                height={28}
-                className="h-7 w-7 rounded-[8px]"
-              />
+              <div className="flex items-center gap-3">
+                <Image
+                  src="/favicon.png"
+                  alt="Homico"
+                  width={28}
+                  height={28}
+                  className="h-7 w-7 rounded-[8px]"
+                />
+                <LanguageSelector variant="icon" />
+              </div>
               <Button
                 variant="secondary"
                 size="icon"
@@ -609,24 +603,26 @@ export default function Header() {
                 <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
               </div>
 
-              {/* Post a Job as Guest */}
-              <Link
-                href="/post-job"
-                onClick={() => setShowMobileMenu(false)}
+              {/* Post a Job as Guest - opens login modal */}
+              <button
+                onClick={() => {
+                  setShowMobileMenu(false);
+                  openLoginModal();
+                }}
                 className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 transition-all active:scale-[0.98]"
               >
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-neutral-100 dark:bg-neutral-800">
                   <Plus className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
                 </div>
                 <div className="flex-1 text-left">
-                  <span className="block font-medium text-neutral-700 dark:text-neutral-300">
+                  <span className="block font-medium text-neutral-700 dark:text-neutral-300 text-left">
                     {t('header.postAJob')}
                   </span>
-                  <span className="block text-xs text-neutral-500 dark:text-neutral-500">
+                  <span className="block text-xs text-neutral-500 dark:text-neutral-500 text-left">
                     {t('header.findProfessionals')}
                   </span>
                 </div>
-              </Link>
+              </button>
 
               {/* Browse link */}
               <Link

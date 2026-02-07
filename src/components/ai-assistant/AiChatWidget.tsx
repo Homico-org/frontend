@@ -2,7 +2,9 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Minimize2, Send, Sparkles, Trash2, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Minimize2, Send, Trash2, X } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -110,62 +112,6 @@ function TypingIndicator() {
   );
 }
 
-// Welcome message component
-function WelcomeMessage({ locale }: { locale: string }) {
-  const welcomeMessages = {
-    en: {
-      title: 'Hi! I\'m Homico AI 👋',
-      subtitle: 'Your intelligent renovation assistant. I can help you with:',
-      items: [
-        'Finding the best professionals',
-        'Real price estimates from our database',
-        'Step-by-step platform guidance',
-        'Renovation planning advice',
-      ],
-    },
-    ka: {
-      title: 'გამარჯობა! მე ვარ Homico AI 👋',
-      subtitle: 'თქვენი ინტელექტუალური რემონტის ასისტენტი. შემიძლია დაგეხმაროთ:',
-      items: [
-        'საუკეთესო პროფესიონალების პოვნაში',
-        'რეალური ფასების შეფასებაში',
-        'პლატფორმის გამოყენების ახსნაში',
-        'რემონტის დაგეგმვაში',
-      ],
-    },
-    ru: {
-      title: 'Привет! Я Homico AI 👋',
-      subtitle: 'Ваш интеллектуальный ассистент по ремонту. Я могу помочь с:',
-      items: [
-        'Поиском лучших специалистов',
-        'Реальными оценками цен из базы',
-        'Пошаговым руководством по платформе',
-        'Планированием ремонта',
-      ],
-    },
-  };
-
-  const content = welcomeMessages[locale as keyof typeof welcomeMessages] || welcomeMessages.en;
-
-  return (
-    <div className="text-center py-4">
-      <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-[#C4735B] to-[#A85D47] rounded-full flex items-center justify-center shadow-lg shadow-[#C4735B]/20">
-        <Sparkles className="w-8 h-8 text-white" />
-      </div>
-      <h3 className="font-bold text-neutral-900 mb-1">{content.title}</h3>
-      <p className="text-sm text-neutral-500 mb-3">{content.subtitle}</p>
-      <ul className="text-left text-sm text-neutral-600 space-y-1.5 max-w-[220px] mx-auto">
-        {content.items.map((item, idx) => (
-          <li key={idx} className="flex items-start gap-2">
-            <Sparkles className="w-3.5 h-3.5 text-[#C4735B] mt-0.5 flex-shrink-0" />
-            <span>{item}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 export default function AiChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -173,6 +119,105 @@ export default function AiChatWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isMobileRef = useRef<boolean>(false);
+
+  // Draggable FAB state
+  const [fabPosition, setFabPosition] = useState<{ x: number; y: number } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [fabSide, setFabSide] = useState<'right' | 'left'>('right');
+  const dragRef = useRef<{ startX: number; startY: number; startPosX: number; startPosY: number; moved: boolean } | null>(null);
+  const fabRef = useRef<HTMLButtonElement>(null);
+
+  // Initialize FAB position
+  useEffect(() => {
+    if (fabPosition === null && typeof window !== 'undefined') {
+      setFabPosition({ x: window.innerWidth - 80, y: window.innerHeight - 160 });
+    }
+  }, [fabPosition]);
+
+  // Snap to nearest side
+  const snapToSide = useCallback((x: number, y: number) => {
+    const midX = window.innerWidth / 2;
+    const fabSize = 64;
+    const margin = 16;
+    const maxY = window.innerHeight - fabSize - margin;
+    const minY = margin + 56; // below header
+
+    const clampedY = Math.max(minY, Math.min(maxY, y));
+
+    if (x + fabSize / 2 < midX) {
+      setFabSide('left');
+      return { x: margin, y: clampedY };
+    } else {
+      setFabSide('right');
+      return { x: window.innerWidth - fabSize - margin, y: clampedY };
+    }
+  }, []);
+
+  // Touch/mouse drag handlers
+  const handleDragStart = useCallback((clientX: number, clientY: number) => {
+    if (!fabPosition) return;
+    dragRef.current = { startX: clientX, startY: clientY, startPosX: fabPosition.x, startPosY: fabPosition.y, moved: false };
+    setIsDragging(true);
+  }, [fabPosition]);
+
+  const handleDragMove = useCallback((clientX: number, clientY: number) => {
+    if (!dragRef.current) return;
+    const dx = clientX - dragRef.current.startX;
+    const dy = clientY - dragRef.current.startY;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+      dragRef.current.moved = true;
+    }
+    setFabPosition({
+      x: dragRef.current.startPosX + dx,
+      y: dragRef.current.startPosY + dy,
+    });
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    const didDrag = !!dragRef.current?.moved;
+    if (fabPosition) {
+      const snapped = snapToSide(fabPosition.x, fabPosition.y);
+      setFabPosition(snapped);
+    }
+    setIsDragging(false);
+    dragRef.current = null;
+    // Open chat only if it was a tap, not a drag
+    if (!didDrag) {
+      setIsOpen(true);
+    }
+  }, [fabPosition, snapToSide]);
+
+  // Mouse events
+  useEffect(() => {
+    if (!isDragging) return;
+    const onMouseMove = (e: MouseEvent) => { e.preventDefault(); handleDragMove(e.clientX, e.clientY); };
+    const onMouseUp = () => { handleDragEnd(); };
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    return () => { window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onMouseUp); };
+  }, [isDragging, handleDragMove, handleDragEnd]);
+
+  // Touch events
+  useEffect(() => {
+    if (!isDragging) return;
+    const onTouchMove = (e: TouchEvent) => { if (e.touches[0]) handleDragMove(e.touches[0].clientX, e.touches[0].clientY); };
+    const onTouchEnd = () => { handleDragEnd(); };
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
+    window.addEventListener('touchend', onTouchEnd);
+    return () => { window.removeEventListener('touchmove', onTouchMove); window.removeEventListener('touchend', onTouchEnd); };
+  }, [isDragging, handleDragMove, handleDragEnd]);
+
+  // Re-snap on window resize
+  useEffect(() => {
+    const onResize = () => {
+      if (fabPosition) {
+        const snapped = snapToSide(fabPosition.x, fabPosition.y);
+        setFabPosition(snapped);
+      }
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [fabPosition, snapToSide]);
 
   const { locale, t } = useLanguage();
   const { user } = useAuth();
@@ -311,40 +356,105 @@ export default function AiChatWidget() {
 
   return (
     <>
-      {/* Floating Button - positioned above mobile navbar */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className={`fixed bottom-24 right-4 sm:bottom-6 sm:right-6 z-40 group ${isOpen ? 'hidden' : ''}`}
-        aria-label="Open AI Assistant"
-      >
-        {/* Pulse animation ring */}
-        {showPulse && (
-          <span className="absolute inset-0 rounded-full bg-[#C4735B] animate-ping opacity-30" />
+      {/* Floating Draggable Button */}
+      <AnimatePresence>
+        {fabPosition && !isOpen && (
+          <motion.button
+            ref={fabRef}
+            key="ai-fab"
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{
+              scale: isDragging ? 1.15 : 1,
+              opacity: 1,
+              boxShadow: isDragging
+                ? '0 12px 40px rgba(196, 115, 91, 0.5)'
+                : '0 4px 16px rgba(196, 115, 91, 0.3)',
+            }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={{
+              scale: { type: 'spring', stiffness: 400, damping: 25 },
+              opacity: { duration: 0.2 },
+            }}
+            onMouseDown={(e) => { e.preventDefault(); handleDragStart(e.clientX, e.clientY); }}
+            onTouchStart={(e) => { if (e.touches[0]) handleDragStart(e.touches[0].clientX, e.touches[0].clientY); }}
+            className="fixed z-40 group touch-none rounded-full"
+            style={{
+              left: fabPosition.x,
+              top: fabPosition.y,
+              transition: isDragging ? 'none' : 'left 0.35s cubic-bezier(0.32, 0.72, 0, 1), top 0.35s cubic-bezier(0.32, 0.72, 0, 1)',
+              cursor: isDragging ? 'grabbing' : 'grab',
+            }}
+            aria-label="Open AI Assistant"
+          >
+            {/* Pulse animation ring */}
+            {showPulse && !isDragging && (
+              <motion.span
+                className="absolute inset-0 rounded-full bg-[#C4735B]"
+                animate={{ scale: [1, 1.8], opacity: [0.4, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeOut' }}
+              />
+            )}
+
+            {/* Mascot Button */}
+            <motion.div
+              className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden shadow-lg"
+              whileHover={!isDragging ? { scale: 1.1 } : undefined}
+              whileTap={!isDragging ? { scale: 0.95 } : undefined}
+            >
+              <motion.div
+                className="w-full h-full"
+                animate={isDragging ? { scale: [1.15, 1.2, 1.15] } : { scale: [1.15, 1.18, 1.15] }}
+                transition={isDragging
+                  ? { duration: 0.4, repeat: Infinity, ease: 'easeInOut' }
+                  : { duration: 3, repeat: Infinity, ease: 'easeInOut' }
+                }
+              >
+                <Image
+                  src="/AI-mascot.png"
+                  alt="Homico AI"
+                  width={64}
+                  height={64}
+                  className="w-full h-full object-cover"
+                  priority
+                />
+              </motion.div>
+            </motion.div>
+
+            {/* Tooltip */}
+            <AnimatePresence>
+              {!isDragging && (
+                <motion.div
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 0 }}
+                  exit={{ opacity: 0 }}
+                  className={`hidden sm:block absolute bottom-full mb-2 px-3 py-1.5 bg-neutral-900 text-white text-sm rounded-lg group-hover:!opacity-100 transition-opacity whitespace-nowrap pointer-events-none ${fabSide === 'right' ? 'right-0' : 'left-0'}`}
+                >
+                  Homico AI
+                  <div className={`absolute top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-neutral-900 ${fabSide === 'right' ? 'right-4' : 'left-4'}`} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.button>
         )}
-
-        {/* Button */}
-        <div className="relative w-16 h-16 bg-gradient-to-br from-[#C4735B] to-[#A85D47] rounded-full shadow-lg shadow-[#C4735B]/30 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-110 group-active:scale-95">
-          <Sparkles className="w-7 h-7 text-white" />
-        </div>
-
-        {/* Tooltip */}
-        <div className="absolute bottom-full right-0 mb-2 px-3 py-1.5 bg-neutral-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-          {locale === 'ka' ? 'Homico AI - ინტელექტუალური ასისტენტი' : locale === 'ru' ? 'Homico AI - Умный Ассистент' : 'Homico AI - Smart Assistant'}
-          <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-neutral-900" />
-        </div>
-      </button>
+      </AnimatePresence>
 
       {/* Chat Panel - fullscreen on mobile, positioned panel on desktop */}
-      {isOpen && (
-        <div
-          onClickCapture={handleChatClickCapture}
-          className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 z-50 sm:w-[400px] sm:max-w-[calc(100vw-48px)] sm:h-[650px] sm:max-h-[calc(100vh-120px)] bg-[#FAFAF9] sm:rounded-2xl shadow-2xl shadow-black/20 flex flex-col overflow-hidden sm:border sm:border-neutral-200"
-        >
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            key="ai-chat-panel"
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            onClickCapture={handleChatClickCapture}
+            className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 z-50 sm:w-[400px] sm:max-w-[calc(100vw-48px)] sm:h-[650px] sm:max-h-[calc(100vh-120px)] bg-[#FAFAF9] sm:rounded-2xl shadow-2xl shadow-black/20 flex flex-col overflow-hidden sm:border sm:border-neutral-200"
+          >
           {/* Header */}
           <div className="bg-gradient-to-r from-[#C4735B] to-[#A85D47] px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center overflow-hidden p-0.5">
+                <Image src="/AI-mascot.png" alt="Homico AI" width={36} height={36} className="w-full h-full object-contain" />
               </div>
               <div>
                 <h2 className="text-white font-semibold text-sm">Homico AI</h2>
@@ -380,8 +490,6 @@ export default function AiChatWidget() {
           <div className="flex-1 overflow-y-auto p-4 space-y-1">
             {messages.length === 0 ? (
               <>
-                <WelcomeMessage locale={locale} />
-
                 {/* Quick prompts */}
                 <div className="pt-4">
                   <p className="text-xs text-neutral-500 text-center mb-2">
@@ -455,8 +563,9 @@ export default function AiChatWidget() {
                 : 'Homico AI can make mistakes. Verify important information.'}
             </p>
           </div>
-        </div>
-      )}
+        </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

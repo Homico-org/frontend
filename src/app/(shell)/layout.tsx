@@ -653,8 +653,8 @@ function ShellContent({ children }: { children: ReactNode }) {
 
         {/* Scrollable Content */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 bg-white dark:bg-neutral-950">
-          {/* Mobile Sticky Tabs */}
-          <div className="lg:hidden sticky top-0 z-20 bg-white dark:bg-neutral-950">
+          {/* Mobile Sticky Tabs - only show when logged in */}
+          {isAuthenticated && <div className="lg:hidden sticky top-0 z-20 bg-white dark:bg-neutral-950">
             <div className="flex items-stretch border-b border-neutral-200 dark:border-neutral-800">
               {visibleTabs.map((tab) => {
                 const isActive = activeTab === tab.key;
@@ -681,7 +681,7 @@ function ShellContent({ children }: { children: ReactNode }) {
                 );
               })}
             </div>
-          </div>
+          </div>}
 
           {/* Mobile Header Row & Search (below sticky tabs) */}
           <div className="lg:hidden">
