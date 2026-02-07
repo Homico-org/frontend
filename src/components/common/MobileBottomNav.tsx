@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Briefcase, Calculator, FileText, Images, Plus, Search, Users } from 'lucide-react';
@@ -27,10 +28,10 @@ const NAV_ITEMS: NavItem[] = [
     showFor: 'guest',
   },
   {
-    key: 'tools-guest',
-    href: '/tools',
-    labelKey: 'nav.tools',
-    icon: Calculator,
+    key: 'professionals-guest',
+    href: '/professionals',
+    labelKey: 'browse.professionals',
+    icon: Users,
     showFor: 'guest',
   },
   // Client navigation (authenticated, not pro)
@@ -87,6 +88,7 @@ export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
   const pathname = usePathname();
   const { t } = useLanguage();
   const { user, isLoading } = useAuth();
+  const { openLoginModal } = useAuthModal();
 
   const isPro = user?.role === 'pro' || user?.role === 'admin';
   const isAuthenticated = !!user;
@@ -128,12 +130,12 @@ export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
 
   // Determine active tab
   const getActiveKey = () => {
-    if (pathname.includes('/tools')) return isPro ? 'tools-pro' : (isAuthenticated ? '' : 'tools-guest');
+    if (pathname.includes('/tools')) return isPro ? 'tools-pro' : '';
     if (pathname.includes('/my-work')) return 'my-work';
     if (pathname.includes('/my-proposals')) return 'my-jobs';
     if (pathname.includes('/my-jobs')) return isPro ? 'my-jobs' : 'my-jobs-client';
     if (pathname.includes('/jobs')) return 'find-jobs';
-    if (pathname.includes('/professionals')) return isPro ? '' : 'browse';
+    if (pathname.includes('/professionals')) return isPro ? '' : (isAuthenticated ? 'browse' : 'professionals-guest');
     if (pathname.includes('/portfolio')) return isPro ? '' : (isAuthenticated ? 'browse' : 'portfolios');
     return '';
   };
@@ -175,29 +177,49 @@ export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
           {leftItems.map(renderNavItem)}
 
           {/* Center Post Job - icon protrudes above the bar */}
-          <Link
-            href="/post-job"
-            className="flex flex-col items-center flex-1 min-w-0 -mt-5"
-          >
-            <div
-              className={`flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-transform active:scale-90 ${
-                isPostJobActive ? 'ring-2 ring-offset-2 ring-offset-white dark:ring-offset-[#0a0a0a]' : ''
-              }`}
-              style={{
-                background: `linear-gradient(135deg, ${ACCENT_COLOR} 0%, #B86349 100%)`,
-                boxShadow: `0 4px 16px ${ACCENT_COLOR}50`,
-                ...(isPostJobActive ? { '--tw-ring-color': ACCENT_COLOR } as React.CSSProperties : {}),
-              }}
+          {isAuthenticated ? (
+            <Link
+              href="/post-job"
+              className="flex flex-col items-center flex-1 min-w-0 -mt-5"
             >
-              <Plus className="w-6 h-6 text-white" strokeWidth={2.5} />
-            </div>
-            <span
-              className={`text-[10px] font-medium mt-0.5 ${isPostJobActive ? '' : 'text-neutral-400 dark:text-neutral-500'}`}
-              style={isPostJobActive ? { color: ACCENT_COLOR } : {}}
+              <div
+                className={`flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-transform active:scale-90 ${
+                  isPostJobActive ? 'ring-2 ring-offset-2 ring-offset-white dark:ring-offset-[#0a0a0a]' : ''
+                }`}
+                style={{
+                  background: `linear-gradient(135deg, ${ACCENT_COLOR} 0%, #B86349 100%)`,
+                  boxShadow: `0 4px 16px ${ACCENT_COLOR}50`,
+                  ...(isPostJobActive ? { '--tw-ring-color': ACCENT_COLOR } as React.CSSProperties : {}),
+                }}
+              >
+                <Plus className="w-6 h-6 text-white" strokeWidth={2.5} />
+              </div>
+              <span
+                className={`text-[10px] font-medium mt-0.5 ${isPostJobActive ? '' : 'text-neutral-400 dark:text-neutral-500'}`}
+                style={isPostJobActive ? { color: ACCENT_COLOR } : {}}
+              >
+                {t('common.post')}
+              </span>
+            </Link>
+          ) : (
+            <button
+              onClick={() => openLoginModal()}
+              className="flex flex-col items-center flex-1 min-w-0 -mt-5"
             >
-              {t('common.post')}
-            </span>
-          </Link>
+              <div
+                className="flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-transform active:scale-90"
+                style={{
+                  background: `linear-gradient(135deg, ${ACCENT_COLOR} 0%, #B86349 100%)`,
+                  boxShadow: `0 4px 16px ${ACCENT_COLOR}50`,
+                }}
+              >
+                <Plus className="w-6 h-6 text-white" strokeWidth={2.5} />
+              </div>
+              <span className="text-[10px] font-medium mt-0.5 text-neutral-400 dark:text-neutral-500">
+                {t('common.post')}
+              </span>
+            </button>
+          )}
 
           {/* Right side items */}
           {rightItems.map(renderNavItem)}
