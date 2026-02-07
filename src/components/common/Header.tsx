@@ -78,7 +78,7 @@ export default function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 h-14 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a]">
       <div className="h-full max-w-[1800px] mx-auto px-4 sm:px-6 flex items-center justify-between">
         {/* Logo */}
-        <Link href={homeHref} className="flex items-center">
+        <Link href={homeHref} className="flex items-center flex-shrink-0">
           <span className="flex items-center gap-2">
             <Image
               src="/favicon.png"
@@ -88,14 +88,14 @@ export default function Header() {
               className="h-7 w-7 rounded-[8px]"
               priority
             />
-            <span className="text-[18px] font-semibold tracking-wide text-neutral-900 dark:text-white">
+            <span className="hidden sm:inline text-[18px] font-semibold tracking-wide text-neutral-900 dark:text-white">
               Homico
             </span>
           </span>
         </Link>
 
         {/* Right side - Actions + Profile */}
-        <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 min-w-0">
           {/* Language Selector */}
           <LanguageSelector variant="icon" />
 
