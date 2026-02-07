@@ -336,7 +336,7 @@ export default function CompanyProfilePage() {
               {t('companies.sorryThisCompanyDoesntExist')}
             </p>
             <Button
-              onClick={() => router.push("/browse")}
+              onClick={() => router.push("/portfolio")}
               size="lg"
             >
               {t('companies.browseCompanies')}

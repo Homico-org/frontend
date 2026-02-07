@@ -7,7 +7,12 @@ import MobileBottomNav from './MobileBottomNav';
 // Pages that have their own custom layout (include their own Header/MobileBottomNav)
 // These pages should NOT get the global nav wrapper
 const CUSTOM_LAYOUT_PATHS = [
-  '/browse',
+  '/jobs',
+  '/professionals',
+  '/portfolio',
+  '/tools',
+  '/my-jobs',
+  '/my-work',
   '/admin',
   '/login',
   '/register',

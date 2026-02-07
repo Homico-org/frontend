@@ -4,7 +4,6 @@ import EmptyState from "@/components/common/EmptyState";
 import JobCard from "@/components/common/JobCard";
 import MyJobCard from "@/components/common/MyJobCard";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { SkeletonCardGrid } from "@/components/ui/Skeleton";
 import { ACCENT_COLOR } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useJobsContext } from "@/contexts/JobsContext";
@@ -28,15 +27,14 @@ export default function JobsPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const { trackEvent } = useAnalytics();
   const router = useRouter();
-  const { filters, savedJobIds, handleSaveJob, appliedJobIds } =
-    useJobsContext();
+  const { filters, savedJobIds, handleSaveJob, appliedJobIds } = useJobsContext();
 
   const isPro = user?.role === "pro" || user?.role === "admin";
 
   // Redirect non-pro users to portfolio page
   useEffect(() => {
     if (!isAuthLoading && !isPro) {
-      router.replace("/browse/portfolio");
+      router.replace("/portfolio");
     }
   }, [isAuthLoading, isPro, router]);
 
@@ -55,21 +53,18 @@ export default function JobsPage() {
   // Jobs are filtered on the backend when showFavoritesOnly is true
   const displayedJobs = jobs;
 
-  // Fetch jobs with filters - filtered by pro's selected subcategories
   const fetchJobs = useCallback(
     async (pageNum: number, reset = false) => {
       if (!isPro) return;
 
       try {
-        if (reset) {
-          setIsLoading(true);
-        } else {
-          setIsLoadingMore(true);
-        }
+        if (reset) setIsLoading(true);
+        else setIsLoadingMore(true);
 
         const params = new URLSearchParams();
         params.append("page", pageNum.toString());
         params.append("limit", "12");
+
         // Pros browse only open jobs; admins should be able to see all jobs (all statuses)
         if (user?.role !== "admin") {
           params.append("status", "open");
@@ -86,53 +81,24 @@ export default function JobsPage() {
           });
         }
 
-        // Apply additional category filter from UI (narrows down further)
-        if (filters.category) {
-          params.append("category", filters.category);
-        }
-
-        // Apply budget filter
-        if (filters.budgetMin !== null) {
+        if (filters.category) params.append("category", filters.category);
+        if (filters.budgetMin !== null)
           params.append("budgetMin", filters.budgetMin.toString());
-        }
-        if (filters.budgetMax !== null) {
+        if (filters.budgetMax !== null)
           params.append("budgetMax", filters.budgetMax.toString());
-        }
-
-        // Apply property type filter
-        if (filters.propertyType !== "all") {
+        if (filters.propertyType !== "all")
           params.append("propertyType", filters.propertyType);
-        }
-
-        // Apply location filter
-        if (filters.location !== "all") {
-          params.append("location", filters.location);
-        }
-
-        // Apply search filter
-        if (filters.searchQuery) {
-          params.append("search", filters.searchQuery);
-        }
-
-        // Apply deadline filter
-        if (filters.deadline !== "all") {
-          params.append("deadline", filters.deadline);
-        }
-
-        // Apply favorites filter - backend will filter to saved jobs only
-        if (filters.showFavoritesOnly) {
-          params.append("savedOnly", "true");
-        }
+        if (filters.location !== "all") params.append("location", filters.location);
+        if (filters.searchQuery) params.append("search", filters.searchQuery);
+        if (filters.deadline !== "all") params.append("deadline", filters.deadline);
+        if (filters.showFavoritesOnly) params.append("savedOnly", "true");
 
         const response = await api.get(`/jobs?${params.toString()}`);
         const data = response.data;
         const jobsList = data.data || data.jobs || [];
 
-        if (reset) {
-          setJobs(jobsList);
-        } else {
-          setJobs((prev) => [...prev, ...jobsList]);
-        }
+        if (reset) setJobs(jobsList);
+        else setJobs((prev) => [...prev, ...jobsList]);
 
         setHasMore(data.pagination?.hasMore ?? jobsList.length === 12);
       } catch (error) {
@@ -154,7 +120,7 @@ export default function JobsPage() {
       filters.searchQuery,
       filters.deadline,
       filters.showFavoritesOnly,
-    ]
+    ],
   );
 
   // Fetch user's own posted jobs (regardless of subcategory)
@@ -165,11 +131,8 @@ export default function JobsPage() {
       setIsLoadingMyJobs(true);
       const response = await api.get("/jobs/my-jobs?status=open");
       const data = response.data;
-      // API returns array directly, or wrapped in data/jobs property
-      const jobsList = Array.isArray(data)
-        ? data
-        : data.data || data.jobs || [];
-      setMyJobs(jobsList.slice(0, 10)); // Limit to 10 jobs
+      const jobsList = Array.isArray(data) ? data : data.data || data.jobs || [];
+      setMyJobs(jobsList.slice(0, 10));
     } catch (error) {
       console.error("Error fetching my jobs:", error);
     } finally {
@@ -177,23 +140,18 @@ export default function JobsPage() {
     }
   }, [user?.id]);
 
-  // Fetch user's own jobs on mount
   useEffect(() => {
-    if (user?.id) {
-      fetchMyJobs();
-    }
+    if (user?.id) fetchMyJobs();
   }, [user?.id, fetchMyJobs]);
 
   // Track if initial fetch has been done
   const hasFetchedRef = useRef(false);
-  // Track previous filter values to detect actual changes
   const prevFiltersRef = useRef<string | null>(null);
 
   // Reset and fetch when filters change
   useEffect(() => {
     if (!isPro) return;
 
-    // Create a stable filter key to detect actual changes
     const filterKey = JSON.stringify({
       category: filters.category,
       budgetMin: filters.budgetMin,
@@ -205,16 +163,12 @@ export default function JobsPage() {
       showFavoritesOnly: filters.showFavoritesOnly,
     });
 
-    // Skip if filters haven't actually changed (prevents duplicate fetches)
-    if (prevFiltersRef.current === filterKey && hasFetchedRef.current) {
-      return;
-    }
+    if (prevFiltersRef.current === filterKey && hasFetchedRef.current) return;
 
     const isInitialFetch = !hasFetchedRef.current;
     hasFetchedRef.current = true;
     prevFiltersRef.current = filterKey;
 
-    // Track search/filter events (only on filter changes, not initial load)
     if (!isInitialFetch) {
       if (filters.searchQuery) {
         trackEvent(AnalyticsEvent.JOB_SEARCH, {
@@ -223,9 +177,7 @@ export default function JobsPage() {
         });
       }
       if (filters.category) {
-        trackEvent(AnalyticsEvent.JOB_FILTER, {
-          jobCategory: filters.category,
-        });
+        trackEvent(AnalyticsEvent.JOB_FILTER, { jobCategory: filters.category });
       }
     }
 
@@ -249,37 +201,29 @@ export default function JobsPage() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (
-          entries[0].isIntersecting &&
-          hasMore &&
-          !isLoading &&
-          !isLoadingMore
-        ) {
+        if (entries[0].isIntersecting && hasMore && !isLoading && !isLoadingMore) {
           setPage((prev) => prev + 1);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
-    if (loaderRef.current) {
-      observer.observe(loaderRef.current);
-    }
-
+    if (loaderRef.current) observer.observe(loaderRef.current);
     return () => observer.disconnect();
   }, [hasMore, isLoading, isLoadingMore]);
 
   // Fetch more when page changes
   useEffect(() => {
-    if (page > 1) {
-      fetchJobs(page);
-    }
+    if (page > 1) fetchJobs(page);
   }, [page, fetchJobs]);
 
-  // Skeleton loading - Grid style (mobile-first)
   const JobsSkeleton = () => (
     <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-5">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800">
+        <div
+          key={i}
+          className="bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800"
+        >
           <div className="aspect-[16/10] sm:aspect-[16/9] bg-neutral-200 dark:bg-neutral-700 animate-pulse" />
           <div className="p-2.5 sm:p-4">
             <div className="h-3 sm:h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-1/3 animate-pulse mb-2" />
@@ -291,7 +235,6 @@ export default function JobsPage() {
     </div>
   );
 
-  // Empty state using shared component
   const JobsEmptyState = () => (
     <EmptyState
       icon={filters.showFavoritesOnly ? Bookmark : Briefcase}
@@ -316,7 +259,6 @@ export default function JobsPage() {
     />
   );
 
-  // Show loading while auth is loading or redirecting non-pro users
   if (isAuthLoading || !isPro) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -406,14 +348,11 @@ export default function JobsPage() {
                 </span>
               </div>
               <span className="hidden sm:block text-xs text-neutral-400">
-                {locale === "ka"
-                  ? "თქვენი სერვისების მიხედვით"
-                  : "Based on your services"}
+                {locale === "ka" ? "თქვენი სერვისების მიხედვით" : "Based on your services"}
               </span>
             </div>
           )}
 
-          {/* Jobs Grid - 2 columns on mobile */}
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-5 items-stretch">
             {displayedJobs.map((job, index) => (
               <div
@@ -431,15 +370,10 @@ export default function JobsPage() {
             ))}
           </div>
 
-          {/* Infinite scroll loader */}
           <div ref={loaderRef} className="flex justify-center py-6 sm:py-12">
             {isLoadingMore && (
               <div className="flex items-center gap-2 sm:gap-3 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-neutral-100 dark:bg-neutral-800">
-                <LoadingSpinner
-                  size="sm"
-                  variant="border"
-                  color={ACCENT_COLOR}
-                />
+                <LoadingSpinner size="sm" variant="border" color={ACCENT_COLOR} />
                 <span className="text-xs sm:text-sm text-neutral-500">
                   {t("common.loading")}
                 </span>
@@ -451,3 +385,4 @@ export default function JobsPage() {
     </div>
   );
 }
+

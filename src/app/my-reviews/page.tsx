@@ -135,7 +135,7 @@ function MyReviewsPageContent() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => router.push('/browse')}
+            onClick={() => router.push('/portfolio')}
             leftIcon={<ArrowLeft className="h-4 w-4" />}
             className="mb-4"
           >
@@ -248,7 +248,7 @@ function MyReviewsPageContent() {
                   {language === 'ka' ? 'პროფესიონალებთან პროექტების დასრულების შემდეგ შეგიძლიათ შეფასებების დაწერა' : 'Once you complete projects with professionals, you can leave reviews to help others'}
                 </p>
                 <Link
-                  href="/browse"
+                  href="/portfolio"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-forest-600 dark:bg-primary-500 text-white rounded-xl hover:bg-forest-700 dark:hover:bg-primary-600 transition-colors font-medium"
                 >
                   <Sparkles className="h-5 w-5" />

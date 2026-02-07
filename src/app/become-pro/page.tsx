@@ -215,7 +215,7 @@ export default function BecomeProPage() {
       if (!isAuthenticated) {
         openLoginModal("/become-pro");
       } else if (user?.role === "pro") {
-        router.push("/browse");
+        router.push("/jobs");
       }
     }
   }, [authLoading, isAuthenticated, user, router, openLoginModal]);
@@ -450,7 +450,7 @@ export default function BecomeProPage() {
             </p>
 
             <div className="space-y-3">
-              <Link href="/browse/jobs">
+              <Link href="/jobs">
                 <Button
                   variant="default"
                   size="xl"

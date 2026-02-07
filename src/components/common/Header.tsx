@@ -9,8 +9,7 @@ import { useCategories } from "@/contexts/CategoriesContext";
 import { Locale, useLanguage } from "@/contexts/LanguageContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useClickOutside } from "@/hooks/useClickOutside";
-import api from "@/lib/api";
-import { ExternalLink, FileText, Hammer, LogIn, Plus, UserPlus, X } from "lucide-react";
+import { ExternalLink, LogIn, Plus, UserPlus, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -31,52 +30,13 @@ export default function Header() {
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   // Check active routes for navigation highlighting
-  const isMyWorkActive = pathname === '/my-work' || pathname === '/my-proposals';
-  const isMyJobsActive = pathname === '/my-jobs';
   const isNotificationsActive = pathname === '/notifications';
 
-  // Counter states for proposals/jobs badges
-  const [proposalUpdatesCount, setProposalUpdatesCount] = useState(0);
-  const [unviewedProposalsCount, setUnviewedProposalsCount] = useState(0);
-
-  // Ref to prevent duplicate fetches (React Strict Mode)
-  const countersFetchedRef = useRef(false);
-
-  // Fetch counter data for pro users
-  useEffect(() => {
-    if (!isAuthenticated || !user) return;
-
-    // Prevent duplicate fetch in React Strict Mode
-    if (countersFetchedRef.current) return;
-    countersFetchedRef.current = true;
-
-    const fetchCounters = async () => {
-      try {
-        // Fetch both counters in parallel
-        const promises: Promise<any>[] = [];
-
-        if (user.role === 'pro' || user.role === 'admin') {
-          promises.push(api.get(`/jobs/counters/proposal-updates`));
-        }
-        promises.push(api.get(`/jobs/counters/unviewed-proposals`));
-
-        const results = await Promise.all(promises);
-
-        if (user.role === 'pro' || user.role === 'admin') {
-          setProposalUpdatesCount(results[0]?.data?.count || 0);
-          setUnviewedProposalsCount(results[1]?.data?.count || 0);
-        } else {
-          setUnviewedProposalsCount(results[0]?.data?.count || 0);
-        }
-      } catch (error) {
-        console.error('Failed to fetch counters:', error);
-      }
-    };
-
-    fetchCounters();
-    // No polling - fetch once on mount/auth change
-    // Counters update via page navigation or WebSocket events
-  }, [isAuthenticated, user]);
+  const homeHref = !isAuthenticated
+    ? "/"
+    : user?.role === "pro" || user?.role === "admin"
+      ? "/jobs"
+      : "/portfolio";
 
   // Helper to get subcategory name from flat categories
   const getSubcategoryDisplayName = useCallback((key: string): string => {
@@ -118,7 +78,7 @@ export default function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 h-14 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a]">
       <div className="h-full max-w-[1800px] mx-auto px-4 sm:px-6 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/browse" className="flex items-center">
+        <Link href={homeHref} className="flex items-center">
           <span className="flex items-center gap-2">
             <Image
               src="/favicon.png"
@@ -136,67 +96,6 @@ export default function Header() {
 
         {/* Right side - Actions + Profile */}
         <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3">
-          {/* My Work & My Jobs buttons - large screens */}
-          {isAuthenticated && user && (
-            <div className="hidden lg:flex items-center gap-1 p-1 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700/50">
-              {/* My Work - only for pro/admin */}
-              {(user.role === "pro" || user.role === "admin") && (
-                <>
-                  <Link
-                    href="/my-work"
-                    className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                      isMyWorkActive
-                        ? 'bg-white dark:bg-neutral-700 shadow-sm'
-                        : 'hover:bg-white dark:hover:bg-neutral-700'
-                    }`}
-                    style={{ color: ACCENT_COLOR }}
-                  >
-                    <FileText className="w-4 h-4" />
-                    <span>{t('header.myWork')}</span>
-                    {proposalUpdatesCount > 0 && (
-                      <span
-                        className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white rounded-full shadow-sm"
-                        style={{
-                          background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-                          boxShadow: '0 2px 8px rgba(16, 185, 129, 0.4)'
-                        }}
-                      >
-                        {proposalUpdatesCount > 99 ? "99+" : proposalUpdatesCount}
-                      </span>
-                    )}
-                  </Link>
-                  <div className="w-px h-4 bg-neutral-300 dark:bg-neutral-600" />
-                </>
-              )}
-              {/* My Jobs - for everyone (pros can also post jobs) */}
-              <Link
-                href="/my-jobs"
-                className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                  isMyJobsActive
-                    ? 'bg-white dark:bg-neutral-700 shadow-sm'
-                    : 'hover:bg-white dark:hover:bg-neutral-700'
-                }`}
-                style={{ color: ACCENT_COLOR }}
-              >
-                <Hammer className="w-4 h-4" />
-                <span>{t('header.myJobs')}</span>
-                {unviewedProposalsCount > 0 && (
-                  <span
-                    className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white rounded-full shadow-sm"
-                    style={{
-                      background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
-                      boxShadow: '0 2px 8px rgba(245, 158, 11, 0.4)'
-                    }}
-                  >
-                    {unviewedProposalsCount > 99 ? "99+" : unviewedProposalsCount}
-                  </span>
-                )}
-              </Link>
-            </div>
-          )}
-
-          {/* My Work & My Jobs buttons removed from tablet - they're in the bottom navigation */}
-
           {/* Language Selector */}
           <LanguageSelector variant="icon" />
 
@@ -721,7 +620,7 @@ export default function Header() {
 
               {/* Browse link */}
               <Link
-                href="/browse"
+                href={homeHref}
                 onClick={() => setShowMobileMenu(false)}
                 className="flex items-center gap-3 w-full px-4 py-3 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-all"
               >

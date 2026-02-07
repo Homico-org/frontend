@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 import { Edit3, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -79,9 +80,25 @@ export default function PortfolioTab({
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <motion.div
+        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"
+        initial="hidden"
+        animate="show"
+        variants={{
+          hidden: {},
+          show: { transition: { staggerChildren: 0.08 } },
+        }}
+      >
         {projects.map((project) => (
-          <div key={project.id} className="relative group">
+          <motion.div
+            key={project.id}
+            className="relative group"
+            variants={{
+              hidden: { opacity: 0, y: 20, scale: 0.97 },
+              show: { opacity: 1, y: 0, scale: 1 },
+            }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          >
             <PortfolioCard
               project={project}
               locale={locale}
@@ -139,9 +156,9 @@ export default function PortfolioTab({
                 </div>
               </div>
             )}
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </div>
   );
 }

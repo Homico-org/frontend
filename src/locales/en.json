@@ -406,8 +406,13 @@
   "browse": {
     "title": "Browse",
     "professionals": "Professionals",
+    "professionalsSubtitle": "Find verified pros for your project",
     "jobs": "Jobs",
+    "jobsSubtitle": "Find jobs matched to your services and filters",
     "tools": "Tools",
+    "toolsSubtitle": "Calculators and AI tools to plan your renovation",
+    "portfolio": "Portfolio",
+    "portfolioSubtitle": "Explore work examples and recent projects",
     "searchProfessionals": "Search professionals...",
     "searchJobs": "Search jobs...",
     "allCategories": "All categories",
@@ -589,6 +594,9 @@
     "min": "Min",
     "mo": "Mo",
     "myJobs": "My Jobs",
+    "myJobsSubtitle": "Manage your job posts, proposals, and project progress",
+    "myWork": "My Work",
+    "myWorkSubtitle": "Your active and completed projects",
     "newProposals": "New Proposals",
     "noImage": "No Image",
     "noProposalsYet": "No Proposals Yet",
@@ -2598,6 +2606,8 @@
   "tools": {
     "back": "Tools",
     "home": {
+      "title": "Tools",
+      "subtitle": "Plan your renovation with calculators and AI",
       "featuredBadge": "Popular",
       "analyzer": {
         "title": "Estimate Analyzer",

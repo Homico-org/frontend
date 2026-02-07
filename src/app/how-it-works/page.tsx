@@ -338,7 +338,7 @@ export default function HowItWorksPage() {
               </svg>
             </Link>
             <Link
-              href="/browse"
+              href="/portfolio"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-neutral-100 dark:bg-dark-card text-neutral-700 dark:text-neutral-300 font-medium hover:bg-neutral-200 dark:hover:bg-dark-elevated transition-all"
             >
               {t('howItWorks.browseProfessionals')}

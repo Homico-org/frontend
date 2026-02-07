@@ -314,7 +314,7 @@ function ProReviewsPageContent() {
               descriptionKa="გააზიარეთ ლინკი ძველ კლიენტებთან ან შეასრულეთ შეკვეთები Homico-ზე"
               actionLabel="Find Jobs"
               actionLabelKa="სამუშაოების ძებნა"
-              actionHref="/browse/jobs"
+              actionHref="/jobs"
               variant="illustrated"
               size="md"
             />

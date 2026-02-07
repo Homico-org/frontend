@@ -1,19 +1,29 @@
 'use client';
 
 import AuthGuard from '@/components/common/AuthGuard';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { useAnalytics, AnalyticsEvent } from '@/hooks/useAnalytics';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { AnalyticsEvent, useAnalytics } from '@/hooks/useAnalytics';
 import {
-  ArrowLeft, Check, CreditCard, Shield, Lock, Sparkles, Star, Zap, Crown,
-  ChevronDown, CheckCircle2, ShieldCheck, BadgeCheck,
-  ArrowRight, Clock, RefreshCw, Gem, CreditCard as CardIcon
+  ArrowLeft,
+  ArrowRight,
+  CreditCard as CardIcon,
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  CreditCard,
+  Gem,
+  Lock,
+  RefreshCw,
+  Shield,
+  ShieldCheck,
+  Sparkles, Star, Zap
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useState, useEffect, useCallback } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 
 // Types for saved payment methods
 interface SavedPaymentMethod {
@@ -940,8 +950,8 @@ function CheckoutContent() {
                 <div className="text-center">
                   <p className="text-xs text-neutral-400">
                     {t('premium.needHelp')}{' '}
-                    <a href="mailto:support@homico.ge" className="font-medium hover:underline" style={{ color: tier.accentColor }}>
-                      support@homico.ge
+                    <a href="mailto:info@homico.ge" className="font-medium hover:underline" style={{ color: tier.accentColor }}>
+                      info@homico.ge
                     </a>
                   </p>
                 </div>

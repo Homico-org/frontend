@@ -2,13 +2,13 @@
 
 import AuthGuard from "@/components/common/AuthGuard";
 import Avatar from "@/components/common/Avatar";
-import BackButton from "@/components/common/BackButton";
 import EmptyState from "@/components/common/EmptyState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ConfirmModal } from "@/components/ui/Modal";
+import PageShell from "@/components/ui/PageShell";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
 import { ACCENT_COLOR } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
@@ -50,13 +50,14 @@ interface ProjectStageUpdateEvent {
 
 import { useLanguage } from "@/contexts/LanguageContext";
 
-function MyJobsPageContent() {
+function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 
   const { t } = useLanguage();
   const { getCategoryLabel, locale } = useCategoryLabels();
   const toast = useToast();
   const router = useRouter();
+  const isEmbedded = !!embedded;
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -260,69 +261,76 @@ function MyJobsPageContent() {
   // Initial loading skeleton
   if (authLoading || isInitialLoading) {
     return (
-      <div className="max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-6">
-        <Skeleton className="w-28 sm:w-32 h-7 sm:h-8 mb-2" />
-        <Skeleton className="w-48 sm:w-64 h-4 sm:h-5 mb-4 sm:mb-6 hidden sm:block" />
-        <div className="space-y-3 sm:space-y-4">
-          {[1, 2, 3].map((i) => (
-            <SkeletonCard
-              key={i}
-              variant="horizontal"
-              className="h-40 sm:h-44"
-            />
-          ))}
+      <PageShell
+        variant={isEmbedded ? "embedded" : "standalone"}
+        showHeader={!isEmbedded}
+        icon={Briefcase}
+        title={t("job.myJobs")}
+        subtitle={t("job.myJobsSubtitle")}
+        headerContentClassName={isEmbedded ? "max-w-none" : "mx-auto max-w-6xl"}
+        bodyContentClassName={isEmbedded ? undefined : "mx-auto max-w-6xl"}
+        rightContent={
+          <div className="hidden sm:flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#C4735B]/10 text-[#C4735B] text-xs font-semibold">
+              {visibleJobs.length}
+            </span>
+          </div>
+        }
+      >
+        <div className="w-full">
+          <Skeleton className="w-28 sm:w-32 h-7 sm:h-8 mb-2" />
+          <Skeleton className="w-48 sm:w-64 h-4 sm:h-5 mb-4 sm:mb-6 hidden sm:block" />
+          <div className="space-y-3 sm:space-y-4">
+            {[1, 2, 3].map((i) => (
+              <SkeletonCard
+                key={i}
+                variant="horizontal"
+                className="h-40 sm:h-44"
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      </PageShell>
     );
   }
 
   return (
     <div className="flex flex-col">
-      {/* ==================== MAIN CONTENT ==================== */}
-      <main className="flex-1 max-w-6xl mx-auto w-full px-3 sm:px-6 py-4 sm:py-6">
-        {/* ==================== PAGE HEADER ==================== */}
-        <div className="flex items-center justify-between gap-2 mb-4 sm:mb-6">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <BackButton showLabel={false} />
-            <h1 className="text-lg sm:text-2xl font-bold text-neutral-900 dark:text-white truncate">
-              {t("job.myJobs")}
-            </h1>
-            <div className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-full bg-[#C4735B]/10 text-[#C4735B] flex-shrink-0">
-              <Briefcase className="w-3 h-3" />
-              <span className="text-[10px] sm:text-xs font-semibold">{visibleJobs.length}</span>
-            </div>
+      <PageShell
+        variant={isEmbedded ? "embedded" : "standalone"}
+        showHeader={!isEmbedded}
+        icon={Briefcase}
+        title={t("job.myJobs")}
+        subtitle={t("job.myJobsSubtitle")}
+        headerContentClassName={isEmbedded ? "max-w-none" : "mx-auto max-w-6xl"}
+        bodyContentClassName={isEmbedded ? undefined : "mx-auto max-w-6xl"}
+        rightContent={
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#C4735B]/10 text-[#C4735B] text-xs font-semibold">
+              {visibleJobs.length}
+            </span>
+            <Button
+              asChild
+              size="sm"
+              className="rounded-full text-xs sm:text-sm px-3 sm:px-4 flex-shrink-0"
+              leftIcon={<Plus className="w-3.5 h-3.5" />}
+            >
+              <Link href="/post-job">{t("common.add")}</Link>
+            </Button>
           </div>
-          <Button
-            asChild
-            size="sm"
-            className="rounded-full text-xs sm:text-sm px-3 sm:px-4 flex-shrink-0"
-            leftIcon={<Plus className="w-3.5 h-3.5" />}
-          >
-            <Link href="/post-job">{t("common.add")}</Link>
-          </Button>
-        </div>
+        }
+      >
 
         {/* Search */}
         {jobs.length > 0 && (
           <div className="mb-4 sm:mb-6">
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder={t("job.searchMyJobsPlaceholder")}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                leftIcon={<Search className="w-4 h-4" />}
-                className="pr-10 text-sm sm:text-base"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                >
-                  <X className="w-3.5 h-3.5 text-neutral-500" />
-                </button>
-              )}
-            </div>
+            <SearchInput
+              placeholder={t("job.searchMyJobsPlaceholder")}
+              value={searchQuery}
+              onValueChange={setSearchQuery}
+              inputSize="default"
+              className="bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800"
+            />
           </div>
         )}
 
@@ -895,7 +903,7 @@ function MyJobsPageContent() {
             })}
           </div>
         )}
-      </main>
+      </PageShell>
 
       {/* ==================== DELETE CONFIRMATION MODAL ==================== */}
       <ConfirmModal
@@ -940,16 +948,24 @@ function MyJobsPageContent() {
 }
 
 export default function MyJobsPage() {
+  const embedded = true;
+
   return (
     <AuthGuard allowedRoles={["client", "pro", "company", "admin"]}>
       <Suspense
         fallback={
-          <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950">
+          <div
+            className={
+              embedded
+                ? "py-20 flex items-center justify-center bg-white dark:bg-neutral-950"
+                : "min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950"
+            }
+          >
             <LoadingSpinner size="lg" color={ACCENT_COLOR} />
           </div>
         }
       >
-        <MyJobsPageContent />
+        <MyJobsPageContent embedded={embedded} />
       </Suspense>
     </AuthGuard>
   );

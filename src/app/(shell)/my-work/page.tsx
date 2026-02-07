@@ -2,11 +2,11 @@
 
 import AuthGuard from "@/components/common/AuthGuard";
 import Avatar from "@/components/common/Avatar";
-import BackButton from "@/components/common/BackButton";
 import EmptyState from "@/components/common/EmptyState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import PageShell from "@/components/ui/PageShell";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/contexts/ToastContext";
@@ -69,11 +69,12 @@ const STAGE_LABELS: Record<
   completed: { en: "Done", ka: "დასრულებული" },
 };
 
-function MyWorkPageContent() {
+function MyWorkPageContent({ embedded }: { embedded?: boolean }) {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { t, locale: language } = useLanguage();
   const toast = useToast();
   const router = useRouter();
+  const isEmbedded = !!embedded;
 
   const [allProposals, setAllProposals] = useState<WorkProposal[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -266,58 +267,38 @@ function MyWorkPageContent() {
   }
 
   return (
-    <div>
-      <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-24">
-        {/* Header - Enhanced */}
-        <div className="mb-8">
-          <div className="flex items-start gap-4">
-            <BackButton showLabel={false} className="mt-1" />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-1">
-                <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white tracking-tight">
-                  {language === "ka" ? "ჩემი სამუშაო" : "My Work"}
-                </h1>
-                <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#C4735B]/10 text-[#C4735B]">
-                  <Briefcase className="w-3.5 h-3.5" />
-                  <span className="text-xs font-semibold">
-                    {works.length}
-                  </span>
-                </div>
-              </div>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400 hidden sm:block">
-                {language === "ka"
-                  ? "აქ არის თქვენი აქტიური და დასრულებული პროექტები"
-                  : "Your active and completed projects"}
-              </p>
-            </div>
-          </div>
+    <PageShell
+      variant={isEmbedded ? "embedded" : "standalone"}
+      showHeader={!isEmbedded}
+      icon={Briefcase}
+      title={t("job.myWork")}
+      subtitle={t("job.myWorkSubtitle")}
+      headerContentClassName={isEmbedded ? "max-w-none" : "mx-auto max-w-6xl"}
+      bodyContentClassName={isEmbedded ? undefined : "mx-auto max-w-6xl"}
+      bodyClassName={!isEmbedded ? "pb-24" : undefined}
+      rightContent={
+        <div className="hidden sm:flex items-center gap-2">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#C4735B]/10 text-[#C4735B] text-xs font-semibold">
+            {works.length}
+          </span>
         </div>
+      }
+    >
 
         {/* Search */}
         {works.length > 0 && (
           <div className="mb-6">
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder={
-                  language === "ka"
-                    ? "ძებნა სამუშაოს სახელით, კატეგორიით ან მდებარეობით..."
-                    : "Search by job title, category, or location..."
-                }
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                leftIcon={<Search className="w-4 h-4" />}
-                className="pr-10"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                >
-                  <X className="w-3.5 h-3.5 text-neutral-500" />
-                </button>
-              )}
-            </div>
+            <SearchInput
+              placeholder={
+                language === "ka"
+                  ? "ძებნა სამუშაოს სახელით, კატეგორიით ან მდებარეობით..."
+                  : "Search by job title, category, or location..."
+              }
+              value={searchQuery}
+              onValueChange={setSearchQuery}
+              inputSize="default"
+              className="bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800"
+            />
           </div>
         )}
 
@@ -425,16 +406,14 @@ function MyWorkPageContent() {
             })}
           </div>
         )}
-      </main>
-
-    </div>
+    </PageShell>
   );
 }
 
 export default function MyWorkPage() {
   return (
     <AuthGuard allowedRoles={["pro", "admin"]}>
-      <MyWorkPageContent />
+      <MyWorkPageContent embedded />
     </AuthGuard>
   );
 }

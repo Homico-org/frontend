@@ -199,7 +199,7 @@ export default function CompanyProposalsPage() {
             asChild
             className="self-start"
           >
-            <Link href="/browse/jobs" className="flex items-center gap-2">
+            <Link href="/jobs" className="flex items-center gap-2">
               <Briefcase className="w-5 h-5" />
               {t('company.browseJobs')}
             </Link>
@@ -457,7 +457,7 @@ export default function CompanyProposalsPage() {
                 : 'დაიწყეთ სამუშაოებზე შეთავაზებების გაგზავნა'}
               actionLabel="Browse Jobs"
               actionLabelKa="სამუშაოების ნახვა"
-              actionHref="/browse/jobs"
+              actionHref="/jobs"
               variant="illustrated"
               size="lg"
             />

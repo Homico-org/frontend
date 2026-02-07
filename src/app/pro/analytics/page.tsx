@@ -69,7 +69,7 @@ function ProAnalyticsPageContent() {
             descriptionKa="დაიწყე შეკვეთების შესრულება შედეგების სანახავად"
             actionLabel="Find Jobs"
             actionLabelKa="სამუშაოების ძებნა"
-            actionHref="/browse/jobs"
+            actionHref="/jobs"
             variant="illustrated"
             size="md"
           />

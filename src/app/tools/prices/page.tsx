@@ -37,7 +37,9 @@ const CATEGORIES: PriceCategory[] = [
 export default function PricesPage() {
   const { t, locale } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<PriceCategory | 'all'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<PriceCategory | 'all'>(
+    'all',
+  );
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
 
   // Build category filter options with counts and icons
@@ -78,7 +80,10 @@ export default function PricesPage() {
       return { [selectedCategory]: filteredItems };
     }
 
-    const groups: Record<PriceCategory, PriceItem[]> = {} as Record<PriceCategory, PriceItem[]>;
+    const groups: Record<PriceCategory, PriceItem[]> = {} as Record<
+      PriceCategory,
+      PriceItem[]
+    >;
     filteredItems.forEach((item) => {
       if (!groups[item.category]) {
         groups[item.category] = [];
@@ -130,7 +135,9 @@ export default function PricesPage() {
             <FilterPills
               options={categoryOptions}
               value={selectedCategory}
-              onChange={(key) => setSelectedCategory(key as PriceCategory | 'all')}
+              onChange={(key) =>
+                setSelectedCategory(key as PriceCategory | 'all')
+              }
               showAll
               allLabel={t('tools.prices.allCategories')}
               allCount={priceDatabase.length}
@@ -235,3 +242,4 @@ export default function PricesPage() {
     </div>
   );
 }
+

@@ -186,7 +186,7 @@ export default function UserProfilePage() {
             <p className="text-[var(--color-text-tertiary)] mb-6">
               {locale === 'ka' ? 'სამწუხაროდ, ეს გვერდი არ არსებობს' : 'Sorry, this page doesn\'t exist'}
             </p>
-            <button onClick={() => router.push('/browse')} className="px-6 py-3 text-sm font-semibold rounded-xl bg-[var(--color-accent)] text-white hover:opacity-90 transition-opacity">
+            <button onClick={() => router.push('/portfolio')} className="px-6 py-3 text-sm font-semibold rounded-xl bg-[var(--color-accent)] text-white hover:opacity-90 transition-opacity">
               {t('common.goBack')}
             </button>
           </div>

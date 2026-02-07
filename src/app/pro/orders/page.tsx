@@ -54,7 +54,7 @@ function ProOrdersPageContent() {
             descriptionKa="როდესაც კლიენტები მიიღებენ თქვენს შეთავაზებებს, შეკვეთები აქ გამოჩნდება"
             actionLabel="Find Jobs"
             actionLabelKa="სამუშაოების ძებნა"
-            actionHref="/browse/jobs"
+            actionHref="/jobs"
             variant="illustrated"
             size="md"
           />

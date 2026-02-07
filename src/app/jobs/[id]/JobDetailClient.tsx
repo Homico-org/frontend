@@ -1311,7 +1311,7 @@ export default function JobDetailClient() {
         });
       } catch (err) {
         console.error("Failed to fetch job:", err);
-        router.push("/browse");
+        router.push("/jobs");
       } finally {
         setIsLoading(false);
       }
@@ -1842,7 +1842,7 @@ export default function JobDetailClient() {
         <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6">
           {/* Back button + Edit/Delete buttons row (only when job is not hired) */}
           <div className="flex items-center justify-between mb-4 sm:mb-5">
-            <BackButton href="/browse/jobs" />
+            <BackButton href="/jobs" />
             {isOwner && !isHired && (
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <button

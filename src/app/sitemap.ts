@@ -6,8 +6,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Static pages
   const staticPages = [
     '',
-    '/browse',
+    '/portfolio',
+    '/professionals',
     '/jobs',
+    '/tools',
     '/how-it-works',
     '/about',
     '/help',
@@ -21,7 +23,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: route === '' ? 'daily' as const : 'weekly' as const,
-    priority: route === '' ? 1 : route === '/browse' ? 0.9 : 0.7,
+    priority: route === '' ? 1 : route === '/portfolio' ? 0.9 : 0.7,
   }));
 
   // TODO: Add dynamic routes for professionals and jobs
