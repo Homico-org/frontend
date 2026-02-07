@@ -48,7 +48,7 @@ const NAV_ITEMS: NavItem[] = [
     icon: Briefcase,
     showFor: 'client',
   },
-  // Pro navigation
+  // Pro navigation (4 items: 2 left + plus + 2 right)
   {
     key: 'find-jobs',
     href: '/jobs',
@@ -70,6 +70,13 @@ const NAV_ITEMS: NavItem[] = [
     icon: FileText,
     showFor: 'pro',
   },
+  {
+    key: 'tools-pro',
+    href: '/tools',
+    labelKey: 'nav.tools',
+    icon: Calculator,
+    showFor: 'pro',
+  },
 ];
 
 interface MobileBottomNavProps {
@@ -89,23 +96,22 @@ export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
     return (
       <>
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#0a0a0a] border-t border-neutral-200 dark:border-neutral-800 safe-area-bottom">
-          <div className="flex items-center justify-around h-16 px-2">
-            {/* Skeleton placeholders */}
-            <div className="flex flex-col items-center justify-center gap-1 flex-1 py-1.5">
+          <div className="flex items-end justify-around h-14 px-2 pb-1">
+            <div className="flex flex-col items-center gap-1">
               <Skeleton className="w-5 h-5 rounded" />
               <Skeleton className="w-10 h-2 rounded" />
             </div>
-            <div className="flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 -mt-3">
+            <div className="flex flex-col items-center -mt-5">
               <Skeleton className="w-12 h-12 rounded-full" />
-              <Skeleton className="w-8 h-2 rounded mt-0.5" />
+              <Skeleton className="w-8 h-2 rounded mt-1" />
             </div>
-            <div className="flex flex-col items-center justify-center gap-1 flex-1 py-1.5">
+            <div className="flex flex-col items-center gap-1">
               <Skeleton className="w-5 h-5 rounded" />
               <Skeleton className="w-10 h-2 rounded" />
             </div>
           </div>
         </nav>
-        <div className="lg:hidden h-[calc(4rem+env(safe-area-inset-bottom))]" />
+        <div className="lg:hidden h-[calc(3.5rem+env(safe-area-inset-bottom))]" />
       </>
     );
   }
@@ -122,7 +128,7 @@ export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
 
   // Determine active tab
   const getActiveKey = () => {
-    if (pathname.includes('/tools')) return isAuthenticated ? '' : 'tools-guest';
+    if (pathname.includes('/tools')) return isPro ? 'tools-pro' : (isAuthenticated ? '' : 'tools-guest');
     if (pathname.includes('/my-work')) return 'my-work';
     if (pathname.includes('/my-proposals')) return 'my-jobs';
     if (pathname.includes('/my-jobs')) return isPro ? 'my-jobs' : 'my-jobs-client';
@@ -141,81 +147,65 @@ export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
 
   const isPostJobActive = pathname === '/post-job';
 
+  const renderNavItem = (item: NavItem) => {
+    const isActive = activeKey === item.key;
+    const Icon = item.icon;
+    return (
+      <Link
+        key={item.key}
+        href={item.href}
+        className={`flex flex-col items-center justify-end gap-0.5 flex-1 min-w-0 transition-colors ${
+          isActive ? '' : 'text-neutral-400 dark:text-neutral-500'
+        }`}
+        style={isActive ? { color: ACCENT_COLOR } : {}}
+      >
+        <Icon className="w-5 h-5" />
+        <span className="text-[10px] font-medium truncate max-w-full px-0.5">
+          {t(item.labelKey)}
+        </span>
+      </Link>
+    );
+  };
+
   return (
     <>
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#0a0a0a] border-t border-neutral-200 dark:border-neutral-800 safe-area-bottom">
-        <div className="flex items-center justify-around h-16 px-2">
+        <div className="flex items-end justify-around h-14 px-2 pb-1.5">
           {/* Left side items */}
-          {leftItems.map((item) => {
-            const isActive = activeKey === item.key;
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.key}
-                href={item.href}
-                className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 transition-colors ${
-                  isActive ? '' : 'text-neutral-400 dark:text-neutral-500'
-                }`}
-                style={isActive ? { color: ACCENT_COLOR } : {}}
-              >
-                <Icon className="w-5 h-5" />
-                <span className="text-[10px] font-medium">
-                  {t(item.labelKey)}
-                </span>
-              </Link>
-            );
-          })}
+          {leftItems.map(renderNavItem)}
 
-          {/* Center Post Job button */}
+          {/* Center Post Job - icon protrudes above the bar */}
           <Link
             href="/post-job"
-            className="flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 -mt-3"
+            className="flex flex-col items-center flex-1 min-w-0 -mt-5"
           >
             <div
-              className={`flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-transform active:scale-95 ${
-                isPostJobActive ? 'ring-2 ring-offset-2' : ''
+              className={`flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-transform active:scale-90 ${
+                isPostJobActive ? 'ring-2 ring-offset-2 ring-offset-white dark:ring-offset-[#0a0a0a]' : ''
               }`}
               style={{
                 background: `linear-gradient(135deg, ${ACCENT_COLOR} 0%, #B86349 100%)`,
-                boxShadow: `0 4px 14px ${ACCENT_COLOR}50`,
+                boxShadow: `0 4px 16px ${ACCENT_COLOR}50`,
                 ...(isPostJobActive ? { '--tw-ring-color': ACCENT_COLOR } as React.CSSProperties : {}),
               }}
             >
               <Plus className="w-6 h-6 text-white" strokeWidth={2.5} />
             </div>
             <span
-              className="text-[10px] font-medium mt-0.5"
-              style={{ color: ACCENT_COLOR }}
+              className={`text-[10px] font-medium mt-0.5 ${isPostJobActive ? '' : 'text-neutral-400 dark:text-neutral-500'}`}
+              style={isPostJobActive ? { color: ACCENT_COLOR } : {}}
             >
               {t('common.post')}
             </span>
           </Link>
 
           {/* Right side items */}
-          {rightItems.map((item) => {
-            const isActive = activeKey === item.key;
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.key}
-                href={item.href}
-                className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 transition-colors ${
-                  isActive ? '' : 'text-neutral-400 dark:text-neutral-500'
-                }`}
-                style={isActive ? { color: ACCENT_COLOR } : {}}
-              >
-                <Icon className="w-5 h-5" />
-                <span className="text-[10px] font-medium">
-                  {t(item.labelKey)}
-                </span>
-              </Link>
-            );
-          })}
+          {rightItems.map(renderNavItem)}
           {extraAction}
         </div>
       </nav>
       {/* Spacer for bottom nav */}
-      <div className="lg:hidden h-[calc(4rem+env(safe-area-inset-bottom))]" />
+      <div className="lg:hidden h-[calc(3.5rem+env(safe-area-inset-bottom))]" />
     </>
   );
 }

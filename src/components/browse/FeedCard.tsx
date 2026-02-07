@@ -378,16 +378,11 @@ const FeedCard = React.memo(function FeedCard({
                       <ChevronRight className="w-5 h-5 text-neutral-700" />
                     </motion.button>
 
-                    {/* Clean Image Counter Indicator - Centered */}
-                    <motion.div
-                      className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2 }}
-                    >
-                      <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-black/60 backdrop-blur-md">
-                        {/* Progress bar */}
-                        <div className="w-12 h-1 rounded-full bg-white/30 overflow-hidden">
+                    {/* Image Counter Indicator */}
+                    <div className="absolute bottom-2 right-2 sm:bottom-3 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto z-20">
+                      <div className="flex items-center gap-1.5 px-2 py-1 sm:gap-2 sm:px-2.5 sm:py-1.5 rounded-full bg-black/55 backdrop-blur-md">
+                        {/* Progress bar - hidden on mobile */}
+                        <div className="hidden sm:block w-12 h-1 rounded-full bg-white/30 overflow-hidden">
                           <motion.div
                             className="h-full bg-white rounded-full"
                             initial={false}
@@ -398,11 +393,11 @@ const FeedCard = React.memo(function FeedCard({
                           />
                         </div>
                         {/* Counter text */}
-                        <span className="text-[11px] font-semibold text-white tabular-nums">
+                        <span className="text-[10px] sm:text-[11px] font-semibold text-white tabular-nums">
                           {currentImageIndex + 1}/{totalImages}
                         </span>
                       </div>
-                    </motion.div>
+                    </div>
 
                     {/* Auto-slide progress indicator (shows when not hovered) */}
                     {!isHovered && (

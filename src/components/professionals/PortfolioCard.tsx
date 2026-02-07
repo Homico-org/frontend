@@ -149,26 +149,21 @@ export default function PortfolioCard({
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
           {/* Top badges row */}
-          <div className="absolute top-3 left-3 right-3 flex items-start justify-between z-20">
+          <div className="absolute top-2 sm:top-3 left-2 sm:left-3 right-2 sm:right-3 flex items-start justify-between z-20">
             {/* Verified badge */}
             {project.isVerified && (
-              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/90 backdrop-blur-sm text-white text-[10px] font-semibold uppercase tracking-wide shadow-lg">
-                <Sparkles className="w-2.5 h-2.5" />
+              <div className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-emerald-500/90 backdrop-blur-sm text-white text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide shadow-lg">
+                <Sparkles className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
                 <span>{t('common.verified')}</span>
               </div>
             )}
 
             {/* Image count badge */}
             {allImages.length > 1 && (
-              <Badge
-                variant="ghost"
-                size="sm"
-                icon={<Camera className="w-3 h-3" />}
-                className="bg-black/40 backdrop-blur-md text-white border border-white/20 shadow-lg ml-auto"
-              >
-                {allImages.length}
-                {hasBeforeAfter && ' ✦'}
-              </Badge>
+              <div className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-black/50 backdrop-blur-md text-white text-[10px] sm:text-xs font-medium shadow-lg ml-auto">
+                <Camera className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                <span>{allImages.length}{hasBeforeAfter && ' ✦'}</span>
+              </div>
             )}
           </div>
 

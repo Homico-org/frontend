@@ -39,7 +39,7 @@ const SIDEBAR_COLLAPSED_WIDTH = 56;
 
 type TabShowFor = "all" | "pro" | "client" | "auth";
 
-type TabKey = "jobs" | "portfolio" | "professionals" | "tools";
+type TabKey = "jobs" | "portfolio" | "professionals";
 
 const TABS: Array<{
   key: TabKey;
@@ -75,15 +75,6 @@ const TABS: Array<{
     labelKa: "სპეციალისტები",
     labelRu: "Специалисты",
     icon: Users,
-    showFor: "all" as const,
-  },
-  {
-    key: "tools",
-    route: "/tools",
-    label: "Tools",
-    labelKa: "კალკულატორები",
-    labelRu: "Инструменты",
-    icon: Wrench,
     showFor: "all" as const,
   },
 ];
@@ -374,11 +365,9 @@ function ShellContent({ children }: { children: ReactNode }) {
       ? "portfolio"
       : isProfessionalsPage
         ? "professionals"
-        : pathname.startsWith("/tools")
-          ? "tools"
-          : isMyWorkPage || isMyJobsPage || pathname.startsWith("/settings")
-            ? null
-            : "portfolio";
+        : isMyWorkPage || isMyJobsPage || pathname.startsWith("/settings") || pathname.startsWith("/tools")
+          ? null
+          : "portfolio";
 
   const visibleTabs = TABS.filter((tab) => {
     if (tab.showFor === "all") return true;
@@ -664,9 +653,9 @@ function ShellContent({ children }: { children: ReactNode }) {
 
         {/* Scrollable Content */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 bg-white dark:bg-neutral-950">
-          {/* Mobile Sticky Header */}
-          <div className="lg:hidden sticky top-0 z-20 bg-white dark:bg-neutral-950 border-b border-neutral-100 dark:border-neutral-800">
-            <div className="flex items-center gap-2 px-3 pt-3 pb-2 overflow-x-auto scrollbar-hide">
+          {/* Mobile Sticky Tabs */}
+          <div className="lg:hidden sticky top-0 z-20 bg-white dark:bg-neutral-950">
+            <div className="flex items-stretch border-b border-neutral-200 dark:border-neutral-800">
               {visibleTabs.map((tab) => {
                 const isActive = activeTab === tab.key;
                 const Icon = tab.icon;
@@ -674,24 +663,30 @@ function ShellContent({ children }: { children: ReactNode }) {
                   <Link
                     key={tab.key}
                     href={tab.route}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
+                    className={`flex items-center justify-center gap-1.5 flex-1 py-3 text-xs font-semibold whitespace-nowrap transition-colors relative ${
                       isActive
-                        ? "text-white shadow-sm"
-                        : "text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800"
+                        ? "text-[#C4735B]"
+                        : "text-neutral-400 dark:text-neutral-500"
                     }`}
-                    style={isActive ? { backgroundColor: ACCENT_COLOR } : {}}
                   >
                     <Icon className="w-4 h-4" />
                     <span>
                       {locale === "ka" ? tab.labelKa : locale === "ru" ? tab.labelRu : tab.label}
                     </span>
+                    <span
+                      className="absolute bottom-0 left-4 right-4 h-[2px] rounded-full transition-colors"
+                      style={{ backgroundColor: isActive ? ACCENT_COLOR : 'transparent' }}
+                    />
                   </Link>
                 );
               })}
             </div>
+          </div>
 
+          {/* Mobile Header Row & Search (below sticky tabs) */}
+          <div className="lg:hidden">
             {showHeaderRow && (
-              <div className="px-3 pb-2">
+              <div className="px-3 pt-3 pb-1">
                 <div className="flex items-start gap-2">
                   <HeaderIcon className="w-4 h-4 text-neutral-500 flex-shrink-0 mt-0.5" />
                   <div className="min-w-0">
@@ -709,7 +704,7 @@ function ShellContent({ children }: { children: ReactNode }) {
             )}
 
             {showSearchFilters && (
-              <div className="flex items-center gap-2 px-3 pb-2">
+              <div className="flex items-center gap-2 px-3 pt-2 pb-3">
                 <div className="flex-1">
                   {isJobsPage ? (
                     <JobsSearchInput />
