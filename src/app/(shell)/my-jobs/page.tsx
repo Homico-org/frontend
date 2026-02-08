@@ -18,6 +18,7 @@ import { api } from "@/lib/api";
 import { storage } from "@/services/storage";
 import type { Job, ProjectStage, ProjectTracking } from "@/types/shared";
 import { formatTimeAgo } from "@/utils/dateUtils";
+import { formatCurrency, formatPriceRange } from "@/utils/currencyUtils";
 import {
   AlertTriangle,
   ArrowRight,
@@ -26,14 +27,11 @@ import {
   Clock,
   Edit3,
   Eye,
-  FileText,
   MapPin,
   Plus,
   RefreshCw,
-  Search,
   Trash2,
   Users,
-  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -49,6 +47,47 @@ interface ProjectStageUpdateEvent {
 }
 
 import { useLanguage } from "@/contexts/LanguageContext";
+
+// Status color strip mapping
+function getStatusColor(job: Job) {
+  const hasShortlisted = (job.shortlistedCount || 0) > 0;
+  if (job.status === "open" && hasShortlisted) return "bg-blue-500";
+  if (job.status === "open") return "bg-emerald-500";
+  if (job.status === "in_progress") return "bg-[#C4735B]";
+  if (job.status === "expired") return "bg-amber-500";
+  return "bg-neutral-300 dark:bg-neutral-600";
+}
+
+// Status badge component
+function JobStatusBadge({ job, t }: { job: Job; t: (key: string) => string }) {
+  const hasShortlisted = (job.shortlistedCount || 0) > 0;
+  if (job.status === "open" && !hasShortlisted)
+    return <Badge variant="success" size="sm" dot dotColor="success">{t("common.open")}</Badge>;
+  if (job.status === "open" && hasShortlisted)
+    return <Badge variant="info" size="sm" icon={<Users className="w-3 h-3" />}>{t("job.shortlisted")} ({job.shortlistedCount})</Badge>;
+  if (job.status === "in_progress")
+    return <Badge variant="premium" size="sm" icon={<Check className="w-3 h-3" />}>{t("common.hired")}</Badge>;
+  if (job.status === "completed" || job.status === "cancelled")
+    return <Badge variant="default" size="sm">{t("job.closed")}</Badge>;
+  if (job.status === "expired")
+    return <Badge variant="warning" size="sm" icon={<Clock className="w-3 h-3" />}>{t("job.expired")}</Badge>;
+  return null;
+}
+
+// Budget display helper
+function getJobBudget(job: Job, t: (key: string) => string): string {
+  if (job.budgetType === "fixed") {
+    const amount = job.budgetAmount ?? job.budgetMin;
+    if (amount) return formatCurrency(amount);
+  } else if (job.budgetType === "per_sqm" && job.pricePerUnit) {
+    const total = job.areaSize ? job.pricePerUnit * job.areaSize : null;
+    if (total) return formatCurrency(total);
+    return `${job.pricePerUnit}₾/მ²`;
+  } else if (job.budgetType === "range" && job.budgetMin && job.budgetMax) {
+    return formatPriceRange(job.budgetMin, job.budgetMax);
+  }
+  return t("card.negotiable");
+}
 
 function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -359,542 +398,283 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
             size="md"
           />
         ) : (
-          <div className="space-y-3 sm:space-y-4">
+          <div className="space-y-3">
             {visibleJobs.map((job) => {
               const firstImage = job.media?.[0]?.url || job.images?.[0];
               const isHired = job.status === "in_progress";
-              const hasShortlisted = (job.shortlistedCount || 0) > 0;
-              const isOpen = job.status === "open" && !hasShortlisted;
-              const isShortlisted = job.status === "open" && hasShortlisted;
-              const isClosed =
-                job.status === "completed" || job.status === "cancelled";
+              const isOpen = job.status === "open";
+              const isClosed = job.status === "completed" || job.status === "cancelled";
               const isExpired = job.status === "expired";
+              const budget = getJobBudget(job, t);
 
               return (
                 <div
                   key={job.id}
                   onClick={() => router.push(`/jobs/${job.id}`)}
-                  className="group relative transition-all duration-500 cursor-pointer"
+                  className="group relative bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/80 dark:border-neutral-800 hover:border-[#C4735B]/30 dark:hover:border-[#C4735B]/30 transition-colors duration-150 cursor-pointer hover:shadow-md flex"
                 >
-                  {/* Premium border glow effect */}
-                  <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-[#C4735B]/0 via-[#C4735B]/0 to-[#C4735B]/0 group-hover:from-[#C4735B]/20 group-hover:via-[#D4937B]/10 group-hover:to-[#C4735B]/20 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-[1px]" />
+                  {/* Status color strip */}
+                  <div className={`w-1 sm:w-1.5 flex-shrink-0 ${getStatusColor(job)}`} />
 
-                  {/* Main Card */}
-                  <div className="relative bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-100/80 dark:border-neutral-800 group-hover:border-[#C4735B]/20 transition-all duration-500 group-hover:shadow-[0_20px_50px_-12px_rgba(196,115,91,0.12)] group-hover:-translate-y-0.5">
-                    {/* Shine effect overlay */}
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-20">
-                      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/3 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+                  {/* Optional thumbnail - desktop only */}
+                  {firstImage && (
+                    <div className="hidden sm:block w-28 lg:w-36 flex-shrink-0 overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                      <img
+                        src={storage.getFileUrl(firstImage)}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
                     </div>
+                  )}
 
-                    {/* Mobile: Vertical Stack Layout */}
-                    <div className="flex flex-col sm:flex-row">
-                      {/* ===== IMAGE SECTION - Only show on mobile if has image ===== */}
-                      {firstImage ? (
-                        <div className="relative w-full sm:w-52 lg:w-64 flex-shrink-0 bg-gradient-to-br from-neutral-100 to-neutral-50 dark:from-neutral-800 dark:to-neutral-900 overflow-hidden">
-                          <img
-                            src={storage.getFileUrl(firstImage)}
-                            alt=""
-                            className="w-full h-36 sm:h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                            style={{ minHeight: "144px" }}
-                          />
+                  {/* Content */}
+                  <div className="flex-1 min-w-0 p-3 sm:p-4 flex flex-col">
+                    {/* Top row: metadata + budget */}
+                    <div className="flex items-start justify-between gap-3 mb-1.5 sm:mb-2">
+                      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
+                        <JobStatusBadge job={job} t={t} />
+                        <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-[#C4735B]/10 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-[#C4735B]">
+                          {getCategoryLabel(job.category)}
+                        </span>
+                        <span className="flex items-center gap-1 text-[10px] sm:text-[11px] text-neutral-400">
+                          <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                          {formatTimeAgo(job.createdAt, t)}
+                        </span>
+                        {job.location && (
+                          <span className="hidden sm:flex items-center gap-1 text-[11px] text-neutral-400 truncate">
+                            <MapPin className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">{job.location}</span>
+                          </span>
+                        )}
+                      </div>
 
-                          {/* Gradient overlay on image */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-
-                          {/* Status Badge on image */}
-                          <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 z-10">
-                            {isOpen && (
-                              <Badge
-                                variant="success"
-                                size="sm"
-                                dot
-                                dotColor="success"
-                                className="shadow-lg backdrop-blur-sm"
+                      {/* Budget + Actions */}
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <div className="text-right">
+                          <p className="text-sm sm:text-base font-bold text-neutral-900 dark:text-white tabular-nums whitespace-nowrap">
+                            {budget}
+                          </p>
+                        </div>
+                        {/* Desktop action icons */}
+                        <div className="hidden sm:flex items-center gap-0.5 ml-1">
+                          {isOpen && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                asChild
+                                onClick={(e) => e.stopPropagation()}
+                                className="w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity"
                               >
-                                {t("common.open")}
-                              </Badge>
-                            )}
-                            {isShortlisted && (
-                              <Badge
-                                variant="info"
-                                size="sm"
-                                icon={<Users className="w-3 h-3" />}
-                                className="shadow-lg backdrop-blur-sm"
-                              >
-                                {t("job.shortlisted")} ({job.shortlistedCount})
-                              </Badge>
-                            )}
-                            {isHired && (
-                              <Badge
-                                variant="premium"
-                                size="sm"
-                                icon={<Check className="w-3 h-3" />}
-                                className="shadow-lg backdrop-blur-sm"
-                              >
-                                {t("common.hired")}
-                              </Badge>
-                            )}
-                            {isClosed && (
-                              <Badge
-                                variant="default"
-                                size="sm"
-                                className="shadow-lg backdrop-blur-sm"
-                              >
-                                {t("job.closed")}
-                              </Badge>
-                            )}
-                            {isExpired && (
-                              <Badge
-                                variant="warning"
-                                size="sm"
-                                icon={<Clock className="w-3 h-3" />}
-                                className="shadow-lg backdrop-blur-sm"
-                              >
-                                {t("job.expired")}
-                              </Badge>
-                            )}
-                          </div>
-
-                          {/* Location badge on image */}
-                          {job.location && (
-                            <div className="absolute bottom-2.5 left-2.5 sm:bottom-3 sm:left-3 z-10">
-                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-black/50 backdrop-blur-sm text-white text-[10px] font-medium">
-                                <MapPin className="w-3 h-3" />
-                                {job.location}
-                              </span>
-                            </div>
-                          )}
-
-                          {/* Mobile: Action buttons overlay on image */}
-                          <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 sm:hidden z-10">
-                            {isOpen && (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  asChild
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md shadow-lg w-8 h-8"
-                                >
-                                  <Link href={`/post-job?edit=${job.id}`}>
-                                    <Edit3 className="w-3.5 h-3.5" />
-                                  </Link>
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setDeleteModalJob(job);
-                                  }}
-                                  disabled={deletingJobId === job.id}
-                                  className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md shadow-lg w-8 h-8 text-neutral-400 hover:text-red-500"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </Button>
-                              </>
-                            )}
-                            {isExpired && (
+                                <Link href={`/post-job?edit=${job.id}`}>
+                                  <Edit3 className="w-3.5 h-3.5" />
+                                </Link>
+                              </Button>
                               <Button
                                 variant="ghost"
                                 size="icon"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleRenewJob(job.id);
+                                  setDeleteModalJob(job);
                                 }}
-                                disabled={renewingJobId === job.id}
-                                loading={renewingJobId === job.id}
-                                className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md shadow-lg w-8 h-8 text-amber-600"
+                                disabled={deletingJobId === job.id}
+                                className="w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
                               >
-                                <RefreshCw className="w-3.5 h-3.5" />
+                                <Trash2 className="w-3.5 h-3.5" />
                               </Button>
-                            )}
-                          </div>
+                            </>
+                          )}
+                          {isExpired && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRenewJob(job.id);
+                              }}
+                              disabled={renewingJobId === job.id}
+                              loading={renewingJobId === job.id}
+                              className="w-8 h-8 text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                              title={t("job.renew")}
+                            >
+                              <RefreshCw className="w-3.5 h-3.5" />
+                            </Button>
+                          )}
                         </div>
-                      ) : (
-                        /* Desktop only: Show placeholder when no image */
-                        <div className="hidden sm:flex relative w-52 lg:w-64 flex-shrink-0 bg-gradient-to-br from-neutral-100 to-neutral-50 dark:from-neutral-800 dark:to-neutral-900 items-center justify-center min-h-[176px]">
-                          <div className="text-center">
-                            <div className="w-12 h-12 rounded-xl bg-neutral-200/50 dark:bg-neutral-700/50 flex items-center justify-center mx-auto mb-1.5">
-                              <FileText className="w-5 h-5 text-neutral-400 dark:text-neutral-500" />
+                      </div>
+                    </div>
+
+                    {/* Title + mobile location */}
+                    <h3 className="text-[13px] sm:text-base font-semibold text-neutral-900 dark:text-white line-clamp-1 sm:line-clamp-2 group-hover:text-[#C4735B] transition-colors duration-150 mb-0.5">
+                      {job.title}
+                    </h3>
+
+                    {/* Mobile location */}
+                    {job.location && (
+                      <span className="sm:hidden flex items-center gap-1 text-[10px] text-neutral-400 mb-1">
+                        <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
+                        <span className="truncate">{job.location}</span>
+                      </span>
+                    )}
+
+                    {/* Description - desktop only */}
+                    <p className="hidden sm:block text-[13px] text-neutral-500 dark:text-neutral-400 line-clamp-1 leading-relaxed">
+                      {job.description}
+                    </p>
+
+                    {/* Footer: proposals / hired pro / actions */}
+                    <div className="flex items-center justify-between mt-2.5 sm:mt-3 pt-2.5 sm:pt-3 border-t border-neutral-100 dark:border-neutral-800 gap-2">
+                      {/* Left: status-specific content */}
+                      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                        {isOpen && job.proposalCount > 0 && (
+                          <>
+                            <div className="flex -space-x-1.5">
+                              {[...Array(Math.min(job.proposalCount, 3))].map((_, i) => {
+                                const proposal = job.recentProposals?.[i];
+                                const proName = proposal?.proId?.name || "";
+                                const initial = proName.charAt(0).toUpperCase();
+                                return (
+                                  <div
+                                    key={i}
+                                    className="relative w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-neutral-200 dark:bg-neutral-700 border-2 border-white dark:border-neutral-900 overflow-hidden"
+                                    style={{ zIndex: 3 - i }}
+                                  >
+                                    {proposal?.proId?.avatar ? (
+                                      <img src={storage.getFileUrl(proposal.proId.avatar)} alt={proName} className="w-full h-full object-cover" />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center text-[9px] sm:text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-600 dark:to-neutral-700">
+                                        {initial || <Users className="w-2.5 h-2.5" />}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                              {job.proposalCount > 3 && (
+                                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[#C4735B]/10 border-2 border-white dark:border-neutral-900 flex items-center justify-center text-[9px] sm:text-[11px] font-bold text-[#C4735B]">
+                                  +{job.proposalCount - 3}
+                                </div>
+                              )}
                             </div>
-                            <span className="text-[10px] text-neutral-400">
-                              {t("job.noImage")}
-                            </span>
-                          </div>
-
-                          {/* Status Badge on placeholder */}
-                          <div className="absolute top-3 left-3 z-10">
-                            {isOpen && (
-                              <Badge
-                                variant="success"
-                                size="sm"
-                                dot
-                                dotColor="success"
-                                className="shadow-lg"
-                              >
-                                {t("common.open")}
-                              </Badge>
-                            )}
-                            {isShortlisted && (
-                              <Badge
-                                variant="info"
-                                size="sm"
-                                icon={<Users className="w-3 h-3" />}
-                                className="shadow-lg"
-                              >
-                                {t("job.shortlisted")} ({job.shortlistedCount})
-                              </Badge>
-                            )}
-                            {isHired && (
-                              <Badge
-                                variant="premium"
-                                size="sm"
-                                icon={<Check className="w-3 h-3" />}
-                                className="shadow-lg"
-                              >
-                                {t("common.hired")}
-                              </Badge>
-                            )}
-                            {isClosed && (
-                              <Badge
-                                variant="default"
-                                size="sm"
-                                className="shadow-lg"
-                              >
-                                {t("job.closed")}
-                              </Badge>
-                            )}
-                            {isExpired && (
-                              <Badge
-                                variant="warning"
-                                size="sm"
-                                icon={<Clock className="w-3 h-3" />}
-                                className="shadow-lg"
-                              >
-                                {t("job.expired")}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* ===== CONTENT SECTION ===== */}
-                      <div className="flex-1 p-3 sm:p-5 flex flex-col">
-                        <div className="flex items-start justify-between flex-1">
-                          <div className="flex-1 min-w-0">
-                            {/* Mobile: Status badge + Actions row (only when no image) */}
-                            {!firstImage && (
-                              <div className="flex items-center justify-between mb-1.5 sm:hidden">
-                                <div>
-                                  {isOpen && (
-                                    <Badge variant="success" size="sm" dot dotColor="success">
-                                      {t("common.open")}
-                                    </Badge>
-                                  )}
-                                  {isShortlisted && (
-                                    <Badge variant="info" size="sm" icon={<Users className="w-3 h-3" />}>
-                                      {t("job.shortlisted")} ({job.shortlistedCount})
-                                    </Badge>
-                                  )}
-                                  {isHired && (
-                                    <Badge variant="premium" size="sm" icon={<Check className="w-3 h-3" />}>
-                                      {t("common.hired")}
-                                    </Badge>
-                                  )}
-                                  {isClosed && (
-                                    <Badge variant="default" size="sm">{t("job.closed")}</Badge>
-                                  )}
-                                  {isExpired && (
-                                    <Badge variant="warning" size="sm" icon={<Clock className="w-3 h-3" />}>
-                                      {t("job.expired")}
-                                    </Badge>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-0.5">
-                                  {isOpen && (
-                                    <>
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        asChild
-                                        onClick={(e) => e.stopPropagation()}
-                                        className="w-7 h-7"
-                                      >
-                                        <Link href={`/post-job?edit=${job.id}`}>
-                                          <Edit3 className="w-3.5 h-3.5" />
-                                        </Link>
-                                      </Button>
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setDeleteModalJob(job);
-                                        }}
-                                        disabled={deletingJobId === job.id}
-                                        className="w-7 h-7 text-neutral-400 hover:text-red-500"
-                                      >
-                                        <Trash2 className="w-3.5 h-3.5" />
-                                      </Button>
-                                    </>
-                                  )}
-                                  {isExpired && (
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleRenewJob(job.id);
-                                      }}
-                                      disabled={renewingJobId === job.id}
-                                      loading={renewingJobId === job.id}
-                                      className="w-7 h-7 text-amber-600"
-                                    >
-                                      <RefreshCw className="w-3.5 h-3.5" />
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Category Tags & Time & Location */}
-                            <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2 flex-wrap text-[10px] sm:text-[11px]">
-                              <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-[#C4735B]/10 font-semibold uppercase tracking-wider text-[#C4735B]">
-                                {getCategoryLabel(job.category)}
+                            <div className="min-w-0">
+                              <span className="text-[12px] sm:text-[13px] font-semibold text-[#C4735B]">
+                                {job.proposalCount} {t("job.proposals")}
                               </span>
-                              <span className="flex items-center gap-1 text-neutral-400">
-                                <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                {formatTimeAgo(job.createdAt, t)}
-                              </span>
-                              {job.location && (
-                                <span className="flex items-center gap-1 text-neutral-400 truncate max-w-[140px] sm:max-w-none">
-                                  <MapPin className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" />
-                                  <span className="truncate">{job.location}</span>
+                              {job.proposalCount === 1 && job.recentProposals?.[0]?.proId?.name && (
+                                <span className="block text-[10px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
+                                  {t("job.from")} {job.recentProposals[0].proId.name}
                                 </span>
                               )}
                             </div>
-
-                            {/* Title */}
-                            <h3 className="text-sm sm:text-lg font-bold text-neutral-900 dark:text-white line-clamp-2 group-hover:text-[#C4735B] transition-colors duration-300 mb-0.5 sm:mb-1">
-                              {job.title}
-                            </h3>
-
-                            {/* Description - Hidden on mobile */}
-                            <p className="hidden sm:block text-sm text-neutral-500 dark:text-neutral-400 line-clamp-2 leading-relaxed">
-                              {job.description}
-                            </p>
+                          </>
+                        )}
+                        {isOpen && job.proposalCount === 0 && (
+                          <div className="flex items-center gap-2 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-100/80 dark:border-amber-800/30">
+                            <span className="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                              <span className="relative inline-flex rounded-full h-full w-full bg-amber-500" />
+                            </span>
+                            <span className="text-[10px] sm:text-[11px] font-medium text-amber-700 dark:text-amber-400">
+                              {t("job.awaitingProposals")}
+                            </span>
                           </div>
+                        )}
+                        {isHired && job.hiredPro && (
+                          <div className="flex items-center gap-2">
+                            <div className="relative">
+                              <Avatar
+                                src={job.hiredPro.avatar || job.hiredPro.userId?.avatar}
+                                name={job.hiredPro.name || job.hiredPro.userId?.name || "Pro"}
+                                size="sm"
+                                className="w-7 h-7 sm:w-8 sm:h-8 ring-2 ring-[#C4735B]/20"
+                              />
+                              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-green-500 border-2 border-white dark:border-neutral-900 flex items-center justify-center">
+                                <Check className="w-1.5 h-1.5 sm:w-2 sm:h-2 text-white" />
+                              </div>
+                            </div>
+                            <div className="min-w-0">
+                              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-[#C4735B] block">
+                                {t("common.hired")}
+                              </span>
+                              <span className="text-[12px] sm:text-[13px] font-semibold text-neutral-900 dark:text-white truncate block">
+                                {job.hiredPro.name || job.hiredPro.userId?.name || "Professional"}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        {isExpired && (
+                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-50 dark:bg-amber-900/20">
+                            <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-600" />
+                            <span className="text-[10px] sm:text-[11px] font-medium text-amber-700 dark:text-amber-400">
+                              {t("job.expired")}
+                            </span>
+                          </div>
+                        )}
+                        {/* Stats: views */}
+                        <div className="hidden sm:flex items-center gap-1 text-[11px] text-neutral-400 ml-auto mr-2">
+                          <Eye className="w-3 h-3" />
+                          {job.viewCount || 0}
+                        </div>
+                      </div>
 
-                          {/* Action Icons - Top Right - Desktop only */}
-                          <div className="hidden sm:flex items-center gap-1 ml-4">
-                            {isOpen && (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  asChild
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                >
-                                  <Link href={`/post-job?edit=${job.id}`}>
-                                    <Edit3 className="w-4 h-4" />
-                                  </Link>
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setDeleteModalJob(job);
-                                  }}
-                                  disabled={deletingJobId === job.id}
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </>
-                            )}
-                            {isExpired && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleRenewJob(job.id);
-                                }}
-                                disabled={renewingJobId === job.id}
-                                loading={renewingJobId === job.id}
-                                className="text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
-                                title={t("job.renew")}
-                              >
-                                <RefreshCw className="w-4 h-4" />
+                      {/* Right: CTA buttons */}
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        {/* Mobile action icons */}
+                        <div className="flex sm:hidden items-center gap-0.5">
+                          {isOpen && (
+                            <>
+                              <Button variant="ghost" size="icon" asChild onClick={(e) => e.stopPropagation()} className="w-7 h-7">
+                                <Link href={`/post-job?edit=${job.id}`}><Edit3 className="w-3 h-3" /></Link>
                               </Button>
-                            )}
-                          </div>
+                              <Button
+                                variant="ghost" size="icon"
+                                onClick={(e) => { e.stopPropagation(); setDeleteModalJob(job); }}
+                                disabled={deletingJobId === job.id}
+                                className="w-7 h-7 text-neutral-400 hover:text-red-500"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </>
+                          )}
+                          {isExpired && (
+                            <Button
+                              variant="ghost" size="icon"
+                              onClick={(e) => { e.stopPropagation(); handleRenewJob(job.id); }}
+                              disabled={renewingJobId === job.id}
+                              loading={renewingJobId === job.id}
+                              className="w-7 h-7 text-amber-600"
+                            >
+                              <RefreshCw className="w-3 h-3" />
+                            </Button>
+                          )}
                         </div>
 
-                        {/* ===== FOOTER SECTION ===== */}
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-neutral-100 dark:border-neutral-800 gap-2.5 sm:gap-3">
-                          {/* Left: Proposals or Hired Pro */}
-                          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                            {isOpen && job.proposalCount > 0 && (
-                              <>
-                                {/* Stacked Avatars with ring effect */}
-                                <div className="flex -space-x-2">
-                                  {[
-                                    ...Array(Math.min(job.proposalCount, 3)),
-                                  ].map((_, i) => {
-                                    const proposal = job.recentProposals?.[i];
-                                    const proName = proposal?.proId?.name || "";
-                                    const initial = proName
-                                      .charAt(0)
-                                      .toUpperCase();
-
-                                    return (
-                                      <div
-                                        key={i}
-                                        className="relative w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-neutral-200 dark:bg-neutral-700 border-2 border-white dark:border-neutral-900 overflow-hidden ring-2 ring-[#C4735B]/0 group-hover:ring-[#C4735B]/20 transition-all duration-300"
-                                        style={{ zIndex: 3 - i }}
-                                      >
-                                        {proposal?.proId?.avatar ? (
-                                          <img
-                                            src={storage.getFileUrl(
-                                              proposal.proId.avatar
-                                            )}
-                                            alt={proName}
-                                            className="w-full h-full object-cover"
-                                          />
-                                        ) : (
-                                          <div className="w-full h-full flex items-center justify-center text-[10px] sm:text-xs font-semibold text-neutral-500 dark:text-neutral-400 bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-600 dark:to-neutral-700">
-                                            {initial || (
-                                              <Users className="w-3 h-3" />
-                                            )}
-                                          </div>
-                                        )}
-                                      </div>
-                                    );
-                                  })}
-                                  {job.proposalCount > 3 && (
-                                    <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-[#C4735B]/10 border-2 border-white dark:border-neutral-900 flex items-center justify-center text-[10px] sm:text-xs font-bold text-[#C4735B]">
-                                      +{job.proposalCount - 3}
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="flex flex-col min-w-0">
-                                  <span className="text-[13px] sm:text-sm font-semibold text-[#C4735B]">
-                                    {job.proposalCount}{" "}
-                                    {t("job.proposals")}
-                                  </span>
-                                  {job.proposalCount === 1 &&
-                                    job.recentProposals?.[0]?.proId?.name && (
-                                      <span className="text-[10px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
-                                        {t("job.from")}{" "}
-                                        {job.recentProposals[0].proId.name}
-                                      </span>
-                                    )}
-                                </div>
-                              </>
-                            )}
-                            {isOpen && job.proposalCount === 0 && (
-                              <div className="flex items-center gap-2 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30">
-                                <span className="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-full w-full bg-amber-500"></span>
-                                </span>
-                                <span className="text-[11px] sm:text-xs font-medium text-amber-700 dark:text-amber-400">
-                                  {t("job.awaitingProposals")}
-                                </span>
-                              </div>
-                            )}
-                            {isHired && job.hiredPro && (
-                              <div className="flex items-center gap-2 sm:gap-3">
-                                <div className="relative">
-                                  <Avatar
-                                    src={
-                                      job.hiredPro.avatar ||
-                                      job.hiredPro.userId?.avatar
-                                    }
-                                    name={
-                                      job.hiredPro.name ||
-                                      job.hiredPro.userId?.name ||
-                                      "Pro"
-                                    }
-                                    size="sm"
-                                    className="w-8 h-8 sm:w-9 sm:h-9 ring-2 ring-[#C4735B]/20"
-                                  />
-                                  <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-green-500 border-2 border-white dark:border-neutral-900 flex items-center justify-center">
-                                    <Check className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-white" />
-                                  </div>
-                                </div>
-                                <div className="min-w-0">
-                                  <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-[#C4735B] block">
-                                    {t("common.hired")}
-                                  </span>
-                                  <span className="text-[13px] sm:text-sm font-semibold text-neutral-900 dark:text-white truncate block">
-                                    {job.hiredPro.name ||
-                                      job.hiredPro.userId?.name ||
-                                      "Professional"}
-                                  </span>
-                                </div>
-                              </div>
-                            )}
-                            {isExpired && (
-                              <div className="flex items-center gap-2 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30">
-                                <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600" />
-                                <span className="text-[11px] sm:text-xs font-medium text-amber-700 dark:text-amber-400">
-                                  {t("job.expired")}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Right: Action Button */}
-                          <div className="flex-shrink-0">
-                            {isOpen && job.proposalCount > 0 && (
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                asChild
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleViewProposals(job.id);
-                                }}
-                                className="group/btn w-full sm:w-auto justify-center text-[13px] sm:text-sm"
-                              >
-                                <Link
-                                  href={`/my-jobs/${job.id}/proposals`}
-                                  className="flex items-center gap-2"
-                                >
-                                  <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                  {t("job.viewProposals")}
-                                  <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 opacity-0 -ml-1 group-hover/btn:opacity-100 group-hover/btn:ml-0 transition-all" />
-                                </Link>
-                              </Button>
-                            )}
-                            {isExpired && (
-                              <Button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleRenewJob(job.id);
-                                }}
-                                disabled={renewingJobId === job.id}
-                                loading={renewingJobId === job.id}
-                                size="sm"
-                                leftIcon={
-                                  !renewingJobId || renewingJobId !== job.id ? (
-                                    <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                  ) : undefined
-                                }
-                                className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-lg shadow-amber-500/20 w-full sm:w-auto justify-center text-[13px] sm:text-sm"
-                              >
-                                {renewingJobId === job.id
-                                  ? t("job.renewing")
-                                  : t("job.renew")}
-                              </Button>
-                            )}
-                          </div>
-                        </div>
+                        {isOpen && job.proposalCount > 0 && (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            asChild
+                            onClick={(e) => { e.stopPropagation(); handleViewProposals(job.id); }}
+                            className="group/btn text-[11px] sm:text-[13px] h-7 sm:h-8 px-2.5 sm:px-3"
+                          >
+                            <Link href={`/my-jobs/${job.id}/proposals`} className="flex items-center gap-1.5">
+                              <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                              {t("job.viewProposals")}
+                              <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 opacity-0 -ml-1 group-hover/btn:opacity-100 group-hover/btn:ml-0 transition-all" />
+                            </Link>
+                          </Button>
+                        )}
+                        {isExpired && (
+                          <Button
+                            onClick={(e) => { e.stopPropagation(); handleRenewJob(job.id); }}
+                            disabled={renewingJobId === job.id}
+                            loading={renewingJobId === job.id}
+                            size="sm"
+                            leftIcon={!renewingJobId || renewingJobId !== job.id ? <RefreshCw className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> : undefined}
+                            className="hidden sm:flex bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-sm text-[13px] h-8"
+                          >
+                            {renewingJobId === job.id ? t("job.renewing") : t("job.renew")}
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>

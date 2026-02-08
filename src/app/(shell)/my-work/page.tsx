@@ -4,13 +4,14 @@ import AuthGuard from "@/components/common/AuthGuard";
 import Avatar from "@/components/common/Avatar";
 import EmptyState from "@/components/common/EmptyState";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import PageShell from "@/components/ui/PageShell";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/contexts/ToastContext";
+import { useCategoryLabels } from "@/hooks/useCategoryLabels";
 import { api } from "@/lib/api";
+import { storage } from "@/services/storage";
 import type {
   Job,
   ProjectStage,
@@ -18,14 +19,14 @@ import type {
   Proposal,
 } from "@/types/shared";
 import { formatBudget } from "@/utils/currencyUtils";
-import type { LucideIcon } from "lucide-react";
 import {
   AlertTriangle,
   ArrowRight,
   Briefcase,
+  CheckCircle2,
   Clock,
-  Search,
-  X
+  MapPin,
+  MessageSquare,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -46,32 +47,23 @@ interface ProjectStageUpdateEvent {
   };
 }
 
-// Status config type
-interface StatusConfig {
-  label: string;
-  labelKa: string;
-  icon: LucideIcon;
-  color: string;
-  bg: string;
-  border: string;
-}
-
 const TERRACOTTA = "#C4735B";
 
-const STAGE_LABELS: Record<
+const STAGE_CONFIG: Record<
   ProjectStage,
-  { en: string; ka: string }
+  { en: string; ka: string; color: string; step: number }
 > = {
-  hired: { en: "Hired", ka: "დაქირავებული" },
-  started: { en: "Started", ka: "დაწყებული" },
-  in_progress: { en: "In Progress", ka: "მიმდინარე" },
-  review: { en: "Review", ka: "შემოწმება" },
-  completed: { en: "Done", ka: "დასრულებული" },
+  hired: { en: "Hired", ka: "დაქირავებული", color: "bg-blue-500", step: 1 },
+  started: { en: "Started", ka: "დაწყებული", color: "bg-[#C4735B]", step: 2 },
+  in_progress: { en: "In Progress", ka: "მიმდინარე", color: "bg-[#C4735B]", step: 3 },
+  review: { en: "Under Review", ka: "შემოწმება", color: "bg-amber-500", step: 4 },
+  completed: { en: "Completed", ka: "დასრულებული", color: "bg-emerald-500", step: 5 },
 };
 
 function MyWorkPageContent({ embedded }: { embedded?: boolean }) {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { t, locale: language } = useLanguage();
+  const { getCategoryLabel } = useCategoryLabels();
   const toast = useToast();
   const router = useRouter();
   const isEmbedded = !!embedded;
@@ -322,87 +314,165 @@ function MyWorkPageContent({ embedded }: { embedded?: boolean }) {
             size="md"
           />
         ) : (
-          <div className="space-y-4 sm:space-y-5">
-            {works.map((proposal, index) => {
+          <div className="space-y-3">
+            {works.map((proposal) => {
               const job = proposal.jobId;
               if (!job || typeof job === "string") return null;
+              if (!isActiveProject(proposal) && !isProjectCompleted(proposal)) return null;
 
-              // For active or completed projects
-              if (isActiveProject(proposal) || isProjectCompleted(proposal)) {
-                return (
-                  <div
-                    key={proposal.id}
-                    className="relative bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100 dark:border-neutral-800 overflow-hidden hover:shadow-lg transition-shadow"
-                  >
-                    <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-                      <div className="flex items-center gap-3 min-w-0">
+              const completed = isProjectCompleted(proposal);
+              const stage = proposal.projectTracking?.currentStage;
+              const stageConfig = stage ? STAGE_CONFIG[stage] : null;
+              const progress = proposal.projectTracking?.progress ?? 0;
+              const agreedPrice = proposal.projectTracking?.agreedPrice;
+              const firstImage = job.media?.[0]?.url || job.images?.[0];
+
+              return (
+                <Link
+                  key={proposal.id}
+                  href={`/jobs/${job.id}`}
+                  className="group flex bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/80 dark:border-neutral-800 hover:border-[#C4735B]/30 dark:hover:border-[#C4735B]/30 transition-colors duration-150 hover:shadow-md"
+                >
+                  {/* Status color strip */}
+                  <div className={`w-1 sm:w-1.5 flex-shrink-0 ${completed ? "bg-emerald-500" : stageConfig?.color || "bg-[#C4735B]"}`} />
+
+                  {/* Optional thumbnail - desktop only */}
+                  {firstImage && (
+                    <div className="hidden sm:block w-28 lg:w-36 flex-shrink-0 overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                      <img
+                        src={storage.getFileUrl(firstImage)}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0 p-3 sm:p-4 flex flex-col">
+                    {/* Top: Client + Budget */}
+                    <div className="flex items-start justify-between gap-3 mb-1.5 sm:mb-2">
+                      <div className="flex items-center gap-2 min-w-0">
                         <Avatar
                           src={job.clientId?.avatar}
                           name={job.clientId?.name || t("common.client")}
-                          size="md"
-                          className="w-10 h-10"
+                          size="sm"
+                          className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0"
                         />
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-neutral-900 dark:text-white truncate">
-                            {job.title}
-                          </p>
-                          <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                          <span className="text-[11px] sm:text-xs text-neutral-500 dark:text-neutral-400 truncate block">
                             {job.clientId?.name || t("common.client")}
-                            {job.location ? ` · ${job.location}` : ""}
-                          </p>
+                          </span>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
                         <Badge
-                          variant={isProjectCompleted(proposal) ? "success" : "info"}
+                          variant={completed ? "success" : "info"}
                           size="sm"
+                          className="flex-shrink-0"
                         >
-                          {isProjectCompleted(proposal)
-                            ? t("common.completed")
+                          {completed ? t("common.completed") : stageConfig
+                            ? (language === "ka" ? stageConfig.ka : stageConfig.en)
                             : t("common.inProgress")}
                         </Badge>
-                        <Button
-                          asChild
-                          size="sm"
-                          rightIcon={<ArrowRight className="w-4 h-4" />}
-                        >
-                          <Link href={`/jobs/${job.id}`}>{t("common.open")}</Link>
-                        </Button>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-sm sm:text-base font-bold text-neutral-900 dark:text-white tabular-nums whitespace-nowrap">
+                          {agreedPrice ? `${agreedPrice.toLocaleString()}₾` : formatBudget(job, t)}
+                        </p>
                       </div>
                     </div>
 
-                    <div className="px-5 py-4">
-                      <div className="flex flex-wrap items-center gap-3 text-sm text-neutral-600 dark:text-neutral-300">
-                        <div className="inline-flex items-center gap-1.5">
-                          <Briefcase className="w-4 h-4 text-neutral-400" />
-                          <span className="font-medium">
-                            {formatBudget(job, t)}
+                    {/* Title */}
+                    <h3 className="text-[13px] sm:text-base font-semibold text-neutral-900 dark:text-white line-clamp-1 group-hover:text-[#C4735B] transition-colors duration-150 mb-0.5">
+                      {job.title}
+                    </h3>
+
+                    {/* Meta: location + category */}
+                    <div className="flex items-center gap-2 text-[10px] sm:text-[11px] text-neutral-400 mb-2 sm:mb-2.5">
+                      {job.location && (
+                        <span className="flex items-center gap-1 truncate">
+                          <MapPin className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" />
+                          <span className="truncate">{job.location}</span>
+                        </span>
+                      )}
+                      {job.category && (
+                        <span className="px-1.5 py-0.5 rounded-full bg-[#C4735B]/10 font-semibold uppercase tracking-wider text-[#C4735B]">
+                          {getCategoryLabel(job.category)}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Progress bar for active projects */}
+                    {!completed && stage && (
+                      <div className="mb-2.5 sm:mb-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-3">
+                            {Object.entries(STAGE_CONFIG).map(([key, config]) => (
+                              <div key={key} className="flex items-center gap-1">
+                                <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
+                                  config.step <= (stageConfig?.step || 0)
+                                    ? config.step === stageConfig?.step ? stageConfig.color : "bg-emerald-500"
+                                    : "bg-neutral-200 dark:bg-neutral-700"
+                                }`} />
+                                <span className={`hidden sm:inline text-[10px] ${
+                                  key === stage ? "font-semibold text-neutral-700 dark:text-neutral-200" : "text-neutral-400"
+                                }`}>
+                                  {language === "ka" ? config.ka : config.en}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                          <span className="text-[10px] sm:text-[11px] font-semibold text-neutral-500 tabular-nums">
+                            {progress}%
                           </span>
                         </div>
-                        {proposal.projectTracking?.currentStage && (
-                          <div className="inline-flex items-center gap-1.5">
-                            <Clock className="w-4 h-4 text-neutral-400" />
-                            <span>
-                              {language === "ka" ? "სტატუსი" : "Stage"}:{" "}
-                              {STAGE_LABELS[proposal.projectTracking.currentStage]?.[
-                                language === "ka" ? "ka" : "en"
-                              ] || proposal.projectTracking.currentStage}
-                            </span>
-                          </div>
+                        <div className="h-1 sm:h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${stageConfig?.color || "bg-[#C4735B]"}`}
+                            style={{ width: `${Math.max(progress, 5)}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Completed badge for completed projects */}
+                    {completed && (
+                      <div className="flex items-center gap-1.5 mb-2.5 sm:mb-3 px-2 py-1 sm:py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100/80 dark:border-emerald-800/30 w-fit">
+                        <CheckCircle2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-600" />
+                        <span className="text-[10px] sm:text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
+                          {proposal.projectTracking?.completedAt
+                            ? `${language === "ka" ? "დასრულდა" : "Completed"} ${new Date(proposal.projectTracking.completedAt).toLocaleDateString(language === "ka" ? "ka-GE" : "en-US", { month: "short", day: "numeric" })}`
+                            : t("common.completed")}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Footer */}
+                    <div className="flex items-center justify-between pt-2.5 sm:pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                      <div className="flex items-center gap-3 text-[10px] sm:text-[11px] text-neutral-400">
+                        {proposal.projectTracking?.startedAt && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                            {language === "ka" ? "დაწყებული" : "Started"}{" "}
+                            {new Date(proposal.projectTracking.startedAt).toLocaleDateString(
+                              language === "ka" ? "ka-GE" : "en-US",
+                              { month: "short", day: "numeric" }
+                            )}
+                          </span>
+                        )}
+                        {(proposal.projectTracking?.comments?.length || 0) > 0 && (
+                          <span className="flex items-center gap-1">
+                            <MessageSquare className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                            {proposal.projectTracking!.comments.length}
+                          </span>
                         )}
                       </div>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
-                        {language === "ka"
-                          ? "პროექტის ჩათი/რესურსები/დეტალები ნახეთ სამუშაოს გვერდზე"
-                          : "Open the job page to view chat, resources, and project details"}
-                      </p>
+                      <div className="flex items-center gap-1 text-[11px] sm:text-[13px] font-medium text-[#C4735B] group-hover:gap-2 transition-all">
+                        <span>{language === "ka" ? "გახსნა" : "View"}</span>
+                        <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                      </div>
+                    </div>
                   </div>
-                </div>
+                </Link>
               );
-              }
-
-              // Pending / rejected proposals are not shown on this page anymore.
-              return null;
             })}
           </div>
         )}
