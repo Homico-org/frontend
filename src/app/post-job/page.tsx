@@ -460,23 +460,23 @@ function PostJobPageContent() {
     <div className="flex flex-col min-h-screen pb-28 lg:pb-14">
       {/* Progress Header */}
       <div className="bg-white border-b border-neutral-100 sticky top-14 z-40">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3 text-sm text-neutral-600">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex items-center gap-3 sm:gap-6">
+            <div className="flex items-center gap-2 sm:gap-3 text-sm text-neutral-600 flex-shrink-0">
               <span className="font-semibold text-[#C4735B]">{getCurrentStepIndex() + 1}/{STEP_IDS.length}</span>
               <span className="hidden sm:inline text-neutral-300">•</span>
               <span className="hidden sm:inline font-medium">{getStepLabel(currentStep)}</span>
             </div>
             <Progress value={progressPercent} size="default" className="flex-1" />
-            <span className="text-sm font-semibold text-[#C4735B]">
+            <span className="text-xs sm:text-sm font-semibold text-[#C4735B] flex-shrink-0">
               {Math.round(progressPercent)}%
             </span>
           </div>
         </div>
       </div>
 
-      <main className={`flex-1 py-6 lg:py-8 transition-opacity duration-500 ${isVisible ? "opacity-100" : "opacity-0"}`}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className={`flex-1 py-4 sm:py-6 lg:py-8 transition-opacity duration-500 ${isVisible ? "opacity-100" : "opacity-0"}`}>
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8">
           {error && (
             <Alert variant="error" size="sm" className="mb-4">
               {error}
@@ -485,14 +485,14 @@ function PostJobPageContent() {
 
           {/* STEP 1: Category Selection */}
           {currentStep === "category" && (
-            <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+            <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {/* Left: Main Content */}
-              <div className="lg:col-span-2 space-y-6">
+              <div className="lg:col-span-2 space-y-4 sm:space-y-6">
                 <div>
-                  <h1 className="text-2xl lg:text-3xl font-bold text-neutral-900 mb-2">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-neutral-900 mb-1 sm:mb-2">
                     {t('job.projectDetails')}
                   </h1>
-                  <p className="text-base text-neutral-500">
+                  <p className="text-sm sm:text-base text-neutral-500">
                     {t('job.selectPropertyTypeCategoryAnd')}
                   </p>
                 </div>
@@ -529,11 +529,11 @@ function PostJobPageContent() {
 
                 {/* Category-specific fields */}
                 {selectedSubcategory && getActiveFields().length > 0 && (
-                  <div className="bg-white rounded-2xl border border-neutral-200 p-5 lg:p-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                    <h3 className="text-base font-semibold text-neutral-900 mb-4">
+                  <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5 lg:p-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <h3 className="text-sm sm:text-base font-semibold text-neutral-900 mb-3 sm:mb-4">
                       {t('job.additionalDetails')}
                     </h3>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       {getActiveFields().map((field) => (
                         <div key={field.key}>
                           <label className="block text-sm font-medium text-neutral-600 mb-2">
@@ -573,9 +573,9 @@ function PostJobPageContent() {
 
                 {/* Cadastral Code Input - Only for architecture/design */}
                 {(selectedCategory === "architecture" || selectedCategory === "design") && (
-                  <div className="bg-white rounded-2xl border border-neutral-200 p-5 lg:p-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                    <label className="block text-base font-semibold text-neutral-900 mb-3">
-                      {t('job.cadastralCode')} <span className="text-neutral-400 font-normal text-sm">({t('common.optional')})</span>
+                  <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5 lg:p-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <label className="block text-sm sm:text-base font-semibold text-neutral-900 mb-2 sm:mb-3">
+                      {t('job.cadastralCode')} <span className="text-neutral-400 font-normal text-xs sm:text-sm">({t('common.optional')})</span>
                     </label>
                     <Input
                       value={formData.cadastralId}
@@ -591,8 +591,8 @@ function PostJobPageContent() {
 
                 {/* Land Area Input - Only for house/building with architecture/design */}
                 {(formData.propertyType === "house" || formData.propertyType === "building") && (selectedCategory === "architecture" || selectedCategory === "design") && (
-                  <div className="bg-white rounded-2xl border border-neutral-200 p-5 lg:p-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                    <label className="block text-base font-semibold text-neutral-900 mb-3">
+                  <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5 lg:p-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <label className="block text-sm sm:text-base font-semibold text-neutral-900 mb-2 sm:mb-3">
                       {t('job.landArea')}
                     </label>
                     <div className="relative">
@@ -621,8 +621,8 @@ function PostJobPageContent() {
 
                 {/* Property Condition Selector - For relevant categories */}
                 {selectedCategory && categoriesNeedingCondition.includes(selectedCategory) && (
-                  <div className="bg-white rounded-2xl border border-neutral-200 p-5 lg:p-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                    <label className="block text-base font-semibold text-neutral-900 mb-4">
+                  <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5 lg:p-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <label className="block text-sm sm:text-base font-semibold text-neutral-900 mb-3 sm:mb-4">
                       {t('job.propertyCondition')}
                     </label>
                     <ConditionSelector
@@ -642,7 +642,7 @@ function PostJobPageContent() {
               <div className="lg:col-span-1">
                 <div className="sticky top-[140px] space-y-4">
                   {/* Hint Card */}
-                  <div className="bg-gradient-to-br from-[#C4735B]/5 to-[#C4735B]/10 rounded-2xl border border-[#C4735B]/20 p-5 lg:p-6">
+                  <div className="bg-gradient-to-br from-[#C4735B]/5 to-[#C4735B]/10 rounded-2xl border border-[#C4735B]/20 p-4 sm:p-5 lg:p-6">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-10 h-10 rounded-xl bg-[#C4735B] flex items-center justify-center">
                         <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -666,15 +666,15 @@ function PostJobPageContent() {
           {/* STEP 2: Location & Budget */}
           {currentStep === "location" && (
             <div className="max-w-3xl mx-auto">
-              <div className="bg-white rounded-2xl border border-neutral-200 p-6 lg:p-8">
-                <h2 className="text-2xl lg:text-3xl font-bold text-neutral-900 mb-2">
+              <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-6 lg:p-8">
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-neutral-900 mb-1 sm:mb-2">
                   {t('job.locationBudget')}
                 </h2>
-                <p className="text-base text-neutral-500 mb-6">
+                <p className="text-sm sm:text-base text-neutral-500 mb-4 sm:mb-6">
                   {t("postJob.locationBudgetSubtitle")}
                 </p>
 
-                <div className="space-y-6">
+                <div className="space-y-5 sm:space-y-6">
                   {/* Address */}
                   <div>
                     <label className="block text-sm font-semibold text-neutral-700 mb-2">
@@ -729,17 +729,17 @@ function PostJobPageContent() {
 
           {/* STEP 3: Details */}
           {currentStep === "details" && (
-            <div className="max-w-3xl mx-auto space-y-6">
+            <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
               <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-neutral-900 mb-2">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-neutral-900 mb-1 sm:mb-2">
                   {t("job.projectDetails")}
                 </h1>
-                <p className="text-base text-neutral-500">
+                <p className="text-sm sm:text-base text-neutral-500">
                   {t('job.describeWhatNeedsToBe')}
                 </p>
               </div>
 
-              <div className="bg-white rounded-2xl border border-neutral-200 p-6 lg:p-8 space-y-6">
+              <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6">
                 {/* Title */}
                 <div>
                   <label className="block text-sm font-semibold text-neutral-700 mb-2">
@@ -769,25 +769,25 @@ function PostJobPageContent() {
 
 
                 {/* Photos - Enhanced with explanation */}
-                <div className={`p-5 lg:p-6 rounded-2xl border-2 transition-all ${
+                <div className={`p-4 sm:p-5 lg:p-6 rounded-2xl border-2 transition-all ${
                   (existingMedia.length + mediaFiles.length) > 0
                     ? 'bg-emerald-50/50 border-emerald-200'
                     : 'bg-gradient-to-br from-amber-50/50 to-orange-50/30 border-amber-200/60'
                 }`}>
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                  <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
                       (existingMedia.length + mediaFiles.length) > 0
                         ? 'bg-emerald-100'
                         : 'bg-amber-100'
                     }`}>
-                      <ImageIcon className={`w-6 h-6 ${
+                      <ImageIcon className={`w-5 h-5 sm:w-6 sm:h-6 ${
                         (existingMedia.length + mediaFiles.length) > 0
                           ? 'text-emerald-600'
                           : 'text-amber-600'
                       }`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <label className="block text-base font-semibold text-neutral-800 mb-1">
+                      <label className="block text-sm sm:text-base font-semibold text-neutral-800 mb-1">
                         {t('job.addPhotos')} <span className="text-[#C4735B]">*</span>
                       </label>
                       <p className="text-sm text-neutral-500 leading-relaxed">
@@ -798,13 +798,13 @@ function PostJobPageContent() {
 
                   {/* Tips when no photos */}
                   {(existingMedia.length + mediaFiles.length) === 0 && (
-                    <div className="mb-4 flex flex-wrap gap-2">
+                    <div className="mb-3 sm:mb-4 flex flex-wrap gap-1.5 sm:gap-2">
                       {[
-                        { icon: <Camera className="w-4 h-4" />, text: t('job.problemArea') },
-                        { icon: <Ruler className="w-4 h-4" />, text: t('job.dimensions') },
-                        { icon: <Palette className="w-4 h-4" />, text: t('job.desiredStyle') },
+                        { icon: <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4" />, text: t('job.problemArea') },
+                        { icon: <Ruler className="w-3.5 h-3.5 sm:w-4 sm:h-4" />, text: t('job.dimensions') },
+                        { icon: <Palette className="w-3.5 h-3.5 sm:w-4 sm:h-4" />, text: t('job.desiredStyle') },
                       ].map((tip, i) => (
-                        <span key={i} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 border border-neutral-200 text-sm text-neutral-600">
+                        <span key={i} className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white/80 border border-neutral-200 text-xs sm:text-sm text-neutral-600">
                           <span className="text-[#C4735B]">{tip.icon}</span>
                           {tip.text}
                         </span>
@@ -813,10 +813,10 @@ function PostJobPageContent() {
                   )}
 
                   {/* Upload area and previews */}
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-wrap gap-2 sm:gap-3">
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className={`w-24 h-24 rounded-xl border-2 border-dashed flex flex-col items-center justify-center transition-all flex-shrink-0 ${
+                      className={`w-20 h-20 sm:w-24 sm:h-24 rounded-xl border-2 border-dashed flex flex-col items-center justify-center transition-all flex-shrink-0 ${
                         (existingMedia.length + mediaFiles.length) > 0
                           ? 'border-emerald-300 hover:border-emerald-400 hover:bg-emerald-100/50 bg-white'
                           : 'border-amber-300 hover:border-amber-400 hover:bg-amber-100/50 bg-white'
@@ -842,7 +842,7 @@ function PostJobPageContent() {
 
                     {/* Preview - Existing */}
                     {existingMedia.map((media, idx) => (
-                      <div key={`existing-${idx}`} className="relative w-24 h-24 rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0 ring-2 ring-emerald-200 ring-offset-2">
+                      <div key={`existing-${idx}`} className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0 ring-2 ring-emerald-200 ring-offset-2">
                         <Image src={storage.getFileUrl(media.url)} alt="Uploaded media" fill className="object-cover" sizes="96px" />
                         <button
                           onClick={() => removeExistingMedia(idx)}
@@ -855,7 +855,7 @@ function PostJobPageContent() {
 
                     {/* Preview - New */}
                     {mediaFiles.map((media, idx) => (
-                      <div key={`new-${idx}`} className="relative w-24 h-24 rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0 ring-2 ring-emerald-200 ring-offset-2">
+                      <div key={`new-${idx}`} className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0 ring-2 ring-emerald-200 ring-offset-2">
                         <Image src={media.preview} alt="Preview" fill className="object-cover" sizes="96px" unoptimized />
                         <button
                           onClick={() => removeMediaFile(idx)}
@@ -898,18 +898,18 @@ function PostJobPageContent() {
 
           {/* STEP 4: Review */}
           {currentStep === "review" && (
-            <div className="max-w-3xl mx-auto space-y-4">
-              <div className="mb-4">
-                <h1 className="text-2xl lg:text-3xl font-bold text-neutral-900 mb-2">
+            <div className="max-w-3xl mx-auto space-y-3 sm:space-y-4">
+              <div className="mb-3 sm:mb-4">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-neutral-900 mb-1 sm:mb-2">
                   {t('job.reviewYourJobPost')}
                 </h1>
-                <p className="text-base text-neutral-500">
+                <p className="text-sm sm:text-base text-neutral-500">
                   {t('job.pleaseEnsureAllDetailsAre')}
                 </p>
               </div>
 
               {/* Service Details */}
-              <div className="bg-white rounded-2xl border border-neutral-200 p-5">
+              <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
@@ -942,8 +942,8 @@ function PostJobPageContent() {
               </div>
 
               {/* Location & Budget - Combined */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="bg-white rounded-2xl border border-neutral-200 p-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
                       <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
@@ -977,7 +977,7 @@ function PostJobPageContent() {
                 </div>
 
                 {/* Budget */}
-                <div className="bg-white rounded-2xl border border-neutral-200 p-5">
+                <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
                       <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
@@ -1001,7 +1001,7 @@ function PostJobPageContent() {
                 </div>
 
                 {/* Timing */}
-                <div className="bg-white rounded-2xl border border-neutral-200 p-5">
+                <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
                       <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
@@ -1027,7 +1027,7 @@ function PostJobPageContent() {
 
               {/* Category-specific fields - Show if any are filled */}
               {(formData.areaSize || formData.roomCount || formData.pointsCount || formData.cadastralId || formData.landArea) && (
-                <div className="bg-white rounded-2xl border border-neutral-200 p-5">
+                <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
                       <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
@@ -1070,7 +1070,7 @@ function PostJobPageContent() {
               )}
 
               {/* Description */}
-              <div className="bg-white rounded-2xl border border-neutral-200 p-5">
+              <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
@@ -1090,7 +1090,7 @@ function PostJobPageContent() {
 
               {/* Photos */}
               {(existingMedia.length > 0 || mediaFiles.length > 0) && (
-                <div className="bg-white rounded-2xl border border-neutral-200 p-5">
+                <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
                       <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
@@ -1131,14 +1131,14 @@ function PostJobPageContent() {
 
       {/* Footer Navigation */}
       <footer className="fixed bottom-14 lg:bottom-0 left-0 right-0 bg-white border-t border-neutral-100 z-40 shadow-lg shadow-neutral-900/5">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-3">
             <Button
               variant="ghost"
               size="default"
               onClick={handleBack}
               leftIcon={<ArrowLeft className="w-4 h-4" />}
-              className="text-base"
+              className="text-sm sm:text-base"
             >
               {t('common.back')}
             </Button>
@@ -1153,7 +1153,7 @@ function PostJobPageContent() {
                 (currentStep === "details" && !canProceedFromDetails())
               }
               rightIcon={currentStep === "review" ? <Check className="w-5 h-5" /> : <ArrowRight className="w-5 h-5" />}
-              className="text-base px-8"
+              className="text-sm sm:text-base px-5 sm:px-8"
             >
               {currentStep === "review"
                 ? (t('job.postJob'))

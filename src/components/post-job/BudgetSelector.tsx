@@ -54,17 +54,17 @@ export default function BudgetSelector({
 
   return (
     <div className={className}>
-      {/* Budget Type Selector */}
-      <div className="flex gap-3 mb-5">
+      {/* Budget Type Selector — Segmented Control */}
+      <div className="flex p-1 rounded-xl bg-neutral-100 dark:bg-neutral-800 mb-5">
         {budgetTypes.map((type) => (
           <button
             key={type.value}
             type="button"
             onClick={() => onBudgetTypeChange(type.value)}
-            className={`flex-1 py-3 px-4 rounded-xl text-sm font-semibold border-2 transition-all ${
+            className={`flex-1 py-2.5 sm:py-3 px-2 sm:px-4 rounded-lg text-[13px] sm:text-sm font-semibold transition-all ${
               budgetType === type.value
-                ? 'border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B] shadow-sm'
-                : 'border-neutral-200 dark:border-neutral-700 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600 hover:bg-neutral-50'
+                ? 'bg-white dark:bg-neutral-700 text-[#C4735B] shadow-sm'
+                : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
             }`}
           >
             {locale === 'ka' ? type.labelKa : type.labelEn}

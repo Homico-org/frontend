@@ -2,8 +2,7 @@
 
 import { useLanguage } from '@/contexts/LanguageContext';
 import { JobFilters } from '@/contexts/JobsContext';
-import { RotateCcw, Bookmark, ChevronDown, Facebook, HelpCircle } from 'lucide-react';
-import Link from 'next/link';
+import { RotateCcw, Bookmark, ChevronDown } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
 import { Badge } from '@/components/ui/badge';
@@ -354,29 +353,6 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
         </CollapsibleSection>
       </div>
 
-      {/* Footer: Help + Social (visible on Jobs page too) */}
-      <div className="px-4 py-3 border-t border-neutral-200/70 bg-white/70 backdrop-blur">
-        <div className="flex items-center justify-between gap-3">
-          <Link
-            href="/help"
-            className="inline-flex items-center gap-2 text-xs font-medium text-neutral-700 hover:text-neutral-900 transition-colors"
-          >
-            <HelpCircle className="w-4 h-4" style={{ color: ACCENT }} />
-            {t('common.help')}
-          </Link>
-
-          <a
-            href="https://www.facebook.com/profile.php?id=61585402505170"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-8 h-8 rounded-lg border border-neutral-200 bg-white flex items-center justify-center hover:bg-neutral-50 transition-colors"
-            aria-label="Facebook"
-            title="Facebook"
-          >
-            <Facebook className="w-4 h-4" style={{ color: ACCENT }} />
-          </a>
-        </div>
-      </div>
     </aside>
   );
 }

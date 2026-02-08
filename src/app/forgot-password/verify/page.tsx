@@ -153,6 +153,11 @@ export default function VerifyResetCodePage() {
             autoFocus
           />
 
+          {/* Delay hint */}
+          <p className="text-xs text-neutral-400 text-center leading-relaxed">
+            {t('common.otpMayBeDelayed')}
+          </p>
+
           {/* Timer and Resend */}
           <div className="text-center">
             {canResend ? (

@@ -150,6 +150,7 @@
     "saving": "Saving...",
     "processing": "Processing...",
     "sending": "Sending...",
+    "otpMayBeDelayed": "The code may take up to 1 minute to arrive. Please wait before resending.",
     "uploading": "Uploading...",
     "deleting": "Deleting...",
     "select": "Select",

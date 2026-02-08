@@ -89,6 +89,11 @@ export default function StepPhone({
           />
         </div>
 
+        {/* Delay hint */}
+        <p className="text-[11px] sm:text-xs text-neutral-400 text-center mb-4 sm:mb-6 leading-relaxed px-2">
+          {t('common.otpMayBeDelayed')}
+        </p>
+
         {/* Resend */}
         <div className="text-center">
           {resendTimer > 0 ? (

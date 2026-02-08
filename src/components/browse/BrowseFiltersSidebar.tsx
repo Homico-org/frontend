@@ -8,8 +8,7 @@ import { useBrowseContext } from '@/contexts/BrowseContext';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getCategoryLabelStatic } from '@/hooks/useCategoryLabels';
-import { ChevronDown, Facebook, HelpCircle } from 'lucide-react';
-import Link from 'next/link';
+import { ChevronDown } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 // Muted terracotta color matching design
@@ -460,31 +459,6 @@ export default function BrowseFiltersSidebar({
         )}
       </div>
 
-      {/* Footer: Help + Social */}
-      <div className="p-3 border-t border-neutral-200/70 bg-white/70 backdrop-blur flex-shrink-0">
-        <div className="flex items-center justify-between gap-3">
-          <Link
-            href="/help"
-            className="inline-flex items-center gap-2 text-xs font-medium text-neutral-700 hover:text-neutral-900 transition-colors"
-          >
-            <HelpCircle className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
-            {t('common.help')}
-          </Link>
-
-          <div className="flex items-center gap-2">
-            <a
-              href="https://www.facebook.com/profile.php?id=61585402505170"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-8 h-8 rounded-lg border border-neutral-200 bg-white flex items-center justify-center hover:bg-neutral-50 transition-colors"
-              aria-label="Facebook"
-              title="Facebook"
-            >
-              <Facebook className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
-            </a>
-          </div>
-        </div>
-      </div>
     </aside>
   );
 }

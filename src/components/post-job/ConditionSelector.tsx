@@ -85,20 +85,20 @@ export default function ConditionSelector({
   const conditions = getConditionsForCategory(category);
 
   return (
-    <div className={`space-y-3 ${className}`}>
+    <div className={`space-y-2 sm:space-y-3 ${className}`}>
       {conditions.map((condition) => (
         <button
           key={condition.value}
           type="button"
           onClick={() => onChange(condition.value)}
-          className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${
+          className={`w-full flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border-2 transition-all text-left ${
             value === condition.value
               ? 'border-[#C4735B] bg-[#C4735B]/5 shadow-sm'
               : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 hover:bg-neutral-50'
           }`}
         >
           <div
-            className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ${
+            className={`flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${
               value === condition.value
                 ? 'bg-[#C4735B]/10 text-[#C4735B]'
                 : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500'
@@ -108,7 +108,7 @@ export default function ConditionSelector({
           </div>
           <div className="flex-1 min-w-0">
             <p
-              className={`text-base font-semibold ${
+              className={`text-sm sm:text-base font-semibold ${
                 value === condition.value
                   ? 'text-[#C4735B]'
                   : 'text-neutral-900 dark:text-neutral-100'

@@ -5,7 +5,8 @@ import { useBrowseContext } from '@/contexts/BrowseContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useLikes } from '@/hooks/useLikes';
 import { FeedItem, LikeTargetType } from '@/types';
-import { Image } from 'lucide-react';
+import { ArrowRight, Briefcase, Image, Plus, Users } from 'lucide-react';
+import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import FeedCard from './FeedCard';
 import EmptyState from '../common/EmptyState';
@@ -20,7 +21,9 @@ interface FeedSectionProps {
 
 export default function FeedSection({ selectedCategory, topRatedActive }: FeedSectionProps) {
   const { t, locale } = useLanguage();
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const isPro = user?.role === 'pro' || user?.role === 'company';
+  const isClient = user?.role === 'client';
   const { searchQuery, sortBy, selectedCity, selectedSubcategory } = useBrowseContext();
   const { toggleLike, initializeLikeStates, likeStates } = useLikes();
 
@@ -230,6 +233,85 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
     />
   );
 
+  // CTA banner component
+  const CtaBanner = () => {
+    if (isLoading || feedItems.length === 0) return null;
+
+    if (isPro && user?.id) {
+      return (
+        <Link
+          href={`/professionals/${user.id}`}
+          className="flex items-center justify-between gap-3 p-3 sm:p-4 mb-3 sm:mb-4 bg-gradient-to-r from-[#C4735B]/10 to-[#C4735B]/5 border border-[#C4735B]/20 rounded-xl sm:rounded-2xl hover:border-[#C4735B]/40 transition-all group"
+        >
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[#C4735B]/15 flex items-center justify-center flex-shrink-0">
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B]" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm sm:text-base font-semibold text-neutral-900 truncate">
+                {locale === 'ka' ? 'დაამატე შენი პროექტი' : 'Add Your Project'}
+              </p>
+              <p className="text-[11px] sm:text-xs text-neutral-500 truncate">
+                {locale === 'ka' ? 'აჩვენე შენი ნამუშევრები კლიენტებს' : 'Showcase your work to attract clients'}
+              </p>
+            </div>
+          </div>
+          <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B] flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+        </Link>
+      );
+    }
+
+    if (!isAuthenticated) {
+      return (
+        <Link
+          href="/register"
+          className="flex items-center justify-between gap-3 p-3 sm:p-4 mb-3 sm:mb-4 bg-gradient-to-r from-[#C4735B]/10 to-[#C4735B]/5 border border-[#C4735B]/20 rounded-xl sm:rounded-2xl hover:border-[#C4735B]/40 transition-all group"
+        >
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[#C4735B]/15 flex items-center justify-center flex-shrink-0">
+              <Users className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B]" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm sm:text-base font-semibold text-neutral-900 truncate">
+                {locale === 'ka' ? 'დარეგისტრირდი პროფესიონალად' : 'Register as a Professional'}
+              </p>
+              <p className="text-[11px] sm:text-xs text-neutral-500 truncate">
+                {locale === 'ka' ? 'აჩვენე შენი ნამუშევრები და იპოვე კლიენტები' : 'Showcase your work and find clients'}
+              </p>
+            </div>
+          </div>
+          <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B] flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+        </Link>
+      );
+    }
+
+    if (isClient) {
+      return (
+        <Link
+          href="/post-job"
+          className="flex items-center justify-between gap-3 p-3 sm:p-4 mb-3 sm:mb-4 bg-gradient-to-r from-[#C4735B]/10 to-[#C4735B]/5 border border-[#C4735B]/20 rounded-xl sm:rounded-2xl hover:border-[#C4735B]/40 transition-all group"
+        >
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[#C4735B]/15 flex items-center justify-center flex-shrink-0">
+              <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B]" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm sm:text-base font-semibold text-neutral-900 truncate">
+                {locale === 'ka' ? 'განათავსე პროექტი' : 'Post a Job to Find a Pro'}
+              </p>
+              <p className="text-[11px] sm:text-xs text-neutral-500 truncate">
+                {locale === 'ka' ? 'აღწერე პროექტი და მიიღე შეთავაზებები' : 'Describe your project and get proposals'}
+              </p>
+            </div>
+          </div>
+          <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B] flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+        </Link>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div>
       {isLoading ? (
@@ -238,6 +320,7 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
         <FeedEmptyState />
       ) : (
         <>
+          <CtaBanner />
           {/* Grid Layout - Mobile first: 2 columns */}
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 items-stretch">
             {feedItems.map((item, index) => (

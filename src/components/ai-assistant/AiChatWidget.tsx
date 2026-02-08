@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Minimize2, Send, Trash2, X } from 'lucide-react';
+import { ChevronLeft, Minimize2, Send, Trash2, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -115,6 +115,7 @@ function TypingIndicator() {
 
 export default function AiChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [showPulse, setShowPulse] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -362,9 +363,30 @@ export default function AiChatWidget() {
 
   return (
     <>
+      {/* Right-edge reveal tab — visible only when widget is hidden */}
+      <AnimatePresence>
+        {isHidden && (
+          <motion.button
+            key="ai-reveal-tab"
+            initial={{ x: 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 20, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            onClick={() => setIsHidden(false)}
+            className="fixed right-0 top-1/2 -translate-y-1/2 z-40 flex items-center gap-1 pl-2 pr-1 py-3 bg-[#C4735B] text-white rounded-l-xl shadow-lg hover:pr-2 hover:shadow-xl transition-all group"
+            aria-label="Show AI Assistant"
+          >
+            <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+            <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0">
+              <Image src="/AI-mascot.png" alt="AI" width={28} height={28} className="w-full h-full object-cover scale-[1.15]" />
+            </div>
+          </motion.button>
+        )}
+      </AnimatePresence>
+
       {/* Floating Draggable Button */}
       <AnimatePresence>
-        {fabPosition && !isOpen && (
+        {fabPosition && !isOpen && !isHidden && (
           <motion.button
             ref={fabRef}
             key="ai-fab"
@@ -426,6 +448,19 @@ export default function AiChatWidget() {
               </motion.div>
             </motion.div>
 
+            {/* X dismiss badge */}
+            {!isDragging && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setIsHidden(true); }}
+                onMouseDown={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
+                className="absolute -top-1 -right-1 w-5 h-5 bg-neutral-700 hover:bg-red-500 rounded-full flex items-center justify-center shadow-md transition-colors z-10"
+                aria-label="Hide AI Assistant"
+              >
+                <X className="w-3 h-3 text-white" />
+              </button>
+            )}
+
             {/* Tooltip */}
             <AnimatePresence>
               {!isDragging && (
@@ -480,12 +515,14 @@ export default function AiChatWidget() {
               <button
                 onClick={() => setIsOpen(false)}
                 className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                title={locale === 'ka' ? 'ჩატის მინიმიზაცია' : 'Minimize'}
               >
                 <Minimize2 className="w-4 h-4" />
               </button>
               <button
-                onClick={() => setIsOpen(false)}
+                onClick={() => { setIsOpen(false); setIsHidden(true); }}
                 className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                title={locale === 'ka' ? 'ჩატის დამალვა' : 'Hide'}
               >
                 <X className="w-4 h-4" />
               </button>

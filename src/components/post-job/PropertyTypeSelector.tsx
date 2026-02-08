@@ -36,20 +36,20 @@ export default function PropertyTypeSelector({
   className = '',
 }: PropertyTypeSelectorProps) {
   return (
-    <div className={`grid grid-cols-5 gap-3 ${className}`}>
+    <div className={`grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3 ${className}`}>
       {propertyTypes.map((type) => (
         <button
           key={type.value}
           type="button"
           onClick={() => onChange(type.value)}
-          className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+          className={`flex flex-col items-center gap-1.5 sm:gap-2 py-3 px-2 sm:p-4 rounded-xl border-2 transition-all ${
             value === type.value
               ? 'border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B] shadow-sm'
               : 'border-neutral-200 dark:border-neutral-700 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600 hover:bg-neutral-50'
           }`}
         >
           {type.icon}
-          <span className="text-sm font-medium">
+          <span className="text-xs sm:text-sm font-medium leading-tight text-center">
             {locale === 'ka' ? type.labelKa : type.labelEn}
           </span>
         </button>

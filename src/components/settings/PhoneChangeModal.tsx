@@ -215,6 +215,10 @@ export default function PhoneChangeModal({
                 />
               </div>
 
+              <p className="text-[11px] sm:text-xs text-neutral-400 text-center leading-relaxed">
+                {t('common.otpMayBeDelayed')}
+              </p>
+
               <div className="flex items-center justify-between pt-1 sm:pt-2">
                 <Button
                   variant="ghost"

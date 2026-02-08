@@ -6,16 +6,17 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBrowseContext } from "@/contexts/BrowseContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import Link from "next/link";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { useLikes } from "@/hooks/useLikes";
 import { api } from "@/lib/api";
 import { LikeTargetType, ProProfile } from "@/types";
-import { Users } from "lucide-react";
+import { ArrowRight, Briefcase, Users } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function ProfessionalsPage() {
-  const { t } = useLanguage();
-  const { user } = useAuth();
+  const { t, locale } = useLanguage();
+  const { user, isAuthenticated } = useAuth();
   const { trackEvent } = useAnalytics();
   const {
     selectedCategory,
@@ -196,6 +197,54 @@ export default function ProfessionalsPage() {
 
   return (
     <div className="space-y-3 sm:space-y-4">
+      {/* CTA: Guest → Register as Pro | Client → Post a Job */}
+      {!isLoading && results.length > 0 && (
+        <>
+          {!isAuthenticated && (
+            <Link
+              href="/register"
+              className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-gradient-to-r from-[#C4735B]/10 to-[#C4735B]/5 border border-[#C4735B]/20 rounded-xl sm:rounded-2xl hover:border-[#C4735B]/40 transition-all group"
+            >
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[#C4735B]/15 flex items-center justify-center flex-shrink-0">
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B]" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm sm:text-base font-semibold text-neutral-900 truncate">
+                    {locale === 'ka' ? 'დარეგისტრირდი პროფესიონალად' : 'Register as a Professional'}
+                  </p>
+                  <p className="text-[11px] sm:text-xs text-neutral-500 truncate">
+                    {locale === 'ka' ? 'შემოგვიერთდი და იპოვე კლიენტები' : 'Join and start finding clients'}
+                  </p>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B] flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          )}
+          {isAuthenticated && user?.role === 'client' && (
+            <Link
+              href="/post-job"
+              className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-gradient-to-r from-[#C4735B]/10 to-[#C4735B]/5 border border-[#C4735B]/20 rounded-xl sm:rounded-2xl hover:border-[#C4735B]/40 transition-all group"
+            >
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[#C4735B]/15 flex items-center justify-center flex-shrink-0">
+                  <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B]" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm sm:text-base font-semibold text-neutral-900 truncate">
+                    {locale === 'ka' ? 'განათავსე პროექტი' : 'Post a Job to Find a Pro'}
+                  </p>
+                  <p className="text-[11px] sm:text-xs text-neutral-500 truncate">
+                    {locale === 'ka' ? 'აღწერე პროექტი და მიიღე შეთავაზებები' : 'Describe your project and get proposals'}
+                  </p>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B] flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          )}
+        </>
+      )}
+
       {isLoading ? (
         <ProfessionalsSkeleton />
       ) : results.length > 0 ? (
