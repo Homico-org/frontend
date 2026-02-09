@@ -22,6 +22,7 @@ interface ProjectSidebarProps {
   unreadPollsCount?: number;
   unreadResourcesCount?: number;
   isProjectStarted?: boolean;
+  isCompleted?: boolean;
 }
 
 interface SidebarMenuItem {
@@ -41,6 +42,7 @@ export default function ProjectSidebar({
   unreadPollsCount = 0,
   unreadResourcesCount = 0,
   isProjectStarted = true,
+  isCompleted = false,
 }: ProjectSidebarProps) {
   const { t } = useLanguage();
   const menuItems: SidebarMenuItem[] = [
@@ -56,7 +58,7 @@ export default function ProjectSidebar({
       label: "Chat",
       labelKa: "ჩატი",
       badge: unreadChatCount,
-      disabled: !isProjectStarted,
+      disabled: !isProjectStarted || isCompleted,
     },
     {
       key: "polls",
@@ -64,7 +66,7 @@ export default function ProjectSidebar({
       label: "Polls",
       labelKa: "გამოკითხვები",
       badge: unreadPollsCount,
-      disabled: !isProjectStarted,
+      disabled: !isProjectStarted || isCompleted,
     },
     {
       key: "resources",
@@ -72,7 +74,7 @@ export default function ProjectSidebar({
       label: "Resources",
       labelKa: "მასალები",
       badge: unreadResourcesCount,
-      disabled: !isProjectStarted,
+      disabled: !isProjectStarted || isCompleted,
     },
     {
       key: "history",
@@ -166,6 +168,7 @@ export function ProjectSidebarMobile({
   unreadPollsCount = 0,
   unreadResourcesCount = 0,
   isProjectStarted = true,
+  isCompleted = false,
 }: ProjectSidebarProps) {
   const menuItems: SidebarMenuItem[] = [
     {
@@ -180,7 +183,7 @@ export function ProjectSidebarMobile({
       label: "Chat",
       labelKa: "ჩატი",
       badge: unreadChatCount,
-      disabled: !isProjectStarted,
+      disabled: !isProjectStarted || isCompleted,
     },
     {
       key: "polls",
@@ -188,7 +191,7 @@ export function ProjectSidebarMobile({
       label: "Polls",
       labelKa: "გამოკითხვები",
       badge: unreadPollsCount,
-      disabled: !isProjectStarted,
+      disabled: !isProjectStarted || isCompleted,
     },
     {
       key: "resources",
@@ -196,7 +199,7 @@ export function ProjectSidebarMobile({
       label: "Resources",
       labelKa: "მასალები",
       badge: unreadResourcesCount,
-      disabled: !isProjectStarted,
+      disabled: !isProjectStarted || isCompleted,
     },
     {
       key: "history",

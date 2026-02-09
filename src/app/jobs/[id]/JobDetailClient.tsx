@@ -1830,7 +1830,7 @@ export default function JobDetailClient() {
     job.status === "completed" ||
     !!job.hiredPro ||
     myProposal?.status === "accepted";
-  const isCompleted = job.status === "completed";
+  const isCompleted = job.status === "completed" || projectStage === "completed";
 
   return (
     <div className="min-h-screen bg-[#FAFAF8] dark:bg-[#0D0D0C]">
@@ -2297,6 +2297,7 @@ export default function JobDetailClient() {
                 unreadPollsCount={unreadPollsCount}
                 unreadResourcesCount={unreadResourcesCount}
                 isProjectStarted={projectStage !== "hired"}
+                isCompleted={isCompleted}
               />
             </div>
           )}
@@ -2319,6 +2320,7 @@ export default function JobDetailClient() {
                     unreadPollsCount={unreadPollsCount}
                     unreadResourcesCount={unreadResourcesCount}
                     isProjectStarted={projectStage !== "hired"}
+                    isCompleted={isCompleted}
                   />
                 </div>
               </div>
@@ -2955,7 +2957,7 @@ export default function JobDetailClient() {
                           const isCurrent = index === currentIndex;
                           const isNext = index === currentIndex + 1;
                           const canAdvance =
-                            isHiredPro && isNext && !isUpdatingStage;
+                            isHiredPro && isNext && !isUpdatingStage && !isCompleted;
                           const isLast = index === STAGES.length - 1;
 
                           return (
