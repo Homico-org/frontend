@@ -165,17 +165,21 @@ export default function ProfessionalsPage() {
   };
 
   const ProfessionalsSkeleton = () => (
-    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
       {Array.from({ length: 8 }).map((_, i) => (
         <div
           key={i}
           className="bg-white dark:bg-neutral-900 rounded-xl p-3 sm:p-5 border border-neutral-200/70 dark:border-neutral-800/80"
         >
-          <div className="flex items-start gap-3 sm:flex-col sm:items-center">
-            <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-full bg-neutral-200 dark:bg-neutral-700 animate-pulse flex-shrink-0" />
+          <div className="flex items-center gap-3 sm:flex-col sm:items-center">
+            <div className="w-12 h-12 sm:w-20 sm:h-20 rounded-full bg-neutral-200 dark:bg-neutral-700 animate-pulse flex-shrink-0" />
             <div className="flex-1 min-w-0 sm:w-full sm:mt-3">
               <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-3/4 sm:mx-auto animate-pulse mb-2" />
-              <div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded w-1/2 sm:mx-auto animate-pulse" />
+              <div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded w-1/2 sm:mx-auto animate-pulse mb-2" />
+              <div className="flex gap-1.5 sm:hidden">
+                <div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded-full w-16 animate-pulse" />
+                <div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded-full w-20 animate-pulse" />
+              </div>
             </div>
           </div>
         </div>
@@ -248,7 +252,7 @@ export default function ProfessionalsPage() {
       {isLoading ? (
         <ProfessionalsSkeleton />
       ) : results.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 items-stretch">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 items-stretch">
           {results.map((profile, index) => (
             <div
               key={profile.id || `pro-${index}`}

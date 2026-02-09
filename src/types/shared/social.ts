@@ -77,6 +77,7 @@ export interface FeedItem extends BaseEntity {
   afterImage?: string;
   beforeAfterPairs?: BeforeAfterPair[];
   category: string;
+  subcategories?: string[];
   tags?: string[];
   pro: FeedItemPro;
   client?: FeedItemClient;

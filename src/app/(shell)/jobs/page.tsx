@@ -269,6 +269,24 @@ export default function JobsPage() {
 
   return (
     <div className="space-y-4 sm:space-y-8">
+      {/* Add Job CTA */}
+      <Link
+        href="/post-job"
+        className="flex items-center gap-3 p-3 sm:p-4 bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700 hover:border-[#C4735B]/50 hover:bg-[#C4735B]/5 transition-all group"
+      >
+        <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#C4735B]/10 group-hover:bg-[#C4735B]/20 flex items-center justify-center transition-colors">
+          <Plus className="w-5 h-5 text-[#C4735B]" />
+        </div>
+        <div>
+          <p className="font-semibold text-sm sm:text-base text-neutral-900 dark:text-white group-hover:text-[#C4735B] transition-colors">
+            {locale === "ka" ? "სამუშაოს დამატება" : "Post a Job"}
+          </p>
+          <p className="text-[11px] sm:text-xs text-neutral-400">
+            {locale === "ka" ? "იპოვე სპეციალისტი შენი პროექტისთვის" : "Find the right professional for your project"}
+          </p>
+        </div>
+      </Link>
+
       {/* User's Own Posted Jobs Section */}
       {!filters.showFavoritesOnly && myJobs.length > 0 && (
         <div className="bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl border border-neutral-200/60 dark:border-neutral-800 p-3 sm:p-4 shadow-sm">

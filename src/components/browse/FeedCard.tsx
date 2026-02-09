@@ -427,10 +427,27 @@ const FeedCard = React.memo(function FeedCard({
 
           {/* Content Section */}
           <div className="p-2.5 sm:p-4 flex-1 flex flex-col">
-            {/* Service Type (subtitle) */}
-            <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1 text-[10px] sm:text-[12px] font-semibold text-[#C4735B]">
-              <Briefcase className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-              <span className="truncate">{getCategoryLabel()}</span>
+            {/* Service Type + Subcategories */}
+            <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
+              <div className="flex items-center gap-1 text-[10px] sm:text-[12px] font-semibold text-[#C4735B]">
+                <Briefcase className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
+                <span className="truncate">{getCategoryLabel()}</span>
+              </div>
+              {item.subcategories && item.subcategories.length > 0 && (
+                <>
+                  <span className="text-neutral-300 dark:text-neutral-600 text-[10px]">·</span>
+                  {item.subcategories.slice(0, 2).map((sub) => (
+                    <span key={sub} className="text-[9px] sm:text-[10px] font-medium text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded-full">
+                      {getCategoryLabelStatic(sub, locale)}
+                    </span>
+                  ))}
+                  {item.subcategories.length > 2 && (
+                    <span className="text-[9px] sm:text-[10px] font-semibold text-[#C4735B]">
+                      +{item.subcategories.length - 2}
+                    </span>
+                  )}
+                </>
+              )}
             </div>
 
             {/* Title Row */}

@@ -206,7 +206,7 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
 
   // Skeleton loading - Grid style (mobile-first)
   const FeedSkeleton = () => (
-    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
       {Array.from({ length: 8 }).map((_, i) => (
         <div key={i} className="bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80">
           <div className="aspect-[4/3] bg-neutral-200 dark:bg-neutral-700 animate-pulse" />
@@ -322,7 +322,7 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
         <>
           <CtaBanner />
           {/* Grid Layout - Mobile first: 2 columns */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 items-stretch">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 items-stretch">
             {feedItems.map((item, index) => (
               <div
                 key={item.id || `feed-item-${index}`}

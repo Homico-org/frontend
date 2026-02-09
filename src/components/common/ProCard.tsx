@@ -231,37 +231,37 @@ export default function ProCard({
             </div>
 
             {/* Top Row - Avatar + Info (Mobile: Horizontal layout) */}
-            <div className="flex items-start gap-3 sm:flex-col sm:items-center">
+            <div className="flex items-center gap-3 sm:flex-col sm:items-center">
               {/* Avatar */}
               <div className="relative flex-shrink-0">
-                <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-full overflow-hidden bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-700 dark:to-neutral-800 ring-2 ring-white dark:ring-neutral-900 shadow-md">
+                <div className="relative w-12 h-12 sm:w-20 sm:h-20 rounded-full overflow-hidden bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-700 dark:to-neutral-800 ring-2 ring-white dark:ring-neutral-900 shadow-md">
                   {avatarUrl && !imageError ? (
                     <Image
                       src={avatarUrl}
                       alt={profile.name}
                       fill
-                      sizes="(max-width: 640px) 56px, 80px"
+                      sizes="(max-width: 640px) 48px, 80px"
                       className={`object-cover transition-all duration-500 group-hover:scale-105 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
                       onLoad={() => setImageLoaded(true)}
                       onError={() => setImageError(true)}
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-xl sm:text-2xl font-bold text-neutral-400 dark:text-neutral-500">
+                    <div className="w-full h-full flex items-center justify-center text-lg sm:text-2xl font-bold text-neutral-400 dark:text-neutral-500">
                       {profile.name.charAt(0)}
                     </div>
                   )}
                 </div>
                 {/* Status indicator */}
                 <span
-                  className={`absolute bottom-0 right-0 w-4 h-4 sm:w-5 sm:h-5 rounded-full ${currentStatus.color} border-2 sm:border-[3px] border-white dark:border-neutral-900 shadow-sm`}
+                  className={`absolute bottom-0 right-0 w-3.5 h-3.5 sm:w-5 sm:h-5 rounded-full ${currentStatus.color} border-2 sm:border-[3px] border-white dark:border-neutral-900 shadow-sm`}
                 />
               </div>
 
-              {/* Mobile: Name + Stats inline */}
+              {/* Info section */}
               <div className="flex-1 min-w-0 sm:w-full sm:text-center sm:mt-3">
                 {/* Name + Badges */}
-                <div className="flex items-center gap-1.5 sm:justify-center mb-1">
-                  <h3 className="font-semibold text-sm sm:text-[15px] text-neutral-900 dark:text-white leading-snug truncate sm:line-clamp-1 group-hover:text-[#C4735B] transition-colors duration-300">
+                <div className="flex items-center gap-1.5 sm:justify-center mb-0.5 sm:mb-1">
+                  <h3 className="font-semibold text-sm sm:text-[15px] text-neutral-900 dark:text-white leading-snug truncate group-hover:text-[#C4735B] transition-colors duration-300">
                     {profile.name}
                   </h3>
                   {profile.verificationStatus === 'verified' && (
@@ -274,8 +274,63 @@ export default function ProCard({
                   )}
                 </div>
 
-                {/* Rating */}
-                <div className="flex items-center sm:justify-center mb-1.5 sm:mb-3">
+                {/* Mobile: Rating + Stats inline */}
+                <div className="flex items-center gap-2 sm:hidden mb-1.5">
+                  {(profile.totalReviews || 0) > 0 ? (
+                    <StarRating
+                      rating={profile.avgRating > 0 ? profile.avgRating : 5.0}
+                      reviewCount={profile.totalReviews}
+                      showCount
+                      size="xs"
+                    />
+                  ) : (
+                    <Badge variant="success" size="xs" icon={<Sparkles className="w-2.5 h-2.5" />}>
+                      {t('card.new')}
+                    </Badge>
+                  )}
+                  <span className="text-neutral-300 dark:text-neutral-600">·</span>
+                  <span className="flex items-center gap-0.5 text-[10px] text-neutral-500 dark:text-neutral-400">
+                    <Clock className="w-3 h-3" />
+                    {(() => {
+                      if (servicesWithExperience && servicesWithExperience.length > 0) {
+                        const expToYears: Record<string, number> = { '1-2': 2, '3-5': 5, '5-10': 10, '10+': 15 };
+                        const maxYears = Math.max(...servicesWithExperience.map(s => expToYears[s.experience] || 0));
+                        return maxYears > 0 ? maxYears : (profile.yearsExperience || 0);
+                      }
+                      return profile.yearsExperience || 0;
+                    })()}{t('timeUnits.year')}
+                  </span>
+                  <span className="text-neutral-300 dark:text-neutral-600">·</span>
+                  <span className="flex items-center gap-0.5 text-[10px] text-neutral-500 dark:text-neutral-400">
+                    <Briefcase className="w-3 h-3" />
+                    {completedJobs}
+                  </span>
+                  {pricing && (
+                    <>
+                      <span className="text-neutral-300 dark:text-neutral-600">·</span>
+                      <span className="text-[10px] font-medium text-[#C4735B]">
+                        {pricing.value || pricing.label}
+                      </span>
+                    </>
+                  )}
+                </div>
+
+                {/* Mobile: Subcategory pills */}
+                <div className="sm:hidden flex flex-wrap gap-1">
+                  {(userSubcategories.length > 0 ? userSubcategories : userCategories).slice(0, 4).map((key) => (
+                    <span key={key} className="text-[10px] font-medium text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full">
+                      {getCategoryLabel(key)}
+                    </span>
+                  ))}
+                  {userSubcategories.length > 4 && (
+                    <span className="text-[10px] font-semibold text-[#C4735B] bg-[#C4735B]/10 px-1.5 py-0.5 rounded-full">
+                      +{userSubcategories.length - 4}
+                    </span>
+                  )}
+                </div>
+
+                {/* Desktop: Rating */}
+                <div className="hidden sm:flex items-center justify-center mb-1.5 sm:mb-3">
                   {(profile.totalReviews || 0) > 0 ? (
                     <StarRating
                       rating={profile.avgRating > 0 ? profile.avgRating : 5.0}
@@ -288,41 +343,6 @@ export default function ProCard({
                       {t('card.new')}
                     </Badge>
                   )}
-                </div>
-
-                {/* Mobile: Compact stats row */}
-                <div className="flex items-center gap-2 text-[10px] sm:hidden text-neutral-500 dark:text-neutral-400">
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {(() => {
-                      if (servicesWithExperience && servicesWithExperience.length > 0) {
-                        const expToYears: Record<string, number> = { '1-2': 2, '3-5': 5, '5-10': 10, '10+': 15 };
-                        const maxYears = Math.max(...servicesWithExperience.map(s => expToYears[s.experience] || 0));
-                        return maxYears > 0 ? maxYears : (profile.yearsExperience || 0);
-                      }
-                      return profile.yearsExperience || 0;
-                    })()}{t('timeUnits.year')}
-                  </span>
-                  <span className="text-neutral-300 dark:text-neutral-600">•</span>
-                  <span className="flex items-center gap-1">
-                    <Briefcase className="w-3 h-3" />
-                    {completedJobs}
-                  </span>
-                  {pricing && (
-                    <>
-                      <span className="text-neutral-300 dark:text-neutral-600">•</span>
-                      <span className="text-[#C4735B] font-medium truncate">
-                        {pricing.value || pricing.label}
-                      </span>
-                    </>
-                  )}
-                </div>
-
-                {/* Mobile: Category */}
-                <div className="mt-1.5 sm:hidden">
-                  <span className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full">
-                    {getCategoryLabel(userCategories[0])}
-                  </span>
                 </div>
               </div>
             </div>
