@@ -509,7 +509,7 @@ function AdminDashboardPageContent() {
               />
 
               {/* Badge for unread */}
-              {action.badge && action.badge > 0 && (
+              {!!action.badge && (
                 <div
                   className="absolute top-1.5 right-1.5 sm:top-3 sm:right-3 w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-[8px] sm:text-[10px] font-bold animate-pulse"
                   style={{ background: THEME.error, color: 'white' }}

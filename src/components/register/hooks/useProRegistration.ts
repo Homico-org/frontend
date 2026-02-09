@@ -124,6 +124,18 @@ export function useProRegistration(): UseProRegistrationReturn {
     setError('');
     try {
       const fullPhone = `${countries[phoneCountry]?.phonePrefix || '+995'}${phone}`;
+
+      // Check if phone is already registered
+      const phoneCheck = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/check-exists?field=phone&value=${encodeURIComponent(fullPhone)}`
+      ).then(r => r.json());
+
+      if (phoneCheck.exists) {
+        setError(locale === 'ka' ? 'ეს ტელეფონის ნომერი უკვე რეგისტრირებულია' : 'This phone number is already registered');
+        setIsLoading(false);
+        return;
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/verification/send-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -133,12 +145,12 @@ export function useProRegistration(): UseProRegistrationReturn {
           channel: verificationChannel,
         }),
       });
-      
+
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.message || 'Failed to send OTP');
       }
-      
+
       setShowOtp(true);
       setResendTimer(60);
     } catch (err) {
@@ -146,7 +158,7 @@ export function useProRegistration(): UseProRegistrationReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [phone, phoneCountry, verificationChannel]);
+  }, [phone, phoneCountry, verificationChannel, locale]);
   
   // Verify OTP
   const verifyOtp = useCallback(async (code: string) => {
@@ -284,21 +296,29 @@ export function useProRegistration(): UseProRegistrationReturn {
       
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || 'Registration failed');
+        const msg = data.message || 'Registration failed';
+        // Translate known backend errors
+        if (msg.includes('phone number already exists')) {
+          throw new Error(locale === 'ka' ? 'ეს ტელეფონის ნომერი უკვე რეგისტრირებულია' : 'This phone number is already registered');
+        }
+        if (msg.includes('email already exists')) {
+          throw new Error(locale === 'ka' ? 'ეს ელ-ფოსტა უკვე რეგისტრირებულია' : 'This email is already registered');
+        }
+        throw new Error(msg);
       }
-      
+
       const data = await response.json();
-      
+
       // Login the user
       if (data.access_token && data.user) {
         login(data.access_token, data.user);
         // Store user ID for profile navigation
         setRegisteredUserId(data.user._id || data.user.id);
       }
-      
+
       setCurrentStep('complete');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      setError(err instanceof Error ? err.message : (locale === 'ka' ? 'რეგისტრაცია ვერ მოხერხდა' : 'Registration failed'));
     } finally {
       setIsLoading(false);
     }
