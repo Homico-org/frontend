@@ -123,7 +123,7 @@ function useBrowseFilterCount(includeProOnlyFilters: boolean) {
   }
   if (includeProOnlyFilters && minRating > 0) count++;
   if (includeProOnlyFilters && (budgetMin !== null || budgetMax !== null)) count++;
-  if (selectedCity && selectedCity !== "tbilisi") count++;
+  if (selectedCity && selectedCity !== "all") count++;
   if (
     selectedBudget &&
     selectedBudget !== "all" &&
