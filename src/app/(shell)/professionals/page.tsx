@@ -53,7 +53,7 @@ export default function ProfessionalsPage() {
         if (minRating > 0) params.append("minRating", minRating.toString());
         if (searchQuery) params.append("search", searchQuery);
         if (sortBy && sortBy !== "recommended") params.append("sort", sortBy);
-        if (selectedCity && selectedCity !== "tbilisi")
+        if (selectedCity && selectedCity !== "all")
           params.append("serviceArea", selectedCity);
         if (budgetMin !== null) params.append("minPrice", budgetMin.toString());
         if (budgetMax !== null) params.append("maxPrice", budgetMax.toString());
