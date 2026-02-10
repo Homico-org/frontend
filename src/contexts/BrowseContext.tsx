@@ -67,7 +67,7 @@ export function BrowseProvider({
   const [selectedBudget, setSelectedBudget] = useState<string>('all');
   const [budgetMin, setBudgetMin] = useState<number | null>(null);
   const [budgetMax, setBudgetMax] = useState<number | null>(null);
-  const [selectedCity, setSelectedCity] = useState<string>('tbilisi');
+  const [selectedCity, setSelectedCity] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('recommended');
 
@@ -135,7 +135,7 @@ export function BrowseProvider({
     setSelectedBudget('common.all');
     setBudgetMin(null);
     setBudgetMax(null);
-    setSelectedCity('tbilisi');
+    setSelectedCity('all');
     setSearchQuery('');
     setSortBy('recommended');
   }, []);
@@ -146,7 +146,7 @@ export function BrowseProvider({
     selectedBudget !== 'all' ||
     budgetMin !== null ||
     budgetMax !== null ||
-    selectedCity !== 'tbilisi' ||
+    selectedCity !== 'all' ||
     searchQuery !== '';
 
   return (
