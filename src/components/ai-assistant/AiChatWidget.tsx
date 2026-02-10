@@ -450,15 +450,18 @@ export default function AiChatWidget() {
 
             {/* X dismiss badge */}
             {!isDragging && (
-              <button
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={(e) => { e.stopPropagation(); setIsHidden(true); }}
                 onMouseDown={(e) => e.stopPropagation()}
                 onTouchStart={(e) => e.stopPropagation()}
-                className="absolute -top-1 -right-1 w-5 h-5 bg-neutral-700 hover:bg-red-500 rounded-full flex items-center justify-center shadow-md transition-colors z-10"
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); setIsHidden(true); } }}
+                className="absolute -top-1 -right-1 w-5 h-5 bg-neutral-700 hover:bg-red-500 rounded-full flex items-center justify-center shadow-md transition-colors z-10 cursor-pointer"
                 aria-label="Hide AI Assistant"
               >
                 <X className="w-3 h-3 text-white" />
-              </button>
+              </div>
             )}
 
             {/* Tooltip */}
