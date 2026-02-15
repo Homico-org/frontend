@@ -2,8 +2,6 @@
 
 import AuthGuard from '@/components/common/AuthGuard';
 import AvatarCropper from '@/components/common/AvatarCropper';
-import BackButton from '@/components/common/BackButton';
-import Header, { HeaderSpacer } from '@/components/common/Header';
 import Select from '@/components/common/Select';
 import { AccountSettings, EmailChangeModal, NotificationSettings, PasswordChangeForm, PaymentSettings, PhoneChangeModal, ProfileSettings } from '@/components/settings';
 import PaymentMethodCard, { type PaymentMethod } from '@/components/settings/PaymentMethodCard';
@@ -804,14 +802,7 @@ function SettingsPageContent() {
         />
       )}
 
-      <div className="min-h-screen relative bg-white dark:bg-neutral-950">
-        <Header />
-        <HeaderSpacer />
-
-      <div className="relative z-10 max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-6 sm:pb-8">
-        <div className="mb-3 sm:mb-4">
-          <BackButton />
-        </div>
+      <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-6 sm:pb-8">
         <div className="mb-4 sm:mb-8">
           <h1
             className="text-lg sm:text-2xl font-serif font-medium"
@@ -1670,7 +1661,6 @@ function SettingsPageContent() {
           } : null);
         }}
       />
-      </div>
     </>
   );
 }
