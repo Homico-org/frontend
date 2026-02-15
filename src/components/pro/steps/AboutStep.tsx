@@ -5,7 +5,9 @@ import { Input, Textarea } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { aiService } from '@/services/ai';
-import { AlertCircle, Camera, CheckCircle2, Clock, FileText, Globe, Instagram, Facebook, Linkedin, MessageCircle, Send, Sparkles, Plus, X, Wand2, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { AlertCircle, Camera, CheckCircle2, Clock, FileText, Globe, Instagram, Facebook, Linkedin, MessageCircle, Send, Sparkles, Plus, X, Wand2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 interface AboutStepProps {
@@ -68,7 +70,7 @@ export default function AboutStep({
         onFormChange({ bio: generatedBio });
       }
     } catch {
-      setAiError(locale === 'ka' ? 'AI გენერაცია ვერ მოხერხდა' : 'AI generation failed');
+      setAiError(t('common.aiGenerationFailed'));
     } finally {
       setIsGeneratingBio(false);
     }
@@ -256,7 +258,7 @@ export default function AboutStep({
                 </Badge>
               ) : (
                 <Badge variant="secondary" size="xs">
-                  {locale === 'ka' ? 'სავალდებულო' : 'Required'}
+                  {t('common.required')}
                 </Badge>
               )}
             </div>
@@ -303,11 +305,11 @@ export default function AboutStep({
             </div>
             {validation.bio ? (
               <Badge variant="success" size="xs" icon={<CheckCircle2 className="w-3.5 h-3.5" />}>
-                {locale === 'ka' ? 'შევსებულია' : 'Completed'}
+                {t('common.completed')}
               </Badge>
             ) : (
               <Badge variant="secondary" size="xs">
-                {locale === 'ka' ? 'სავალდებულო' : 'Required'}
+                {t('common.required')}
               </Badge>
             )}
           </div>
@@ -323,16 +325,14 @@ export default function AboutStep({
               variant="filled"
               textareaSize="lg"
               success={validation.bio}
-              placeholder={locale === 'ka'
-                ? 'მაგ: სანტექნიკი ვარ 10 წლის გამოცდილებით, ვმუშაობ თბილისში, ვაკეთებ გათბობას, წყალგაყვანილობას და კანალიზაციას...'
-                : 'e.g: I am a plumber with 10 years of experience, I work in Tbilisi, I do heating, plumbing and sewage...'}
+              placeholder={t('common.bioPlaceholderExample')}
             />
             {isGeneratingBio && (
               <div className="absolute inset-0 bg-[var(--color-bg-elevated)]/80 backdrop-blur-[2px] rounded-xl flex items-center justify-center">
                 <div className="flex items-center gap-2.5 text-[#C4735B]">
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <LoadingSpinner size="sm" color="#C4735B" />
                   <span className="text-sm font-medium">
-                    {locale === 'ka' ? 'AI ამზადებს აღწერას...' : 'AI is writing your bio...'}
+                    {t('common.aiGeneratingBio')}
                   </span>
                 </div>
               </div>
@@ -348,21 +348,17 @@ export default function AboutStep({
               )}
             </div>
             <div className="flex items-center gap-3 shrink-0">
-              <button
+              <Button
                 type="button"
                 onClick={handleGenerateBio}
                 disabled={!canGenerateBio}
-                className={`
-                  inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all
-                  ${canGenerateBio
-                    ? 'bg-gradient-to-r from-[#C4735B] to-[#B5624A] text-white shadow-sm hover:shadow-md hover:from-[#B5624A] hover:to-[#A85D4A] active:scale-[0.97]'
-                    : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] cursor-not-allowed'
-                  }
-                `}
+                variant={canGenerateBio ? 'default' : 'secondary'}
+                size="sm"
+                leftIcon={<Wand2 className="w-3.5 h-3.5" />}
+                className={canGenerateBio ? 'bg-gradient-to-r from-[#C4735B] to-[#B5624A] hover:from-[#B5624A] hover:to-[#A85D4A] border-0' : ''}
               >
-                <Wand2 className="w-3.5 h-3.5" />
-                {locale === 'ka' ? 'AI აღწერა' : 'AI Write'}
-              </button>
+                {t('common.aiWrite')}
+              </Button>
               <span className={`text-xs font-medium tabular-nums ${formData.bio.length >= 50 ? 'text-emerald-600' : formData.bio.length > 0 ? 'text-amber-600' : 'text-[var(--color-text-muted)]'}`}>
                 {formData.bio.length}/500
               </span>
@@ -371,9 +367,7 @@ export default function AboutStep({
           {wordCount > 0 && wordCount < 5 && (
             <p className="text-[11px] text-[var(--color-text-muted)] mt-1 flex items-center gap-1">
               <Wand2 className="w-3 h-3" />
-              {locale === 'ka'
-                ? `კიდევ ${5 - wordCount} სიტყვა და AI დაგეხმარებათ აღწერის შექმნაში`
-                : `${5 - wordCount} more word${5 - wordCount === 1 ? '' : 's'} to unlock AI bio generation`}
+              {t('common.aiWordsToUnlock', { count: 5 - wordCount })}
             </p>
           )}
         </div>
